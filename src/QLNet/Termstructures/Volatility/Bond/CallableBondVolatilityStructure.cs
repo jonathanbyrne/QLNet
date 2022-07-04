@@ -66,7 +66,7 @@ namespace QLNet.Termstructures.Volatility.Bond
         public double blackVariance(double optionTime, double bondLength, double strike, bool extrapolate = false)
         {
             checkRange(optionTime, bondLength, strike, extrapolate);
-            double vol = volatilityImpl(optionTime, bondLength, strike);
+            var vol = volatilityImpl(optionTime, bondLength, strike);
             return vol * vol * optionTime;
         }
         //! returns the volatility for a given option date and bond tenor
@@ -78,43 +78,41 @@ namespace QLNet.Termstructures.Volatility.Bond
         //! returns the Black variance for a given option date and bond tenor
         public double blackVariance(Date optionDate, Period bondTenor, double strike, bool extrapolate = false)
         {
-            double vol = volatility(optionDate, bondTenor, strike, extrapolate);
-            KeyValuePair<double, double> p = convertDates(optionDate, bondTenor);
+            var vol = volatility(optionDate, bondTenor, strike, extrapolate);
+            var p = convertDates(optionDate, bondTenor);
             return vol * vol * p.Key;
         }
         public virtual SmileSection smileSection(Date optionDate, Period bondTenor)
         {
-            KeyValuePair<double, double> p = convertDates(optionDate, bondTenor);
+            var p = convertDates(optionDate, bondTenor);
             return smileSectionImpl(p.Key, p.Value);
         }
 
         //! returns the volatility for a given option tenor and bond tenor
         public double volatility(Period optionTenor, Period bondTenor, double strike, bool extrapolate = false)
         {
-            Date optionDate = optionDateFromTenor(optionTenor);
+            var optionDate = optionDateFromTenor(optionTenor);
             return volatility(optionDate, bondTenor, strike, extrapolate);
         }
         //! returns the Black variance for a given option tenor and bond tenor
         public double blackVariance(Period optionTenor, Period bondTenor, double strike, bool extrapolate = false)
         {
-            Date optionDate = optionDateFromTenor(optionTenor);
-            double vol = volatility(optionDate, bondTenor, strike, extrapolate);
-            KeyValuePair<double, double> p = convertDates(optionDate, bondTenor);
+            var optionDate = optionDateFromTenor(optionTenor);
+            var vol = volatility(optionDate, bondTenor, strike, extrapolate);
+            var p = convertDates(optionDate, bondTenor);
             return vol * vol * p.Key;
         }
         public SmileSection smileSection(Period optionTenor, Period bondTenor)
         {
-            Date optionDate = optionDateFromTenor(optionTenor);
+            var optionDate = optionDateFromTenor(optionTenor);
             return smileSection(optionDate, bondTenor);
         }
         // Limits
         //! the largest length for which the term structure can return vols
         public abstract Period maxBondTenor();
         //! the largest bondLength for which the term structure can return vols
-        public virtual double maxBondLength()
-        {
-            return timeFromReference(referenceDate() + maxBondTenor());
-        }
+        public virtual double maxBondLength() => timeFromReference(referenceDate() + maxBondTenor());
+
         //! the minimum strike for which the term structure can return vols
         public abstract double minStrike();
         //! the maximum strike for which the term structure can return vols
@@ -123,22 +121,21 @@ namespace QLNet.Termstructures.Volatility.Bond
         //! implements the conversion between dates and times
         public virtual KeyValuePair<double, double> convertDates(Date optionDate, Period bondTenor)
         {
-            Date end = optionDate + bondTenor;
+            var end = optionDate + bondTenor;
             Utils.QL_REQUIRE(end > optionDate, () =>
                              "negative bond tenor (" + bondTenor + ") given");
-            double optionTime = timeFromReference(optionDate);
-            double timeLength = dayCounter().yearFraction(optionDate, end);
+            var optionTime = timeFromReference(optionDate);
+            var timeLength = dayCounter().yearFraction(optionDate, end);
             return new KeyValuePair<double, double>(optionTime, timeLength);
         }
         //! the business day convention used for option date calculation
-        public virtual BusinessDayConvention businessDayConvention() { return bdc_; }
+        public virtual BusinessDayConvention businessDayConvention() => bdc_;
+
         //! implements the conversion between optionTenors and optionDates
-        public Date optionDateFromTenor(Period optionTenor)
-        {
-            return calendar().advance(referenceDate(),
-                                      optionTenor,
-                                      businessDayConvention());
-        }
+        public Date optionDateFromTenor(Period optionTenor) =>
+            calendar().advance(referenceDate(),
+                optionTenor,
+                businessDayConvention());
 
         //! return smile section
         protected abstract SmileSection smileSectionImpl(double optionTime, double bondLength);
@@ -147,7 +144,7 @@ namespace QLNet.Termstructures.Volatility.Bond
         protected abstract double volatilityImpl(double optionTime, double bondLength, double strike);
         protected virtual double volatilityImpl(Date optionDate, Period bondTenor, double strike)
         {
-            KeyValuePair<double, double> p = convertDates(optionDate, bondTenor);
+            var p = convertDates(optionDate, bondTenor);
             return volatilityImpl(p.Key, p.Value, strike);
         }
         protected void checkRange(double optionTime, double bondLength, double k, bool extrapolate)

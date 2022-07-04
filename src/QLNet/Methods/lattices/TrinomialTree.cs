@@ -21,7 +21,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Methods.lattices
 {
-    public class TrinomialTree : Tree<TrinomialTree>
+    [JetBrains.Annotations.PublicAPI] public class TrinomialTree : Tree<TrinomialTree>
     {
         public enum Branches { branches = 3 }
         private List<Branching> branchings_;
@@ -43,26 +43,26 @@ namespace QLNet.Methods.lattices
             timeGrid_ = timeGrid;
             x0_ = process.x0();
 
-            int nTimeSteps = timeGrid.size() - 1;
-            int jMin = 0;
-            int jMax = 0;
+            var nTimeSteps = timeGrid.size() - 1;
+            var jMin = 0;
+            var jMax = 0;
 
-            for (int i = 0; i < nTimeSteps; i++)
+            for (var i = 0; i < nTimeSteps; i++)
             {
-                double t = timeGrid[i];
-                double dt = timeGrid.dt(i);
+                var t = timeGrid[i];
+                var dt = timeGrid.dt(i);
 
                 //Variance must be independent of x
-                double v2 = process.variance(t, 0.0, dt);
-                double v = System.Math.Sqrt(v2);
+                var v2 = process.variance(t, 0.0, dt);
+                var v = System.Math.Sqrt(v2);
                 dx_.Add(v * System.Math.Sqrt(3.0));
 
-                Branching branching = new Branching();
-                for (int j = jMin; j <= jMax; j++)
+                var branching = new Branching();
+                for (var j = jMin; j <= jMax; j++)
                 {
-                    double x = x0_ + j * dx_[i];
-                    double m = process.expectation(t, x, dt);
-                    int temp = (int)System.Math.Floor((m - x0_) / dx_[i + 1] + 0.5);
+                    var x = x0_ + j * dx_[i];
+                    var m = process.expectation(t, x, dt);
+                    var temp = (int)System.Math.Floor((m - x0_) / dx_[i + 1] + 0.5);
 
                     if (isPositive)
                     {
@@ -72,13 +72,13 @@ namespace QLNet.Methods.lattices
                         }
                     }
 
-                    double e = m - (x0_ + temp * dx_[i + 1]);
-                    double e2 = e * e;
-                    double e3 = e * System.Math.Sqrt(3.0);
+                    var e = m - (x0_ + temp * dx_[i + 1]);
+                    var e2 = e * e;
+                    var e3 = e * System.Math.Sqrt(3.0);
 
-                    double p1 = (1.0 + e2 / v2 - e3 / v) / 6.0;
-                    double p2 = (2.0 - e2 / v2) / 3.0;
-                    double p3 = (1.0 + e2 / v2 + e3 / v) / 6.0;
+                    var p1 = (1.0 + e2 / v2 - e3 / v) / 6.0;
+                    var p2 = (2.0 - e2 / v2) / 3.0;
+                    var p3 = (1.0 + e2 / v2 + e3 / v) / 6.0;
 
                     branching.add(temp, p1, p2, p3);
                 }
@@ -89,11 +89,11 @@ namespace QLNet.Methods.lattices
             }
         }
 
-        public double dx(int i) { return dx_[i]; }
+        public double dx(int i) => dx_[i];
 
-        public TimeGrid timeGrid() { return timeGrid_; }
+        public TimeGrid timeGrid() => timeGrid_;
 
-        public int size(int i) { return i == 0 ? 1 : branchings_[i - 1].size(); }
+        public int size(int i) => i == 0 ? 1 : branchings_[i - 1].size();
 
         public double underlying(int i, int index)
         {
@@ -104,15 +104,9 @@ namespace QLNet.Methods.lattices
                               (double)index) * dx(i);
         }
 
-        public int descendant(int i, int index, int branch)
-        {
-            return branchings_[i].descendant(index, branch);
-        }
+        public int descendant(int i, int index, int branch) => branchings_[i].descendant(index, branch);
 
-        public double probability(int i, int index, int branch)
-        {
-            return branchings_[i].probability(index, branch);
-        }
+        public double probability(int i, int index, int branch) => branchings_[i].probability(index, branch);
 
         /* Branching scheme for a trinomial node.  Each node has three
            descendants, with the middle branch linked to the node
@@ -133,30 +127,15 @@ namespace QLNet.Methods.lattices
                 kMax_ = int.MinValue;
                 jMax_ = int.MinValue;
             }
-            public int descendant(int index, int branch)
-            {
-                return k_[index] - jMin_ - 1 + branch;
-            }
+            public int descendant(int index, int branch) => k_[index] - jMin_ - 1 + branch;
 
-            public double probability(int index, int branch)
-            {
-                return probs_[branch][index];
-            }
+            public double probability(int index, int branch) => probs_[branch][index];
 
-            public int size()
-            {
-                return jMax_ - jMin_ + 1;
-            }
+            public int size() => jMax_ - jMin_ + 1;
 
-            public int jMin()
-            {
-                return jMin_;
-            }
+            public int jMin() => jMin_;
 
-            public int jMax()
-            {
-                return jMax_;
-            }
+            public int jMax() => jMax_;
 
             public void add
                (int k, double p1, double p2, double p3)

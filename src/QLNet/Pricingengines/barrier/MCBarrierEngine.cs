@@ -49,7 +49,7 @@ namespace QLNet.Pricingengines.barrier
         \test the correctness of the returned value is tested by
               reproducing results available in literature.
     */
-    public class MCBarrierEngine<RNG, S> : McSimulation<SingleVariate, RNG, S>, IGenericEngine
+    [JetBrains.Annotations.PublicAPI] public class MCBarrierEngine<RNG, S> : McSimulation<SingleVariate, RNG, S>, IGenericEngine
       where RNG : IRSG, new()
       where S : IGeneralStatistics, new()
     {
@@ -89,7 +89,7 @@ namespace QLNet.Pricingengines.barrier
 
         public void calculate()
         {
-            double spot = process_.x0();
+            var spot = process_.x0();
             Utils.QL_REQUIRE(spot >= 0.0, () => "negative or null underlying given");
             Utils.QL_REQUIRE(!triggered(spot), () => "barrier touched");
             calculate(requiredTolerance_,
@@ -103,21 +103,21 @@ namespace QLNet.Pricingengines.barrier
 
         protected override IPathGenerator<IRNG> pathGenerator()
         {
-            TimeGrid grid = timeGrid();
-            IRNG gen = new RNG().make_sequence_generator(grid.size() - 1, seed_);
+            var grid = timeGrid();
+            var gen = new RNG().make_sequence_generator(grid.size() - 1, seed_);
             return new PathGenerator<IRNG>(process_, grid, gen, brownianBridge_);
         }
 
         protected override TimeGrid timeGrid()
         {
-            double residualTime = process_.time(arguments_.exercise.lastDate());
+            var residualTime = process_.time(arguments_.exercise.lastDate());
             if (timeSteps_ > 0)
             {
                 return new TimeGrid(residualTime, timeSteps_.Value);
             }
             else if (timeStepsPerYear_ > 0)
             {
-                int steps = (int)(timeStepsPerYear_.Value * residualTime);
+                var steps = (int)(timeStepsPerYear_.Value * residualTime);
                 return new TimeGrid(residualTime, System.Math.Max(steps, 1));
             }
             else
@@ -129,12 +129,12 @@ namespace QLNet.Pricingengines.barrier
 
         protected override PathPricer<IPath> pathPricer()
         {
-            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
-            TimeGrid grid = timeGrid();
+            var grid = timeGrid();
             List<double> discounts = new InitializedList<double>(grid.size());
-            for (int i = 0; i < grid.size(); i++)
+            for (var i = 0; i < grid.size(); i++)
                 discounts[i] = process_.riskFreeRate().currentLink().discount(grid[i]);
 
             // do this with template parameters?
@@ -172,7 +172,7 @@ namespace QLNet.Pricingengines.barrier
                 case Barrier.Type.UpOut:
                     return underlying > arguments_.barrier;
                 default:
-                    Utils.QL_FAIL("unknown type");
+                    Utils.QL_FAIL("unknown ExerciseType");
                     return false;
             }
         }
@@ -190,8 +190,10 @@ namespace QLNet.Pricingengines.barrier
         protected BarrierOption.Arguments arguments_ = new BarrierOption.Arguments();
         protected OneAssetOption.Results results_ = new OneAssetOption.Results();
 
-        public IPricingEngineArguments getArguments() { return arguments_; }
-        public IPricingEngineResults getResults() { return results_; }
+        public IPricingEngineArguments getArguments() => arguments_;
+
+        public IPricingEngineResults getResults() => results_;
+
         public void reset() { results_.reset(); }
 
         #region Observer & Observable
@@ -199,14 +201,8 @@ namespace QLNet.Pricingengines.barrier
         private readonly WeakEventSource eventSource = new WeakEventSource();
         public event Callback notifyObserversEvent
         {
-            add
-            {
-                eventSource.Subscribe(value);
-            }
-            remove
-            {
-                eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
         }
 
         public void registerWith(Callback handler) { notifyObserversEvent += handler; }
@@ -222,7 +218,7 @@ namespace QLNet.Pricingengines.barrier
     }
 
 
-    public class BarrierPathPricer : PathPricer<IPath>
+    [JetBrains.Annotations.PublicAPI] public class BarrierPathPricer : PathPricer<IPath>
     {
         public BarrierPathPricer(
            Barrier.Type barrierType,
@@ -246,18 +242,18 @@ namespace QLNet.Pricingengines.barrier
         }
         public double value(IPath path)
         {
-            int n = path.length();
+            var n = path.length();
             Utils.QL_REQUIRE(n > 1, () => "the path cannot be empty");
 
-            bool isOptionActive = false;
+            var isOptionActive = false;
             int? knockNode = null;
-            double asset_price = (path as Path).front();
+            var asset_price = (path as Path).front();
             double new_asset_price;
             double x, y;
             double vol;
-            TimeGrid timeGrid = (path as Path).timeGrid();
+            var timeGrid = (path as Path).timeGrid();
             double dt;
-            List<double> u = sequenceGen_.nextSequence().value;
+            var u = sequenceGen_.nextSequence().value;
             int i;
 
             switch (barrierType_)
@@ -347,7 +343,7 @@ namespace QLNet.Pricingengines.barrier
                     }
                     break;
                 default:
-                    Utils.QL_FAIL("unknown barrier type");
+                    Utils.QL_FAIL("unknown barrier ExerciseType");
                     break;
             }
 
@@ -366,7 +362,7 @@ namespace QLNet.Pricingengines.barrier
                     case Barrier.Type.DownOut:
                         return rebate_.GetValueOrDefault() * discounts_[(int)knockNode];
                     default:
-                        Utils.QL_FAIL("unknown barrier type");
+                        Utils.QL_FAIL("unknown barrier ExerciseType");
                         return -1;
                 }
             }
@@ -382,7 +378,7 @@ namespace QLNet.Pricingengines.barrier
     }
 
 
-    public class BiasedBarrierPathPricer : PathPricer<IPath>
+    [JetBrains.Annotations.PublicAPI] public class BiasedBarrierPathPricer : PathPricer<IPath>
     {
         public BiasedBarrierPathPricer(Barrier.Type barrierType,
                                        double? barrier,
@@ -406,12 +402,12 @@ namespace QLNet.Pricingengines.barrier
 
         public double value(IPath path)
         {
-            int n = path.length();
+            var n = path.length();
             Utils.QL_REQUIRE(n > 1, () => "the path cannot be empty");
 
-            bool isOptionActive = false;
+            var isOptionActive = false;
             int? knockNode = null;
-            double asset_price = (path as Path).front();
+            var asset_price = (path as Path).front();
             int i;
 
             switch (barrierType_)
@@ -469,7 +465,7 @@ namespace QLNet.Pricingengines.barrier
                     }
                     break;
                 default:
-                    Utils.QL_FAIL("unknown barrier type");
+                    Utils.QL_FAIL("unknown barrier ExerciseType");
                     break;
             }
 
@@ -488,7 +484,7 @@ namespace QLNet.Pricingengines.barrier
                     case Barrier.Type.DownOut:
                         return rebate_.GetValueOrDefault() * discounts_[(int)knockNode];
                     default:
-                        Utils.QL_FAIL("unknown barrier type");
+                        Utils.QL_FAIL("unknown barrier ExerciseType");
                         return -1;
                 }
             }
@@ -502,7 +498,7 @@ namespace QLNet.Pricingengines.barrier
     }
 
     //! Monte Carlo barrier-option engine factory
-    public class MakeMCBarrierEngine<RNG, S>
+    [JetBrains.Annotations.PublicAPI] public class MakeMCBarrierEngine<RNG, S>
        where RNG : IRSG, new()
        where S : IGeneralStatistics, new()
     {

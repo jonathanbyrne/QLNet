@@ -84,14 +84,14 @@ namespace QLNet.Termstructures.Inflation
             Utils.QL_REQUIRE(cfMaturities_.Count == cPrice.columns(), () => "maturities vs cap price columns not equal");
 
             // data has correct properties (positive, monotonic)?
-            for (int j = 0; j < cfMaturities_.Count; j++)
+            for (var j = 0; j < cfMaturities_.Count; j++)
             {
                 Utils.QL_REQUIRE(cfMaturities[j] > new Period(0, TimeUnit.Days), () => "non-positive maturities");
                 if (j > 0)
                 {
                     Utils.QL_REQUIRE(cfMaturities[j] > cfMaturities[j - 1], () => "non-increasing maturities");
                 }
-                for (int i = 0; i < fPrice_.rows(); i++)
+                for (var i = 0; i < fPrice_.rows(); i++)
                 {
                     Utils.QL_REQUIRE(fPrice_[i, j] > 0.0, () => "non-positive floor price: " + fPrice_[i, j]);
                     if (i > 0)
@@ -99,7 +99,7 @@ namespace QLNet.Termstructures.Inflation
                         Utils.QL_REQUIRE(fPrice_[i, j] >= fPrice_[i - 1, j], () => "non-increasing floor prices");
                     }
                 }
-                for (int i = 0; i < cPrice_.rows(); i++)
+                for (var i = 0; i < cPrice_.rows(); i++)
                 {
                     Utils.QL_REQUIRE(cPrice_[i, j] > 0.0, () => "non-positive cap price: " + cPrice_[i, j]);
                     if (i > 0)
@@ -115,90 +115,76 @@ namespace QLNet.Termstructures.Inflation
             // expected between caps and floors but that no overlap in the
             // output is allowed so no repeats or overlaps are used
             cfStrikes_ = new List<double>();
-            for (int i = 0; i < fStrikes_.Count; i++)
+            for (var i = 0; i < fStrikes_.Count; i++)
                 cfStrikes_.Add(fStrikes[i]);
-            double eps = 0.0000001;
-            double maxFstrike = fStrikes_.Last();
-            for (int i = 0; i < cStrikes_.Count; i++)
+            var eps = 0.0000001;
+            var maxFstrike = fStrikes_.Last();
+            for (var i = 0; i < cStrikes_.Count; i++)
             {
-                double k = cStrikes[i];
+                var k = cStrikes[i];
                 if (k > maxFstrike + eps)
                     cfStrikes_.Add(k);
             }
 
             // final consistency checking
             Utils.QL_REQUIRE(cfStrikes_.Count > 2, () => "overall not enough strikes");
-            for (int i = 1; i < cfStrikes_.Count; i++)
+            for (var i = 1; i < cfStrikes_.Count; i++)
                 Utils.QL_REQUIRE(cfStrikes_[i] > cfStrikes_[i - 1], () => "cfStrikes not increasing");
 
         }
         // InflationTermStructure interface
-        public override Period observationLag()
-        {
-            return zeroInflationIndex().link.zeroInflationTermStructure().link.observationLag();
-        }
-        public override Date baseDate()
-        {
-            return zeroInflationIndex().link.zeroInflationTermStructure().link.baseDate();
-        }
+        public override Period observationLag() => zeroInflationIndex().link.zeroInflationTermStructure().link.observationLag();
+
+        public override Date baseDate() => zeroInflationIndex().link.zeroInflationTermStructure().link.baseDate();
 
         //! is based on
-        public Handle<ZeroInflationIndex> zeroInflationIndex() { return zii_; }
-
+        public Handle<ZeroInflationIndex> zeroInflationIndex() => zii_;
 
         //! inspectors
         /*! \note you don't know if price() is a cap or a floor
                  without checking the ZeroInflation ATM level.
         */
-        public virtual double nominal() { return nominal_; }
-        public virtual BusinessDayConvention businessDayConvention() { return bdc_; }
+        public virtual double nominal() => nominal_;
+
+        public virtual BusinessDayConvention businessDayConvention() => bdc_;
 
         //! \warning you MUST remind the compiler in any descendants with the using:: mechanism
         //!          because you overload the names
         //! remember that the strikes use the quoting convention
-        public virtual double price(Period d, double k)
-        {
-            return price(cpiOptionDateFromTenor(d), k);
-        }
-        public virtual double capPrice(Period d, double k)
-        {
-            return capPrice(cpiOptionDateFromTenor(d), k);
-        }
-        public virtual double floorPrice(Period d, double k)
-        {
-            return floorPrice(cpiOptionDateFromTenor(d), k);
-        }
+        public virtual double price(Period d, double k) => price(cpiOptionDateFromTenor(d), k);
+
+        public virtual double capPrice(Period d, double k) => capPrice(cpiOptionDateFromTenor(d), k);
+
+        public virtual double floorPrice(Period d, double k) => floorPrice(cpiOptionDateFromTenor(d), k);
+
         public abstract double price(Date d, double k);
         public abstract double capPrice(Date d, double k);
         public abstract double floorPrice(Date d, double k);
 
-        public virtual List<double> strikes() { return cfStrikes_; }
-        public virtual List<double> capStrikes() { return cStrikes_; }
-        public virtual List<double> floorStrikes() { return fStrikes_; }
-        public virtual List<Period> maturities() { return cfMaturities_; }
+        public virtual List<double> strikes() => cfStrikes_;
 
-        public virtual Matrix capPrices() { return cPrice_; }
-        public virtual Matrix floorPrices() { return fPrice_; }
+        public virtual List<double> capStrikes() => cStrikes_;
 
-        public virtual double minStrike() { return cfStrikes_.First(); }
-        public virtual double maxStrike() { return cfStrikes_.Last(); }
-        public virtual Date minDate() { return referenceDate() + cfMaturities_.First(); } // \TODO deal with index interpolation
-        public override Date maxDate() { return referenceDate() + cfMaturities_.Last(); }
+        public virtual List<double> floorStrikes() => fStrikes_;
 
-        public virtual Date cpiOptionDateFromTenor(Period p)
-        {
-            return new Date(calendar().adjust(referenceDate() + p, businessDayConvention()));
-        }
+        public virtual List<Period> maturities() => cfMaturities_;
 
-        protected virtual bool checkStrike(double K)
-        {
-            return minStrike() <= K && K <= maxStrike();
-        }
+        public virtual Matrix capPrices() => cPrice_;
 
-        protected virtual bool checkMaturity(Date d)
-        {
-            return minDate() <= d && d <= maxDate();
-        }
+        public virtual Matrix floorPrices() => fPrice_;
+
+        public virtual double minStrike() => cfStrikes_.First();
+
+        public virtual double maxStrike() => cfStrikes_.Last();
+
+        public virtual Date minDate() => referenceDate() + cfMaturities_.First(); // \TODO deal with index interpolation
+        public override Date maxDate() => referenceDate() + cfMaturities_.Last();
+
+        public virtual Date cpiOptionDateFromTenor(Period p) => new Date(calendar().adjust(referenceDate() + p, businessDayConvention()));
+
+        protected virtual bool checkStrike(double K) => minStrike() <= K && K <= maxStrike();
+
+        protected virtual bool checkMaturity(Date d) => minDate() <= d && d <= maxDate();
 
         protected Handle<ZeroInflationIndex> zii_;
         // data
@@ -216,7 +202,7 @@ namespace QLNet.Termstructures.Inflation
     }
 
 
-    public class InterpolatedCPICapFloorTermPriceSurface<Interpolator2D> : CPICapFloorTermPriceSurface
+    [JetBrains.Annotations.PublicAPI] public class InterpolatedCPICapFloorTermPriceSurface<Interpolator2D> : CPICapFloorTermPriceSurface
        where Interpolator2D : IInterpolationFactory2D, new()
     {
         public InterpolatedCPICapFloorTermPriceSurface(double nominal,
@@ -255,39 +241,39 @@ namespace QLNet.Termstructures.Inflation
                 nK = ncK + nfK;
             Matrix cP = new Matrix(nK, nMat),
             fP = new Matrix(nK, nMat);
-            Handle<ZeroInflationTermStructure> zts = zii_.link.zeroInflationTermStructure();
-            Handle<YieldTermStructure> yts = nominalTermStructure();
+            var zts = zii_.link.zeroInflationTermStructure();
+            var yts = nominalTermStructure();
             Utils.QL_REQUIRE(!zts.empty(), () => "Zts is empty!!!");
             Utils.QL_REQUIRE(!yts.empty(), () => "Yts is empty!!!");
 
-            for (int i = 0; i < nfK; i++)
+            for (var i = 0; i < nfK; i++)
             {
                 allStrikes_.Add(fStrikes_[i]);
-                for (int j = 0; j < nMat; j++)
+                for (var j = 0; j < nMat; j++)
                 {
-                    Period mat = cfMaturities_[j];
-                    double df = yts.link.discount(cpiOptionDateFromTenor(mat));
-                    double atm_quote = zts.link.zeroRate(cpiOptionDateFromTenor(mat));
-                    double atm = System.Math.Pow(1.0 + atm_quote, mat.length());
-                    double S = atm * df;
-                    double K_quote = fStrikes_[i] / 100.0;
-                    double K = System.Math.Pow(1.0 + K_quote, mat.length());
+                    var mat = cfMaturities_[j];
+                    var df = yts.link.discount(cpiOptionDateFromTenor(mat));
+                    var atm_quote = zts.link.zeroRate(cpiOptionDateFromTenor(mat));
+                    var atm = System.Math.Pow(1.0 + atm_quote, mat.length());
+                    var S = atm * df;
+                    var K_quote = fStrikes_[i] / 100.0;
+                    var K = System.Math.Pow(1.0 + K_quote, mat.length());
                     cP[i, j] = fPrice_[i, j] + S - K * df;
                     fP[i, j] = fPrice_[i, j];
                 }
             }
-            for (int i = 0; i < ncK; i++)
+            for (var i = 0; i < ncK; i++)
             {
                 allStrikes_.Add(cStrikes_[i]);
-                for (int j = 0; j < nMat; j++)
+                for (var j = 0; j < nMat; j++)
                 {
-                    Period mat = cfMaturities_[j];
-                    double df = yts.link.discount(cpiOptionDateFromTenor(mat));
-                    double atm_quote = zts.link.zeroRate(cpiOptionDateFromTenor(mat));
-                    double atm = System.Math.Pow(1.0 + atm_quote, mat.length());
-                    double S = atm * df;
-                    double K_quote = cStrikes_[i] / 100.0;
-                    double K = System.Math.Pow(1.0 + K_quote, mat.length());
+                    var mat = cfMaturities_[j];
+                    var df = yts.link.discount(cpiOptionDateFromTenor(mat));
+                    var atm_quote = zts.link.zeroRate(cpiOptionDateFromTenor(mat));
+                    var atm = System.Math.Pow(1.0 + atm_quote, mat.length());
+                    var S = atm * df;
+                    var K_quote = cStrikes_[i] / 100.0;
+                    var K = System.Math.Pow(1.0 + K_quote, mat.length());
                     cP[i + nfK, j] = cPrice_[i, j];
                     fP[i + nfK, j] = cPrice_[i, j] + K * df - S;
                 }
@@ -298,7 +284,7 @@ namespace QLNet.Termstructures.Inflation
             fPriceB_ = fP;
 
             cfMaturityTimes_ = new List<double>();
-            for (int i = 0; i < cfMaturities_.Count; i++)
+            for (var i = 0; i < cfMaturities_.Count; i++)
             {
                 cfMaturityTimes_.Add(timeFromReference(cpiOptionDateFromTenor(cfMaturities_[i])));
             }
@@ -317,17 +303,17 @@ namespace QLNet.Termstructures.Inflation
         //! remember that the strikes use the quoting convention
         public override double price(Date d, double k)
         {
-            double atm = zeroInflationIndex().link.zeroInflationTermStructure().link.zeroRate(d);
+            var atm = zeroInflationIndex().link.zeroInflationTermStructure().link.zeroRate(d);
             return k > atm ? capPrice(d, k) : floorPrice(d, k);
         }
         public override double capPrice(Date d, double k)
         {
-            double t = timeFromReference(d);
+            var t = timeFromReference(d);
             return capPrice_.value(t, k);
         }
         public override double floorPrice(Date d, double k)
         {
-            double t = timeFromReference(d);
+            var t = timeFromReference(d);
             return floorPrice_.value(t, k);
         }
 

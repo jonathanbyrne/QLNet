@@ -30,14 +30,8 @@ namespace QLNet.Instruments
 
         public event Callback notifyObserversEvent
         {
-            add
-            {
-                eventSource.Subscribe(value);
-            }
-            remove
-            {
-                eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
         }
 
         public void registerWith(Callback handler) { notifyObserversEvent += handler; }
@@ -60,16 +54,13 @@ namespace QLNet.Instruments
     }
 
     //! Claim on a notional
-    public class FaceValueClaim : Claim
+    [JetBrains.Annotations.PublicAPI] public class FaceValueClaim : Claim
     {
-        public override double amount(Date d, double notional, double recoveryRate)
-        {
-            return notional * (1.0 - recoveryRate);
-        }
+        public override double amount(Date d, double notional, double recoveryRate) => notional * (1.0 - recoveryRate);
     }
 
     //! Claim on the notional of a reference security, including accrual
-    public class FaceValueAccrualClaim : Claim
+    [JetBrains.Annotations.PublicAPI] public class FaceValueAccrualClaim : Claim
     {
         public FaceValueAccrualClaim(Bond referenceSecurity)
         {
@@ -79,8 +70,8 @@ namespace QLNet.Instruments
 
         public override double amount(Date d, double notional, double recoveryRate)
         {
-            double accrual = referenceSecurity_.accruedAmount(d) /
-                             referenceSecurity_.notional(d);
+            var accrual = referenceSecurity_.accruedAmount(d) /
+                          referenceSecurity_.notional(d);
             return notional * (1.0 - recoveryRate - accrual);
         }
 

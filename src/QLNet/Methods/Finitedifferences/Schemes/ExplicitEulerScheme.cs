@@ -25,7 +25,7 @@ using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Schemes
 {
-    public class ExplicitEulerScheme : IMixedScheme, ISchemeFactory
+    [JetBrains.Annotations.PublicAPI] public class ExplicitEulerScheme : IMixedScheme, ISchemeFactory
     {
         public ExplicitEulerScheme() { }
         public ExplicitEulerScheme(FdmLinearOpComposite map,
@@ -37,10 +37,8 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         }
 
         #region ISchemeFactory
-        public IMixedScheme factory(object L, object bcs, object[] additionalInputs = null)
-        {
-            return new ExplicitEulerScheme(L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
-        }
+        public IMixedScheme factory(object L, object bcs, object[] additionalInputs = null) => new ExplicitEulerScheme(L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
+
         #endregion
 
         #region IMixedScheme interface

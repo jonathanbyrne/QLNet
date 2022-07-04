@@ -35,7 +35,7 @@ namespace QLNet.Models.Equity
         transform methods: application to Heston’s model,
         http://arxiv.org/pdf/0708.2020
     */
-    public class PiecewiseTimeDependentHestonModel : CalibratedModel
+    [JetBrains.Annotations.PublicAPI] public class PiecewiseTimeDependentHestonModel : CalibratedModel
     {
         public PiecewiseTimeDependentHestonModel(Handle<YieldTermStructure> riskFreeRate,
                                                  Handle<YieldTermStructure> dividendYield,
@@ -65,23 +65,28 @@ namespace QLNet.Models.Equity
         }
 
         // variance mean version level
-        public double theta(double t) { return arguments_[0].value(t); }
+        public double theta(double t) => arguments_[0].value(t);
+
         // variance mean reversion speed
-        public double kappa(double t) { return arguments_[1].value(t); }
+        public double kappa(double t) => arguments_[1].value(t);
+
         // volatility of the volatility
-        public double sigma(double t) { return arguments_[2].value(t); }
+        public double sigma(double t) => arguments_[2].value(t);
+
         // correlation
-        public double rho(double t) { return arguments_[3].value(t); }
+        public double rho(double t) => arguments_[3].value(t);
+
         // spot variance
-        public double v0() { return arguments_[4].value(0.0); }
+        public double v0() => arguments_[4].value(0.0);
+
         // spot
-        public double s0() { return s0_.link.value(); }
+        public double s0() => s0_.link.value();
 
+        public TimeGrid timeGrid() => timeGrid_;
 
-        public TimeGrid timeGrid() { return timeGrid_; }
-        public Handle<YieldTermStructure> dividendYield() { return dividendYield_; }
-        public Handle<YieldTermStructure> riskFreeRate() { return riskFreeRate_; }
+        public Handle<YieldTermStructure> dividendYield() => dividendYield_;
 
+        public Handle<YieldTermStructure> riskFreeRate() => riskFreeRate_;
 
         protected Handle<Quote> s0_;
         protected Handle<YieldTermStructure> riskFreeRate_;

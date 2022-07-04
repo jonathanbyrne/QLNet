@@ -26,7 +26,7 @@ namespace QLNet
         pointer is relinked to another observable, the change will be propagated to all the copies.
         <tt>registerAsObserver</tt> is not needed since C# does automatic garbage collection */
 
-    public class Handle<T> where T : IObservable
+    [JetBrains.Annotations.PublicAPI] public class Handle<T> where T : IObservable
    {
       protected Link link_;
 
@@ -40,10 +40,10 @@ namespace QLNet
       }
 
       //! dereferencing
-      public T currentLink() { return link; }
+      public T currentLink() => link;
 
       // this one is instead of c++ -> and () operators overload
-      public static implicit operator T(Handle<T> ImpliedObject) { return ImpliedObject.link; }
+      public static implicit operator T(Handle<T> ImpliedObject) => ImpliedObject.link;
 
       public T link
       {
@@ -60,7 +60,7 @@ namespace QLNet
       public void unregisterWith(Callback handler) { link_.unregisterWith(handler); }
 
       //! checks if the contained shared pointer points to anything
-      public bool empty() { return link_.empty(); }
+      public bool empty() => link_.empty();
 
       #region operator overload
 
@@ -73,17 +73,11 @@ namespace QLNet
          return here.Equals(there);
       }
 
-      public static bool operator !=(Handle<T> here, Handle<T> there)
-      {
-         return !(here == there);
-      }
+      public static bool operator !=(Handle<T> here, Handle<T> there) => !(here == there);
 
-      public override bool Equals(object o)
-      {
-         return link_ == ((Handle<T>)o).link_;
-      }
+      public override bool Equals(object o) => link_ == ((Handle<T>)o).link_;
 
-      public override int GetHashCode() { return ToString().GetHashCode(); }
+      public override int GetHashCode() => ToString().GetHashCode();
 
       #endregion operator overload
 
@@ -119,9 +113,9 @@ namespace QLNet
             }
          }
 
-         public bool empty() { return h_ == null; }
+         public bool empty() => h_ == null;
 
-         public T currentLink() { return h_; }
+         public T currentLink() => h_;
 
          public void update() { notifyObservers(); }
 
@@ -130,14 +124,8 @@ namespace QLNet
 
          public event Callback notifyObserversEvent
          {
-            add
-            {
-               eventSource.Subscribe(value);
-            }
-            remove
-            {
-               eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
          }
 
          public void registerWith(Callback handler) { notifyObserversEvent += handler; }
@@ -155,7 +143,7 @@ namespace QLNet
    /*! An instance of this class can be relinked so that it points to another observable. The change will be propagated to all
        handles that were created as copies of such instance. */
 
-   public class RelinkableHandle<T> : Handle<T> where T : IObservable
+   [JetBrains.Annotations.PublicAPI] public class RelinkableHandle<T> : Handle<T> where T : IObservable
    {
       public RelinkableHandle() : base(default(T), true) { }
 

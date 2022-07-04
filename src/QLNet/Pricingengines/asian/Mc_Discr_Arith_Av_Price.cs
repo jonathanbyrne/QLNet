@@ -40,7 +40,7 @@ namespace QLNet.Pricingengines.asian
                reproducing results available in literature.
     */
     //template <class RNG = PseudoRandom, class S = Statistics>
-    public class MCDiscreteArithmeticAPEngine<RNG, S>
+    [JetBrains.Annotations.PublicAPI] public class MCDiscreteArithmeticAPEngine<RNG, S>
       : MCDiscreteAveragingAsianEngine<RNG, S>
         where RNG : IRSG, new()
         where S : IGeneralStatistics, new()
@@ -64,10 +64,10 @@ namespace QLNet.Pricingengines.asian
 
         protected override PathPricer<IPath> pathPricer()
         {
-            PlainVanillaPayoff payoff = (PlainVanillaPayoff)arguments_.payoff;
+            var payoff = (PlainVanillaPayoff)arguments_.payoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
-            EuropeanExercise exercise = (EuropeanExercise)arguments_.exercise;
+            var exercise = (EuropeanExercise)arguments_.exercise;
             Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
 
             return new ArithmeticAPOPathPricer(
@@ -80,10 +80,10 @@ namespace QLNet.Pricingengines.asian
 
         protected override PathPricer<IPath> controlPathPricer()
         {
-            PlainVanillaPayoff payoff = (PlainVanillaPayoff)arguments_.payoff;
+            var payoff = (PlainVanillaPayoff)arguments_.payoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
-            EuropeanExercise exercise = (EuropeanExercise)arguments_.exercise;
+            var exercise = (EuropeanExercise)arguments_.exercise;
             Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
 
             // for seasoned option the geometric strike might be rescaled
@@ -95,13 +95,10 @@ namespace QLNet.Pricingengines.asian
                       process_.riskFreeRate().link.discount(timeGrid().Last()));
         }
 
-        protected override IPricingEngine controlPricingEngine()
-        {
-            return new AnalyticDiscreteGeometricAveragePriceAsianEngine(process_);
-        }
+        protected override IPricingEngine controlPricingEngine() => new AnalyticDiscreteGeometricAveragePriceAsianEngine(process_);
     }
 
-    public class ArithmeticAPOPathPricer : PathPricer<IPath>
+    [JetBrains.Annotations.PublicAPI] public class ArithmeticAPOPathPricer : PathPricer<IPath>
     {
 
         private PlainVanillaPayoff payoff_;
@@ -136,36 +133,33 @@ namespace QLNet.Pricingengines.asian
 
         public double value(Path path)
         {
-            int n = path.length();
+            var n = path.length();
             Utils.QL_REQUIRE(n > 1, () => "the path cannot be empty");
 
-            double sum = runningSum_;
+            var sum = runningSum_;
             int fixings;
             if (path.timeGrid().mandatoryTimes()[0].IsEqual(0.0))
             {
                 // include initial fixing
-                for (int i = 0; i < path.length(); i++)
+                for (var i = 0; i < path.length(); i++)
                     sum += path[i];
                 fixings = pastFixings_ + n;
             }
             else
             {
-                for (int i = 1; i < path.length(); i++)
+                for (var i = 1; i < path.length(); i++)
                     sum += path[i];
                 fixings = pastFixings_ + n - 1;
             }
-            double averagePrice = sum / fixings;
+            var averagePrice = sum / fixings;
             return discount_ * payoff_.value(averagePrice);
 
         }
 
-        public double value(IPath path)
-        {
-            return value((Path)path);
-        }
+        public double value(IPath path) => value((Path)path);
     }
     //<class RNG = PseudoRandom, class S = Statistics>
-    public class MakeMCDiscreteArithmeticAPEngine<RNG, S>
+    [JetBrains.Annotations.PublicAPI] public class MakeMCDiscreteArithmeticAPEngine<RNG, S>
        where RNG : IRSG, new()
        where S : Statistics, new()
     {
@@ -195,10 +189,7 @@ namespace QLNet.Pricingengines.asian
             return this;
         }
 
-        public MakeMCDiscreteArithmeticAPEngine<RNG, S> withBrownianBridge()
-        {
-            return withBrownianBridge(true);
-        }
+        public MakeMCDiscreteArithmeticAPEngine<RNG, S> withBrownianBridge() => withBrownianBridge(true);
 
         public MakeMCDiscreteArithmeticAPEngine<RNG, S> withSamples(int samples)
         {
@@ -234,10 +225,7 @@ namespace QLNet.Pricingengines.asian
             return this;
         }
 
-        public MakeMCDiscreteArithmeticAPEngine<RNG, S> withAntitheticVariate()
-        {
-            return withAntitheticVariate(true);
-        }
+        public MakeMCDiscreteArithmeticAPEngine<RNG, S> withAntitheticVariate() => withAntitheticVariate(true);
 
         public MakeMCDiscreteArithmeticAPEngine<RNG, S> withControlVariate(bool b)
         {
@@ -245,11 +233,7 @@ namespace QLNet.Pricingengines.asian
             return this;
         }
 
-        public MakeMCDiscreteArithmeticAPEngine<RNG, S> withControlVariate()
-        {
-            return withControlVariate(true);
-        }
-
+        public MakeMCDiscreteArithmeticAPEngine<RNG, S> withControlVariate() => withControlVariate(true);
 
         // conversion to pricing engine
         public IPricingEngine value()

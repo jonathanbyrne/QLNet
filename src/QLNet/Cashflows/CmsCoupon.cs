@@ -30,7 +30,7 @@ namespace QLNet.Cashflows
     //                 i.e., the start and end date passed upon construction
     //                 should be already rolled to a business day.
     //
-    public class CmsCoupon : FloatingRateCoupon
+    [JetBrains.Annotations.PublicAPI] public class CmsCoupon : FloatingRateCoupon
     {
         // need by CashFlowVectors
         public CmsCoupon() { }
@@ -52,27 +52,21 @@ namespace QLNet.Cashflows
             swapIndex_ = swapIndex;
         }
         // Inspectors
-        public SwapIndex swapIndex()
-        {
-            return swapIndex_;
-        }
+        public SwapIndex swapIndex() => swapIndex_;
 
         private SwapIndex swapIndex_;
 
         // Factory - for Leg generators
         public override CashFlow factory(double nominal, Date paymentDate, Date startDate, Date endDate, int fixingDays,
                                          InterestRateIndex index, double gearing, double spread,
-                                         Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears)
-        {
-            return new CmsCoupon(nominal, paymentDate, startDate, endDate, fixingDays,
-                                 (SwapIndex)index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears);
-        }
-
+                                         Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears) =>
+            new CmsCoupon(nominal, paymentDate, startDate, endDate, fixingDays,
+                (SwapIndex)index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears);
     }
 
 
     //! helper class building a sequence of capped/floored cms-rate coupons
-    public class CmsLeg : FloatingLegBase
+    [JetBrains.Annotations.PublicAPI] public class CmsLeg : FloatingLegBase
     {
         public CmsLeg(Schedule schedule, SwapIndex swapIndex)
         {
@@ -83,10 +77,8 @@ namespace QLNet.Cashflows
             zeroPayments_ = false;
         }
 
-        public override List<CashFlow> value()
-        {
-            return CashFlowVectors.FloatingLeg<SwapIndex, CmsCoupon, CappedFlooredCmsCoupon>(
-                      notionals_, schedule_, index_ as SwapIndex, paymentDayCounter_, paymentAdjustment_, fixingDays_, gearings_, spreads_, caps_, floors_, inArrears_, zeroPayments_);
-        }
+        public override List<CashFlow> value() =>
+            CashFlowVectors.FloatingLeg<SwapIndex, CmsCoupon, CappedFlooredCmsCoupon>(
+                notionals_, schedule_, index_ as SwapIndex, paymentDayCounter_, paymentAdjustment_, fixingDays_, gearings_, spreads_, caps_, floors_, inArrears_, zeroPayments_);
     }
 }

@@ -32,9 +32,9 @@ namespace QLNet.Models.Shortrate
 
         public override Lattice tree(TimeGrid grid)
         {
-            ShortRateDynamics dyn = dynamics();
-            TrinomialTree tree1 = new TrinomialTree(dyn.xProcess(), grid);
-            TrinomialTree tree2 = new TrinomialTree(dyn.yProcess(), grid);
+            var dyn = dynamics();
+            var tree1 = new TrinomialTree(dyn.xProcess(), grid);
+            var tree2 = new TrinomialTree(dyn.yProcess(), grid);
             return new ShortRateTree(tree1, tree2, dyn);
         }
 
@@ -60,34 +60,22 @@ namespace QLNet.Models.Shortrate
             public abstract double shortRate(double t, double x, double y);
 
             //! Risk-neutral dynamics of the first state variable x
-            public StochasticProcess1D xProcess()
-            {
-                return xProcess_;
-            }
+            public StochasticProcess1D xProcess() => xProcess_;
 
             //! Risk-neutral dynamics of the second state variable y
-            public StochasticProcess1D yProcess()
-            {
-                return yProcess_;
-            }
+            public StochasticProcess1D yProcess() => yProcess_;
 
             //! Correlation \f$ \rho \f$ between the two brownian motions.
-            public double correlation()
-            {
-                return correlation_;
-            }
+            public double correlation() => correlation_;
 
             //! Joint process of the two variables
             public abstract StochasticProcess process();
         }
 
         //! Recombining two-dimensional tree discretizing the state variable
-        public class ShortRateTree : TreeLattice2D<ShortRateTree, TrinomialTree>, IGenericLattice
+        [JetBrains.Annotations.PublicAPI] public class ShortRateTree : TreeLattice2D<ShortRateTree, TrinomialTree>, IGenericLattice
         {
-            protected override ShortRateTree impl()
-            {
-                return this;
-            }
+            protected override ShortRateTree impl() => this;
 
             ShortRateDynamics dynamics_;
 
@@ -102,23 +90,20 @@ namespace QLNet.Models.Shortrate
 
             public double discount(int i, int index)
             {
-                int modulo = tree1_.size(i);
-                int index1 = index % modulo;
-                int index2 = index / modulo;
+                var modulo = tree1_.size(i);
+                var index1 = index % modulo;
+                var index2 = index / modulo;
 
-                double x = tree1_.underlying(i, index1);
-                double y = tree2_.underlying(i, index2);
+                var x = tree1_.underlying(i, index1);
+                var y = tree2_.underlying(i, index2);
 
-                double r = dynamics_.shortRate(timeGrid()[i], x, y);
+                var r = dynamics_.shortRate(timeGrid()[i], x, y);
                 return System.Math.Exp(-r * timeGrid().dt(i));
             }
 
             #region Interface
 
-            public double underlying(int i, int index)
-            {
-                throw new NotImplementedException();
-            }
+            public double underlying(int i, int index) => throw new NotImplementedException();
 
             #endregion
         }

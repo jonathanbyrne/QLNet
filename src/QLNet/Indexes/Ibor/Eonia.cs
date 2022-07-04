@@ -26,7 +26,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Indexes.Ibor
 {
     //! %Eonia (Euro Overnight Index Average) rate fixed by the ECB.
-    public class Eonia : OvernightIndex
+    [JetBrains.Annotations.PublicAPI] public class Eonia : OvernightIndex
     {
         public Eonia() : this(new Handle<YieldTermStructure>()) { }
 

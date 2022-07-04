@@ -24,14 +24,14 @@ namespace QLNet.Methods.Finitedifferences
 {
     //! condition to be applied at every time step
     /*! \ingroup findiff */
-    public interface IStepCondition<array_type> where array_type : Vector
+    [JetBrains.Annotations.PublicAPI] public interface IStepCondition<array_type> where array_type : Vector
     {
         void applyTo(object o, double t);
     }
 
 
     /* Abstract base class which allows step conditions to use both payoff and array functions */
-    public class CurveDependentStepCondition<array_type> : IStepCondition<array_type> where array_type : Vector
+    [JetBrains.Annotations.PublicAPI] public class CurveDependentStepCondition<array_type> : IStepCondition<array_type> where array_type : Vector
     {
         CurveWrapper curveItem_;
 
@@ -48,21 +48,18 @@ namespace QLNet.Methods.Finitedifferences
             curveItem_ = new ArrayWrapper(a);
         }
 
-        protected double getValue(array_type a, int index)
-        {
-            return curveItem_.getValue(a, index);
-        }
+        protected double getValue(array_type a, int index) => curveItem_.getValue(a, index);
 
         public void applyTo(object o, double t)
         {
-            Vector a = (Vector)o;
-            for (int i = 0; i < a.size(); i++)
+            var a = (Vector)o;
+            for (var i = 0; i < a.size(); i++)
             {
                 a[i] = applyToValue(a[i], getValue((array_type)o, i));
             }
         }
 
-        protected virtual double applyToValue(double a, double b) { throw new NotImplementedException(); }
+        protected virtual double applyToValue(double a, double b) => throw new NotImplementedException();
 
         protected abstract class CurveWrapper
         {
@@ -78,10 +75,7 @@ namespace QLNet.Methods.Finitedifferences
                 value_ = a;
             }
 
-            public override double getValue(array_type a, int i)
-            {
-                return value_[i];
-            }
+            public override double getValue(array_type a, int i) => value_[i];
         }
 
         protected class PayoffWrapper : CurveWrapper
@@ -96,17 +90,14 @@ namespace QLNet.Methods.Finitedifferences
             {
                 payoff_ = new PlainVanillaPayoff(type, strike);
             }
-            public override double getValue(array_type a, int i)
-            {
-                return a[i];
-            }
+            public override double getValue(array_type a, int i) => a[i];
         }
     }
 
 
     //! %null step condition
     /*! \ingroup findiff */
-    public class NullCondition<array_type> : IStepCondition<array_type> where array_type : Vector
+    [JetBrains.Annotations.PublicAPI] public class NullCondition<array_type> : IStepCondition<array_type> where array_type : Vector
     {
         public void applyTo(object a, double t)
         {

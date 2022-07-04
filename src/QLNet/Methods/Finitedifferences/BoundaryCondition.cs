@@ -22,7 +22,7 @@ using System;
 namespace QLNet.Methods.Finitedifferences
 {
     //! Abstract boundary condition class for finite difference problems
-    public class BoundaryCondition<Operator> where Operator : IOperator
+    [JetBrains.Annotations.PublicAPI] public class BoundaryCondition<Operator> where Operator : IOperator
     {
         //! \todo Generalize for n-dimensional conditions
         public enum Side { None, Upper, Lower }
@@ -60,8 +60,8 @@ namespace QLNet.Methods.Finitedifferences
 
         \ingroup findiff
     */
-    // NeumanBC works on TridiagonalOperator. IOperator here is for type compatobility with options
-    public class NeumannBC : BoundaryCondition<IOperator>
+    // NeumanBC works on TridiagonalOperator. IOperator here is for ExerciseType compatobility with options
+    [JetBrains.Annotations.PublicAPI] public class NeumannBC : BoundaryCondition<IOperator>
     {
         private double value_;
         private Side side_;
@@ -75,7 +75,7 @@ namespace QLNet.Methods.Finitedifferences
         // interface
         public override void applyBeforeApplying(IOperator o)
         {
-            TridiagonalOperator L = o as TridiagonalOperator;
+            var L = o as TridiagonalOperator;
             switch (side_)
             {
                 case Side.Lower:
@@ -106,7 +106,7 @@ namespace QLNet.Methods.Finitedifferences
 
         public override void applyBeforeSolving(IOperator o, Vector rhs)
         {
-            TridiagonalOperator L = o as TridiagonalOperator;
+            var L = o as TridiagonalOperator;
             switch (side_)
             {
                 case Side.Lower:

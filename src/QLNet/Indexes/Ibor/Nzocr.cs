@@ -27,7 +27,7 @@ namespace QLNet.Indexes.Ibor
 
         See <http://www.rbnz.govt.nz/monetary-policy/official-cash-rate-decisions>.
     */
-    public class Nzocr : OvernightIndex
+    [JetBrains.Annotations.PublicAPI] public class Nzocr : OvernightIndex
     {
         public Nzocr(Handle<YieldTermStructure> h = null)
            : base("Nzocr", 0, new NZDCurrency(),

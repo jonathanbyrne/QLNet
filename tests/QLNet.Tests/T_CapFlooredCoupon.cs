@@ -30,7 +30,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_CapFlooredCoupon
+    [JetBrains.Annotations.PublicAPI] public class T_CapFlooredCoupon
     {
         private class CommonVars
         {
@@ -77,8 +77,8 @@ namespace QLNet.Tests
             // utilities
             public List<CashFlow> makeFixedLeg(Date sDate, int len)
             {
-                Date endDate = calendar.advance(sDate, len, TimeUnit.Years, convention);
-                Schedule schedule = new Schedule(sDate, endDate, new Period(frequency), calendar,
+                var endDate = calendar.advance(sDate, len, TimeUnit.Years, convention);
+                var schedule = new Schedule(sDate, endDate, new Period(frequency), calendar,
                                                  convention, convention, DateGeneration.Rule.Forward, false);
                 List<double> coupons = new InitializedList<double>(len, 0.0);
                 return new FixedRateLeg(schedule)
@@ -88,8 +88,8 @@ namespace QLNet.Tests
 
             public List<CashFlow> makeFloatingLeg(Date sDate, int len, double gearing = 1.0, double spread = 0.0)
             {
-                Date endDate = calendar.advance(sDate, len, TimeUnit.Years, convention);
-                Schedule schedule = new Schedule(sDate, endDate, new Period(frequency), calendar,
+                var endDate = calendar.advance(sDate, len, TimeUnit.Years, convention);
+                var schedule = new Schedule(sDate, endDate, new Period(frequency), calendar,
                                                  convention, convention, DateGeneration.Rule.Forward, false);
                 List<double> gearingVector = new InitializedList<double>(len, gearing);
                 List<double> spreadVector = new InitializedList<double>(len, spread);
@@ -105,10 +105,10 @@ namespace QLNet.Tests
             public List<CashFlow> makeCapFlooredLeg(Date sDate, int len, List<double?> caps, List<double?> floors,
                                                     double volatility, double gearing = 1.0, double spread = 0.0)
             {
-                Date endDate = calendar.advance(sDate, len, TimeUnit.Years, convention);
-                Schedule schedule = new Schedule(sDate, endDate, new Period(frequency), calendar,
+                var endDate = calendar.advance(sDate, len, TimeUnit.Years, convention);
+                var schedule = new Schedule(sDate, endDate, new Period(frequency), calendar,
                                                  convention, convention, DateGeneration.Rule.Forward, false);
-                Handle<OptionletVolatilityStructure> vol = new Handle<OptionletVolatilityStructure>(new
+                var vol = new Handle<OptionletVolatilityStructure>(new
                       ConstantOptionletVolatility(0, calendar, BusinessDayConvention.Following, volatility, new Actual365Fixed()));
                 IborCouponPricer pricer = new BlackIborCouponPricer(vol);
                 List<double> gearingVector = new InitializedList<double>(len, gearing);
@@ -129,7 +129,7 @@ namespace QLNet.Tests
 
             public IPricingEngine makeEngine(double vols)
             {
-                Handle<Quote> vol = new Handle<Quote>(new SimpleQuote(vols));
+                var vol = new Handle<Quote>(new SimpleQuote(vols));
                 return new BlackCapFloorEngine(termStructure, vol);
             }
 
@@ -150,7 +150,7 @@ namespace QLNet.Tests
                                             new InitializedList<double>(1, floorStrike));
                         break;
                     default:
-                        Utils.QL_FAIL("unknown cap/floor type");
+                        Utils.QL_FAIL("unknown cap/floor ExerciseType");
                         break;
                 }
                 result.setPricingEngine(makeEngine(vol));
@@ -164,7 +164,7 @@ namespace QLNet.Tests
         {
             // Testing degenerate collared coupon
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             /* A vanilla floating leg and a capped floating leg with strike
                equal to 100 and floor equal to 0 must have (about) the same NPV
@@ -173,20 +173,20 @@ namespace QLNet.Tests
 
             List<double?> caps = new InitializedList<double?>(vars.length, 100.0);
             List<double?> floors = new InitializedList<double?>(vars.length, 0.0);
-            double tolerance = 1e-10;
+            var tolerance = 1e-10;
 
             // fixed leg with zero rate
-            List<CashFlow> fixedLeg = vars.makeFixedLeg(vars.startDate, vars.length);
-            List<CashFlow> floatLeg = vars.makeFloatingLeg(vars.startDate, vars.length);
-            List<CashFlow> collaredLeg = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps, floors, vars.volatility);
+            var fixedLeg = vars.makeFixedLeg(vars.startDate, vars.length);
+            var floatLeg = vars.makeFloatingLeg(vars.startDate, vars.length);
+            var collaredLeg = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps, floors, vars.volatility);
 
             IPricingEngine engine = new DiscountingSwapEngine(vars.termStructure);
-            Swap vanillaLeg = new Swap(fixedLeg, floatLeg);
-            Swap collarLeg = new Swap(fixedLeg, collaredLeg);
+            var vanillaLeg = new Swap(fixedLeg, floatLeg);
+            var collarLeg = new Swap(fixedLeg, collaredLeg);
             vanillaLeg.setPricingEngine(engine);
             collarLeg.setPricingEngine(engine);
-            double npvVanilla = vanillaLeg.NPV();
-            double npvCollar = collarLeg.NPV();
+            var npvVanilla = vanillaLeg.NPV();
+            var npvCollar = collarLeg.NPV();
             if (System.Math.Abs(npvVanilla - npvCollar) > tolerance)
             {
                 QAssert.Fail("Lenght: " + vars.length + " y" + "\n" +
@@ -206,35 +206,35 @@ namespace QLNet.Tests
         {
             // Testing collared coupon against its decomposition
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            double tolerance = 1e-12;
+            var tolerance = 1e-12;
             double npvVanilla, npvCappedLeg, npvFlooredLeg, npvCollaredLeg, npvCap, npvFloor, npvCollar;
             double error;
-            double floorstrike = 0.05;
-            double capstrike = 0.10;
+            var floorstrike = 0.05;
+            var capstrike = 0.10;
             List<double?> caps = new InitializedList<double?>(vars.length, capstrike);
-            List<double?> caps0 = new List<double?>();
+            var caps0 = new List<double?>();
             List<double?> floors = new InitializedList<double?>(vars.length, floorstrike);
-            List<double?> floors0 = new List<double?>();
-            double gearing_p = 0.5;
-            double spread_p = 0.002;
-            double gearing_n = -1.5;
-            double spread_n = 0.12;
+            var floors0 = new List<double?>();
+            var gearing_p = 0.5;
+            var spread_p = 0.002;
+            var gearing_n = -1.5;
+            var spread_n = 0.12;
             // fixed leg with zero rate
-            List<CashFlow> fixedLeg = vars.makeFixedLeg(vars.startDate, vars.length);
+            var fixedLeg = vars.makeFixedLeg(vars.startDate, vars.length);
             // floating leg with gearing=1 and spread=0
-            List<CashFlow> floatLeg = vars.makeFloatingLeg(vars.startDate, vars.length);
+            var floatLeg = vars.makeFloatingLeg(vars.startDate, vars.length);
             // floating leg with positive gearing (gearing_p) and spread<>0
-            List<CashFlow> floatLeg_p = vars.makeFloatingLeg(vars.startDate, vars.length, gearing_p, spread_p);
+            var floatLeg_p = vars.makeFloatingLeg(vars.startDate, vars.length, gearing_p, spread_p);
             // floating leg with negative gearing (gearing_n) and spread<>0
-            List<CashFlow> floatLeg_n = vars.makeFloatingLeg(vars.startDate, vars.length, gearing_n, spread_n);
+            var floatLeg_n = vars.makeFloatingLeg(vars.startDate, vars.length, gearing_n, spread_n);
             // Swap with null fixed leg and floating leg with gearing=1 and spread=0
-            Swap vanillaLeg = new Swap(fixedLeg, floatLeg);
+            var vanillaLeg = new Swap(fixedLeg, floatLeg);
             // Swap with null fixed leg and floating leg with positive gearing and spread<>0
-            Swap vanillaLeg_p = new Swap(fixedLeg, floatLeg_p);
+            var vanillaLeg_p = new Swap(fixedLeg, floatLeg_p);
             // Swap with null fixed leg and floating leg with negative gearing and spread<>0
-            Swap vanillaLeg_n = new Swap(fixedLeg, floatLeg_n);
+            var vanillaLeg_n = new Swap(fixedLeg, floatLeg_n);
 
             IPricingEngine engine = new DiscountingSwapEngine(vars.termStructure);
             vanillaLeg.setPricingEngine(engine);
@@ -249,10 +249,10 @@ namespace QLNet.Tests
             */
 
             // Case gearing = 1 and spread = 0
-            List<CashFlow> cappedLeg = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps, floors0, vars.volatility);
-            Swap capLeg = new Swap(fixedLeg, cappedLeg);
+            var cappedLeg = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps, floors0, vars.volatility);
+            var capLeg = new Swap(fixedLeg, cappedLeg);
             capLeg.setPricingEngine(engine);
-            Cap cap = new Cap(floatLeg, new InitializedList<double>(1, capstrike));
+            var cap = new Cap(floatLeg, new InitializedList<double>(1, capstrike));
             cap.setPricingEngine(vars.makeEngine(vars.volatility));
             npvVanilla = vanillaLeg.NPV();
             npvCappedLeg = capLeg.NPV();
@@ -275,10 +275,10 @@ namespace QLNet.Tests
                      = VanillaFloatingLeg + Put
             */
 
-            List<CashFlow> flooredLeg = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps0, floors, vars.volatility);
-            Swap floorLeg = new Swap(fixedLeg, flooredLeg);
+            var flooredLeg = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps0, floors, vars.volatility);
+            var floorLeg = new Swap(fixedLeg, flooredLeg);
             floorLeg.setPricingEngine(engine);
-            Floor floor = new Floor(floatLeg, new InitializedList<double>(1, floorstrike));
+            var floor = new Floor(floatLeg, new InitializedList<double>(1, floorstrike));
             floor.setPricingEngine(vars.makeEngine(vars.volatility));
             npvFlooredLeg = floorLeg.NPV();
             npvFloor = floor.NPV();
@@ -298,10 +298,10 @@ namespace QLNet.Tests
                      = VanillaFloatingLeg - Collar
             */
 
-            List<CashFlow> collaredLeg = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps, floors, vars.volatility);
-            Swap collarLeg = new Swap(fixedLeg, collaredLeg);
+            var collaredLeg = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps, floors, vars.volatility);
+            var collarLeg = new Swap(fixedLeg, collaredLeg);
             collarLeg.setPricingEngine(engine);
-            Collar collar = new Collar(floatLeg, new InitializedList<double>(1, capstrike),
+            var collar = new Collar(floatLeg, new InitializedList<double>(1, capstrike),
                                        new InitializedList<double>(1, floorstrike));
             collar.setPricingEngine(vars.makeEngine(vars.volatility));
             npvCollaredLeg = collarLeg.NPV();
@@ -330,11 +330,11 @@ namespace QLNet.Tests
             */
 
             // Positive gearing
-            List<CashFlow> cappedLeg_p = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps, floors0,
+            var cappedLeg_p = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps, floors0,
                                                                 vars.volatility, gearing_p, spread_p);
-            Swap capLeg_p = new Swap(fixedLeg, cappedLeg_p);
+            var capLeg_p = new Swap(fixedLeg, cappedLeg_p);
             capLeg_p.setPricingEngine(engine);
-            Cap cap_p = new Cap(floatLeg_p, new InitializedList<double>(1, capstrike));
+            var cap_p = new Cap(floatLeg_p, new InitializedList<double>(1, capstrike));
             cap_p.setPricingEngine(vars.makeEngine(vars.volatility));
             npvVanilla = vanillaLeg_p.NPV();
             npvCappedLeg = capLeg_p.NPV();
@@ -355,11 +355,11 @@ namespace QLNet.Tests
             }
 
             // Negative gearing
-            List<CashFlow> cappedLeg_n = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps, floors0,
+            var cappedLeg_n = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps, floors0,
                                                                 vars.volatility, gearing_n, spread_n);
-            Swap capLeg_n = new Swap(fixedLeg, cappedLeg_n);
+            var capLeg_n = new Swap(fixedLeg, cappedLeg_n);
             capLeg_n.setPricingEngine(engine);
-            Floor floor_n = new Floor(floatLeg, new InitializedList<double>(1, (capstrike - spread_n) / gearing_n));
+            var floor_n = new Floor(floatLeg, new InitializedList<double>(1, (capstrike - spread_n) / gearing_n));
             floor_n.setPricingEngine(vars.makeEngine(vars.volatility));
             npvVanilla = vanillaLeg_n.NPV();
             npvCappedLeg = capLeg_n.NPV();
@@ -393,11 +393,11 @@ namespace QLNet.Tests
             */
 
             // Positive gearing
-            List<CashFlow> flooredLeg_p1 = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps0, floors,
+            var flooredLeg_p1 = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps0, floors,
                                                                   vars.volatility, gearing_p, spread_p);
-            Swap floorLeg_p1 = new Swap(fixedLeg, flooredLeg_p1);
+            var floorLeg_p1 = new Swap(fixedLeg, flooredLeg_p1);
             floorLeg_p1.setPricingEngine(engine);
-            Floor floor_p1 = new Floor(floatLeg_p, new InitializedList<double>(1, floorstrike));
+            var floor_p1 = new Floor(floatLeg_p, new InitializedList<double>(1, floorstrike));
             floor_p1.setPricingEngine(vars.makeEngine(vars.volatility));
             npvVanilla = vanillaLeg_p.NPV();
             npvFlooredLeg = floorLeg_p1.NPV();
@@ -416,11 +416,11 @@ namespace QLNet.Tests
                              "  Diff: " + error);
             }
             // Negative gearing
-            List<CashFlow> flooredLeg_n = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps0, floors,
+            var flooredLeg_n = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps0, floors,
                                                                  vars.volatility, gearing_n, spread_n);
-            Swap floorLeg_n = new Swap(fixedLeg, flooredLeg_n);
+            var floorLeg_n = new Swap(fixedLeg, flooredLeg_n);
             floorLeg_n.setPricingEngine(engine);
-            Cap cap_n = new Cap(floatLeg, new InitializedList<double>(1, (floorstrike - spread_n) / gearing_n));
+            var cap_n = new Cap(floatLeg, new InitializedList<double>(1, (floorstrike - spread_n) / gearing_n));
             cap_n.setPricingEngine(vars.makeEngine(vars.volatility));
             npvVanilla = vanillaLeg_n.NPV();
             npvFlooredLeg = floorLeg_n.NPV();
@@ -446,11 +446,11 @@ namespace QLNet.Tests
                   Payoff = VanillaFloatingLeg + Collar(|a|*rate+b, caprate, floorrate)
             */
             // Positive gearing
-            List<CashFlow> collaredLeg_p = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps, floors,
+            var collaredLeg_p = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps, floors,
                                                                   vars.volatility, gearing_p, spread_p);
-            Swap collarLeg_p1 = new Swap(fixedLeg, collaredLeg_p);
+            var collarLeg_p1 = new Swap(fixedLeg, collaredLeg_p);
             collarLeg_p1.setPricingEngine(engine);
-            Collar collar_p = new Collar(floatLeg_p, new InitializedList<double>(1, capstrike),
+            var collar_p = new Collar(floatLeg_p, new InitializedList<double>(1, capstrike),
                                          new InitializedList<double>(1, floorstrike));
             collar_p.setPricingEngine(vars.makeEngine(vars.volatility));
             npvVanilla = vanillaLeg_p.NPV();
@@ -473,11 +473,11 @@ namespace QLNet.Tests
                              "  Diff: " + error);
             }
             // Negative gearing
-            List<CashFlow> collaredLeg_n = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps, floors,
+            var collaredLeg_n = vars.makeCapFlooredLeg(vars.startDate, vars.length, caps, floors,
                                                                   vars.volatility, gearing_n, spread_n);
-            Swap collarLeg_n1 = new Swap(fixedLeg, collaredLeg_n);
+            var collarLeg_n1 = new Swap(fixedLeg, collaredLeg_n);
             collarLeg_n1.setPricingEngine(engine);
-            Collar collar_n = new Collar(floatLeg, new InitializedList<double>(1, (floorstrike - spread_n) / gearing_n),
+            var collar_n = new Collar(floatLeg, new InitializedList<double>(1, (floorstrike - spread_n) / gearing_n),
                                          new InitializedList<double>(1, (capstrike - spread_n) / gearing_n));
             collar_n.setPricingEngine(vars.makeEngine(vars.volatility));
             npvVanilla = vanillaLeg_n.NPV();

@@ -44,29 +44,29 @@ namespace QLNet.Cashflows
         We add the inverse prices so that conventional caps can be
         priced simply.
     */
-    public class InflationCouponPricer : IObserver, IObservable
+    [JetBrains.Annotations.PublicAPI] public class InflationCouponPricer : IObserver, IObservable
     {
         // Interface
-        public virtual double swapletPrice() { return 0; }
-        public virtual double swapletRate() { return 0; }
-        public virtual double capletPrice(double effectiveCap) { return 0; }
-        public virtual double capletRate(double effectiveCap) { return 0; }
-        public virtual double floorletPrice(double effectiveFloor) { return 0; }
-        public virtual double floorletRate(double effectiveFloor) { return 0; }
+        public virtual double swapletPrice() => 0;
+
+        public virtual double swapletRate() => 0;
+
+        public virtual double capletPrice(double effectiveCap) => 0;
+
+        public virtual double capletRate(double effectiveCap) => 0;
+
+        public virtual double floorletPrice(double effectiveFloor) => 0;
+
+        public virtual double floorletRate(double effectiveFloor) => 0;
+
         public virtual void initialize(InflationCoupon i) { }
 
         #region Observer & observable
         private readonly WeakEventSource eventSource = new WeakEventSource();
         public event Callback notifyObserversEvent
         {
-            add
-            {
-                eventSource.Subscribe(value);
-            }
-            remove
-            {
-                eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
         }
 
         public void registerWith(Callback handler) { notifyObserversEvent += handler; }
@@ -89,7 +89,7 @@ namespace QLNet.Cashflows
     /*! \note this pricer can already do swaplets but to get
               volatility-dependent coupons you need the descendents.
     */
-    public class YoYInflationCouponPricer : InflationCouponPricer
+    [JetBrains.Annotations.PublicAPI] public class YoYInflationCouponPricer : InflationCouponPricer
     {
         public YoYInflationCouponPricer(Handle<YoYOptionletVolatilitySurface> capletVol = null)
         {
@@ -99,10 +99,7 @@ namespace QLNet.Cashflows
                 capletVol_.registerWith(update);
         }
 
-        public virtual Handle<YoYOptionletVolatilitySurface> capletVolatility()
-        {
-            return capletVol_;
-        }
+        public virtual Handle<YoYOptionletVolatilitySurface> capletVolatility() => capletVol_;
 
         public virtual void setCapletVolatility(Handle<YoYOptionletVolatilitySurface> capletVol)
         {
@@ -115,40 +112,33 @@ namespace QLNet.Cashflows
         // InflationCouponPricer interface
         public override double swapletPrice()
         {
-            double swapletPrice = adjustedFixing() * coupon_.accrualPeriod() * discount_;
+            var swapletPrice = adjustedFixing() * coupon_.accrualPeriod() * discount_;
             return gearing_ * swapletPrice + spreadLegValue_;
         }
 
-        public override double swapletRate()
-        {
+        public override double swapletRate() =>
             // This way we do not require the index to have
             // a yield curve, i.e. we do not get the problem
             // that a discounting-instrument-pricer is used
             // with a different yield curve
-            return gearing_ * adjustedFixing() + spread_;
-        }
+            gearing_ * adjustedFixing() + spread_;
 
         public override double capletPrice(double effectiveCap)
         {
-            double capletPrice = optionletPrice(QLNet.Option.Type.Call, effectiveCap);
+            var capletPrice = optionletPrice(QLNet.Option.Type.Call, effectiveCap);
             return gearing_ * capletPrice;
         }
 
-        public override double capletRate(double effectiveCap)
-        {
-            return capletPrice(effectiveCap) / (coupon_.accrualPeriod() * discount_);
-        }
+        public override double capletRate(double effectiveCap) => capletPrice(effectiveCap) / (coupon_.accrualPeriod() * discount_);
 
         public override double floorletPrice(double effectiveFloor)
         {
-            double floorletPrice = optionletPrice(QLNet.Option.Type.Put, effectiveFloor);
+            var floorletPrice = optionletPrice(QLNet.Option.Type.Put, effectiveFloor);
             return gearing_ * floorletPrice;
         }
-        public override double floorletRate(double effectiveFloor)
-        {
-            return floorletPrice(effectiveFloor) /
-                   (coupon_.accrualPeriod() * discount_);
-        }
+        public override double floorletRate(double effectiveFloor) =>
+            floorletPrice(effectiveFloor) /
+            (coupon_.accrualPeriod() * discount_);
 
         public override void initialize(InflationCoupon coupon)
         {
@@ -156,7 +146,7 @@ namespace QLNet.Cashflows
             gearing_ = coupon_.gearing();
             spread_ = coupon_.spread();
             paymentDate_ = coupon_.date();
-            YoYInflationIndex y = (YoYInflationIndex)coupon.index();
+            var y = (YoYInflationIndex)coupon.index();
             rateCurve_ = y.yoyInflationTermStructure().link.nominalTermStructure();
 
             // past or future fixing is managed in YoYInflationIndex::fixing()
@@ -173,7 +163,7 @@ namespace QLNet.Cashflows
         protected virtual double optionletPrice(Option.Type optionType, double effStrike)
         {
 
-            Date fixingDate = coupon_.fixingDate();
+            var fixingDate = coupon_.fixingDate();
             if (fixingDate <= Settings.evaluationDate())
             {
                 // the amount is determined
@@ -196,9 +186,9 @@ namespace QLNet.Cashflows
                 // not yet determined, use Black/DD1/Bachelier/whatever from Impl
                 Utils.QL_REQUIRE(!capletVolatility().empty(), () => "missing optionlet volatility");
 
-                double stdDev = System.Math.Sqrt(capletVolatility().link.totalVariance(fixingDate, effStrike));
+                var stdDev = System.Math.Sqrt(capletVolatility().link.totalVariance(fixingDate, effStrike));
 
-                double fixing = optionletPriceImp(optionType,
+                var fixing = optionletPriceImp(optionType,
                                                   effStrike,
                                                   adjustedFixing(),
                                                   stdDev);
@@ -216,10 +206,7 @@ namespace QLNet.Cashflows
             return 0;
         }
 
-        protected virtual double adjustedFixing()
-        {
-            return adjustedFixing(null);
-        }
+        protected virtual double adjustedFixing() => adjustedFixing(null);
 
         protected virtual double adjustedFixing(double? fixing)
         {
@@ -240,7 +227,7 @@ namespace QLNet.Cashflows
     }
 
     //! Black-formula pricer for capped/floored yoy inflation coupons
-    public class BlackYoYInflationCouponPricer : YoYInflationCouponPricer
+    [JetBrains.Annotations.PublicAPI] public class BlackYoYInflationCouponPricer : YoYInflationCouponPricer
     {
 
         public BlackYoYInflationCouponPricer(Handle<YoYOptionletVolatilitySurface> capletVol)
@@ -248,48 +235,40 @@ namespace QLNet.Cashflows
         { }
 
         protected override double optionletPriceImp(Option.Type optionType, double effStrike,
-                                                    double forward, double stdDev)
-        {
-            return Utils.blackFormula(optionType,
-                                      effStrike,
-                                      forward,
-                                      stdDev);
-        }
-
+                                                    double forward, double stdDev) =>
+            Utils.blackFormula(optionType,
+                effStrike,
+                forward,
+                stdDev);
     }
 
     //! Unit-Displaced-Black-formula pricer for capped/floored yoy inflation coupons
-    public class UnitDisplacedBlackYoYInflationCouponPricer : YoYInflationCouponPricer
+    [JetBrains.Annotations.PublicAPI] public class UnitDisplacedBlackYoYInflationCouponPricer : YoYInflationCouponPricer
     {
         public UnitDisplacedBlackYoYInflationCouponPricer(Handle<YoYOptionletVolatilitySurface> capletVol = null)
            : base(capletVol)
         { }
 
         protected override double optionletPriceImp(Option.Type optionType, double effStrike,
-                                                    double forward, double stdDev)
-        {
-
-            return Utils.blackFormula(optionType,
-                                      effStrike + 1.0,
-                                      forward + 1.0,
-                                      stdDev);
-        }
+                                                    double forward, double stdDev) =>
+            Utils.blackFormula(optionType,
+                effStrike + 1.0,
+                forward + 1.0,
+                stdDev);
     }
 
     //! Bachelier-formula pricer for capped/floored yoy inflation coupons
-    public class BachelierYoYInflationCouponPricer : YoYInflationCouponPricer
+    [JetBrains.Annotations.PublicAPI] public class BachelierYoYInflationCouponPricer : YoYInflationCouponPricer
     {
         public BachelierYoYInflationCouponPricer(Handle<YoYOptionletVolatilitySurface> capletVol = null)
            : base(capletVol)
         { }
 
         protected override double optionletPriceImp(Option.Type optionType, double effStrike,
-                                                    double forward, double stdDev)
-        {
-            return Utils.bachelierBlackFormula(optionType,
-                                               effStrike,
-                                               forward,
-                                               stdDev);
-        }
+                                                    double forward, double stdDev) =>
+            Utils.bachelierBlackFormula(optionType,
+                effStrike,
+                forward,
+                stdDev);
     }
 }

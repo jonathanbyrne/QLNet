@@ -32,7 +32,7 @@ namespace QLNet.Math.Interpolations
                                interpolation over the second part. */
     }
 
-    public class MixedInterpolationImpl<Interpolator1, Interpolator2> : Interpolation.templateImpl
+    [JetBrains.Annotations.PublicAPI] public class MixedInterpolationImpl<Interpolator1, Interpolator2> : Interpolation.templateImpl
        where Interpolator1 : IInterpolationFactory, new()
        where Interpolator2 : IInterpolationFactory, new()
     {
@@ -106,7 +106,7 @@ namespace QLNet.Math.Interpolations
             return interpolation2_.secondDerivative(x, true);
         }
 
-        public int switchIndex() { return n_; }
+        public int switchIndex() => n_;
 
         private List<double> xBegin2_;
         private List<double> yBegin2_;
@@ -116,7 +116,7 @@ namespace QLNet.Math.Interpolations
     }
 
     //! mixed linear/cubic interpolation between discrete points
-    public class MixedLinearCubicInterpolation : Interpolation
+    [JetBrains.Annotations.PublicAPI] public class MixedLinearCubicInterpolation : Interpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public MixedLinearCubicInterpolation(List<double> xBegin, int xEnd,
@@ -138,7 +138,7 @@ namespace QLNet.Math.Interpolations
 
     //! mixed linear/cubic interpolation factory and traits
     /*! \ingroup interpolations */
-    public class MixedLinearCubic
+    [JetBrains.Annotations.PublicAPI] public class MixedLinearCubic
     {
         public MixedLinearCubic(int n,
                                 Behavior behavior,
@@ -161,14 +161,12 @@ namespace QLNet.Math.Interpolations
             requiredPoints = 3;
         }
 
-        public Interpolation interpolate(List<double> xBegin, int xEnd, List<double> yBegin)
-        {
-            return new MixedLinearCubicInterpolation(xBegin, xEnd,
-                                                     yBegin, n_, behavior_,
-                                                     da_, monotonic_,
-                                                     leftType_, leftValue_,
-                                                     rightType_, rightValue_);
-        }
+        public Interpolation interpolate(List<double> xBegin, int xEnd, List<double> yBegin) =>
+            new MixedLinearCubicInterpolation(xBegin, xEnd,
+                yBegin, n_, behavior_,
+                da_, monotonic_,
+                leftType_, leftValue_,
+                rightType_, rightValue_);
 
         // fix below
         public bool global { get; set; }
@@ -184,7 +182,7 @@ namespace QLNet.Math.Interpolations
 
     // convenience classes
 
-    public class MixedLinearCubicNaturalSpline : MixedLinearCubicInterpolation
+    [JetBrains.Annotations.PublicAPI] public class MixedLinearCubicNaturalSpline : MixedLinearCubicInterpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public MixedLinearCubicNaturalSpline(List<double> xBegin, int xEnd, List<double> yBegin, int n,
@@ -196,7 +194,7 @@ namespace QLNet.Math.Interpolations
         { }
     }
 
-    public class MixedLinearMonotonicCubicNaturalSpline : MixedLinearCubicInterpolation
+    [JetBrains.Annotations.PublicAPI] public class MixedLinearMonotonicCubicNaturalSpline : MixedLinearCubicInterpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public MixedLinearMonotonicCubicNaturalSpline(List<double> xBegin, int xEnd, List<double> yBegin, int n,
@@ -208,7 +206,7 @@ namespace QLNet.Math.Interpolations
         { }
     }
 
-    public class MixedLinearKrugerCubic : MixedLinearCubicInterpolation
+    [JetBrains.Annotations.PublicAPI] public class MixedLinearKrugerCubic : MixedLinearCubicInterpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public MixedLinearKrugerCubic(List<double> xBegin, int xEnd, List<double> yBegin, int n,
@@ -220,7 +218,7 @@ namespace QLNet.Math.Interpolations
         { }
     }
 
-    public class MixedLinearFritschButlandCubic : MixedLinearCubicInterpolation
+    [JetBrains.Annotations.PublicAPI] public class MixedLinearFritschButlandCubic : MixedLinearCubicInterpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public MixedLinearFritschButlandCubic(List<double> xBegin, int xEnd, List<double> yBegin, int n,
@@ -232,7 +230,7 @@ namespace QLNet.Math.Interpolations
         { }
     }
 
-    public class MixedLinearParabolic : MixedLinearCubicInterpolation
+    [JetBrains.Annotations.PublicAPI] public class MixedLinearParabolic : MixedLinearCubicInterpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public MixedLinearParabolic(List<double> xBegin, int xEnd, List<double> yBegin, int n,
@@ -244,7 +242,7 @@ namespace QLNet.Math.Interpolations
         { }
     }
 
-    public class MixedLinearMonotonicParabolic : MixedLinearCubicInterpolation
+    [JetBrains.Annotations.PublicAPI] public class MixedLinearMonotonicParabolic : MixedLinearCubicInterpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public MixedLinearMonotonicParabolic(List<double> xBegin, int xEnd, List<double> yBegin, int n,

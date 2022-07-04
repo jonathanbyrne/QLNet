@@ -22,7 +22,7 @@ using System;
 
 namespace QLNet.Math.Solvers1d
 {
-    public class Secant : Solver1D
+    [JetBrains.Annotations.PublicAPI] public class Secant : Solver1D
     {
         protected override double solveImpl(ISolver1d f, double xAccuracy)
         {

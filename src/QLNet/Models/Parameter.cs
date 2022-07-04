@@ -28,13 +28,13 @@ using System.Collections.Generic;
 namespace QLNet.Models
 {
     //! Base class for model arguments
-    public class Parameter
+    [JetBrains.Annotations.PublicAPI] public class Parameter
     {
         protected Impl impl_;
-        public Impl implementation() { return impl_; }
+        public Impl implementation() => impl_;
 
         protected Vector params_;
-        public Vector parameters() { return params_; }
+        public Vector parameters() => params_;
 
         protected Constraint constraint_;
 
@@ -51,11 +51,13 @@ namespace QLNet.Models
         }
 
         public void setParam(int i, double x) { params_[i] = x; }
-        public bool testParams(Vector p) { return constraint_.test(p); }
+        public bool testParams(Vector p) => constraint_.test(p);
 
-        public int size() { return params_.size(); }
-        public double value(double t) { return impl_.value(params_, t); }
-        public Constraint constraint() { return constraint_; }
+        public int size() => params_.size();
+
+        public double value(double t) => impl_.value(params_, t);
+
+        public Constraint constraint() => constraint_;
 
         //! Base class for model parameter implementation
         public abstract class Impl
@@ -65,14 +67,11 @@ namespace QLNet.Models
     }
 
     //! Standard constant parameter \f$ a(t) = a \f$
-    public class ConstantParameter : Parameter
+    [JetBrains.Annotations.PublicAPI] public class ConstantParameter : Parameter
     {
         private new class Impl : Parameter.Impl
         {
-            public override double value(Vector parameters, double UnnamedParameter1)
-            {
-                return parameters[0];
-            }
+            public override double value(Vector parameters, double UnnamedParameter1) => parameters[0];
         }
         public ConstantParameter(Constraint constraint)
            : base(1, new Impl(), constraint)
@@ -90,14 +89,11 @@ namespace QLNet.Models
     }
 
     //! %Parameter which is always zero \f$ a(t) = 0 \f$
-    public class NullParameter : Parameter
+    [JetBrains.Annotations.PublicAPI] public class NullParameter : Parameter
     {
         private new class Impl : Parameter.Impl
         {
-            public override double value(Vector UnnamedParameter1, double UnnamedParameter2)
-            {
-                return 0.0;
-            }
+            public override double value(Vector UnnamedParameter1, double UnnamedParameter2) => 0.0;
         }
         public NullParameter()
            : base(0, new Impl(), new NoConstraint())
@@ -110,7 +106,7 @@ namespace QLNet.Models
     //        This kind of parameter is usually used to enhance the fitting of a
     //        model
     //
-    public class PiecewiseConstantParameter : Parameter
+    [JetBrains.Annotations.PublicAPI] public class PiecewiseConstantParameter : Parameter
     {
         private new class Impl : Parameter.Impl
         {
@@ -121,8 +117,8 @@ namespace QLNet.Models
 
             public override double value(Vector parameters, double t)
             {
-                int size = times_.Count;
-                for (int i = 0; i < size; i++)
+                var size = times_.Count;
+                for (var i = 0; i < size; i++)
                 {
                     if (t < times_[i])
                         return parameters[i];
@@ -138,9 +134,9 @@ namespace QLNet.Models
     }
 
     //! Deterministic time-dependent parameter used for yield-curve fitting
-    public class TermStructureFittingParameter : Parameter
+    [JetBrains.Annotations.PublicAPI] public class TermStructureFittingParameter : Parameter
     {
-        public class NumericalImpl : Impl
+        [JetBrains.Annotations.PublicAPI] public class NumericalImpl : Impl
         {
             private List<double> times_;
             private List<double> values_;
@@ -171,13 +167,13 @@ namespace QLNet.Models
             }
             public override double value(Vector UnnamedParameter1, double t)
             {
-                int nIndex = times_.FindIndex(val => val.IsEqual(t));
+                var nIndex = times_.FindIndex(val => val.IsEqual(t));
                 Utils.QL_REQUIRE(nIndex != -1, () => "fitting parameter not set!");
 
                 return values_[nIndex];
             }
 
-            public Handle<YieldTermStructure> termStructure() { return termStructure_; }
+            public Handle<YieldTermStructure> termStructure() => termStructure_;
         }
 
         public TermStructureFittingParameter(Impl impl)

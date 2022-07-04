@@ -23,15 +23,12 @@ namespace QLNet.Methods.Finitedifferences
 {
     //! American exercise condition.
     /*! \todo unify the intrinsicValues/Payoff thing */
-    public class AmericanCondition : CurveDependentStepCondition<Vector>
+    [JetBrains.Annotations.PublicAPI] public class AmericanCondition : CurveDependentStepCondition<Vector>
     {
         public AmericanCondition(Option.Type type, double strike) : base(type, strike) { }
 
         public AmericanCondition(Vector intrinsicValues) : base(intrinsicValues) { }
 
-        protected override double applyToValue(double current, double intrinsic)
-        {
-            return System.Math.Max(current, intrinsic);
-        }
+        protected override double applyToValue(double current, double intrinsic) => System.Math.Max(current, intrinsic);
     }
 }

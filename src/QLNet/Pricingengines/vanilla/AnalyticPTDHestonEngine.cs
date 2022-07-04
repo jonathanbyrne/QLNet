@@ -39,7 +39,7 @@ namespace QLNet.Pricingengines.vanilla
 
         \ingroup vanillaengines
     */
-    public class AnalyticPTDHestonEngine : GenericModelEngine<PiecewiseTimeDependentHestonModel,
+    [JetBrains.Annotations.PublicAPI] public class AnalyticPTDHestonEngine : GenericModelEngine<PiecewiseTimeDependentHestonModel,
         QLNet.Option.Arguments, OneAssetOption.Results>
     {
         // Simple to use constructor: Using adaptive
@@ -65,30 +65,30 @@ namespace QLNet.Pricingengines.vanilla
         public override void calculate()
         {
             // this is an european option pricer
-            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European, () => "not an European option");
+            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
 
             // plain vanilla
-            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
-            double v0 = model_.link.v0();
-            double spotPrice = model_.link.s0();
+            var v0 = model_.link.v0();
+            var spotPrice = model_.link.s0();
             Utils.QL_REQUIRE(spotPrice > 0.0, () => "negative or null underlying given");
 
-            double strike = payoff.strike();
-            double term = model_.link.riskFreeRate().link.dayCounter().yearFraction(
+            var strike = payoff.strike();
+            var term = model_.link.riskFreeRate().link.dayCounter().yearFraction(
                              model_.link.riskFreeRate().link.referenceDate(), arguments_.exercise.lastDate());
-            double riskFreeDiscount = model_.link.riskFreeRate().link.discount(arguments_.exercise.lastDate());
-            double dividendDiscount = model_.link.dividendYield().link.discount(arguments_.exercise.lastDate());
+            var riskFreeDiscount = model_.link.riskFreeRate().link.discount(arguments_.exercise.lastDate());
+            var dividendDiscount = model_.link.dividendYield().link.discount(arguments_.exercise.lastDate());
 
             //average values
-            TimeGrid timeGrid = model_.link.timeGrid();
-            int n = timeGrid.size() - 1;
+            var timeGrid = model_.link.timeGrid();
+            var n = timeGrid.size() - 1;
             double kappaAvg = 0.0, thetaAvg = 0.0, sigmaAvg = 0.0, rhoAvg = 0.0;
 
-            for (int i = 1; i <= n; ++i)
+            for (var i = 1; i <= n; ++i)
             {
-                double t = 0.5 * (timeGrid[i - 1] + timeGrid[i]);
+                var t = 0.5 * (timeGrid[i - 1] + timeGrid[i]);
                 kappaAvg += model_.link.kappa(t);
                 thetaAvg += model_.link.theta(t);
                 sigmaAvg += model_.link.sigma(t);
@@ -99,13 +99,13 @@ namespace QLNet.Pricingengines.vanilla
             sigmaAvg /= n;
             rhoAvg /= n;
 
-            double c_inf = System.Math.Min(10.0, System.Math.Max(0.0001,
+            var c_inf = System.Math.Min(10.0, System.Math.Max(0.0001,
                                                    System.Math.Sqrt(1.0 - System.Math.Pow(rhoAvg, 2)) / sigmaAvg)) * (v0 + kappaAvg * thetaAvg * term);
 
-            double p1 = integration_.calculate(c_inf,
+            var p1 = integration_.calculate(c_inf,
                                                new Fj_Helper(model_, term, strike, 1).value) / Const.M_PI;
 
-            double p2 = integration_.calculate(c_inf,
+            var p2 = integration_.calculate(c_inf,
                                                new Fj_Helper(model_, term, strike, 2).value) / Const.M_PI;
 
             switch (payoff.optionType())
@@ -119,7 +119,7 @@ namespace QLNet.Pricingengines.vanilla
                                      - strike * riskFreeDiscount * (p2 - 0.5);
                     break;
                 default:
-                    Utils.QL_FAIL("unknown option type");
+                    Utils.QL_FAIL("unknown option ExerciseType");
                     break;
             }
         }
@@ -139,10 +139,10 @@ namespace QLNet.Pricingengines.vanilla
                 model_ = model;
                 timeGrid_ = model.link.timeGrid();
 
-                for (int i = 0; i < timeGrid_.size() - 1; ++i)
+                for (var i = 0; i < timeGrid_.size() - 1; ++i)
                 {
-                    double begin = System.Math.Min(term_, timeGrid_[i]);
-                    double end = System.Math.Min(term_, timeGrid_[i + 1]);
+                    var begin = System.Math.Min(term_, timeGrid_[i]);
+                    var end = System.Math.Min(term_, timeGrid_[i + 1]);
                     r_[i] = model.link.riskFreeRate().link.forwardRate(begin, end,
                                                                        Compounding.Continuous, Frequency.NoFrequency).rate();
                     q_[i] = model.link.dividendYield().link.forwardRate(begin, end,
@@ -160,32 +160,32 @@ namespace QLNet.Pricingengines.vanilla
                 Complex D = 0.0;
                 Complex C = 0.0;
 
-                for (int i = timeGrid_.size() - 1; i > 0; --i)
+                for (var i = timeGrid_.size() - 1; i > 0; --i)
                 {
-                    double begin = timeGrid_[i - 1];
+                    var begin = timeGrid_[i - 1];
                     if (begin < term_)
                     {
-                        double end = System.Math.Min(term_, timeGrid_[i]);
-                        double tau = end - begin;
-                        double t = 0.5 * (end + begin);
+                        var end = System.Math.Min(term_, timeGrid_[i]);
+                        var tau = end - begin;
+                        var t = 0.5 * (end + begin);
 
-                        double rho = model_.link.rho(t);
-                        double sigma = model_.link.sigma(t);
-                        double kappa = model_.link.kappa(t);
-                        double theta = model_.link.theta(t);
+                        var rho = model_.link.rho(t);
+                        var sigma = model_.link.sigma(t);
+                        var kappa = model_.link.kappa(t);
+                        var theta = model_.link.theta(t);
 
-                        double sigma2 = sigma * sigma;
-                        double t0 = kappa - (j_ == 1 ? rho * sigma : 0);
-                        double rpsig = rho * sigma * phi;
+                        var sigma2 = sigma * sigma;
+                        var t0 = kappa - (j_ == 1 ? rho * sigma : 0);
+                        var rpsig = rho * sigma * phi;
 
-                        Complex t1 = t0 + new Complex(0, -rpsig);
-                        Complex d = Complex.Sqrt(t1 * t1 - sigma2 * phi * new Complex(-phi, j_ == 1 ? 1 : -1));
-                        Complex g = (t1 - d) / (t1 + d);
-                        Complex gt = (t1 - d - D * sigma2) / (t1 + d - D * sigma2);
+                        var t1 = t0 + new Complex(0, -rpsig);
+                        var d = Complex.Sqrt(t1 * t1 - sigma2 * phi * new Complex(-phi, j_ == 1 ? 1 : -1));
+                        var g = (t1 - d) / (t1 + d);
+                        var gt = (t1 - d - D * sigma2) / (t1 + d - D * sigma2);
 
                         D = (t1 + d) / sigma2 * (g - gt * Complex.Exp(-d * tau)) / (1.0 - gt * Complex.Exp(-d * tau));
 
-                        Complex lng = Complex.Log((1.0 - gt * Complex.Exp(-d * tau)) / (1.0 - gt));
+                        var lng = Complex.Log((1.0 - gt * Complex.Exp(-d * tau)) / (1.0 - gt));
 
                         C = kappa * theta / sigma2 * ((t1 - d) * tau - 2.0 * lng)
                             + new Complex(0.0, phi * (r_[i - 1] - q_[i - 1]) * tau) + C;

@@ -29,7 +29,7 @@ using QLNet.Time.Calendars;
 namespace QLNet.Termstructures.Yield
 {
     //! Rate helper for bootstrapping over interest-rate futures prices
-    public class FuturesRateHelper : RateHelper
+    [JetBrains.Annotations.PublicAPI] public class FuturesRateHelper : RateHelper
     {
 
         public FuturesRateHelper(Handle<Quote> price,
@@ -56,7 +56,7 @@ namespace QLNet.Termstructures.Yield
                                      iborStartDate + " is not a valid ASX date");
                     break;
                 default:
-                    Utils.QL_FAIL("unknown futures type (" + type + ")");
+                    Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
             earliestDate_ = iborStartDate;
@@ -92,7 +92,7 @@ namespace QLNet.Termstructures.Yield
                                      iborStartDate + " is not a valid ASX date");
                     break;
                 default:
-                    Utils.QL_FAIL("unknown futures type (" + type + ")");
+                    Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
             earliestDate_ = iborStartDate;
@@ -152,7 +152,7 @@ namespace QLNet.Termstructures.Yield
                     }
                     break;
                 default:
-                    Utils.QL_FAIL("unknown futures type (" + type + ")");
+                    Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
             earliestDate_ = iborStartDate;
@@ -213,7 +213,7 @@ namespace QLNet.Termstructures.Yield
                     }
                     break;
                 default:
-                    Utils.QL_FAIL("unknown futures type (" + type + ")");
+                    Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
             earliestDate_ = iborStartDate;
@@ -241,11 +241,11 @@ namespace QLNet.Termstructures.Yield
                                      iborStartDate + " is not a valid ASX date");
                     break;
                 default:
-                    Utils.QL_FAIL("unknown futures type (" + type + ")");
+                    Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
             earliestDate_ = iborStartDate;
-            Calendar cal = i.fixingCalendar();
+            var cal = i.fixingCalendar();
             maturityDate_ = cal.advance(iborStartDate, i.tenor(), i.businessDayConvention());
             yearFraction_ = i.dayCounter().yearFraction(earliestDate_, maturityDate_);
             pillarDate_ = latestDate_ = latestRelevantDate_ = maturityDate_;
@@ -272,11 +272,11 @@ namespace QLNet.Termstructures.Yield
                                      iborStartDate + " is not a valid ASX date");
                     break;
                 default:
-                    Utils.QL_FAIL("unknown futures type (" + type + ")");
+                    Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
             earliestDate_ = iborStartDate;
-            Calendar cal = i.fixingCalendar();
+            var cal = i.fixingCalendar();
             maturityDate_ = cal.advance(iborStartDate, i.tenor(), i.businessDayConvention());
             yearFraction_ = i.dayCounter().yearFraction(earliestDate_, maturityDate_);
             pillarDate_ = latestDate_ = latestRelevantDate_ = maturityDate_;
@@ -287,21 +287,18 @@ namespace QLNet.Termstructures.Yield
         {
             Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
 
-            double forwardRate = (termStructure_.discount(earliestDate_) /
+            var forwardRate = (termStructure_.discount(earliestDate_) /
                                   termStructure_.discount(maturityDate_) - 1) / yearFraction_;
-            double convAdj = convAdj_.empty() ? 0 : convAdj_.link.value();
+            var convAdj = convAdj_.empty() ? 0 : convAdj_.link.value();
             // Convexity, as FRA/futures adjustment, has been used in the
             // past to take into account futures margining vs FRA.
             // Therefore, there's no requirement for it to be non-negative.
-            double futureRate = forwardRate + convAdj;
+            var futureRate = forwardRate + convAdj;
             return 100.0 * (1.0 - futureRate);
         }
 
         //! FuturesRateHelper inspectors
-        public double convexityAdjustment()
-        {
-            return convAdj_.empty() ? 0.0 : convAdj_.link.value();
-        }
+        public double convexityAdjustment() => convAdj_.empty() ? 0.0 : convAdj_.link.value();
 
         private double yearFraction_;
         private Handle<Quote> convAdj_;
@@ -348,7 +345,7 @@ namespace QLNet.Termstructures.Yield
     }
 
     // Rate helper for bootstrapping over deposit rates
-    public class DepositRateHelper : RelativeDateRateHelper
+    [JetBrains.Annotations.PublicAPI] public class DepositRateHelper : RelativeDateRateHelper
     {
         public DepositRateHelper(Handle<Quote> rate,
                                  Period tenor,
@@ -413,7 +410,7 @@ namespace QLNet.Termstructures.Yield
         {
             // if the evaluation date is not a business day
             // then move to the next business day
-            Date referenceDate = iborIndex_.fixingCalendar().adjust(evaluationDate_);
+            var referenceDate = iborIndex_.fixingCalendar().adjust(evaluationDate_);
             earliestDate_ = iborIndex_.valueDate(referenceDate);
             fixingDate_ = iborIndex_.fixingDate(earliestDate_);
             maturityDate_ = iborIndex_.maturityDate(earliestDate_);
@@ -428,7 +425,7 @@ namespace QLNet.Termstructures.Yield
     }
 
     //! Rate helper for bootstrapping over %FRA rates
-    public class FraRateHelper : RelativeDateRateHelper
+    [JetBrains.Annotations.PublicAPI] public class FraRateHelper : RelativeDateRateHelper
     {
 
         public FraRateHelper(Handle<Quote> rate,
@@ -615,8 +612,8 @@ namespace QLNet.Termstructures.Yield
         {
             // if the evaluation date is not a business day
             // then move to the next business day
-            Date referenceDate = iborIndex_.fixingCalendar().adjust(evaluationDate_);
-            Date spotDate = iborIndex_.fixingCalendar().advance(referenceDate, new Period(iborIndex_.fixingDays(), TimeUnit.Days));
+            var referenceDate = iborIndex_.fixingCalendar().adjust(evaluationDate_);
+            var spotDate = iborIndex_.fixingCalendar().advance(referenceDate, new Period(iborIndex_.fixingDays(), TimeUnit.Days));
             earliestDate_ = iborIndex_.fixingCalendar().advance(spotDate,
                                                                 periodToStart_,
                                                                 iborIndex_.businessDayConvention(),
@@ -666,7 +663,7 @@ namespace QLNet.Termstructures.Yield
     }
 
     // Rate helper for bootstrapping over swap rates
-    public class SwapRateHelper : RelativeDateRateHelper
+    [JetBrains.Annotations.PublicAPI] public class SwapRateHelper : RelativeDateRateHelper
     {
         public SwapRateHelper(Handle<Quote> rate,
                               SwapIndex swapIndex,
@@ -901,18 +898,20 @@ namespace QLNet.Termstructures.Yield
             // we didn't register as observers - force calculation
             swap_.recalculate();                // it is from lazy objects
                                                 // weak implementation... to be improved
-            double floatingLegNPV = swap_.floatingLegNPV();
-            double spread = this.spread();
-            double spreadNPV = swap_.floatingLegBPS() / Const.BASIS_POINT * spread;
-            double totNPV = -(floatingLegNPV + spreadNPV);
-            double result = totNPV / (swap_.fixedLegBPS() / Const.BASIS_POINT);
+            var floatingLegNPV = swap_.floatingLegNPV();
+            var spread = this.spread();
+            var spreadNPV = swap_.floatingLegBPS() / Const.BASIS_POINT * spread;
+            var totNPV = -(floatingLegNPV + spreadNPV);
+            var result = totNPV / (swap_.fixedLegBPS() / Const.BASIS_POINT);
             return result;
         }
 
         // SwapRateHelper inspectors
-        public double spread() { return spread_.empty() ? 0.0 : spread_.link.value(); }
-        public VanillaSwap swap() { return swap_; }
-        public Period forwardStart() { return fwdStart_; }
+        public double spread() => spread_.empty() ? 0.0 : spread_.link.value();
+
+        public VanillaSwap swap() => swap_;
+
+        public Period forwardStart() => fwdStart_;
 
         protected int? settlementDays_;
         protected Period tenor_;
@@ -933,7 +932,7 @@ namespace QLNet.Termstructures.Yield
     }
 
     //! Rate helper for bootstrapping over BMA swap rates
-    public class BMASwapRateHelper : RelativeDateRateHelper
+    [JetBrains.Annotations.PublicAPI] public class BMASwapRateHelper : RelativeDateRateHelper
     {
         public BMASwapRateHelper(Handle<Quote> liborFraction,
                                  Period tenor,
@@ -982,22 +981,22 @@ namespace QLNet.Termstructures.Yield
         {
             // if the evaluation date is not a business day
             // then move to the next business day
-            JointCalendar jc = new JointCalendar(calendar_, iborIndex_.fixingCalendar());
-            Date referenceDate = jc.adjust(evaluationDate_);
+            var jc = new JointCalendar(calendar_, iborIndex_.fixingCalendar());
+            var referenceDate = jc.adjust(evaluationDate_);
             earliestDate_ = calendar_.advance(referenceDate, new Period(settlementDays_, TimeUnit.Days), BusinessDayConvention.Following);
 
-            Date maturity = earliestDate_ + tenor_;
+            var maturity = earliestDate_ + tenor_;
 
             // dummy BMA index with curve/swap arguments
-            BMAIndex clonedIndex = new BMAIndex(termStructureHandle_);
+            var clonedIndex = new BMAIndex(termStructureHandle_);
 
-            Schedule bmaSchedule = new MakeSchedule().from(earliestDate_).to(maturity)
+            var bmaSchedule = new MakeSchedule().from(earliestDate_).to(maturity)
             .withTenor(bmaPeriod_)
             .withCalendar(bmaIndex_.fixingCalendar())
             .withConvention(bmaConvention_)
             .backwards().value();
 
-            Schedule liborSchedule = new MakeSchedule().from(earliestDate_).to(maturity)
+            var liborSchedule = new MakeSchedule().from(earliestDate_).to(maturity)
             .withTenor(iborIndex_.tenor())
             .withCalendar(iborIndex_.fixingCalendar())
             .withConvention(iborIndex_.businessDayConvention())
@@ -1010,9 +1009,9 @@ namespace QLNet.Termstructures.Yield
 
             swap_.setPricingEngine(new DiscountingSwapEngine(iborIndex_.forwardingTermStructure()));
 
-            Date d = calendar_.adjust(swap_.maturityDate(), BusinessDayConvention.Following);
-            int w = d.weekday();
-            Date nextWednesday = w >= 4 ?
+            var d = calendar_.adjust(swap_.maturityDate(), BusinessDayConvention.Following);
+            var w = d.weekday();
+            var nextWednesday = w >= 4 ?
                                  d + new Period(11 - w, TimeUnit.Days) :
                                  d + new Period(4 - w, TimeUnit.Days);
             latestDate_ = clonedIndex.valueDate(clonedIndex.fixingCalendar().adjust(nextWednesday));
@@ -1038,7 +1037,7 @@ namespace QLNet.Termstructures.Yield
        isFxBaseCurrencyCollateralCurrency indicates if the base currency
        of the fx currency pair is the one used as collateral
     */
-    public class FxSwapRateHelper : RelativeDateRateHelper
+    [JetBrains.Annotations.PublicAPI] public class FxSwapRateHelper : RelativeDateRateHelper
     {
         public FxSwapRateHelper(Handle<Quote> fwdPoint,
                                 Handle<Quote> spotFx,
@@ -1072,13 +1071,13 @@ namespace QLNet.Termstructures.Yield
 
             Utils.QL_REQUIRE(!collHandle_.empty(), () => "collateral term structure not set");
 
-            double d1 = collHandle_.link.discount(earliestDate_);
-            double d2 = collHandle_.link.discount(latestDate_);
-            double collRatio = d1 / d2;
+            var d1 = collHandle_.link.discount(earliestDate_);
+            var d2 = collHandle_.link.discount(latestDate_);
+            var collRatio = d1 / d2;
             d1 = termStructureHandle_.link.discount(earliestDate_);
             d2 = termStructureHandle_.link.discount(latestDate_);
-            double ratio = d1 / d2;
-            double spot = spot_.link.value();
+            var ratio = d1 / d2;
+            var spot = spot_.link.value();
             if (isFxBaseCurrencyCollateralCurrency_)
             {
                 return (ratio / collRatio - 1) * spot;
@@ -1097,19 +1096,25 @@ namespace QLNet.Termstructures.Yield
         }
 
         // FxSwapRateHelper inspectors
-        public double spot() { return spot_.link.value(); }
-        public Period tenor() { return tenor_; }
-        public int fixingDays() { return fixingDays_; }
-        public Calendar calendar() { return cal_; }
-        public BusinessDayConvention businessDayConvention() { return conv_; }
-        public bool endOfMonth() { return eom_; }
-        public bool isFxBaseCurrencyCollateralCurrency() { return isFxBaseCurrencyCollateralCurrency_; }
+        public double spot() => spot_.link.value();
+
+        public Period tenor() => tenor_;
+
+        public int fixingDays() => fixingDays_;
+
+        public Calendar calendar() => cal_;
+
+        public BusinessDayConvention businessDayConvention() => conv_;
+
+        public bool endOfMonth() => eom_;
+
+        public bool isFxBaseCurrencyCollateralCurrency() => isFxBaseCurrencyCollateralCurrency_;
 
         protected override void initializeDates()
         {
             // if the evaluation date is not a business day
             // then move to the next business day
-            Date refDate = cal_.adjust(evaluationDate_);
+            var refDate = cal_.adjust(evaluationDate_);
             earliestDate_ = cal_.advance(refDate, new Period(fixingDays_, TimeUnit.Days));
             latestDate_ = cal_.advance(earliestDate_, tenor_, conv_, eom_);
         }

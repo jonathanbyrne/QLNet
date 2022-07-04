@@ -24,7 +24,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Math.Interpolations
 {
-    public class SVIWrapper : IWrapper
+    [JetBrains.Annotations.PublicAPI] public class SVIWrapper : IWrapper
     {
         public SVIWrapper(double t, double forward, List<double?> param, List<double?> addParams)
         {
@@ -33,10 +33,7 @@ namespace QLNet.Math.Interpolations
             params_ = param;
             Utils.checkSviParameters(param[0].Value, param[1].Value, param[2].Value, param[3].Value, param[4].Value);
         }
-        public double volatility(double x)
-        {
-            return Utils.sviVolatility(x, forward_, t_, params_);
-        }
+        public double volatility(double x) => Utils.sviVolatility(x, forward_, t_, params_);
 
         private double t_, forward_;
         private List<double?> params_;
@@ -44,7 +41,8 @@ namespace QLNet.Math.Interpolations
 
     public struct SVISpecs : IModel
     {
-        public int dimension() { return 5; }
+        public int dimension() => 5;
+
         public void defaultValues(List<double?> param, List<bool> paramIsFixed, double forward, double expiryTime, List<double?> addParams)
         {
             if (param[2] == null)
@@ -66,7 +64,7 @@ namespace QLNet.Math.Interpolations
 
         public void guess(Vector values, List<bool> paramIsFixed, double forward, double expiryTime, List<double> r, List<double?> addParams)
         {
-            int j = 0;
+            var j = 0;
             if (!paramIsFixed[2])
                 values[2] = r[j++] + eps1();
             if (!paramIsFixed[3])
@@ -80,12 +78,15 @@ namespace QLNet.Math.Interpolations
                             eps2() * (values[1] * values[2] *
                                       System.Math.Sqrt(1.0 - values[3] * values[3]));
         }
-        public double eps1() { return 0.000001; }
-        public double eps2() { return 0.999999; }
-        public double dilationFactor() { return 0.001; }
+        public double eps1() => 0.000001;
+
+        public double eps2() => 0.999999;
+
+        public double dilationFactor() => 0.001;
+
         public Vector inverse(Vector y, List<bool> b, List<double?> c, double d)
         {
-            Vector x = new Vector(5);
+            var x = new Vector(5);
             x[2] = System.Math.Sqrt(y[2] - eps1());
             x[3] = System.Math.Asin(y[3] / eps2());
             x[4] = y[4];
@@ -97,7 +98,7 @@ namespace QLNet.Math.Interpolations
         }
         public Vector direct(Vector x, List<bool> paramIsFixed, List<double?> param, double forward)
         {
-            Vector y = new Vector(5);
+            var y = new Vector(5);
             y[2] = x[2] * x[2] + eps1();
             y[3] = System.Math.Sin(x[3]) * eps2();
             y[4] = x[4];
@@ -113,19 +114,15 @@ namespace QLNet.Math.Interpolations
                        y[1] * y[2] * System.Math.Sqrt(1.0 - y[3] * y[3]);
             return y;
         }
-        public IWrapper instance(double t, double forward, List<double?> param, List<double?> addParams)
-        {
-            return new SVIWrapper(t, forward, param, addParams);
-        }
-        public double weight(double strike, double forward, double stdDev, List<double?> addParams)
-        {
-            return Utils.blackFormulaStdDevDerivative(strike, forward, stdDev, 1.0);
-        }
+        public IWrapper instance(double t, double forward, List<double?> param, List<double?> addParams) => new SVIWrapper(t, forward, param, addParams);
+
+        public double weight(double strike, double forward, double stdDev, List<double?> addParams) => Utils.blackFormulaStdDevDerivative(strike, forward, stdDev, 1.0);
+
         public SVIWrapper modelInstance_ { get; set; }
     }
 
     //! %SABR smile interpolation between discrete volatility points.
-    public class SviInterpolation : Interpolation
+    [JetBrains.Annotations.PublicAPI] public class SviInterpolation : Interpolation
     {
         public SviInterpolation(List<double> xBegin,  // x = strikes
                                 int size,
@@ -158,23 +155,33 @@ namespace QLNet.Math.Interpolations
             maxGuesses, addParams);
             coeffs_ = (impl_ as XABRInterpolationImpl<SVISpecs>).coeff_;
         }
-        public double expiry() { return coeffs_.t_; }
-        public double forward() { return coeffs_.forward_; }
-        public double a() { return coeffs_.params_[0].Value; }
-        public double b() { return coeffs_.params_[1].Value; }
-        public double sigma() { return coeffs_.params_[2].Value; }
-        public double rho() { return coeffs_.params_[3].Value; }
-        public double m() { return coeffs_.params_[4].Value; }
-        public double rmsError() { return coeffs_.error_.Value; }
-        public double maxError() { return coeffs_.maxError_.Value; }
-        public List<double> interpolationWeights() { return coeffs_.weights_; }
-        public EndCriteria.Type endCriteria() { return coeffs_.XABREndCriteria_; }
+        public double expiry() => coeffs_.t_;
+
+        public double forward() => coeffs_.forward_;
+
+        public double a() => coeffs_.params_[0].Value;
+
+        public double b() => coeffs_.params_[1].Value;
+
+        public double sigma() => coeffs_.params_[2].Value;
+
+        public double rho() => coeffs_.params_[3].Value;
+
+        public double m() => coeffs_.params_[4].Value;
+
+        public double rmsError() => coeffs_.error_.Value;
+
+        public double maxError() => coeffs_.maxError_.Value;
+
+        public List<double> interpolationWeights() => coeffs_.weights_;
+
+        public EndCriteria.Type endCriteria() => coeffs_.XABREndCriteria_;
 
         private XABRCoeffHolder<SVISpecs> coeffs_;
     }
 
     //! %SABR interpolation factory and traits
-    public class SVI
+    [JetBrains.Annotations.PublicAPI] public class SVI
     {
         public SVI(double t, double forward, double a, double b, double sigma, double rho, double m,
                    bool aIsFixed, bool bIsFixed, bool sigmaIsFixed, bool rhoIsFixed, bool mIsFixed,
@@ -204,12 +211,11 @@ namespace QLNet.Math.Interpolations
             addParams_ = addParams;
         }
 
-        public Interpolation interpolate(List<double> xBegin, int xEnd, List<double> yBegin)
-        {
-            return new SviInterpolation(xBegin, xEnd, yBegin, t_, forward_, a_, b_, sigma_, rho_, m_,
-                                        aIsFixed_, bIsFixed_, sigmaIsFixed_, rhoIsFixed_, mIsFixed_, vegaWeighted_,
-                                        endCriteria_, optMethod_, errorAccept_, useMaxError_, maxGuesses_);
-        }
+        public Interpolation interpolate(List<double> xBegin, int xEnd, List<double> yBegin) =>
+            new SviInterpolation(xBegin, xEnd, yBegin, t_, forward_, a_, b_, sigma_, rho_, m_,
+                aIsFixed_, bIsFixed_, sigmaIsFixed_, rhoIsFixed_, mIsFixed_, vegaWeighted_,
+                endCriteria_, optMethod_, errorAccept_, useMaxError_, maxGuesses_);
+
         public const bool global = true;
 
         private double t_;

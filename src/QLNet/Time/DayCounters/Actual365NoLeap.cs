@@ -25,7 +25,7 @@ namespace QLNet.Time.DayCounters
 
        \ingroup daycounters
     */
-    public class Actual365NoLeap : DayCounter
+    [JetBrains.Annotations.PublicAPI] public class Actual365NoLeap : DayCounter
     {
         public Actual365NoLeap() : base(Impl.Singleton) { }
 
@@ -37,7 +37,8 @@ namespace QLNet.Time.DayCounters
                                             };
             private Impl() { }
 
-            public override string name() { return "Actual/365 (NL)"; }
+            public override string name() => "Actual/365 (NL)";
+
             public override int dayCount(Date d1, Date d2)
             {
 
@@ -58,10 +59,7 @@ namespace QLNet.Time.DayCounters
 
                 return s2 - s1;
             }
-            public override double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd)
-            {
-                return dayCount(d1, d2) / 365.0;
-            }
+            public override double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd) => dayCount(d1, d2) / 365.0;
         }
     }
 }

@@ -27,7 +27,7 @@ namespace QLNet
     /// Amount of cash
     /// Money arithmetic is tested with and without currency conversions.
     /// </summary>
-    public class Money
+    [JetBrains.Annotations.PublicAPI] public class Money
    {
       #region Define
 
@@ -57,8 +57,12 @@ namespace QLNet
       [ThreadStatic]
       private static Currency baseCurrency_;
 
-      public static ConversionType conversionType {get {return conversionType_;} set {conversionType_ = value;}}
-      public static Currency baseCurrency { get { return baseCurrency_; } set { baseCurrency_ = value; } }
+      public static ConversionType conversionType {get => conversionType_;
+          set => conversionType_ = value;
+      }
+      public static Currency baseCurrency { get => baseCurrency_;
+          set => baseCurrency_ = value;
+      }
 
       private double value_;
       private Currency currency_;
@@ -84,20 +88,9 @@ namespace QLNet
 
       #region Get/Set
 
-      public Currency currency
-      {
-         get
-         {
-            return currency_;
-         }
-      }
-      public double value
-      {
-         get
-         {
-            return value_;
-         }
-      }
+      public Currency currency => currency_;
+
+      public double value => value_;
 
       #endregion
 
@@ -107,7 +100,7 @@ namespace QLNet
       {
          if (m.currency != target)
          {
-            ExchangeRate rate = ExchangeRateManager.Instance.lookup(m.currency, target);
+            var rate = ExchangeRateManager.Instance.lookup(m.currency, target);
             m = rate.exchange(m).rounded();
          }
       }
@@ -116,34 +109,23 @@ namespace QLNet
          Utils.QL_REQUIRE(!baseCurrency.empty(), () => "no base currency set");
          convertTo(ref m, baseCurrency);
       }
-      public Money rounded()
-      {
-         return new Money(currency_.rounding.Round(value_), currency_);
-      }
-      public override String ToString()
-      {
-         return this.rounded().value +  "-" + this.currency.code + "-"  + this.currency.symbol ;
-      }
+      public Money rounded() => new Money(currency_.rounding.Round(value_), currency_);
+
+      public override String ToString() => this.rounded().value +  "-" + this.currency.code + "-"  + this.currency.symbol;
+
       #endregion
 
       #region Operators
 
-      public static Money operator * (Money m, double x)
-      {
-         return new Money(m.value_ * x, m.currency);
-      }
-      public static Money operator *(double x, Money m)
-      {
-         return m * x;
-      }
-      public static Money operator / (Money m, double x)
-      {
-         return new Money(m.value_ / x, m.currency);
-      }
+      public static Money operator * (Money m, double x) => new Money(m.value_ * x, m.currency);
+
+      public static Money operator *(double x, Money m) => m * x;
+
+      public static Money operator / (Money m, double x) => new Money(m.value_ / x, m.currency);
 
       public static Money operator+(Money m1, Money m2)
       {
-         Money m = new Money(m1.currency, m1.value);
+         var m = new Money(m1.currency, m1.value);
 
          if (m1.currency_ == m2.currency_)
          {
@@ -152,13 +134,13 @@ namespace QLNet
          else if (Money.conversionType == Money.ConversionType.BaseCurrencyConversion)
          {
             Money.convertToBase(ref m);
-            Money tmp = m2;
+            var tmp = m2;
             Money.convertToBase(ref tmp);
             m += tmp;
          }
          else if (Money.conversionType == Money.ConversionType.AutomatedConversion)
          {
-            Money tmp = m2;
+            var tmp = m2;
             Money.convertTo(ref tmp, m.currency_);
             m += tmp;
          }
@@ -171,7 +153,7 @@ namespace QLNet
       }
       public static Money operator-(Money m1, Money m2)
       {
-         Money m = new Money(m1.currency, m1.value);
+         var m = new Money(m1.currency, m1.value);
 
          if (m.currency_ == m2.currency_)
          {
@@ -180,13 +162,13 @@ namespace QLNet
          else if (Money.conversionType == Money.ConversionType.BaseCurrencyConversion)
          {
             convertToBase(ref m);
-            Money tmp = m2;
+            var tmp = m2;
             convertToBase(ref tmp);
             m -= tmp;
          }
          else if (Money.conversionType == Money.ConversionType.AutomatedConversion)
          {
-            Money tmp = m2;
+            var tmp = m2;
             convertTo(ref tmp, m.currency_);
             m -= tmp;
          }
@@ -210,15 +192,15 @@ namespace QLNet
          }
          else if (Money.conversionType == Money.ConversionType.BaseCurrencyConversion)
          {
-            Money tmp1 = m1;
+            var tmp1 = m1;
             convertToBase(ref tmp1);
-            Money tmp2 = m2;
+            var tmp2 = m2;
             convertToBase(ref tmp2);
             return tmp1 == tmp2;
          }
          else if (Money.conversionType == Money.ConversionType.AutomatedConversion)
          {
-            Money tmp = m2;
+            var tmp = m2;
             convertTo(ref tmp, m1.currency);
             return m1 == tmp;
          }
@@ -228,13 +210,12 @@ namespace QLNet
             return false;
          }
       }
-      public static bool  operator !=(Money m1, Money m2)
-      {
-         return !(m1 == m2) ;
-      }
+      public static bool  operator !=(Money m1, Money m2) => !(m1 == m2);
 
-      public override bool Equals(object o) { return (this == (Money)o); }
-      public override int GetHashCode() { return 0; }
+      public override bool Equals(object o) => (this == (Money)o);
+
+      public override int GetHashCode() => 0;
+
       #endregion
    }
 }

@@ -81,7 +81,7 @@ namespace QLNet.Termstructures.Credit
         */
         protected override double survivalProbabilityImpl(double t)
         {
-            GaussChebyshevIntegration integral = new GaussChebyshevIntegration(48);
+            var integral = new GaussChebyshevIntegration(48);
             // this stores the address of the method to integrate (so that
             // we don't have to insert its full expression inside the
             // integral below--it's long enough already)
@@ -92,10 +92,7 @@ namespace QLNet.Termstructures.Credit
         }
 
         //! default density calculation
-        protected override double defaultDensityImpl(double t)
-        {
-            return hazardRateImpl(t) * survivalProbabilityImpl(t);
-        }
+        protected override double defaultDensityImpl(double t) => hazardRateImpl(t) * survivalProbabilityImpl(t);
 
         #endregion
     }

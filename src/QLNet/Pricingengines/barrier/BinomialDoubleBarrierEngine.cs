@@ -37,7 +37,7 @@ namespace QLNet.Pricingengines.barrier
         \test the correctness of the returned values is tested by
               checking it against analytic results.
     */
-    public class BinomialDoubleBarrierEngine : DoubleBarrierOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class BinomialDoubleBarrierEngine : DoubleBarrierOption.Engine
     {
         public delegate ITree GetTree(StochasticProcess1D process, double end, int steps, double strike);
         public delegate DiscretizedAsset GetAsset(DoubleBarrierOption.Arguments args, StochasticProcess process, TimeGrid grid = null);
@@ -70,39 +70,39 @@ namespace QLNet.Pricingengines.barrier
 
         public override void calculate()
         {
-            DayCounter rfdc = process_.riskFreeRate().link.dayCounter();
-            DayCounter divdc = process_.dividendYield().link.dayCounter();
-            DayCounter voldc = process_.blackVolatility().link.dayCounter();
-            Calendar volcal = process_.blackVolatility().link.calendar();
+            var rfdc = process_.riskFreeRate().link.dayCounter();
+            var divdc = process_.dividendYield().link.dayCounter();
+            var voldc = process_.blackVolatility().link.dayCounter();
+            var volcal = process_.blackVolatility().link.calendar();
 
-            double s0 = process_.stateVariable().link.value();
+            var s0 = process_.stateVariable().link.value();
             Utils.QL_REQUIRE(s0 > 0.0, () => "negative or null underlying given");
-            double v = process_.blackVolatility().link.blackVol(arguments_.exercise.lastDate(), s0);
-            Date maturityDate = arguments_.exercise.lastDate();
-            double r = process_.riskFreeRate().link.zeroRate(maturityDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).value();
-            double q = process_.dividendYield().link.zeroRate(maturityDate, divdc, Compounding.Continuous, Frequency.NoFrequency).value();
-            Date referenceDate = process_.riskFreeRate().link.referenceDate();
+            var v = process_.blackVolatility().link.blackVol(arguments_.exercise.lastDate(), s0);
+            var maturityDate = arguments_.exercise.lastDate();
+            var r = process_.riskFreeRate().link.zeroRate(maturityDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).value();
+            var q = process_.dividendYield().link.zeroRate(maturityDate, divdc, Compounding.Continuous, Frequency.NoFrequency).value();
+            var referenceDate = process_.riskFreeRate().link.referenceDate();
 
             // binomial trees with constant coefficient
-            Handle<YieldTermStructure> flatRiskFree = new Handle<YieldTermStructure>(new FlatForward(referenceDate, r, rfdc));
-            Handle<YieldTermStructure> flatDividends = new Handle<YieldTermStructure>(new FlatForward(referenceDate, q, divdc));
-            Handle<BlackVolTermStructure> flatVol = new Handle<BlackVolTermStructure>(new BlackConstantVol(referenceDate, volcal, v, voldc));
+            var flatRiskFree = new Handle<YieldTermStructure>(new FlatForward(referenceDate, r, rfdc));
+            var flatDividends = new Handle<YieldTermStructure>(new FlatForward(referenceDate, q, divdc));
+            var flatVol = new Handle<BlackVolTermStructure>(new BlackConstantVol(referenceDate, volcal, v, voldc));
 
-            StrikedTypePayoff payoff = arguments_.payoff as StrikedTypePayoff;
+            var payoff = arguments_.payoff as StrikedTypePayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
-            double maturity = rfdc.yearFraction(referenceDate, maturityDate);
+            var maturity = rfdc.yearFraction(referenceDate, maturityDate);
 
             StochasticProcess1D bs = new GeneralizedBlackScholesProcess(process_.stateVariable(),
                                                                         flatDividends, flatRiskFree, flatVol);
 
-            TimeGrid grid = new TimeGrid(maturity, timeSteps_);
+            var grid = new TimeGrid(maturity, timeSteps_);
 
-            ITree tree = getTree_(bs, maturity, timeSteps_, payoff.strike());
+            var tree = getTree_(bs, maturity, timeSteps_, payoff.strike());
 
-            BlackScholesLattice<ITree> lattice = new BlackScholesLattice<ITree>(tree, r, maturity, timeSteps_);
+            var lattice = new BlackScholesLattice<ITree>(tree, r, maturity, timeSteps_);
 
-            DiscretizedAsset option = getAsset_(arguments_, process_, grid);
+            var option = getAsset_(arguments_, process_, grid);
             option.initialize(lattice, maturity);
 
             // Partial derivatives calculated from various points in the
@@ -112,35 +112,35 @@ namespace QLNet.Pricingengines.barrier
             // Rollback to third-last step, and get underlying prices (s2) &
             // option values (p2) at this point
             option.rollback(grid[2]);
-            Vector va2 = new Vector(option.values());
+            var va2 = new Vector(option.values());
             Utils.QL_REQUIRE(va2.size() == 3, () => "Expect 3 nodes in grid at second step");
-            double p2u = va2[2]; // up
-            double p2m = va2[1]; // mid
-            double p2d = va2[0]; // down (low)
-            double s2u = lattice.underlying(2, 2); // up price
-            double s2m = lattice.underlying(2, 1); // middle price
-            double s2d = lattice.underlying(2, 0); // down (low) price
+            var p2u = va2[2]; // up
+            var p2m = va2[1]; // mid
+            var p2d = va2[0]; // down (low)
+            var s2u = lattice.underlying(2, 2); // up price
+            var s2m = lattice.underlying(2, 1); // middle price
+            var s2d = lattice.underlying(2, 0); // down (low) price
 
             // calculate gamma by taking the first derivate of the two deltas
-            double delta2u = (p2u - p2m) / (s2u - s2m);
-            double delta2d = (p2m - p2d) / (s2m - s2d);
-            double gamma = (delta2u - delta2d) / ((s2u - s2d) / 2);
+            var delta2u = (p2u - p2m) / (s2u - s2m);
+            var delta2d = (p2m - p2d) / (s2m - s2d);
+            var gamma = (delta2u - delta2d) / ((s2u - s2d) / 2);
 
             // Rollback to second-last step, and get option values (p1) at
             // this point
             option.rollback(grid[1]);
-            Vector va = new Vector(option.values());
+            var va = new Vector(option.values());
             Utils.QL_REQUIRE(va.size() == 2, () => "Expect 2 nodes in grid at first step");
-            double p1u = va[1];
-            double p1d = va[0];
-            double s1u = lattice.underlying(1, 1); // up (high) price
-            double s1d = lattice.underlying(1, 0); // down (low) price
+            var p1u = va[1];
+            var p1d = va[0];
+            var s1u = lattice.underlying(1, 1); // up (high) price
+            var s1d = lattice.underlying(1, 0); // down (low) price
 
-            double delta = (p1u - p1d) / (s1u - s1d);
+            var delta = (p1u - p1d) / (s1u - s1d);
 
             // Finally, rollback to t=0
             option.rollback(0.0);
-            double p0 = option.presentValue();
+            var p0 = option.presentValue();
 
             // Store results
             results_.value = p0;

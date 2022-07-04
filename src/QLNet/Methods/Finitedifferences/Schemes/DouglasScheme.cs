@@ -27,7 +27,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
     /// <summary>
     /// Douglas operator splitting
     /// </summary>
-    public class DouglasScheme : IMixedScheme, ISchemeFactory
+    [JetBrains.Annotations.PublicAPI] public class DouglasScheme : IMixedScheme, ISchemeFactory
     {
         public DouglasScheme()
         { }
@@ -46,7 +46,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
 
         public IMixedScheme factory(object L, object bcs, object[] additionalInputs = null)
         {
-            double? theta = additionalInputs[0] as double?;
+            var theta = additionalInputs[0] as double?;
             return new DouglasScheme(theta.Value,
                                      L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
         }
@@ -62,12 +62,12 @@ namespace QLNet.Methods.Finitedifferences.Schemes
             bcSet_.setTime(System.Math.Max(0.0, t - dt_.Value));
 
             bcSet_.applyBeforeApplying(map_);
-            Vector y = (a as Vector) + dt_.Value * map_.apply(a as Vector);
+            var y = (a as Vector) + dt_.Value * map_.apply(a as Vector);
             bcSet_.applyAfterApplying(y);
 
-            for (int i = 0; i < map_.size(); ++i)
+            for (var i = 0; i < map_.size(); ++i)
             {
-                Vector rhs = y - theta_ * dt_.Value * map_.apply_direction(i, a as Vector);
+                var rhs = y - theta_ * dt_.Value * map_.apply_direction(i, a as Vector);
                 y = map_.solve_splitting(i, rhs, -theta_ * dt_.Value);
             }
             bcSet_.applyAfterSolving(y);
@@ -82,10 +82,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
 
         #endregion
 
-        protected Vector apply(Vector r)
-        {
-            return r - dt_.Value * map_.apply(r);
-        }
+        protected Vector apply(Vector r) => r - dt_.Value * map_.apply(r);
 
         protected double? dt_;
         protected double theta_;

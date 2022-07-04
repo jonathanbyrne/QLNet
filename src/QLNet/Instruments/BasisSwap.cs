@@ -26,7 +26,7 @@ using System.Collections.Generic;
 namespace QLNet.Instruments
 {
     //! Basis swap. Simple Libor swap vs Libor swap
-    public class BasisSwap : Swap
+    [JetBrains.Annotations.PublicAPI] public class BasisSwap : Swap
     {
         public enum Type { Receiver = -1, Payer = 1 }
 
@@ -35,12 +35,12 @@ namespace QLNet.Instruments
         private double nominal_;
 
         private Schedule floating1Schedule_;
-        public Schedule floating1Schedule() { return floating1Schedule_; }
+        public Schedule floating1Schedule() => floating1Schedule_;
 
         private DayCounter floating1DayCount_;
 
         private Schedule floating2Schedule_;
-        public Schedule floating2Schedule() { return floating2Schedule_; }
+        public Schedule floating2Schedule() => floating2Schedule_;
 
         private IborIndex iborIndex1_, iborIndex2_;
         private DayCounter floating2DayCount_;
@@ -122,7 +122,7 @@ namespace QLNet.Instruments
         {
             base.setupArguments(args);
 
-            Arguments arguments = args as Arguments;
+            var arguments = args as Arguments;
             if (arguments == null)  // it's a swap engine...
                 return;
 
@@ -130,7 +130,7 @@ namespace QLNet.Instruments
             arguments.nominal = nominal_;
 
 
-            List<CashFlow> floating1Coupons = floating1Leg();
+            var floating1Coupons = floating1Leg();
 
             arguments.floating1ResetDates = new InitializedList<Date>(floating1Coupons.Count);
             arguments.floating1PayDates = new InitializedList<Date>(floating1Coupons.Count);
@@ -138,9 +138,9 @@ namespace QLNet.Instruments
             arguments.floating1AccrualTimes = new InitializedList<double>(floating1Coupons.Count);
             arguments.floating1Spreads = new InitializedList<double>(floating1Coupons.Count);
             arguments.floating1Coupons = new InitializedList<double>(floating1Coupons.Count);
-            for (int i = 0; i < floating1Coupons.Count; ++i)
+            for (var i = 0; i < floating1Coupons.Count; ++i)
             {
-                IborCoupon coupon = (IborCoupon)floating1Coupons[i];
+                var coupon = (IborCoupon)floating1Coupons[i];
 
                 arguments.floating1ResetDates[i] = coupon.accrualStartDate();
                 arguments.floating1PayDates[i] = coupon.date();
@@ -158,7 +158,7 @@ namespace QLNet.Instruments
                 }
             }
 
-            List<CashFlow> floating2Coupons = floating2Leg();
+            var floating2Coupons = floating2Leg();
 
             arguments.floating2ResetDates = new InitializedList<Date>(floating2Coupons.Count);
             arguments.floating2PayDates = new InitializedList<Date>(floating2Coupons.Count);
@@ -166,9 +166,9 @@ namespace QLNet.Instruments
             arguments.floating2AccrualTimes = new InitializedList<double>(floating2Coupons.Count);
             arguments.floating2Spreads = new InitializedList<double>(floating2Coupons.Count);
             arguments.floating2Coupons = new InitializedList<double>(floating2Coupons.Count);
-            for (int i = 0; i < floating2Coupons.Count; ++i)
+            for (var i = 0; i < floating2Coupons.Count; ++i)
             {
-                IborCoupon coupon = (IborCoupon)floating2Coupons[i];
+                var coupon = (IborCoupon)floating2Coupons[i];
 
                 arguments.floating2ResetDates[i] = coupon.accrualStartDate();
                 arguments.floating2PayDates[i] = coupon.date();
@@ -220,14 +220,21 @@ namespace QLNet.Instruments
             return legNPV_[1].GetValueOrDefault();
         }
 
-        public IborIndex iborIndex1() { return iborIndex1_; }
-        public IborIndex iborIndex2() { return iborIndex2_; }
-        public double spread1 { get { return spread1_; } }
-        public double spread2 { get { return spread2_; } }
-        public double nominal { get { return nominal_; } }
-        public Type swapType { get { return type_; } }
-        public List<CashFlow> floating1Leg() { return legs_[0]; }
-        public List<CashFlow> floating2Leg() { return legs_[1]; }
+        public IborIndex iborIndex1() => iborIndex1_;
+
+        public IborIndex iborIndex2() => iborIndex2_;
+
+        public double spread1 => spread1_;
+
+        public double spread2 => spread2_;
+
+        public double nominal => nominal_;
+
+        public Type swapType => type_;
+
+        public List<CashFlow> floating1Leg() => legs_[0];
+
+        public List<CashFlow> floating2Leg() => legs_[1];
 
         public double fairLongSpread()
         {
@@ -254,7 +261,7 @@ namespace QLNet.Instruments
         public override void fetchResults(IPricingEngineResults r)
         {
             base.fetchResults(r);
-            Results results = r as Results;
+            var results = r as Results;
 
             if (results != null)
             {

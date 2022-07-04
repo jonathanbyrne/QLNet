@@ -21,14 +21,15 @@ using System;
 
 namespace QLNet.Time
 {
-    public class Period : IComparable
+    [JetBrains.Annotations.PublicAPI] public class Period : IComparable
     {
         private int length_;
         private TimeUnit unit_;
 
         // properties
-        public int length() { return length_; }
-        public TimeUnit units() { return unit_; }
+        public int length() => length_;
+
+        public TimeUnit units() => unit_;
 
         public Period() { length_ = 0; unit_ = TimeUnit.Days; }
         public Period(int n, TimeUnit u) { length_ = n; unit_ = u; }
@@ -80,7 +81,7 @@ namespace QLNet.Time
         {
             periodString = periodString.ToUpper();
             length_ = int.Parse(periodString.Substring(0, periodString.Length - 1));
-            string freq = periodString.Substring(periodString.Length - 1, 1);
+            var freq = periodString.Substring(periodString.Length - 1, 1);
             switch (freq)
             {
                 case "D":
@@ -102,7 +103,7 @@ namespace QLNet.Time
 
         public Frequency frequency()
         {
-            int length = System.Math.Abs(length_); // unsigned version
+            var length = System.Math.Abs(length_); // unsigned version
 
             if (length == 0)
             {
@@ -164,8 +165,8 @@ namespace QLNet.Time
 
         public static Period operator +(Period p1, Period p2)
         {
-            int length_ = p1.length();
-            TimeUnit units_ = p1.units();
+            var length_ = p1.length();
+            var units_ = p1.units();
 
             if (length_ == 0)
             {
@@ -254,14 +255,13 @@ namespace QLNet.Time
             }
             return new Period(length_, units_);
         }
-        public static Period operator -(Period p1, Period p2)
-        {
-            return p1 + -p2;
-        }
+        public static Period operator -(Period p1, Period p2) => p1 + -p2;
 
-        public static Period operator -(Period p) { return new Period(-p.length(), p.units()); }
-        public static Period operator *(int n, Period p) { return new Period(n * p.length(), p.units()); }
-        public static Period operator *(Period p, int n) { return new Period(n * p.length(), p.units()); }
+        public static Period operator -(Period p) => new Period(-p.length(), p.units());
+
+        public static Period operator *(int n, Period p) => new Period(n * p.length(), p.units());
+
+        public static Period operator *(Period p, int n) => new Period(n * p.length(), p.units());
 
         public static bool operator ==(Period p1, Period p2)
         {
@@ -273,10 +273,14 @@ namespace QLNet.Time
 
             return !(p1 < p2 || p2 < p1);
         }
-        public static bool operator !=(Period p1, Period p2) { return !(p1 == p2); }
-        public static bool operator <=(Period p1, Period p2) { return !(p1 > p2); }
-        public static bool operator >=(Period p1, Period p2) { return !(p1 < p2); }
-        public static bool operator >(Period p1, Period p2) { return p2 < p1; }
+        public static bool operator !=(Period p1, Period p2) => !(p1 == p2);
+
+        public static bool operator <=(Period p1, Period p2) => !(p1 > p2);
+
+        public static bool operator >=(Period p1, Period p2) => !(p1 < p2);
+
+        public static bool operator >(Period p1, Period p2) => p2 < p1;
+
         public static bool operator <(Period p1, Period p2)
         {
             // special cases
@@ -329,17 +333,17 @@ namespace QLNet.Time
             }
         }
 
-        public override bool Equals(object o) { return this == (Period)o; }
-        public override int GetHashCode() { return 0; }
-        public override string ToString()
-        {
-            return "TimeUnit: " + unit_.ToString() + ", length: " + length_.ToString();
-        }
+        public override bool Equals(object o) => this == (Period)o;
+
+        public override int GetHashCode() => 0;
+
+        public override string ToString() => "TimeUnit: " + unit_.ToString() + ", length: " + length_.ToString();
+
         public string ToShortString()
         {
-            string result = "";
-            int n = length();
-            int m = 0;
+            var result = "";
+            var n = length();
+            var m = 0;
             switch (units())
             {
                 case TimeUnit.Days:

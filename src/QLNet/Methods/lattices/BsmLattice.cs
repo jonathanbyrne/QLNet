@@ -24,7 +24,7 @@ using System;
 namespace QLNet.Methods.lattices
 {
     // this is just a wrapper for QL compatibility
-    public class BlackScholesLattice<T> : BlackScholesLattice where T : ITree
+    [JetBrains.Annotations.PublicAPI] public class BlackScholesLattice<T> : BlackScholesLattice where T : ITree
     {
         public BlackScholesLattice(ITree tree, double riskFreeRate, double end, int steps)
            : base(tree, riskFreeRate, end, steps)
@@ -34,7 +34,7 @@ namespace QLNet.Methods.lattices
     //! Simple binomial lattice approximating the Black-Scholes model
     /*! \ingroup lattices */
 
-    public class BlackScholesLattice : TreeLattice1D<BlackScholesLattice>, IGenericLattice
+    [JetBrains.Annotations.PublicAPI] public class BlackScholesLattice : TreeLattice1D<BlackScholesLattice>, IGenericLattice
     {
         public BlackScholesLattice(ITree tree, double riskFreeRate, double end, int steps)
            : base(new TimeGrid(end, steps), 2)
@@ -47,53 +47,29 @@ namespace QLNet.Methods.lattices
             pu_ = tree.probability(0, 0, 1);
         }
 
-        public double riskFreeRate()
-        {
-            return riskFreeRate_;
-        }
+        public double riskFreeRate() => riskFreeRate_;
 
-        public double dt()
-        {
-            return dt_;
-        }
+        public double dt() => dt_;
 
-        public int size(int i)
-        {
-            return tree_.size(i);
-        }
+        public int size(int i) => tree_.size(i);
 
-        public double discount(int i, int j)
-        {
-            return discount_;
-        }
+        public double discount(int i, int j) => discount_;
 
         public override void stepback(int i, Vector values, Vector newValues)
         {
-            for (int j = 0; j < size(i); j++)
+            for (var j = 0; j < size(i); j++)
                 newValues[j] = (pd_ * values[j] + pu_ * values[j + 1]) * discount_;
         }
 
-        public override double underlying(int i, int index)
-        {
-            return tree_.underlying(i, index);
-        }
+        public override double underlying(int i, int index) => tree_.underlying(i, index);
 
-        public int descendant(int i, int index, int branch)
-        {
-            return tree_.descendant(i, index, branch);
-        }
+        public int descendant(int i, int index, int branch) => tree_.descendant(i, index, branch);
 
-        public double probability(int i, int index, int branch)
-        {
-            return tree_.probability(i, index, branch);
-        }
+        public double probability(int i, int index, int branch) => tree_.probability(i, index, branch);
 
         // this is a workaround for CuriouslyRecurringTemplate of TreeLattice
         // recheck it
-        protected override BlackScholesLattice impl()
-        {
-            return this;
-        }
+        protected override BlackScholesLattice impl() => this;
 
         protected ITree tree_;
         protected double riskFreeRate_;

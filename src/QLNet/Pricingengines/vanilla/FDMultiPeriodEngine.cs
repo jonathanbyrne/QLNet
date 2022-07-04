@@ -26,7 +26,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Pricingengines.vanilla
 {
-    public class FDMultiPeriodEngine : FDConditionEngineTemplate
+    [JetBrains.Annotations.PublicAPI] public class FDMultiPeriodEngine : FDConditionEngineTemplate
     {
         protected List<Event> events_ = new List<Event>();
         protected List<double> stoppingTimes_ = new List<double>();
@@ -52,49 +52,46 @@ namespace QLNet.Pricingengines.vanilla
             model_ = new FiniteDifferenceModel<CrankNicolson<TridiagonalOperator>>(finiteDifferenceOperator_, BCs_);
         }
 
-        protected double getDividendTime(int i)
-        {
-            return stoppingTimes_[i];
-        }
+        protected double getDividendTime(int i) => stoppingTimes_[i];
 
         protected virtual void setupArguments(IPricingEngineArguments args, List<Event> schedule)
         {
             base.setupArguments(args);
             events_ = schedule;
             stoppingTimes_.Clear();
-            int n = schedule.Count;
+            var n = schedule.Count;
             stoppingTimes_ = new List<double>(n);
-            for (int i = 0; i < n; ++i)
+            for (var i = 0; i < n; ++i)
                 stoppingTimes_.Add(process_.time(events_[i].date()));
         }
 
         public override void setupArguments(IPricingEngineArguments a)
         {
             base.setupArguments(a);
-            QLNet.Option.Arguments args = a as QLNet.Option.Arguments;
-            Utils.QL_REQUIRE(args != null, () => "incorrect argument type");
+            var args = a as QLNet.Option.Arguments;
+            Utils.QL_REQUIRE(args != null, () => "incorrect argument ExerciseType");
             events_.Clear();
 
-            int n = args.exercise.dates().Count;
+            var n = args.exercise.dates().Count;
             stoppingTimes_ = new InitializedList<double>(n);
-            for (int i = 0; i < n; ++i)
+            for (var i = 0; i < n; ++i)
                 stoppingTimes_[i] = process_.time(args.exercise.date(i));
         }
 
         public override void calculate(IPricingEngineResults r)
         {
-            OneAssetOption.Results results = r as OneAssetOption.Results;
-            Utils.QL_REQUIRE(results != null, () => "incorrect results type");
+            var results = r as OneAssetOption.Results;
+            Utils.QL_REQUIRE(results != null, () => "incorrect results ExerciseType");
 
             double beginDate, endDate;
-            int dateNumber = stoppingTimes_.Count;
-            bool lastDateIsResTime = false;
-            int firstIndex = -1;
-            int lastIndex = dateNumber - 1;
-            bool firstDateIsZero = false;
-            double firstNonZeroDate = getResidualTime();
+            var dateNumber = stoppingTimes_.Count;
+            var lastDateIsResTime = false;
+            var firstIndex = -1;
+            var lastIndex = dateNumber - 1;
+            var firstDateIsZero = false;
+            var firstNonZeroDate = getResidualTime();
 
-            double dateTolerance = 1e-6;
+            var dateTolerance = 1e-6;
             int j;
 
             if (dateNumber > 0)
@@ -126,7 +123,7 @@ namespace QLNet.Pricingengines.vanilla
                 }
             }
 
-            double dt = getResidualTime() / (timeStepPerPeriod_ * (dateNumber + 1));
+            var dt = getResidualTime() / (timeStepPerPeriod_ * (dateNumber + 1));
 
             // Ensure that dt is always smaller than the first non-zero date
             if (firstNonZeroDate <= dt)

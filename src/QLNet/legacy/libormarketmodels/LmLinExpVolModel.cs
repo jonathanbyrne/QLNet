@@ -39,7 +39,7 @@ namespace QLNet.legacy.libormarketmodels
         Caps/Swaptions Calibration,
         (<http://www.business.uts.edu.au/qfrc/conferences/qmf2001/Brigo_D.pdf>)
     */
-    public class LmLinearExponentialVolatilityModel : LmVolatilityModel
+    [JetBrains.Annotations.PublicAPI] public class LmLinearExponentialVolatilityModel : LmVolatilityModel
     {
         public LmLinearExponentialVolatilityModel(List<double> fixingTimes, double a, double b, double c, double d)
            : base(fixingTimes.Count, 4)
@@ -53,16 +53,16 @@ namespace QLNet.legacy.libormarketmodels
 
         public override Vector volatility(double t, Vector x = null)
         {
-            double a = arguments_[0].value(0.0);
-            double b = arguments_[1].value(0.0);
-            double c = arguments_[2].value(0.0);
-            double d = arguments_[3].value(0.0);
+            var a = arguments_[0].value(0.0);
+            var b = arguments_[1].value(0.0);
+            var c = arguments_[2].value(0.0);
+            var d = arguments_[3].value(0.0);
 
-            Vector tmp = new Vector(size_, 0.0);
+            var tmp = new Vector(size_, 0.0);
 
-            for (int i = 0; i < size_; ++i)
+            for (var i = 0; i < size_; ++i)
             {
-                double T = fixingTimes_[i];
+                var T = fixingTimes_[i];
                 if (T > t)
                 {
                     tmp[i] = (a * (T - t) + d) * System.Math.Exp(-b * (T - t)) + c;
@@ -73,12 +73,12 @@ namespace QLNet.legacy.libormarketmodels
 
         public override double volatility(int i, double t, Vector x = null)
         {
-            double a = arguments_[0].value(0.0);
-            double b = arguments_[1].value(0.0);
-            double c = arguments_[2].value(0.0);
-            double d = arguments_[3].value(0.0);
+            var a = arguments_[0].value(0.0);
+            var b = arguments_[1].value(0.0);
+            var c = arguments_[2].value(0.0);
+            var d = arguments_[3].value(0.0);
 
-            double T = fixingTimes_[i];
+            var T = fixingTimes_[i];
 
             return T > t ? (a * (T - t) + d) * System.Math.Exp(-b * (T - t)) + c : 0.0;
         }
@@ -86,17 +86,17 @@ namespace QLNet.legacy.libormarketmodels
 
         public override double integratedVariance(int i, int j, double u, Vector x = null)
         {
-            double a = arguments_[0].value(0.0);
-            double b = arguments_[1].value(0.0);
-            double c = arguments_[2].value(0.0);
-            double d = arguments_[3].value(0.0);
+            var a = arguments_[0].value(0.0);
+            var b = arguments_[1].value(0.0);
+            var c = arguments_[2].value(0.0);
+            var d = arguments_[3].value(0.0);
 
-            double T = fixingTimes_[i];
-            double S = fixingTimes_[j];
+            var T = fixingTimes_[i];
+            var S = fixingTimes_[j];
 
-            double k1 = System.Math.Exp(b * u);
-            double k2 = System.Math.Exp(b * S);
-            double k3 = System.Math.Exp(b * T);
+            var k1 = System.Math.Exp(b * u);
+            var k2 = System.Math.Exp(b * S);
+            var k3 = System.Math.Exp(b * T);
 
             return (a * a * (-1 - 2 * b * b * S * T - b * (S + T)
                              + k1 * k1 * (1 + b * (S + T - 2 * u) + 2 * b * b * (S - u) * (T - u)))

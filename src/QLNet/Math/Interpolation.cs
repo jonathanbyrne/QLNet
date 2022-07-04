@@ -29,7 +29,7 @@ namespace QLNet.Math
      * representing discretized values of a variable and a function of the former, respectively. */
 
     // Interpolation factory
-    public interface IInterpolationFactory
+    [JetBrains.Annotations.PublicAPI] public interface IInterpolationFactory
     {
         Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin);
         bool global { get; }
@@ -40,7 +40,7 @@ namespace QLNet.Math
     {
         protected Impl impl_;
 
-        public bool empty() { return impl_ == null; }
+        public bool empty() => impl_ == null;
 
         public double primitive(double x, bool allowExtrapolation = false)
         {
@@ -60,25 +60,20 @@ namespace QLNet.Math
             return impl_.secondDerivative(x);
         }
 
-        public double xMin()
-        {
-            return impl_.xMin();
-        }
-        public double xMax()
-        {
-            return impl_.xMax();
-        }
-        bool isInRange(double x)
-        {
-            return impl_.isInRange(x);
-        }
+        public double xMin() => impl_.xMin();
+
+        public double xMax() => impl_.xMax();
+
+        bool isInRange(double x) => impl_.isInRange(x);
+
         public override void update()
         {
             impl_.update();
         }
 
         // main method to derive an interpolated point
-        public double value(double x) { return value(x, false); }
+        public double value(double x) => value(x, false);
+
         public double value(double x, bool allowExtrapolation)
         {
             checkRange(x, allowExtrapolation);
@@ -123,10 +118,13 @@ namespace QLNet.Math
                                                 + size + " provided");
             }
 
-            public double xMin() { return xBegin_.First(); }
-            public double xMax() { return xBegin_[size_ - 1]; }
-            public List<double> xValues() { return xBegin_.GetRange(0, size_); }
-            public List<double> yValues() { return yBegin_.GetRange(0, size_); }
+            public double xMin() => xBegin_.First();
+
+            public double xMax() => xBegin_[size_ - 1];
+
+            public List<double> xValues() => xBegin_.GetRange(0, size_);
+
+            public List<double> yValues() => yBegin_.GetRange(0, size_);
 
             public bool isInRange(double x)
             {
@@ -136,7 +134,7 @@ namespace QLNet.Math
 
             protected int locate(double x)
             {
-                int result = xBegin_.BinarySearch(x);
+                var result = xBegin_.BinarySearch(x);
                 if (result < 0)
                     // The upper_bound() algorithm finds the last position in a sequence that value can occupy
                     // without violating the sequence's ordering

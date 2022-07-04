@@ -22,7 +22,7 @@ using QLNet.Math;
 namespace QLNet.Math.Optimization
 {
     // Goldstein and Price line-search class
-    public class GoldsteinLineSearch : LineSearch
+    [JetBrains.Annotations.PublicAPI] public class GoldsteinLineSearch : LineSearch
     {
         //! Default constructor
         public GoldsteinLineSearch(double eps = 1e-8, double alpha = 0.05, double beta = 0.65, double extrapolation = 1.5)
@@ -39,17 +39,17 @@ namespace QLNet.Math.Optimization
                                      EndCriteria endCriteria,
                                      double t_ini)      // initial value of line-search step
         {
-            Constraint constraint = P.constraint();
+            var constraint = P.constraint();
             succeed_ = true;
-            bool maxIter = false;
-            double t = t_ini;
-            int loopNumber = 0;
+            var maxIter = false;
+            var t = t_ini;
+            var loopNumber = 0;
 
-            double q0 = P.functionValue();
-            double qp0 = P.gradientNormValue();
+            var q0 = P.functionValue();
+            var qp0 = P.gradientNormValue();
 
-            double tl = 0.0;
-            double tr = 0.0;
+            var tl = 0.0;
+            var tr = 0.0;
 
             qt_ = q0;
             qpt_ = gradient_.empty() ? qp0 : -Vector.DotProduct(gradient_, searchDirection_);

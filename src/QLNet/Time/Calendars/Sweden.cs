@@ -45,7 +45,7 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    public class Sweden : Calendar
+    [JetBrains.Annotations.PublicAPI] public class Sweden : Calendar
     {
         public Sweden() : base(Impl.Singleton) { }
 
@@ -54,14 +54,15 @@ namespace QLNet.Time.Calendars
             public static readonly Impl Singleton = new Impl();
             private Impl() { }
 
-            public override string name() { return "Sweden"; }
+            public override string name() => "Sweden";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
                 if (isWeekend(w)
                     // Good Friday
                     || dd == em - 3

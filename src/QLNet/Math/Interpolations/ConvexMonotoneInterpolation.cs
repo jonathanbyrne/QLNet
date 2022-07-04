@@ -26,14 +26,14 @@ namespace QLNet.Math.Interpolations
     //the first value in the y-vector is ignored.
 
     #region Helpers
-    public interface ISectionHelper
+    [JetBrains.Annotations.PublicAPI] public interface ISectionHelper
     {
         double value(double x);
         double primitive(double x);
         double fNext();
     }
 
-    public class ComboHelper : ISectionHelper
+    [JetBrains.Annotations.PublicAPI] public class ComboHelper : ISectionHelper
     {
         private double quadraticity_;
         ISectionHelper quadraticHelper_;
@@ -47,21 +47,14 @@ namespace QLNet.Math.Interpolations
             Utils.QL_REQUIRE(quadraticity < 1.0 && quadraticity > 0.0, () => "Quadratic value must lie between 0 and 1");
         }
 
-        public double value(double x)
-        {
-            return quadraticity_ * quadraticHelper_.value(x) + (1.0 - quadraticity_) * convMonoHelper_.value(x);
-        }
-        public double primitive(double x)
-        {
-            return quadraticity_ * quadraticHelper_.primitive(x) + (1.0 - quadraticity_) * convMonoHelper_.primitive(x);
-        }
-        public double fNext()
-        {
-            return quadraticity_ * quadraticHelper_.fNext() + (1.0 - quadraticity_) * convMonoHelper_.fNext();
-        }
+        public double value(double x) => quadraticity_ * quadraticHelper_.value(x) + (1.0 - quadraticity_) * convMonoHelper_.value(x);
+
+        public double primitive(double x) => quadraticity_ * quadraticHelper_.primitive(x) + (1.0 - quadraticity_) * convMonoHelper_.primitive(x);
+
+        public double fNext() => quadraticity_ * quadraticHelper_.fNext() + (1.0 - quadraticity_) * convMonoHelper_.fNext();
     }
 
-    public class EverywhereConstantHelper : ISectionHelper
+    [JetBrains.Annotations.PublicAPI] public class EverywhereConstantHelper : ISectionHelper
     {
         private double value_;
         private double prevPrimitive_;
@@ -74,12 +67,14 @@ namespace QLNet.Math.Interpolations
             xPrev_ = xPrev;
         }
 
-        public double value(double x) { return value_; }
-        public double primitive(double x) { return prevPrimitive_ + (x - xPrev_) * value_; }
-        public double fNext() { return value_; }
+        public double value(double x) => value_;
+
+        public double primitive(double x) => prevPrimitive_ + (x - xPrev_) * value_;
+
+        public double fNext() => value_;
     }
 
-    public class ConvexMonotone2Helper : ISectionHelper
+    [JetBrains.Annotations.PublicAPI] public class ConvexMonotone2Helper : ISectionHelper
     {
         private double xPrev_, xScaling_, gPrev_, gNext_, fAverage_, eta2_, prevPrimitive_;
 
@@ -97,7 +92,7 @@ namespace QLNet.Math.Interpolations
 
         public double value(double x)
         {
-            double xVal = (x - xPrev_) / xScaling_;
+            var xVal = (x - xPrev_) / xScaling_;
             if (xVal <= eta2_)
             {
                 return fAverage_ + gPrev_;
@@ -110,7 +105,7 @@ namespace QLNet.Math.Interpolations
 
         public double primitive(double x)
         {
-            double xVal = (x - xPrev_) / xScaling_;
+            var xVal = (x - xPrev_) / xScaling_;
             if (xVal <= eta2_)
             {
                 return prevPrimitive_ + xScaling_ * (fAverage_ * xVal + gPrev_ * xVal);
@@ -121,10 +116,10 @@ namespace QLNet.Math.Interpolations
                                                       (1.0 / 3.0 * (xVal * xVal * xVal - eta2_ * eta2_ * eta2_) - eta2_ * xVal * xVal + eta2_ * eta2_ * xVal));
             }
         }
-        public double fNext() { return fAverage_ + gNext_; }
+        public double fNext() => fAverage_ + gNext_;
     }
 
-    public class ConvexMonotone3Helper : ISectionHelper
+    [JetBrains.Annotations.PublicAPI] public class ConvexMonotone3Helper : ISectionHelper
     {
         private double xPrev_, xScaling_, gPrev_, gNext_, fAverage_, eta3_, prevPrimitive_;
 
@@ -144,7 +139,7 @@ namespace QLNet.Math.Interpolations
 
         public double value(double x)
         {
-            double xVal = (x - xPrev_) / xScaling_;
+            var xVal = (x - xPrev_) / xScaling_;
             if (xVal <= eta3_)
             {
                 return fAverage_ + gNext_ + (gPrev_ - gNext_) / (eta3_ * eta3_) * (eta3_ - xVal) * (eta3_ - xVal);
@@ -157,7 +152,7 @@ namespace QLNet.Math.Interpolations
 
         public double primitive(double x)
         {
-            double xVal = (x - xPrev_) / xScaling_;
+            var xVal = (x - xPrev_) / xScaling_;
             if (xVal <= eta3_)
             {
                 return prevPrimitive_ + xScaling_ * (fAverage_ * xVal + gNext_ * xVal + (gPrev_ - gNext_) / (eta3_ * eta3_) *
@@ -169,10 +164,10 @@ namespace QLNet.Math.Interpolations
                                                       (1.0 / 3.0 * eta3_ * eta3_ * eta3_));
             }
         }
-        public double fNext() { return fAverage_ + gNext_; }
+        public double fNext() => fAverage_ + gNext_;
     }
 
-    public class ConvexMonotone4Helper : ISectionHelper
+    [JetBrains.Annotations.PublicAPI] public class ConvexMonotone4Helper : ISectionHelper
     {
         protected double xPrev_, xScaling_, gPrev_, gNext_, fAverage_, eta4_, prevPrimitive_;
         protected double A_;
@@ -192,7 +187,7 @@ namespace QLNet.Math.Interpolations
 
         public virtual double value(double x)
         {
-            double xVal = (x - xPrev_) / xScaling_;
+            var xVal = (x - xPrev_) / xScaling_;
             if (xVal <= eta4_)
             {
                 return fAverage_ + A_ + (gPrev_ - A_) * (eta4_ - xVal) * (eta4_ - xVal) / (eta4_ * eta4_);
@@ -205,7 +200,7 @@ namespace QLNet.Math.Interpolations
 
         public virtual double primitive(double x)
         {
-            double xVal = (x - xPrev_) / xScaling_;
+            var xVal = (x - xPrev_) / xScaling_;
             double retVal;
             if (xVal <= eta4_)
             {
@@ -220,10 +215,10 @@ namespace QLNet.Math.Interpolations
             }
             return retVal;
         }
-        public double fNext() { return fAverage_ + gNext_; }
+        public double fNext() => fAverage_ + gNext_;
     }
 
-    public class ConvexMonotone4MinHelper : ConvexMonotone4Helper
+    [JetBrains.Annotations.PublicAPI] public class ConvexMonotone4MinHelper : ConvexMonotone4Helper
     {
         private bool splitRegion_;
         private double xRatio_, x2_, x3_;
@@ -237,11 +232,11 @@ namespace QLNet.Math.Interpolations
             if (A_ + fAverage_ <= 0.0)
             {
                 splitRegion_ = true;
-                double fPrev = gPrev_ + fAverage_;
-                double fNext = gNext_ + fAverage_;
-                double reqdShift = (eta4_ * fPrev + (1 - eta4_) * fNext) / 3.0 - fAverage_;
-                double reqdPeriod = reqdShift * xScaling_ / (fAverage_ + reqdShift);
-                double xAdjust = xScaling_ - reqdPeriod;
+                var fPrev = gPrev_ + fAverage_;
+                var fNext = gNext_ + fAverage_;
+                var reqdShift = (eta4_ * fPrev + (1 - eta4_) * fNext) / 3.0 - fAverage_;
+                var reqdPeriod = reqdShift * xScaling_ / (fAverage_ + reqdShift);
+                var xAdjust = xScaling_ - reqdPeriod;
                 xRatio_ = xAdjust / xScaling_;
 
                 fAverage_ += reqdShift;
@@ -258,7 +253,7 @@ namespace QLNet.Math.Interpolations
             if (!splitRegion_)
                 return base.value(x);
 
-            double xVal = (x - xPrev_) / xScaling_;
+            var xVal = (x - xPrev_) / xScaling_;
             if (x <= x2_)
             {
                 xVal /= xRatio_;
@@ -280,7 +275,7 @@ namespace QLNet.Math.Interpolations
             if (!splitRegion_)
                 return base.primitive(x);
 
-            double xVal = (x - xPrev_) / xScaling_;
+            var xVal = (x - xPrev_) / xScaling_;
             if (x <= x2_)
             {
                 xVal /= xRatio_;
@@ -302,7 +297,7 @@ namespace QLNet.Math.Interpolations
         }
     }
 
-    public class ConstantGradHelper : ISectionHelper
+    [JetBrains.Annotations.PublicAPI] public class ConstantGradHelper : ISectionHelper
     {
         private double fPrev_, prevPrimitive_, xPrev_, fGrad_, fNext_;
 
@@ -315,12 +310,14 @@ namespace QLNet.Math.Interpolations
             fNext_ = fNext;
         }
 
-        public double value(double x) { return fPrev_ + (x - xPrev_) * fGrad_; }
-        public double primitive(double x) { return prevPrimitive_ + (x - xPrev_) * (fPrev_ + 0.5 * (x - xPrev_) * fGrad_); }
-        public double fNext() { return fNext_; }
+        public double value(double x) => fPrev_ + (x - xPrev_) * fGrad_;
+
+        public double primitive(double x) => prevPrimitive_ + (x - xPrev_) * (fPrev_ + 0.5 * (x - xPrev_) * fGrad_);
+
+        public double fNext() => fNext_;
     }
 
-    public class QuadraticHelper : ISectionHelper
+    [JetBrains.Annotations.PublicAPI] public class QuadraticHelper : ISectionHelper
     {
         private double xPrev_, xNext_, fPrev_, fNext_, fAverage_, prevPrimitive_;
         private double xScaling_, a_, b_, c_;
@@ -341,20 +338,20 @@ namespace QLNet.Math.Interpolations
 
         public double value(double x)
         {
-            double xVal = (x - xPrev_) / xScaling_;
+            var xVal = (x - xPrev_) / xScaling_;
             return a_ * xVal * xVal + b_ * xVal + c_;
         }
 
         public double primitive(double x)
         {
-            double xVal = (x - xPrev_) / xScaling_;
+            var xVal = (x - xPrev_) / xScaling_;
             return prevPrimitive_ + xScaling_ * (a_ / 3 * xVal * xVal + b_ / 2 * xVal + c_) * xVal;
         }
 
-        public double fNext() { return fNext_; }
+        public double fNext() => fNext_;
     }
 
-    public class QuadraticMinHelper : ISectionHelper
+    [JetBrains.Annotations.PublicAPI] public class QuadraticMinHelper : ISectionHelper
     {
         private bool splitRegion_;
         private double x1_, x2_, x3_, x4_;
@@ -374,19 +371,19 @@ namespace QLNet.Math.Interpolations
             a_ = 3 * fPrev_ + 3 * fNext_ - 6 * fAverage_;
             b_ = -(4 * fPrev_ + 2 * fNext_ - 6 * fAverage_);
             c_ = fPrev_;
-            double d = b_ * b_ - 4 * a_ * c_;
+            var d = b_ * b_ - 4 * a_ * c_;
             xScaling_ = x4_ - x1_;
             xRatio_ = 1.0;
             if (d > 0)
             {
                 double aAv = 36;
-                double bAv = -24 * (fPrev_ + fNext_);
-                double cAv = 4 * (fPrev_ * fPrev_ + fPrev_ * fNext_ + fNext_ * fNext_);
-                double dAv = bAv * bAv - 4.0 * aAv * cAv;
+                var bAv = -24 * (fPrev_ + fNext_);
+                var cAv = 4 * (fPrev_ * fPrev_ + fPrev_ * fNext_ + fNext_ * fNext_);
+                var dAv = bAv * bAv - 4.0 * aAv * cAv;
                 if (dAv >= 0.0)
                 {
                     splitRegion_ = true;
-                    double avRoot = (-bAv - System.Math.Sqrt(dAv)) / (2 * aAv);
+                    var avRoot = (-bAv - System.Math.Sqrt(dAv)) / (2 * aAv);
 
                     xRatio_ = fAverage_ / avRoot;
                     xScaling_ *= xRatio_;
@@ -394,7 +391,7 @@ namespace QLNet.Math.Interpolations
                     a_ = 3 * fPrev_ + 3 * fNext_ - 6 * avRoot;
                     b_ = -(4 * fPrev_ + 2 * fNext_ - 6 * avRoot);
                     c_ = fPrev_;
-                    double xRoot = -b_ / (2 * a_);
+                    var xRoot = -b_ / (2 * a_);
                     x2_ = x1_ + xRatio_ * (x4_ - x1_) * xRoot;
                     x3_ = x4_ - xRatio_ * (x4_ - x1_) * (1 - xRoot);
                     primitive2_ =
@@ -405,7 +402,7 @@ namespace QLNet.Math.Interpolations
 
         public double value(double x)
         {
-            double xVal = (x - x1_) / (x4_ - x1_);
+            var xVal = (x - x1_) / (x4_ - x1_);
             if (splitRegion_)
             {
                 if (x <= x2_)
@@ -427,7 +424,7 @@ namespace QLNet.Math.Interpolations
 
         public double primitive(double x)
         {
-            double xVal = (x - x1_) / (x4_ - x1_);
+            var xVal = (x - x1_) / (x4_ - x1_);
             if (splitRegion_)
             {
                 if (x < x2_)
@@ -446,12 +443,12 @@ namespace QLNet.Math.Interpolations
             return primitive1_ + xScaling_ * (a_ / 3 * xVal * xVal + b_ / 2 * xVal + c_) * xVal;
         }
 
-        public double fNext() { return fNext_; }
+        public double fNext() => fNext_;
     }
     #endregion
 
 
-    public class ConvexMonotoneImpl : Interpolation.templateImpl
+    [JetBrains.Annotations.PublicAPI] public class ConvexMonotoneImpl : Interpolation.templateImpl
     {
         private Dictionary<double, ISectionHelper> sectionHelpers_ = new Dictionary<double, ISectionHelper>();
         private Dictionary<double, ISectionHelper> preSectionHelpers_ = new Dictionary<double, ISectionHelper>();
@@ -499,13 +496,13 @@ namespace QLNet.Math.Interpolations
 
             List<double> f = new InitializedList<double>(size_);
             sectionHelpers_ = new Dictionary<double, ISectionHelper>(preSectionHelpers_);
-            int startPoint = sectionHelpers_.Count + 1;
+            var startPoint = sectionHelpers_.Count + 1;
 
             //first derive the boundary forwards.
-            for (int i = startPoint; i < size_ - 1; ++i)
+            for (var i = startPoint; i < size_ - 1; ++i)
             {
-                double dxPrev = xBegin_[i] - xBegin_[i - 1];
-                double dx = xBegin_[i + 1] - xBegin_[i];
+                var dxPrev = xBegin_[i] - xBegin_[i - 1];
+                var dx = xBegin_[i + 1] - xBegin_[i];
                 f[i] = dxPrev / (dx + dxPrev) * yBegin_[i]
                        + dx / (dx + dxPrev) * yBegin_[i + 1];
             }
@@ -525,18 +522,18 @@ namespace QLNet.Math.Interpolations
                     f[size_ - 1] = 0.0;
             }
 
-            double primitive = 0.0;
-            for (int i = 0; i < startPoint - 1; ++i)
+            var primitive = 0.0;
+            for (var i = 0; i < startPoint - 1; ++i)
                 primitive += yBegin_[i + 1] * (xBegin_[i + 1] - xBegin_[i]);
 
-            int endPoint = size_;
+            var endPoint = size_;
             if (constantLastPeriod_)
                 endPoint = endPoint - 1;
 
-            for (int i = startPoint; i < endPoint; ++i)
+            for (var i = startPoint; i < endPoint; ++i)
             {
-                double gPrev = f[i - 1] - yBegin_[i];
-                double gNext = f[i] - yBegin_[i];
+                var gPrev = f[i - 1] - yBegin_[i];
+                var gNext = f[i] - yBegin_[i];
                 //first deal with the zero gradient case
                 if (System.Math.Abs(gPrev) < 1.0E-14 && System.Math.Abs(gNext) < 1.0E-14)
                 {
@@ -548,7 +545,7 @@ namespace QLNet.Math.Interpolations
                 }
                 else
                 {
-                    double quadraticity = quadraticity_;
+                    var quadraticity = quadraticity_;
                     ISectionHelper quadraticHelper = null;
                     ISectionHelper convMonotoneHelper = null;
                     if (quadraticity_ > 0.0)
@@ -603,8 +600,8 @@ namespace QLNet.Math.Interpolations
                                  gPrev > 0.0 && gNext < -2.0 * gPrev)
                         {
 
-                            double eta = (gNext + 2.0 * gPrev) / (gNext - gPrev);
-                            double b2 = (1.0 + monotonicity_) / 2.0;
+                            var eta = (gNext + 2.0 * gPrev) / (gNext - gPrev);
+                            var b2 = (1.0 + monotonicity_) / 2.0;
                             if (eta < b2)
                             {
                                 convMonotoneHelper = new ConvexMonotone2Helper(
@@ -639,8 +636,8 @@ namespace QLNet.Math.Interpolations
                         else if (gPrev > 0.0 && gNext < 0.0 && gNext > -0.5 * gPrev ||
                                  gPrev < 0.0 && gNext > 0.0 && gNext < -0.5 * gPrev)
                         {
-                            double eta = gNext / (gNext - gPrev) * 3.0;
-                            double b3 = (1.0 - monotonicity_) / 2.0;
+                            var eta = gNext / (gNext - gPrev) * 3.0;
+                            var b3 = (1.0 - monotonicity_) / 2.0;
                             if (eta > b3)
                             {
                                 convMonotoneHelper = new ConvexMonotone3Helper(
@@ -674,9 +671,9 @@ namespace QLNet.Math.Interpolations
                         }
                         else
                         {
-                            double eta = gNext / (gPrev + gNext);
-                            double b2 = (1.0 + monotonicity_) / 2.0;
-                            double b3 = (1.0 - monotonicity_) / 2.0;
+                            var eta = gNext / (gPrev + gNext);
+                            var b2 = (1.0 + monotonicity_) / 2.0;
+                            var b3 = (1.0 - monotonicity_) / 2.0;
                             if (eta > b2)
                                 eta = b2;
                             if (eta < b3)
@@ -764,19 +761,13 @@ namespace QLNet.Math.Interpolations
             return sectionHelpers_[i].primitive(x);
         }
 
-        public override double derivative(double x)
-        {
-            throw new NotImplementedException("Convex-monotone spline derivative not implemented");
-        }
+        public override double derivative(double x) => throw new NotImplementedException("Convex-monotone spline derivative not implemented");
 
-        public override double secondDerivative(double x)
-        {
-            throw new NotImplementedException("Convex-monotone spline second derivative not implemented");
-        }
+        public override double secondDerivative(double x) => throw new NotImplementedException("Convex-monotone spline second derivative not implemented");
 
         public Dictionary<double, ISectionHelper> getExistingHelpers()
         {
-            Dictionary<double, ISectionHelper> retArray = new Dictionary<double, ISectionHelper>(sectionHelpers_);
+            var retArray = new Dictionary<double, ISectionHelper>(sectionHelpers_);
             if (constantLastPeriod_)
                 retArray.Remove(retArray.Keys.Last());
             return retArray;
@@ -795,7 +786,7 @@ namespace QLNet.Math.Interpolations
         produces smoother curves.  Extra enhancement to avoid negative
         values (if required) is in place.
     */
-    public class ConvexMonotoneInterpolation : Interpolation
+    [JetBrains.Annotations.PublicAPI] public class ConvexMonotoneInterpolation : Interpolation
     {
         public ConvexMonotoneInterpolation(List<double> xBegin, int size, List<double> yBegin, double quadraticity,
                                            double monotonicity, bool forcePositive, bool flatFinalPeriod)
@@ -813,14 +804,14 @@ namespace QLNet.Math.Interpolations
 
         public Dictionary<double, ISectionHelper> getExistingHelpers()
         {
-            ConvexMonotoneImpl derived = impl_ as ConvexMonotoneImpl;
+            var derived = impl_ as ConvexMonotoneImpl;
             return derived.getExistingHelpers();
         }
     }
 
 
     //! Convex-monotone interpolation factory and traits
-    public class ConvexMonotone : IInterpolationFactory
+    [JetBrains.Annotations.PublicAPI] public class ConvexMonotone : IInterpolationFactory
     {
         private double quadraticity_, monotonicity_;
         private bool forcePositive_;
@@ -833,15 +824,12 @@ namespace QLNet.Math.Interpolations
             forcePositive_ = forcePositive;
         }
 
-        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin)
-        {
-            return new ConvexMonotoneInterpolation(xBegin, size, yBegin, quadraticity_, monotonicity_, forcePositive_, false);
-        }
+        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin) => new ConvexMonotoneInterpolation(xBegin, size, yBegin, quadraticity_, monotonicity_, forcePositive_, false);
 
         public Interpolation localInterpolate(List<double> xBegin, int size, List<double> yBegin, int localisation,
                                               ConvexMonotoneInterpolation prevInterpolation, int finalSize)
         {
-            int length = size;
+            var length = size;
             if (length - localisation == 1)   // the first time this
             {
                 // function is called
@@ -849,13 +837,15 @@ namespace QLNet.Math.Interpolations
                                                        length != finalSize);
             }
 
-            ConvexMonotoneInterpolation interp = prevInterpolation;
+            var interp = prevInterpolation;
             return new ConvexMonotoneInterpolation(xBegin, size, yBegin, quadraticity_, monotonicity_,
                                                    forcePositive_, length != finalSize, interp.getExistingHelpers());
         }
 
-        public bool global { get { return true; } }
-        public int requiredPoints { get { return 2; } }
-        public int dataSizeAdjustment { get { return 1; } }
+        public bool global => true;
+
+        public int requiredPoints => 2;
+
+        public int dataSizeAdjustment => 1;
     }
 }

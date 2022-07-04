@@ -21,7 +21,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Math.Interpolations
 {
-    public class BilinearInterpolationImpl : Interpolation2D.templateImpl
+    [JetBrains.Annotations.PublicAPI] public class BilinearInterpolationImpl : Interpolation2D.templateImpl
     {
         public BilinearInterpolationImpl(List<double> xBegin, int xSize,
                                          List<double> yBegin, int ySize,
@@ -38,15 +38,15 @@ namespace QLNet.Math.Interpolations
         {
             int i = locateX(x), j = locateY(y);
 
-            double z1 = zData_[j, i];
-            double z2 = zData_[j, i + 1];
-            double z3 = zData_[j + 1, i];
-            double z4 = zData_[j + 1, i + 1];
+            var z1 = zData_[j, i];
+            var z2 = zData_[j, i + 1];
+            var z3 = zData_[j + 1, i];
+            var z4 = zData_[j + 1, i + 1];
 
-            double t = (x - xBegin_[i]) /
-                       (xBegin_[i + 1] - xBegin_[i]);
-            double u = (y - yBegin_[j]) /
-                       (yBegin_[j + 1] - yBegin_[j]);
+            var t = (x - xBegin_[i]) /
+                    (xBegin_[i + 1] - xBegin_[i]);
+            var u = (y - yBegin_[j]) /
+                    (yBegin_[j + 1] - yBegin_[j]);
 
             return (1.0 - t) * (1.0 - u) * z1 + t * (1.0 - u) * z2
                    + (1.0 - t) * u * z3 + t * u * z4;
@@ -54,7 +54,7 @@ namespace QLNet.Math.Interpolations
     }
 
     //! %bilinear interpolation between discrete points
-    public class BilinearInterpolation : Interpolation2D
+    [JetBrains.Annotations.PublicAPI] public class BilinearInterpolation : Interpolation2D
     {
         /*! \pre the \f$ x \f$ and \f$ y \f$ values must be sorted. */
 
@@ -69,13 +69,11 @@ namespace QLNet.Math.Interpolations
     }
 
     //! bilinear-interpolation factory
-    public class Bilinear : IInterpolationFactory2D
+    [JetBrains.Annotations.PublicAPI] public class Bilinear : IInterpolationFactory2D
     {
         public Interpolation2D interpolate(List<double> xBegin, int xSize,
                                            List<double> yBegin, int ySize,
-                                           Matrix zData)
-        {
-            return new BilinearInterpolation(xBegin, xSize, yBegin, ySize, zData);
-        }
+                                           Matrix zData) =>
+            new BilinearInterpolation(xBegin, xSize, yBegin, ySize, zData);
     }
 }

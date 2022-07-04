@@ -26,7 +26,7 @@ namespace QLNet.Instruments
 {
     // helper class
     // This class provides a more comfortable way to instantiate standard basis swap.
-    public class MakeBasisSwap
+    [JetBrains.Annotations.PublicAPI] public class MakeBasisSwap
     {
         private Period forwardStart_, swapTenor_;
         private IborIndex iborIndex1_, iborIndex2_;
@@ -77,7 +77,8 @@ namespace QLNet.Instruments
             engine_ = new DiscountingBasisSwapEngine(index1.forwardingTermStructure(), index2.forwardingTermStructure());
         }
 
-        public MakeBasisSwap receiveFixed() { return receiveFixed(true); }
+        public MakeBasisSwap receiveFixed() => receiveFixed(true);
+
         public MakeBasisSwap receiveFixed(bool flag)
         {
             type_ = flag ? BasisSwap.Type.Receiver : BasisSwap.Type.Payer;
@@ -144,7 +145,8 @@ namespace QLNet.Instruments
             float1Rule_ = r;
             return this;
         }
-        public MakeBasisSwap withFloating1LegEndOfMonth() { return withFloating1LegEndOfMonth(true); }
+        public MakeBasisSwap withFloating1LegEndOfMonth() => withFloating1LegEndOfMonth(true);
+
         public MakeBasisSwap withFloating1LegEndOfMonth(bool flag)
         {
             float1EndOfMonth_ = flag;
@@ -194,7 +196,8 @@ namespace QLNet.Instruments
             float2Rule_ = r;
             return this;
         }
-        public MakeBasisSwap withFloating2LegEndOfMonth() { return withFloating2LegEndOfMonth(true); }
+        public MakeBasisSwap withFloating2LegEndOfMonth() => withFloating2LegEndOfMonth(true);
+
         public MakeBasisSwap withFloating2LegEndOfMonth(bool flag)
         {
             float2EndOfMonth_ = flag;
@@ -223,7 +226,8 @@ namespace QLNet.Instruments
 
 
         // swap creator
-        public static implicit operator BasisSwap(MakeBasisSwap o) { return o.value(); }
+        public static implicit operator BasisSwap(MakeBasisSwap o) => o.value();
+
         public BasisSwap value()
         {
             Date startDate;
@@ -232,9 +236,9 @@ namespace QLNet.Instruments
                 startDate = effectiveDate_;
             else
             {
-                int fixingDays = iborIndex1_.fixingDays();
-                Date referenceDate = Settings.evaluationDate();
-                Date spotDate = float1Calendar_.advance(referenceDate, new Period(fixingDays, TimeUnit.Days));
+                var fixingDays = iborIndex1_.fixingDays();
+                var referenceDate = Settings.evaluationDate();
+                var spotDate = float1Calendar_.advance(referenceDate, new Period(fixingDays, TimeUnit.Days));
                 startDate = spotDate + forwardStart_;
             }
 
@@ -245,20 +249,20 @@ namespace QLNet.Instruments
                 endDate = startDate + swapTenor_;
 
 
-            Schedule float1Schedule = new Schedule(startDate, endDate,
+            var float1Schedule = new Schedule(startDate, endDate,
                                                    float1Tenor_, float1Calendar_,
                                                    float1Convention_, float1TerminationDateConvention_,
                                                    float1Rule_, float1EndOfMonth_,
                                                    float1FirstDate_, float1NextToLastDate_);
 
-            Schedule float2Schedule = new Schedule(startDate, endDate,
+            var float2Schedule = new Schedule(startDate, endDate,
                                                    float2Tenor_, float2Calendar_,
                                                    float2Convention_, float2TerminationDateConvention_,
                                                    float2Rule_, float2EndOfMonth_,
                                                    float2FirstDate_, float2NextToLastDate_);
 
 
-            BasisSwap swap = new BasisSwap(type_, nominal_,
+            var swap = new BasisSwap(type_, nominal_,
                                            float1Schedule, iborIndex1_, float1Spread_, float1DayCount_,
                                            float2Schedule, iborIndex2_, float2Spread_, float2DayCount_);
             swap.setPricingEngine(engine_);

@@ -31,7 +31,7 @@ namespace QLNet.Pricingengines.vanilla
         \test the correctness of the returned value is tested by
               checking it against analytic results.
     */
-    public class FDEuropeanEngine : FDVanillaEngine, IGenericEngine
+    [JetBrains.Annotations.PublicAPI] public class FDEuropeanEngine : FDVanillaEngine, IGenericEngine
     {
         private SampledCurve prices_;
 
@@ -77,8 +77,10 @@ namespace QLNet.Pricingengines.vanilla
         protected QLNet.Option.Arguments arguments_ = new QLNet.Option.Arguments();
         protected OneAssetOption.Results results_ = new OneAssetOption.Results();
 
-        public IPricingEngineArguments getArguments() { return arguments_; }
-        public IPricingEngineResults getResults() { return results_; }
+        public IPricingEngineArguments getArguments() => arguments_;
+
+        public IPricingEngineResults getResults() => results_;
+
         public void reset() { results_.reset(); }
 
         #region Observer & Observable
@@ -86,14 +88,8 @@ namespace QLNet.Pricingengines.vanilla
         private readonly WeakEventSource eventSource = new WeakEventSource();
         public event Callback notifyObserversEvent
         {
-            add
-            {
-                eventSource.Subscribe(value);
-            }
-            remove
-            {
-                eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
         }
 
         public void registerWith(Callback handler) { notifyObserversEvent += handler; }

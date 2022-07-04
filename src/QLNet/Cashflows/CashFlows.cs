@@ -37,7 +37,7 @@ using Leg = System.Collections.Generic.List<QLNet.CashFlow>;
 namespace QLNet.Cashflows
 {
     //! %cashflow-analysis functions
-    public class CashFlows
+    [JetBrains.Annotations.PublicAPI] public class CashFlows
     {
         #region utility functions
 
@@ -46,16 +46,16 @@ namespace QLNet.Cashflows
             if (cf == null)
                 return 0.0;
 
-            Date paymentDate = cf.date();
-            bool firstCouponFound = false;
-            double nominal = 0.0;
-            double accrualPeriod = 0.0;
+            var paymentDate = cf.date();
+            var firstCouponFound = false;
+            var nominal = 0.0;
+            var accrualPeriod = 0.0;
             DayCounter dc = null;
-            double result = 0.0;
+            var result = 0.0;
 
-            foreach (CashFlow x in leg.Where(x => x.date() == paymentDate))
+            foreach (var x in leg.Where(x => x.date() == paymentDate))
             {
-                Coupon cp = x as Coupon;
+                var cp = x as Coupon;
                 if (cp != null)
                 {
                     if (firstCouponFound)
@@ -92,25 +92,25 @@ namespace QLNet.Cashflows
             if (npvDate == null)
                 npvDate = settlementDate;
 
-            double P = 0.0;
-            double dPdy = 0.0;
-            double t = 0.0;
-            Date lastDate = npvDate;
+            var P = 0.0;
+            var dPdy = 0.0;
+            var t = 0.0;
+            var lastDate = npvDate;
 
-            DayCounter dc = y.dayCounter();
-            for (int i = 0; i < leg.Count; ++i)
+            var dc = y.dayCounter();
+            for (var i = 0; i < leg.Count; ++i)
             {
                 if (leg[i].hasOccurred(settlementDate, includeSettlementDateFlows))
                     continue;
 
-                double c = leg[i].amount();
+                var c = leg[i].amount();
                 if (leg[i].tradingExCoupon(settlementDate))
                 {
                     c = 0.0;
                 }
 
                 t += getStepwiseDiscountTime(leg[i], dc, npvDate, lastDate);
-                double B = y.discountFactor(t);
+                var B = y.discountFactor(t);
                 P += c * B;
                 dPdy += t * c * B;
 
@@ -133,20 +133,20 @@ namespace QLNet.Cashflows
             if (npvDate == null)
                 npvDate = settlementDate;
 
-            double P = 0.0;
-            double t = 0.0;
-            double dPdy = 0.0;
-            double r = y.rate();
-            int N = (int)y.frequency();
-            Date lastDate = npvDate;
-            DayCounter dc = y.dayCounter();
+            var P = 0.0;
+            var t = 0.0;
+            var dPdy = 0.0;
+            var r = y.rate();
+            var N = (int)y.frequency();
+            var lastDate = npvDate;
+            var dc = y.dayCounter();
 
-            for (int i = 0; i < leg.Count; ++i)
+            for (var i = 0; i < leg.Count; ++i)
             {
                 if (leg[i].hasOccurred(settlementDate, includeSettlementDateFlows))
                     continue;
 
-                double c = leg[i].amount();
+                var c = leg[i].amount();
                 if (leg[i].tradingExCoupon(settlementDate))
                 {
                     c = 0.0;
@@ -154,7 +154,7 @@ namespace QLNet.Cashflows
 
                 t += getStepwiseDiscountTime(leg[i], dc, npvDate, lastDate);
 
-                double B = y.discountFactor(t);
+                var B = y.discountFactor(t);
                 P += c * B;
                 switch (y.compounding())
                 {
@@ -197,9 +197,9 @@ namespace QLNet.Cashflows
         // helper function used to calculate Time-To-Discount for each stage when calculating discount factor stepwisely
         public static double getStepwiseDiscountTime(CashFlow cashFlow, DayCounter dc, Date npvDate, Date lastDate)
         {
-            Date cashFlowDate = cashFlow.date();
+            var cashFlowDate = cashFlow.date();
             Date refStartDate, refEndDate;
-            Coupon coupon = cashFlow as Coupon;
+            var coupon = cashFlow as Coupon;
             if (coupon != null)
             {
                 refStartDate = coupon.referencePeriodStart;
@@ -224,8 +224,8 @@ namespace QLNet.Cashflows
 
             if (coupon != null && lastDate != coupon.accrualStartDate())
             {
-                double couponPeriod = dc.yearFraction(coupon.accrualStartDate(), cashFlowDate, refStartDate, refEndDate);
-                double accruedPeriod = dc.yearFraction(coupon.accrualStartDate(), lastDate, refStartDate, refEndDate);
+                var couponPeriod = dc.yearFraction(coupon.accrualStartDate(), cashFlowDate, refStartDate, refEndDate);
+                var accruedPeriod = dc.yearFraction(coupon.accrualStartDate(), lastDate, refStartDate, refEndDate);
                 return couponPeriod - accruedPeriod;
             }
             else
@@ -272,14 +272,14 @@ namespace QLNet.Cashflows
 
             public override double value(double y)
             {
-                InterestRate yield = new InterestRate(y, dayCounter_, compounding_, frequency_);
-                double NPV = npv(leg_, yield, includeSettlementDateFlows_, settlementDate_, npvDate_);
+                var yield = new InterestRate(y, dayCounter_, compounding_, frequency_);
+                var NPV = npv(leg_, yield, includeSettlementDateFlows_, settlementDate_, npvDate_);
                 return npv_ - NPV;
             }
 
             public override double derivative(double y)
             {
-                InterestRate yield = new InterestRate(y, dayCounter_, compounding_, frequency_);
+                var yield = new InterestRate(y, dayCounter_, compounding_, frequency_);
                 return modifiedDuration(leg_, yield, includeSettlementDateFlows_, settlementDate_, npvDate_);
             }
 
@@ -290,12 +290,12 @@ namespace QLNet.Cashflows
                 // IRR is nonsensical.)
 
                 int lastSign = System.Math.Sign(-npv_), signChanges = 0;
-                for (int i = 0; i < leg_.Count; ++i)
+                for (var i = 0; i < leg_.Count; ++i)
                 {
                     if (!leg_[i].hasOccurred(settlementDate_, includeSettlementDateFlows_) &&
                         !leg_[i].tradingExCoupon(settlementDate_))
                     {
-                        int thisSign = System.Math.Sign(leg_[i].amount());
+                        var thisSign = System.Math.Sign(leg_[i].amount());
                         if (lastSign * thisSign < 0) // sign change
                             signChanges++;
 
@@ -343,7 +343,7 @@ namespace QLNet.Cashflows
             public override double value(double zSpread)
             {
                 zSpread_.setValue(zSpread);
-                double NPV = npv(leg_, curve_, includeSettlementDateFlows_, settlementDate_, npvDate_);
+                var NPV = npv(leg_, curve_, includeSettlementDateFlows_, settlementDate_, npvDate_);
                 return npv_ - NPV;
             }
 
@@ -365,8 +365,8 @@ namespace QLNet.Cashflows
             // visitor classes should implement the generic visit method in the following form
             public void visit(object o)
             {
-                Type[] types = new Type[] { o.GetType() };
-                MethodInfo methodInfo = Utils.GetMethodInfo(this, "visit", types);
+                var types = new Type[] { o.GetType() };
+                var methodInfo = Utils.GetMethodInfo(this, "visit", types);
 
                 if (methodInfo != null)
                 {
@@ -375,9 +375,9 @@ namespace QLNet.Cashflows
             }
             public void visit(Coupon c)
             {
-                double bps = c.nominal() *
-                             c.accrualPeriod() *
-                             discountCurve_.discount(c.date());
+                var bps = c.nominal() *
+                          c.accrualPeriod() *
+                          discountCurve_.discount(c.date());
                 bps_ += bps;
             }
             public void visit(CashFlow cf)
@@ -386,8 +386,9 @@ namespace QLNet.Cashflows
             }
             #endregion
 
-            public double bps() { return bps_; }
-            public double nonSensNPV() { return nonSensNPV_; }
+            public double bps() => bps_;
+
+            public double nonSensNPV() => nonSensNPV_;
         }
         #endregion
 
@@ -395,10 +396,10 @@ namespace QLNet.Cashflows
         public static Date startDate(Leg leg)
         {
             Utils.QL_REQUIRE(!leg.empty(), () => "empty leg");
-            Date d = Date.maxDate();
-            for (int i = 0; i < leg.Count; ++i)
+            var d = Date.maxDate();
+            for (var i = 0; i < leg.Count; ++i)
             {
-                Coupon c = leg[i] as Coupon;
+                var c = leg[i] as Coupon;
                 if (c != null)
                     d = Date.Min(d, c.accrualStartDate());
                 else
@@ -409,10 +410,10 @@ namespace QLNet.Cashflows
         public static Date maturityDate(Leg leg)
         {
             Utils.QL_REQUIRE(!leg.empty(), () => "empty leg");
-            Date d = Date.minDate();
-            for (int i = 0; i < leg.Count; ++i)
+            var d = Date.minDate();
+            for (var i = 0; i < leg.Count; ++i)
             {
-                Coupon c = leg[i] as Coupon;
+                var c = leg[i] as Coupon;
                 if (c != null)
                     d = Date.Max(d, c.accrualEndDate());
                 else
@@ -428,7 +429,7 @@ namespace QLNet.Cashflows
             if (settlementDate == null)
                 settlementDate = Settings.evaluationDate();
 
-            for (int i = leg.Count; i > 0; --i)
+            for (var i = leg.Count; i > 0; --i)
                 if (!leg[i - 1].hasOccurred(settlementDate, includeSettlementDateFlows))
                     return false;
             return true;
@@ -442,7 +443,7 @@ namespace QLNet.Cashflows
             if (leg.empty())
                 return null;
 
-            Date d = settlementDate ?? Settings.evaluationDate();
+            var d = settlementDate ?? Settings.evaluationDate();
             return leg.LastOrDefault(x => x.hasOccurred(d, includeSettlementDateFlows));
         }
         //! the first cashflow paying after the given date
@@ -451,14 +452,14 @@ namespace QLNet.Cashflows
             if (leg.empty())
                 return null;
 
-            Date d = settlementDate ?? Settings.evaluationDate();
+            var d = settlementDate ?? Settings.evaluationDate();
 
             // the first coupon paying after d is the one we're after
             return leg.FirstOrDefault(x => !x.hasOccurred(d, includeSettlementDateFlows));
         }
         public static Date previousCashFlowDate(Leg leg, bool includeSettlementDateFlows, Date settlementDate = null)
         {
-            CashFlow cf = previousCashFlow(leg, includeSettlementDateFlows, settlementDate);
+            var cf = previousCashFlow(leg, includeSettlementDateFlows, settlementDate);
 
             if (cf == null)
                 return null;
@@ -467,7 +468,7 @@ namespace QLNet.Cashflows
         }
         public static Date nextCashFlowDate(Leg leg, bool includeSettlementDateFlows, Date settlementDate = null)
         {
-            CashFlow cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
+            var cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
             if (cf == null)
                 return null;
             return cf.date();
@@ -475,12 +476,12 @@ namespace QLNet.Cashflows
         public static double? previousCashFlowAmount(Leg leg, bool includeSettlementDateFlows, Date settlementDate = null)
         {
 
-            CashFlow cf = previousCashFlow(leg, includeSettlementDateFlows, settlementDate);
+            var cf = previousCashFlow(leg, includeSettlementDateFlows, settlementDate);
 
             if (cf == null)
                 return null;
 
-            Date paymentDate = cf.date();
+            var paymentDate = cf.date();
             double? result = 0.0;
             result = leg.Where(cf1 => cf1.date() == paymentDate).Sum(cf1 => cf1.amount());
             return result;
@@ -488,13 +489,13 @@ namespace QLNet.Cashflows
         }
         public static double? nextCashFlowAmount(Leg leg, bool includeSettlementDateFlows, Date settlementDate = null)
         {
-            CashFlow cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
+            var cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
 
             if (cf == null)
                 return null;
 
-            Date paymentDate = cf.date();
-            double result = 0.0;
+            var paymentDate = cf.date();
+            var result = 0.0;
             result = leg.Where(cf1 => cf1.date() == paymentDate).Sum(cf1 => cf1.amount());
             return result;
         }
@@ -504,25 +505,25 @@ namespace QLNet.Cashflows
 
         public static double previousCouponRate(Leg leg, bool includeSettlementDateFlows, Date settlementDate = null)
         {
-            CashFlow cf = previousCashFlow(leg, includeSettlementDateFlows, settlementDate);
+            var cf = previousCashFlow(leg, includeSettlementDateFlows, settlementDate);
             return aggregateRate(leg, cf);
         }
         public static double nextCouponRate(Leg leg, bool includeSettlementDateFlows, Date settlementDate = null)
         {
-            CashFlow cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
+            var cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
             return aggregateRate(leg, cf);
         }
         public static double nominal(Leg leg, bool includeSettlementDateFlows, Date settlementDate = null)
         {
-            CashFlow cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
+            var cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
             if (cf == null)
                 return 0.0;
 
-            Date paymentDate = cf.date();
+            var paymentDate = cf.date();
 
-            foreach (CashFlow x in leg.Where(x => x.date() == paymentDate))
+            foreach (var x in leg.Where(x => x.date() == paymentDate))
             {
-                Coupon cp = x as Coupon;
+                var cp = x as Coupon;
                 if (cp != null)
                     return cp.nominal();
             }
@@ -530,15 +531,15 @@ namespace QLNet.Cashflows
         }
         public static Date accrualStartDate(Leg leg, bool includeSettlementDateFlows, Date settlementDate = null)
         {
-            CashFlow cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
+            var cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
             if (cf == null)
                 return null;
 
-            Date paymentDate = cf.date();
+            var paymentDate = cf.date();
 
-            foreach (CashFlow x in leg.Where(x => x.date() == paymentDate))
+            foreach (var x in leg.Where(x => x.date() == paymentDate))
             {
-                Coupon cp = x as Coupon;
+                var cp = x as Coupon;
                 if (cp != null)
                     return cp.accrualStartDate();
             }
@@ -546,15 +547,15 @@ namespace QLNet.Cashflows
         }
         public static Date accrualEndDate(Leg leg, bool includeSettlementDateFlows, Date settlementDate = null)
         {
-            CashFlow cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
+            var cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
             if (cf == null)
                 return null;
 
-            Date paymentDate = cf.date();
+            var paymentDate = cf.date();
 
-            foreach (CashFlow x in leg.Where(x => x.date() == paymentDate))
+            foreach (var x in leg.Where(x => x.date() == paymentDate))
             {
-                Coupon cp = x as Coupon;
+                var cp = x as Coupon;
                 if (cp != null)
                     return cp.accrualEndDate();
             }
@@ -562,14 +563,14 @@ namespace QLNet.Cashflows
         }
         public static Date referencePeriodStart(Leg leg, bool includeSettlementDateFlows, Date settlementDate = null)
         {
-            CashFlow cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
+            var cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
             if (cf == null)
                 return null;
-            Date paymentDate = cf.date();
+            var paymentDate = cf.date();
 
-            foreach (CashFlow x in leg.Where(x => x.date() == paymentDate))
+            foreach (var x in leg.Where(x => x.date() == paymentDate))
             {
-                Coupon cp = x as Coupon;
+                var cp = x as Coupon;
                 if (cp != null)
                     return cp.referencePeriodStart;
             }
@@ -577,14 +578,14 @@ namespace QLNet.Cashflows
         }
         public static Date referencePeriodEnd(Leg leg, bool includeSettlementDateFlows, Date settlementDate = null)
         {
-            CashFlow cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
+            var cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
             if (cf == null)
                 return null;
-            Date paymentDate = cf.date();
+            var paymentDate = cf.date();
 
-            foreach (CashFlow x in leg.Where(x => x.date() == paymentDate))
+            foreach (var x in leg.Where(x => x.date() == paymentDate))
             {
-                Coupon cp = x as Coupon;
+                var cp = x as Coupon;
                 if (cp != null)
                     return cp.referencePeriodEnd;
             }
@@ -592,14 +593,14 @@ namespace QLNet.Cashflows
         }
         public static double accrualPeriod(Leg leg, bool includeSettlementDateFlows, Date settlementDate = null)
         {
-            CashFlow cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
+            var cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
             if (cf == null)
                 return 0;
-            Date paymentDate = cf.date();
+            var paymentDate = cf.date();
 
-            foreach (CashFlow x in leg.Where(x => x.date() == paymentDate))
+            foreach (var x in leg.Where(x => x.date() == paymentDate))
             {
-                Coupon cp = x as Coupon;
+                var cp = x as Coupon;
                 if (cp != null)
                     return cp.accrualPeriod();
             }
@@ -607,14 +608,14 @@ namespace QLNet.Cashflows
         }
         public static int accrualDays(Leg leg, bool includeSettlementDateFlows, Date settlementDate = null)
         {
-            CashFlow cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
+            var cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
             if (cf == null)
                 return 0;
-            Date paymentDate = cf.date();
+            var paymentDate = cf.date();
 
-            foreach (CashFlow x in leg.Where(x => x.date() == paymentDate))
+            foreach (var x in leg.Where(x => x.date() == paymentDate))
             {
-                Coupon cp = x as Coupon;
+                var cp = x as Coupon;
                 if (cp != null)
                     return cp.accrualDays();
             }
@@ -625,14 +626,14 @@ namespace QLNet.Cashflows
             if (settlementDate == null)
                 settlementDate = Settings.evaluationDate();
 
-            CashFlow cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
+            var cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
             if (cf == null)
                 return 0;
 
-            Date paymentDate = cf.date();
-            foreach (CashFlow x in leg.Where(x => x.date() == paymentDate))
+            var paymentDate = cf.date();
+            foreach (var x in leg.Where(x => x.date() == paymentDate))
             {
-                Coupon cp = x as Coupon;
+                var cp = x as Coupon;
                 if (cp != null)
                     return cp.accruedPeriod(settlementDate);
             }
@@ -643,14 +644,14 @@ namespace QLNet.Cashflows
             if (settlementDate == null)
                 settlementDate = Settings.evaluationDate();
 
-            CashFlow cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
+            var cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
             if (cf == null)
                 return (0, 0);
-            Date paymentDate = cf.date();
+            var paymentDate = cf.date();
 
-            foreach (CashFlow x in leg.Where(x => x.date() == paymentDate))
+            foreach (var x in leg.Where(x => x.date() == paymentDate))
             {
-                Coupon cp = x as Coupon;
+                var cp = x as Coupon;
                 if (cp != null)
                 {
                     return (cp.accruedDays(settlementDate), cp.accruedAmount(settlementDate));
@@ -663,14 +664,14 @@ namespace QLNet.Cashflows
             if (settlementDate == null)
                 settlementDate = Settings.evaluationDate();
 
-            CashFlow cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
+            var cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
             if (cf == null)
                 return 0;
-            Date paymentDate = cf.date();
+            var paymentDate = cf.date();
 
-            foreach (CashFlow x in leg.Where(x => x.date() == paymentDate))
+            foreach (var x in leg.Where(x => x.date() == paymentDate))
             {
-                Coupon cp = x as Coupon;
+                var cp = x as Coupon;
                 if (cp != null)
                     return cp.accruedDays(settlementDate);
             }
@@ -681,16 +682,16 @@ namespace QLNet.Cashflows
             if (settlementDate == null)
                 settlementDate = Settings.evaluationDate();
 
-            CashFlow cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
+            var cf = nextCashFlow(leg, includeSettlementDateFlows, settlementDate);
             if (cf == null)
                 return 0;
 
-            Date paymentDate = cf.date();
-            double result = 0.0;
+            var paymentDate = cf.date();
+            var result = 0.0;
 
-            foreach (CashFlow x in leg.Where(x => x.date() == paymentDate))
+            foreach (var x in leg.Where(x => x.date() == paymentDate))
             {
-                Coupon cp = x as Coupon;
+                var cp = x as Coupon;
                 if (cp != null)
                     result += cp.accruedAmount(settlementDate);
             }
@@ -714,8 +715,8 @@ namespace QLNet.Cashflows
             if (npvDate == null)
                 npvDate = settlementDate;
 
-            double totalNPV = 0.0;
-            for (int i = 0; i < leg.Count; ++i)
+            var totalNPV = 0.0;
+            for (var i = 0; i < leg.Count; ++i)
             {
                 if (!leg[i].hasOccurred(settlementDate, includeSettlementDateFlows) && !leg[i].tradingExCoupon(settlementDate))
                     totalNPV += leg[i].amount() * discountCurve.discount(leg[i].date());
@@ -738,8 +739,8 @@ namespace QLNet.Cashflows
             if (npvDate == null)
                 npvDate = settlementDate;
 
-            BPSCalculator calc = new BPSCalculator(discountCurve);
-            for (int i = 0; i < leg.Count; ++i)
+            var calc = new BPSCalculator(discountCurve);
+            for (var i = 0; i < leg.Count; ++i)
             {
                 if (!leg[i].hasOccurred(settlementDate, includeSettlementDateFlows) &&
                     !leg[i].tradingExCoupon(settlementDate))
@@ -759,20 +760,20 @@ namespace QLNet.Cashflows
                 return;
             }
 
-            for (int i = 0; i < leg.Count; ++i)
+            for (var i = 0; i < leg.Count; ++i)
             {
-                CashFlow cf = leg[i];
+                var cf = leg[i];
                 if (!cf.hasOccurred(settlementDate, includeSettlementDateFlows) &&
                     !cf.tradingExCoupon(settlementDate))
                 {
-                    Coupon cp = leg[i] as Coupon;
-                    double df = discountCurve.discount(cf.date());
+                    var cp = leg[i] as Coupon;
+                    var df = discountCurve.discount(cf.date());
                     npv += cf.amount() * df;
                     if (cp != null)
                         bps += cp.nominal() * cp.accrualPeriod() * df;
                 }
             }
-            double d = discountCurve.discount(npvDate);
+            var d = discountCurve.discount(npvDate);
             npv /= d;
             bps = Const.BASIS_POINT * bps / d;
         }
@@ -790,11 +791,11 @@ namespace QLNet.Cashflows
             if (npvDate == null)
                 npvDate = settlementDate;
 
-            double npv = 0.0;
-            BPSCalculator calc = new BPSCalculator(discountCurve);
-            for (int i = 0; i < leg.Count; ++i)
+            var npv = 0.0;
+            var calc = new BPSCalculator(discountCurve);
+            for (var i = 0; i < leg.Count; ++i)
             {
-                CashFlow cf = leg[i];
+                var cf = leg[i];
                 if (!cf.hasOccurred(settlementDate, includeSettlementDateFlows) &&
                     !cf.tradingExCoupon(settlementDate))
                 {
@@ -814,7 +815,7 @@ namespace QLNet.Cashflows
             if (targetNpv.IsEqual(0.0))
                 return 0.0;
 
-            double bps = calc.bps();
+            var bps = calc.bps();
             Utils.QL_REQUIRE(bps.IsNotEqual(0.0), () => "null bps: impossible atm rate");
 
             return targetNpv.Value / bps;
@@ -837,23 +838,23 @@ namespace QLNet.Cashflows
             if (npvDate == null)
                 npvDate = settlementDate;
 
-            double npv = 0.0;
-            double discount = 1.0;
-            Date lastDate = npvDate;
-            DayCounter dc = yield.dayCounter();
+            var npv = 0.0;
+            var discount = 1.0;
+            var lastDate = npvDate;
+            var dc = yield.dayCounter();
 
-            for (int i = 0; i < leg.Count; ++i)
+            for (var i = 0; i < leg.Count; ++i)
             {
                 if (leg[i].hasOccurred(settlementDate, includeSettlementDateFlows))
                     continue;
 
-                double amount = leg[i].amount();
+                var amount = leg[i].amount();
                 if (leg[i].tradingExCoupon(settlementDate))
                 {
                     amount = 0.0;
                 }
 
-                double b = yield.discountFactor(getStepwiseDiscountTime(leg[i], dc, npvDate, lastDate));
+                var b = yield.discountFactor(getStepwiseDiscountTime(leg[i], dc, npvDate, lastDate));
                 discount *= b;
                 lastDate = leg[i].date();
 
@@ -862,11 +863,9 @@ namespace QLNet.Cashflows
             return npv;
         }
         public static double npv(Leg leg, double yield, DayCounter dayCounter, Compounding compounding, Frequency frequency,
-                                 bool includeSettlementDateFlows, Date settlementDate = null, Date npvDate = null)
-        {
-            return npv(leg, new InterestRate(yield, dayCounter, compounding, frequency),
-                       includeSettlementDateFlows, settlementDate, npvDate);
-        }
+                                 bool includeSettlementDateFlows, Date settlementDate = null, Date npvDate = null) =>
+            npv(leg, new InterestRate(yield, dayCounter, compounding, frequency),
+                includeSettlementDateFlows, settlementDate, npvDate);
 
         //! Basis-point sensitivity of the cash flows.
         // The result is the change in NPV due to a uniform
@@ -888,23 +887,21 @@ namespace QLNet.Cashflows
             if (npvDate == null)
                 npvDate = settlementDate;
 
-            FlatForward flatRate = new FlatForward(settlementDate, yield.rate(), yield.dayCounter(),
+            var flatRate = new FlatForward(settlementDate, yield.rate(), yield.dayCounter(),
                                                    yield.compounding(), yield.frequency());
             return bps(leg, flatRate, includeSettlementDateFlows, settlementDate, npvDate);
         }
 
         public static double bps(Leg leg, double yield, DayCounter dayCounter, Compounding compounding, Frequency frequency,
-                                 bool includeSettlementDateFlows, Date settlementDate = null, Date npvDate = null)
-        {
-            return bps(leg, new InterestRate(yield, dayCounter, compounding, frequency),
-                       includeSettlementDateFlows, settlementDate, npvDate);
-        }
+                                 bool includeSettlementDateFlows, Date settlementDate = null, Date npvDate = null) =>
+            bps(leg, new InterestRate(yield, dayCounter, compounding, frequency),
+                includeSettlementDateFlows, settlementDate, npvDate);
 
         //! NPV of a single cash flows
         public static double npv(CashFlow cashflow, YieldTermStructure discountCurve,
                                  Date settlementDate = null, Date npvDate = null, int exDividendDays = 0)
         {
-            double NPV = 0.0;
+            var NPV = 0.0;
 
             if (cashflow == null)
                 return 0.0;
@@ -932,7 +929,7 @@ namespace QLNet.Cashflows
             if (settlementDate == null)
                 settlementDate = Settings.evaluationDate();
 
-            double totalCASH = cashflows.Where(x => !x.hasOccurred(settlementDate + exDividendDays)).
+            var totalCASH = cashflows.Where(x => !x.hasOccurred(settlementDate + exDividendDays)).
                                Sum(c => c.amount());
 
             return totalCASH;
@@ -946,9 +943,9 @@ namespace QLNet.Cashflows
                                    bool includeSettlementDateFlows, Date settlementDate = null, Date npvDate = null,
                                    double accuracy = 1.0e-10, int maxIterations = 100, double guess = 0.05)
         {
-            NewtonSafe solver = new NewtonSafe();
+            var solver = new NewtonSafe();
             solver.setMaxEvaluations(maxIterations);
-            IrrFinder objFunction = new IrrFinder(leg, npv,
+            var objFunction = new IrrFinder(leg, npv,
                                                   dayCounter, compounding, frequency,
                                                   includeSettlementDateFlows,
                                                   settlementDate, npvDate);
@@ -977,7 +974,7 @@ namespace QLNet.Cashflows
                 case Duration.Type.Macaulay:
                     return macaulayDuration(leg, rate, includeSettlementDateFlows, settlementDate, npvDate);
                 default:
-                    Utils.QL_FAIL("unknown duration type");
+                    Utils.QL_FAIL("unknown duration ExerciseType");
                     break;
             }
             return 0.0;
@@ -985,11 +982,9 @@ namespace QLNet.Cashflows
 
         public static double duration(Leg leg, double yield, DayCounter dayCounter, Compounding compounding, Frequency frequency,
                                       Duration.Type type, bool includeSettlementDateFlows, Date settlementDate = null,
-                                      Date npvDate = null)
-        {
-            return duration(leg, new InterestRate(yield, dayCounter, compounding, frequency),
-                            type, includeSettlementDateFlows, settlementDate, npvDate);
-        }
+                                      Date npvDate = null) =>
+            duration(leg, new InterestRate(yield, dayCounter, compounding, frequency),
+                type, includeSettlementDateFlows, settlementDate, npvDate);
 
         //! Cash-flow convexity
         public static double convexity(Leg leg, InterestRate yield, bool includeSettlementDateFlows,
@@ -1004,22 +999,22 @@ namespace QLNet.Cashflows
             if (npvDate == null)
                 npvDate = settlementDate;
 
-            DayCounter dc = yield.dayCounter();
+            var dc = yield.dayCounter();
 
-            double P = 0.0;
-            double t = 0.0;
-            double d2Pdy2 = 0.0;
-            double r = yield.rate();
-            int N = (int)yield.frequency();
-            Date lastDate = npvDate;
+            var P = 0.0;
+            var t = 0.0;
+            var d2Pdy2 = 0.0;
+            var r = yield.rate();
+            var N = (int)yield.frequency();
+            var lastDate = npvDate;
 
 
-            for (int i = 0; i < leg.Count; ++i)
+            for (var i = 0; i < leg.Count; ++i)
             {
                 if (leg[i].hasOccurred(settlementDate, includeSettlementDateFlows))
                     continue;
 
-                double c = leg[i].amount();
+                var c = leg[i].amount();
                 if (leg[i].tradingExCoupon(settlementDate))
                 {
                     c = 0.0;
@@ -1027,7 +1022,7 @@ namespace QLNet.Cashflows
 
                 t += getStepwiseDiscountTime(leg[i], dc, npvDate, lastDate);
 
-                double B = yield.discountFactor(t);
+                var B = yield.discountFactor(t);
                 P += c * B;
                 switch (yield.compounding())
                 {
@@ -1061,11 +1056,9 @@ namespace QLNet.Cashflows
         }
 
         public static double convexity(Leg leg, double yield, DayCounter dayCounter, Compounding compounding, Frequency frequency,
-                                       bool includeSettlementDateFlows, Date settlementDate = null, Date npvDate = null)
-        {
-            return convexity(leg, new InterestRate(yield, dayCounter, compounding, frequency),
-                             includeSettlementDateFlows, settlementDate, npvDate);
-        }
+                                       bool includeSettlementDateFlows, Date settlementDate = null, Date npvDate = null) =>
+            convexity(leg, new InterestRate(yield, dayCounter, compounding, frequency),
+                includeSettlementDateFlows, settlementDate, npvDate);
 
         //! Basis-point value
         /*! Obtained by setting dy = 0.0001 in the 2nd-order Taylor
@@ -1083,25 +1076,23 @@ namespace QLNet.Cashflows
             if (npvDate == null)
                 npvDate = settlementDate;
 
-            double npv = CashFlows.npv(leg, yield, includeSettlementDateFlows, settlementDate, npvDate);
-            double modifiedDuration = duration(leg, yield, Duration.Type.Modified, includeSettlementDateFlows,
+            var npv = CashFlows.npv(leg, yield, includeSettlementDateFlows, settlementDate, npvDate);
+            var modifiedDuration = duration(leg, yield, Duration.Type.Modified, includeSettlementDateFlows,
                                                          settlementDate, npvDate);
-            double convexity = CashFlows.convexity(leg, yield, includeSettlementDateFlows, settlementDate, npvDate);
-            double delta = -modifiedDuration * npv;
-            double gamma = convexity / 100.0 * npv;
+            var convexity = CashFlows.convexity(leg, yield, includeSettlementDateFlows, settlementDate, npvDate);
+            var delta = -modifiedDuration * npv;
+            var gamma = convexity / 100.0 * npv;
 
-            double shift = 0.0001;
+            var shift = 0.0001;
             delta *= shift;
             gamma *= shift * shift;
 
             return delta + 0.5 * gamma;
         }
         public static double basisPointValue(Leg leg, double yield, DayCounter dayCounter, Compounding compounding, Frequency frequency,
-                                             bool includeSettlementDateFlows, Date settlementDate = null, Date npvDate = null)
-        {
-            return basisPointValue(leg, new InterestRate(yield, dayCounter, compounding, frequency),
-                                   includeSettlementDateFlows, settlementDate, npvDate);
-        }
+                                             bool includeSettlementDateFlows, Date settlementDate = null, Date npvDate = null) =>
+            basisPointValue(leg, new InterestRate(yield, dayCounter, compounding, frequency),
+                includeSettlementDateFlows, settlementDate, npvDate);
 
         //! Yield value of a basis point
         /*! The yield value of a one basis point change in price is
@@ -1120,21 +1111,20 @@ namespace QLNet.Cashflows
             if (npvDate == null)
                 npvDate = settlementDate;
 
-            double npv = CashFlows.npv(leg, yield, includeSettlementDateFlows, settlementDate, npvDate);
-            double modifiedDuration = duration(leg, yield, Duration.Type.Modified, includeSettlementDateFlows,
+            var npv = CashFlows.npv(leg, yield, includeSettlementDateFlows, settlementDate, npvDate);
+            var modifiedDuration = duration(leg, yield, Duration.Type.Modified, includeSettlementDateFlows,
                                                          settlementDate, npvDate);
 
-            double shift = 0.01;
+            var shift = 0.01;
             return 1.0 / (-npv * modifiedDuration) * shift;
         }
 
         public static double yieldValueBasisPoint(Leg leg, double yield, DayCounter dayCounter, Compounding compounding,
                                                   Frequency frequency, bool includeSettlementDateFlows, Date settlementDate = null,
-                                                  Date npvDate = null)
-        {
-            return yieldValueBasisPoint(leg, new InterestRate(yield, dayCounter, compounding, frequency),
-                                        includeSettlementDateFlows, settlementDate, npvDate);
-        }
+                                                  Date npvDate = null) =>
+            yieldValueBasisPoint(leg, new InterestRate(yield, dayCounter, compounding, frequency),
+                includeSettlementDateFlows, settlementDate, npvDate);
+
         #endregion
 
         #region  Z-spread utility functions
@@ -1157,10 +1147,10 @@ namespace QLNet.Cashflows
             if (npvDate == null)
                 npvDate = settlementDate;
 
-            Handle<YieldTermStructure> discountCurveHandle = new Handle<YieldTermStructure>(discountCurve);
-            Handle<Quote> zSpreadQuoteHandle = new Handle<Quote>(new SimpleQuote(zSpread));
+            var discountCurveHandle = new Handle<YieldTermStructure>(discountCurve);
+            var zSpreadQuoteHandle = new Handle<Quote>(new SimpleQuote(zSpread));
 
-            ZeroSpreadedTermStructure spreadedCurve = new ZeroSpreadedTermStructure(discountCurveHandle, zSpreadQuoteHandle,
+            var spreadedCurve = new ZeroSpreadedTermStructure(discountCurveHandle, zSpreadQuoteHandle,
                                                                                     comp, freq, dc);
 
             spreadedCurve.enableExtrapolation(discountCurveHandle.link.allowsExtrapolation());
@@ -1178,23 +1168,22 @@ namespace QLNet.Cashflows
             if (npvDate == null)
                 npvDate = settlementDate;
 
-            Brent solver = new Brent();
+            var solver = new Brent();
             solver.setMaxEvaluations(maxIterations);
-            ZSpreadFinder objFunction = new ZSpreadFinder(leg, discount, npv, dayCounter, compounding, frequency,
+            var objFunction = new ZSpreadFinder(leg, discount, npv, dayCounter, compounding, frequency,
                                                           includeSettlementDateFlows, settlementDate, npvDate);
-            double step = 0.01;
+            var step = 0.01;
             return solver.solve(objFunction, accuracy, guess, step);
         }
         //! deprecated implied Z-spread.
         public static double zSpread(Leg leg, YieldTermStructure d, double npv, DayCounter dayCounter, Compounding compounding,
                                      Frequency frequency, bool includeSettlementDateFlows, Date settlementDate = null,
                                      Date npvDate = null, double accuracy = 1.0e-10, int maxIterations = 100,
-                                     double guess = 0.0)
-        {
-            return zSpread(leg, npv, d, dayCounter, compounding, frequency,
-                           includeSettlementDateFlows, settlementDate, npvDate,
-                           accuracy, maxIterations, guess);
-        }
+                                     double guess = 0.0) =>
+            zSpread(leg, npv, d, dayCounter, compounding, frequency,
+                includeSettlementDateFlows, settlementDate, npvDate,
+                accuracy, maxIterations, guess);
+
         #endregion
     }
 

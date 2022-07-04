@@ -30,7 +30,7 @@ namespace QLNet.Pricingengines.Bond
     /// Binomial Tsiveriotis-Fernandes engine for convertible bonds
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class BinomialConvertibleEngine<T> : ConvertibleBond.option.Engine where T : ITree, ITreeFactory<T>, new()
+    [JetBrains.Annotations.PublicAPI] public class BinomialConvertibleEngine<T> : ConvertibleBond.option.Engine where T : ITree, ITreeFactory<T>, new()
     {
         public BinomialConvertibleEngine(GeneralizedBlackScholesProcess process, int timeSteps)
         {
@@ -42,24 +42,24 @@ namespace QLNet.Pricingengines.Bond
         }
         public override void calculate()
         {
-            DayCounter rfdc = process_.riskFreeRate().link.dayCounter();
-            DayCounter divdc = process_.dividendYield().link.dayCounter();
-            DayCounter voldc = process_.blackVolatility().link.dayCounter();
-            Calendar volcal = process_.blackVolatility().link.calendar();
+            var rfdc = process_.riskFreeRate().link.dayCounter();
+            var divdc = process_.dividendYield().link.dayCounter();
+            var voldc = process_.blackVolatility().link.dayCounter();
+            var volcal = process_.blackVolatility().link.calendar();
 
-            double s0 = process_.x0();
+            var s0 = process_.x0();
             Utils.QL_REQUIRE(s0 > 0.0, () => "negative or null underlying");
-            double v = process_.blackVolatility().link.blackVol(arguments_.exercise.lastDate(), s0);
-            Date maturityDate = arguments_.exercise.lastDate();
-            double riskFreeRate = process_.riskFreeRate().link.zeroRate(maturityDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).value();
-            double q = process_.dividendYield().link.zeroRate(maturityDate, divdc, Compounding.Continuous, Frequency.NoFrequency).value();
-            Date referenceDate = process_.riskFreeRate().link.referenceDate();
+            var v = process_.blackVolatility().link.blackVol(arguments_.exercise.lastDate(), s0);
+            var maturityDate = arguments_.exercise.lastDate();
+            var riskFreeRate = process_.riskFreeRate().link.zeroRate(maturityDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).value();
+            var q = process_.dividendYield().link.zeroRate(maturityDate, divdc, Compounding.Continuous, Frequency.NoFrequency).value();
+            var referenceDate = process_.riskFreeRate().link.referenceDate();
 
             // substract dividends
 
-            ConvertibleBond.option.Arguments args = arguments_ as ConvertibleBond.option.Arguments;
+            var args = arguments_ as ConvertibleBond.option.Arguments;
 
-            for (int i = 0; i < args.dividends.Count; i++)
+            for (var i = 0; i < args.dividends.Count; i++)
             {
                 if (args.dividends[i].date() >= referenceDate)
                     s0 -= args.dividends[i].amount() * process_.riskFreeRate().link.discount(args.dividends[i].date());
@@ -69,28 +69,28 @@ namespace QLNet.Pricingengines.Bond
 
             // binomial trees with constant coefficient
 
-            Handle<Quote> underlying = new Handle<Quote>(new SimpleQuote(s0));
-            Handle<YieldTermStructure> flatRiskFree =
+            var underlying = new Handle<Quote>(new SimpleQuote(s0));
+            var flatRiskFree =
                new Handle<YieldTermStructure>(new FlatForward(referenceDate, riskFreeRate, rfdc));
-            Handle<YieldTermStructure> flatDividends =
+            var flatDividends =
                new Handle<YieldTermStructure>(new FlatForward(referenceDate, q, divdc));
-            Handle<BlackVolTermStructure> flatVol =
+            var flatVol =
                new Handle<BlackVolTermStructure>(new BlackConstantVol(referenceDate, volcal, v, voldc));
-            PlainVanillaPayoff payoff = args.payoff as PlainVanillaPayoff;
+            var payoff = args.payoff as PlainVanillaPayoff;
 
             Utils.QL_REQUIRE(payoff != null, () => " non-plain payoff given ");
 
-            double maturity = rfdc.yearFraction(args.settlementDate, maturityDate);
-            GeneralizedBlackScholesProcess bs =
+            var maturity = rfdc.yearFraction(args.settlementDate, maturityDate);
+            var bs =
                new GeneralizedBlackScholesProcess(underlying, flatDividends, flatRiskFree, flatVol);
 
-            T Tree = new T().factory(bs, maturity, timeSteps_, payoff.strike());
+            var Tree = new T().factory(bs, maturity, timeSteps_, payoff.strike());
 
-            double creditSpread = args.creditSpread.link.value();
+            var creditSpread = args.creditSpread.link.value();
 
-            TsiveriotisFernandesLattice<T> lattice = new TsiveriotisFernandesLattice<T>(Tree, riskFreeRate,
+            var lattice = new TsiveriotisFernandesLattice<T>(Tree, riskFreeRate,
                                                                                         maturity, timeSteps_, creditSpread, v, q);
-            DiscretizedConvertible convertible = new DiscretizedConvertible(args, bs, new TimeGrid(maturity, timeSteps_));
+            var convertible = new DiscretizedConvertible(args, bs, new TimeGrid(maturity, timeSteps_));
             convertible.initialize(lattice, maturity);
             convertible.rollback(0.0);
             results_.value = convertible.presentValue();

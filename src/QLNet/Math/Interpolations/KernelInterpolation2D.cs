@@ -39,7 +39,7 @@ namespace QLNet.Math.Interpolations
         corresponding to the grid above.
       - kernel is a template which needs a Real operator()(Real x) implementation
     */
-    public class KernelInterpolation2DImpl<Kernel> : Interpolation2D.templateImpl where Kernel : IKernelFunction
+    [JetBrains.Annotations.PublicAPI] public class KernelInterpolation2DImpl<Kernel> : Interpolation2D.templateImpl where Kernel : IKernelFunction
     {
         public KernelInterpolation2DImpl(List<double> xBegin, int size, List<double> yBegin, int ySize,
                                          Matrix zData, Kernel kernel)
@@ -64,16 +64,16 @@ namespace QLNet.Math.Interpolations
 
         public override double value(double x1, double x2)
         {
-            double res = 0.0;
+            var res = 0.0;
 
             Vector X = new Vector(2), Xn = new Vector(2);
             X[0] = x1; X[1] = x2;
 
-            int cnt = 0; // counter
+            var cnt = 0; // counter
 
-            for (int j = 0; j < ySize_; ++j)
+            for (var j = 0; j < ySize_; ++j)
             {
-                for (int i = 0; i < xSize_; ++i)
+                for (var i = 0; i < xSize_; ++i)
                 {
                     Xn[0] = xBegin_[i];
                     Xn[1] = yBegin_[j];
@@ -92,19 +92,16 @@ namespace QLNet.Math.Interpolations
 
 
         // returns K(||X-Y||) where X,Y are vectors
-        private double kernelAbs(Vector X, Vector Y)
-        {
-            return kernel_.value(Vector.Norm2(X - Y));
-        }
+        private double kernelAbs(Vector X, Vector Y) => kernel_.value(Vector.Norm2(X - Y));
 
         private double gammaFunc(Vector X)
         {
-            double res = 0.0;
-            Vector Xn = new Vector(X.size());
+            var res = 0.0;
+            var Xn = new Vector(X.size());
 
-            for (int j = 0; j < ySize_; ++j)
+            for (var j = 0; j < ySize_; ++j)
             {
-                for (int i = 0; i < xSize_; ++i)
+                for (var i = 0; i < xSize_; ++i)
                 {
                     Xn[0] = xBegin_[i];
                     Xn[1] = yBegin_[j];
@@ -123,12 +120,12 @@ namespace QLNet.Math.Interpolations
             Vector Xk = new Vector(2), Xn = new Vector(2);
 
             int rowCnt = 0, colCnt = 0;
-            double tmpVar = 0.0;
+            var tmpVar = 0.0;
 
             // write y-vector and M-Matrix
-            for (int j = 0; j < ySize_; ++j)
+            for (var j = 0; j < ySize_; ++j)
             {
-                for (int i = 0; i < xSize_; ++i)
+                for (var i = 0; i < xSize_; ++i)
                 {
                     yVec_[rowCnt] = zData_[i, j];
                     // calculate X_k
@@ -138,9 +135,9 @@ namespace QLNet.Math.Interpolations
                     tmpVar = 1 / gammaFunc(Xk);
                     colCnt = 0;
 
-                    for (int jM = 0; jM < ySize_; ++jM)
+                    for (var jM = 0; jM < ySize_; ++jM)
                     {
-                        for (int iM = 0; iM < xSize_; ++iM)
+                        for (var iM = 0; iM < xSize_; ++iM)
                         {
                             Xn[0] = xBegin_[iM];
                             Xn[1] = yBegin_[jM];
@@ -157,8 +154,8 @@ namespace QLNet.Math.Interpolations
             // check if inversion worked up to a reasonable precision.
             // I've chosen not to check determinant(M_)!=0 before solving
 
-            Vector diffVec = Vector.Abs(M_ * alphaVec_ - yVec_);
-            for (int i = 0; i < diffVec.size(); ++i)
+            var diffVec = Vector.Abs(M_ * alphaVec_ - yVec_);
+            for (var i = 0; i < diffVec.size(); ++i)
             {
                 Utils.QL_REQUIRE(diffVec[i] < invPrec_, () =>
                                  "inversion failed in 2d kernel interpolation");
@@ -180,7 +177,7 @@ namespace QLNet.Math.Interpolations
           The kernel in the implementation is kept general, although a
           Gaussian is considered in the cited text.
     */
-    public class KernelInterpolation2D : Interpolation2D
+    [JetBrains.Annotations.PublicAPI] public class KernelInterpolation2D : Interpolation2D
     {
 
         /*! \pre the \f$ x \f$ values must be sorted.

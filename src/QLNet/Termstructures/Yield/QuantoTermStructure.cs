@@ -32,7 +32,7 @@ namespace QLNet.Termstructures.Yield
               structures, i.e., any changes in the latters will be
               reflected in this structure as well.
     */
-    public class QuantoTermStructure : ZeroYieldStructure
+    [JetBrains.Annotations.PublicAPI] public class QuantoTermStructure : ZeroYieldStructure
     {
 
         public QuantoTermStructure(
@@ -61,29 +61,17 @@ namespace QLNet.Termstructures.Yield
             exchRateBlackVolTS_.registerWith(update);
         }
 
-        public override DayCounter dayCounter()
-        {
-            return underlyingDividendTS_.currentLink().dayCounter();
-        }
+        public override DayCounter dayCounter() => underlyingDividendTS_.currentLink().dayCounter();
 
-        public override Calendar calendar()
-        {
-            return underlyingDividendTS_.currentLink().calendar();
-        }
+        public override Calendar calendar() => underlyingDividendTS_.currentLink().calendar();
 
-        public override int settlementDays()
-        {
-            return underlyingDividendTS_.currentLink().settlementDays();
-        }
+        public override int settlementDays() => underlyingDividendTS_.currentLink().settlementDays();
 
-        public override Date referenceDate()
-        {
-            return underlyingDividendTS_.currentLink().referenceDate();
-        }
+        public override Date referenceDate() => underlyingDividendTS_.currentLink().referenceDate();
 
         public override Date maxDate()
         {
-            Date maxDate = Date.Min(underlyingDividendTS_.currentLink().maxDate(),
+            var maxDate = Date.Min(underlyingDividendTS_.currentLink().maxDate(),
                                     riskFreeTS_.currentLink().maxDate());
             maxDate = Date.Min(maxDate, foreignRiskFreeTS_.currentLink().maxDate());
             maxDate = Date.Min(maxDate, underlyingBlackVolTS_.currentLink().maxDate());
@@ -91,17 +79,15 @@ namespace QLNet.Termstructures.Yield
             return maxDate;
         }
 
-        protected override double zeroYieldImpl(double t)
-        {
+        protected override double zeroYieldImpl(double t) =>
             // warning: here it is assumed that all TS have the same daycount.
             //          It should be QL_REQUIREd
-            return underlyingDividendTS_.currentLink().zeroRate(t, Compounding.Continuous, Frequency.NoFrequency, true).value()
-                   + riskFreeTS_.currentLink().zeroRate(t, Compounding.Continuous, Frequency.NoFrequency, true).value()
-                   - foreignRiskFreeTS_.currentLink().zeroRate(t, Compounding.Continuous, Frequency.NoFrequency, true).value()
-                   + underlyingExchRateCorrelation_
-                   * underlyingBlackVolTS_.currentLink().blackVol(t, strike_, true)
-                   * exchRateBlackVolTS_.currentLink().blackVol(t, exchRateATMlevel_, true);
-        }
+            underlyingDividendTS_.currentLink().zeroRate(t, Compounding.Continuous, Frequency.NoFrequency, true).value()
+            + riskFreeTS_.currentLink().zeroRate(t, Compounding.Continuous, Frequency.NoFrequency, true).value()
+            - foreignRiskFreeTS_.currentLink().zeroRate(t, Compounding.Continuous, Frequency.NoFrequency, true).value()
+            + underlyingExchRateCorrelation_
+            * underlyingBlackVolTS_.currentLink().blackVol(t, strike_, true)
+            * exchRateBlackVolTS_.currentLink().blackVol(t, exchRateATMlevel_, true);
 
         protected Handle<YieldTermStructure> underlyingDividendTS_, riskFreeTS_, foreignRiskFreeTS_;
         protected Handle<BlackVolTermStructure> underlyingBlackVolTS_, exchRateBlackVolTS_;

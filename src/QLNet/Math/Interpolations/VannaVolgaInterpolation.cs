@@ -20,7 +20,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Math.Interpolations
 {
-    public class VannaVolgaInterpolationImpl : Interpolation.templateImpl
+    [JetBrains.Annotations.PublicAPI] public class VannaVolgaInterpolationImpl : Interpolation.templateImpl
     {
         public VannaVolgaInterpolationImpl(List<double> xBegin, int size, List<double> yBegin,
                                            double spot, double dDiscount, double fDiscount, double T)
@@ -43,7 +43,7 @@ namespace QLNet.Math.Interpolations
             //atmVol should be the second vol
             atmVol_ = yBegin_[1];
             fwd_ = spot_ * fDiscount_ / dDiscount_;
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 premiaBS.Add(Utils.blackFormula(QLNet.Option.Type.Call, xBegin_[i], fwd_, atmVol_ * System.Math.Sqrt(T_), dDiscount_));
                 premiaMKT.Add(Utils.blackFormula(QLNet.Option.Type.Call, xBegin_[i], fwd_, yBegin_[i] * System.Math.Sqrt(T_), dDiscount_));
@@ -53,19 +53,19 @@ namespace QLNet.Math.Interpolations
 
         public override double value(double k)
         {
-            double x1 = vega(k) / vegas[0]
-                        * (System.Math.Log(xBegin_[1] / k) * System.Math.Log(xBegin_[2] / k))
-                        / (System.Math.Log(xBegin_[1] / xBegin_[0]) * System.Math.Log(xBegin_[2] / xBegin_[0]));
-            double x2 = vega(k) / vegas[1]
-                        * (System.Math.Log(k / xBegin_[0]) * System.Math.Log(xBegin_[2] / k))
-                        / (System.Math.Log(xBegin_[1] / xBegin_[0]) * System.Math.Log(xBegin_[2] / xBegin_[1]));
-            double x3 = vega(k) / vegas[2]
-                        * (System.Math.Log(k / xBegin_[0]) * System.Math.Log(k / xBegin_[1]))
-                        / (System.Math.Log(xBegin_[2] / xBegin_[0]) * System.Math.Log(xBegin_[2] / xBegin_[1]));
+            var x1 = vega(k) / vegas[0]
+                     * (System.Math.Log(xBegin_[1] / k) * System.Math.Log(xBegin_[2] / k))
+                     / (System.Math.Log(xBegin_[1] / xBegin_[0]) * System.Math.Log(xBegin_[2] / xBegin_[0]));
+            var x2 = vega(k) / vegas[1]
+                     * (System.Math.Log(k / xBegin_[0]) * System.Math.Log(xBegin_[2] / k))
+                     / (System.Math.Log(xBegin_[1] / xBegin_[0]) * System.Math.Log(xBegin_[2] / xBegin_[1]));
+            var x3 = vega(k) / vegas[2]
+                     * (System.Math.Log(k / xBegin_[0]) * System.Math.Log(k / xBegin_[1]))
+                     / (System.Math.Log(xBegin_[2] / xBegin_[0]) * System.Math.Log(xBegin_[2] / xBegin_[1]));
 
-            double cBS = Utils.blackFormula(QLNet.Option.Type.Call, k, fwd_, atmVol_ * System.Math.Sqrt(T_), dDiscount_);
-            double c = cBS + x1 * (premiaMKT[0] - premiaBS[0]) + x2 * (premiaMKT[1] - premiaBS[1]) + x3 * (premiaMKT[2] - premiaBS[2]);
-            double std = Utils.blackFormulaImpliedStdDev(QLNet.Option.Type.Call, k, fwd_, c, dDiscount_);
+            var cBS = Utils.blackFormula(QLNet.Option.Type.Call, k, fwd_, atmVol_ * System.Math.Sqrt(T_), dDiscount_);
+            var c = cBS + x1 * (premiaMKT[0] - premiaBS[0]) + x2 * (premiaMKT[1] - premiaBS[1]) + x3 * (premiaMKT[2] - premiaBS[2]);
+            var std = Utils.blackFormulaImpliedStdDev(QLNet.Option.Type.Call, k, fwd_, c, dDiscount_);
             return std / System.Math.Sqrt(T_);
         }
 
@@ -100,13 +100,13 @@ namespace QLNet.Math.Interpolations
 
         private double vega(double k)
         {
-            double d1 = (System.Math.Log(fwd_ / k) + 0.5 * System.Math.Pow(atmVol_, 2.0) * T_) / (atmVol_ * System.Math.Sqrt(T_));
-            NormalDistribution norm = new NormalDistribution();
+            var d1 = (System.Math.Log(fwd_ / k) + 0.5 * System.Math.Pow(atmVol_, 2.0) * T_) / (atmVol_ * System.Math.Sqrt(T_));
+            var norm = new NormalDistribution();
             return spot_ * dDiscount_ * System.Math.Sqrt(T_) * norm.value(d1);
         }
 
     }
-    public class VannaVolgaInterpolation : Interpolation
+    [JetBrains.Annotations.PublicAPI] public class VannaVolgaInterpolation : Interpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public VannaVolgaInterpolation(List<double> xBegin, int size, List<double> yBegin,
@@ -119,7 +119,7 @@ namespace QLNet.Math.Interpolations
     }
 
     //! %VannaVolga-interpolation factory and traits
-    public class VannaVolga
+    [JetBrains.Annotations.PublicAPI] public class VannaVolga
     {
         public VannaVolga(double spot, double dDiscount, double fDiscount, double T)
         {
@@ -129,10 +129,7 @@ namespace QLNet.Math.Interpolations
             T_ = T;
         }
 
-        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin)
-        {
-            return new VannaVolgaInterpolation(xBegin, size, yBegin, spot_, dDiscount_, fDiscount_, T_);
-        }
+        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin) => new VannaVolgaInterpolation(xBegin, size, yBegin, spot_, dDiscount_, fDiscount_, T_);
 
         public const int requiredPoints = 3;
 

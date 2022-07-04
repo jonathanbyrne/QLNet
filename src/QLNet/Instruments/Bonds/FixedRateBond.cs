@@ -25,7 +25,7 @@ using QLNet.Cashflows;
 
 namespace QLNet.Instruments.Bonds
 {
-    public class FixedRateBond : Bond
+    [JetBrains.Annotations.PublicAPI] public class FixedRateBond : Bond
     {
         //! fixed-rate bond
         /*! \ingroup instruments
@@ -124,7 +124,7 @@ namespace QLNet.Instruments.Bonds
             }
 
 
-            Schedule schedule = new Schedule(startDate, maturityDate_, tenor,
+            var schedule = new Schedule(startDate, maturityDate_, tenor,
                                              calendar, accrualConvention, accrualConvention,
                                              rule, endOfMonth,
                                              firstDate, nextToLastDate);
@@ -185,8 +185,9 @@ namespace QLNet.Instruments.Bonds
             Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
         }
 
-        public Frequency frequency() { return frequency_; }
-        public DayCounter dayCounter() { return dayCounter_; }
+        public Frequency frequency() => frequency_;
+
+        public DayCounter dayCounter() => dayCounter_;
 
         protected Frequency frequency_;
         protected DayCounter dayCounter_;

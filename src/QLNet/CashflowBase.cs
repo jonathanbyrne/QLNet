@@ -33,7 +33,7 @@ namespace QLNet
          // easy and quick handling of most cases
          if (refDate != null)
          {
-            Date cf = date();
+            var cf = date();
             if (refDate < cf)
                return false;
             if (cf < refDate)
@@ -44,7 +44,7 @@ namespace QLNet
          {
             // today's date; we override the bool with the one
             // specified in the settings (if any)
-            bool? includeToday = Settings.includeTodaysCashFlows;
+            var includeToday = Settings.includeTodaysCashFlows;
             if (includeToday.HasValue)
                includeRefDate = includeToday;
          }
@@ -60,22 +60,23 @@ namespace QLNet
       //! The amount is not discounted, i.e., it is the actual  amount paid at the cash flow date.
       public abstract double amount();
       //! returns the date that the cash flow trades exCoupon
-      public virtual Date exCouponDate() {return null;}
+      public virtual Date exCouponDate() => null;
+
       //! returns true if the cashflow is trading ex-coupon on the refDate
       public bool tradingExCoupon(Date refDate = null)
       {
-         Date ecd = exCouponDate();
+         var ecd = exCouponDate();
          if (ecd == null)
             return false;
 
-         Date ref_ = refDate ?? Settings.evaluationDate();
+         var ref_ = refDate ?? Settings.evaluationDate();
 
          return ecd <= ref_;
       }
 
       #endregion
 
-      public int CompareTo(CashFlow cf) { return date().CompareTo(cf.date()); }
+      public int CompareTo(CashFlow cf) => date().CompareTo(cf.date());
 
       public override bool Equals(Object cf)
       {
@@ -87,10 +88,7 @@ namespace QLNet
          return CompareTo(other) == 0;
       }
 
-      public override int GetHashCode()
-      {
-         return date().serialNumber();
-      }
+      public override int GetHashCode() => date().serialNumber();
 
       public static bool operator ==(CashFlow left, CashFlow right)
       {
@@ -100,25 +98,14 @@ namespace QLNet
          }
          return left.Equals(right);
       }
-      public static bool operator >(CashFlow left, CashFlow right)
-      {
-         return left.date() > right.date() ;
-      }
-      public static bool operator >=(CashFlow left, CashFlow right)
-      {
-         return left.date() >= right.date();
-      }
-      public static bool operator <(CashFlow left, CashFlow right)
-      {
-         return left.date() < right.date() ;
-      }
-      public static bool operator <=(CashFlow left, CashFlow right)
-      {
-         return left.date() <= right.date();
-      }
-      public static bool operator !=(CashFlow left, CashFlow right)
-      {
-         return !(left == right);
-      }
+      public static bool operator >(CashFlow left, CashFlow right) => left.date() > right.date();
+
+      public static bool operator >=(CashFlow left, CashFlow right) => left.date() >= right.date();
+
+      public static bool operator <(CashFlow left, CashFlow right) => left.date() < right.date();
+
+      public static bool operator <=(CashFlow left, CashFlow right) => left.date() <= right.date();
+
+      public static bool operator !=(CashFlow left, CashFlow right) => !(left == right);
    }
 }

@@ -30,7 +30,7 @@ namespace QLNet
 
         \test Converted rates are checked against known good results
     */
-    public class InterestRate
+    [JetBrains.Annotations.PublicAPI] public class InterestRate
    {
       #region Constructors
 
@@ -61,16 +61,19 @@ namespace QLNet
 
       #region Conversions
 
-      public double value() { return rate(); }        // operator redefinition
+      public double value() => rate(); // operator redefinition
 
       #endregion
 
       #region Inspectors
 
-      public double rate() { return r_.Value; }
-      public DayCounter dayCounter() { return dc_; }
-      public Compounding compounding() { return comp_; }
-      public Frequency frequency() { return freqMakesSense_ ? (Frequency)freq_ : Frequency.NoFrequency; }
+      public double rate() => r_.Value;
+
+      public DayCounter dayCounter() => dc_;
+
+      public Compounding compounding() => comp_;
+
+      public Frequency frequency() => freqMakesSense_ ? (Frequency)freq_ : Frequency.NoFrequency;
 
       #endregion
 
@@ -80,13 +83,13 @@ namespace QLNet
       /*! \warning Time must be measured using InterestRate's own
                    day counter.
       */
-      public double discountFactor(double t) { return 1.0 / compoundFactor(t); }
+      public double discountFactor(double t) => 1.0 / compoundFactor(t);
 
       //! discount factor implied by the rate compounded between two dates
       public double discountFactor(Date d1, Date d2, Date refStart = null, Date refEnd = null)
       {
          Utils.QL_REQUIRE(d2 >= d1, () => "d1 (" + d1 + ") later than d2 (" + d2 + ")");
-         double t = dc_.yearFraction(d1, d2, refStart, refEnd);
+         var t = dc_.yearFraction(d1, d2, refStart, refEnd);
          return discountFactor(t);
       }
 
@@ -127,7 +130,7 @@ namespace QLNet
       public double compoundFactor(Date d1, Date d2, Date refStart = null, Date refEnd = null)
       {
          Utils.QL_REQUIRE(d2 >= d1, () => "d1 (" + d1 + ") later than d2 (" + d2 + ")");
-         double t = dc_.yearFraction(d1, d2, refStart, refEnd);
+         var t = dc_.yearFraction(d1, d2, refStart, refEnd);
          return compoundFactor(t);
       }
 
@@ -188,7 +191,7 @@ namespace QLNet
                                              Date refStart = null, Date refEnd = null)
       {
          Utils.QL_REQUIRE(d2 >= d1, () => "d1 (" + d1 + ") later than d2 (" + d2 + ")");
-         double t = resultDC.yearFraction(d1, d2, refStart, refEnd);
+         var t = resultDC.yearFraction(d1, d2, refStart, refEnd);
          return impliedRate(compound, resultDC, comp, freq, t);
       }
 
@@ -204,10 +207,7 @@ namespace QLNet
           \warning Time must be measured using the InterestRate's
                    own day counter.
       */
-      public InterestRate equivalentRate(Compounding comp, Frequency freq, double t)
-      {
-         return impliedRate(compoundFactor(t), dc_, comp, freq, t);
-      }
+      public InterestRate equivalentRate(Compounding comp, Frequency freq, double t) => impliedRate(compoundFactor(t), dc_, comp, freq, t);
 
       //! equivalent rate for a compounding period between two dates
       /*! The resulting rate is calculated taking the required
@@ -217,14 +217,14 @@ namespace QLNet
                                          Date refStart = null, Date refEnd = null)
       {
          Utils.QL_REQUIRE(d2 >= d1, () => "d1 (" + d1 + ") later than d2 (" + d2 + ")");
-         double t1 = dc_.yearFraction(d1, d2, refStart, refEnd);
-         double t2 = resultDC.yearFraction(d1, d2, refStart, refEnd);
+         var t1 = dc_.yearFraction(d1, d2, refStart, refEnd);
+         var t2 = resultDC.yearFraction(d1, d2, refStart, refEnd);
          return impliedRate(compoundFactor(t1), resultDC, comp, freq, t2);
       }
 
       public override string ToString()
       {
-         string result = "";
+         var result = "";
          if (r_ == null)
             return "null interest rate";
 

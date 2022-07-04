@@ -24,7 +24,7 @@ using QLNet.Time.Calendars;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_BusinessDayConvention
+    [JetBrains.Annotations.PublicAPI] public class T_BusinessDayConvention
     {
         struct SingleCase
         {
@@ -107,11 +107,11 @@ namespace QLNet.Tests
             new SingleCase(new SouthAfrica(), BusinessDayConvention.Nearest, new Date(2, Month.April, 2015),    new Period(1, TimeUnit.Months), false, new Date(4, Month.May, 2015))
          };
 
-            int n = testCases.Length;
-            for (int i = 0; i < n; i++)
+            var n = testCases.Length;
+            for (var i = 0; i < n; i++)
             {
-                Calendar calendar = new Calendar(testCases[i].calendar);
-                Date result = calendar.advance(testCases[i].start, testCases[i].period, testCases[i].convention, testCases[i].endOfMonth);
+                var calendar = new Calendar(testCases[i].calendar);
+                var result = calendar.advance(testCases[i].start, testCases[i].period, testCases[i].convention, testCases[i].endOfMonth);
 
                 QAssert.IsTrue(result == testCases[i].result,
                                "\ncase " + i + ":\n" //<< j << " ("<< desc << "): "

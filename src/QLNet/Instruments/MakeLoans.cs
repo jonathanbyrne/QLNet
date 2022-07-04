@@ -24,7 +24,7 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Instruments
 {
-    public class MakeFixedLoan
+    [JetBrains.Annotations.PublicAPI] public class MakeFixedLoan
     {
         private double nominal_;
         private Calendar calendar_;
@@ -104,22 +104,22 @@ namespace QLNet.Instruments
         }
 
         // Loan creator
-        public static implicit operator FixedLoan(MakeFixedLoan o) { return o.value(); }
+        public static implicit operator FixedLoan(MakeFixedLoan o) => o.value();
 
         public FixedLoan value()
         {
 
-            Schedule fixedSchedule = new Schedule(startDate_, endDate_, new Period(frequency_),
+            var fixedSchedule = new Schedule(startDate_, endDate_, new Period(frequency_),
                                                   calendar_, convention_, convention_, rule_, endOfMonth_);
 
-            Period principalPeriod = amortising_ == Loan.Amortising.Bullet ?
+            var principalPeriod = amortising_ == Loan.Amortising.Bullet ?
                                      new Period(Frequency.Once) :
                                      new Period(frequency_);
 
-            Schedule principalSchedule = new Schedule(startDate_, endDate_, principalPeriod,
+            var principalSchedule = new Schedule(startDate_, endDate_, principalPeriod,
                                                       calendar_, convention_, convention_, rule_, endOfMonth_);
 
-            FixedLoan fl = new FixedLoan(type_, nominal_, fixedSchedule, fixedRate_, dayCounter_,
+            var fl = new FixedLoan(type_, nominal_, fixedSchedule, fixedRate_, dayCounter_,
                                          principalSchedule, convention_);
             return fl;
 
@@ -127,7 +127,7 @@ namespace QLNet.Instruments
 
     }
 
-    public class MakeFloatingLoan
+    [JetBrains.Annotations.PublicAPI] public class MakeFloatingLoan
     {
         private double nominal_;
         private Calendar calendar_;
@@ -215,22 +215,22 @@ namespace QLNet.Instruments
         }
 
         // Loan creator
-        public static implicit operator FloatingLoan(MakeFloatingLoan o) { return o.value(); }
+        public static implicit operator FloatingLoan(MakeFloatingLoan o) => o.value();
 
         public FloatingLoan value()
         {
 
-            Schedule floatingSchedule = new Schedule(startDate_, endDate_, new Period(frequency_),
+            var floatingSchedule = new Schedule(startDate_, endDate_, new Period(frequency_),
                                                      calendar_, convention_, convention_, rule_, endOfMonth_);
 
-            Period principalPeriod = amortising_ == Loan.Amortising.Bullet ?
+            var principalPeriod = amortising_ == Loan.Amortising.Bullet ?
                                      new Period(Frequency.Once) :
                                      new Period(frequency_);
 
-            Schedule principalSchedule = new Schedule(startDate_, endDate_, principalPeriod,
+            var principalSchedule = new Schedule(startDate_, endDate_, principalPeriod,
                                                       calendar_, convention_, convention_, rule_, endOfMonth_);
 
-            FloatingLoan fl = new FloatingLoan(type_, nominal_, floatingSchedule, spread_, dayCounter_,
+            var fl = new FloatingLoan(type_, nominal_, floatingSchedule, spread_, dayCounter_,
                                                principalSchedule, convention_, index_);
             return fl;
 
@@ -238,7 +238,7 @@ namespace QLNet.Instruments
 
     }
 
-    public class MakeCommercialPaper
+    [JetBrains.Annotations.PublicAPI] public class MakeCommercialPaper
     {
         private double nominal_;
         private Calendar calendar_;
@@ -318,22 +318,22 @@ namespace QLNet.Instruments
         }
 
         // Loan creator
-        public static implicit operator CommercialPaper(MakeCommercialPaper o) { return o.value(); }
+        public static implicit operator CommercialPaper(MakeCommercialPaper o) => o.value();
 
         public CommercialPaper value()
         {
 
-            Schedule fixedSchedule = new Schedule(startDate_, endDate_, new Period(frequency_),
+            var fixedSchedule = new Schedule(startDate_, endDate_, new Period(frequency_),
                                                   calendar_, convention_, convention_, rule_, endOfMonth_);
 
-            Period principalPeriod = amortising_ == Loan.Amortising.Bullet ?
+            var principalPeriod = amortising_ == Loan.Amortising.Bullet ?
                                      new Period(Frequency.Once) :
                                      new Period(frequency_);
 
-            Schedule principalSchedule = new Schedule(startDate_, endDate_, principalPeriod,
+            var principalSchedule = new Schedule(startDate_, endDate_, principalPeriod,
                                                       calendar_, convention_, convention_, rule_, endOfMonth_);
 
-            CommercialPaper fl = new CommercialPaper(type_, nominal_, fixedSchedule, fixedRate_, dayCounter_,
+            var fl = new CommercialPaper(type_, nominal_, fixedSchedule, fixedRate_, dayCounter_,
                                                      principalSchedule, convention_);
             return fl;
 
@@ -341,7 +341,7 @@ namespace QLNet.Instruments
 
     }
 
-    public class MakeCash
+    [JetBrains.Annotations.PublicAPI] public class MakeCash
     {
         private double nominal_;
         private Calendar calendar_;
@@ -413,19 +413,19 @@ namespace QLNet.Instruments
         }
 
         // Loan creator
-        public static implicit operator Cash(MakeCash o) { return o.value(); }
+        public static implicit operator Cash(MakeCash o) => o.value();
 
         public Cash value()
         {
 
-            Period principalPeriod = amortising_ == Loan.Amortising.Bullet ?
+            var principalPeriod = amortising_ == Loan.Amortising.Bullet ?
                                      new Period(Frequency.Once) :
                                      new Period(frequency_);
 
-            Schedule principalSchedule = new Schedule(startDate_, endDate_, principalPeriod,
+            var principalSchedule = new Schedule(startDate_, endDate_, principalPeriod,
                                                       calendar_, convention_, convention_, rule_, endOfMonth_);
 
-            Cash c = new Cash(type_, nominal_, principalSchedule, convention_);
+            var c = new Cash(type_, nominal_, principalSchedule, convention_);
             return c;
 
         }

@@ -35,10 +35,10 @@ namespace QLNet.Instruments
            (maturityDate - valueDate) is the tenor/term of the
            underlying loan or deposit
 
-        2. Choose position type = Long for an "FRA purchase" (future
+        2. Choose position ExerciseType = Long for an "FRA purchase" (future
            long loan, short deposit [borrower])
 
-        3. Choose position type = Short for an "FRA sale" (future short
+        3. Choose position ExerciseType = Short for an "FRA sale" (future short
            loan, long deposit [lender])
 
         4. If strike is given in the constructor, can calculate the NPV
@@ -68,7 +68,7 @@ namespace QLNet.Instruments
         \ingroup instruments
     */
 
-    public class ForwardRateAgreement : Forward
+    [JetBrains.Annotations.PublicAPI] public class ForwardRateAgreement : Forward
     {
         protected Position.Type fraType_;
         //! aka FRA rate (the market forward rate)
@@ -91,10 +91,10 @@ namespace QLNet.Instruments
             Utils.QL_REQUIRE(notionalAmount > 0.0, () => "notional Amount must be positive");
 
             // do I adjust this ?
-            Date fixingDate = calendar_.advance(valueDate_, -settlementDays_, TimeUnit.Days);
+            var fixingDate = calendar_.advance(valueDate_, -settlementDays_, TimeUnit.Days);
             forwardRate_ = new InterestRate(index.fixing(fixingDate), index.dayCounter(), Compounding.Simple, Frequency.Once);
             strikeForwardRate_ = new InterestRate(strikeForwardRate, index.dayCounter(), Compounding.Simple, Frequency.Once);
-            double strike = notionalAmount_ * strikeForwardRate_.compoundFactor(valueDate_, maturityDate_);
+            var strike = notionalAmount_ * strikeForwardRate_.compoundFactor(valueDate_, maturityDate_);
             payoff_ = new ForwardTypePayoff(fraType_, strike);
             // incomeDiscountCurve_ is irrelevant to an FRA
             incomeDiscountCurve_ = discountCurve_;
@@ -105,24 +105,15 @@ namespace QLNet.Instruments
         }
 
         // Calculations
-        public override Date settlementDate()
-        {
-            return calendar_.advance(Settings.evaluationDate(), settlementDays_, TimeUnit.Days);
-        }
+        public override Date settlementDate() => calendar_.advance(Settings.evaluationDate(), settlementDays_, TimeUnit.Days);
 
         /*! A FRA expires/settles on the valueDate */
 
-        public override bool isExpired()
-        {
-            return new simple_event(valueDate_).hasOccurred(settlementDate());
-        }
+        public override bool isExpired() => new simple_event(valueDate_).hasOccurred(settlementDate());
 
         /*!  Income is zero for a FRA */
 
-        public override double spotIncome(Handle<YieldTermStructure> t)
-        {
-            return 0.0;
-        }
+        public override double spotIncome(Handle<YieldTermStructure> t) => 0.0;
 
         //! Spot value (NPV) of the underlying loan
         /*! This has always a positive value (asset), even if short the FRA */
@@ -130,9 +121,9 @@ namespace QLNet.Instruments
         public override double spotValue()
         {
             calculate();
-            double result = notionalAmount_ *
-                            forwardRate().compoundFactor(valueDate_, maturityDate_) *
-                            discountCurve_.link.discount(maturityDate_);
+            var result = notionalAmount_ *
+                         forwardRate().compoundFactor(valueDate_, maturityDate_) *
+                         discountCurve_.link.discount(maturityDate_);
             return result;
         }
 
@@ -145,7 +136,7 @@ namespace QLNet.Instruments
 
         protected override void performCalculations()
         {
-            Date fixingDate = calendar_.advance(valueDate_, -settlementDays_, TimeUnit.Days);
+            var fixingDate = calendar_.advance(valueDate_, -settlementDays_, TimeUnit.Days);
             forwardRate_ = new InterestRate(index_.fixing(fixingDate), index_.dayCounter(),
                                             Compounding.Simple, Frequency.Once);
             underlyingSpotValue_ = spotValue();

@@ -20,17 +20,12 @@
 namespace QLNet.Indexes
 {
     //! Region class, used for inflation applicability.
-    public class Region
+    [JetBrains.Annotations.PublicAPI] public class Region
     {
         // Inspectors
-        public string name()
-        {
-            return data_.name;
-        }
-        public string code()
-        {
-            return data_.code;
-        }
+        public string name() => data_.name;
+
+        public string code() => data_.code;
 
         protected Region() { }
         protected struct Data
@@ -55,80 +50,71 @@ namespace QLNet.Indexes
             return r1.Equals(r2);
         }
 
-        public static bool operator !=(Region r1, Region r2)
-        {
-            return !(r1 == r2);
-        }
+        public static bool operator !=(Region r1, Region r2) => !(r1 == r2);
 
-        public override bool Equals(object o)
-        {
-            return name() == ((Region)o).name();
-        }
+        public override bool Equals(object o) => name() == ((Region)o).name();
 
-        public override int GetHashCode()
-        {
-            return 0;
-        }
+        public override int GetHashCode() => 0;
     }
 
     //! Australia as geographical/economic region
-    public class AustraliaRegion : Region
+    [JetBrains.Annotations.PublicAPI] public class AustraliaRegion : Region
     {
         public AustraliaRegion()
         {
-            Data AUdata = new Data("Australia", "AU");
+            var AUdata = new Data("Australia", "AU");
             data_ = AUdata;
         }
 
     }
 
     //! European Union as geographical/economic region
-    public class EURegion : Region
+    [JetBrains.Annotations.PublicAPI] public class EURegion : Region
     {
         public EURegion()
         {
-            Data EUdata = new Data("EU", "EU");
+            var EUdata = new Data("EU", "EU");
             data_ = EUdata;
         }
     }
 
     //! France as geographical/economic region
-    public class FranceRegion : Region
+    [JetBrains.Annotations.PublicAPI] public class FranceRegion : Region
     {
         public FranceRegion()
         {
-            Data FRdata = new Data("France", "FR");
+            var FRdata = new Data("France", "FR");
             data_ = FRdata;
         }
     }
 
 
     //! United Kingdom as geographical/economic region
-    public class UKRegion : Region
+    [JetBrains.Annotations.PublicAPI] public class UKRegion : Region
     {
         public UKRegion()
         {
-            Data UKdata = new Data("UK", "UK");
+            var UKdata = new Data("UK", "UK");
             data_ = UKdata;
         }
     }
 
     //! USA as geographical/economic region
-    public class USRegion : Region
+    [JetBrains.Annotations.PublicAPI] public class USRegion : Region
     {
         public USRegion()
         {
-            Data USdata = new Data("USA", "US");
+            var USdata = new Data("USA", "US");
             data_ = USdata;
         }
     }
 
     //! South Africa as geographical/economic region
-    public class ZARegion : Region
+    [JetBrains.Annotations.PublicAPI] public class ZARegion : Region
     {
         public ZARegion()
         {
-            Data ZAdata = new Data("South Africa", "ZA");
+            var ZAdata = new Data("South Africa", "ZA");
             data_ = ZAdata;
         }
     }

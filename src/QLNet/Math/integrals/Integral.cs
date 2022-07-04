@@ -57,30 +57,15 @@ namespace QLNet.Math.integrals
         }
 
         // Inspectors
-        public double? absoluteAccuracy()
-        {
-            return absoluteAccuracy_;
-        }
+        public double? absoluteAccuracy() => absoluteAccuracy_;
 
-        public int maxEvaluations()
-        {
-            return maxEvaluations_;
-        }
+        public int maxEvaluations() => maxEvaluations_;
 
-        public double absoluteError()
-        {
-            return absoluteError_;
-        }
+        public double absoluteError() => absoluteError_;
 
-        public int numberOfEvaluations()
-        {
-            return evaluations_;
-        }
+        public int numberOfEvaluations() => evaluations_;
 
-        public bool integrationSuccess()
-        {
-            return evaluations_ <= maxEvaluations_ && absoluteError_ <= absoluteAccuracy_;
-        }
+        public bool integrationSuccess() => evaluations_ <= maxEvaluations_ && absoluteError_ <= absoluteAccuracy_;
 
         protected abstract double integrate(Func<double, double> f, double a, double b);
 

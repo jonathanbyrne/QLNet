@@ -23,7 +23,7 @@ namespace QLNet.Time.Calendars
 {
     //! %Calendar for reproducing theoretical calculations.
     /*! This calendar has no holidays. It ensures that dates at whole-month distances have the same day of month.    */
-    public class NullCalendar : Calendar
+    [JetBrains.Annotations.PublicAPI] public class NullCalendar : Calendar
     {
         public NullCalendar() : base(Impl.Singleton) { }
 
@@ -32,9 +32,11 @@ namespace QLNet.Time.Calendars
             public static readonly Impl Singleton = new Impl();
             private Impl() { }
 
-            public override string name() { return "Null calendar"; }
-            public override bool isWeekend(DayOfWeek w) { return false; }
-            public override bool isBusinessDay(Date d) { return true; }
+            public override string name() => "Null calendar";
+
+            public override bool isWeekend(DayOfWeek w) => false;
+
+            public override bool isBusinessDay(Date d) => true;
         }
     }
 }

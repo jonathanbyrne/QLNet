@@ -50,14 +50,8 @@ namespace QLNet
       private readonly WeakEventSource eventSource = new WeakEventSource();
       public event Callback notifyObserversEvent
       {
-         add
-         {
-            eventSource.Subscribe(value);
-         }
-         remove
-         {
-            eventSource.Unsubscribe(value);
-         }
+         add => eventSource.Subscribe(value);
+         remove => eventSource.Unsubscribe(value);
       }
 
       public void registerWith(Callback handler) { notifyObserversEvent += handler; }
@@ -82,10 +76,7 @@ namespace QLNet
             capletVol_.registerWith(update);
       }
 
-      public Handle<OptionletVolatilityStructure> capletVolatility()
-      {
-         return capletVol_;
-      }
+      public Handle<OptionletVolatilityStructure> capletVolatility() => capletVol_;
 
       public void setCapletVolatility(Handle<OptionletVolatilityStructure> v = null)
       {
@@ -106,7 +97,7 @@ namespace QLNet
        BivariateLognormal  http://ssrn.com/abstract=2170721
        The bivariate lognormal adjustment implementation is
        still considered experimental */
-   public class BlackIborCouponPricer : IborCouponPricer
+   [JetBrains.Annotations.PublicAPI] public class BlackIborCouponPricer : IborCouponPricer
    {
       public enum TimingAdjustment { Black76, BivariateLognormal }
       public BlackIborCouponPricer(Handle<OptionletVolatilityStructure> v = null,
@@ -135,14 +126,14 @@ namespace QLNet
          if (index_ == null)
          {
             // check if the coupon was right
-            IborCoupon c = coupon as IborCoupon;
+            var c = coupon as IborCoupon;
             Utils.QL_REQUIRE(c != null, () => "IborCoupon required");
             // coupon was right, index is not
             Utils.QL_FAIL("IborIndex required");
          }
 
-         Handle<YieldTermStructure> rateCurve = index_.forwardingTermStructure();
-         Date paymentDate = coupon.date();
+         var rateCurve = index_.forwardingTermStructure();
+         var paymentDate = coupon.date();
          if (paymentDate > rateCurve.link.referenceDate())
             discount_ = rateCurve.link.discount(paymentDate);
          else
@@ -156,35 +147,28 @@ namespace QLNet
       {
          // past or future fixing is managed in InterestRateIndex::fixing()
 
-         double swapletPrice = adjustedFixing() * accrualPeriod_ * discount_;
+         var swapletPrice = adjustedFixing() * accrualPeriod_ * discount_;
          return gearing_ * swapletPrice + spreadLegValue_;
       }
-      public override double swapletRate()
-      {
-         return swapletPrice() / (accrualPeriod_ * discount_);
-      }
+      public override double swapletRate() => swapletPrice() / (accrualPeriod_ * discount_);
+
       public override double capletPrice(double effectiveCap)
       {
-         double capletPrice = optionletPrice(QLNet.Option.Type.Call, effectiveCap);
+         var capletPrice = optionletPrice(QLNet.Option.Type.Call, effectiveCap);
          return gearing_ * capletPrice;
       }
-      public override double capletRate(double effectiveCap)
-      {
-         return capletPrice(effectiveCap) / (accrualPeriod_ * discount_);
-      }
+      public override double capletRate(double effectiveCap) => capletPrice(effectiveCap) / (accrualPeriod_ * discount_);
+
       public override double floorletPrice(double effectiveFloor)
       {
-         double floorletPrice = optionletPrice(QLNet.Option.Type.Put, effectiveFloor);
+         var floorletPrice = optionletPrice(QLNet.Option.Type.Put, effectiveFloor);
          return gearing_ * floorletPrice;
       }
-      public override double floorletRate(double effectiveFloor)
-      {
-         return floorletPrice(effectiveFloor) / (accrualPeriod_ * discount_);
-      }
+      public override double floorletRate(double effectiveFloor) => floorletPrice(effectiveFloor) / (accrualPeriod_ * discount_);
 
       protected double optionletPrice(Option.Type optionType, double effStrike)
       {
-         Date fixingDate = coupon_.fixingDate();
+         var fixingDate = coupon_.fixingDate();
          if (fixingDate <= Settings.evaluationDate())
          {
             // the amount is determined
@@ -207,10 +191,10 @@ namespace QLNet
             // not yet determined, use Black model
             Utils.QL_REQUIRE(!capletVolatility().empty(), () => "missing optionlet volatility");
 
-            double stdDev = System.Math.Sqrt(capletVolatility().link.blackVariance(fixingDate, effStrike));
-            double shift = capletVolatility().link.displacement();
-            bool shiftedLn = capletVolatility().link.volatilityType() == VolatilityType.ShiftedLognormal;
-            double fixing =
+            var stdDev = System.Math.Sqrt(capletVolatility().link.blackVariance(fixingDate, effStrike));
+            var shift = capletVolatility().link.displacement();
+            var shiftedLn = capletVolatility().link.volatilityType() == VolatilityType.ShiftedLognormal;
+            var fixing =
                shiftedLn
                ? Utils.blackFormula(optionType, effStrike, adjustedFixing(), stdDev, 1.0, shift)
                : Utils.bachelierBlackFormula(optionType, effStrike, adjustedFixing(), stdDev, 1.0);
@@ -226,37 +210,37 @@ namespace QLNet
             return fixing.Value;
 
          Utils.QL_REQUIRE(!capletVolatility().empty(), () => "missing optionlet volatility");
-         Date d1 = coupon_.fixingDate();
-         Date referenceDate = capletVolatility().link.referenceDate();
+         var d1 = coupon_.fixingDate();
+         var referenceDate = capletVolatility().link.referenceDate();
          if (d1 <= referenceDate)
             return fixing.Value;
-         Date d2 = index_.valueDate(d1);
-         Date d3 = index_.maturityDate(d2);
-         double tau = index_.dayCounter().yearFraction(d2, d3);
-         double variance = capletVolatility().link.blackVariance(d1, fixing.Value);
+         var d2 = index_.valueDate(d1);
+         var d3 = index_.maturityDate(d2);
+         var tau = index_.dayCounter().yearFraction(d2, d3);
+         var variance = capletVolatility().link.blackVariance(d1, fixing.Value);
 
-         double shift = capletVolatility().link.displacement();
-         bool shiftedLn = capletVolatility().link.volatilityType() == VolatilityType.ShiftedLognormal;
+         var shift = capletVolatility().link.displacement();
+         var shiftedLn = capletVolatility().link.volatilityType() == VolatilityType.ShiftedLognormal;
 
-         double adjustment = shiftedLn
+         var adjustment = shiftedLn
                              ? (fixing.Value + shift) * (fixing.Value + shift) * variance * tau / (1.0 + fixing.Value * tau)
                              : variance * tau / (1.0 + fixing.Value * tau);
 
          if (timingAdjustment_ == TimingAdjustment.BivariateLognormal)
          {
             Utils.QL_REQUIRE(!correlation_.empty(), () => "no correlation given");
-            Date d4 = coupon_.date();
-            Date d5 = d4 >= d3 ? d3 : d2;
-            double tau2 = index_.dayCounter().yearFraction(d5, d4);
+            var d4 = coupon_.date();
+            var d5 = d4 >= d3 ? d3 : d2;
+            var tau2 = index_.dayCounter().yearFraction(d5, d4);
             if (d4 >= d3)
                adjustment = 0.0;
             // if d4 < d2 (payment before index start) we just apply the
             // Black76 in arrears adjustment
             if (tau2 > 0.0)
             {
-               double fixing2 = (index_.forwardingTermStructure().link.discount(d5) /
-                                 index_.forwardingTermStructure().link.discount(d4) -
-                                 1.0) / tau2;
+               var fixing2 = (index_.forwardingTermStructure().link.discount(d5) /
+                              index_.forwardingTermStructure().link.discount(d4) -
+                              1.0) / tau2;
                adjustment -= shiftedLn
                              ? correlation_.link.value() * tau2 * variance * (fixing.Value + shift) * (fixing2 + shift) / (1.0 + fixing2 * tau2)
                              : correlation_.link.value() * tau2 * variance / (1.0 + fixing2 * tau2);
@@ -288,7 +272,7 @@ namespace QLNet
          swaptionVol_.registerWith(update);
       }
 
-      public Handle<SwaptionVolatilityStructure> swaptionVolatility() {return swaptionVol_;}
+      public Handle<SwaptionVolatilityStructure> swaptionVolatility() => swaptionVol_;
 
       public void setSwaptionVolatility(Handle<SwaptionVolatilityStructure> v = null)
       {
@@ -302,7 +286,7 @@ namespace QLNet
 
    /*! (CMS) coupon pricer that has a mean reversion parameter which can be
       used to calibrate to cms market quotes */
-   public interface IMeanRevertingPricer
+   [JetBrains.Annotations.PublicAPI] public interface IMeanRevertingPricer
    {
       double meanReversion() ;
       void setMeanReversion(Handle<Quote> q) ;
@@ -312,7 +296,7 @@ namespace QLNet
    //                         CouponSelectorToSetPricer                         //
    //===========================================================================//
 
-   public class PricerSetter : IAcyclicVisitor
+   [JetBrains.Annotations.PublicAPI] public class PricerSetter : IAcyclicVisitor
    {
       private FloatingRateCouponPricer pricer_;
       public PricerSetter(FloatingRateCouponPricer pricer)
@@ -322,8 +306,8 @@ namespace QLNet
 
       public void visit(object o)
       {
-         Type[] types = new Type[] { o.GetType() };
-         MethodInfo methodInfo = Utils.GetMethodInfo(this, "visit", types);
+         var types = new Type[] { o.GetType() };
+         var methodInfo = Utils.GetMethodInfo(this, "visit", types);
          if (methodInfo != null)
          {
             methodInfo.Invoke(this, new object[] { o });
@@ -348,46 +332,46 @@ namespace QLNet
       }
       public void visit(IborCoupon c)
       {
-         IborCouponPricer iborCouponPricer = pricer_ as IborCouponPricer;
+         var iborCouponPricer = pricer_ as IborCouponPricer;
          Utils.QL_REQUIRE(iborCouponPricer != null, () => "pricer not compatible with Ibor coupon");
          c.setPricer(iborCouponPricer);
       }
       public void visit(DigitalIborCoupon c)
       {
-         IborCouponPricer iborCouponPricer = pricer_ as IborCouponPricer;
+         var iborCouponPricer = pricer_ as IborCouponPricer;
          Utils.QL_REQUIRE(iborCouponPricer != null, () => "pricer not compatible with Ibor coupon");
          c.setPricer(iborCouponPricer);
       }
       public void visit(CappedFlooredIborCoupon c)
       {
-         IborCouponPricer iborCouponPricer = pricer_ as IborCouponPricer;
+         var iborCouponPricer = pricer_ as IborCouponPricer;
          Utils.QL_REQUIRE(iborCouponPricer != null, () => "pricer not compatible with Ibor coupon");
          c.setPricer(iborCouponPricer);
       }
       public void visit(CmsCoupon c)
       {
-         CmsCouponPricer cmsCouponPricer = pricer_ as CmsCouponPricer;
+         var cmsCouponPricer = pricer_ as CmsCouponPricer;
          Utils.QL_REQUIRE(cmsCouponPricer != null, () => "pricer not compatible with CMS coupon");
          c.setPricer(cmsCouponPricer);
       }
 
       public void visit(CappedFlooredCmsCoupon c)
       {
-         CmsCouponPricer cmsCouponPricer = pricer_ as CmsCouponPricer;
+         var cmsCouponPricer = pricer_ as CmsCouponPricer;
          Utils.QL_REQUIRE(cmsCouponPricer != null, () => "pricer not compatible with CMS coupon");
          c.setPricer(cmsCouponPricer);
       }
 
       public void visit(DigitalCmsCoupon c)
       {
-         CmsCouponPricer cmsCouponPricer = pricer_ as CmsCouponPricer;
+         var cmsCouponPricer = pricer_ as CmsCouponPricer;
          Utils.QL_REQUIRE(cmsCouponPricer != null, () => "pricer not compatible with CMS coupon");
          c.setPricer(cmsCouponPricer);
       }
 
       public void visit(RangeAccrualFloatersCoupon c)
       {
-         RangeAccrualPricer rangeAccrualPricer = pricer_ as RangeAccrualPricer;
+         var rangeAccrualPricer = pricer_ as RangeAccrualPricer;
          Utils.QL_REQUIRE(rangeAccrualPricer != null, () => "pricer not compatible with range-accrual coupon");
          c.setPricer(rangeAccrualPricer);
       }
@@ -397,8 +381,8 @@ namespace QLNet
    {
       public static void setCouponPricer(List<CashFlow> leg, FloatingRateCouponPricer pricer)
       {
-         PricerSetter setter = new PricerSetter(pricer);
-         foreach (CashFlow cf in leg)
+         var setter = new PricerSetter(pricer);
+         foreach (var cf in leg)
          {
             cf.accept(setter);
          }
@@ -406,17 +390,17 @@ namespace QLNet
 
       public static void setCouponPricers(List<CashFlow> leg, List<FloatingRateCouponPricer> pricers)
       {
-         int nCashFlows = leg.Count;
+         var nCashFlows = leg.Count;
          Utils.QL_REQUIRE(nCashFlows > 0, () => "no cashflows");
 
-         int nPricers = pricers.Count;
+         var nPricers = pricers.Count;
          Utils.QL_REQUIRE(nCashFlows >= nPricers, () =>
                           "mismatch between leg size (" + nCashFlows +
                           ") and number of pricers (" + nPricers + ")");
 
-         for (int i = 0; i < nCashFlows; ++i)
+         for (var i = 0; i < nCashFlows; ++i)
          {
-            PricerSetter setter = new PricerSetter(i < nPricers ? pricers[i] : pricers[nPricers - 1]);
+            var setter = new PricerSetter(i < nPricers ? pricers[i] : pricers[nPricers - 1]);
             leg[i].accept(setter);
          }
       }

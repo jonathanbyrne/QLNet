@@ -22,42 +22,30 @@ using System;
 namespace QLNet.processes
 {
     //! Euler discretization for stochastic processes
-    public class EulerDiscretization : IDiscretization, IDiscretization1D
+    [JetBrains.Annotations.PublicAPI] public class EulerDiscretization : IDiscretization, IDiscretization1D
     {
         /*! Returns an approximation of the drift defined as
             \f$ \mu(t_0, \mathbf{x}_0) \Delta t \f$. */
-        public Vector drift(StochasticProcess process, double t0, Vector x0, double dt)
-        {
-            return process.drift(t0, x0) * dt;
-        }
+        public Vector drift(StochasticProcess process, double t0, Vector x0, double dt) => process.drift(t0, x0) * dt;
 
         /*! Returns an approximation of the drift defined as
             \f$ \mu(t_0, x_0) \Delta t \f$. */
-        public double drift(StochasticProcess1D process, double t0, double x0, double dt)
-        {
-            return process.drift(t0, x0) * dt;
-        }
+        public double drift(StochasticProcess1D process, double t0, double x0, double dt) => process.drift(t0, x0) * dt;
 
         /*! Returns an approximation of the diffusion defined as
             \f$ \sigma(t_0, \mathbf{x}_0) \sqrt{\Delta t} \f$. */
-        public Matrix diffusion(StochasticProcess process, double t0, Vector x0, double dt)
-        {
-            return process.diffusion(t0, x0) * System.Math.Sqrt(dt);
-        }
+        public Matrix diffusion(StochasticProcess process, double t0, Vector x0, double dt) => process.diffusion(t0, x0) * System.Math.Sqrt(dt);
 
         /*! Returns an approximation of the diffusion defined as
             \f$ \sigma(t_0, x_0) \sqrt{\Delta t} \f$. */
-        public double diffusion(StochasticProcess1D process, double t0, double x0, double dt)
-        {
-            return process.diffusion(t0, x0) * System.Math.Sqrt(dt);
-        }
+        public double diffusion(StochasticProcess1D process, double t0, double x0, double dt) => process.diffusion(t0, x0) * System.Math.Sqrt(dt);
 
         /*! Returns an approximation of the covariance defined as
             \f$ \sigma(t_0, \mathbf{x}_0)^2 \Delta t \f$. */
         public Matrix covariance(StochasticProcess process, double t0, Vector x0, double dt)
         {
-            Matrix sigma = process.diffusion(t0, x0);
-            Matrix result = sigma * Matrix.transpose(sigma) * dt;
+            var sigma = process.diffusion(t0, x0);
+            var result = sigma * Matrix.transpose(sigma) * dt;
             return result;
         }
 
@@ -65,7 +53,7 @@ namespace QLNet.processes
             \f$ \sigma(t_0, x_0)^2 \Delta t \f$. */
         public double variance(StochasticProcess1D process, double t0, double x0, double dt)
         {
-            double sigma = process.diffusion(t0, x0);
+            var sigma = process.diffusion(t0, x0);
             return sigma * sigma * dt;
         }
     }

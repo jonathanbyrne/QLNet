@@ -30,7 +30,7 @@ namespace QLNet.Pricingengines.Cliquet
         - the correctness of the returned greeks is tested by
           reproducing numerical derivatives.
     */
-    public class AnalyticCliquetEngine : CliquetOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class AnalyticCliquetEngine : CliquetOption.Engine
     {
         public AnalyticCliquetEngine(GeneralizedBlackScholesProcess process)
         {
@@ -49,17 +49,17 @@ namespace QLNet.Pricingengines.Cliquet
                              arguments_.globalFloor == null, () =>
                              "this engine cannot price capped/floored options");
 
-            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European, () => "not an European option");
+            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
 
-            PercentageStrikePayoff moneyness = arguments_.payoff as PercentageStrikePayoff;
+            var moneyness = arguments_.payoff as PercentageStrikePayoff;
             Utils.QL_REQUIRE(moneyness != null, () => "wrong payoff given");
 
-            List<Date> resetDates = arguments_.resetDates;
+            var resetDates = arguments_.resetDates;
             resetDates.Add(arguments_.exercise.lastDate());
 
-            double underlying = process_.stateVariable().link.value();
+            var underlying = process_.stateVariable().link.value();
             Utils.QL_REQUIRE(underlying > 0.0, () => "negative or null underlying");
-            double strike = underlying * moneyness.strike();
+            var strike = underlying * moneyness.strike();
             StrikedTypePayoff payoff = new PlainVanillaPayoff(moneyness.optionType(), strike);
 
             results_.value = 0.0;
@@ -68,21 +68,21 @@ namespace QLNet.Pricingengines.Cliquet
             results_.rho = results_.dividendRho = 0.0;
             results_.vega = 0.0;
 
-            for (int i = 1; i < resetDates.Count; i++)
+            for (var i = 1; i < resetDates.Count; i++)
             {
-                double weight = process_.dividendYield().link.discount(resetDates[i - 1]);
-                double discount = process_.riskFreeRate().link.discount(resetDates[i]) /
-                                  process_.riskFreeRate().link.discount(resetDates[i - 1]);
-                double qDiscount = process_.dividendYield().link.discount(resetDates[i]) /
-                                   process_.dividendYield().link.discount(resetDates[i - 1]);
-                double forward = underlying * qDiscount / discount;
-                double variance = process_.blackVolatility().link.blackForwardVariance(resetDates[i - 1], resetDates[i], strike);
+                var weight = process_.dividendYield().link.discount(resetDates[i - 1]);
+                var discount = process_.riskFreeRate().link.discount(resetDates[i]) /
+                               process_.riskFreeRate().link.discount(resetDates[i - 1]);
+                var qDiscount = process_.dividendYield().link.discount(resetDates[i]) /
+                                process_.dividendYield().link.discount(resetDates[i - 1]);
+                var forward = underlying * qDiscount / discount;
+                var variance = process_.blackVolatility().link.blackForwardVariance(resetDates[i - 1], resetDates[i], strike);
 
-                BlackCalculator black = new BlackCalculator(payoff, forward, System.Math.Sqrt(variance), discount);
+                var black = new BlackCalculator(payoff, forward, System.Math.Sqrt(variance), discount);
 
-                DayCounter rfdc = process_.riskFreeRate().link.dayCounter();
-                DayCounter divdc = process_.dividendYield().link.dayCounter();
-                DayCounter voldc = process_.blackVolatility().link.dayCounter();
+                var rfdc = process_.riskFreeRate().link.dayCounter();
+                var divdc = process_.dividendYield().link.dayCounter();
+                var voldc = process_.blackVolatility().link.dayCounter();
 
                 results_.value += weight * black.value();
                 results_.delta += weight * (black.delta(underlying) +
@@ -93,10 +93,10 @@ namespace QLNet.Pricingengines.Cliquet
                                      resetDates[i - 1], resetDates[i], rfdc, Compounding.Continuous, Frequency.NoFrequency).value() *
                                   weight * black.value();
 
-                double dt = rfdc.yearFraction(resetDates[i - 1], resetDates[i]);
+                var dt = rfdc.yearFraction(resetDates[i - 1], resetDates[i]);
                 results_.rho += weight * black.rho(dt);
 
-                double t = divdc.yearFraction(process_.dividendYield().link.referenceDate(), resetDates[i - 1]);
+                var t = divdc.yearFraction(process_.dividendYield().link.referenceDate(), resetDates[i - 1]);
                 dt = divdc.yearFraction(resetDates[i - 1], resetDates[i]);
                 results_.dividendRho += weight * (black.dividendRho(dt) -
                                                   t * black.value());

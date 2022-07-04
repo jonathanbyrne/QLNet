@@ -25,7 +25,7 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.Ibor
 {
-    public class FedFunds : OvernightIndex
+    [JetBrains.Annotations.PublicAPI] public class FedFunds : OvernightIndex
     {
         public FedFunds(Handle<YieldTermStructure> h = null)
            : base("FedFunds", 0, new USDCurrency(), new UnitedStates(UnitedStates.Market.Settlement),

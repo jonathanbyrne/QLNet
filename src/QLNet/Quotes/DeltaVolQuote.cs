@@ -22,7 +22,7 @@ namespace QLNet.Quotes
     /*! It includes the various delta quotation types
         in FX markets as well as ATM types.
     */
-    public class DeltaVolQuote : Quote, IObserver
+    [JetBrains.Annotations.PublicAPI] public class DeltaVolQuote : Quote, IObserver
     {
         public enum DeltaType
         {
@@ -68,14 +68,17 @@ namespace QLNet.Quotes
 
         public void update() { notifyObservers(); }
 
-        public override double value() { return vol_.link.value(); }
-        public double delta() { return delta_; }
-        public double maturity() { return maturity_; }
+        public override double value() => vol_.link.value();
 
-        public AtmType atmType() { return atmType_; }
-        public DeltaType deltaType() { return deltaType_; }
+        public double delta() => delta_;
 
-        public override bool isValid() { return !vol_.empty() && vol_.link.isValid(); }
+        public double maturity() => maturity_;
+
+        public AtmType atmType() => atmType_;
+
+        public DeltaType deltaType() => deltaType_;
+
+        public override bool isValid() => !vol_.empty() && vol_.link.isValid();
 
         private double delta_;
         private Handle<Quote> vol_;

@@ -24,7 +24,7 @@ using System;
 namespace QLNet.Termstructures.Volatility.equityfx
 {
     //! Local volatility curve derived from a Black curve
-    public class LocalVolCurve : LocalVolTermStructure
+    [JetBrains.Annotations.PublicAPI] public class LocalVolCurve : LocalVolTermStructure
     {
         public LocalVolCurve(Handle<BlackVarianceCurve> curve)
            : base(curve.link.businessDayConvention(), curve.link.dayCounter())
@@ -34,43 +34,25 @@ namespace QLNet.Termstructures.Volatility.equityfx
         }
 
         // TermStructure interface
-        public override Date referenceDate()
-        {
-            return blackVarianceCurve_.link.referenceDate();
-        }
+        public override Date referenceDate() => blackVarianceCurve_.link.referenceDate();
 
-        public override Calendar calendar()
-        {
-            return blackVarianceCurve_.link.calendar();
-        }
+        public override Calendar calendar() => blackVarianceCurve_.link.calendar();
 
-        public override DayCounter dayCounter()
-        {
-            return blackVarianceCurve_.link.dayCounter();
-        }
+        public override DayCounter dayCounter() => blackVarianceCurve_.link.dayCounter();
 
-        public override Date maxDate()
-        {
-            return blackVarianceCurve_.link.maxDate();
-        }
+        public override Date maxDate() => blackVarianceCurve_.link.maxDate();
 
         // VolatilityTermStructure interface
-        public override double minStrike()
-        {
-            return double.MinValue;
-        }
+        public override double minStrike() => double.MinValue;
 
-        public override double maxStrike()
-        {
-            return double.MaxValue;
-        }
+        public override double maxStrike() => double.MaxValue;
 
         protected override double localVolImpl(double t, double dummy)
         {
-            double dt = 1.0 / 365.0;
-            double var1 = blackVarianceCurve_.link.blackVariance(t, dummy, true);
-            double var2 = blackVarianceCurve_.link.blackVariance(t + dt, dummy, true);
-            double derivative = (var2 - var1) / dt;
+            var dt = 1.0 / 365.0;
+            var var1 = blackVarianceCurve_.link.blackVariance(t, dummy, true);
+            var var2 = blackVarianceCurve_.link.blackVariance(t + dt, dummy, true);
+            var derivative = (var2 - var1) / dt;
             return System.Math.Sqrt(derivative);
         }
 

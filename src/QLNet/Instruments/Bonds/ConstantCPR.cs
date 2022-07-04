@@ -21,20 +21,15 @@ using System;
 
 namespace QLNet.Instruments.Bonds
 {
-    public class ConstantCPR : IPrepayModel
+    [JetBrains.Annotations.PublicAPI] public class ConstantCPR : IPrepayModel
     {
         public ConstantCPR(double cpr)
         {
             _cpr = cpr;
         }
-        public double getCPR(Date valDate)
-        {
-            return _cpr;
-        }
-        public double getSMM(Date valDate)
-        {
-            return 1 - System.Math.Pow(1 - getCPR(valDate), 1 / 12d);
-        }
+        public double getCPR(Date valDate) => _cpr;
+
+        public double getSMM(Date valDate) => 1 - System.Math.Pow(1 - getCPR(valDate), 1 / 12d);
 
         private double _cpr;
     }

@@ -28,7 +28,7 @@ namespace QLNet
    {
       protected Date date_;
       // Event interface
-      public override Date date() { return date_; }
+      public override Date date() => date_;
 
       protected Dividend(Date date)
       {
@@ -40,11 +40,12 @@ namespace QLNet
 
    //! Predetermined cash flow
    /*! This cash flow pays a predetermined amount at a given date. */
-   public class FixedDividend : Dividend
+   [JetBrains.Annotations.PublicAPI] public class FixedDividend : Dividend
    {
       protected double amount_;
-      public override double amount() { return amount_; }
-      public override double amount(double d) { return amount_; }
+      public override double amount() => amount_;
+
+      public override double amount(double d) => amount_;
 
       public FixedDividend(double amount, Date date)
          : base(date)
@@ -55,13 +56,13 @@ namespace QLNet
 
    //! Predetermined cash flow
    /*! This cash flow pays a predetermined amount at a given date. */
-   public class FractionalDividend : Dividend
+   [JetBrains.Annotations.PublicAPI] public class FractionalDividend : Dividend
    {
       protected double rate_;
-      public double rate() { return rate_; }
+      public double rate() => rate_;
 
       protected double? nominal_;
-      public double? nominal() { return nominal_; }
+      public double? nominal() => nominal_;
 
       public FractionalDividend(double rate, Date date)
          : base(date)
@@ -84,10 +85,7 @@ namespace QLNet
          return rate_ * nominal_.GetValueOrDefault();
       }
 
-      public override double amount(double underlying)
-      {
-         return rate_ * underlying;
-      }
+      public override double amount(double underlying) => rate_ * underlying;
    }
 
    public static partial class Utils
@@ -97,8 +95,8 @@ namespace QLNet
       {
          QL_REQUIRE(dividendDates.Count == dividends.Count, () => "size mismatch between dividend dates and amounts");
 
-         DividendSchedule items = new DividendSchedule();
-         for (int i = 0; i < dividendDates.Count; i++)
+         var items = new DividendSchedule();
+         for (var i = 0; i < dividendDates.Count; i++)
             items.Add(new FixedDividend(dividends[i], dividendDates[i]));
          return items;
       }

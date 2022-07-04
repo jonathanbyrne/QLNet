@@ -30,7 +30,7 @@ namespace QLNet.Pricingengines.vanilla
         \test the correctness of the returned value is tested by
               reproducing results available in literature.
     */
-    public class BjerksundStenslandApproximationEngine : OneAssetOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class BjerksundStenslandApproximationEngine : OneAssetOption.Engine
     {
         private GeneralizedBlackScholesProcess process_;
 
@@ -44,24 +44,24 @@ namespace QLNet.Pricingengines.vanilla
         public override void calculate()
         {
 
-            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.American, () => "not an American Option");
+            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.American, () => "not an American Option");
 
-            AmericanExercise ex = arguments_.exercise as AmericanExercise;
+            var ex = arguments_.exercise as AmericanExercise;
             Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
 
             Utils.QL_REQUIRE(!ex.payoffAtExpiry(), () => "payoff at expiry not handled");
 
-            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
-            double variance = process_.blackVolatility().link.blackVariance(ex.lastDate(), payoff.strike());
-            double dividendDiscount = process_.dividendYield().link.discount(ex.lastDate());
-            double riskFreeDiscount = process_.riskFreeRate().link.discount(ex.lastDate());
+            var variance = process_.blackVolatility().link.blackVariance(ex.lastDate(), payoff.strike());
+            var dividendDiscount = process_.dividendYield().link.discount(ex.lastDate());
+            var riskFreeDiscount = process_.riskFreeRate().link.discount(ex.lastDate());
 
-            double spot = process_.stateVariable().link.value();
+            var spot = process_.stateVariable().link.value();
             Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
 
-            double strike = payoff.strike();
+            var strike = payoff.strike();
 
             if (payoff.optionType() == QLNet.Option.Type.Put)
             {
@@ -74,8 +74,8 @@ namespace QLNet.Pricingengines.vanilla
             if (dividendDiscount >= 1.0)
             {
                 // early exercise is never optimal - use Black formula
-                double forwardPrice = spot * dividendDiscount / riskFreeDiscount;
-                BlackCalculator black = new BlackCalculator(payoff, forwardPrice, System.Math.Sqrt(variance), riskFreeDiscount);
+                var forwardPrice = spot * dividendDiscount / riskFreeDiscount;
+                var black = new BlackCalculator(payoff, forwardPrice, System.Math.Sqrt(variance), riskFreeDiscount);
 
                 results_.value = black.value();
                 results_.delta = black.delta(spot);
@@ -83,10 +83,10 @@ namespace QLNet.Pricingengines.vanilla
                 results_.elasticity = black.elasticity(spot);
                 results_.gamma = black.gamma(spot);
 
-                DayCounter rfdc = process_.riskFreeRate().link.dayCounter();
-                DayCounter divdc = process_.dividendYield().link.dayCounter();
-                DayCounter voldc = process_.blackVolatility().link.dayCounter();
-                double t = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(), arguments_.exercise.lastDate());
+                var rfdc = process_.riskFreeRate().link.dayCounter();
+                var divdc = process_.dividendYield().link.dayCounter();
+                var voldc = process_.blackVolatility().link.dayCounter();
+                var t = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(), arguments_.exercise.lastDate());
                 results_.rho = black.rho(t);
 
                 t = divdc.yearFraction(process_.dividendYield().link.referenceDate(), arguments_.exercise.lastDate());
@@ -114,9 +114,9 @@ namespace QLNet.Pricingengines.vanilla
         double phi(double S, double gamma, double H, double I, double rT, double bT, double variance)
         {
 
-            double lambda = -rT + gamma * bT + 0.5 * gamma * (gamma - 1.0) * variance;
-            double d = -(System.Math.Log(S / H) + (bT + (gamma - 0.5) * variance)) / System.Math.Sqrt(variance);
-            double kappa = 2.0 * bT / variance + (2.0 * gamma - 1.0);
+            var lambda = -rT + gamma * bT + 0.5 * gamma * (gamma - 1.0) * variance;
+            var d = -(System.Math.Log(S / H) + (bT + (gamma - 0.5) * variance)) / System.Math.Sqrt(variance);
+            var kappa = 2.0 * bT / variance + (2.0 * gamma - 1.0);
             return System.Math.Exp(lambda) * (cumNormalDist.value(d)
                                        - System.Math.Pow(I / S, kappa) *
                                        cumNormalDist.value(d - 2.0 * System.Math.Log(I / S) / System.Math.Sqrt(variance)));
@@ -126,16 +126,16 @@ namespace QLNet.Pricingengines.vanilla
         double americanCallApproximation(double S, double X, double rfD, double dD, double variance)
         {
 
-            double bT = System.Math.Log(dD / rfD);
-            double rT = System.Math.Log(1.0 / rfD);
+            var bT = System.Math.Log(dD / rfD);
+            var rT = System.Math.Log(1.0 / rfD);
 
-            double beta = 0.5 - bT / variance + System.Math.Sqrt(System.Math.Pow(bT / variance - 0.5, 2.0) + 2.0 * rT / variance);
-            double BInfinity = beta / (beta - 1.0) * X;
-            double B0 = System.Math.Max(X, rT / (rT - bT) * X);
-            double ht = -(bT + 2.0 * System.Math.Sqrt(variance)) * B0 / (BInfinity - B0);
+            var beta = 0.5 - bT / variance + System.Math.Sqrt(System.Math.Pow(bT / variance - 0.5, 2.0) + 2.0 * rT / variance);
+            var BInfinity = beta / (beta - 1.0) * X;
+            var B0 = System.Math.Max(X, rT / (rT - bT) * X);
+            var ht = -(bT + 2.0 * System.Math.Sqrt(variance)) * B0 / (BInfinity - B0);
 
             // investigate what happen to I for dD->0.0
-            double I = B0 + (BInfinity - B0) * (1 - System.Math.Exp(ht));
+            var I = B0 + (BInfinity - B0) * (1 - System.Math.Exp(ht));
             Utils.QL_REQUIRE(I >= X, () => "Bjerksund-Stensland approximation not applicable to this set of parameters");
             if (S >= I)
             {
@@ -144,7 +144,7 @@ namespace QLNet.Pricingengines.vanilla
             else
             {
                 // investigate what happen to alpha for dD->0.0
-                double alpha = (I - X) * System.Math.Pow(I, -beta);
+                var alpha = (I - X) * System.Math.Pow(I, -beta);
                 return (I - X) * System.Math.Pow(S / I, beta)
                        * (1 - phi(S, beta, I, I, rT, bT, variance))
                        + S * phi(S, 1.0, I, I, rT, bT, variance)

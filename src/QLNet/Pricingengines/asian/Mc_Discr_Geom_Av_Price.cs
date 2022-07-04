@@ -38,7 +38,7 @@ namespace QLNet.Pricingengines.asian
     /// </remarks>
     /// <typeparam name="RNG"></typeparam>
     /// <typeparam name="S"></typeparam>
-    public class MCDiscreteGeometricAPEngine<RNG, S>
+    [JetBrains.Annotations.PublicAPI] public class MCDiscreteGeometricAPEngine<RNG, S>
        : MCDiscreteAveragingAsianEngine<RNG, S>
          where RNG : IRSG, new()
          where S : IGeneralStatistics, new()
@@ -60,10 +60,10 @@ namespace QLNet.Pricingengines.asian
         // conversion to pricing engine
         protected override PathPricer<IPath> pathPricer()
         {
-            PlainVanillaPayoff payoff = (PlainVanillaPayoff)arguments_.payoff;
+            var payoff = (PlainVanillaPayoff)arguments_.payoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
-            EuropeanExercise exercise = (EuropeanExercise)arguments_.exercise;
+            var exercise = (EuropeanExercise)arguments_.exercise;
             Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
 
             return (PathPricer<IPath>)new GeometricAPOPathPricer(
@@ -76,7 +76,7 @@ namespace QLNet.Pricingengines.asian
         }
     }
 
-    public class GeometricAPOPathPricer : PathPricer<Path>
+    [JetBrains.Annotations.PublicAPI] public class GeometricAPOPathPricer : PathPricer<Path>
     {
         private PlainVanillaPayoff payoff_;
         private double discount_;
@@ -111,23 +111,23 @@ namespace QLNet.Pricingengines.asian
 
         public double value(Path path)
         {
-            int n = path.length() - 1;
+            var n = path.length() - 1;
             Utils.QL_REQUIRE(n > 0, () => "the path cannot be empty");
 
             double averagePrice;
-            double product = runningProduct_;
-            int fixings = n + pastFixings_;
+            var product = runningProduct_;
+            var fixings = n + pastFixings_;
             if (path.timeGrid().mandatoryTimes()[0].IsEqual(0.0))
             {
                 fixings += 1;
                 product *= path.front();
             }
             // care must be taken not to overflow product
-            double maxValue = double.MaxValue;
+            var maxValue = double.MaxValue;
             averagePrice = 1.0;
-            for (int i = 1; i < n + 1; i++)
+            for (var i = 1; i < n + 1; i++)
             {
-                double price = path[i];
+                var price = path[i];
                 if (product < maxValue / price)
                 {
                     product *= price;
@@ -144,7 +144,7 @@ namespace QLNet.Pricingengines.asian
     }
 
     //<class RNG = PseudoRandom, class S = Statistics>
-    public class MakeMCDiscreteGeometricAPEngine<RNG, S>
+    [JetBrains.Annotations.PublicAPI] public class MakeMCDiscreteGeometricAPEngine<RNG, S>
        where RNG : IRSG, new()
        where S : Statistics, new()
     {
@@ -174,10 +174,7 @@ namespace QLNet.Pricingengines.asian
             return this;
         }
 
-        public MakeMCDiscreteGeometricAPEngine<RNG, S> withBrownianBridge()
-        {
-            return withBrownianBridge(true);
-        }
+        public MakeMCDiscreteGeometricAPEngine<RNG, S> withBrownianBridge() => withBrownianBridge(true);
 
         public MakeMCDiscreteGeometricAPEngine<RNG, S> withSamples(int samples)
         {
@@ -213,10 +210,7 @@ namespace QLNet.Pricingengines.asian
             return this;
         }
 
-        public MakeMCDiscreteGeometricAPEngine<RNG, S> withAntitheticVariate()
-        {
-            return withAntitheticVariate(true);
-        }
+        public MakeMCDiscreteGeometricAPEngine<RNG, S> withAntitheticVariate() => withAntitheticVariate(true);
 
         public MakeMCDiscreteGeometricAPEngine<RNG, S> withControlVariate(bool b)
         {
@@ -224,10 +218,7 @@ namespace QLNet.Pricingengines.asian
             return this;
         }
 
-        public MakeMCDiscreteGeometricAPEngine<RNG, S> withControlVariate()
-        {
-            return withControlVariate(true);
-        }
+        public MakeMCDiscreteGeometricAPEngine<RNG, S> withControlVariate() => withControlVariate(true);
 
         // conversion to pricing engine
         public IPricingEngine value()

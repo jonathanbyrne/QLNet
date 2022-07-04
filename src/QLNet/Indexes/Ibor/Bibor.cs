@@ -27,7 +27,7 @@ namespace QLNet.Indexes.Ibor
     /// Bibor index
     /// Bangkok Interbank Offered Rate  fixed by the Bank of Thailand BOT.
     /// </summary>
-    public class Bibor : IborIndex
+    [JetBrains.Annotations.PublicAPI] public class Bibor : IborIndex
     {
         public static BusinessDayConvention BiborConvention(Period p)
         {
@@ -73,7 +73,7 @@ namespace QLNet.Indexes.Ibor
         /// <summary>
         /// 1-week Bibor index
         /// </summary>
-        public class BiborSW : Bibor
+        [JetBrains.Annotations.PublicAPI] public class BiborSW : Bibor
         {
             public BiborSW(Handle<YieldTermStructure> h = null)
                : base(new Period(1, TimeUnit.Weeks), h ?? new Handle<YieldTermStructure>())
@@ -83,7 +83,7 @@ namespace QLNet.Indexes.Ibor
         /// <summary>
         /// 1-month Bibor index
         /// </summary>
-        public class Bibor1M : Bibor
+        [JetBrains.Annotations.PublicAPI] public class Bibor1M : Bibor
         {
             public Bibor1M(Handle<YieldTermStructure> h = null)
                : base(new Period(1, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
@@ -93,7 +93,7 @@ namespace QLNet.Indexes.Ibor
         /// <summary>
         /// 2-months Bibor index
         /// </summary>
-        public class Bibor2M : Bibor
+        [JetBrains.Annotations.PublicAPI] public class Bibor2M : Bibor
         {
             public Bibor2M(Handle<YieldTermStructure> h = null)
                : base(new Period(2, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
@@ -103,7 +103,7 @@ namespace QLNet.Indexes.Ibor
         /// <summary>
         /// 3-months Bibor index
         /// </summary>
-        public class Bibor3M : Bibor
+        [JetBrains.Annotations.PublicAPI] public class Bibor3M : Bibor
         {
             public Bibor3M(Handle<YieldTermStructure> h = null)
                : base(new Period(3, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
@@ -113,7 +113,7 @@ namespace QLNet.Indexes.Ibor
         /// <summary>
         /// 6-months Bibor index
         /// </summary>
-        public class Bibor6M : Bibor
+        [JetBrains.Annotations.PublicAPI] public class Bibor6M : Bibor
         {
             public Bibor6M(Handle<YieldTermStructure> h = null)
                : base(new Period(6, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
@@ -123,7 +123,7 @@ namespace QLNet.Indexes.Ibor
         /// <summary>
         /// 9-months Bibor index
         /// </summary>
-        public class Bibor9M : Bibor
+        [JetBrains.Annotations.PublicAPI] public class Bibor9M : Bibor
         {
             public Bibor9M(Handle<YieldTermStructure> h = null)
                : base(new Period(9, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
@@ -133,7 +133,7 @@ namespace QLNet.Indexes.Ibor
         /// <summary>
         /// 1-year Bibor index
         /// </summary>
-        public class Bibor1Y : Bibor
+        [JetBrains.Annotations.PublicAPI] public class Bibor1Y : Bibor
         {
             public Bibor1Y(Handle<YieldTermStructure> h = null)
                : base(new Period(1, TimeUnit.Years), h ?? new Handle<YieldTermStructure>())

@@ -26,7 +26,7 @@ using System;
 namespace QLNet.Indexes
 {
     //! base class for Inter-Bank-Offered-Rate indexes (e.g. %Libor, etc.)
-    public class IborIndex : InterestRateIndex
+    [JetBrains.Annotations.PublicAPI] public class IborIndex : InterestRateIndex
     {
         public IborIndex(string familyName,
                          Period tenor,
@@ -50,15 +50,13 @@ namespace QLNet.Indexes
         }
 
         // InterestRateIndex interface
-        public override Date maturityDate(Date valueDate)
-        {
-            return fixingCalendar().advance(valueDate, tenor_, convention_, endOfMonth_);
-        }
+        public override Date maturityDate(Date valueDate) => fixingCalendar().advance(valueDate, tenor_, convention_, endOfMonth_);
+
         public override double forecastFixing(Date fixingDate)
         {
-            Date d1 = valueDate(fixingDate);
-            Date d2 = maturityDate(d1);
-            double t = dayCounter_.yearFraction(d1, d2);
+            var d1 = valueDate(fixingDate);
+            var d2 = maturityDate(d1);
+            var t = dayCounter_.yearFraction(d1, d2);
             Utils.QL_REQUIRE(t > 0.0, () =>
                              "\n cannot calculate forward rate between " +
                              d1 + " and " + d2 +
@@ -67,17 +65,18 @@ namespace QLNet.Indexes
             return forecastFixing(d1, d2, t);
         }
         // Inspectors
-        public BusinessDayConvention businessDayConvention() { return convention_; }
-        public bool endOfMonth() { return endOfMonth_; }
+        public BusinessDayConvention businessDayConvention() => convention_;
+
+        public bool endOfMonth() => endOfMonth_;
+
         // the curve used to forecast fixings
-        public Handle<YieldTermStructure> forwardingTermStructure() { return termStructure_; }
+        public Handle<YieldTermStructure> forwardingTermStructure() => termStructure_;
+
         // Other methods
         // returns a copy of itself linked to a different forwarding curve
-        public virtual IborIndex clone(Handle<YieldTermStructure> forwarding)
-        {
-            return new IborIndex(familyName(), tenor(), fixingDays(), currency(), fixingCalendar(),
-                                 businessDayConvention(), endOfMonth(), dayCounter(), forwarding);
-        }
+        public virtual IborIndex clone(Handle<YieldTermStructure> forwarding) =>
+            new IborIndex(familyName(), tenor(), fixingDays(), currency(), fixingCalendar(),
+                businessDayConvention(), endOfMonth(), dayCounter(), forwarding);
 
         protected BusinessDayConvention convention_;
         protected Handle<YieldTermStructure> termStructure_;
@@ -87,8 +86,8 @@ namespace QLNet.Indexes
         public double forecastFixing(Date d1, Date d2, double t)
         {
             Utils.QL_REQUIRE(!termStructure_.empty(), () => "null term structure set to this instance of " + name());
-            double disc1 = termStructure_.link.discount(d1);
-            double disc2 = termStructure_.link.discount(d2);
+            var disc1 = termStructure_.link.discount(d1);
+            var disc2 = termStructure_.link.discount(d2);
             return (disc1 / disc2 - 1.0) / t;
         }
 
@@ -98,7 +97,7 @@ namespace QLNet.Indexes
 
     }
 
-    public class OvernightIndex : IborIndex
+    [JetBrains.Annotations.PublicAPI] public class OvernightIndex : IborIndex
     {
         public OvernightIndex(string familyName,
                               int settlementDays,
@@ -112,11 +111,8 @@ namespace QLNet.Indexes
         { }
 
         //! returns a copy of itself linked to a different forwarding curve
-        public new OvernightIndex clone(Handle<YieldTermStructure> h)
-        {
-            return new OvernightIndex(familyName(), fixingDays(), currency(), fixingCalendar(),
-                                      dayCounter(), h);
-
-        }
+        public new OvernightIndex clone(Handle<YieldTermStructure> h) =>
+            new OvernightIndex(familyName(), fixingDays(), currency(), fixingCalendar(),
+                dayCounter(), h);
     }
 }

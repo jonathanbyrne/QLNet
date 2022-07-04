@@ -26,7 +26,7 @@ using QLNet.Cashflows;
 
 namespace QLNet
 {
-    public class MBSFixedRateBond : AmortizingFixedRateBond
+    [JetBrains.Annotations.PublicAPI] public class MBSFixedRateBond : AmortizingFixedRateBond
    {
       public MBSFixedRateBond(int settlementDays,
                               Calendar calendar,
@@ -56,16 +56,16 @@ namespace QLNet
       {
          calcBondFactor();
 
-         List<CashFlow> expectedcashflows = new List<CashFlow>();
+         var expectedcashflows = new List<CashFlow>();
 
          List<double> notionals = new InitializedList<double>(schedule_.Count);
          notionals[0] = notionals_[0];
-         for (int i = 0; i < schedule_.Count - 1; ++i)
+         for (var i = 0; i < schedule_.Count - 1; ++i)
          {
-            double currentNotional = notionals[i];
-            double smm = SMM(schedule_[i]);
-            double prepay = (notionals[i] * bondFactors_[i + 1]) / bondFactors_[i] * smm;
-            double actualamort = currentNotional * (1 - bondFactors_[i + 1] / bondFactors_[i]);
+            var currentNotional = notionals[i];
+            var smm = SMM(schedule_[i]);
+            var prepay = (notionals[i] * bondFactors_[i + 1]) / bondFactors_[i] * smm;
+            var actualamort = currentNotional * (1 - bondFactors_[i + 1] / bondFactors_[i]);
             notionals[i + 1] = currentNotional - actualamort - prepay;
 
             // ADD
@@ -94,23 +94,20 @@ namespace QLNet
 
       public double MonthlyYield()
       {
-         Brent solver = new Brent();
+         var solver = new Brent();
          solver.setMaxEvaluations(100);
-         List<CashFlow> cf = expectedCashflows();
+         var cf = expectedCashflows();
 
-         MonthlyYieldFinder objective = new MonthlyYieldFinder(notional(settlementDate()), cf, settlementDate());
+         var objective = new MonthlyYieldFinder(notional(settlementDate()), cf, settlementDate());
          return solver.solve(objective, 1.0e-10, 0.02, 0.0, 1.0) / 100 ;
       }
 
-      public double BondEquivalentYield()
-      {
-         return 2 * (System.Math.Pow(1 + MonthlyYield(), 6) - 1);
-      }
+      public double BondEquivalentYield() => 2 * (System.Math.Pow(1 + MonthlyYield(), 6) - 1);
 
       protected void calcBondFactor()
       {
          bondFactors_ = new InitializedList<double>(notionals_.Count);
-         for (int i = 0 ; i < notionals_.Count ; i++)
+         for (var i = 0 ; i < notionals_.Count ; i++)
          {
             if (i == 0)
                bondFactors_[i] = 1;
@@ -130,7 +127,7 @@ namespace QLNet
 
    }
 
-   public class MonthlyYieldFinder : ISolver1d
+   [JetBrains.Annotations.PublicAPI] public class MonthlyYieldFinder : ISolver1d
    {
       private double faceAmount_;
       private List<CashFlow> cashflows_;
@@ -143,10 +140,7 @@ namespace QLNet
          settlement_ = settlement;
       }
 
-      public override double value(double yield)
-      {
-         return Utils.PVDifference(faceAmount_, cashflows_, yield, settlement_);
-      }
+      public override double value(double yield) => Utils.PVDifference(faceAmount_, cashflows_, yield, settlement_);
    }
 
 
@@ -154,12 +148,12 @@ namespace QLNet
    {
       public static double PVDifference(double faceAmount, List<CashFlow> cashflows, double yield, Date settlement)
       {
-         double price = 0.0;
-         Date actualDate = new Date(1, 1, 1970) ;
-         int cashflowindex = 0 ;
+         var price = 0.0;
+         var actualDate = new Date(1, 1, 1970) ;
+         var cashflowindex = 0 ;
 
 
-         for (int i = 0; i < cashflows.Count; i++)
+         for (var i = 0; i < cashflows.Count; i++)
          {
             if (cashflows[i].hasOccurred(settlement))
                continue;
@@ -169,7 +163,7 @@ namespace QLNet
                actualDate = cashflows[i].date();
                cashflowindex++;
             }
-            double amount = cashflows[i].amount();
+            var amount = cashflows[i].amount();
             price += amount / System.Math.Pow((1 + yield / 100), cashflowindex);
          }
 

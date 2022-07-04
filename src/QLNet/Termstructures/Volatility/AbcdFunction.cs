@@ -22,27 +22,24 @@ namespace QLNet.Termstructures.Volatility
     //! %Abcd functional form for instantaneous volatility
     /*! \f[ f(T-t) = [ a + b(T-t) ] e^{-c(T-t)} + d \f]
         following Rebonato's notation. */
-    public class AbcdFunction : AbcdMathFunction
+    [JetBrains.Annotations.PublicAPI] public class AbcdFunction : AbcdMathFunction
     {
         public AbcdFunction(double a = -0.06, double b = 0.17, double c = 0.54, double d = 0.17)
            : base(a, b, c, d)
         { }
 
         //! maximum value of the volatility function
-        public double maximumVolatility() { return maximumValue(); }
+        public double maximumVolatility() => maximumValue();
 
         //! volatility function value at time 0: \f[ f(0) \f]
-        public double shortTermVolatility() { return new AbcdFunction().value(0.0); }
+        public double shortTermVolatility() => new AbcdFunction().value(0.0);
 
         //! volatility function value at time +inf: \f[ f(\inf) \f]
-        public double longTermVolatility() { return longTermValue(); }
+        public double longTermVolatility() => longTermValue();
 
         /*! instantaneous covariance function at time t between T-fixing and
            S-fixing rates \f[ f(T-t)f(S-t) \f] */
-        public double covariance(double t, double T, double S)
-        {
-            return new AbcdFunction().value(T - t) * new AbcdFunction().value(S - t);
-        }
+        public double covariance(double t, double T, double S) => new AbcdFunction().value(T - t) * new AbcdFunction().value(S - t);
 
         /*! integral of the instantaneous covariance function between
            time t1 and t2 for T-fixing and S-fixing rates
@@ -50,7 +47,7 @@ namespace QLNet.Termstructures.Volatility
         public double covariance(double t1, double t2, double T, double S)
         {
             Utils.QL_REQUIRE(t1 <= t2, () => "integrations bounds (" + t1 + "," + t2 + ") are in reverse order");
-            double cutOff = System.Math.Min(S, T);
+            var cutOff = System.Math.Min(S, T);
             if (t1 >= cutOff)
             {
                 return 0.0;
@@ -74,34 +71,20 @@ namespace QLNet.Termstructures.Volatility
 
         /*! variance between tMin and tMax of T-fixing rate:
            \f[ \frac{\int_{tMin}^{tMax} f^2(T-u)du}{tMax-tMin} \f] */
-        public double variance(double tMin, double tMax, double T)
-        {
-            return covariance(tMin, tMax, T, T);
-        }
-
-
+        public double variance(double tMin, double tMax, double T) => covariance(tMin, tMax, T, T);
 
         // INSTANTANEOUS
         /*! instantaneous volatility at time t of the T-fixing rate:
            \f[ f(T-t) \f] */
-        public double instantaneousVolatility(double u, double T)
-        {
-            return System.Math.Sqrt(instantaneousVariance(u, T));
-        }
+        public double instantaneousVolatility(double u, double T) => System.Math.Sqrt(instantaneousVariance(u, T));
 
         /*! instantaneous variance at time t of T-fixing rate:
            \f[ f(T-t)f(T-t) \f] */
-        public double instantaneousVariance(double u, double T)
-        {
-            return instantaneousCovariance(u, T, T);
-        }
+        public double instantaneousVariance(double u, double T) => instantaneousCovariance(u, T, T);
 
         /*! instantaneous covariance at time t between T and S fixing rates:
            \f[ f(T-u)f(S-u) \f] */
-        public double instantaneousCovariance(double u, double T, double S)
-        {
-            return new AbcdFunction().value(T - u) * new AbcdFunction().value(S - u);
-        }
+        public double instantaneousCovariance(double u, double T, double S) => new AbcdFunction().value(T - u) * new AbcdFunction().value(S - u);
 
         // PRIMITIVE
         /*! indefinite integral of the instantaneous covariance function at
@@ -114,7 +97,7 @@ namespace QLNet.Termstructures.Volatility
 
             if (Utils.close(c_, 0.0))
             {
-                double v = a_ + d_;
+                var v = a_ + d_;
                 return t * (v * v + v * b_ * S + v * b_ * T - v * b_ * t + b_ * b_ * S * T - 0.5 * b_ * b_ * t * (S + T) + b_ * b_ * t * t / 3.0);
             }
 
@@ -136,7 +119,7 @@ namespace QLNet.Termstructures.Volatility
     }
 
     // Helper class used by unit tests
-    public class AbcdSquared
+    [JetBrains.Annotations.PublicAPI] public class AbcdSquared
     {
         public AbcdSquared(double a, double b, double c, double d, double T, double S)
         {
@@ -145,10 +128,7 @@ namespace QLNet.Termstructures.Volatility
             S_ = S;
         }
 
-        public double value(double t)
-        {
-            return abcd_.covariance(t, T_, S_);
-        }
+        public double value(double t) => abcd_.covariance(t, T_, S_);
 
         private AbcdFunction abcd_;
         private double T_, S_;

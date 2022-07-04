@@ -24,18 +24,18 @@ using QLNet.Quotes;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Instruments
+    [JetBrains.Annotations.PublicAPI] public class T_Instruments
     {
         [Fact]
         public void testObservable()
         {
             //.("Testing observability of instruments...");
 
-            SimpleQuote me1 = new SimpleQuote(0.0);
-            RelinkableHandle<Quote> h = new RelinkableHandle<Quote>(me1);
+            var me1 = new SimpleQuote(0.0);
+            var h = new RelinkableHandle<Quote>(me1);
             Instrument s = new Stock(h);
 
-            Flag f = new Flag();
+            var f = new Flag();
 
             s.registerWith(f.update);
 
@@ -46,7 +46,7 @@ namespace QLNet.Tests
 
             s.NPV();
             f.lower();
-            SimpleQuote me2 = new SimpleQuote(0.0);
+            var me2 = new SimpleQuote(0.0);
             h.linkTo(me2);
             if (!f.isUp())
                 QAssert.Fail("Observer was not notified of instrument change");

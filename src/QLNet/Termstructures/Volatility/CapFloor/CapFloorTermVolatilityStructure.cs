@@ -51,14 +51,14 @@ namespace QLNet.Termstructures.Volatility.CapFloor
         //! returns the volatility for a given cap/floor length and strike rate
         public double volatility(Period length, double strike, bool extrapolate = false)
         {
-            Date d = optionDateFromTenor(length);
+            var d = optionDateFromTenor(length);
             return volatility(d, strike, extrapolate);
         }
 
         public double volatility(Date end, double strike, bool extrapolate = false)
         {
             checkRange(end, extrapolate);
-            double t = timeFromReference(end);
+            var t = timeFromReference(end);
             return volatility(t, strike, extrapolate);
         }
 

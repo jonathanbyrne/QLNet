@@ -27,7 +27,7 @@ namespace QLNet.Patterns
     {
         /// <summary>
         /// Extremely fast generic factory method that returns an instance
-        /// of the type <typeparam name="T"/>.
+        /// of the ExerciseType <typeparam name="T"/>.
         /// </summary>
         public static readonly Func<T> Create = DynamicModuleLambdaCompiler.GenerateFactory<T>();
     }
@@ -37,7 +37,7 @@ namespace QLNet.Patterns
         public static Func<T> GenerateFactory<T>() where T : new()
         {
             Expression<Func<T>> expr = () => new T();
-            NewExpression newExpr = (NewExpression)expr.Body;
+            var newExpr = (NewExpression)expr.Body;
 
 #if NET452
          var method = new DynamicMethod(
@@ -55,7 +55,7 @@ namespace QLNet.Patterns
                skipVisibility: true);
 #endif
 
-            ILGenerator ilGen = method.GetILGenerator();
+            var ilGen = method.GetILGenerator();
             // Constructor for value types could be null
             if (newExpr.Constructor != null)
             {
@@ -63,7 +63,7 @@ namespace QLNet.Patterns
             }
             else
             {
-                LocalBuilder temp = ilGen.DeclareLocal(newExpr.Type);
+                var temp = ilGen.DeclareLocal(newExpr.Type);
                 ilGen.Emit(OpCodes.Ldloca, temp);
                 ilGen.Emit(OpCodes.Initobj, newExpr.Type);
                 ilGen.Emit(OpCodes.Ldloc, temp);

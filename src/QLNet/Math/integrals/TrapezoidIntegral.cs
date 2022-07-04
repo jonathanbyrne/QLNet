@@ -38,19 +38,19 @@ namespace QLNet.Math.integrals
         \test the correctness of the result is tested by checking it
               against known good values.
     */
-    public class TrapezoidIntegral<IntegrationPolicy> : Integrator where IntegrationPolicy : IIntegrationPolicy, new()
+    [JetBrains.Annotations.PublicAPI] public class TrapezoidIntegral<IntegrationPolicy> : Integrator where IntegrationPolicy : IIntegrationPolicy, new()
     {
         public TrapezoidIntegral(double accuracy, int maxIterations) : base(accuracy, maxIterations) { }
 
         protected override double integrate(Func<double, double> f, double a, double b)
         {
             // start from the coarsest trapezoid...
-            int N = 1;
+            var N = 1;
             double I = (f(a) + f(b)) * (b - a) / 2.0, newI;
             // ...and refine it
-            int i = 1;
+            var i = 1;
 
-            IntegrationPolicy ip = FastActivator<IntegrationPolicy>.Create();
+            var ip = FastActivator<IntegrationPolicy>.Create();
             do
             {
                 newI = ip.integrate(f, a, b, I, N);
@@ -69,7 +69,7 @@ namespace QLNet.Math.integrals
         }
     }
 
-    public interface IIntegrationPolicy
+    [JetBrains.Annotations.PublicAPI] public interface IIntegrationPolicy
     {
         double integrate(Func<double, double> f, double a, double b, double I, int N);
         int nbEvalutions();
@@ -80,30 +80,30 @@ namespace QLNet.Math.integrals
     {
         public double integrate(Func<double, double> f, double a, double b, double I, int N)
         {
-            double sum = 0.0;
-            double dx = (b - a) / N;
-            double x = a + dx / 2.0;
-            for (int i = 0; i < N; x += dx, ++i)
+            var sum = 0.0;
+            var dx = (b - a) / N;
+            var x = a + dx / 2.0;
+            for (var i = 0; i < N; x += dx, ++i)
                 sum += f(x);
             return (I + dx * sum) / 2.0;
         }
-        public int nbEvalutions() { return 2; }
+        public int nbEvalutions() => 2;
     }
 
     public struct MidPoint : IIntegrationPolicy
     {
         public double integrate(Func<double, double> f, double a, double b, double I, int N)
         {
-            double sum = 0.0;
-            double dx = (b - a) / N;
-            double x = a + dx / 6.0;
-            double D = 2.0 * dx / 3.0;
-            for (int i = 0; i < N; x += dx, ++i)
+            var sum = 0.0;
+            var dx = (b - a) / N;
+            var x = a + dx / 6.0;
+            var D = 2.0 * dx / 3.0;
+            for (var i = 0; i < N; x += dx, ++i)
                 sum += f(x) + f(x + D);
             return (I + dx * sum) / 3.0;
         }
 
-        public int nbEvalutions() { return 3; }
+        public int nbEvalutions() => 3;
     }
 
 }

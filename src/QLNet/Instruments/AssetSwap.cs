@@ -39,7 +39,7 @@ namespace QLNet.Instruments
         \bug fair prices are not calculated correctly when using
              indexed coupons.
     */
-    public class AssetSwap : Swap
+    [JetBrains.Annotations.PublicAPI] public class AssetSwap : Swap
     {
         public AssetSwap(bool payBondCoupon,
                          Bond bond,
@@ -57,7 +57,7 @@ namespace QLNet.Instruments
             spread_ = spread;
             parSwap_ = parAssetSwap;
 
-            Schedule schedule = floatSchedule;
+            var schedule = floatSchedule;
             if (floatSchedule == null)
                 schedule = new Schedule(bond_.settlementDate(),
                                         bond_.maturityDate(),
@@ -69,10 +69,10 @@ namespace QLNet.Instruments
                                         false); // endOfMonth
 
             // the following might become an input parameter
-            BusinessDayConvention paymentAdjustment = BusinessDayConvention.Following;
+            var paymentAdjustment = BusinessDayConvention.Following;
 
-            Date finalDate = schedule.calendar().adjust(schedule.endDate(), paymentAdjustment);
-            Date adjBondMaturityDate = schedule.calendar().adjust(bond_.maturityDate(), paymentAdjustment);
+            var finalDate = schedule.calendar().adjust(schedule.endDate(), paymentAdjustment);
+            var adjBondMaturityDate = schedule.calendar().adjust(bond_.maturityDate(), paymentAdjustment);
 
             Utils.QL_REQUIRE(finalDate == adjBondMaturityDate, () =>
                              "adjusted schedule end date (" +
@@ -83,10 +83,10 @@ namespace QLNet.Instruments
             // bondCleanPrice must be the (forward) clean price
             // at the floating schedule start date
             upfrontDate_ = schedule.startDate();
-            double dirtyPrice = bondCleanPrice_ +
-                                bond_.accruedAmount(upfrontDate_);
+            var dirtyPrice = bondCleanPrice_ +
+                             bond_.accruedAmount(upfrontDate_);
 
-            double notional = bond_.notional(upfrontDate_);
+            var notional = bond_.notional(upfrontDate_);
             /* In the market asset swap, the bond is purchased in return for
                payment of the full price. The notional of the floating leg is
                then scaled by the full price. */
@@ -105,15 +105,15 @@ namespace QLNet.Instruments
                 .withNotionals(notional)
                 .withPaymentAdjustment(paymentAdjustment);
 
-            foreach (CashFlow c in legs_[1])
+            foreach (var c in legs_[1])
                 c.registerWith(update);
 
-            List<CashFlow> bondLeg = bond_.cashflows();
-            foreach (CashFlow c in bondLeg)
+            var bondLeg = bond_.cashflows();
+            foreach (var c in bondLeg)
             {
                 // whatever might be the choice for the discounting engine
                 // bond flows on upfrontDate_ must be discarded
-                bool upfrontDateBondFlows = false;
+                var upfrontDateBondFlows = false;
                 if (!c.hasOccurred(upfrontDate_, upfrontDateBondFlows))
                     legs_[0].Add(c);
             }
@@ -124,12 +124,12 @@ namespace QLNet.Instruments
             if (parSwap_)
             {
                 // upfront on the floating leg
-                double upfront = (dirtyPrice - 100.0) / 100.0 * notional;
+                var upfront = (dirtyPrice - 100.0) / 100.0 * notional;
                 CashFlow upfrontCashFlow = new SimpleCashFlow(upfront, upfrontDate_);
                 legs_[1].Insert(0, upfrontCashFlow);
                 // backpayment on the floating leg
                 // (accounts for non-par redemption, if any)
-                double backPayment = notional;
+                var backPayment = notional;
                 CashFlow backPaymentCashFlow = new SimpleCashFlow(backPayment, finalDate);
                 legs_[1].Add(backPaymentCashFlow);
             }
@@ -142,7 +142,7 @@ namespace QLNet.Instruments
 
             Utils.QL_REQUIRE(!legs_[0].empty(), () => "empty bond leg");
 
-            foreach (CashFlow c in legs_[0])
+            foreach (var c in legs_[0])
                 c.registerWith(update);
 
             if (payBondCoupon)
@@ -175,7 +175,7 @@ namespace QLNet.Instruments
             spread_ = spread;
             parSwap_ = parAssetSwap;
 
-            Schedule tempSch = new Schedule(bond_.settlementDate(),
+            var tempSch = new Schedule(bond_.settlementDate(),
                                             bond_.maturityDate(),
                                             iborIndex.tenor(),
                                             iborIndex.fixingCalendar(),
@@ -197,18 +197,18 @@ namespace QLNet.Instruments
                              tempSch.dates()[0]);
 
             // the following might become an input parameter
-            BusinessDayConvention paymentAdjustment = BusinessDayConvention.Following;
+            var paymentAdjustment = BusinessDayConvention.Following;
 
-            Date finalDate = tempSch.calendar().adjust(dealMaturity, paymentAdjustment);
-            Schedule schedule = tempSch.until(finalDate);
+            var finalDate = tempSch.calendar().adjust(dealMaturity, paymentAdjustment);
+            var schedule = tempSch.until(finalDate);
 
             // bondCleanPrice must be the (forward) clean price
             // at the floating schedule start date
             upfrontDate_ = schedule.startDate();
-            double dirtyPrice = bondCleanPrice_ +
-                                bond_.accruedAmount(upfrontDate_);
+            var dirtyPrice = bondCleanPrice_ +
+                             bond_.accruedAmount(upfrontDate_);
 
-            double notional = bond_.notional(upfrontDate_);
+            var notional = bond_.notional(upfrontDate_);
             /* In the market asset swap, the bond is purchased in return for
                payment of the full price. The notional of the floating leg is
                then scaled by the full price. */
@@ -229,18 +229,18 @@ namespace QLNet.Instruments
                 .withNotionals(notional)
                 .withPaymentAdjustment(paymentAdjustment);
 
-            foreach (CashFlow c in legs_[1])
+            foreach (var c in legs_[1])
                 c.registerWith(update);
 
 
-            List<CashFlow> bondLeg = bond_.cashflows();
+            var bondLeg = bond_.cashflows();
             // skip bond redemption
             int i;
             for (i = 0; i < bondLeg.Count && bondLeg[i].date() <= dealMaturity; ++i)
             {
                 // whatever might be the choice for the discounting engine
                 // bond flows on upfrontDate_ must be discarded
-                bool upfrontDateBondFlows = false;
+                var upfrontDateBondFlows = false;
                 if (!bondLeg[i].hasOccurred(upfrontDate_, upfrontDateBondFlows))
                     legs_[0].Add(bondLeg[i]);
             }
@@ -248,7 +248,7 @@ namespace QLNet.Instruments
             // and it is a coupon then add the accrued coupon
             if (i < bondLeg.Count - 1)
             {
-                Coupon c = bondLeg[i] as Coupon;
+                var c = bondLeg[i] as Coupon;
                 if (c != null)
                 {
                     CashFlow accruedCoupon = new SimpleCashFlow(c.accruedAmount(dealMaturity), finalDate);
@@ -265,12 +265,12 @@ namespace QLNet.Instruments
             if (parSwap_)
             {
                 // upfront on the floating leg
-                double upfront = (dirtyPrice - 100.0) / 100.0 * notional;
+                var upfront = (dirtyPrice - 100.0) / 100.0 * notional;
                 CashFlow upfrontCashFlow = new SimpleCashFlow(upfront, upfrontDate_);
                 legs_[1].Insert(0, upfrontCashFlow);
                 // backpayment on the floating leg
                 // (accounts for non-par redemption, if any)
-                double backPayment = notional;
+                var backPayment = notional;
                 CashFlow backPaymentCashFlow = new SimpleCashFlow(backPayment, finalDate);
                 legs_[1].Add(backPaymentCashFlow);
             }
@@ -283,7 +283,7 @@ namespace QLNet.Instruments
 
             Utils.QL_REQUIRE(!legs_[0].empty(), () => "empty bond leg");
 
-            foreach (CashFlow c in legs_[0])
+            foreach (var c in legs_[0])
                 c.registerWith(update);
 
             if (payBondCoupon)
@@ -343,7 +343,7 @@ namespace QLNet.Instruments
             else
             {
                 Utils.QL_REQUIRE(startDiscounts_[1] != null, () => "fair clean price not available for seasoned deal");
-                double notional = bond_.notional(upfrontDate_);
+                var notional = bond_.notional(upfrontDate_);
                 if (parSwap_)
                 {
                     fairCleanPrice_ = bondCleanPrice_ - payer_[1] *
@@ -351,9 +351,9 @@ namespace QLNet.Instruments
                 }
                 else
                 {
-                    double accruedAmount = bond_.accruedAmount(upfrontDate_);
-                    double dirtyPrice = bondCleanPrice_ + accruedAmount;
-                    double fairDirtyPrice = -legNPV_[0].Value / legNPV_[1].Value * dirtyPrice;
+                    var accruedAmount = bond_.accruedAmount(upfrontDate_);
+                    var dirtyPrice = bondCleanPrice_ + accruedAmount;
+                    var fairDirtyPrice = -legNPV_[0].Value / legNPV_[1].Value * dirtyPrice;
                     fairCleanPrice_ = fairDirtyPrice - accruedAmount;
                 }
 
@@ -371,7 +371,7 @@ namespace QLNet.Instruments
             else
             {
                 Utils.QL_REQUIRE(endDiscounts_[1] != null, () => "fair non par repayment not available for expired leg");
-                double notional = bond_.notional(upfrontDate_);
+                var notional = bond_.notional(upfrontDate_);
                 fairNonParRepayment_ = nonParRepayment_ - payer_[0] *
                                        NPV_ * npvDateDiscount_ / endDiscounts_[1] / (notional / 100.0);
                 return fairNonParRepayment_.Value;
@@ -379,48 +379,56 @@ namespace QLNet.Instruments
         }
 
         // inspectors
-        public bool parSwap() { return parSwap_; }
-        public double spread() { return spread_; }
-        public double cleanPrice() { return bondCleanPrice_; }
-        public double nonParRepayment() { return nonParRepayment_; }
-        public Bond bond() { return bond_; }
-        public bool payBondCoupon() { return payer_[0].IsEqual(-1.0); }
-        public List<CashFlow> bondLeg() { return legs_[0]; }
-        public List<CashFlow> floatingLeg() { return legs_[1]; }
+        public bool parSwap() => parSwap_;
+
+        public double spread() => spread_;
+
+        public double cleanPrice() => bondCleanPrice_;
+
+        public double nonParRepayment() => nonParRepayment_;
+
+        public Bond bond() => bond_;
+
+        public bool payBondCoupon() => payer_[0].IsEqual(-1.0);
+
+        public List<CashFlow> bondLeg() => legs_[0];
+
+        public List<CashFlow> floatingLeg() => legs_[1];
+
         // other
         public override void setupArguments(IPricingEngineArguments args)
         {
             base.setupArguments(args);
 
-            Arguments arguments = args as Arguments;
+            var arguments = args as Arguments;
 
             if (arguments == null)  // it's a swap engine...
                 return;
 
-            List<CashFlow> fixedCoupons = bondLeg();
+            var fixedCoupons = bondLeg();
 
             arguments.fixedResetDates = arguments.fixedPayDates = new List<Date>(fixedCoupons.Count);
             arguments.fixedCoupons = new List<double>(fixedCoupons.Count);
 
-            for (int i = 0; i < fixedCoupons.Count; ++i)
+            for (var i = 0; i < fixedCoupons.Count; ++i)
             {
-                FixedRateCoupon coupon = fixedCoupons[i] as FixedRateCoupon;
+                var coupon = fixedCoupons[i] as FixedRateCoupon;
 
                 arguments.fixedPayDates[i] = coupon.date();
                 arguments.fixedResetDates[i] = coupon.accrualStartDate();
                 arguments.fixedCoupons[i] = coupon.amount();
             }
 
-            List<CashFlow> floatingCoupons = floatingLeg();
+            var floatingCoupons = floatingLeg();
 
             arguments.floatingResetDates = arguments.floatingPayDates =
                                               arguments.floatingFixingDates = new List<Date>(floatingCoupons.Count);
             arguments.floatingAccrualTimes = new List<double>(floatingCoupons.Count);
             arguments.floatingSpreads = new List<double>(floatingCoupons.Count);
 
-            for (int i = 0; i < floatingCoupons.Count; ++i)
+            for (var i = 0; i < floatingCoupons.Count; ++i)
             {
-                FloatingRateCoupon coupon = floatingCoupons[i] as FloatingRateCoupon;
+                var coupon = floatingCoupons[i] as FloatingRateCoupon;
 
                 arguments.floatingResetDates[i] = coupon.accrualStartDate();
                 arguments.floatingPayDates[i] = coupon.date();
@@ -433,7 +441,7 @@ namespace QLNet.Instruments
         public override void fetchResults(IPricingEngineResults r)
         {
             base.fetchResults(r);
-            Results results = r as Results;
+            var results = r as Results;
             if (results != null)
             {
                 fairSpread_ = results.fairSpread;

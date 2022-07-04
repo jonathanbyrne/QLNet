@@ -57,18 +57,13 @@ namespace QLNet.Termstructures.Volatility.Inflation
         //! of the term structure.
         //! Because inflation is highly linked to dates (for interpolation, periods, etc)
         //! we do NOT provide a time version.
-        public double volatility(Date maturityDate, double strike)
-        {
-            return volatility(maturityDate, strike, new Period(-1, TimeUnit.Days), false);
-        }
-        public double volatility(Date maturityDate, double strike, Period obsLag)
-        {
-            return volatility(maturityDate, strike, obsLag, false);
-        }
+        public double volatility(Date maturityDate, double strike) => volatility(maturityDate, strike, new Period(-1, TimeUnit.Days), false);
+
+        public double volatility(Date maturityDate, double strike, Period obsLag) => volatility(maturityDate, strike, obsLag, false);
 
         public double volatility(Date maturityDate, double strike, Period obsLag, bool extrapolate)
         {
-            Period useLag = obsLag;
+            var useLag = obsLag;
             if (obsLag == new Period(-1, TimeUnit.Days))
             {
                 useLag = observationLag();
@@ -77,33 +72,33 @@ namespace QLNet.Termstructures.Volatility.Inflation
             if (indexIsInterpolated())
             {
                 checkRange(maturityDate - useLag, strike, extrapolate);
-                double t = timeFromReference(maturityDate - useLag);
+                var t = timeFromReference(maturityDate - useLag);
                 return volatilityImpl(t, strike);
             }
             else
             {
-                KeyValuePair<Date, Date> dd = Utils.inflationPeriod(maturityDate - useLag, frequency());
+                var dd = Utils.inflationPeriod(maturityDate - useLag, frequency());
                 checkRange(dd.Key, strike, extrapolate);
-                double t = timeFromReference(dd.Key);
+                var t = timeFromReference(dd.Key);
                 return volatilityImpl(t, strike);
             }
         }
 
         public double volatility(Period optionTenor, double strike)
         {
-            Date maturityDate = optionDateFromTenor(optionTenor);
+            var maturityDate = optionDateFromTenor(optionTenor);
             return volatility(maturityDate, strike, new Period(-1, TimeUnit.Days), false);
         }
 
         public double volatility(Period optionTenor, double strike, Period obsLag)
         {
-            Date maturityDate = optionDateFromTenor(optionTenor);
+            var maturityDate = optionDateFromTenor(optionTenor);
             return volatility(maturityDate, strike, obsLag, false);
         }
 
         public double volatility(Period optionTenor, double strike, Period obsLag, bool extrapolate)
         {
-            Date maturityDate = optionDateFromTenor(optionTenor);
+            var maturityDate = optionDateFromTenor(optionTenor);
             return volatility(maturityDate, strike, obsLag, extrapolate);
         }
 
@@ -118,43 +113,41 @@ namespace QLNet.Termstructures.Volatility.Inflation
          Because inflation is highly linked to dates (for interpolation, periods, etc)
          we do NOT provide a time version
          */
-        public virtual double totalVariance(Date maturityDate, double strike)
-        {
-            return totalVariance(maturityDate, strike, new Period(-1, TimeUnit.Days), false);
-        }
-        public virtual double totalVariance(Date maturityDate, double strike, Period obsLag)
-        {
-            return totalVariance(maturityDate, strike, obsLag, false);
-        }
+        public virtual double totalVariance(Date maturityDate, double strike) => totalVariance(maturityDate, strike, new Period(-1, TimeUnit.Days), false);
+
+        public virtual double totalVariance(Date maturityDate, double strike, Period obsLag) => totalVariance(maturityDate, strike, obsLag, false);
+
         public virtual double totalVariance(Date maturityDate, double strike, Period obsLag, bool extrapolate)
         {
-            double vol = volatility(maturityDate, strike, obsLag, extrapolate);
-            double t = timeFromBase(maturityDate, obsLag);
+            var vol = volatility(maturityDate, strike, obsLag, extrapolate);
+            var t = timeFromBase(maturityDate, obsLag);
             return vol * vol * t;
         }
 
         public virtual double totalVariance(Period tenor, double strike)
         {
-            Date maturityDate = optionDateFromTenor(tenor);
+            var maturityDate = optionDateFromTenor(tenor);
             return totalVariance(maturityDate, strike, new Period(-1, TimeUnit.Days), false);
         }
         public virtual double totalVariance(Period tenor, double strike, Period obsLag)
         {
-            Date maturityDate = optionDateFromTenor(tenor);
+            var maturityDate = optionDateFromTenor(tenor);
             return totalVariance(maturityDate, strike, obsLag, false);
         }
         public virtual double totalVariance(Period tenor, double strike, Period obsLag, bool extrap)
         {
-            Date maturityDate = optionDateFromTenor(tenor);
+            var maturityDate = optionDateFromTenor(tenor);
             return totalVariance(maturityDate, strike, obsLag, extrap);
         }
 
         //! The TS observes with a lag that is usually different from the
         //! availability lag of the index.  An inflation rate is given,
         //! by default, for the maturity requested assuming this lag.
-        public virtual Period observationLag() { return observationLag_; }
-        public virtual Frequency frequency() { return frequency_; }
-        public virtual bool indexIsInterpolated() { return indexIsInterpolated_; }
+        public virtual Period observationLag() => observationLag_;
+
+        public virtual Frequency frequency() => frequency_;
+
+        public virtual bool indexIsInterpolated() => indexIsInterpolated_;
 
         public virtual Date baseDate()
         {
@@ -175,16 +168,13 @@ namespace QLNet.Termstructures.Volatility.Inflation
         }
 
         //! base date will be in the past because of observation lag
-        public virtual double timeFromBase(Date maturityDate)
-        {
-            return timeFromBase(maturityDate, new Period(-1, TimeUnit.Days));
-        }
+        public virtual double timeFromBase(Date maturityDate) => timeFromBase(maturityDate, new Period(-1, TimeUnit.Days));
 
         //! needed for total variance calculations
         public virtual double timeFromBase(Date maturityDate, Period obsLag)
         {
 
-            Period useLag = obsLag;
+            var useLag = obsLag;
             if (obsLag == new Period(-1, TimeUnit.Days))
             {
                 useLag = observationLag();
@@ -257,7 +247,7 @@ namespace QLNet.Termstructures.Volatility.Inflation
     }
 
     //! Constant surface, no K or T dependence.
-    public class ConstantYoYOptionletVolatility : YoYOptionletVolatilitySurface
+    [JetBrains.Annotations.PublicAPI] public class ConstantYoYOptionletVolatility : YoYOptionletVolatilitySurface
     {
 
         // Constructor
@@ -280,17 +270,16 @@ namespace QLNet.Termstructures.Volatility.Inflation
         }
 
         // Limits
-        public override Date maxDate() { return Date.maxDate(); }
+        public override Date maxDate() => Date.maxDate();
+
         //! the minimum strike for which the term structure can return vols
-        public override double minStrike() { return minStrike_; }
+        public override double minStrike() => minStrike_;
+
         //! the maximum strike for which the term structure can return vols
-        public override double maxStrike() { return maxStrike_; }
+        public override double maxStrike() => maxStrike_;
 
         //! implements the actual volatility calculation in derived classes
-        protected override double volatilityImpl(double length, double strike)
-        {
-            return volatility_;
-        }
+        protected override double volatilityImpl(double length, double strike) => volatility_;
 
         protected double volatility_;
         protected double minStrike_, maxStrike_;

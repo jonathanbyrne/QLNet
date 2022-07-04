@@ -57,7 +57,7 @@ namespace QLNet.Cashflows
         R = (a L + b) + |a| \min(\frac{C - b}{|a|} - \xi L, 0)
         \f]
      */
-    public class CappedFlooredYoYInflationCoupon : YoYInflationCoupon
+    [JetBrains.Annotations.PublicAPI] public class CappedFlooredYoYInflationCoupon : YoYInflationCoupon
     {
         // we may watch an underlying coupon ...
         public CappedFlooredYoYInflationCoupon(YoYInflationCoupon underlying,
@@ -113,7 +113,7 @@ namespace QLNet.Cashflows
         // swap(let) rate
         public override double rate()
         {
-            double swapletRate = underlying_ != null ? underlying_.rate() : base.rate();
+            var swapletRate = underlying_ != null ? underlying_.rate() : base.rate();
 
             if (isFloored_ || isCapped_)
             {
@@ -127,7 +127,7 @@ namespace QLNet.Cashflows
                 }
             }
 
-            double floorletRate = 0.0;
+            var floorletRate = 0.0;
             if (isFloored_)
             {
                 floorletRate =
@@ -136,7 +136,7 @@ namespace QLNet.Cashflows
                    pricer().floorletRate(effectiveFloor())
                    ;
             }
-            double capletRate = 0.0;
+            var capletRate = 0.0;
             if (isCapped_)
             {
                 capletRate =
@@ -172,19 +172,14 @@ namespace QLNet.Cashflows
             return null;
         }
         //! effective cap of fixing
-        public double effectiveCap()
-        {
-            return (cap_ - spread()) / gearing();
-        }
+        public double effectiveCap() => (cap_ - spread()) / gearing();
+
         //! effective floor of fixing
-        public double effectiveFloor()
-        {
-            return (floor_ - spread()) / gearing();
-        }
+        public double effectiveFloor() => (floor_ - spread()) / gearing();
 
-        public bool isCapped() { return isCapped_; }
-        public bool isFloored() { return isFloored_; }
+        public bool isCapped() => isCapped_;
 
+        public bool isFloored() => isFloored_;
 
         public void setPricer(YoYInflationCouponPricer pricer)
         {

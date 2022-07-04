@@ -22,7 +22,7 @@ using System;
 
 namespace QLNet.Termstructures.Volatility.CapFloor
 {
-    public class ConstantCapFloorTermVolatility : CapFloorTermVolatilityStructure
+    [JetBrains.Annotations.PublicAPI] public class ConstantCapFloorTermVolatility : CapFloorTermVolatilityStructure
     {
         private Handle<Quote> volatility_;
 
@@ -74,32 +74,19 @@ namespace QLNet.Termstructures.Volatility.CapFloor
 
         #region TermStructure interface
 
-        public override Date maxDate()
-        {
-            return Date.maxDate();
-        }
+        public override Date maxDate() => Date.maxDate();
 
         #endregion
 
 
         #region VolatilityTermStructure interface
-        public override double minStrike()
-        {
-            return double.MinValue;
-        }
+        public override double minStrike() => double.MinValue;
 
-        public override double maxStrike()
-        {
-            return double.MaxValue;
-        }
+        public override double maxStrike() => double.MaxValue;
 
         #endregion
 
 
-        protected override double volatilityImpl(double t, double rate)
-        {
-            return volatility_.link.value();
-        }
-
+        protected override double volatilityImpl(double t, double rate) => volatility_.link.value();
     }
 }

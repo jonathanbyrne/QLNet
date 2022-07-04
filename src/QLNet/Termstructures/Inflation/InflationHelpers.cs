@@ -29,7 +29,7 @@ using QLNet.Pricingengines.Swap;
 namespace QLNet.Termstructures.Inflation
 {
     //! Zero-coupon inflation-swap bootstrap helper
-    public class ZeroCouponInflationSwapHelper : BootstrapHelper<ZeroInflationTermStructure>
+    [JetBrains.Annotations.PublicAPI] public class ZeroCouponInflationSwapHelper : BootstrapHelper<ZeroInflationTermStructure>
     {
         public ZeroCouponInflationSwapHelper(
            Handle<Quote> quote,
@@ -61,7 +61,7 @@ namespace QLNet.Termstructures.Inflation
                 // get an extended validity, however for curve building
                 // just put the first date because using that convention
                 // for the base date throughout
-                KeyValuePair<Date, Date> limStart = Utils.inflationPeriod(maturity_ - swapObsLag_,
+                var limStart = Utils.inflationPeriod(maturity_ - swapObsLag_,
                                                                           zii_.frequency());
                 earliestDate_ = limStart.Key;
                 latestDate_ = limStart.Key;
@@ -72,7 +72,7 @@ namespace QLNet.Termstructures.Inflation
             // it's interpolation (assuming the start day is spot)
             if (zii_.interpolated())
             {
-                Period pShift = new Period(zii_.frequency());
+                var pShift = new Period(zii_.frequency());
                 Utils.QL_REQUIRE(swapObsLag_ - pShift > zii_.availabilityLag(), () =>
                                  "inconsistency between swap observation of index "
                                  + swapObsLag_ +
@@ -93,17 +93,17 @@ namespace QLNet.Termstructures.Inflation
 
             // set up a new ZCIIS
             // but this one does NOT own its inflation term structure
-            bool own = false;
-            double K = quote().link.value();
+            var own = false;
+            var K = quote().link.value();
 
             // The effect of the new inflation term structure is
             // felt via the effect on the inflation index
-            Handle<ZeroInflationTermStructure> zits = new Handle<ZeroInflationTermStructure>(z, own);
+            var zits = new Handle<ZeroInflationTermStructure>(z, own);
 
-            ZeroInflationIndex new_zii = zii_.clone(zits);
+            var new_zii = zii_.clone(zits);
 
-            double nominal = 1000000.0;   // has to be something but doesn't matter what
-            Date start = z.nominalTermStructure().link.referenceDate();
+            var nominal = 1000000.0;   // has to be something but doesn't matter what
+            var start = z.nominalTermStructure().link.referenceDate();
             zciis_ = new ZeroCouponInflationSwap(
                ZeroCouponInflationSwap.Type.Payer,
                nominal, start, maturity_,
@@ -134,7 +134,7 @@ namespace QLNet.Termstructures.Inflation
     }
 
     //! Year-on-year inflation-swap bootstrap helper
-    public class YearOnYearInflationSwapHelper : BootstrapHelper<YoYInflationTermStructure>
+    [JetBrains.Annotations.PublicAPI] public class YearOnYearInflationSwapHelper : BootstrapHelper<YoYInflationTermStructure>
     {
         public YearOnYearInflationSwapHelper(Handle<Quote> quote,
                                              Period swapObsLag,
@@ -165,7 +165,7 @@ namespace QLNet.Termstructures.Inflation
                 // get an extended validity, however for curve building
                 // just put the first date because using that convention
                 // for the base date throughout
-                KeyValuePair<Date, Date> limStart = Utils.inflationPeriod(maturity_ - swapObsLag_,
+                var limStart = Utils.inflationPeriod(maturity_ - swapObsLag_,
                                                                           yii_.frequency());
                 earliestDate_ = limStart.Key;
                 latestDate_ = limStart.Key;
@@ -176,7 +176,7 @@ namespace QLNet.Termstructures.Inflation
             // it's interpolation (assuming the start day is spot)
             if (yii_.interpolated())
             {
-                Period pShift = new Period(yii_.frequency());
+                var pShift = new Period(yii_.frequency());
                 Utils.QL_REQUIRE(swapObsLag_ - pShift > yii_.availabilityLag(), () =>
                                  "inconsistency between swap observation of index "
                                  + swapObsLag_ +
@@ -199,24 +199,24 @@ namespace QLNet.Termstructures.Inflation
 
             // The effect of the new inflation term structure is
             // felt via the effect on the inflation index
-            Handle<YoYInflationTermStructure> yyts = new Handle<YoYInflationTermStructure>(y, own);
+            var yyts = new Handle<YoYInflationTermStructure>(y, own);
 
-            YoYInflationIndex new_yii = yii_.clone(yyts);
+            var new_yii = yii_.clone(yyts);
 
             // always works because tenor is always 1 year so
             // no problem with different days-in-month
-            Date from = Settings.evaluationDate();
-            Date to = maturity_;
-            Schedule fixedSchedule = new MakeSchedule().from(from).to(to)
+            var from = Settings.evaluationDate();
+            var to = maturity_;
+            var fixedSchedule = new MakeSchedule().from(from).to(to)
             .withTenor(new Period(1, TimeUnit.Years))
             .withConvention(BusinessDayConvention.Unadjusted)
             .withCalendar(calendar_)// fixed leg gets cal from sched
             .value();
-            Schedule yoySchedule = fixedSchedule;
-            double spread = 0.0;
-            double fixedRate = quote().link.value();
+            var yoySchedule = fixedSchedule;
+            var spread = 0.0;
+            var fixedRate = quote().link.value();
 
-            double nominal = 1000000.0;   // has to be something but doesn't matter what
+            var nominal = 1000000.0;   // has to be something but doesn't matter what
             yyiis_ = new YearOnYearInflationSwap(YearOnYearInflationSwap.Type.Payer,
                                                  nominal,
                                                  fixedSchedule,

@@ -26,7 +26,7 @@ namespace QLNet.Pricingengines
     /*! Derived engines only need to implement the <tt>calculate()</tt>
         method
     */
-    public class LatticeShortRateModelEngine<ArgumentsType, ResultsType>
+    [JetBrains.Annotations.PublicAPI] public class LatticeShortRateModelEngine<ArgumentsType, ResultsType>
       : GenericModelEngine<ShortRateModel, ArgumentsType, ResultsType>
         where ArgumentsType : IPricingEngineArguments, new()
         where ResultsType : IPricingEngineResults, new()

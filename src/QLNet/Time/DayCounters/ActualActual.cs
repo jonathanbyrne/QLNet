@@ -34,7 +34,7 @@ namespace QLNet.Time.DayCounters
     /// For more details, refer to https://www.isda.org/a/pIJEE/The-Actual-Actual-Day-Count-Fraction-1999.pdf
     /// </remarks>
     /// </summary>
-    public class ActualActual : DayCounter
+    [JetBrains.Annotations.PublicAPI] public class ActualActual : DayCounter
     {
         public enum Convention { ISMA, Bond, ISDA, Historical, Actual365, AFB, Euro }
 
@@ -68,19 +68,16 @@ namespace QLNet.Time.DayCounters
         {
             private Schedule schedule_;
 
-            public static ISMA_Impl Singleton(Schedule schedule)
-            {
-                return new ISMA_Impl(schedule);
-            }
+            public static ISMA_Impl Singleton(Schedule schedule) => new ISMA_Impl(schedule);
 
             private ISMA_Impl(Schedule schedule)
             {
                 schedule_ = schedule;
             }
 
-            public override string name() { return "Actual/Actual (ISMA)"; }
+            public override string name() => "Actual/Actual (ISMA)";
 
-            public override int dayCount(Date d1, Date d2) { return d2 - d1; }
+            public override int dayCount(Date d1, Date d2) => d2 - d1;
 
             public override double yearFraction(Date d1, Date d2, Date d3, Date d4)
             {
@@ -90,14 +87,14 @@ namespace QLNet.Time.DayCounters
                 if (d2 < d1)
                     return -yearFraction(d2, d1, d3, d4);
 
-                List<Date> couponDates =
+                var couponDates =
                    getListOfPeriodDatesIncludingQuasiPayments(schedule_);
 
-                double yearFractionSum = 0.0;
-                for (int i = 0; i < couponDates.Count - 1; i++)
+                var yearFractionSum = 0.0;
+                for (var i = 0; i < couponDates.Count - 1; i++)
                 {
-                    Date startReferencePeriod = couponDates[i];
-                    Date endReferencePeriod = couponDates[i + 1];
+                    var startReferencePeriod = couponDates[i];
+                    var endReferencePeriod = couponDates[i + 1];
                     if (d1 < endReferencePeriod && d2 > startReferencePeriod)
                     {
                         yearFractionSum +=
@@ -114,15 +111,15 @@ namespace QLNet.Time.DayCounters
             private List<Date> getListOfPeriodDatesIncludingQuasiPayments(Schedule schedule)
             {
                 // Process the schedule into an array of dates.
-                Date issueDate = schedule.date(0);
-                Date firstCoupon = schedule.date(1);
-                Date notionalFirstCoupon =
+                var issueDate = schedule.date(0);
+                var firstCoupon = schedule.date(1);
+                var notionalFirstCoupon =
                    schedule.calendar().advance(firstCoupon,
                                                -schedule.tenor(),
                                                schedule.businessDayConvention(),
                                                schedule.endOfMonth());
 
-                List<Date> newDates = schedule.dates().ToList();
+                var newDates = schedule.dates().ToList();
                 newDates[0] = notionalFirstCoupon;
 
                 // The handling of the last coupon is is needed for odd final periods
@@ -138,7 +135,7 @@ namespace QLNet.Time.DayCounters
                 //long first coupon
                 if (notionalFirstCoupon > issueDate)
                 {
-                    Date priorNotionalCoupon =
+                    var priorNotionalCoupon =
                        schedule.calendar().advance(notionalFirstCoupon,
                                                    -schedule.tenor(),
                                                    schedule.businessDayConvention(),
@@ -149,7 +146,7 @@ namespace QLNet.Time.DayCounters
                 // long last coupon
                 if (notionalLastCoupon < schedule.endDate())
                 {
-                    Date nextNotionalCoupon =
+                    var nextNotionalCoupon =
                        schedule.calendar().advance(
                           notionalLastCoupon,
                           schedule.tenor(),
@@ -187,7 +184,7 @@ namespace QLNet.Time.DayCounters
             private int findCouponsPerYear<T>(T impl, Date refStart, Date refEnd) where T : DayCounter
             {
                 // This will only work for day counts longer than 15 days.
-                int months = (int)(0.5 + 12 * (double)impl.dayCount(refStart, refEnd) / 365.0);
+                var months = (int)(0.5 + 12 * (double)impl.dayCount(refStart, refEnd) / 365.0);
                 return (int)(0.5 + 12.0 / months);
             }
         }
@@ -198,9 +195,9 @@ namespace QLNet.Time.DayCounters
 
             private Old_ISMA_Impl() { }
 
-            public override string name() { return "Actual/Actual (ISMA)"; }
+            public override string name() => "Actual/Actual (ISMA)";
 
-            public override int dayCount(Date d1, Date d2) { return d2 - d1; }
+            public override int dayCount(Date d1, Date d2) => d2 - d1;
 
             public override double yearFraction(Date d1, Date d2, Date d3, Date d4)
             {
@@ -210,15 +207,15 @@ namespace QLNet.Time.DayCounters
                     return -yearFraction(d2, d1, d3, d4);
 
                 // when the reference period is not specified, try taking it equal to (d1,d2)
-                Date refPeriodStart = d3 ?? d1;
-                Date refPeriodEnd = d4 ?? d2;
+                var refPeriodStart = d3 ?? d1;
+                var refPeriodEnd = d4 ?? d2;
 
                 Utils.QL_REQUIRE(refPeriodEnd > refPeriodStart && refPeriodEnd > d1, () =>
                                  "Invalid reference period: date 1: " + d1 + ", date 2: " + d2 +
                                  ", reference period start: " + refPeriodStart + ", reference period end: " + refPeriodEnd);
 
                 // estimate roughly the length in months of a period
-                int months = (int)(0.5 + 12 * (refPeriodEnd - refPeriodStart) / 365.0);
+                var months = (int)(0.5 + 12 * (refPeriodEnd - refPeriodStart) / 365.0);
 
                 // for short periods...
                 if (months == 0)
@@ -229,7 +226,7 @@ namespace QLNet.Time.DayCounters
                     months = 12;
                 }
 
-                double period = months / 12.0;
+                var period = months / 12.0;
 
                 if (d2 <= refPeriodEnd)
                 {
@@ -249,7 +246,7 @@ namespace QLNet.Time.DayCounters
                         // this case is long first coupon
 
                         // the last notional payment date
-                        Date previousRef = refPeriodStart - new Period(months, TimeUnit.Months);
+                        var previousRef = refPeriodStart - new Period(months, TimeUnit.Months);
                         if (d2 > refPeriodStart)
                             return yearFraction(d1, refPeriodStart, previousRef, refPeriodStart) +
                                    yearFraction(refPeriodStart, d2, refPeriodStart, refPeriodEnd);
@@ -266,11 +263,11 @@ namespace QLNet.Time.DayCounters
                     // now it is: refPeriodStart <= d1 < refPeriodEnd < d2
 
                     // the part from d1 to refPeriodEnd
-                    double sum = yearFraction(d1, refPeriodEnd, refPeriodStart, refPeriodEnd);
+                    var sum = yearFraction(d1, refPeriodEnd, refPeriodStart, refPeriodEnd);
 
                     // the part from refPeriodEnd to d2
                     // count how many regular periods are in [refPeriodEnd, d2], then add the remaining time
-                    int i = 0;
+                    var i = 0;
                     Date newRefStart, newRefEnd;
                     for (; ; )
                     {
@@ -298,9 +295,9 @@ namespace QLNet.Time.DayCounters
 
             private ISDA_Impl() { }
 
-            public override string name() { return "Actual/Actual (ISDA)"; }
+            public override string name() => "Actual/Actual (ISDA)";
 
-            public override int dayCount(Date d1, Date d2) { return d2 - d1; }
+            public override int dayCount(Date d1, Date d2) => d2 - d1;
 
             public override double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd)
             {
@@ -326,9 +323,9 @@ namespace QLNet.Time.DayCounters
 
             private AFB_Impl() { }
 
-            public override string name() { return "Actual/Actual (AFB)"; }
+            public override string name() => "Actual/Actual (AFB)";
 
-            public override int dayCount(Date d1, Date d2) { return d2 - d1; }
+            public override int dayCount(Date d1, Date d2) => d2 - d1;
 
             public override double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd)
             {

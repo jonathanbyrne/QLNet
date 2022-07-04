@@ -29,7 +29,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
         same when volatility is at most time dependent, so this class
         is basically a proxy for BlackVolatilityTermStructure.
     */
-    public class LocalConstantVol : LocalVolTermStructure
+    [JetBrains.Annotations.PublicAPI] public class LocalConstantVol : LocalVolTermStructure
     {
         Handle<Quote> volatility_;
         DayCounter dayCounter_;
@@ -67,12 +67,15 @@ namespace QLNet.Termstructures.Volatility.equityfx
         }
 
         // TermStructure interface
-        public override DayCounter dayCounter() { return dayCounter_; }
-        public override Date maxDate() { return Date.maxDate(); }
-        // VolatilityTermStructure interface
-        public override double minStrike() { return double.MinValue; }
-        public override double maxStrike() { return double.MaxValue; }
+        public override DayCounter dayCounter() => dayCounter_;
 
-        protected override double localVolImpl(double t, double s) { return volatility_.link.value(); }
+        public override Date maxDate() => Date.maxDate();
+
+        // VolatilityTermStructure interface
+        public override double minStrike() => double.MinValue;
+
+        public override double maxStrike() => double.MaxValue;
+
+        protected override double localVolImpl(double t, double s) => volatility_.link.value();
     }
 }

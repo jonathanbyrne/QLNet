@@ -37,7 +37,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_SwaptionVolatilityMatrix : IDisposable
+    [JetBrains.Annotations.PublicAPI] public class T_SwaptionVolatilityMatrix : IDisposable
     {
         #region Initialize&Cleanup
         private SavedSettings backup;
@@ -53,13 +53,13 @@ namespace QLNet.Tests
         }
         #endregion
 
-        public class SwaptionTenors
+        [JetBrains.Annotations.PublicAPI] public class SwaptionTenors
         {
             public List<Period> options;
             public List<Period> swaps;
         }
 
-        public class SwaptionMarketConventions
+        [JetBrains.Annotations.PublicAPI] public class SwaptionMarketConventions
         {
             public Calendar calendar;
             public BusinessDayConvention optionBdc;
@@ -67,14 +67,14 @@ namespace QLNet.Tests
             public void setConventions()
             {
                 calendar = new TARGET();
-                Date today = calendar.adjust(Date.Today);
+                var today = calendar.adjust(Date.Today);
                 Settings.setEvaluationDate(today);
                 optionBdc = BusinessDayConvention.ModifiedFollowing;
                 dayCounter = new Actual365Fixed();
             }
         }
 
-        public class AtmVolatility
+        [JetBrains.Annotations.PublicAPI] public class AtmVolatility
         {
             public SwaptionTenors tenors;
             public Matrix vols;
@@ -107,10 +107,10 @@ namespace QLNet.Tests
                 vols[5, 0] = 0.1130; vols[5, 1] = 0.1090; vols[5, 2] = 0.1070; vols[5, 3] = 0.0930;
                 volsHandle = new InitializedList<List<Handle<Quote>>>(tenors.options.Count);
 
-                for (int i = 0; i < tenors.options.Count; i++)
+                for (var i = 0; i < tenors.options.Count; i++)
                 {
                     volsHandle[i] = new InitializedList<Handle<Quote>>(tenors.swaps.Count);
-                    for (int j = 0; j < tenors.swaps.Count; j++)
+                    for (var j = 0; j < tenors.swaps.Count; j++)
                         // every handle must be reassigned, as the ones created by
                         // default are all linked together.
                         volsHandle[i][j] = new Handle<Quote>(new SimpleQuote(vols[i, j]));
@@ -151,14 +151,14 @@ namespace QLNet.Tests
                                               bool mktDataFloating,
                                               bool referenceDateFloating)
             {
-                double dummyStrike = .02;
-                Date referenceDate = Settings.evaluationDate();
-                double initialVol = vol.volatility(
+                var dummyStrike = .02;
+                var referenceDate = Settings.evaluationDate();
+                var initialVol = vol.volatility(
                                        referenceDate + atm.tenors.options[0],
                                        atm.tenors.swaps[0], dummyStrike, false);
                 // testing evaluation date change ...
                 Settings.setEvaluationDate(referenceDate - new Period(1, TimeUnit.Years));
-                double newVol = vol.volatility(
+                var newVol = vol.volatility(
                                     referenceDate + atm.tenors.options[0],
                                     atm.tenors.swaps[0], dummyStrike, false);
 
@@ -173,9 +173,9 @@ namespace QLNet.Tests
                 // test market data change...
                 if (mktDataFloating)
                 {
-                    double initialVolatility = atm.volsHandle[0][0].link.value();
+                    var initialVolatility = atm.volsHandle[0][0].link.value();
 
-                    SimpleQuote sq = (SimpleQuote)atm.volsHandle[0][0].currentLink();
+                    var sq = (SimpleQuote)atm.volsHandle[0][0].currentLink();
                     sq.setValue(10);
 
                     newVol = vol.volatility(referenceDate + atm.tenors.options[0],
@@ -192,9 +192,9 @@ namespace QLNet.Tests
                                           SwaptionVolatilityDiscrete vol)
             {
 
-                for (int i = 0; i < atm.tenors.options.Count; ++i)
+                for (var i = 0; i < atm.tenors.options.Count; ++i)
                 {
-                    Date optionDate =
+                    var optionDate =
                        vol.optionDateFromTenor(atm.tenors.options[i]);
                     if (optionDate != vol.optionDates()[i])
                         QAssert.Fail(
@@ -203,7 +203,7 @@ namespace QLNet.Tests
                            "\n       option tenor: " + atm.tenors.options[i] +
                            "\nactual option date : " + optionDate +
                            "\n  exp. option date : " + vol.optionDates()[i]);
-                    double optionTime = vol.timeFromReference(optionDate);
+                    var optionTime = vol.timeFromReference(optionDate);
                     if (optionTime != vol.optionTimes()[i])
                         QAssert.Fail(
                            "timeFromReference failure for " +
@@ -214,13 +214,13 @@ namespace QLNet.Tests
                            "\n  exp. option time : " + vol.optionTimes()[i]);
                 }
 
-                BlackSwaptionEngine engine = new BlackSwaptionEngine(
+                var engine = new BlackSwaptionEngine(
                    termStructure,
                    new Handle<SwaptionVolatilityStructure>(vol));
 
-                for (int j = 0; j < atm.tenors.swaps.Count; j++)
+                for (var j = 0; j < atm.tenors.swaps.Count; j++)
                 {
-                    double swapLength = vol.swapLength(atm.tenors.swaps[j]);
+                    var swapLength = vol.swapLength(atm.tenors.swaps[j]);
 
                     if (swapLength != atm.tenors.swaps[j].length())
                         QAssert.Fail("convertSwapTenor failure for " +
@@ -231,7 +231,7 @@ namespace QLNet.Tests
 
                     SwapIndex swapIndex = new EuriborSwapIsdaFixA(atm.tenors.swaps[j], termStructure);
 
-                    for (int i = 0; i < atm.tenors.options.Count; ++i)
+                    for (var i = 0; i < atm.tenors.options.Count; ++i)
                     {
                         double error, tolerance = 1.0e-16;
                         double actVol, expVol = atm.vols[i, j];
@@ -250,7 +250,7 @@ namespace QLNet.Tests
                                "\n       error = " + error +
                                "\n   tolerance = " + tolerance);
 
-                        Date optionDate =
+                        var optionDate =
                            vol.optionDateFromTenor(atm.tenors.options[i]);
                         actVol = vol.volatility(optionDate,
                                                 atm.tenors.swaps[j], 0.05, true);
@@ -267,7 +267,7 @@ namespace QLNet.Tests
                                "\n      error: " + error +
                                "\n  tolerance: " + tolerance);
 
-                        double optionTime = vol.timeFromReference(optionDate);
+                        var optionTime = vol.timeFromReference(optionDate);
                         actVol = vol.volatility(optionTime, swapLength,
                                                 0.05, true);
                         error = System.Math.Abs(expVol - actVol);
@@ -285,12 +285,12 @@ namespace QLNet.Tests
                                "\n   tolerance: " + tolerance);
 
                         // ATM swaption
-                        Swaption swaption = new MakeSwaption(
+                        var swaption = new MakeSwaption(
                            swapIndex, atm.tenors.options[i])
                         .withPricingEngine(engine)
                         .value();
 
-                        Date exerciseDate = swaption.exercise().dates().First();
+                        var exerciseDate = swaption.exercise().dates().First();
                         if (exerciseDate != vol.optionDates()[i])
                             QAssert.Fail(
                                "optionDateFromTenor mismatch for " +
@@ -299,9 +299,9 @@ namespace QLNet.Tests
                                "\nactual option date: " + exerciseDate +
                                "\n  exp. option date: " + vol.optionDates()[i]);
 
-                        Date start = swaption.underlyingSwap().startDate();
-                        Date end = swaption.underlyingSwap().maturityDate();
-                        double swapLength2 = vol.swapLength(start, end);
+                        var start = swaption.underlyingSwap().startDate();
+                        var end = swaption.underlyingSwap().maturityDate();
+                        var swapLength2 = vol.swapLength(start, end);
                         if (swapLength2 != swapLength)
                             QAssert.Fail(
                                "swapLength failure for " +
@@ -310,7 +310,7 @@ namespace QLNet.Tests
                                "\n actual swap length: " + swapLength2 +
                                "\n   exp. swap length: " + swapLength);
 
-                        double npv = swaption.NPV();
+                        var npv = swaption.NPV();
                         actVol = swaption.impliedVolatility(npv, termStructure,
                                                             expVol * 0.98, 1e-6);
                         error = System.Math.Abs(expVol - actVol);
@@ -337,7 +337,7 @@ namespace QLNet.Tests
         public void testSwaptionVolMatrixCoherence()
         {
             // Testing swaption volatility matrix
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             SwaptionVolatilityMatrix vol;
             string description;
@@ -393,7 +393,7 @@ namespace QLNet.Tests
         public void testSwaptionVolMatrixObservability()
         {
             // Testing swaption volatility matrix observability
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             SwaptionVolatilityMatrix vol;
             string description;

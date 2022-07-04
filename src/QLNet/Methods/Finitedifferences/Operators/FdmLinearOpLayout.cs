@@ -23,7 +23,7 @@ using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Operators
 {
-    public class FdmLinearOpLayout
+    [JetBrains.Annotations.PublicAPI] public class FdmLinearOpLayout
     {
         public FdmLinearOpLayout(List<int> dim)
         {
@@ -31,47 +31,29 @@ namespace QLNet.Methods.Finitedifferences.Operators
             spacing_ = new InitializedList<int>(dim.Count);
             spacing_[0] = 1;
 
-            for (int i = 0; i < dim.Count - 1; i++)
+            for (var i = 0; i < dim.Count - 1; i++)
                 spacing_[i + 1] = dim[i] * spacing_[i];
 
             size_ = spacing_.Last() * dim.Last();
         }
 
-        public FdmLinearOpIterator begin()
-        {
-            return new FdmLinearOpIterator(dim_);
-        }
+        public FdmLinearOpIterator begin() => new FdmLinearOpIterator(dim_);
 
-        public FdmLinearOpIterator end()
-        {
-            return new FdmLinearOpIterator(size_);
-        }
+        public FdmLinearOpIterator end() => new FdmLinearOpIterator(size_);
 
-        public List<int> dim()
-        {
-            return dim_;
-        }
+        public List<int> dim() => dim_;
 
-        public List<int> spacing()
-        {
-            return spacing_;
-        }
+        public List<int> spacing() => spacing_;
 
-        public int size()
-        {
-            return size_;
-        }
+        public int size() => size_;
 
-        public int index(List<int> coordinates)
-        {
-            return coordinates.inner_product(0, coordinates.Count, 0, spacing_, 0);
-        }
+        public int index(List<int> coordinates) => coordinates.inner_product(0, coordinates.Count, 0, spacing_, 0);
 
         public int neighbourhood(FdmLinearOpIterator iterator, int i, int offset)
         {
-            int myIndex = iterator.index() - iterator.coordinates()[i] * spacing_[i];
+            var myIndex = iterator.index() - iterator.coordinates()[i] * spacing_[i];
 
-            int coorOffset = iterator.coordinates()[i] + offset;
+            var coorOffset = iterator.coordinates()[i] + offset;
 
             if (coorOffset < 0)
             {
@@ -88,11 +70,11 @@ namespace QLNet.Methods.Finitedifferences.Operators
                                  int i1, int offset1,
                                  int i2, int offset2)
         {
-            int myIndex = iterator.index()
+            var myIndex = iterator.index()
                           - iterator.coordinates()[i1] * spacing_[i1]
                           - iterator.coordinates()[i2] * spacing_[i2];
 
-            int coorOffset1 = iterator.coordinates()[i1] + offset1;
+            var coorOffset1 = iterator.coordinates()[i1] + offset1;
             if (coorOffset1 < 0)
             {
                 coorOffset1 = -coorOffset1;
@@ -102,7 +84,7 @@ namespace QLNet.Methods.Finitedifferences.Operators
                 coorOffset1 = 2 * (dim_[i1] - 1) - coorOffset1;
             }
 
-            int coorOffset2 = iterator.coordinates()[i2] + offset2;
+            var coorOffset2 = iterator.coordinates()[i2] + offset2;
             if (coorOffset2 < 0)
             {
                 coorOffset2 = -coorOffset2;
@@ -117,9 +99,9 @@ namespace QLNet.Methods.Finitedifferences.Operators
 
         public FdmLinearOpIterator iter_neighbourhood(FdmLinearOpIterator iterator, int i, int offset)
         {
-            List<int> coordinates = iterator.coordinates();
+            var coordinates = iterator.coordinates();
 
-            int coorOffset = coordinates[i] + offset;
+            var coorOffset = coordinates[i] + offset;
             if (coorOffset < 0)
             {
                 coorOffset = -coorOffset;
@@ -130,7 +112,7 @@ namespace QLNet.Methods.Finitedifferences.Operators
             }
             coordinates[i] = coorOffset;
 
-            FdmLinearOpIterator retVal = new FdmLinearOpIterator(dim_, coordinates,
+            var retVal = new FdmLinearOpIterator(dim_, coordinates,
                                                                  index(coordinates));
 
             return retVal;

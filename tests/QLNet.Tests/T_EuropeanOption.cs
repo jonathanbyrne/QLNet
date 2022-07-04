@@ -32,7 +32,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_EuropeanOption : IDisposable
+    [JetBrains.Annotations.PublicAPI] public class T_EuropeanOption : IDisposable
     {
         #region Initialize&Cleanup
         private SavedSettings backup;
@@ -62,10 +62,10 @@ namespace QLNet.Tests
         public void testJRBinomialEngines()
         {
             // Testing JR binomial European engines against analytic results
-            EngineType engine = EngineType.JR;
-            int steps = 251;
-            int samples = 0;
-            Dictionary<string, double> relativeTol = new Dictionary<string, double>();
+            var engine = EngineType.JR;
+            var steps = 251;
+            var samples = 0;
+            var relativeTol = new Dictionary<string, double>();
             relativeTol.Add("value", 0.002);
             relativeTol.Add("delta", 1.0e-3);
             relativeTol.Add("gamma", 1.0e-4);
@@ -76,10 +76,10 @@ namespace QLNet.Tests
         public void testCRRBinomialEngines()
         {
             // Testing CRR binomial European engines against analytic results
-            EngineType engine = EngineType.CRR;
-            int steps = 501;
-            int samples = 0;
-            Dictionary<string, double> relativeTol = new Dictionary<string, double>();
+            var engine = EngineType.CRR;
+            var steps = 501;
+            var samples = 0;
+            var relativeTol = new Dictionary<string, double>();
             relativeTol.Add("value", 0.02);
             relativeTol.Add("delta", 1.0e-3);
             relativeTol.Add("gamma", 1.0e-4);
@@ -90,10 +90,10 @@ namespace QLNet.Tests
         public void testEQPBinomialEngines()
         {
             // Testing EQP binomial European engines against analytic results
-            EngineType engine = EngineType.EQP;
-            int steps = 501;
-            int samples = 0;
-            Dictionary<string, double> relativeTol = new Dictionary<string, double>();
+            var engine = EngineType.EQP;
+            var steps = 501;
+            var samples = 0;
+            var relativeTol = new Dictionary<string, double>();
             relativeTol.Add("value", 0.02);
             relativeTol.Add("delta", 1.0e-3);
             relativeTol.Add("gamma", 1.0e-4);
@@ -104,10 +104,10 @@ namespace QLNet.Tests
         public void testTGEOBinomialEngines()
         {
             // Testing TGEO binomial European engines " against analytic results
-            EngineType engine = EngineType.TGEO;
-            int steps = 251;
-            int samples = 0;
-            Dictionary<string, double> relativeTol = new Dictionary<string, double>();
+            var engine = EngineType.TGEO;
+            var steps = 251;
+            var samples = 0;
+            var relativeTol = new Dictionary<string, double>();
             relativeTol.Add("value", 0.002);
             relativeTol.Add("delta", 1.0e-3);
             relativeTol.Add("gamma", 1.0e-4);
@@ -118,10 +118,10 @@ namespace QLNet.Tests
         public void testTIANBinomialEngines()
         {
             // Testing TIAN binomial European engines against analytic results
-            EngineType engine = EngineType.TIAN;
-            int steps = 251;
-            int samples = 0;
-            Dictionary<string, double> relativeTol = new Dictionary<string, double>();
+            var engine = EngineType.TIAN;
+            var steps = 251;
+            var samples = 0;
+            var relativeTol = new Dictionary<string, double>();
             relativeTol.Add("value", 0.002);
             relativeTol.Add("delta", 1.0e-3);
             relativeTol.Add("gamma", 1.0e-4);
@@ -132,10 +132,10 @@ namespace QLNet.Tests
         public void testLRBinomialEngines()
         {
             // Testing LR binomial European engines against analytic results
-            EngineType engine = EngineType.LR;
-            int steps = 251;
-            int samples = 0;
-            Dictionary<string, double> relativeTol = new Dictionary<string, double>();
+            var engine = EngineType.LR;
+            var steps = 251;
+            var samples = 0;
+            var relativeTol = new Dictionary<string, double>();
             relativeTol.Add("value", 1.0e-6);
             relativeTol.Add("delta", 1.0e-3);
             relativeTol.Add("gamma", 1.0e-4);
@@ -146,10 +146,10 @@ namespace QLNet.Tests
         public void testJOSHIBinomialEngines()
         {
             // Testing Joshi binomial European engines against analytic results
-            EngineType engine = EngineType.JOSHI;
-            int steps = 251;
-            int samples = 0;
-            Dictionary<string, double> relativeTol = new Dictionary<string, double>();
+            var engine = EngineType.JOSHI;
+            var steps = 251;
+            var samples = 0;
+            var relativeTol = new Dictionary<string, double>();
             relativeTol.Add("value", 1.0e-7);
             relativeTol.Add("delta", 1.0e-3);
             relativeTol.Add("gamma", 1.0e-4);
@@ -166,10 +166,10 @@ namespace QLNet.Tests
 
             //SavedSettings backup;
 
-            EngineType engine = EngineType.FiniteDifferences;
-            int timeSteps = 300;
-            int gridPoints = 300;
-            Dictionary<string, double> relativeTol = new Dictionary<string, double>();
+            var engine = EngineType.FiniteDifferences;
+            var timeSteps = 300;
+            var gridPoints = 300;
+            var relativeTol = new Dictionary<string, double>();
             relativeTol.Add("value", 1.0e-4);
             relativeTol.Add("delta", 1.0e-6);
             relativeTol.Add("gamma", 1.0e-6);
@@ -178,18 +178,15 @@ namespace QLNet.Tests
         }
 
 
-        GeneralizedBlackScholesProcess makeProcess(Quote u, YieldTermStructure q, YieldTermStructure r, BlackVolTermStructure vol)
-        {
-            return new BlackScholesMertonProcess(new Handle<Quote>(u), new Handle<YieldTermStructure>(q),
-                                                 new Handle<YieldTermStructure>(r), new Handle<BlackVolTermStructure>(vol));
-        }
-
+        GeneralizedBlackScholesProcess makeProcess(Quote u, YieldTermStructure q, YieldTermStructure r, BlackVolTermStructure vol) =>
+            new BlackScholesMertonProcess(new Handle<Quote>(u), new Handle<YieldTermStructure>(q),
+                new Handle<YieldTermStructure>(r), new Handle<BlackVolTermStructure>(vol));
 
         VanillaOption makeOption(StrikedTypePayoff payoff, Exercise exercise, Quote u, YieldTermStructure q,
                                  YieldTermStructure r, BlackVolTermStructure vol, EngineType engineType, int binomialSteps, int samples)
         {
 
-            GeneralizedBlackScholesProcess stochProcess = makeProcess(u, q, r, vol);
+            var stochProcess = makeProcess(u, q, r, vol);
 
             IPricingEngine engine;
             switch (engineType)
@@ -236,7 +233,7 @@ namespace QLNet.Tests
                 //      .withSamples(samples);
                 //  break;
                 default:
-                    throw new ArgumentException("unknown engine type");
+                    throw new ArgumentException("unknown engine ExerciseType");
             }
 
             VanillaOption option = new EuropeanOption(payoff, exercise);
@@ -265,44 +262,44 @@ namespace QLNet.Tests
             double[] vols = { 0.11, 0.50, 1.20 };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            SimpleQuote vol = new SimpleQuote(0.0);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
-            SimpleQuote qRate = new SimpleQuote(0.0);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
+            var spot = new SimpleQuote(0.0);
+            var vol = new SimpleQuote(0.0);
+            var volTS = Utilities.flatVol(today, vol, dc);
+            var qRate = new SimpleQuote(0.0);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.0);
+            var rTS = Utilities.flatRate(today, rRate, dc);
 
-            for (int i = 0; i < types.Length; i++)
+            for (var i = 0; i < types.Length; i++)
             {
-                for (int j = 0; j < strikes.Length; j++)
+                for (var j = 0; j < strikes.Length; j++)
                 {
-                    for (int k = 0; k < lengths.Length; k++)
+                    for (var k = 0; k < lengths.Length; k++)
                     {
-                        Date exDate = today + lengths[k] * 360;
+                        var exDate = today + lengths[k] * 360;
                         Exercise exercise = new EuropeanExercise(exDate);
                         StrikedTypePayoff payoff = new PlainVanillaPayoff(types[i], strikes[j]);
                         // reference option
-                        VanillaOption refOption = makeOption(payoff, exercise, spot, qTS, rTS, volTS,
+                        var refOption = makeOption(payoff, exercise, spot, qTS, rTS, volTS,
                                                              EngineType.Analytic, 0, 0);
                         // option to check
-                        VanillaOption option = makeOption(payoff, exercise, spot, qTS, rTS, volTS,
+                        var option = makeOption(payoff, exercise, spot, qTS, rTS, volTS,
                                                           engine, binomialSteps, samples);
 
-                        for (int l = 0; l < underlyings.Length; l++)
+                        for (var l = 0; l < underlyings.Length; l++)
                         {
-                            for (int m = 0; m < qRates.Length; m++)
+                            for (var m = 0; m < qRates.Length; m++)
                             {
-                                for (int n = 0; n < rRates.Length; n++)
+                                for (var n = 0; n < rRates.Length; n++)
                                 {
-                                    for (int p = 0; p < vols.Length; p++)
+                                    for (var p = 0; p < vols.Length; p++)
                                     {
-                                        double u = underlyings[l];
+                                        var u = underlyings[l];
                                         double q = qRates[m],
                                                r = rRates[n];
-                                        double v = vols[p];
+                                        var v = vols[p];
                                         spot.setValue(u);
                                         qRate.setValue(q);
                                         rRate.setValue(r);
@@ -324,12 +321,12 @@ namespace QLNet.Tests
                                             calculated.Add("gamma", option.gamma());
                                             calculated.Add("theta", option.theta());
                                         }
-                                        foreach (string greek in calculated.Keys)
+                                        foreach (var greek in calculated.Keys)
                                         {
                                             double expct = expected[greek],
                                                    calcl = calculated[greek],
                                                    tol = tolerance[greek];
-                                            double error = Utilities.relativeError(expct, calcl, u);
+                                            var error = Utilities.relativeError(expct, calcl, u);
                                             if (error > tol)
                                             {
                                                 REPORT_FAILURE(greek, payoff, exercise,

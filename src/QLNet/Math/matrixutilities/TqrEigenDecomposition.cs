@@ -35,7 +35,7 @@ namespace QLNet.Math.matrixutilities
        \test the correctness of the result is tested by checking it
              against known good values.
     */
-    public class TqrEigenDecomposition
+    [JetBrains.Annotations.PublicAPI] public class TqrEigenDecomposition
     {
 
         public enum EigenVectorCalculation
@@ -58,16 +58,16 @@ namespace QLNet.Math.matrixutilities
             iter_ = 0;
             d_ = new Vector(diag);
 
-            int row = calc == EigenVectorCalculation.WithEigenVector ? d_.size() :
+            var row = calc == EigenVectorCalculation.WithEigenVector ? d_.size() :
                       calc == EigenVectorCalculation.WithoutEigenVector ? 0 : 1;
 
             ev_ = new Matrix(row, d_.size(), 0.0);
 
-            int n = diag.size();
+            var n = diag.size();
 
             Utils.QL_REQUIRE(n == sub.size() + 1, () => "Wrong dimensions");
 
-            Vector e = new Vector(n, 0.0);
+            var e = new Vector(n, 0.0);
             int i;
             for (i = 1; i < e.Count; ++i)
             {
@@ -80,15 +80,15 @@ namespace QLNet.Math.matrixutilities
                 ev_[i, i] = 1.0;
             }
 
-            for (int k = n - 1; k >= 1; --k)
+            for (var k = n - 1; k >= 1; --k)
             {
                 while (!offDiagIsZero(k, e))
                 {
-                    int l = k;
+                    var l = k;
                     while (--l > 0 && !offDiagIsZero(l, e)) ;
                     iter_++;
 
-                    double q = d_[l];
+                    var q = d_[l];
                     if (strategy != ShiftStrategy.NoShift)
                     {
                         // calculated eigenvalue of 2x2 sub matrix of
@@ -96,12 +96,12 @@ namespace QLNet.Math.matrixutilities
                         // [  e_[k]  d_[k] ]
                         // which is closer to d_[k+1].
                         // FLOATING_POINT_EXCEPTION
-                        double t1 = System.Math.Sqrt(
+                        var t1 = System.Math.Sqrt(
                                        0.25 * (d_[k] * d_[k] + d_[k - 1] * d_[k - 1])
                                        - 0.5 * d_[k - 1] * d_[k] + e[k] * e[k]);
-                        double t2 = 0.5 * (d_[k] + d_[k - 1]);
+                        var t2 = 0.5 * (d_[k] + d_[k - 1]);
 
-                        double lambda = System.Math.Abs(t2 + t1 - d_[k]) < System.Math.Abs(t2 - t1 - d_[k]) ?
+                        var lambda = System.Math.Abs(t2 + t1 - d_[k]) < System.Math.Abs(t2 - t1 - d_[k]) ?
                                         t2 + t1 : t2 - t1;
 
                         if (strategy == ShiftStrategy.CloseEigenValue)
@@ -115,15 +115,15 @@ namespace QLNet.Math.matrixutilities
                     }
 
                     // the QR transformation
-                    double sine = 1.0;
-                    double cosine = 1.0;
-                    double u = 0.0;
+                    var sine = 1.0;
+                    var cosine = 1.0;
+                    var u = 0.0;
 
-                    bool recoverUnderflow = false;
+                    var recoverUnderflow = false;
                     for (i = l + 1; i <= k && !recoverUnderflow; ++i)
                     {
-                        double h = cosine * e[i];
-                        double p = sine * e[i];
+                        var h = cosine * e[i];
+                        var p = sine * e[i];
 
                         e[i - 1] = System.Math.Sqrt(p * p + q * q);
                         if (e[i - 1].IsNotEqual(0.0))
@@ -131,16 +131,16 @@ namespace QLNet.Math.matrixutilities
                             sine = p / e[i - 1];
                             cosine = q / e[i - 1];
 
-                            double g = d_[i - 1] - u;
-                            double t = (d_[i] - g) * sine + 2 * cosine * h;
+                            var g = d_[i - 1] - u;
+                            var t = (d_[i] - g) * sine + 2 * cosine * h;
 
                             u = sine * t;
                             d_[i - 1] = g + u;
                             q = cosine * t - h;
 
-                            for (int j = 0; j < ev_.rows(); ++j)
+                            for (var j = 0; j < ev_.rows(); ++j)
                             {
-                                double tmp = ev_[j, i - 1];
+                                var tmp = ev_[j, i - 1];
                                 ev_[j, i - 1] = sine * ev_[j, i] + cosine * tmp;
                                 ev_[j, i] = cosine * ev_[j, i] - sine * tmp;
                             }
@@ -181,10 +181,10 @@ namespace QLNet.Math.matrixutilities
             for (i = 0; i < n; i++)
             {
                 d_[i] = temp[i].Key;
-                double sign = 1.0;
+                var sign = 1.0;
                 if (ev_.rows() > 0 && temp[i].Value[0] < 0.0)
                     sign = -1.0;
-                for (int j = 0; j < ev_.rows(); ++j)
+                for (var j = 0; j < ev_.rows(); ++j)
                 {
                     ev_[j, i] = sign * temp[i].Value[j];
                 }
@@ -192,21 +192,16 @@ namespace QLNet.Math.matrixutilities
 
         }
 
-        static int KeyValuePairCompare(KeyValuePair<double, List<double>> a, KeyValuePair<double, List<double>> b)
-        {
-            return a.Key.CompareTo(b.Key);
-        }
+        static int KeyValuePairCompare(KeyValuePair<double, List<double>> a, KeyValuePair<double, List<double>> b) => a.Key.CompareTo(b.Key);
 
-        public Vector eigenvalues() { return d_; }
-        public Matrix eigenvectors() { return ev_; }
+        public Vector eigenvalues() => d_;
 
-        public int iterations() { return iter_; }
+        public Matrix eigenvectors() => ev_;
 
+        public int iterations() => iter_;
 
-        private bool offDiagIsZero(int k, Vector e)
-        {
-            return (System.Math.Abs(d_[k - 1]) + System.Math.Abs(d_[k])).IsEqual(System.Math.Abs(d_[k - 1]) + System.Math.Abs(d_[k]) + System.Math.Abs(e[k]));
-        }
+        private bool offDiagIsZero(int k, Vector e) => (System.Math.Abs(d_[k - 1]) + System.Math.Abs(d_[k])).IsEqual(System.Math.Abs(d_[k - 1]) + System.Math.Abs(d_[k]) + System.Math.Abs(e[k]));
+
         private int iter_;
         private Vector d_;
         private Matrix ev_;

@@ -51,14 +51,18 @@ namespace QLNet.Math.matrixutilities
         private List<double> errors;
         private Vector x;
 
-        public List<double> Errors { get { return errors; } set { errors = value; } }
-        public Vector X { get { return x; } set { x = value; } }
+        public List<double> Errors { get => errors;
+            set => errors = value;
+        }
+        public Vector X { get => x;
+            set => x = value;
+        }
     }
 
     /// <summary>
     /// Generalized minimal residual method
     /// </summary>
-    public class GMRES
+    [JetBrains.Annotations.PublicAPI] public class GMRES
     {
         public delegate Vector MatrixMult(Vector x);
 
@@ -75,7 +79,7 @@ namespace QLNet.Math.matrixutilities
 
         public GMRESResult solve(Vector b, Vector x0 = null)
         {
-            GMRESResult result = solveImpl(b, x0);
+            var result = solveImpl(b, x0);
 
             Utils.QL_REQUIRE(result.Errors.Last() < relTol_, () => "could not converge");
 
@@ -84,11 +88,11 @@ namespace QLNet.Math.matrixutilities
 
         public GMRESResult solveWithRestart(int restart, Vector b, Vector x0 = null)
         {
-            GMRESResult result = solveImpl(b, x0);
+            var result = solveImpl(b, x0);
 
-            List<double> errors = result.Errors;
+            var errors = result.Errors;
 
-            for (int i = 0; i < restart - 1 && result.Errors.Last() >= relTol_; ++i)
+            for (var i = 0; i < restart - 1 && result.Errors.Last() >= relTol_; ++i)
             {
                 result = solveImpl(b, result.X);
                 errors.AddRange(result.Errors);
@@ -102,7 +106,7 @@ namespace QLNet.Math.matrixutilities
 
         protected GMRESResult solveImpl(Vector b, Vector x0)
         {
-            double bn = Vector.Norm2(b);
+            var bn = Vector.Norm2(b);
             GMRESResult result;
             if (bn.IsEqual(0.0))
             {
@@ -110,10 +114,10 @@ namespace QLNet.Math.matrixutilities
                 return result;
             }
 
-            Vector x = !x0.empty() ? x0 : new Vector(b.size(), 0.0);
-            Vector r = b - A_(x);
+            var x = !x0.empty() ? x0 : new Vector(b.size(), 0.0);
+            var r = b - A_(x);
 
-            double g = Vector.Norm2(r);
+            var g = Vector.Norm2(r);
             if (g / bn < relTol_)
             {
                 result = new GMRESResult(new InitializedList<double>(1, g / bn), x);
@@ -130,12 +134,12 @@ namespace QLNet.Math.matrixutilities
 
             List<double> errors = new InitializedList<double>(1, g / bn);
 
-            for (int j = 0; j < maxIter_ && errors.Last() >= relTol_; ++j)
+            for (var j = 0; j < maxIter_ && errors.Last() >= relTol_; ++j)
             {
                 h.Add(new Vector(maxIter_, 0.0));
-                Vector w = A_(M_ != null ? M_(v[j]) : v[j]);
+                var w = A_(M_ != null ? M_(v[j]) : v[j]);
 
-                for (int i = 0; i <= j; ++i)
+                for (var i = 0; i <= j; ++i)
                 {
                     h[i][j] = Vector.DotProduct(w, v[i]);
                     w -= h[i][j] * v[i];
@@ -148,17 +152,17 @@ namespace QLNet.Math.matrixutilities
 
                 v.Add(w / h[j + 1][j]);
 
-                for (int i = 0; i < j; ++i)
+                for (var i = 0; i < j; ++i)
                 {
-                    double h0 = c[i] * h[i][j] + s[i] * h[i + 1][j];
-                    double h1 = -s[i] * h[i][j] + c[i] * h[i + 1][j];
+                    var h0 = c[i] * h[i][j] + s[i] * h[i + 1][j];
+                    var h1 = -s[i] * h[i][j] + c[i] * h[i + 1][j];
 
                     h[i][j] = h0;
                     h[i + 1][j] = h1;
                 }
 
-                double nu = System.Math.Sqrt(h[j][j] * h[j][j]
-                                      + h[j + 1][j] * h[j + 1][j]);
+                var nu = System.Math.Sqrt(h[j][j] * h[j][j]
+                                          + h[j + 1][j] * h[j + 1][j]);
 
                 c[j] = h[j][j] / nu;
                 s[j] = h[j + 1][j] / nu;
@@ -172,19 +176,19 @@ namespace QLNet.Math.matrixutilities
                 errors.Add(System.Math.Abs(z[j + 1] / bn));
             }
 
-            int k = v.Count - 1;
+            var k = v.Count - 1;
 
-            Vector y = new Vector(k, 0.0);
+            var y = new Vector(k, 0.0);
             y[k - 1] = z[k - 1] / h[k - 1][k - 1];
 
-            for (int i = k - 2; i >= 0; --i)
+            for (var i = k - 2; i >= 0; --i)
             {
                 y[i] = (z[i] - h[i].inner_product(
                            i + 1, k, i + 1, y, 0.0)) / h[i][i];
             }
 
-            Vector xm = new Vector(x.Count, 0.0);
-            for (int i = 0; i < x.Count; i++)
+            var xm = new Vector(x.Count, 0.0);
+            for (var i = 0; i < x.Count; i++)
                 xm[i] = v[i].inner_product(0, k, 0, y, 0.0);
 
             xm = x + (M_ != null ? M_(xm) : xm);

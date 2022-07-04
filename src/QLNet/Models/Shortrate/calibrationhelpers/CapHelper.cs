@@ -31,7 +31,7 @@ using QLNet.Pricingengines.Swap;
 
 namespace QLNet.Models.Shortrate.calibrationhelpers
 {
-    public class CapHelper : CalibrationHelper
+    [JetBrains.Annotations.PublicAPI] public class CapHelper : CalibrationHelper
     {
         public CapHelper(Period length,
                          Handle<Quote> volatility,
@@ -56,12 +56,12 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
         public override void addTimesTo(List<double> times)
         {
             calculate();
-            CapFloor.Arguments args = new CapFloor.Arguments();
+            var args = new CapFloor.Arguments();
             cap_.setupArguments(args);
-            List<double> capTimes = new DiscretizedCapFloor(args,
+            var capTimes = new DiscretizedCapFloor(args,
                                                             termStructure_.link.referenceDate(),
                                                             termStructure_.link.dayCounter()).mandatoryTimes();
-            for (int i = 0; i < capTimes.Count; i++)
+            for (var i = 0; i < capTimes.Count; i++)
                 times.Insert(times.Count, capTimes[i]);
 
         }
@@ -80,15 +80,15 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
             IPricingEngine black = new BlackCapFloorEngine(termStructure_,
                                                            new Handle<Quote>(vol));
             cap_.setPricingEngine(black);
-            double value = cap_.NPV();
+            var value = cap_.NPV();
             cap_.setPricingEngine(engine_);
             return value;
         }
 
         protected override void performCalculations()
         {
-            Period indexTenor = index_.tenor();
-            double fixedRate = 0.04; // dummy value
+            var indexTenor = index_.tenor();
+            var fixedRate = 0.04; // dummy value
             Date startDate, maturity;
             if (includeFirstSwaplet_)
             {
@@ -100,7 +100,7 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
                 startDate = termStructure_.link.referenceDate() + indexTenor;
                 maturity = termStructure_.link.referenceDate() + length_;
             }
-            IborIndex dummyIndex = new IborIndex("dummy",
+            var dummyIndex = new IborIndex("dummy",
                                                  indexTenor,
                                                  index_.fixingDays(),
                                                  index_.currency(),
@@ -112,7 +112,7 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
 
             List<double> nominals = new InitializedList<double>(1, 1.0);
 
-            Schedule floatSchedule = new Schedule(startDate, maturity,
+            var floatSchedule = new Schedule(startDate, maturity,
                                                   index_.tenor(), index_.fixingCalendar(),
                                                   index_.businessDayConvention(),
                                                   index_.businessDayConvention(),
@@ -122,7 +122,7 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
             .withNotionals(nominals)
             .withPaymentAdjustment(index_.businessDayConvention());
 
-            Schedule fixedSchedule = new Schedule(startDate, maturity, new Period(fixedLegFrequency_),
+            var fixedSchedule = new Schedule(startDate, maturity, new Period(fixedLegFrequency_),
                                                   index_.fixingCalendar(),
                                                   BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
                                                   DateGeneration.Rule.Forward, false);
@@ -131,9 +131,9 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
             .withNotionals(nominals)
             .withPaymentAdjustment(index_.businessDayConvention());
 
-            Swap swap = new Swap(floatingLeg, fixedLeg);
+            var swap = new Swap(floatingLeg, fixedLeg);
             swap.setPricingEngine(new DiscountingSwapEngine(termStructure_, false));
-            double fairRate = fixedRate - (double)(swap.NPV() / (swap.legBPS(1) / 1.0e-4));
+            var fairRate = fixedRate - (double)(swap.NPV() / (swap.legBPS(1) / 1.0e-4));
             cap_ = new Cap(floatingLeg, new InitializedList<double>(1, fairRate));
 
             base.performCalculations();

@@ -46,7 +46,7 @@ namespace QLNet.Termstructures.Volatility.swaption
             vegaWeightedSmileFit_ = vegaWeightedSmileFit;
 
             Utils.QL_REQUIRE(!atmVol_.empty(), () => "atm vol handle not linked to anything");
-            for (int i = 1; i < nStrikes_; ++i)
+            for (var i = 1; i < nStrikes_; ++i)
                 Utils.QL_REQUIRE(strikeSpreads_[i - 1] < strikeSpreads_[i], () =>
                                  "non increasing strike spreads: " + i + " is " + strikeSpreads_[i - 1] + ", " +
                                  (i + 1) + " is " + strikeSpreads_[i]);
@@ -58,7 +58,7 @@ namespace QLNet.Termstructures.Volatility.swaption
                              nOptionTenors_ * nSwapTenors_ + ") and number of rows (" +
                              volSpreads_.Count + ")");
 
-            for (int i = 0; i < volSpreads_.Count; i++)
+            for (var i = 0; i < volSpreads_.Count; i++)
                 Utils.QL_REQUIRE(nStrikes_ == volSpreads_[i].Count, () =>
                                  "mismatch between number of strikes (" + nStrikes_ +
                                  ") and number of columns (" + volSpreads_[i].Count +
@@ -80,9 +80,12 @@ namespace QLNet.Termstructures.Volatility.swaption
             evaluationDate_ = Settings.evaluationDate();
         }
         // TermStructure interface
-        public new DayCounter dayCounter() { return atmVol_.link.dayCounter(); }
-        public override Date maxDate() { return atmVol_.link.maxDate(); }
-        public new double maxTime() { return atmVol_.link.maxTime(); }
+        public new DayCounter dayCounter() => atmVol_.link.dayCounter();
+
+        public override Date maxDate() => atmVol_.link.maxDate();
+
+        public new double maxTime() => atmVol_.link.maxTime();
+
         public override Date referenceDate()
         {
             if (atmVol_ == null)
@@ -90,14 +93,18 @@ namespace QLNet.Termstructures.Volatility.swaption
 
             return atmVol_.link.referenceDate();
         }
-        public new Calendar calendar() { return atmVol_.link.calendar(); }
-        public new int settlementDays() { return atmVol_.link.settlementDays(); }
+        public new Calendar calendar() => atmVol_.link.calendar();
+
+        public new int settlementDays() => atmVol_.link.settlementDays();
+
         // VolatilityTermStructure interface
-        public override double minStrike() { return -double.MaxValue; }
-        public override double maxStrike() { return double.MaxValue; }
+        public override double minStrike() => -double.MaxValue;
+
+        public override double maxStrike() => double.MaxValue;
 
         // SwaptionVolatilityStructure interface
-        public override Period maxSwapTenor() { return atmVol_.link.maxSwapTenor(); }
+        public override Period maxSwapTenor() => atmVol_.link.maxSwapTenor();
+
         // Other inspectors
         public double atmStrike(Date optionDate, Period swapTenor)
         {
@@ -161,15 +168,20 @@ namespace QLNet.Termstructures.Volatility.swaption
         }
         public double atmStrike(Period optionTenor, Period swapTenor)
         {
-            Date optionDate = optionDateFromTenor(optionTenor);
+            var optionDate = optionDateFromTenor(optionTenor);
             return atmStrike(optionDate, swapTenor);
         }
-        public Handle<SwaptionVolatilityStructure> atmVol() { return atmVol_; }
-        public List<double> strikeSpreads() { return strikeSpreads_; }
-        public List<List<Handle<Quote>>> volSpreads() { return volSpreads_; }
-        public SwapIndex swapIndexBase() { return swapIndexBase_; }
-        public SwapIndex shortSwapIndexBase() { return shortSwapIndexBase_; }
-        public bool vegaWeightedSmileFit() { return vegaWeightedSmileFit_; }
+        public Handle<SwaptionVolatilityStructure> atmVol() => atmVol_;
+
+        public List<double> strikeSpreads() => strikeSpreads_;
+
+        public List<List<Handle<Quote>>> volSpreads() => volSpreads_;
+
+        public SwapIndex swapIndexBase() => swapIndexBase_;
+
+        public SwapIndex shortSwapIndexBase() => shortSwapIndexBase_;
+
+        public bool vegaWeightedSmileFit() => vegaWeightedSmileFit_;
 
         // LazyObject interface
         protected override void performCalculations()
@@ -181,28 +193,23 @@ namespace QLNet.Termstructures.Volatility.swaption
             base.performCalculations();
         }
 
-        public override VolatilityType volatilityType() { return atmVol_.link.volatilityType(); }
+        public override VolatilityType volatilityType() => atmVol_.link.volatilityType();
 
         protected void registerWithVolatilitySpread()
         {
-            for (int i = 0; i < nStrikes_; i++)
-                for (int j = 0; j < nOptionTenors_; j++)
-                    for (int k = 0; k < nSwapTenors_; k++)
+            for (var i = 0; i < nStrikes_; i++)
+                for (var j = 0; j < nOptionTenors_; j++)
+                    for (var k = 0; k < nSwapTenors_; k++)
                         volSpreads_[j * nSwapTenors_ + k][i].registerWith(update);
         }
-        protected virtual int requiredNumberOfStrikes() { return 2; }
-        protected override double volatilityImpl(double optionTime, double swapLength, double strike)
-        {
-            return smileSectionImpl(optionTime, swapLength).volatility(strike);
-        }
-        protected override double volatilityImpl(Date optionDate, Period swapTenor, double strike)
-        {
-            return smileSectionImpl(optionDate, swapTenor).volatility(strike);
-        }
-        protected override double shiftImpl(double optionTime, double swapLength)
-        {
-            return atmVol_.link.shift(optionTime, swapLength);
-        }
+        protected virtual int requiredNumberOfStrikes() => 2;
+
+        protected override double volatilityImpl(double optionTime, double swapLength, double strike) => smileSectionImpl(optionTime, swapLength).volatility(strike);
+
+        protected override double volatilityImpl(Date optionDate, Period swapTenor, double strike) => smileSectionImpl(optionDate, swapTenor).volatility(strike);
+
+        protected override double shiftImpl(double optionTime, double swapLength) => atmVol_.link.shift(optionTime, swapLength);
+
         protected Handle<SwaptionVolatilityStructure> atmVol_;
         protected int nStrikes_;
         protected List<double> strikeSpreads_;

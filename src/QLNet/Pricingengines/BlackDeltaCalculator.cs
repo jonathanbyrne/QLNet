@@ -27,7 +27,7 @@ namespace QLNet.Pricingengines
         in FX markets, which has special quoation mechanisms, since
         every price can be expressed in both numeraires.
     */
-    public class BlackDeltaCalculator
+    [JetBrains.Annotations.PublicAPI] public class BlackDeltaCalculator
     {
         // A parsimonious constructor is chosen, which for example
         // doesn't need a strike. The reason for this is, that we'd
@@ -60,12 +60,12 @@ namespace QLNet.Pricingengines
             fExpNeg_ = forward_ * System.Math.Exp(-0.5 * stdDev_ * stdDev_);
         }
 
-        // Give strike, receive delta according to specified type
+        // Give strike, receive delta according to specified ExerciseType
         public double deltaFromStrike(double strike)
         {
             Utils.QL_REQUIRE(strike >= 0.0, () => "positive strike value required: " + strike + " not allowed");
 
-            double res = 0.0;
+            var res = 0.0;
 
             switch (dt_)
             {
@@ -86,26 +86,23 @@ namespace QLNet.Pricingengines
                     break;
 
                 default:
-                    Utils.QL_FAIL("invalid delta type");
+                    Utils.QL_FAIL("invalid delta ExerciseType");
                     break;
             }
             return res;
 
         }
 
-        // Give delta according to specified type, receive strike
-        public double strikeFromDelta(double delta)
-        {
-            return strikeFromDelta(delta, dt_);
-        }
+        // Give delta according to specified ExerciseType, receive strike
+        public double strikeFromDelta(double delta) => strikeFromDelta(delta, dt_);
 
         public double cumD1(double strike)     // N(d1) or N(-d1)
         {
-            double d1_ = 0.0;
-            double cum_d1_pos_ = 1.0; // N(d1)
-            double cum_d1_neg_ = 0.0; // N(-d1)
+            var d1_ = 0.0;
+            var cum_d1_pos_ = 1.0; // N(d1)
+            var cum_d1_neg_ = 0.0; // N(-d1)
 
-            CumulativeNormalDistribution f = new CumulativeNormalDistribution();
+            var f = new CumulativeNormalDistribution();
 
             if (stdDev_ >= Const.QL_EPSILON)
             {
@@ -142,11 +139,11 @@ namespace QLNet.Pricingengines
         }
         public double cumD2(double strike)     // N(d2) or N(-d2)
         {
-            double d2_ = 0.0;
-            double cum_d2_pos_ = 1.0; // N(d2)
-            double cum_d2_neg_ = 0.0; // N(-d2)
+            var d2_ = 0.0;
+            var cum_d2_pos_ = 1.0; // N(d2)
+            var cum_d2_neg_ = 0.0; // N(-d2)
 
-            CumulativeNormalDistribution f = new CumulativeNormalDistribution();
+            var f = new CumulativeNormalDistribution();
 
             if (stdDev_ >= Const.QL_EPSILON)
             {
@@ -184,15 +181,15 @@ namespace QLNet.Pricingengines
 
         public double nD1(double strike)       // n(d1)
         {
-            double d1_ = 0.0;
-            double n_d1_ = 0.0; // n(d1)
+            var d1_ = 0.0;
+            var n_d1_ = 0.0; // n(d1)
 
             if (stdDev_ >= Const.QL_EPSILON)
             {
                 if (strike > 0)
                 {
                     d1_ = System.Math.Log(forward_ / strike) / stdDev_ + 0.5 * stdDev_;
-                    CumulativeNormalDistribution f = new CumulativeNormalDistribution();
+                    var f = new CumulativeNormalDistribution();
                     n_d1_ = f.derivative(d1_);
                 }
             }
@@ -202,15 +199,15 @@ namespace QLNet.Pricingengines
         }
         public double nD2(double strike)       // n(d2)
         {
-            double d2_ = 0.0;
-            double n_d2_ = 0.0; // n(d2)
+            var d2_ = 0.0;
+            var n_d2_ = 0.0; // n(d2)
 
             if (stdDev_ >= Const.QL_EPSILON)
             {
                 if (strike > 0)
                 {
                     d2_ = System.Math.Log(forward_ / strike) / stdDev_ - 0.5 * stdDev_;
-                    CumulativeNormalDistribution f = new CumulativeNormalDistribution();
+                    var f = new CumulativeNormalDistribution();
                     n_d2_ = f.derivative(d2_);
                 }
             }
@@ -228,7 +225,7 @@ namespace QLNet.Pricingengines
         // The following function can be calculated without an explicit strike
         public double atmStrike(DeltaVolQuote.AtmType atmT)
         {
-            double res = 0.0;
+            var res = 0.0;
 
             switch (atmT)
             {
@@ -259,7 +256,7 @@ namespace QLNet.Pricingengines
                     break;
 
                 default:
-                    Utils.QL_FAIL("invalid atm type");
+                    Utils.QL_FAIL("invalid atm ExerciseType");
                     break;
             }
 
@@ -267,14 +264,14 @@ namespace QLNet.Pricingengines
         }
 
 
-        // alternative delta type
+        // alternative delta ExerciseType
         private double strikeFromDelta(double delta, DeltaVolQuote.DeltaType dt)
         {
-            double res = 0.0;
-            double arg = 0.0;
-            InverseCumulativeNormal f = new InverseCumulativeNormal();
+            var res = 0.0;
+            var arg = 0.0;
+            var f = new InverseCumulativeNormal();
 
-            Utils.QL_REQUIRE(delta * phi_ >= 0.0, () => "Option type and delta are incoherent.");
+            Utils.QL_REQUIRE(delta * phi_ >= 0.0, () => "Option ExerciseType and delta are incoherent.");
 
             switch (dt)
             {
@@ -305,15 +302,15 @@ namespace QLNet.Pricingengines
                     // put delta doesn't have this property and can be
                     // solved without any problems, but also numerically.
 
-                    BlackDeltaPremiumAdjustedSolverClass f1 = new BlackDeltaPremiumAdjustedSolverClass(
+                    var f1 = new BlackDeltaPremiumAdjustedSolverClass(
                        ot_, dt, spot_, dDiscount_, fDiscount_, stdDev_, delta);
 
-                    Brent solver = new Brent();
+                    var solver = new Brent();
                     solver.setMaxEvaluations(1000);
-                    double accuracy = 1.0e-10;
+                    var accuracy = 1.0e-10;
 
-                    double rightLimit = 0.0;
-                    double leftLimit = 0.0;
+                    var rightLimit = 0.0;
+                    var leftLimit = 0.0;
 
                     // Strike of not premium adjusted is always to the right of premium adjusted
                     if (dt == DeltaVolQuote.DeltaType.PaSpot)
@@ -337,12 +334,12 @@ namespace QLNet.Pricingengines
                         // corresponding to the value where premium adjusted
                         // deltas have their maximum.
 
-                        BlackDeltaPremiumAdjustedMaxStrikeClass g = new BlackDeltaPremiumAdjustedMaxStrikeClass(
+                        var g = new BlackDeltaPremiumAdjustedMaxStrikeClass(
                            ot_, dt, spot_, dDiscount_, fDiscount_, stdDev_);
 
                         leftLimit = solver.solve(g, accuracy, rightLimit * 0.5, 0.0, rightLimit);
 
-                        double guess = leftLimit + (rightLimit - leftLimit) * 0.5;
+                        var guess = leftLimit + (rightLimit - leftLimit) * 0.5;
 
                         res = solver.solve(f1, accuracy, guess, leftLimit, rightLimit);
                     } // end if phi<0 else
@@ -351,7 +348,7 @@ namespace QLNet.Pricingengines
 
 
                 default:
-                    Utils.QL_FAIL("invalid delta type");
+                    Utils.QL_FAIL("invalid delta ExerciseType");
                     break;
             }
 
@@ -369,7 +366,7 @@ namespace QLNet.Pricingengines
     }
 
 
-    public class BlackDeltaPremiumAdjustedSolverClass : ISolver1d
+    [JetBrains.Annotations.PublicAPI] public class BlackDeltaPremiumAdjustedSolverClass : ISolver1d
     {
         public BlackDeltaPremiumAdjustedSolverClass(QLNet.Option.Type ot,
                                                     DeltaVolQuote.DeltaType dt,
@@ -383,13 +380,13 @@ namespace QLNet.Pricingengines
             delta_ = delta;
         }
 
-        public override double value(double strike) { return bdc_.deltaFromStrike(strike) - delta_; }
+        public override double value(double strike) => bdc_.deltaFromStrike(strike) - delta_;
 
         private BlackDeltaCalculator bdc_;
         private double delta_;
     }
 
-    public class BlackDeltaPremiumAdjustedMaxStrikeClass : ISolver1d
+    [JetBrains.Annotations.PublicAPI] public class BlackDeltaPremiumAdjustedMaxStrikeClass : ISolver1d
     {
         public BlackDeltaPremiumAdjustedMaxStrikeClass(QLNet.Option.Type ot,
                                                        DeltaVolQuote.DeltaType dt,
@@ -402,7 +399,7 @@ namespace QLNet.Pricingengines
             stdDev_ = stdDev;
         }
 
-        public override double value(double strike) { return bdc_.cumD2(strike) * stdDev_ - bdc_.nD2(strike); }
+        public override double value(double strike) => bdc_.cumD2(strike) * stdDev_ - bdc_.nD2(strike);
 
         private BlackDeltaCalculator bdc_;
         private double stdDev_;

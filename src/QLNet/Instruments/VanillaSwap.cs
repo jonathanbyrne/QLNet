@@ -42,7 +42,7 @@ namespace QLNet.Instruments
     - that the price of a swap increases with the received floating-rate spread.
     - the correctness of the returned value is tested by checking it against a known good value.
     */
-    public class VanillaSwap : Swap
+    [JetBrains.Annotations.PublicAPI] public class VanillaSwap : Swap
     {
         public enum Type { Receiver = -1, Payer = 1 }
 
@@ -52,17 +52,18 @@ namespace QLNet.Instruments
         private double nominal_;
 
         private Schedule fixedSchedule_;
-        public Schedule fixedSchedule() { return fixedSchedule_; }
+        public Schedule fixedSchedule() => fixedSchedule_;
 
         private DayCounter fixedDayCount_;
-        public DayCounter fixedDayCount() { return fixedDayCount_; }
+        public DayCounter fixedDayCount() => fixedDayCount_;
 
         private Schedule floatingSchedule_;
-        public Schedule floatingSchedule() { return floatingSchedule_; }
+        public Schedule floatingSchedule() => floatingSchedule_;
 
         private IborIndex iborIndex_;
         private DayCounter floatingDayCount_;
-        public DayCounter floatingDayCount() { return floatingDayCount_; }
+        public DayCounter floatingDayCount() => floatingDayCount_;
+
         private BusinessDayConvention paymentConvention_;
 
         // results
@@ -117,7 +118,7 @@ namespace QLNet.Instruments
                     payer_[1] = -1.0;
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown vanilla-swap type");
+                    Utils.QL_FAIL("Unknown vanilla-swap ExerciseType");
                     break;
             }
         }
@@ -126,29 +127,29 @@ namespace QLNet.Instruments
         {
             base.setupArguments(args);
 
-            Arguments arguments = args as Arguments;
+            var arguments = args as Arguments;
             if (arguments == null)  // it's a swap engine...
                 return;
 
             arguments.type = type_;
             arguments.nominal = nominal_;
 
-            List<CashFlow> fixedCoupons = fixedLeg();
+            var fixedCoupons = fixedLeg();
 
             arguments.fixedResetDates = new InitializedList<Date>(fixedCoupons.Count);
             arguments.fixedPayDates = new InitializedList<Date>(fixedCoupons.Count);
             arguments.fixedCoupons = new InitializedList<double>(fixedCoupons.Count);
 
-            for (int i = 0; i < fixedCoupons.Count; ++i)
+            for (var i = 0; i < fixedCoupons.Count; ++i)
             {
-                FixedRateCoupon coupon = (FixedRateCoupon)fixedCoupons[i];
+                var coupon = (FixedRateCoupon)fixedCoupons[i];
 
                 arguments.fixedPayDates[i] = coupon.date();
                 arguments.fixedResetDates[i] = coupon.accrualStartDate();
                 arguments.fixedCoupons[i] = coupon.amount();
             }
 
-            List<CashFlow> floatingCoupons = floatingLeg();
+            var floatingCoupons = floatingLeg();
 
             arguments.floatingResetDates = new InitializedList<Date>(floatingCoupons.Count);
             arguments.floatingPayDates = new InitializedList<Date>(floatingCoupons.Count);
@@ -156,9 +157,9 @@ namespace QLNet.Instruments
             arguments.floatingAccrualTimes = new InitializedList<double>(floatingCoupons.Count);
             arguments.floatingSpreads = new InitializedList<double>(floatingCoupons.Count);
             arguments.floatingCoupons = new InitializedList<double>(floatingCoupons.Count);
-            for (int i = 0; i < floatingCoupons.Count; ++i)
+            for (var i = 0; i < floatingCoupons.Count; ++i)
             {
-                IborCoupon coupon = (IborCoupon)floatingCoupons[i];
+                var coupon = (IborCoupon)floatingCoupons[i];
 
                 arguments.floatingResetDates[i] = coupon.accrualStartDate();
                 arguments.floatingPayDates[i] = coupon.date();
@@ -226,18 +227,19 @@ namespace QLNet.Instruments
             return legNPV_[1].GetValueOrDefault();
         }
 
-        public IborIndex iborIndex()
-        {
-            return iborIndex_;
-        }
+        public IborIndex iborIndex() => iborIndex_;
 
-        public double fixedRate { get { return fixedRate_; } }
-        public double spread { get { return spread_; } }
-        public double nominal { get { return nominal_; } }
-        public Type swapType { get { return type_; } }
-        public List<CashFlow> fixedLeg() { return legs_[0]; }
-        public List<CashFlow> floatingLeg() { return legs_[1]; }
+        public double fixedRate => fixedRate_;
 
+        public double spread => spread_;
+
+        public double nominal => nominal_;
+
+        public Type swapType => type_;
+
+        public List<CashFlow> fixedLeg() => legs_[0];
+
+        public List<CashFlow> floatingLeg() => legs_[1];
 
         protected override void setupExpired()
         {
@@ -249,7 +251,7 @@ namespace QLNet.Instruments
         public override void fetchResults(IPricingEngineResults r)
         {
             base.fetchResults(r);
-            Results results = r as Results;
+            var results = r as Results;
 
             if (results != null)
             {

@@ -35,7 +35,7 @@ namespace QLNet.Indexes.Ibor
         \warning This is the rate fixed in London by ICE. Use TIBOR if
                  you're interested in the Tokio fixing.
     */
-    public class JPYLibor : Libor
+    [JetBrains.Annotations.PublicAPI] public class JPYLibor : Libor
     {
         public JPYLibor(Period tenor)
            : base("JPYLibor", tenor, 2, new JPYCurrency(), new Japan(), new Actual360(), new Handle<YieldTermStructure>())
@@ -48,7 +48,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! base class for the one day deposit ICE %JPY %LIBOR indexes
-    public class DailyTenorJPYLibor : DailyTenorLibor
+    [JetBrains.Annotations.PublicAPI] public class DailyTenorJPYLibor : DailyTenorLibor
     {
         public DailyTenorJPYLibor(int settlementDays) : this(settlementDays, new Handle<YieldTermStructure>())
         { }

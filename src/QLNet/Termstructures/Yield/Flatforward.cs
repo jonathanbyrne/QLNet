@@ -24,7 +24,7 @@ using QLNet.Time;
 namespace QLNet.Termstructures.Yield
 {
     //! Flat interest-rate curve
-    public class FlatForward : YieldTermStructure
+    [JetBrains.Annotations.PublicAPI] public class FlatForward : YieldTermStructure
     {
         private Quote forward_;
         private Compounding compounding_;
@@ -94,7 +94,7 @@ namespace QLNet.Termstructures.Yield
         }
 
         // TermStructure interface
-        public override Date maxDate() { return Date.maxDate(); }
+        public override Date maxDate() => Date.maxDate();
 
         protected override double discountImpl(double t)
         {

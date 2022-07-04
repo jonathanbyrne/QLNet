@@ -24,7 +24,7 @@ using System.Linq;
 
 namespace QLNet.Termstructures.Inflation
 {
-    public class InterpolatedZeroInflationCurve<Interpolator> : ZeroInflationTermStructure, InterpolatedCurve
+    [JetBrains.Annotations.PublicAPI] public class InterpolatedZeroInflationCurve<Interpolator> : ZeroInflationTermStructure, InterpolatedCurve
        where Interpolator : class, IInterpolationFactory, new()
     {
         public InterpolatedZeroInflationCurve(Date referenceDate, Calendar calendar, DayCounter dayCounter, Period lag,
@@ -44,7 +44,7 @@ namespace QLNet.Termstructures.Inflation
             // check that the data starts from the beginning,
             // i.e. referenceDate - lag, at least must be in the relevant
             // period
-            KeyValuePair<Date, Date> lim = Utils.inflationPeriod(yTS.link.referenceDate() - observationLag(), frequency);
+            var lim = Utils.inflationPeriod(yTS.link.referenceDate() - observationLag(), frequency);
             Utils.QL_REQUIRE(lim.Key <= dates_[0] && dates_[0] <= lim.Value, () =>
                              "first data date is not in base period, date: " + dates_[0]
                              + " not within [" + lim.Key + "," + lim.Value + "]");
@@ -54,7 +54,7 @@ namespace QLNet.Termstructures.Inflation
             // otherwise the time calculations will be inconsistent
             if (!indexIsInterpolated_)
             {
-                for (int i = 0; i < dates_.Count; i++)
+                for (var i = 0; i < dates_.Count; i++)
                 {
                     dates_[i] = Utils.inflationPeriod(dates_[i], frequency).Key;
                 }
@@ -68,7 +68,7 @@ namespace QLNet.Termstructures.Inflation
 
             times_ = new InitializedList<double>(dates_.Count);
             times_[0] = timeFromReference(dates_[0]);
-            for (int i = 1; i < dates_.Count; i++)
+            for (var i = 1; i < dates_.Count; i++)
             {
                 Utils.QL_REQUIRE(dates_[i] > dates_[i - 1], () => "dates not sorted");
 
@@ -88,10 +88,11 @@ namespace QLNet.Termstructures.Inflation
 
         #region InterpolatedCurve
         public List<double> times_ { get; set; }
-        public virtual List<double> times() { return times_; }
+        public virtual List<double> times() => times_;
 
         public List<Date> dates_ { get; set; }
-        public virtual List<Date> dates() { return dates_; }
+        public virtual List<Date> dates() => dates_;
+
         public Date maxDate_ { get; set; }
         public override Date maxDate()
         {
@@ -108,15 +109,16 @@ namespace QLNet.Termstructures.Inflation
         }
 
         public List<double> data_ { get; set; }
-        public List<double> forwards() { return data_; }
-        public virtual List<double> data() { return forwards(); }
+        public List<double> forwards() => data_;
+
+        public virtual List<double> data() => forwards();
 
         public Interpolation interpolation_ { get; set; }
         public IInterpolationFactory interpolator_ { get; set; }
 
         public virtual Dictionary<Date, double> nodes()
         {
-            Dictionary<Date, double> results = new Dictionary<Date, double>();
+            var results = new Dictionary<Date, double>();
             dates_.ForEach((i, x) => results.Add(x, data_[i]));
             return results;
         }
@@ -128,7 +130,7 @@ namespace QLNet.Termstructures.Inflation
 
         public object Clone()
         {
-            InterpolatedCurve copy = MemberwiseClone() as InterpolatedCurve;
+            var copy = MemberwiseClone() as InterpolatedCurve;
             copy.times_ = new List<double>(times_);
             copy.data_ = new List<double>(data_);
             copy.interpolator_ = interpolator_;
@@ -138,23 +140,15 @@ namespace QLNet.Termstructures.Inflation
         #endregion
 
         // InflationTermStructure interface
-        public override Date baseDate()
-        {
+        public override Date baseDate() =>
             // if indexIsInterpolated we fixed the dates in the constructor
-            return dates_.First();
-        }
+            dates_.First();
 
         // Inspectors
-        public List<double> rates()
-        {
-            return data_;
-        }
+        public List<double> rates() => data_;
 
         // ZeroInflationTermStructure Interface
-        protected override double zeroRateImpl(double t)
-        {
-            return interpolation_.value(t, true);
-        }
+        protected override double zeroRateImpl(double t) => interpolation_.value(t, true);
 
         /*! Protected version for use when descendents don't want to
             (or can't) provide the points for interpolation on

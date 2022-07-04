@@ -32,7 +32,7 @@ namespace QLNet.Indexes.Ibor
 
         See <https://www.theice.com/marketdata/reports/170>.
     */
-    public class GBPLibor : Libor
+    [JetBrains.Annotations.PublicAPI] public class GBPLibor : Libor
     {
         public GBPLibor(Period tenor)
            : base("GBPLibor", tenor, 0, new GBPCurrency(), new UnitedKingdom(UnitedKingdom.Market.Exchange), new Actual365Fixed(),
@@ -46,7 +46,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! Base class for the one day deposit ICE %GBP %LIBOR indexes
-    public class DailyTenorGBPLibor : DailyTenorLibor
+    [JetBrains.Annotations.PublicAPI] public class DailyTenorGBPLibor : DailyTenorLibor
     {
         public DailyTenorGBPLibor(int settlementDays, Handle<YieldTermStructure> h)
            : base("GBPLibor", settlementDays, new GBPCurrency(), new UnitedKingdom(UnitedKingdom.Market.Exchange),
@@ -55,7 +55,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! Overnight %GBP %Libor index
-    public class GBPLiborON : DailyTenorGBPLibor
+    [JetBrains.Annotations.PublicAPI] public class GBPLiborON : DailyTenorGBPLibor
     {
         public GBPLiborON(Handle<YieldTermStructure> h) : base(0, h)
         { }

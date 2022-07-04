@@ -36,7 +36,7 @@ namespace QLNet.Instruments.Bonds
          \ingroup instruments
 
     */
-    public class CCTEU : FloatingRateBond
+    [JetBrains.Annotations.PublicAPI] public class CCTEU : FloatingRateBond
     {
         public CCTEU(Date maturityDate, double spread, Handle<YieldTermStructure> fwdCurve = null,
                      Date startDate = null, Date issueDate = null)
@@ -64,7 +64,7 @@ namespace QLNet.Instruments.Bonds
         /*! The default bond settlement is used if no date is given. */
         public override double accruedAmount(Date d = null)
         {
-            double result = base.accruedAmount(d);
+            var result = base.accruedAmount(d);
             return new ClosestRounding(5).Round(result);
         }
 
@@ -76,7 +76,7 @@ namespace QLNet.Instruments.Bonds
     /*! \ingroup instruments
 
     */
-    public class BTP : FixedRateBond
+    [JetBrains.Annotations.PublicAPI] public class BTP : FixedRateBond
     {
         public BTP(Date maturityDate, double fixedRate, Date startDate = null, Date issueDate = null)
            : base(2, 100.0, new Schedule(startDate,
@@ -106,7 +106,7 @@ namespace QLNet.Instruments.Bonds
         /*! The default bond settlement is used if no date is given. */
         public override double accruedAmount(Date d = null)
         {
-            double result = base.accruedAmount(d);
+            var result = base.accruedAmount(d);
             return new ClosestRounding(5).Round(result);
         }
 
@@ -116,14 +116,12 @@ namespace QLNet.Instruments.Bonds
         /*! The default BTP conventions are used: Actual/Actual (ISMA),
             Compounded, Annual.
             The default bond settlement is used if no date is given. */
-        public double yield(double cleanPrice, Date settlementDate = null, double accuracy = 1.0e-8, int maxEvaluations = 100)
-        {
-            return yield(cleanPrice, new ActualActual(ActualActual.Convention.ISMA),
-                              Compounding.Compounded, Frequency.Annual, settlementDate, accuracy, maxEvaluations);
-        }
+        public double yield(double cleanPrice, Date settlementDate = null, double accuracy = 1.0e-8, int maxEvaluations = 100) =>
+            yield(cleanPrice, new ActualActual(ActualActual.Convention.ISMA),
+                Compounding.Compounded, Frequency.Annual, settlementDate, accuracy, maxEvaluations);
     }
 
-    public class RendistatoBasket : IObserver, IObservable
+    [JetBrains.Annotations.PublicAPI] public class RendistatoBasket : IObserver, IObservable
     {
 
         public RendistatoBasket(List<BTP> btps, List<double> outstandings, List<Handle<Quote>> cleanPriceQuotes)
@@ -133,7 +131,7 @@ namespace QLNet.Instruments.Bonds
             quotes_ = cleanPriceQuotes;
 
             Utils.QL_REQUIRE(!btps_.empty(), () => "empty RendistatoCalculator Basket");
-            int k = btps_.Count;
+            var k = btps_.Count;
 
             Utils.QL_REQUIRE(outstandings_.Count == k, () =>
                              "mismatch between number of BTPs (" + k +
@@ -145,7 +143,7 @@ namespace QLNet.Instruments.Bonds
                              quotes_.Count + ")");
 
             // require non-negative outstanding
-            for (int i = 0; i < k; ++i)
+            for (var i = 0; i < k; ++i)
             {
                 Utils.QL_REQUIRE(outstandings[i] >= 0, () =>
                                  "negative outstanding for " + i +
@@ -159,11 +157,11 @@ namespace QLNet.Instruments.Bonds
             n_ = btps_.Count;
 
             outstanding_ = 0.0;
-            for (int i = 0; i < n_; ++i)
+            for (var i = 0; i < n_; ++i)
                 outstanding_ += outstandings[i];
 
             weights_ = new List<double>(n_);
-            for (int i = 0; i < n_; ++i)
+            for (var i = 0; i < n_; ++i)
             {
                 weights_.Add(outstandings[i] / outstanding_);
                 quotes_[i].registerWith(update);
@@ -172,12 +170,17 @@ namespace QLNet.Instruments.Bonds
         }
         #region Inspectors
 
-        public int size() { return n_; }
-        public List<BTP> btps() { return btps_; }
-        public List<Handle<Quote>> cleanPriceQuotes() { return quotes_; }
-        public List<double> outstandings() { return outstandings_; }
-        public List<double> weights() { return weights_; }
-        public double outstanding() { return outstanding_; }
+        public int size() => n_;
+
+        public List<BTP> btps() => btps_;
+
+        public List<Handle<Quote>> cleanPriceQuotes() => quotes_;
+
+        public List<double> outstandings() => outstandings_;
+
+        public List<double> weights() => weights_;
+
+        public double outstanding() => outstanding_;
 
         #endregion
 
@@ -185,14 +188,8 @@ namespace QLNet.Instruments.Bonds
         private readonly WeakEventSource eventSource = new WeakEventSource();
         public event Callback notifyObserversEvent
         {
-            add
-            {
-                eventSource.Subscribe(value);
-            }
-            remove
-            {
-                eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
         }
 
         public void registerWith(Callback handler) { notifyObserversEvent += handler; }
@@ -215,7 +212,7 @@ namespace QLNet.Instruments.Bonds
         private List<double> weights_;
     }
 
-    public class RendistatoCalculator : LazyObject
+    [JetBrains.Annotations.PublicAPI] public class RendistatoCalculator : LazyObject
     {
         public RendistatoCalculator(RendistatoBasket basket, Euribor euriborIndex, Handle<YieldTermStructure> discountCurve)
         {
@@ -235,8 +232,8 @@ namespace QLNet.Instruments.Bonds
             euriborIndex_.registerWith(update);
             discountCurve_.registerWith(update);
 
-            double dummyRate = 0.05;
-            for (int i = 0; i < nSwaps_; ++i)
+            var dummyRate = 0.05;
+            for (var i = 0; i < nSwaps_; ++i)
             {
                 swapLenghts_[i] = i + 1;
                 swaps_[i] = new MakeVanillaSwap(new Period((int)swapLenghts_[i], TimeUnit.Years),
@@ -270,7 +267,8 @@ namespace QLNet.Instruments.Bonds
             return durations_;
         }
         // swaps
-        public List<double> swapLengths() { return swapLenghts_; }
+        public List<double> swapLengths() => swapLenghts_;
+
         public List<double?> swapRates()
         {
             calculate();
@@ -315,10 +313,7 @@ namespace QLNet.Instruments.Bonds
             calculate();
             return swapLenghts_[equivalentSwapIndex_];
         }
-        public double equivalentSwapSpread()
-        {
-            return yield() - equivalentSwapRate();
-        }
+        public double equivalentSwapSpread() => yield() - equivalentSwapRate();
 
         #endregion
 
@@ -326,10 +321,10 @@ namespace QLNet.Instruments.Bonds
 
         protected override void performCalculations()
         {
-            List<BTP> btps = basket_.btps();
-            List<Handle<Quote>> quotes = basket_.cleanPriceQuotes();
-            Date bondSettlementDate = btps[0].settlementDate();
-            for (int i = 0; i < basket_.size(); ++i)
+            var btps = basket_.btps();
+            var quotes = basket_.cleanPriceQuotes();
+            var bondSettlementDate = btps[0].settlementDate();
+            for (var i = 0; i < basket_.size(); ++i)
             {
                 yields_[i] = BondFunctions.yield(btps[i], quotes[i].link.value(),
                                                  new ActualActual(ActualActual.Convention.ISMA),
@@ -346,11 +341,11 @@ namespace QLNet.Instruments.Bonds
             duration_ = 0;
             basket_.weights().ForEach((ii, vv) => duration_ += vv * yields()[ii]);
 
-            int settlDays = 2;
-            DayCounter fixedDayCount = swaps_[0].fixedDayCount();
+            var settlDays = 2;
+            var fixedDayCount = swaps_[0].fixedDayCount();
             equivalentSwapIndex_ = nSwaps_ - 1;
             swapRates_[0] = swaps_[0].fairRate();
-            FixedRateBond swapBond = new FixedRateBond(settlDays,
+            var swapBond = new FixedRateBond(settlDays,
                                                        100.0,      // faceAmount
                                                        swaps_[0].fixedSchedule(),
             new List<double>() { swapRates_[0].Value },
@@ -369,10 +364,10 @@ namespace QLNet.Instruments.Bonds
                                                            new ActualActual(ActualActual.Convention.ISMA),
                                                            Compounding.Compounded, Frequency.Annual,
                                                            Duration.Type.Modified, bondSettlementDate);
-            for (int i = 1; i < nSwaps_; ++i)
+            for (var i = 1; i < nSwaps_; ++i)
             {
                 swapRates_[i] = swaps_[i].fairRate();
-                FixedRateBond swapBond2 = new FixedRateBond(settlDays,
+                var swapBond2 = new FixedRateBond(settlDays,
                                                             100.0,      // faceAmount
                                                             swaps_[i].fixedSchedule(),
                 new List<double>() { swapRates_[i].Value },
@@ -420,10 +415,11 @@ namespace QLNet.Instruments.Bonds
     }
 
     //! RendistatoCalculator equivalent swap lenth Quote adapter
-    public class RendistatoEquivalentSwapLengthQuote : Quote
+    [JetBrains.Annotations.PublicAPI] public class RendistatoEquivalentSwapLengthQuote : Quote
     {
         public RendistatoEquivalentSwapLengthQuote(RendistatoCalculator r) { r_ = r; }
-        public override double value() { return r_.equivalentSwapLength(); }
+        public override double value() => r_.equivalentSwapLength();
+
         public override bool isValid()
         {
             try
@@ -441,10 +437,11 @@ namespace QLNet.Instruments.Bonds
     }
 
     //! RendistatoCalculator equivalent swap spread Quote adapter
-    public class RendistatoEquivalentSwapSpreadQuote : Quote
+    [JetBrains.Annotations.PublicAPI] public class RendistatoEquivalentSwapSpreadQuote : Quote
     {
         public RendistatoEquivalentSwapSpreadQuote(RendistatoCalculator r) { r_ = r; }
-        public override double value() { return r_.equivalentSwapSpread(); }
+        public override double value() => r_.equivalentSwapSpread();
+
         public override bool isValid()
         {
             try

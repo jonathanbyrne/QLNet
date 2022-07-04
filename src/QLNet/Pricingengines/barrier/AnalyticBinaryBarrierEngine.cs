@@ -35,7 +35,7 @@ namespace QLNet.Pricingengines.barrier
           asset-or-nothing at-expiry binary payoff is tested by
           reproducing results available in literature.
     */
-    public class AnalyticBinaryBarrierEngine : BarrierOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class AnalyticBinaryBarrierEngine : BarrierOption.Engine
     {
         public AnalyticBinaryBarrierEngine(GeneralizedBlackScholesProcess process)
         {
@@ -44,22 +44,22 @@ namespace QLNet.Pricingengines.barrier
         }
         public override void calculate()
         {
-            AmericanExercise ex = arguments_.exercise as AmericanExercise;
+            var ex = arguments_.exercise as AmericanExercise;
             Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
             Utils.QL_REQUIRE(ex.payoffAtExpiry(), () => "payoff must be at expiry");
             Utils.QL_REQUIRE(ex.dates()[0] <= process_.blackVolatility().link.referenceDate(), () =>
                              "American option with window exercise not handled yet");
 
-            StrikedTypePayoff payoff = arguments_.payoff as StrikedTypePayoff;
+            var payoff = arguments_.payoff as StrikedTypePayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
-            double spot = process_.stateVariable().link.value();
+            var spot = process_.stateVariable().link.value();
             Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
 
-            double variance = process_.blackVolatility().link.blackVariance(ex.lastDate(), payoff.strike());
-            double? barrier = arguments_.barrier;
+            var variance = process_.blackVolatility().link.blackVariance(ex.lastDate(), payoff.strike());
+            var barrier = arguments_.barrier;
             Utils.QL_REQUIRE(barrier > 0.0, () => "positive barrier value required");
-            Barrier.Type barrierType = arguments_.barrierType;
+            var barrierType = arguments_.barrierType;
 
             // KO degenerate cases
             if (barrierType == Barrier.Type.DownOut && spot <= barrier ||
@@ -85,7 +85,7 @@ namespace QLNet.Pricingengines.barrier
 
                 IPricingEngine engine = new AnalyticEuropeanEngine(process_);
 
-                VanillaOption opt = new VanillaOption(payoff, exercise);
+                var opt = new VanillaOption(payoff, exercise);
                 opt.setPricingEngine(engine);
                 results_.value = opt.NPV();
                 results_.delta = opt.delta();
@@ -97,9 +97,9 @@ namespace QLNet.Pricingengines.barrier
                 return;
             }
 
-            double riskFreeDiscount = process_.riskFreeRate().link.discount(ex.lastDate());
+            var riskFreeDiscount = process_.riskFreeRate().link.discount(ex.lastDate());
 
-            AnalyticBinaryBarrierEngine_helper helper = new AnalyticBinaryBarrierEngine_helper(
+            var helper = new AnalyticBinaryBarrierEngine_helper(
                process_, payoff, ex, arguments_);
             results_.value = helper.payoffAtExpiry(spot, variance, riskFreeDiscount);
 
@@ -109,7 +109,7 @@ namespace QLNet.Pricingengines.barrier
     }
 
     // calc helper object
-    public class AnalyticBinaryBarrierEngine_helper
+    [JetBrains.Annotations.PublicAPI] public class AnalyticBinaryBarrierEngine_helper
     {
 
         public AnalyticBinaryBarrierEngine_helper(
@@ -126,47 +126,47 @@ namespace QLNet.Pricingengines.barrier
 
         public double payoffAtExpiry(double spot, double variance, double discount)
         {
-            double dividendDiscount = process_.dividendYield().link.discount(exercise_.lastDate());
+            var dividendDiscount = process_.dividendYield().link.discount(exercise_.lastDate());
 
             Utils.QL_REQUIRE(spot > 0.0, () => "positive spot value required");
             Utils.QL_REQUIRE(discount > 0.0, () => "positive discount required");
             Utils.QL_REQUIRE(dividendDiscount > 0.0, () => "positive dividend discount required");
             Utils.QL_REQUIRE(variance >= 0.0, () => "negative variance not allowed");
 
-            QLNet.Option.Type type = payoff_.optionType();
-            double strike = payoff_.strike();
-            double? barrier = arguments_.barrier;
+            var type = payoff_.optionType();
+            var strike = payoff_.strike();
+            var barrier = arguments_.barrier;
             Utils.QL_REQUIRE(barrier > 0.0, () => "positive barrier value required");
-            Barrier.Type barrierType = arguments_.barrierType;
+            var barrierType = arguments_.barrierType;
 
-            double stdDev = System.Math.Sqrt(variance);
-            double mu = System.Math.Log(dividendDiscount / discount) / variance - 0.5;
+            var stdDev = System.Math.Sqrt(variance);
+            var mu = System.Math.Log(dividendDiscount / discount) / variance - 0.5;
             double K = 0;
 
             // binary cash-or-nothing payoff?
-            CashOrNothingPayoff coo = payoff_ as CashOrNothingPayoff;
+            var coo = payoff_ as CashOrNothingPayoff;
             if (coo != null)
             {
                 K = coo.cashPayoff();
             }
 
             // binary asset-or-nothing payoff?
-            AssetOrNothingPayoff aoo = payoff_ as AssetOrNothingPayoff;
+            var aoo = payoff_ as AssetOrNothingPayoff;
             if (aoo != null)
             {
                 mu += 1.0;
                 K = spot * dividendDiscount / discount; // forward
             }
 
-            double log_S_X = System.Math.Log(spot / strike);
-            double log_S_H = System.Math.Log(spot / barrier.GetValueOrDefault());
-            double log_H_S = System.Math.Log(barrier.GetValueOrDefault() / spot);
-            double log_H2_SX = System.Math.Log(barrier.GetValueOrDefault() * barrier.GetValueOrDefault() / (spot * strike));
-            double H_S_2mu = System.Math.Pow(barrier.GetValueOrDefault() / spot, 2 * mu);
+            var log_S_X = System.Math.Log(spot / strike);
+            var log_S_H = System.Math.Log(spot / barrier.GetValueOrDefault());
+            var log_H_S = System.Math.Log(barrier.GetValueOrDefault() / spot);
+            var log_H2_SX = System.Math.Log(barrier.GetValueOrDefault() * barrier.GetValueOrDefault() / (spot * strike));
+            var H_S_2mu = System.Math.Pow(barrier.GetValueOrDefault() / spot, 2 * mu);
 
-            double eta = barrierType == Barrier.Type.DownIn ||
-                          barrierType == Barrier.Type.DownOut ? 1.0 : -1.0;
-            double phi = type == QLNet.Option.Type.Call ? 1.0 : -1.0;
+            var eta = barrierType == Barrier.Type.DownIn ||
+                      barrierType == Barrier.Type.DownOut ? 1.0 : -1.0;
+            var phi = type == QLNet.Option.Type.Call ? 1.0 : -1.0;
 
             double x1, x2, y1, y2;
             double cum_x1, cum_x2, cum_y1, cum_y2;
@@ -180,7 +180,7 @@ namespace QLNet.Pricingengines.barrier
                 y1 = eta * (log_H2_SX / stdDev + mu * stdDev);
                 y2 = eta * (log_H_S / stdDev + mu * stdDev);
 
-                CumulativeNormalDistribution f = new CumulativeNormalDistribution();
+                var f = new CumulativeNormalDistribution();
                 cum_x1 = f.value(x1);
                 cum_x2 = f.value(x2);
                 cum_y1 = f.value(y1);
@@ -333,7 +333,7 @@ namespace QLNet.Pricingengines.barrier
                     }
                     break;
                 default:
-                    Utils.QL_FAIL("invalid barrier type");
+                    Utils.QL_FAIL("invalid barrier ExerciseType");
                     break;
             }
 

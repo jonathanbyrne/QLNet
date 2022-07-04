@@ -31,7 +31,7 @@ namespace QLNet.Math.Interpolations
     */
 
     // Interpolation factory
-    public interface IInterpolationFactory2D
+    [JetBrains.Annotations.PublicAPI] public interface IInterpolationFactory2D
     {
         Interpolation2D interpolate(List<double> xBegin, int xSize,
                                     List<double> yBegin, int ySize,
@@ -42,30 +42,30 @@ namespace QLNet.Math.Interpolations
     {
         protected Impl impl_;
 
-        public double xMin() { return impl_.xMin(); }
+        public double xMin() => impl_.xMin();
 
-        public double xMax() { return impl_.xMax(); }
+        public double xMax() => impl_.xMax();
 
-        public List<double> xValues() { return impl_.xValues(); }
+        public List<double> xValues() => impl_.xValues();
 
-        public int locateX(double x) { return impl_.locateX(x); }
+        public int locateX(double x) => impl_.locateX(x);
 
-        public double yMin() { return impl_.yMin(); }
+        public double yMin() => impl_.yMin();
 
-        public double yMax() { return impl_.yMax(); }
+        public double yMax() => impl_.yMax();
 
-        public List<double> yValues() { return impl_.yValues(); }
+        public List<double> yValues() => impl_.yValues();
 
-        public int locateY(double y) { return impl_.locateY(y); }
+        public int locateY(double y) => impl_.locateY(y);
 
-        public Matrix zData() { return impl_.zData(); }
+        public Matrix zData() => impl_.zData();
 
-        public bool isInRange(double x, double y) { return impl_.isInRange(x, y); }
+        public bool isInRange(double x, double y) => impl_.isInRange(x, y);
 
         public override void update() { impl_.calculate(); }
 
         // main method to derive an interpolated point
-        public double value(double x, double y) { return value(x, y, false); }
+        public double value(double x, double y) => value(x, y, false);
 
         public double value(double x, double y, bool allowExtrapolation)
         {
@@ -125,24 +125,24 @@ namespace QLNet.Math.Interpolations
                                                 + ySize + " provided");
             }
 
-            public double xMin() { return xBegin_.First(); }
+            public double xMin() => xBegin_.First();
 
-            public double xMax() { return xBegin_[xSize_ - 1]; }
+            public double xMax() => xBegin_[xSize_ - 1];
 
-            public List<double> xValues() { return xBegin_.GetRange(0, xSize_); }
+            public List<double> xValues() => xBegin_.GetRange(0, xSize_);
 
-            public double yMin() { return yBegin_.First(); }
+            public double yMin() => yBegin_.First();
 
-            public double yMax() { return yBegin_[ySize_ - 1]; }
+            public double yMax() => yBegin_[ySize_ - 1];
 
-            public List<double> yValues() { return yBegin_.GetRange(0, ySize_); }
+            public List<double> yValues() => yBegin_.GetRange(0, ySize_);
 
-            public Matrix zData() { return zData_; }
+            public Matrix zData() => zData_;
 
             public bool isInRange(double x, double y)
             {
                 double x1 = xMin(), x2 = xMax();
-                bool xIsInrange = x >= x1 && x <= x2 || Utils.close(x, x1) || Utils.close(x, x2);
+                var xIsInrange = x >= x1 && x <= x2 || Utils.close(x, x1) || Utils.close(x, x2);
                 if (!xIsInrange)
                     return false;
 
@@ -152,7 +152,7 @@ namespace QLNet.Math.Interpolations
 
             public int locateX(double x)
             {
-                int result = xBegin_.BinarySearch(x);
+                var result = xBegin_.BinarySearch(x);
                 if (result < 0)
                     // The upper_bound() algorithm finds the last position in a sequence that value can occupy
                     // without violating the sequence's ordering
@@ -166,7 +166,7 @@ namespace QLNet.Math.Interpolations
 
             public int locateY(double y)
             {
-                int result = yBegin_.BinarySearch(y);
+                var result = yBegin_.BinarySearch(y);
                 if (result < 0)
                     // The upper_bound() algorithm finds the last position in a sequence that value can occupy
                     // without violating the sequence's ordering

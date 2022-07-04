@@ -23,7 +23,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Termstructures.Volatility.Optionlet
 {
-    public class CapletVarianceCurve : OptionletVolatilityStructure
+    [JetBrains.Annotations.PublicAPI] public class CapletVarianceCurve : OptionletVolatilityStructure
     {
 
         private BlackVarianceCurve blackCurve_;
@@ -37,36 +37,21 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             blackCurve_ = new BlackVarianceCurve(referenceDate, dates, capletVolCurve, dayCounter, false);
         }
 
-        public override DayCounter dayCounter()
-        {
-            return blackCurve_.dayCounter();
-        }
+        public override DayCounter dayCounter() => blackCurve_.dayCounter();
 
-        public override Date maxDate()
-        {
-            return blackCurve_.maxDate();
-        }
+        public override Date maxDate() => blackCurve_.maxDate();
 
-        public override double minStrike()
-        {
-            return blackCurve_.minStrike();
-        }
+        public override double minStrike() => blackCurve_.minStrike();
 
-        public override double maxStrike()
-        {
-            return blackCurve_.maxStrike();
-        }
+        public override double maxStrike() => blackCurve_.maxStrike();
 
         protected override SmileSection smileSectionImpl(double t)
         {
             // dummy strike
-            double atmVol = blackCurve_.blackVol(t, 0.05, true);
+            var atmVol = blackCurve_.blackVol(t, 0.05, true);
             return new FlatSmileSection(t, atmVol, dayCounter());
         }
 
-        protected override double volatilityImpl(double t, double r)
-        {
-            return blackCurve_.blackVol(t, r, true);
-        }
+        protected override double volatilityImpl(double t, double r) => blackCurve_.blackVol(t, r, true);
     }
 }

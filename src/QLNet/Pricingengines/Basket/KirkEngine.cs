@@ -33,7 +33,7 @@ namespace QLNet.Pricingengines.Basket
         \test the correctness of the returned value is tested by
               reproducing results available in literature.
     */
-    public class KirkEngine : BasketOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class KirkEngine : BasketOption.Engine
     {
         public KirkEngine(BlackProcess process1,
                           BlackProcess process2,
@@ -50,35 +50,35 @@ namespace QLNet.Pricingengines.Basket
         public override void calculate()
         {
 
-            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European, () => "not an European Option");
+            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European Option");
 
-            EuropeanExercise exercise = arguments_.exercise as EuropeanExercise;
+            var exercise = arguments_.exercise as EuropeanExercise;
             Utils.QL_REQUIRE(exercise != null, () => "not an European Option");
 
-            SpreadBasketPayoff spreadPayoff = arguments_.payoff as SpreadBasketPayoff;
+            var spreadPayoff = arguments_.payoff as SpreadBasketPayoff;
             Utils.QL_REQUIRE(spreadPayoff != null, () => " spread payoff expected");
 
-            PlainVanillaPayoff payoff = spreadPayoff.basePayoff() as PlainVanillaPayoff;
+            var payoff = spreadPayoff.basePayoff() as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
-            double strike = payoff.strike();
+            var strike = payoff.strike();
 
-            double f1 = process1_.stateVariable().link.value();
-            double f2 = process2_.stateVariable().link.value();
+            var f1 = process1_.stateVariable().link.value();
+            var f2 = process2_.stateVariable().link.value();
 
             // use atm vols
-            double variance1 = process1_.blackVolatility().link.blackVariance(exercise.lastDate(), f1);
-            double variance2 = process2_.blackVolatility().link.blackVariance(exercise.lastDate(), f2);
+            var variance1 = process1_.blackVolatility().link.blackVariance(exercise.lastDate(), f1);
+            var variance2 = process2_.blackVolatility().link.blackVariance(exercise.lastDate(), f2);
 
-            double riskFreeDiscount = process1_.riskFreeRate().link.discount(exercise.lastDate());
+            var riskFreeDiscount = process1_.riskFreeRate().link.discount(exercise.lastDate());
 
             Func<double, double> Square = x => x * x;
-            double f = f1 / (f2 + strike);
-            double v = System.Math.Sqrt(variance1
-                                 + variance2 * Square(f2 / (f2 + strike))
-                                 - 2 * rho_ * System.Math.Sqrt(variance1 * variance2)
-                                 * (f2 / (f2 + strike)));
+            var f = f1 / (f2 + strike);
+            var v = System.Math.Sqrt(variance1
+                                     + variance2 * Square(f2 / (f2 + strike))
+                                     - 2 * rho_ * System.Math.Sqrt(variance1 * variance2)
+                                     * (f2 / (f2 + strike)));
 
-            BlackCalculator black = new BlackCalculator(new PlainVanillaPayoff(payoff.optionType(), 1.0), f, v, riskFreeDiscount);
+            var black = new BlackCalculator(new PlainVanillaPayoff(payoff.optionType(), 1.0), f, v, riskFreeDiscount);
 
             results_.value = (f2 + strike) * black.value();
 

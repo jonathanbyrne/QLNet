@@ -35,7 +35,7 @@ namespace QLNet.Indexes.swap
         Reuters page ISDAFIX.
 
     */
-    public class EuriborSwapIsdaFixA : SwapIndex
+    [JetBrains.Annotations.PublicAPI] public class EuriborSwapIsdaFixA : SwapIndex
     {
         public EuriborSwapIsdaFixA(Period tenor)
            : this(tenor, new Handle<YieldTermStructure>()) { }
@@ -82,7 +82,7 @@ namespace QLNet.Indexes.swap
         Reuters page ISDAFIX.
 
     */
-    public class EuriborSwapIsdaFixB : SwapIndex
+    [JetBrains.Annotations.PublicAPI] public class EuriborSwapIsdaFixB : SwapIndex
     {
         public EuriborSwapIsdaFixB(Period tenor)
            : this(tenor, new Handle<YieldTermStructure>()) { }
@@ -127,7 +127,7 @@ namespace QLNet.Indexes.swap
         For more info see <http://www.ifrmarkets.com>.
 
     */
-    public class EuriborSwapIfrFix : SwapIndex
+    [JetBrains.Annotations.PublicAPI] public class EuriborSwapIfrFix : SwapIndex
     {
         public EuriborSwapIfrFix(Period tenor)
            : this(tenor, new Handle<YieldTermStructure>()) { }

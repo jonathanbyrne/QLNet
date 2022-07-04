@@ -27,10 +27,7 @@ namespace QLNet.Extensions
             return false;
         }
 
-        public static bool IsNotEqual(this double d1, double d2)
-        {
-            return !d1.IsEqual(d2);
-        }
+        public static bool IsNotEqual(this double d1, double d2) => !d1.IsEqual(d2);
 
         // Fix double? comparison
         public static bool IsEqual(this double? d1, double d2)

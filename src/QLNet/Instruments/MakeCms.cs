@@ -28,7 +28,7 @@ namespace QLNet.Instruments
     /*! This class provides a more comfortable way
         to instantiate standard market constant maturity swap.
     */
-    public class MakeCms
+    [JetBrains.Annotations.PublicAPI] public class MakeCms
     {
         public MakeCms(Period swapTenor,
                        SwapIndex swapIndex,
@@ -124,25 +124,25 @@ namespace QLNet.Instruments
                 startDate = effectiveDate_;
             else
             {
-                int fixingDays = iborIndex_.fixingDays();
-                Date refDate = Settings.evaluationDate();
+                var fixingDays = iborIndex_.fixingDays();
+                var refDate = Settings.evaluationDate();
                 // if the evaluation date is not a business day
                 // then move to the next business day
                 refDate = floatCalendar_.adjust(refDate);
-                Date spotDate = floatCalendar_.advance(refDate, new Period(fixingDays, TimeUnit.Days));
+                var spotDate = floatCalendar_.advance(refDate, new Period(fixingDays, TimeUnit.Days));
                 startDate = spotDate + forwardStart_;
             }
 
-            Date terminationDate = maturityDate_ == null ? startDate + swapTenor_ : maturityDate_;
+            var terminationDate = maturityDate_ == null ? startDate + swapTenor_ : maturityDate_;
 
-            Schedule cmsSchedule = new Schedule(startDate, terminationDate,
+            var cmsSchedule = new Schedule(startDate, terminationDate,
                                                 cmsTenor_, cmsCalendar_,
                                                 cmsConvention_,
                                                 cmsTerminationDateConvention_,
                                                 cmsRule_, cmsEndOfMonth_,
                                                 cmsFirstDate_, cmsNextToLastDate_);
 
-            Schedule floatSchedule = new Schedule(startDate, terminationDate,
+            var floatSchedule = new Schedule(startDate, terminationDate,
                                                   floatTenor_, floatCalendar_,
                                                   floatConvention_,
                                                   floatTerminationDateConvention_,
@@ -181,10 +181,10 @@ namespace QLNet.Instruments
                 if (iborCouponPricer_ != null)
                     Utils.setCouponPricer(fLeg, iborCouponPricer_);
 
-                Swap temp = new Swap(cmsLeg, fLeg);
+                var temp = new Swap(cmsLeg, fLeg);
                 temp.setPricingEngine(engine_);
 
-                double? npv = temp.legNPV(0) + temp.legNPV(1);
+                var npv = temp.legNPV(0) + temp.legNPV(1);
 
                 usedSpread = -npv / temp.legBPS(1) * 1e-4;
             }

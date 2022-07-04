@@ -45,7 +45,7 @@ namespace QLNet.Pricingengines
         //! add samples until the required absolute tolerance is reached
         public double value(double tolerance, int maxSamples = int.MaxValue, int minSamples = 1023)
         {
-            int sampleNumber = mcModel_.sampleAccumulator().samples();
+            var sampleNumber = mcModel_.sampleAccumulator().samples();
             if (sampleNumber < minSamples)
             {
                 mcModel_.addSamples(minSamples - sampleNumber);
@@ -54,7 +54,7 @@ namespace QLNet.Pricingengines
 
             int nextBatch;
             double order;
-            double error = mcModel_.sampleAccumulator().errorEstimate();
+            var error = mcModel_.sampleAccumulator().errorEstimate();
             while (maxError(error) > tolerance)
             {
                 Utils.QL_REQUIRE(sampleNumber < maxSamples, () =>
@@ -80,7 +80,7 @@ namespace QLNet.Pricingengines
         public double valueWithSamples(int samples)
         {
 
-            int sampleNumber = mcModel_.sampleAccumulator().samples();
+            var sampleNumber = mcModel_.sampleAccumulator().samples();
 
             Utils.QL_REQUIRE(samples >= sampleNumber, () =>
                              "number of already simulated samples (" + sampleNumber
@@ -92,10 +92,10 @@ namespace QLNet.Pricingengines
         }
 
         //! error estimated using the samples simulated so far
-        public double errorEstimate() { return mcModel_.sampleAccumulator().errorEstimate(); }
+        public double errorEstimate() => mcModel_.sampleAccumulator().errorEstimate();
 
         //! access to the sample accumulator for richer statistics
-        public S sampleAccumulator() { return mcModel_.sampleAccumulator(); }
+        public S sampleAccumulator() => mcModel_.sampleAccumulator();
 
         //! basic calculate method provided to inherited pricing engines
         public void calculate(double? requiredTolerance, int? requiredSamples, int? maxSamples)
@@ -107,13 +107,13 @@ namespace QLNet.Pricingengines
             if (controlVariate_)
             {
 
-                double? controlVariateValue = this.controlVariateValue();
+                var controlVariateValue = this.controlVariateValue();
                 Utils.QL_REQUIRE(controlVariateValue != null, () => "engine does not provide control-variation price");
 
-                PathPricer<IPath> controlPP = controlPathPricer();
+                var controlPP = controlPathPricer();
                 Utils.QL_REQUIRE(controlPP != null, () => "engine does not provide control-variation path pricer");
 
-                IPathGenerator<IRNG> controlPG = controlPathGenerator();
+                var controlPG = controlPathGenerator();
 
                 mcModel_ = new MonteCarloModel<MC, RNG, S>(pathGenerator(), pathPricer(), FastActivator<S>.Create(), antitheticVariate_,
                                                                 controlPP, controlVariateValue.GetValueOrDefault(), controlPG);
@@ -140,13 +140,17 @@ namespace QLNet.Pricingengines
         protected abstract PathPricer<IPath> pathPricer();
         protected abstract IPathGenerator<IRNG> pathGenerator();
         protected abstract TimeGrid timeGrid();
-        protected virtual PathPricer<IPath> controlPathPricer() { return null; }
-        protected virtual IPathGenerator<IRNG> controlPathGenerator() { return null; }
-        protected virtual IPricingEngine controlPricingEngine() { return null; }
-        protected virtual double? controlVariateValue() { return null; }
+        protected virtual PathPricer<IPath> controlPathPricer() => null;
 
-        protected static double maxError(List<double> sequence) { return sequence.Max(); }
-        protected static double maxError(double error) { return error; }
+        protected virtual IPathGenerator<IRNG> controlPathGenerator() => null;
+
+        protected virtual IPricingEngine controlPricingEngine() => null;
+
+        protected virtual double? controlVariateValue() => null;
+
+        protected static double maxError(List<double> sequence) => sequence.Max();
+
+        protected static double maxError(double error) => error;
 
         protected MonteCarloModel<MC, RNG, S> mcModel_;
         protected bool antitheticVariate_, controlVariate_;

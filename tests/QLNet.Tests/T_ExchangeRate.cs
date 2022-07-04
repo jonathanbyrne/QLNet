@@ -24,7 +24,7 @@ using QLNet.Time;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_ExchangeRate
+    [JetBrains.Annotations.PublicAPI] public class T_ExchangeRate
     {
         [Fact]
         public void testDirect()
@@ -32,15 +32,15 @@ namespace QLNet.Tests
 
             Currency EUR = new EURCurrency(), USD = new USDCurrency();
 
-            ExchangeRate eur_usd = new ExchangeRate(EUR, USD, 1.2042);
+            var eur_usd = new ExchangeRate(EUR, USD, 1.2042);
 
-            Money m1 = 50000.0 * EUR;
-            Money m2 = 100000.0 * USD;
+            var m1 = 50000.0 * EUR;
+            var m2 = 100000.0 * USD;
 
             Money.conversionType = Money.ConversionType.NoConversion;
 
-            Money calculated = eur_usd.exchange(m1);
-            Money expected = new Money(m1.value * eur_usd.rate, USD);
+            var calculated = eur_usd.exchange(m1);
+            var expected = new Money(m1.value * eur_usd.rate, USD);
 
             if (!Utils.close(calculated, expected))
             {
@@ -65,18 +65,18 @@ namespace QLNet.Tests
 
             Currency EUR = new EURCurrency(), USD = new USDCurrency(), GBP = new GBPCurrency();
 
-            ExchangeRate eur_usd = new ExchangeRate(EUR, USD, 1.2042);
-            ExchangeRate eur_gbp = new ExchangeRate(EUR, GBP, 0.6612);
+            var eur_usd = new ExchangeRate(EUR, USD, 1.2042);
+            var eur_gbp = new ExchangeRate(EUR, GBP, 0.6612);
 
-            ExchangeRate derived = ExchangeRate.chain(eur_usd, eur_gbp);
+            var derived = ExchangeRate.chain(eur_usd, eur_gbp);
 
-            Money m1 = 50000.0 * GBP;
-            Money m2 = 100000.0 * USD;
+            var m1 = 50000.0 * GBP;
+            var m2 = 100000.0 * USD;
 
             Money.conversionType = Money.ConversionType.NoConversion;
 
-            Money calculated = derived.exchange(m1);
-            Money expected = new Money(m1.value * eur_usd.rate / eur_gbp.rate, USD);
+            var calculated = derived.exchange(m1);
+            var expected = new Money(m1.value * eur_usd.rate / eur_gbp.rate, USD);
 
             if (!Utils.close(calculated, expected))
             {
@@ -98,24 +98,24 @@ namespace QLNet.Tests
         [Fact]
         public void testDirectLookup()
         {
-            ExchangeRateManager rateManager = ExchangeRateManager.Instance;
+            var rateManager = ExchangeRateManager.Instance;
             rateManager.clear();
 
             Currency EUR = new EURCurrency(), USD = new USDCurrency();
 
-            ExchangeRate eur_usd1 = new ExchangeRate(EUR, USD, 1.1983);
-            ExchangeRate eur_usd2 = new ExchangeRate(USD, EUR, 1.0 / 1.2042);
+            var eur_usd1 = new ExchangeRate(EUR, USD, 1.1983);
+            var eur_usd2 = new ExchangeRate(USD, EUR, 1.0 / 1.2042);
             rateManager.add(eur_usd1, new Date(4, Month.August, 2004));
             rateManager.add(eur_usd2, new Date(5, Month.August, 2004));
 
-            Money m1 = 50000.0 * EUR;
-            Money m2 = 100000.0 * USD;
+            var m1 = 50000.0 * EUR;
+            var m2 = 100000.0 * USD;
 
             Money.conversionType = Money.ConversionType.NoConversion;
 
-            ExchangeRate eur_usd = rateManager.lookup(EUR, USD, new Date(4, Month.August, 2004), ExchangeRate.Type.Direct);
-            Money calculated = eur_usd.exchange(m1);
-            Money expected = new Money(m1.value * eur_usd1.rate, USD);
+            var eur_usd = rateManager.lookup(EUR, USD, new Date(4, Month.August, 2004), ExchangeRate.Type.Direct);
+            var calculated = eur_usd.exchange(m1);
+            var expected = new Money(m1.value * eur_usd1.rate, USD);
 
             if (!Utils.close(calculated, expected))
             {
@@ -131,7 +131,7 @@ namespace QLNet.Tests
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
 
-            ExchangeRate usd_eur = rateManager.lookup(USD, EUR, new Date(4, Month.August, 2004), ExchangeRate.Type.Direct);
+            var usd_eur = rateManager.lookup(USD, EUR, new Date(4, Month.August, 2004), ExchangeRate.Type.Direct);
 
             calculated = usd_eur.exchange(m2);
             expected = new Money(m2.value / eur_usd1.rate, EUR);
@@ -159,24 +159,24 @@ namespace QLNet.Tests
         public void testTriangulatedLookup()
         {
 
-            ExchangeRateManager rateManager = ExchangeRateManager.Instance;
+            var rateManager = ExchangeRateManager.Instance;
             rateManager.clear();
 
             Currency EUR = new EURCurrency(), USD = new USDCurrency(), ITL = new ITLCurrency();
 
-            ExchangeRate eur_usd1 = new ExchangeRate(EUR, USD, 1.1983);
-            ExchangeRate eur_usd2 = new ExchangeRate(EUR, USD, 1.2042);
+            var eur_usd1 = new ExchangeRate(EUR, USD, 1.1983);
+            var eur_usd2 = new ExchangeRate(EUR, USD, 1.2042);
             rateManager.add(eur_usd1, new Date(4, Month.August, 2004));
             rateManager.add(eur_usd2, new Date(5, Month.August, 2004));
 
-            Money m1 = 50000000.0 * ITL;
-            Money m2 = 100000.0 * USD;
+            var m1 = 50000000.0 * ITL;
+            var m2 = 100000.0 * USD;
 
             Money.conversionType = Money.ConversionType.NoConversion;
 
-            ExchangeRate itl_usd = rateManager.lookup(ITL, USD, new Date(4, Month.August, 2004));
-            Money calculated = itl_usd.exchange(m1);
-            Money expected = new Money(m1.value * eur_usd1.rate / 1936.27, USD);
+            var itl_usd = rateManager.lookup(ITL, USD, new Date(4, Month.August, 2004));
+            var calculated = itl_usd.exchange(m1);
+            var expected = new Money(m1.value * eur_usd1.rate / 1936.27, USD);
 
             if (!Utils.close(calculated, expected))
             {
@@ -192,7 +192,7 @@ namespace QLNet.Tests
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
 
-            ExchangeRate usd_itl = rateManager.lookup(USD, ITL, new Date(4, Month.August, 2004));
+            var usd_itl = rateManager.lookup(USD, ITL, new Date(4, Month.August, 2004));
 
             calculated = usd_itl.exchange(m2);
             expected = new Money(m2.value * 1936.27 / eur_usd1.rate, ITL);
@@ -223,48 +223,48 @@ namespace QLNet.Tests
             Currency EUR = new EURCurrency(), USD = new USDCurrency(), GBP = new GBPCurrency(),
             CHF = new CHFCurrency(), SEK = new SEKCurrency(), JPY = new JPYCurrency();
 
-            ExchangeRateManager rateManager = ExchangeRateManager.Instance;
+            var rateManager = ExchangeRateManager.Instance;
             rateManager.clear();
 
-            ExchangeRate eur_usd1 = new ExchangeRate(EUR, USD, 1.1983);
-            ExchangeRate eur_usd2 = new ExchangeRate(USD, EUR, 1.0 / 1.2042);
+            var eur_usd1 = new ExchangeRate(EUR, USD, 1.1983);
+            var eur_usd2 = new ExchangeRate(USD, EUR, 1.0 / 1.2042);
             rateManager.add(eur_usd1, new Date(4, Month.August, 2004));
             rateManager.add(eur_usd2, new Date(5, Month.August, 2004));
 
-            ExchangeRate eur_gbp1 = new ExchangeRate(GBP, EUR, 1.0 / 0.6596);
-            ExchangeRate eur_gbp2 = new ExchangeRate(EUR, GBP, 0.6612);
+            var eur_gbp1 = new ExchangeRate(GBP, EUR, 1.0 / 0.6596);
+            var eur_gbp2 = new ExchangeRate(EUR, GBP, 0.6612);
             rateManager.add(eur_gbp1, new Date(4, Month.August, 2004));
             rateManager.add(eur_gbp2, new Date(5, Month.August, 2004));
 
-            ExchangeRate usd_chf1 = new ExchangeRate(USD, CHF, 1.2847);
-            ExchangeRate usd_chf2 = new ExchangeRate(CHF, USD, 1.0 / 1.2774);
+            var usd_chf1 = new ExchangeRate(USD, CHF, 1.2847);
+            var usd_chf2 = new ExchangeRate(CHF, USD, 1.0 / 1.2774);
             rateManager.add(usd_chf1, new Date(4, Month.August, 2004));
             rateManager.add(usd_chf2, new Date(5, Month.August, 2004));
 
-            ExchangeRate chf_sek1 = new ExchangeRate(SEK, CHF, 0.1674);
-            ExchangeRate chf_sek2 = new ExchangeRate(CHF, SEK, 1.0 / 0.1677);
+            var chf_sek1 = new ExchangeRate(SEK, CHF, 0.1674);
+            var chf_sek2 = new ExchangeRate(CHF, SEK, 1.0 / 0.1677);
             rateManager.add(chf_sek1, new Date(4, Month.August, 2004));
             rateManager.add(chf_sek2, new Date(5, Month.August, 2004));
 
-            ExchangeRate jpy_sek1 = new ExchangeRate(SEK, JPY, 14.5450);
-            ExchangeRate jpy_sek2 = new ExchangeRate(JPY, SEK, 1.0 / 14.6110);
+            var jpy_sek1 = new ExchangeRate(SEK, JPY, 14.5450);
+            var jpy_sek2 = new ExchangeRate(JPY, SEK, 1.0 / 14.6110);
             rateManager.add(jpy_sek1, new Date(4, Month.August, 2004));
             rateManager.add(jpy_sek2, new Date(5, Month.August, 2004));
 
-            Money m1 = 100000.0 * USD;
-            Money m2 = 100000.0 * EUR;
-            Money m3 = 100000.0 * GBP;
-            Money m4 = 100000.0 * CHF;
-            Money m5 = 100000.0 * SEK;
-            Money m6 = 100000.0 * JPY;
+            var m1 = 100000.0 * USD;
+            var m2 = 100000.0 * EUR;
+            var m3 = 100000.0 * GBP;
+            var m4 = 100000.0 * CHF;
+            var m5 = 100000.0 * SEK;
+            var m6 = 100000.0 * JPY;
 
             Money.conversionType = Money.ConversionType.NoConversion;
 
             // two-rate chain
 
-            ExchangeRate usd_sek = rateManager.lookup(USD, SEK, new Date(4, Month.August, 2004));
-            Money calculated = usd_sek.exchange(m1);
-            Money expected = new Money(m1.value * usd_chf1.rate / chf_sek1.rate, SEK);
+            var usd_sek = rateManager.lookup(USD, SEK, new Date(4, Month.August, 2004));
+            var calculated = usd_sek.exchange(m1);
+            var expected = new Money(m1.value * usd_chf1.rate / chf_sek1.rate, SEK);
 
             if (!Utils.close(calculated, expected))
             {
@@ -282,7 +282,7 @@ namespace QLNet.Tests
 
             // three-rate chain
 
-            ExchangeRate eur_sek = rateManager.lookup(EUR, SEK, new Date(4, Month.August, 2004));
+            var eur_sek = rateManager.lookup(EUR, SEK, new Date(4, Month.August, 2004));
             calculated = eur_sek.exchange(m2);
             expected = new Money(m2.value * eur_usd1.rate * usd_chf1.rate / chf_sek1.rate, SEK);
 
@@ -302,7 +302,7 @@ namespace QLNet.Tests
 
             // four-rate chain
 
-            ExchangeRate eur_jpy = rateManager.lookup(EUR, JPY, new Date(4, Month.August, 2004));
+            var eur_jpy = rateManager.lookup(EUR, JPY, new Date(4, Month.August, 2004));
             calculated = eur_jpy.exchange(m2);
             expected = new Money(m2.value * eur_usd1.rate * usd_chf1.rate * jpy_sek1.rate / chf_sek1.rate, JPY);
 
@@ -322,7 +322,7 @@ namespace QLNet.Tests
 
             // five-rate chain
 
-            ExchangeRate gbp_jpy = rateManager.lookup(GBP, JPY, new Date(4, Month.August, 2004));
+            var gbp_jpy = rateManager.lookup(GBP, JPY, new Date(4, Month.August, 2004));
             calculated = gbp_jpy.exchange(m3);
             expected = new Money(m3.value * eur_gbp1.rate * eur_usd1.rate * usd_chf1.rate * jpy_sek1.rate / chf_sek1.rate, JPY);
 

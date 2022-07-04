@@ -21,7 +21,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Math.Interpolations
 {
-    public interface IBicubicSplineDerivatives
+    [JetBrains.Annotations.PublicAPI] public interface IBicubicSplineDerivatives
     {
         double derivativeX(double x, double y);
         double derivativeY(double x, double y);
@@ -30,7 +30,7 @@ namespace QLNet.Math.Interpolations
         double secondDerivativeY(double x, double y);
     }
 
-    public class BicubicSplineImpl : Interpolation2D.templateImpl, IBicubicSplineDerivatives
+    [JetBrains.Annotations.PublicAPI] public class BicubicSplineImpl : Interpolation2D.templateImpl, IBicubicSplineDerivatives
     {
         public BicubicSplineImpl(List<double> xBegin, int size, List<double> yBegin, int ySize, Matrix zData)
            : base(xBegin, size, yBegin, ySize, zData)
@@ -41,7 +41,7 @@ namespace QLNet.Math.Interpolations
         public override void calculate()
         {
             splines_ = new List<Interpolation>(zData_.rows());
-            for (int i = 0; i < zData_.rows(); ++i)
+            for (var i = 0; i < zData_.rows(); ++i)
                 splines_.Add(new CubicInterpolation(xBegin_, xSize_, zData_.row(i),
                                                     CubicInterpolation.DerivativeApprox.Spline, false,
                                                     CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
@@ -52,10 +52,10 @@ namespace QLNet.Math.Interpolations
         public override double value(double x, double y)
         {
             List<double> section = new InitializedList<double>(splines_.Count);
-            for (int i = 0; i < splines_.Count; i++)
+            for (var i = 0; i < splines_.Count; i++)
                 section[i] = splines_[i].value(x, true);
 
-            CubicInterpolation spline = new CubicInterpolation(yBegin_, ySize_, section,
+            var spline = new CubicInterpolation(yBegin_, ySize_, section,
                                                                CubicInterpolation.DerivativeApprox.Spline, false,
                                                                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
                                                                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0);
@@ -66,7 +66,7 @@ namespace QLNet.Math.Interpolations
         public double derivativeX(double x, double y)
         {
             List<double> section = new InitializedList<double>(zData_.columns());
-            for (int i = 0; i < section.Count; ++i)
+            for (var i = 0; i < section.Count; ++i)
             {
                 section[i] = value(xBegin_[i], y);
             }
@@ -81,7 +81,7 @@ namespace QLNet.Math.Interpolations
         public double secondDerivativeX(double x, double y)
         {
             List<double> section = new InitializedList<double>(zData_.columns());
-            for (int i = 0; i < section.Count; ++i)
+            for (var i = 0; i < section.Count; ++i)
             {
                 section[i] = value(xBegin_[i], y);
             }
@@ -96,7 +96,7 @@ namespace QLNet.Math.Interpolations
         public double derivativeY(double x, double y)
         {
             List<double> section = new InitializedList<double>(splines_.Count);
-            for (int i = 0; i < splines_.Count; i++)
+            for (var i = 0; i < splines_.Count; i++)
                 section[i] = splines_[i].value(x, true);
 
             return new CubicInterpolation(yBegin_, ySize_, section,
@@ -108,7 +108,7 @@ namespace QLNet.Math.Interpolations
         public double secondDerivativeY(double x, double y)
         {
             List<double> section = new InitializedList<double>(splines_.Count);
-            for (int i = 0; i < splines_.Count; i++)
+            for (var i = 0; i < splines_.Count; i++)
                 section[i] = splines_[i].value(x, true);
 
             return new CubicInterpolation(yBegin_, ySize_, section,
@@ -120,7 +120,7 @@ namespace QLNet.Math.Interpolations
         public double derivativeXY(double x, double y)
         {
             List<double> section = new InitializedList<double>(zData_.columns());
-            for (int i = 0; i < section.Count; ++i)
+            for (var i = 0; i < section.Count; ++i)
             {
                 section[i] = derivativeY(xBegin_[i], y);
             }
@@ -139,7 +139,7 @@ namespace QLNet.Math.Interpolations
 
     //! bicubic-spline interpolation between discrete points
     /*! \todo revise end conditions */
-    public class BicubicSpline : Interpolation2D
+    [JetBrains.Annotations.PublicAPI] public class BicubicSpline : Interpolation2D
     {
         /*! \pre the \f$ x \f$ and \f$ y \f$ values must be sorted. */
         public BicubicSpline(List<double> xBegin, int size, List<double> yBegin, int ySize, Matrix zData)
@@ -147,39 +147,21 @@ namespace QLNet.Math.Interpolations
             impl_ = new BicubicSplineImpl(xBegin, size, yBegin, ySize, zData);
         }
 
-        public double derivativeX(double x, double y)
-        {
-            return ((IBicubicSplineDerivatives)impl_).derivativeX(x, y);
-        }
+        public double derivativeX(double x, double y) => ((IBicubicSplineDerivatives)impl_).derivativeX(x, y);
 
-        public double derivativeY(double x, double y)
-        {
-            return ((IBicubicSplineDerivatives)impl_).derivativeY(x, y);
-        }
+        public double derivativeY(double x, double y) => ((IBicubicSplineDerivatives)impl_).derivativeY(x, y);
 
-        public double secondDerivativeX(double x, double y)
-        {
-            return ((IBicubicSplineDerivatives)impl_).secondDerivativeX(x, y);
-        }
+        public double secondDerivativeX(double x, double y) => ((IBicubicSplineDerivatives)impl_).secondDerivativeX(x, y);
 
-        public double secondDerivativeY(double x, double y)
-        {
-            return ((IBicubicSplineDerivatives)impl_).secondDerivativeY(x, y);
-        }
+        public double secondDerivativeY(double x, double y) => ((IBicubicSplineDerivatives)impl_).secondDerivativeY(x, y);
 
-        public double derivativeXY(double x, double y)
-        {
-            return ((IBicubicSplineDerivatives)impl_).derivativeXY(x, y);
-        }
+        public double derivativeXY(double x, double y) => ((IBicubicSplineDerivatives)impl_).derivativeXY(x, y);
     }
 
     //! bicubic-spline-interpolation factory
-    public class Bicubic : IInterpolationFactory2D
+    [JetBrains.Annotations.PublicAPI] public class Bicubic : IInterpolationFactory2D
     {
-        public Interpolation2D interpolate(List<double> xBegin, int size, List<double> yBegin, int ySize, Matrix zData)
-        {
-            return new BicubicSpline(xBegin, size, yBegin, ySize, zData);
-        }
+        public Interpolation2D interpolate(List<double> xBegin, int size, List<double> yBegin, int ySize, Matrix zData) => new BicubicSpline(xBegin, size, yBegin, ySize, zData);
     }
 
 }

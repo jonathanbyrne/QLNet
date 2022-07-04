@@ -22,7 +22,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Math.Interpolations
 {
-    public class BackwardFlatInterpolationImpl : Interpolation.templateImpl
+    [JetBrains.Annotations.PublicAPI] public class BackwardFlatInterpolationImpl : Interpolation.templateImpl
     {
         private List<double> primitive_;
 
@@ -34,9 +34,9 @@ namespace QLNet.Math.Interpolations
         public override void update()
         {
             primitive_[0] = 0.0;
-            for (int i = 1; i < size_; i++)
+            for (var i = 1; i < size_; i++)
             {
-                double dx = xBegin_[i] - xBegin_[i - 1];
+                var dx = xBegin_[i] - xBegin_[i - 1];
                 primitive_[i] = primitive_[i - 1] + dx * yBegin_[i];
             }
         }
@@ -45,7 +45,7 @@ namespace QLNet.Math.Interpolations
         {
             if (x <= xBegin_[0])
                 return yBegin_[0];
-            int i = locate(x);
+            var i = locate(x);
             if (x.IsEqual(xBegin_[i]))
                 return yBegin_[i];
             else
@@ -54,18 +54,19 @@ namespace QLNet.Math.Interpolations
 
         public override double primitive(double x)
         {
-            int i = locate(x);
-            double dx = x - xBegin_[i];
+            var i = locate(x);
+            var dx = x - xBegin_[i];
             return primitive_[i] + dx * yBegin_[i + 1];
         }
 
-        public override double derivative(double x) { return 0.0; }
-        public override double secondDerivative(double x) { return 0.0; }
+        public override double derivative(double x) => 0.0;
+
+        public override double secondDerivative(double x) => 0.0;
     }
 
 
     //! Backward-flat interpolation between discrete points
-    public class BackwardFlatInterpolation : Interpolation
+    [JetBrains.Annotations.PublicAPI] public class BackwardFlatInterpolation : Interpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public BackwardFlatInterpolation(List<double> xBegin, int size, List<double> yBegin)
@@ -76,13 +77,12 @@ namespace QLNet.Math.Interpolations
     }
 
     //! Backward-flat interpolation factory and traits
-    public class BackwardFlat : IInterpolationFactory
+    [JetBrains.Annotations.PublicAPI] public class BackwardFlat : IInterpolationFactory
     {
-        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin)
-        {
-            return new BackwardFlatInterpolation(xBegin, size, yBegin);
-        }
-        public bool global { get { return false; } }
-        public int requiredPoints { get { return 2; } }
+        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin) => new BackwardFlatInterpolation(xBegin, size, yBegin);
+
+        public bool global => false;
+
+        public int requiredPoints => 2;
     }
 }

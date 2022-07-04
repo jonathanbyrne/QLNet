@@ -45,9 +45,9 @@ namespace QLNet.Instruments
      because we do not have that degree of generality.
 
     */
-    public class CPICapFloor : Instrument
+    [JetBrains.Annotations.PublicAPI] public class CPICapFloor : Instrument
     {
-        public class Arguments : IPricingEngineArguments
+        [JetBrains.Annotations.PublicAPI] public class Arguments : IPricingEngineArguments
         {
             public QLNet.Option.Type type { get; set; }
             public double nominal { get; set; }
@@ -76,7 +76,7 @@ namespace QLNet.Instruments
             public override void reset() { base.reset(); }
         }
 
-        public class Engine : GenericEngine<Arguments, Results> { }
+        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results> { }
 
         public CPICapFloor(Option.Type type,
                            double nominal,
@@ -128,23 +128,30 @@ namespace QLNet.Instruments
         }
 
         // Inspectors
-        public QLNet.Option.Type type() { return type_; }
-        public double nominal() { return nominal_; }
+        public QLNet.Option.Type type() => type_;
+
+        public double nominal() => nominal_;
+
         //! \f$ K \f$ in the above formula.
-        public double strike() { return strike_; }
+        public double strike() => strike_;
+
         //! when you fix - but remember that there is an observation interpolation factor as well
-        public Date fixingDate() { return fixCalendar_.adjust(maturity_ - observationLag_, fixConvention_); }
-        public Date payDate() { return payCalendar_.adjust(maturity_, payConvention_); }
-        public Handle<ZeroInflationIndex> inflationIndex() { return infIndex_; }
-        public Period observationLag() { return observationLag_; }
+        public Date fixingDate() => fixCalendar_.adjust(maturity_ - observationLag_, fixConvention_);
+
+        public Date payDate() => payCalendar_.adjust(maturity_, payConvention_);
+
+        public Handle<ZeroInflationIndex> inflationIndex() => infIndex_;
+
+        public Period observationLag() => observationLag_;
 
         // Instrument interface
-        public override bool isExpired() { return Settings.evaluationDate() > maturity_; }
+        public override bool isExpired() => Settings.evaluationDate() > maturity_;
+
         public override void setupArguments(IPricingEngineArguments args)
         {
             // correct PricingEngine?
-            Arguments arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong argument type, not CPICapFloor.Arguments");
+            var arguments = args as Arguments;
+            Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType, not CPICapFloor.Arguments");
 
             // data move
             arguments.type = type_;

@@ -26,7 +26,7 @@ using System.Linq;
 namespace QLNet
 {
     // interface for all value methods
-    public interface IValue
+    [JetBrains.Annotations.PublicAPI] public interface IValue
    {
       double value(double v);
    }
@@ -48,7 +48,7 @@ namespace QLNet
       public static double BASIS_POINT = 1.0e-4;
    }
 
-   public class TimeSeries<T> : IDictionary<Date, T>
+   [JetBrains.Annotations.PublicAPI] public class TimeSeries<T> : IDictionary<Date, T>
    {
       private Dictionary<Date, T> backingDictionary_;
 
@@ -63,15 +63,9 @@ namespace QLNet
          backingDictionary_ = new Dictionary<Date, T>(size);
       }
 
-      IEnumerator IEnumerable.GetEnumerator()
-      {
-         return backingDictionary_.GetEnumerator();
-      }
+      IEnumerator IEnumerable.GetEnumerator() => backingDictionary_.GetEnumerator();
 
-      public IEnumerator<KeyValuePair<Date, T>> GetEnumerator()
-      {
-         return backingDictionary_.GetEnumerator();
-      }
+      public IEnumerator<KeyValuePair<Date, T>> GetEnumerator() => backingDictionary_.GetEnumerator();
 
       public void Add(KeyValuePair<Date, T> item)
       {
@@ -83,49 +77,29 @@ namespace QLNet
          backingDictionary_.Clear();
       }
 
-      public bool Contains(KeyValuePair<Date, T> item)
-      {
-         return backingDictionary_.Contains(item);
-      }
+      public bool Contains(KeyValuePair<Date, T> item) => backingDictionary_.Contains(item);
 
       public void CopyTo(KeyValuePair<Date, T>[] array, int arrayIndex)
       {
          throw new System.NotImplementedException();
       }
 
-      public bool Remove(KeyValuePair<Date, T> item)
-      {
-         return backingDictionary_.Remove(item.Key);
-      }
+      public bool Remove(KeyValuePair<Date, T> item) => backingDictionary_.Remove(item.Key);
 
-      public int Count { get { return backingDictionary_.Count; } }
-      public bool IsReadOnly
-      {
-         get
-         {
-            return false;
-         }
-      }
+      public int Count => backingDictionary_.Count;
 
-      public bool ContainsKey(Date key)
-      {
-         return backingDictionary_.ContainsKey(key);
-      }
+      public bool IsReadOnly => false;
+
+      public bool ContainsKey(Date key) => backingDictionary_.ContainsKey(key);
 
       public void Add(Date key, T value)
       {
          backingDictionary_.Add(key, value);
       }
 
-      public bool Remove(Date key)
-      {
-         return backingDictionary_.Remove(key);
-      }
+      public bool Remove(Date key) => backingDictionary_.Remove(key);
 
-      public bool TryGetValue(Date key, out T value)
-      {
-         return backingDictionary_.TryGetValue(key, out value);
-      }
+      public bool TryGetValue(Date key, out T value) => backingDictionary_.TryGetValue(key, out value);
 
       public T this[Date key]
       {
@@ -137,14 +111,12 @@ namespace QLNet
             }
             return default(T);
          }
-         set
-         {
-            backingDictionary_[key] = value;
-         }
+         set => backingDictionary_[key] = value;
       }
 
-      public ICollection<Date> Keys { get { return backingDictionary_.Keys; } }
-      public ICollection<T> Values { get { return backingDictionary_.Values; } }
+      public ICollection<Date> Keys => backingDictionary_.Keys;
+
+      public ICollection<T> Values => backingDictionary_.Values;
    }
 
    public struct Duration

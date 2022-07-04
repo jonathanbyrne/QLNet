@@ -29,7 +29,7 @@ namespace QLNet.Instruments
 {
     // helper class
     // This class provides a more comfortable way to instantiate standard market swap.
-    public class MakeVanillaSwap
+    [JetBrains.Annotations.PublicAPI] public class MakeVanillaSwap
     {
         private Period forwardStart_, swapTenor_;
         private IborIndex iborIndex_;
@@ -227,7 +227,8 @@ namespace QLNet.Instruments
 
 
         // swap creator
-        public static implicit operator VanillaSwap(MakeVanillaSwap o) { return o.value(); }
+        public static implicit operator VanillaSwap(MakeVanillaSwap o) => o.value();
+
         public VanillaSwap value()
         {
             Date startDate;
@@ -236,11 +237,11 @@ namespace QLNet.Instruments
                 startDate = effectiveDate_;
             else
             {
-                Date refDate = Settings.evaluationDate();
+                var refDate = Settings.evaluationDate();
                 // if the evaluation date is not a business day
                 // then move to the next business day
                 refDate = floatCalendar_.adjust(refDate);
-                Date spotDate = floatCalendar_.advance(refDate, new Period(settlementDays_, TimeUnit.Days));
+                var spotDate = floatCalendar_.advance(refDate, new Period(settlementDays_, TimeUnit.Days));
                 startDate = spotDate + forwardStart_;
                 if (forwardStart_.length() < 0)
                     startDate = floatCalendar_.adjust(startDate, BusinessDayConvention.Preceding);
@@ -248,7 +249,7 @@ namespace QLNet.Instruments
                     startDate = floatCalendar_.adjust(startDate, BusinessDayConvention.Following);
             }
 
-            Date endDate = terminationDate_;
+            var endDate = terminationDate_;
             if (endDate == null)
                 if (floatEndOfMonth_)
                     endDate = floatCalendar_.advance(startDate,
@@ -258,7 +259,7 @@ namespace QLNet.Instruments
                 else
                     endDate = startDate + swapTenor_;
 
-            Currency curr = iborIndex_.currency();
+            var curr = iborIndex_.currency();
             Period fixedTenor = null;
             if (fixedTenor_ != null)
                 fixedTenor = fixedTenor_;
@@ -281,13 +282,13 @@ namespace QLNet.Instruments
                     Utils.QL_FAIL("unknown fixed leg default tenor for " + curr);
             }
 
-            Schedule fixedSchedule = new Schedule(startDate, endDate,
+            var fixedSchedule = new Schedule(startDate, endDate,
                                                   fixedTenor, fixedCalendar_,
                                                   fixedConvention_, fixedTerminationDateConvention_,
                                                   fixedRule_, fixedEndOfMonth_,
                                                   fixedFirstDate_, fixedNextToLastDate_);
 
-            Schedule floatSchedule = new Schedule(startDate, endDate,
+            var floatSchedule = new Schedule(startDate, endDate,
                                                   floatTenor_, floatCalendar_,
                                                   floatConvention_, floatTerminationDateConvention_,
                                                   floatRule_, floatEndOfMonth_,
@@ -309,18 +310,18 @@ namespace QLNet.Instruments
                     Utils.QL_FAIL("unknown fixed leg day counter for " + curr);
             }
 
-            double? usedFixedRate = fixedRate_;
+            var usedFixedRate = fixedRate_;
             if (fixedRate_ == null)
             {
-                VanillaSwap temp = new VanillaSwap(type_, nominal_, fixedSchedule, 0.0, fixedDayCount,
+                var temp = new VanillaSwap(type_, nominal_, fixedSchedule, 0.0, fixedDayCount,
                                                    floatSchedule, iborIndex_, floatSpread_, floatDayCount_);
 
                 if (engine_ == null)
                 {
-                    Handle<YieldTermStructure> disc = iborIndex_.forwardingTermStructure();
+                    var disc = iborIndex_.forwardingTermStructure();
                     Utils.QL_REQUIRE(!disc.empty(), () =>
                                      "null term structure set to this instance of " + iborIndex_.name());
-                    bool includeSettlementDateFlows = false;
+                    var includeSettlementDateFlows = false;
                     IPricingEngine engine = new DiscountingSwapEngine(disc, includeSettlementDateFlows);
                     temp.setPricingEngine(engine);
                 }
@@ -330,13 +331,13 @@ namespace QLNet.Instruments
                 usedFixedRate = temp.fairRate();
             }
 
-            VanillaSwap swap = new VanillaSwap(type_, nominal_, fixedSchedule, usedFixedRate.Value, fixedDayCount,
+            var swap = new VanillaSwap(type_, nominal_, fixedSchedule, usedFixedRate.Value, fixedDayCount,
                                                floatSchedule, iborIndex_, floatSpread_, floatDayCount_);
 
             if (engine_ == null)
             {
-                Handle<YieldTermStructure> disc = iborIndex_.forwardingTermStructure();
-                bool includeSettlementDateFlows = false;
+                var disc = iborIndex_.forwardingTermStructure();
+                var includeSettlementDateFlows = false;
                 IPricingEngine engine = new DiscountingSwapEngine(disc, includeSettlementDateFlows);
                 swap.setPricingEngine(engine);
             }

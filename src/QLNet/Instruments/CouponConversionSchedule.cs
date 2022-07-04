@@ -19,7 +19,7 @@ using System.Collections.Generic;
 
 namespace QLNet
 {
-    public class CouponConversion
+    [JetBrains.Annotations.PublicAPI] public class CouponConversion
    {
       public CouponConversion(DateTime date, double rate)
       {
@@ -32,7 +32,7 @@ namespace QLNet
       public override string ToString() => ($"Conversion Date : {Date}\nConversion Rate : {Rate}");
    }
 
-   public class CouponConversionSchedule : List<CouponConversion>
+   [JetBrains.Annotations.PublicAPI] public class CouponConversionSchedule : List<CouponConversion>
    {}
 
    public static partial class Utils
@@ -41,8 +41,8 @@ namespace QLNet
                                                       CouponConversionSchedule couponConversionSchedule)
       {
          List<double> ret = new InitializedList<double>(schedule.Count);
-         for (int i = 0 ; i < couponConversionSchedule.Count; i++)
-            for (int j = 0; j < schedule.Count; j++)
+         for (var i = 0 ; i < couponConversionSchedule.Count; i++)
+            for (var j = 0; j < schedule.Count; j++)
                if (schedule[j] >= (Date)couponConversionSchedule[i].Date)
                   ret[j] = couponConversionSchedule[i].Rate;
 

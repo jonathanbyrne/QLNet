@@ -49,7 +49,7 @@ namespace QLNet.Time.Calendars
     /// Christmas Day, December 25th
     /// </remarks>
 
-    public class Chile : Calendar
+    [JetBrains.Annotations.PublicAPI] public class Chile : Calendar
     {
         public enum Market
         {
@@ -73,7 +73,7 @@ namespace QLNet.Time.Calendars
         {
             public static readonly Settlement Singleton = new Settlement();
             private Settlement() { }
-            public override string name() { return "Santiago Stock Exchange"; }
+            public override string name() => "Santiago Stock Exchange";
 
             public override bool isBusinessDay(Date date)
             {

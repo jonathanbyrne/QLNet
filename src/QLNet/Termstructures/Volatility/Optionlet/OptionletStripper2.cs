@@ -31,7 +31,7 @@ namespace QLNet.Termstructures.Volatility.Optionlet
          forward-forward volatilities) from the (cap/floor) At-The-Money
          term volatilities of a CapFloorTermVolCurve.
     */
-    public class OptionletStripper2 : OptionletStripper
+    [JetBrains.Annotations.PublicAPI] public class OptionletStripper2 : OptionletStripper
     {
 
         public OptionletStripper2(OptionletStripper1 optionletStripper1, Handle<CapFloorTermVolCurve> atmCapFloorTermVolCurve)
@@ -84,21 +84,21 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             optionletAccrualPeriods_ = new List<double>(stripper1_.optionletAccrualPeriods());
             optionletTimes_ = new List<double>(stripper1_.optionletFixingTimes());
             atmOptionletRate_ = new List<double>(stripper1_.atmOptionletRates());
-            for (int i = 0; i < optionletTimes_.Count; ++i)
+            for (var i = 0; i < optionletTimes_.Count; ++i)
             {
                 optionletStrikes_[i] = new List<double>(stripper1_.optionletStrikes(i));
                 optionletVolatilities_[i] = new List<double>(stripper1_.optionletVolatilities(i));
             }
 
             // atmCapFloorTermVolCurve data
-            List<Period> optionExpiriesTenors = new List<Period>(atmCapFloorTermVolCurve_.link.optionTenors());
-            List<double> optionExpiriesTimes = new List<double>(atmCapFloorTermVolCurve_.link.optionTimes());
+            var optionExpiriesTenors = new List<Period>(atmCapFloorTermVolCurve_.link.optionTenors());
+            var optionExpiriesTimes = new List<double>(atmCapFloorTermVolCurve_.link.optionTimes());
 
-            for (int j = 0; j < nOptionExpiries_; ++j)
+            for (var j = 0; j < nOptionExpiries_; ++j)
             {
-                double atmOptionVol = atmCapFloorTermVolCurve_.link.volatility(optionExpiriesTimes[j], 33.3333); // dummy strike
-                BlackCapFloorEngine engine = new BlackCapFloorEngine(iborIndex_.forwardingTermStructure(), atmOptionVol, dc_);
-                Instruments.CapFloor test = new MakeCapFloor(CapFloorType.Cap, optionExpiriesTenors[j], iborIndex_, null,
+                var atmOptionVol = atmCapFloorTermVolCurve_.link.volatility(optionExpiriesTimes[j], 33.3333); // dummy strike
+                var engine = new BlackCapFloorEngine(iborIndex_.forwardingTermStructure(), atmOptionVol, dc_);
+                var test = new MakeCapFloor(CapFloorType.Cap, optionExpiriesTenors[j], iborIndex_, null,
                                                  new Period(0, TimeUnit.Days)).withPricingEngine(engine).value();
                 caps_.Add(test);
                 atmCapFloorStrikes_[j] = caps_[j].atmRate(iborIndex_.forwardingTermStructure());
@@ -107,12 +107,12 @@ namespace QLNet.Termstructures.Volatility.Optionlet
 
             spreadsVolImplied_ = spreadsVolImplied();
 
-            StrippedOptionletAdapter adapter = new StrippedOptionletAdapter(stripper1_);
+            var adapter = new StrippedOptionletAdapter(stripper1_);
 
             double unadjustedVol, adjustedVol;
-            for (int j = 0; j < nOptionExpiries_; ++j)
+            for (var j = 0; j < nOptionExpiries_; ++j)
             {
-                for (int i = 0; i < optionletVolatilities_.Count; ++i)
+                for (var i = 0; i < optionletVolatilities_.Count; ++i)
                 {
                     if (i <= caps_[j].floatingLeg().Count)
                     {
@@ -120,7 +120,7 @@ namespace QLNet.Termstructures.Volatility.Optionlet
                         adjustedVol = unadjustedVol + spreadsVolImplied_[j];
 
                         var previous = optionletStrikes_[i].FindIndex(x => x >= atmCapFloorStrikes_[j]);
-                        int insertIndex = previous;
+                        var insertIndex = previous;
 
                         optionletStrikes_[i].Insert(insertIndex, atmCapFloorStrikes_[j]);
                         optionletVolatilities_[i].Insert(insertIndex, adjustedVol);
@@ -131,14 +131,14 @@ namespace QLNet.Termstructures.Volatility.Optionlet
 
         private List<double> spreadsVolImplied()
         {
-            Brent solver = new Brent();
+            var solver = new Brent();
             List<double> result = new InitializedList<double>(nOptionExpiries_, 0.0);
             double guess = 0.0001, minSpread = -0.1, maxSpread = 0.1;
-            for (int j = 0; j < nOptionExpiries_; ++j)
+            for (var j = 0; j < nOptionExpiries_; ++j)
             {
-                ObjectiveFunction f = new ObjectiveFunction(stripper1_, caps_[j], atmCapFloorPrices_[j]);
+                var f = new ObjectiveFunction(stripper1_, caps_[j], atmCapFloorPrices_[j]);
                 solver.setMaxEvaluations(maxEvaluations_);
-                double root = solver.solve(f, accuracy_, guess, minSpread, maxSpread);
+                var root = solver.solve(f, accuracy_, guess, minSpread, maxSpread);
                 result[j] = root;
             }
             return result;
@@ -160,7 +160,7 @@ namespace QLNet.Termstructures.Volatility.Optionlet
                 OptionletVolatilityStructure spreadedAdapter = new SpreadedOptionletVolatility(
                    new Handle<OptionletVolatilityStructure>(adapter), new Handle<Quote>(spreadQuote_));
 
-                BlackCapFloorEngine engine = new BlackCapFloorEngine(optionletStripper1.iborIndex().forwardingTermStructure(),
+                var engine = new BlackCapFloorEngine(optionletStripper1.iborIndex().forwardingTermStructure(),
                                                                      new Handle<OptionletVolatilityStructure>(spreadedAdapter));
 
                 cap_.setPricingEngine(engine);

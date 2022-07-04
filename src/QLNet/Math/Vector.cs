@@ -32,7 +32,7 @@ namespace QLNet.Math
     /// <remarks>This class implements the concept of vector as used in linear algebra.
     /// As such, it is not meant to be used as a container -
     /// <c>List</c> should be used instead.</remarks>
-    public class Vector : InitializedList<double>, ICloneable
+    [JetBrains.Annotations.PublicAPI] public class Vector : InitializedList<double>, ICloneable
     {
         /// <summary>
         /// Creates an empty Vector.
@@ -59,7 +59,7 @@ namespace QLNet.Math
         /// </summary>
         public Vector(int size, double value, double increment) : this(size)
         {
-            for (int i = 0; i < Count; i++, value += increment)
+            for (var i = 0; i < Count; i++, value += increment)
                 this[i] = value;
         }
 
@@ -68,7 +68,7 @@ namespace QLNet.Math
         /// </summary>
         public Vector(Vector from) : base(from.Count)
         {
-            for (int i = 0; i < Count; i++)
+            for (var i = 0; i < Count; i++)
                 this[i] = from[i];
         }
 
@@ -77,7 +77,7 @@ namespace QLNet.Math
         /// </summary>
         public Vector(List<double> from) : this(from.Count)
         {
-            for (int i = 0; i < Count; i++)
+            for (var i = 0; i < Count; i++)
                 this[i] = from[i];
         }
 
@@ -85,10 +85,7 @@ namespace QLNet.Math
         /// Returns a deep-copy clone of the Vector.
         /// </summary>
         /// <returns>A clone of the vector.</returns>
-        public Vector Clone()
-        {
-            return new Vector(this);
-        }
+        public Vector Clone() => new Vector(this);
 
         /// <summary>
         /// Creates a new object that is a copy of the current instance.
@@ -96,10 +93,7 @@ namespace QLNet.Math
         /// <returns>
         /// A new object that is a copy of this instance.
         /// </returns>
-        object ICloneable.Clone()
-        {
-            return Clone();
-        }
+        object ICloneable.Clone() => Clone();
 
         /// <summary>
         /// Indicates whether the current Vector is equal to another Vector.
@@ -117,7 +111,7 @@ namespace QLNet.Math
             if (Count != other.Count)
                 return false;
 
-            for (int i = 0; i < Count; i++)
+            for (var i = 0; i < Count; i++)
                 if (other[i].IsNotEqual(this[i]))
                     return false;
 
@@ -139,7 +133,7 @@ namespace QLNet.Math
 
         public override int GetHashCode()
         {
-            int hash = 0;
+            var hash = 0;
             for (var i = 0; i < Count; i++)
             {
                 hash = hash * 31 + this[i].GetHashCode();
@@ -147,15 +141,9 @@ namespace QLNet.Math
             return hash;
         }
 
-        public int size()
-        {
-            return Count;
-        }
+        public int size() => Count;
 
-        public bool empty()
-        {
-            return Count == 0;
-        }
+        public bool empty() => Count == 0;
 
         #region Vector algebra
 
@@ -217,16 +205,16 @@ namespace QLNet.Math
             Utils.QL_REQUIRE(v1.Count == v2.Count, () =>
                              "operation on vectors with different sizes (" + v1.Count + ", " + v2.Count);
 
-            Vector temp = new Vector(v1.Count);
-            for (int i = 0; i < v1.Count; i++)
+            var temp = new Vector(v1.Count);
+            for (var i = 0; i < v1.Count; i++)
                 temp[i] = func(v1[i], v2[i]);
             return temp;
         }
 
         private static Vector operValue(Vector v1, double value, Func<double, double, double> func)
         {
-            Vector temp = new Vector(v1.Count);
-            for (int i = 0; i < v1.Count; i++)
+            var temp = new Vector(v1.Count);
+            for (var i = 0; i < v1.Count; i++)
                 temp[i] = func(v1[i], value);
             return temp;
         }
@@ -237,7 +225,7 @@ namespace QLNet.Math
                              "operation on vectors with different sizes (" + v1.Count + ", " + v2.Count);
 
             double result = 0;
-            for (int i = 0; i < v1.Count; i++)
+            for (var i = 0; i < v1.Count; i++)
                 result += v1[i] * v2[i];
             return result;
         }
@@ -247,15 +235,9 @@ namespace QLNet.Math
         #region Vector utils
 
         // dot product. It is already overloaded in the vector. Thus for compatibility only
-        public static double DotProduct(Vector v1, Vector v2)
-        {
-            return v1 * v2;
-        }
+        public static double DotProduct(Vector v1, Vector v2) => v1 * v2;
 
-        public static double Norm2(Vector v)
-        {
-            return System.Math.Sqrt(v * v);
-        }
+        public static double Norm2(Vector v) => System.Math.Sqrt(v * v);
 
         public static Vector DirectMultiply(Vector v1, Vector v2)
         {
@@ -264,28 +246,28 @@ namespace QLNet.Math
 
         public static Vector Sqrt(Vector v)
         {
-            Vector result = new Vector(v.size());
+            var result = new Vector(v.size());
             result.ForEach((i, x) => result[i] = System.Math.Sqrt(v[i]));
             return result;
         }
 
         public static Vector Abs(Vector v)
         {
-            Vector result = new Vector(v.size());
+            var result = new Vector(v.size());
             result.ForEach((i, x) => result[i] = System.Math.Abs(v[i]));
             return result;
         }
 
         public static Vector Exp(Vector v)
         {
-            Vector result = new Vector(v.size());
+            var result = new Vector(v.size());
             result.ForEach((i, x) => result[i] = System.Math.Exp(v[i]));
             return result;
         }
 
         public void swap(int i1, int i2)
         {
-            double t = this[i2];
+            var t = this[i2];
             this[i2] = this[i1];
             this[i1] = t;
         }

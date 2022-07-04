@@ -24,12 +24,12 @@ using QLNet.Termstructures;
 
 namespace QLNet.Pricingengines.Bond
 {
-    public class DiscountingBondEngine : QLNet.Instruments.Bond.Engine
+    [JetBrains.Annotations.PublicAPI] public class DiscountingBondEngine : QLNet.Instruments.Bond.Engine
     {
         private Handle<YieldTermStructure> discountCurve_;
         private bool? includeSettlementDateFlows_;
 
-        public Handle<YieldTermStructure> discountCurve() { return discountCurve_; }
+        public Handle<YieldTermStructure> discountCurve() => discountCurve_;
 
         public DiscountingBondEngine(Handle<YieldTermStructure> discountCurve, bool? includeSettlementDateFlows = null)
         {
@@ -43,7 +43,7 @@ namespace QLNet.Pricingengines.Bond
             Utils.QL_REQUIRE(!discountCurve_.empty(), () => "discounting term structure handle is empty");
 
             results_.valuationDate = discountCurve_.link.referenceDate();
-            bool includeRefDateFlows =
+            var includeRefDateFlows =
                includeSettlementDateFlows_.HasValue ?
                includeSettlementDateFlows_.Value :
                Settings.includeReferenceDateEvents;

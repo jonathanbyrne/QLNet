@@ -33,7 +33,7 @@ namespace QLNet.Pricingengines.vanilla
         \test the correctness of the returned value is tested by
               checking it against analytic results.
     */
-    public class MCEuropeanEngine<RNG, S> : MCVanillaEngine<SingleVariate, RNG, S>
+    [JetBrains.Annotations.PublicAPI] public class MCEuropeanEngine<RNG, S> : MCVanillaEngine<SingleVariate, RNG, S>
        where RNG : IRSG, new()
        where S : IGeneralStatistics, new()
     {
@@ -53,10 +53,10 @@ namespace QLNet.Pricingengines.vanilla
 
         protected override PathPricer<IPath> pathPricer()
         {
-            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
-            GeneralizedBlackScholesProcess process = process_ as GeneralizedBlackScholesProcess;
+            var process = process_ as GeneralizedBlackScholesProcess;
             Utils.QL_REQUIRE(process != null, () => "Black-Scholes process required");
 
             return new EuropeanPathPricer(payoff.optionType(), payoff.strike(),
@@ -67,12 +67,12 @@ namespace QLNet.Pricingengines.vanilla
 
     //! Monte Carlo European engine factory
     // template <class RNG = PseudoRandom, class S = Statistics>
-    public class MakeMCEuropeanEngine<RNG> : MakeMCEuropeanEngine<RNG, Statistics> where RNG : IRSG, new()
+    [JetBrains.Annotations.PublicAPI] public class MakeMCEuropeanEngine<RNG> : MakeMCEuropeanEngine<RNG, Statistics> where RNG : IRSG, new()
     {
         public MakeMCEuropeanEngine(GeneralizedBlackScholesProcess process) : base(process) { }
     }
 
-    public class MakeMCEuropeanEngine<RNG, S>
+    [JetBrains.Annotations.PublicAPI] public class MakeMCEuropeanEngine<RNG, S>
        where RNG : IRSG, new()
        where S : IGeneralStatistics, new()
     {
@@ -155,7 +155,7 @@ namespace QLNet.Pricingengines.vanilla
     }
 
 
-    public class EuropeanPathPricer : PathPricer<IPath>
+    [JetBrains.Annotations.PublicAPI] public class EuropeanPathPricer : PathPricer<IPath>
     {
         public EuropeanPathPricer(QLNet.Option.Type type, double strike, double discount)
         {

@@ -29,7 +29,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         Douglas scheme and in higher dimensions it is usually inferior to
         operator splitting methods like Craig-Sneyd or Hundsdorfer-Verwer.
     */
-    public class TrBDF2Scheme<TrapezoidalScheme> : IMixedScheme, ISchemeFactory
+    [JetBrains.Annotations.PublicAPI] public class TrBDF2Scheme<TrapezoidalScheme> : IMixedScheme, ISchemeFactory
       where TrapezoidalScheme : class, IMixedScheme
     {
         public enum SolverType { BiCGstab, GMRES }
@@ -59,10 +59,10 @@ namespace QLNet.Methods.Finitedifferences.Schemes
 
         public IMixedScheme factory(object L, object bcs, object[] additionalInputs = null)
         {
-            double? alpha = additionalInputs[0] as double?;
-            TrapezoidalScheme trapezoidalScheme = additionalInputs[1] as TrapezoidalScheme;
-            double? relTol = additionalInputs[0] as double?;
-            SolverType? solverType = additionalInputs[2] as SolverType?;
+            var alpha = additionalInputs[0] as double?;
+            var trapezoidalScheme = additionalInputs[1] as TrapezoidalScheme;
+            var relTol = additionalInputs[0] as double?;
+            var solverType = additionalInputs[2] as SolverType?;
             return new TrBDF2Scheme<TrapezoidalScheme>(alpha.Value, L as FdmLinearOpComposite, trapezoidalScheme,
                                                        bcs as List<BoundaryCondition<FdmLinearOp>>, relTol.Value, solverType.Value);
         }
@@ -72,17 +72,17 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         public void step(ref object a, double t, double theta = 1.0)
         {
             Utils.QL_REQUIRE(t - dt_ > -1e-8, () => "a step towards negative time given");
-            double intermediateTimeStep = dt_.Value * alpha_;
+            var intermediateTimeStep = dt_.Value * alpha_;
 
-            object fStar = a;
+            var fStar = a;
             trapezoidalScheme_.setStep(intermediateTimeStep);
             trapezoidalScheme_.step(ref fStar, t);
 
             bcSet_.setTime(System.Math.Max(0.0, t - dt_.Value));
             bcSet_.applyBeforeSolving(map_, a as Vector);
 
-            Vector fStarVec = fStar as Vector;
-            Vector f = (1.0 / alpha_ * fStarVec - System.Math.Pow(1.0 - alpha_, 2.0) / alpha_ * (a as Vector)) / (2.0 - alpha_);
+            var fStarVec = fStar as Vector;
+            var f = (1.0 / alpha_ * fStarVec - System.Math.Pow(1.0 - alpha_, 2.0) / alpha_ * (a as Vector)) / (2.0 - alpha_);
 
             if (map_.size() == 1)
             {
@@ -95,7 +95,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
                     BiCGStab.MatrixMult preconditioner = x => map_.preconditioner(x, -beta_.Value);
                     BiCGStab.MatrixMult applyF = x => apply(x);
 
-                    BiCGStabResult result =
+                    var result =
                        new BiCGStab(applyF, System.Math.Max(10, (a as Vector).Count), relTol_, preconditioner).solve(f, f);
 
                     iterations_ += result.Iterations;
@@ -106,14 +106,14 @@ namespace QLNet.Methods.Finitedifferences.Schemes
                     GMRES.MatrixMult preconditioner = x => map_.preconditioner(x, -beta_.Value);
                     GMRES.MatrixMult applyF = x => apply(x);
 
-                    GMRESResult result =
+                    var result =
                        new GMRES(applyF, System.Math.Max(10, (a as Vector).Count) / 10, relTol_, preconditioner).solve(f, f);
 
                     iterations_ += result.Errors.Count;
                     a = result.X;
                 }
                 else
-                    Utils.QL_FAIL("unknown/illegal solver type");
+                    Utils.QL_FAIL("unknown/illegal solver ExerciseType");
             }
             bcSet_.applyAfterSolving(a as Vector);
         }
@@ -124,15 +124,9 @@ namespace QLNet.Methods.Finitedifferences.Schemes
             beta_ = (1.0 - alpha_) / (2.0 - alpha_) * dt_.Value;
         }
 
-        public int numberOfIterations()
-        {
-            return iterations_;
-        }
+        public int numberOfIterations() => iterations_;
 
-        public Vector apply(Vector r)
-        {
-            return r - beta_.Value * map_.apply(r);
-        }
+        public Vector apply(Vector r) => r - beta_.Value * map_.apply(r);
 
         protected double? dt_, beta_;
         protected double alpha_, relTol_;

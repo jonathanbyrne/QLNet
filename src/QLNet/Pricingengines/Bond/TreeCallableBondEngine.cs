@@ -28,7 +28,7 @@ namespace QLNet.Pricingengines.Bond
 {
     //! Numerical lattice engine for callable fixed rate bonds
     /*! \ingroup callablebondengines */
-    public class TreeCallableFixedRateBondEngine : LatticeShortRateModelEngine<CallableBond.Arguments, CallableBond.Results>
+    [JetBrains.Annotations.PublicAPI] public class TreeCallableFixedRateBondEngine : LatticeShortRateModelEngine<CallableBond.Arguments, CallableBond.Results>
     {
         /* Constructors
             \note the term structure is only needed when the short-rate
@@ -59,7 +59,7 @@ namespace QLNet.Pricingengines.Bond
             Date referenceDate;
             DayCounter dayCounter;
 
-            ITermStructureConsistentModel tsmodel = (ITermStructureConsistentModel)model_.link;
+            var tsmodel = (ITermStructureConsistentModel)model_.link;
             if (tsmodel != null)
             {
                 referenceDate = tsmodel.termStructure().link.referenceDate();
@@ -71,7 +71,7 @@ namespace QLNet.Pricingengines.Bond
                 dayCounter = termStructure_.link.dayCounter();
             }
 
-            DiscretizedCallableFixedRateBond callableBond = new DiscretizedCallableFixedRateBond(arguments_, referenceDate, dayCounter);
+            var callableBond = new DiscretizedCallableFixedRateBond(arguments_, referenceDate, dayCounter);
             Lattice lattice;
 
             if (lattice_ != null)
@@ -80,12 +80,12 @@ namespace QLNet.Pricingengines.Bond
             }
             else
             {
-                List<double> times = callableBond.mandatoryTimes();
-                TimeGrid timeGrid = new TimeGrid(times, times.Count, timeSteps_);
+                var times = callableBond.mandatoryTimes();
+                var timeGrid = new TimeGrid(times, times.Count, timeSteps_);
                 lattice = model_.link.tree(timeGrid);
             }
 
-            double redemptionTime = dayCounter.yearFraction(referenceDate, arguments_.redemptionDate);
+            var redemptionTime = dayCounter.yearFraction(referenceDate, arguments_.redemptionDate);
             callableBond.initialize(lattice, redemptionTime);
             callableBond.rollback(0.0);
             results_.value = results_.settlementValue = callableBond.presentValue();

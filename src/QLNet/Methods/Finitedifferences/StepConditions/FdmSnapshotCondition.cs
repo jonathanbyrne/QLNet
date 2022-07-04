@@ -24,7 +24,7 @@ using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.StepConditions
 {
-    public class FdmSnapshotCondition : IStepCondition<Vector>
+    [JetBrains.Annotations.PublicAPI] public class FdmSnapshotCondition : IStepCondition<Vector>
     {
         public FdmSnapshotCondition(double t)
         {
@@ -37,8 +37,9 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
                 values_ = (Vector)o;
         }
 
-        public double getTime() { return t_; }
-        public Vector getValues() { return values_; }
+        public double getTime() => t_;
+
+        public Vector getValues() => values_;
 
         protected double t_;
         protected Vector values_;

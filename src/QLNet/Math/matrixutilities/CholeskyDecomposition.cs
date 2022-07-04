@@ -36,14 +36,14 @@ namespace QLNet
                           "input matrix is not symmetric");
 #endif
 
-         Matrix result = new Matrix(size, size, 0.0);
+         var result = new Matrix(size, size, 0.0);
          double sum;
          for (i = 0; i < size; i++)
          {
             for (j = i; j < size; j++)
             {
                sum = S[i, j];
-               for (int k = 0; k <= i - 1; k++)
+               for (var k = 0; k <= i - 1; k++)
                {
                   sum -= result[i, k] * result[j, k];
                }

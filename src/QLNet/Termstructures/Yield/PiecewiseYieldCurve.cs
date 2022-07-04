@@ -30,42 +30,35 @@ using System.Linq;
 namespace QLNet.Termstructures.Yield
 {
     // this is an abstract class to give access to all properties and methods of PiecewiseYieldCurve and avoiding generics
-    public class PiecewiseYieldCurve : YieldTermStructure, Curve<YieldTermStructure>
+    [JetBrains.Annotations.PublicAPI] public class PiecewiseYieldCurve : YieldTermStructure, Curve<YieldTermStructure>
     {
         #region new fields: Curve
 
-        public double initialValue() { return _traits_.initialValue(this); }
-        public Date initialDate() { return _traits_.initialDate(this); }
+        public double initialValue() => _traits_.initialValue(this);
+
+        public Date initialDate() => _traits_.initialDate(this);
+
         public void registerWith(BootstrapHelper<YieldTermStructure> helper)
         {
             helper.registerWith(update);
         }
         public new bool moving_
         {
-            get
-            {
-                return base.moving_;
-            }
-            set
-            {
-                base.moving_ = value;
-            }
+            get => base.moving_;
+            set => base.moving_ = value;
         }
         public void setTermStructure(BootstrapHelper<YieldTermStructure> helper)
         {
             helper.setTermStructure(this);
         }
         protected ITraits<YieldTermStructure> _traits_ = null;//todo define with the trait for yield curve
-        public ITraits<YieldTermStructure> traits_
-        {
-            get
-            {
-                return _traits_;
-            }
-        }
-        public double minValueAfter(int i, InterpolatedCurve c, bool validData, int first) { return traits_.minValueAfter(i, c, validData, first); }
-        public double maxValueAfter(int i, InterpolatedCurve c, bool validData, int first) { return traits_.maxValueAfter(i, c, validData, first); }
-        public double guess(int i, InterpolatedCurve c, bool validData, int first) { return traits_.guess(i, c, validData, first); }
+        public ITraits<YieldTermStructure> traits_ => _traits_;
+
+        public double minValueAfter(int i, InterpolatedCurve c, bool validData, int first) => traits_.minValueAfter(i, c, validData, first);
+
+        public double maxValueAfter(int i, InterpolatedCurve c, bool validData, int first) => traits_.maxValueAfter(i, c, validData, first);
+
+        public double guess(int i, InterpolatedCurve c, bool validData, int first) => traits_.guess(i, c, validData, first);
 
         #endregion
 
@@ -95,7 +88,7 @@ namespace QLNet.Termstructures.Yield
         public Dictionary<Date, double> nodes()
         {
             calculate();
-            Dictionary<Date, double> results = new Dictionary<Date, double>();
+            var results = new Dictionary<Date, double>();
             dates_.ForEach((i, x) => results.Add(x, data_[i]));
             return results;
         }
@@ -107,7 +100,7 @@ namespace QLNet.Termstructures.Yield
 
         public object Clone()
         {
-            InterpolatedCurve copy = MemberwiseClone() as InterpolatedCurve;
+            var copy = MemberwiseClone() as InterpolatedCurve;
             copy.times_ = new List<double>(times_);
             copy.data_ = new List<double>(data_);
             copy.interpolator_ = interpolator_;
@@ -118,23 +111,29 @@ namespace QLNet.Termstructures.Yield
 
         #region BootstrapTraits
 
-        public Date initialDate(YieldTermStructure c) { return traits_.initialDate(c); }
-        public double initialValue(YieldTermStructure c) { return traits_.initialValue(c); }
+        public Date initialDate(YieldTermStructure c) => traits_.initialDate(c);
+
+        public double initialValue(YieldTermStructure c) => traits_.initialValue(c);
+
         public void updateGuess(List<double> data, double discount, int i) { traits_.updateGuess(data, discount, i); }
-        public int maxIterations() { return traits_.maxIterations(); }
+        public int maxIterations() => traits_.maxIterations();
 
         protected override double discountImpl(double t)
         {
             calculate();
             return traits_.discountImpl(interpolation_, t);
         }
-        protected double zeroYieldImpl(double t) { return traits_.zeroYieldImpl(interpolation_, t); }
-        protected double forwardImpl(double t) { return traits_.forwardImpl(interpolation_, t); }
+        protected double zeroYieldImpl(double t) => traits_.zeroYieldImpl(interpolation_, t);
+
+        protected double forwardImpl(double t) => traits_.forwardImpl(interpolation_, t);
 
         // these are dummy methods (for the sake of ITraits and should not be called directly
-        public double discountImpl(Interpolation i, double t) { throw new NotSupportedException(); }
-        public double zeroYieldImpl(Interpolation i, double t) { throw new NotSupportedException(); }
-        public double forwardImpl(Interpolation i, double t) { throw new NotSupportedException(); }
+        public double discountImpl(Interpolation i, double t) => throw new NotSupportedException();
+
+        public double zeroYieldImpl(Interpolation i, double t) => throw new NotSupportedException();
+
+        public double forwardImpl(Interpolation i, double t) => throw new NotSupportedException();
+
         #endregion
 
         #region Properties
@@ -142,14 +141,8 @@ namespace QLNet.Termstructures.Yield
         protected double _accuracy_;
         public double accuracy_
         {
-            get
-            {
-                return _accuracy_;
-            }
-            set
-            {
-                _accuracy_ = value;
-            }
+            get => _accuracy_;
+            set => _accuracy_ = value;
         }
 
         protected List<RateHelper> _instruments_ = new List<RateHelper>();
@@ -158,7 +151,7 @@ namespace QLNet.Termstructures.Yield
             get
             {
                 //todo edem
-                List<BootstrapHelper<YieldTermStructure>> instruments = new List<BootstrapHelper<YieldTermStructure>>();
+                var instruments = new List<BootstrapHelper<YieldTermStructure>>();
                 _instruments_.ForEach((i, x) => instruments.Add(x));
                 return instruments;
             }
@@ -182,7 +175,7 @@ namespace QLNet.Termstructures.Yield
         { }
     }
 
-    public class PiecewiseYieldCurve<Traits, Interpolator, BootStrap> : PiecewiseYieldCurve
+    [JetBrains.Annotations.PublicAPI] public class PiecewiseYieldCurve<Traits, Interpolator, BootStrap> : PiecewiseYieldCurve
        where Traits : ITraits<YieldTermStructure>, new()
        where Interpolator : IInterpolationFactory, new()
           where BootStrap : IBootStrap<PiecewiseYieldCurve>, new()
@@ -265,7 +258,7 @@ namespace QLNet.Termstructures.Yield
     }
 
     // Allows for optional 3rd generic parameter defaulted to IterativeBootstrap
-    public class PiecewiseYieldCurve<Traits, Interpolator> : PiecewiseYieldCurve<Traits, Interpolator, IterativeBootstrapForYield>
+    [JetBrains.Annotations.PublicAPI] public class PiecewiseYieldCurve<Traits, Interpolator> : PiecewiseYieldCurve<Traits, Interpolator, IterativeBootstrapForYield>
        where Traits : ITraits<YieldTermStructure>, new()
        where Interpolator : IInterpolationFactory, new()
     {

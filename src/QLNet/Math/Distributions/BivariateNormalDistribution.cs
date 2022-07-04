@@ -49,7 +49,7 @@ namespace QLNet.Math.Distributions
               checking it against known good results.
     */
 
-    public class BivariateCumulativeNormalDistributionDr78
+    [JetBrains.Annotations.PublicAPI] public class BivariateCumulativeNormalDistributionDr78
     {
         public BivariateCumulativeNormalDistributionDr78(double rho)
         {
@@ -63,11 +63,11 @@ namespace QLNet.Math.Distributions
         // function
         public double value(double a, double b)
         {
-            CumulativeNormalDistribution cumNormalDist = new CumulativeNormalDistribution();
-            double CumNormDistA = cumNormalDist.value(a);
-            double CumNormDistB = cumNormalDist.value(b);
-            double MaxCumNormDistAB = System.Math.Max(CumNormDistA, CumNormDistB);
-            double MinCumNormDistAB = System.Math.Min(CumNormDistA, CumNormDistB);
+            var cumNormalDist = new CumulativeNormalDistribution();
+            var CumNormDistA = cumNormalDist.value(a);
+            var CumNormDistB = cumNormalDist.value(b);
+            var MaxCumNormDistAB = System.Math.Max(CumNormDistA, CumNormDistB);
+            var MinCumNormDistAB = System.Math.Min(CumNormDistA, CumNormDistB);
 
             if (1.0 - MaxCumNormDistAB < 1e-15)
                 return MinCumNormDistAB;
@@ -75,17 +75,17 @@ namespace QLNet.Math.Distributions
             if (MinCumNormDistAB < 1e-15)
                 return MinCumNormDistAB;
 
-            double a1 = a / System.Math.Sqrt(2.0 * (1.0 - rho2_));
-            double b1 = b / System.Math.Sqrt(2.0 * (1.0 - rho2_));
+            var a1 = a / System.Math.Sqrt(2.0 * (1.0 - rho2_));
+            var b1 = b / System.Math.Sqrt(2.0 * (1.0 - rho2_));
 
-            double result = -1.0;
+            var result = -1.0;
 
             if (a <= 0.0 && b <= 0 && rho_ <= 0)
             {
-                double sum = 0.0;
-                for (int i = 0; i < 5; i++)
+                var sum = 0.0;
+                for (var i = 0; i < 5; i++)
                 {
-                    for (int j = 0; j < 5; j++)
+                    for (var j = 0; j < 5; j++)
                     {
                         sum += x_[i] * x_[j] * System.Math.Exp(a1 * (2.0 * y_[i] - a1) + b1 * (2.0 * y_[j] - b1) + 2.0 * rho_ * (y_[i] - a1) * (y_[j] - b1));
                     }
@@ -94,12 +94,12 @@ namespace QLNet.Math.Distributions
             }
             else if (a <= 0 && b >= 0 && rho_ >= 0)
             {
-                BivariateCumulativeNormalDistributionDr78 bivCumNormalDist = new BivariateCumulativeNormalDistributionDr78(-rho_);
+                var bivCumNormalDist = new BivariateCumulativeNormalDistributionDr78(-rho_);
                 result = CumNormDistA - bivCumNormalDist.value(a, -b);
             }
             else if (a >= 0.0 && b <= 0.0 && rho_ >= 0.0)
             {
-                BivariateCumulativeNormalDistributionDr78 bivCumNormalDist = new BivariateCumulativeNormalDistributionDr78(-rho_);
+                var bivCumNormalDist = new BivariateCumulativeNormalDistributionDr78(-rho_);
                 result = CumNormDistB - bivCumNormalDist.value(-a, b);
             }
             else if (a >= 0.0 && b >= 0.0 && rho_ <= 0.0)
@@ -108,13 +108,13 @@ namespace QLNet.Math.Distributions
             }
             else if (a * b * rho_ > 0.0)
             {
-                double rho1 = (rho_ * a - b) * (a > 0.0 ? 1.0 : -1.0) / System.Math.Sqrt(a * a - 2.0 * rho_ * a * b + b * b);
-                BivariateCumulativeNormalDistributionDr78 bivCumNormalDist = new BivariateCumulativeNormalDistributionDr78(rho1);
+                var rho1 = (rho_ * a - b) * (a > 0.0 ? 1.0 : -1.0) / System.Math.Sqrt(a * a - 2.0 * rho_ * a * b + b * b);
+                var bivCumNormalDist = new BivariateCumulativeNormalDistributionDr78(rho1);
 
-                double rho2 = (rho_ * b - a) * (b > 0.0 ? 1.0 : -1.0) / System.Math.Sqrt(a * a - 2.0 * rho_ * a * b + b * b);
-                BivariateCumulativeNormalDistributionDr78 CBND2 = new BivariateCumulativeNormalDistributionDr78(rho2);
+                var rho2 = (rho_ * b - a) * (b > 0.0 ? 1.0 : -1.0) / System.Math.Sqrt(a * a - 2.0 * rho_ * a * b + b * b);
+                var CBND2 = new BivariateCumulativeNormalDistributionDr78(rho2);
 
-                double delta = (1.0 - (a > 0.0 ? 1.0 : -1.0) * (b > 0.0 ? 1.0 : -1.0)) / 4.0;
+                var delta = (1.0 - (a > 0.0 ? 1.0 : -1.0) * (b > 0.0 ? 1.0 : -1.0)) / 4.0;
 
                 result = bivCumNormalDist.value(a, 0.0) + CBND2.value(b, 0.0) - delta;
             }
@@ -165,7 +165,7 @@ namespace QLNet.Math.Distributions
        \test the correctness of the returned value is tested by
              checking it against known good results.
     */
-    public class BivariateCumulativeNormalDistributionWe04DP
+    [JetBrains.Annotations.PublicAPI] public class BivariateCumulativeNormalDistributionWe04DP
     {
         public BivariateCumulativeNormalDistributionWe04DP(double rho)
         {
@@ -192,7 +192,7 @@ namespace QLNet.Math.Distributions
 
                Change some magic numbers to M_PI */
 
-            TabulatedGaussLegendre gaussLegendreQuad = new TabulatedGaussLegendre(20);
+            var gaussLegendreQuad = new TabulatedGaussLegendre(20);
             if (System.Math.Abs(correlation_) < 0.3)
             {
                 gaussLegendreQuad.order(6);
@@ -202,17 +202,17 @@ namespace QLNet.Math.Distributions
                 gaussLegendreQuad.order(12);
             }
 
-            double h = -x;
-            double k = -y;
-            double hk = h * k;
-            double BVN = 0.0;
+            var h = -x;
+            var k = -y;
+            var hk = h * k;
+            var BVN = 0.0;
 
             if (System.Math.Abs(correlation_) < 0.925)
             {
                 if (System.Math.Abs(correlation_) > 0)
                 {
-                    double asr = System.Math.Asin(correlation_);
-                    eqn3 f = new eqn3(h, k, asr);
+                    var asr = System.Math.Asin(correlation_);
+                    var f = new eqn3(h, k, asr);
                     BVN = gaussLegendreQuad.value(f.value);
                     BVN *= asr * (0.25 / Const.M_PI);
                 }
@@ -227,12 +227,12 @@ namespace QLNet.Math.Distributions
                 }
                 if (System.Math.Abs(correlation_) < 1)
                 {
-                    double Ass = (1 - correlation_) * (1 + correlation_);
-                    double a = System.Math.Sqrt(Ass);
-                    double bs = (h - k) * (h - k);
-                    double c = (4 - hk) / 8;
-                    double d = (12 - hk) / 16;
-                    double asr = -(bs / Ass + hk) / 2;
+                    var Ass = (1 - correlation_) * (1 + correlation_);
+                    var a = System.Math.Sqrt(Ass);
+                    var bs = (h - k) * (h - k);
+                    var c = (4 - hk) / 8;
+                    var d = (12 - hk) / 16;
+                    var asr = -(bs / Ass + hk) / 2;
                     if (asr > -100)
                     {
                         BVN = a * System.Math.Exp(asr) *
@@ -241,13 +241,13 @@ namespace QLNet.Math.Distributions
                     }
                     if (-hk < 100)
                     {
-                        double B = System.Math.Sqrt(bs);
+                        var B = System.Math.Sqrt(bs);
                         BVN -= System.Math.Exp(-hk / 2) * 2.506628274631 *
                                cumnorm_.value(-B / a) * B *
                                (1 - c * bs * (1 - d * bs / 5) / 3);
                     }
                     a /= 2;
-                    eqn6 f = new eqn6(a, c, d, bs, hk);
+                    var f = new eqn6(a, c, d, bs, hk);
                     BVN += gaussLegendreQuad.value(f.value);
                     BVN /= -2.0 * Const.M_PI;
                 }
@@ -282,7 +282,7 @@ namespace QLNet.Math.Distributions
         private CumulativeNormalDistribution cumnorm_ = new CumulativeNormalDistribution();
     }
 
-    public class eqn3
+    [JetBrains.Annotations.PublicAPI] public class eqn3
     {
         /* Relates to eqn3 Genz 2004 */
         public eqn3(double h, double k, double asr)
@@ -293,7 +293,7 @@ namespace QLNet.Math.Distributions
         }
         public double value(double x)
         {
-            double sn = System.Math.Sin(asr_ * (-x + 1) * 0.5);
+            var sn = System.Math.Sin(asr_ * (-x + 1) * 0.5);
             return System.Math.Exp((sn * hk_ - hs_) / (1.0 - sn * sn));
         }
 
@@ -301,7 +301,7 @@ namespace QLNet.Math.Distributions
 
     }
 
-    public class eqn6
+    [JetBrains.Annotations.PublicAPI] public class eqn6
     {
         /* Relates to eqn6 Genz 2004 */
         public eqn6(double a, double c, double d, double bs, double hk)
@@ -315,10 +315,10 @@ namespace QLNet.Math.Distributions
 
         public double value(double x)
         {
-            double xs = a_ * (-x + 1);
+            var xs = a_ * (-x + 1);
             xs = System.Math.Abs(xs * xs);
-            double rs = System.Math.Sqrt(1 - xs);
-            double asr = -(bs_ / xs + hk_) / 2;
+            var rs = System.Math.Sqrt(1 - xs);
+            var asr = -(bs_ / xs + hk_) / 2;
             if (asr > -100.0)
             {
                 return a_ * System.Math.Exp(asr) *

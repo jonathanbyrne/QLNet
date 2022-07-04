@@ -38,7 +38,7 @@ namespace QLNet.Pricingengines.swaption
 
         \test calculations are checked against cached results
     */
-    public class TreeSwaptionEngine
+    [JetBrains.Annotations.PublicAPI] public class TreeSwaptionEngine
        : LatticeShortRateModelEngine<Swaption.Arguments,
          Instrument.Results>
     {
@@ -86,7 +86,7 @@ namespace QLNet.Pricingengines.swaption
             Date referenceDate;
             DayCounter dayCounter;
 
-            ITermStructureConsistentModel tsmodel =
+            var tsmodel =
                (ITermStructureConsistentModel)model_.link;
             try
             {
@@ -107,7 +107,7 @@ namespace QLNet.Pricingengines.swaption
                 dayCounter = termStructure_.link.dayCounter();
             }
 
-            DiscretizedSwaption swaption = new DiscretizedSwaption(arguments_, referenceDate, dayCounter);
+            var swaption = new DiscretizedSwaption(arguments_, referenceDate, dayCounter);
             Lattice lattice;
 
             if (lattice_ != null)
@@ -116,13 +116,13 @@ namespace QLNet.Pricingengines.swaption
             }
             else
             {
-                List<double> times = swaption.mandatoryTimes();
-                TimeGrid timeGrid = new TimeGrid(times, times.Count, timeSteps_);
+                var times = swaption.mandatoryTimes();
+                var timeGrid = new TimeGrid(times, times.Count, timeSteps_);
                 lattice = model_.link.tree(timeGrid);
             }
 
             List<double> stoppingTimes = new InitializedList<double>(arguments_.exercise.dates().Count);
-            for (int i = 0; i < stoppingTimes.Count; ++i)
+            for (var i = 0; i < stoppingTimes.Count; ++i)
                 stoppingTimes[i] =
                    dayCounter.yearFraction(referenceDate,
                                            arguments_.exercise.date(i));
@@ -131,7 +131,7 @@ namespace QLNet.Pricingengines.swaption
 
             double nextExercise;
 
-            List<double> listExercise = new List<double>();
+            var listExercise = new List<double>();
             listExercise.AddRange(stoppingTimes.FindAll(x => x >= 0));
             nextExercise = listExercise[0];
             swaption.rollback(nextExercise);

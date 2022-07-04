@@ -43,15 +43,9 @@ namespace QLNet.Quotes
             return index_.fixing(referenceDate());
         }
 
-        public override bool isValid()
-        {
-            return index_.timeSeries().Count > 0;
-        }
+        public override bool isValid() => index_.timeSeries().Count > 0;
 
-        public Date referenceDate()
-        {
-            return index_.timeSeries().Keys.Last(); // must be tested
-        }
+        public Date referenceDate() => index_.timeSeries().Keys.Last(); // must be tested
 
         public void update()
         {

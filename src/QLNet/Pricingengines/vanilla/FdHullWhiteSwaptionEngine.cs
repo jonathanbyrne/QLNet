@@ -33,7 +33,7 @@ using System.Linq;
 
 namespace QLNet.Pricingengines.vanilla
 {
-    public class FdHullWhiteSwaptionEngine : GenericModelEngine<HullWhite, Swaption.Arguments, Instrument.Results>
+    [JetBrains.Annotations.PublicAPI] public class FdHullWhiteSwaptionEngine : GenericModelEngine<HullWhite, Swaption.Arguments, Instrument.Results>
     {
         public FdHullWhiteSwaptionEngine(
            HullWhite model,
@@ -52,16 +52,16 @@ namespace QLNet.Pricingengines.vanilla
         public override void calculate()
         {
             // 1. Term structure
-            Handle<YieldTermStructure> ts = model_.currentLink().termStructure();
+            var ts = model_.currentLink().termStructure();
 
             // 2. Mesher
-            DayCounter dc = ts.currentLink().dayCounter();
-            Date referenceDate = ts.currentLink().referenceDate();
-            double maturity = dc.yearFraction(referenceDate,
+            var dc = ts.currentLink().dayCounter();
+            var referenceDate = ts.currentLink().referenceDate();
+            var maturity = dc.yearFraction(referenceDate,
                                               arguments_.exercise.lastDate());
 
 
-            OrnsteinUhlenbeckProcess process = new OrnsteinUhlenbeckProcess(model_.currentLink().a(), model_.currentLink().sigma());
+            var process = new OrnsteinUhlenbeckProcess(model_.currentLink().a(), model_.currentLink().sigma());
 
             Fdm1dMesher shortRateMesher =
                new FdmSimpleProcess1DMesher(xGrid_, process, maturity, 1, invEps_);
@@ -69,19 +69,19 @@ namespace QLNet.Pricingengines.vanilla
             FdmMesher mesher = new FdmMesherComposite(shortRateMesher);
 
             // 3. Inner Value Calculator
-            List<Date> exerciseDates = arguments_.exercise.dates();
-            Dictionary<double, Date> t2d = new Dictionary<double, Date>();
+            var exerciseDates = arguments_.exercise.dates();
+            var t2d = new Dictionary<double, Date>();
 
-            for (int i = 0; i < exerciseDates.Count; ++i)
+            for (var i = 0; i < exerciseDates.Count; ++i)
             {
-                double t = dc.yearFraction(referenceDate, exerciseDates[i]);
+                var t = dc.yearFraction(referenceDate, exerciseDates[i]);
                 Utils.QL_REQUIRE(t >= 0, () => "exercise dates must not contain past date");
 
                 t2d.Add(t, exerciseDates[i]);
             }
 
-            Handle<YieldTermStructure> disTs = model_.currentLink().termStructure();
-            Handle<YieldTermStructure> fwdTs
+            var disTs = model_.currentLink().termStructure();
+            var fwdTs
                = arguments_.swap.iborIndex().forwardingTermStructure();
 
             Utils.QL_REQUIRE(fwdTs.currentLink().dayCounter() == disTs.currentLink().dayCounter(),
@@ -89,7 +89,7 @@ namespace QLNet.Pricingengines.vanilla
             Utils.QL_REQUIRE(fwdTs.currentLink().referenceDate() == disTs.currentLink().referenceDate(),
                              () => "reference date of forward and discount curve must match");
 
-            HullWhite fwdModel =
+            var fwdModel =
                new HullWhite(fwdTs, model_.currentLink().a(), model_.currentLink().sigma());
 
             FdmInnerValueCalculator calculator =
@@ -98,16 +98,16 @@ namespace QLNet.Pricingengines.vanilla
                arguments_.swap, t2d, mesher, 0);
 
             // 4. Step conditions
-            FdmStepConditionComposite conditions =
+            var conditions =
                FdmStepConditionComposite.vanillaComposite(
                   new DividendSchedule(), arguments_.exercise,
                   mesher, calculator, referenceDate, dc);
 
             // 5. Boundary conditions
-            FdmBoundaryConditionSet boundaries = new FdmBoundaryConditionSet();
+            var boundaries = new FdmBoundaryConditionSet();
 
             // 6. Solver
-            FdmSolverDesc solverDesc = new FdmSolverDesc();
+            var solverDesc = new FdmSolverDesc();
             solverDesc.mesher = mesher;
             solverDesc.bcSet = boundaries;
             solverDesc.condition = conditions;
@@ -116,7 +116,7 @@ namespace QLNet.Pricingengines.vanilla
             solverDesc.timeSteps = tGrid_;
             solverDesc.dampingSteps = dampingSteps_;
 
-            FdmHullWhiteSolver solver =
+            var solver =
                new FdmHullWhiteSolver(model_, solverDesc, schemeDesc_);
 
             results_.value = solver.valueAt(0.0);

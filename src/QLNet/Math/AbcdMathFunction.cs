@@ -22,7 +22,7 @@ namespace QLNet.Math
     //! %Abcd functional form
     /*! \f[ f(t) = [ a + b*t ] e^{-c*t} + d \f]
         following Rebonato's notation. */
-    public class AbcdMathFunction
+    [JetBrains.Annotations.PublicAPI] public class AbcdMathFunction
     {
         public AbcdMathFunction(double a = 0.002, double b = 0.001, double c = 0.16, double d = 0.0005)
         {
@@ -51,10 +51,7 @@ namespace QLNet.Math
         }
 
         //! function value at time t: \f[ f(t) \f]
-        public double value(double t)
-        {
-            return t < 0 ? 0.0 : (a_ + b_ * t) * System.Math.Exp(-c_ * t) + d_;
-        }
+        public double value(double t) => t < 0 ? 0.0 : (a_ + b_ * t) * System.Math.Exp(-c_ * t) + d_;
 
         //! time at which the function reaches maximum (if any)
         public double maximumLocation()
@@ -70,7 +67,7 @@ namespace QLNet.Math
             // stationary point
             // TODO check if minimum
             // TODO check if maximum at +inf
-            double zeroFirstDerivative = 1.0 / c_ - a_ / b_;
+            var zeroFirstDerivative = 1.0 / c_ - a_ / b_;
             return zeroFirstDerivative > 0.0 ? zeroFirstDerivative : 0.0;
         }
 
@@ -83,44 +80,40 @@ namespace QLNet.Math
         }
 
         //! function value at time +inf: \f[ f(\inf) \f]
-        public double longTermValue() { return d_; }
+        public double longTermValue() => d_;
 
         /*! first derivative of the function at time t
            \f[ f'(t) = [ (b-c*a) + (-c*b)*t) ] e^{-c*t} \f] */
-        public double derivative(double t)
-        {
-            return t < 0 ? 0.0 : (da_ + db_ * t) * System.Math.Exp(-c_ * t);
-        }
+        public double derivative(double t) => t < 0 ? 0.0 : (da_ + db_ * t) * System.Math.Exp(-c_ * t);
 
         /*! indefinite integral of the function at time t
            \f[ \int f(t)dt = [ (-a/c-b/c^2) + (-b/c)*t ] e^{-c*t} + d*t \f] */
-        public double primitive(double t)
-        {
-            return t < 0 ? 0.0 : (pa_ + pb_ * t) * System.Math.Exp(-c_ * t) + d_ * t + K_;
-        }
+        public double primitive(double t) => t < 0 ? 0.0 : (pa_ + pb_ * t) * System.Math.Exp(-c_ * t) + d_ * t + K_;
 
         /*! definite integral of the function between t1 and t2
            \f[ \int_{t1}^{t2} f(t)dt \f] */
-        public double definiteIntegral(double t1, double t2)
-        {
-            return primitive(t2) - primitive(t1);
-        }
+        public double definiteIntegral(double t1, double t2) => primitive(t2) - primitive(t1);
 
         /*! Inspectors */
-        public double a() { return a_; }
-        public double b() { return b_; }
-        public double c() { return c_; }
-        public double d() { return d_; }
-        public List<double> coefficients() { return abcd_; }
-        public List<double> derivativeCoefficients() { return dabcd_; }
+        public double a() => a_;
+
+        public double b() => b_;
+
+        public double c() => c_;
+
+        public double d() => d_;
+
+        public List<double> coefficients() => abcd_;
+
+        public List<double> derivativeCoefficients() => dabcd_;
         // the primitive is not abcd
 
         /*! coefficients of a AbcdMathFunction defined as definite
            integral on a rolling window of length tau, with tau = t2-t */
         public List<double> definiteIntegralCoefficients(double t, double t2)
         {
-            double dt = t2 - t;
-            double expcdt = System.Math.Exp(-c_ * dt);
+            var dt = t2 - t;
+            var expcdt = System.Math.Exp(-c_ * dt);
             List<double> result = new InitializedList<double>(4);
             result[0] = diacplusbcc_ - (diacplusbcc_ + dibc_ * dt) * expcdt;
             result[1] = dibc_ * (1.0 - expcdt);
@@ -133,8 +126,8 @@ namespace QLNet.Math
            derivative on a rolling window of length tau, with tau = t2-t */
         public List<double> definiteDerivativeCoefficients(double t, double t2)
         {
-            double dt = t2 - t;
-            double expcdt = System.Math.Exp(-c_ * dt);
+            var dt = t2 - t;
+            var expcdt = System.Math.Exp(-c_ * dt);
             List<double> result = new InitializedList<double>(4);
             result[1] = b_ * c_ / (1.0 - expcdt);
             result[0] = a_ * c_ - b_ + result[1] * dt * expcdt;
@@ -154,7 +147,7 @@ namespace QLNet.Math
                 return;
 
             // the one and only stationary point...
-            double zeroFirstDerivative = 1.0 / c - a / b;
+            var zeroFirstDerivative = 1.0 / c - a / b;
             if (zeroFirstDerivative >= 0.0)
             {
                 // ... is a minimum

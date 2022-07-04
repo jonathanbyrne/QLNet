@@ -22,7 +22,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Termstructures
 {
-    public interface Curve<T> : ITraits<T>, InterpolatedCurve
+    [JetBrains.Annotations.PublicAPI] public interface Curve<T> : ITraits<T>, InterpolatedCurve
     {
         #region ITraits
 

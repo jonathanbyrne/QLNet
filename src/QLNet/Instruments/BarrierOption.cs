@@ -28,7 +28,7 @@ namespace QLNet.Instruments
     //
     //        \ingroup instruments
     //
-    public class BarrierOption : OneAssetOption
+    [JetBrains.Annotations.PublicAPI] public class BarrierOption : OneAssetOption
     {
         public new class Arguments : Option.Arguments
         {
@@ -54,7 +54,7 @@ namespace QLNet.Instruments
                     case Barrier.Type.UpOut:
                         break;
                     default:
-                        Utils.QL_FAIL("unknown type");
+                        Utils.QL_FAIL("unknown ExerciseType");
                         break;
                 }
 
@@ -76,7 +76,7 @@ namespace QLNet.Instruments
                     case Barrier.Type.UpOut:
                         return underlying > arguments_.barrier;
                     default:
-                        Utils.QL_FAIL("unknown type");
+                        Utils.QL_FAIL("unknown ExerciseType");
                         return false;
                 }
             }
@@ -92,8 +92,8 @@ namespace QLNet.Instruments
         {
             base.setupArguments(args);
 
-            Arguments moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument type");
+            var moreArgs = args as Arguments;
+            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
 
             moreArgs.barrierType = barrierType_;
             moreArgs.barrier = barrier_;
@@ -107,13 +107,13 @@ namespace QLNet.Instruments
         {
             Utils.QL_REQUIRE(!isExpired(), () => "option expired");
 
-            SimpleQuote volQuote = new SimpleQuote();
+            var volQuote = new SimpleQuote();
 
-            GeneralizedBlackScholesProcess newProcess = ImpliedVolatilityHelper.clone(process, volQuote);
+            var newProcess = ImpliedVolatilityHelper.clone(process, volQuote);
 
             // engines are built-in for the time being
             IPricingEngine engine = null;
-            switch (exercise_.type())
+            switch (exercise_.ExerciseType())
             {
                 case Exercise.Type.European:
                     engine = new AnalyticBarrierEngine(newProcess);
@@ -123,7 +123,7 @@ namespace QLNet.Instruments
                     Utils.QL_FAIL("Engine not available for non-European barrier option");
                     break;
                 default:
-                    Utils.QL_FAIL("unknown exercise type");
+                    Utils.QL_FAIL("unknown exercise ExerciseType");
                     break;
             }
 

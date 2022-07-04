@@ -25,7 +25,7 @@ using System;
 namespace QLNet.Pricingengines.vanilla
 {
 
-    public class Integrand
+    [JetBrains.Annotations.PublicAPI] public class Integrand
     {
         private Payoff payoff_;
         private double s0_;
@@ -41,8 +41,8 @@ namespace QLNet.Pricingengines.vanilla
         }
         public double value(double x)
         {
-            double temp = s0_ * System.Math.Exp(x);
-            double result = payoff_.value(temp);
+            var temp = s0_ * System.Math.Exp(x);
+            var result = payoff_.value(temp);
             return result * System.Math.Exp(-(x - drift_) * (x - drift_) / (2.0 * variance_));
         }
     }
@@ -52,7 +52,7 @@ namespace QLNet.Pricingengines.vanilla
     //
     //        \ingroup vanillaengines
     //
-    public class IntegralEngine : OneAssetOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class IntegralEngine : OneAssetOption.Engine
     {
         private GeneralizedBlackScholesProcess process_;
 
@@ -65,22 +65,22 @@ namespace QLNet.Pricingengines.vanilla
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European, () => "not an European Option");
+            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European Option");
 
-            StrikedTypePayoff payoff = arguments_.payoff as StrikedTypePayoff;
+            var payoff = arguments_.payoff as StrikedTypePayoff;
 
             Utils.QL_REQUIRE(payoff != null, () => "not an European Option");
 
-            double variance = process_.blackVolatility().link.blackVariance(arguments_.exercise.lastDate(), payoff.strike());
+            var variance = process_.blackVolatility().link.blackVariance(arguments_.exercise.lastDate(), payoff.strike());
 
-            double dividendDiscount = process_.dividendYield().link.discount(arguments_.exercise.lastDate());
-            double riskFreeDiscount = process_.riskFreeRate().link.discount(arguments_.exercise.lastDate());
-            double drift = System.Math.Log(dividendDiscount / riskFreeDiscount) - 0.5 * variance;
+            var dividendDiscount = process_.dividendYield().link.discount(arguments_.exercise.lastDate());
+            var riskFreeDiscount = process_.riskFreeRate().link.discount(arguments_.exercise.lastDate());
+            var drift = System.Math.Log(dividendDiscount / riskFreeDiscount) - 0.5 * variance;
 
-            Integrand f = new Integrand(arguments_.payoff, process_.stateVariable().link.value(), drift, variance);
-            SegmentIntegral integrator = new SegmentIntegral(5000);
+            var f = new Integrand(arguments_.payoff, process_.stateVariable().link.value(), drift, variance);
+            var integrator = new SegmentIntegral(5000);
 
-            double infinity = 10.0 * System.Math.Sqrt(variance);
+            var infinity = 10.0 * System.Math.Sqrt(variance);
             results_.value = process_.riskFreeRate().link.discount(arguments_.exercise.lastDate()) /
                              System.Math.Sqrt(2.0 * System.Math.PI * variance) *
                              integrator.value(f.value, drift - infinity, drift + infinity);

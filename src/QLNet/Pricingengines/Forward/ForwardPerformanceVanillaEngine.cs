@@ -31,7 +31,7 @@ namespace QLNet.Pricingengines.Forward
         - the correctness of the returned greeks is tested by
           reproducing numerical derivatives.
     */
-    public class ForwardPerformanceVanillaEngine : ForwardVanillaEngine
+    [JetBrains.Annotations.PublicAPI] public class ForwardPerformanceVanillaEngine : ForwardVanillaEngine
     {
         public ForwardPerformanceVanillaEngine(GeneralizedBlackScholesProcess process, GetOriginalEngine getEngine)
            : base(process, getEngine) { }
@@ -43,14 +43,14 @@ namespace QLNet.Pricingengines.Forward
         }
         protected override void getOriginalResults()
         {
-            DayCounter rfdc = process_.riskFreeRate().link.dayCounter();
-            double resetTime = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(),
+            var rfdc = process_.riskFreeRate().link.dayCounter();
+            var resetTime = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(),
                                                  arguments_.resetDate);
-            double discR = process_.riskFreeRate().link.discount(arguments_.resetDate);
+            var discR = process_.riskFreeRate().link.discount(arguments_.resetDate);
             // it's a performance option
             discR /= process_.stateVariable().link.value();
 
-            double? temp = originalResults_.value;
+            var temp = originalResults_.value;
             results_.value = discR * temp;
             results_.delta = 0.0;
             results_.gamma = 0.0;

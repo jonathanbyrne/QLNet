@@ -39,19 +39,17 @@ namespace QLNet.Pricingengines.vanilla
            : base(process, timeSteps, gridPoints, timeDependent) { }
 
         public override FDVanillaEngine factory(GeneralizedBlackScholesProcess process,
-                                                int timeSteps, int gridPoints, bool timeDependent)
-        {
-            return factory2(process, timeSteps, gridPoints, timeDependent);
-        }
+                                                int timeSteps, int gridPoints, bool timeDependent) =>
+            factory2(process, timeSteps, gridPoints, timeDependent);
 
         public abstract FDVanillaEngine factory2(GeneralizedBlackScholesProcess process,
                                                  int timeSteps, int gridPoints, bool timeDependent);
 
         public override void setupArguments(IPricingEngineArguments a)
         {
-            DividendVanillaOption.Arguments args = a as DividendVanillaOption.Arguments;
-            Utils.QL_REQUIRE(args != null, () => "incorrect argument type");
-            List<Event> events = new List<Event>();
+            var args = a as DividendVanillaOption.Arguments;
+            Utils.QL_REQUIRE(args != null, () => "incorrect argument ExerciseType");
+            var events = new List<Event>();
             foreach (Event e in args.cashFlow)
                 events.Add(e);
             base.setupArguments(a, events);
@@ -59,7 +57,7 @@ namespace QLNet.Pricingengines.vanilla
 
         protected double getDividendAmount(int i)
         {
-            Dividend dividend = events_[i] as Dividend;
+            var dividend = events_[i] as Dividend;
             if (dividend != null)
             {
                 return dividend.amount();
@@ -72,9 +70,9 @@ namespace QLNet.Pricingengines.vanilla
 
         protected double getDiscountedDividend(int i)
         {
-            double dividend = getDividendAmount(i);
-            double discount = process_.riskFreeRate().link.discount(events_[i].date()) /
-                              process_.dividendYield().link.discount(events_[i].date());
+            var dividend = getDividendAmount(i);
+            var discount = process_.riskFreeRate().link.discount(events_[i].date()) /
+                           process_.dividendYield().link.discount(events_[i].date());
             return dividend * discount;
         }
     }
@@ -90,7 +88,7 @@ namespace QLNet.Pricingengines.vanilla
        This is set as the default engine, because it is consistent
        with the analytic version.
     */
-    public class FDDividendEngineMerton73 : FDDividendEngineBase
+    [JetBrains.Annotations.PublicAPI] public class FDDividendEngineMerton73 : FDDividendEngineBase
     {
         // required for generics
         public FDDividendEngineMerton73() { }
@@ -98,10 +96,7 @@ namespace QLNet.Pricingengines.vanilla
         public FDDividendEngineMerton73(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
            : base(process, timeSteps, gridPoints, timeDependent) { }
 
-        public override FDVanillaEngine factory2(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
-        {
-            throw new NotImplementedException();
-        }
+        public override FDVanillaEngine factory2(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent) => throw new NotImplementedException();
         // The value of the x axis is the NPV of the underlying minus the
         // value of the paid dividends.
 
@@ -111,8 +106,8 @@ namespace QLNet.Pricingengines.vanilla
         //
         protected override void setGridLimits()
         {
-            double paidDividends = 0.0;
-            for (int i = 0; i < events_.Count; i++)
+            var paidDividends = 0.0;
+            for (var i = 0; i < events_.Count; i++)
             {
                 if (getDividendTime(i) >= 0.0)
                     paidDividends += getDiscountedDividend(i);
@@ -125,7 +120,7 @@ namespace QLNet.Pricingengines.vanilla
         // TODO:  Make this work for both fixed and scaled dividends
         protected override void executeIntermediateStep(int step)
         {
-            double scaleFactor = getDiscountedDividend(step) / center_ + 1.0;
+            var scaleFactor = getDiscountedDividend(step) / center_ + 1.0;
             sMin_ *= scaleFactor;
             sMax_ *= scaleFactor;
             center_ *= scaleFactor;
@@ -152,22 +147,19 @@ namespace QLNet.Pricingengines.vanilla
 
        \todo Review literature to see whether this is described
     */
-    public class FDDividendEngineShiftScale : FDDividendEngineBase
+    [JetBrains.Annotations.PublicAPI] public class FDDividendEngineShiftScale : FDDividendEngineBase
     {
         public FDDividendEngineShiftScale(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
            : base(process, timeSteps, gridPoints, timeDependent) { }
 
-        public override FDVanillaEngine factory2(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
-        {
-            throw new NotImplementedException();
-        }
+        public override FDVanillaEngine factory2(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent) => throw new NotImplementedException();
 
         protected override void setGridLimits()
         {
-            double underlying = process_.stateVariable().link.value();
-            for (int i = 0; i < events_.Count; i++)
+            var underlying = process_.stateVariable().link.value();
+            for (var i = 0; i < events_.Count; i++)
             {
-                Dividend dividend = events_[i] as Dividend;
+                var dividend = events_[i] as Dividend;
                 if (dividend == null)
                     continue;
                 if (getDividendTime(i) < 0.0)
@@ -181,10 +173,10 @@ namespace QLNet.Pricingengines.vanilla
 
         protected override void executeIntermediateStep(int step)
         {
-            Dividend dividend = events_[step] as Dividend;
+            var dividend = events_[step] as Dividend;
             if (dividend == null)
                 return;
-            DividendAdder adder = new DividendAdder(dividend);
+            var adder = new DividendAdder(dividend);
             sMin_ = adder.value(sMin_);
             sMax_ = adder.value(sMax_);
             center_ = adder.value(center_);
@@ -208,15 +200,12 @@ namespace QLNet.Pricingengines.vanilla
             {
                 dividend = d;
             }
-            public double value(double x)
-            {
-                return x + dividend.amount(x);
-            }
+            public double value(double x) => x + dividend.amount(x);
         }
     }
 
     // Use Merton73 engine as default.
-    public class FDDividendEngine : FDDividendEngineMerton73
+    [JetBrains.Annotations.PublicAPI] public class FDDividendEngine : FDDividendEngineMerton73
     {
 
         public FDDividendEngine()
@@ -226,9 +215,6 @@ namespace QLNet.Pricingengines.vanilla
                                 bool timeDependent = false) : base(process, timeSteps, gridPoints, timeDependent)
         { }
 
-        public override FDVanillaEngine factory2(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
-        {
-            return new FDDividendEngine(process, timeSteps, gridPoints, timeDependent);
-        }
+        public override FDVanillaEngine factory2(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent) => new FDDividendEngine(process, timeSteps, gridPoints, timeDependent);
     }
 }

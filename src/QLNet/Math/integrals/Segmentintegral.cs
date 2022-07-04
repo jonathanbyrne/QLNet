@@ -38,7 +38,7 @@ namespace QLNet.Math.integrals
     //        \test the correctness of the result is tested by checking it
     //              against known good values.
     //
-    public class SegmentIntegral : Integrator
+    [JetBrains.Annotations.PublicAPI] public class SegmentIntegral : Integrator
     {
         private int intervals_;
 
@@ -53,10 +53,10 @@ namespace QLNet.Math.integrals
         // inline and template definitions
         protected override double integrate(Func<double, double> f, double a, double b)
         {
-            double dx = (b - a) / intervals_;
-            double sum = 0.5 * (f(a) + f(b));
-            double end = b - 0.5 * dx;
-            for (double x = a + dx; x < end; x += dx)
+            var dx = (b - a) / intervals_;
+            var sum = 0.5 * (f(a) + f(b));
+            var end = b - 0.5 * dx;
+            for (var x = a + dx; x < end; x += dx)
                 sum += f(x);
             return sum * dx;
         }

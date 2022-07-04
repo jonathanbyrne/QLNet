@@ -22,7 +22,7 @@ namespace QLNet.Math.randomnumbers
 {
     // Interface class to map the functionality of SobolBrownianGenerator
     // to the "conventional" sequence generator interface
-    public class SobolBrownianBridgeRsg : IRNG
+    [JetBrains.Annotations.PublicAPI] public class SobolBrownianBridgeRsg : IRNG
     {
         public SobolBrownianBridgeRsg(int factors, int steps,
                                       SobolBrownianGenerator.Ordering ordering = SobolBrownianGenerator.Ordering.Diagonal,
@@ -40,10 +40,10 @@ namespace QLNet.Math.randomnumbers
         {
             gen_.nextPath();
             List<double> output = new InitializedList<double>(factors_);
-            for (int i = 0; i < steps_; ++i)
+            for (var i = 0; i < steps_; ++i)
             {
                 gen_.nextStep(output);
-                for (int j = 0; j < output.Count; j++)
+                for (var j = 0; j < output.Count; j++)
                 {
                     seq_.value[j + i * factors_] = output[j];
                 }
@@ -51,13 +51,11 @@ namespace QLNet.Math.randomnumbers
 
             return seq_;
         }
-        public Sample<List<double>> lastSequence() { return seq_; }
-        public IRNG factory(int dimensionality, ulong seed)
-        {
-            throw new NotImplementedException();
-        }
+        public Sample<List<double>> lastSequence() => seq_;
 
-        public int dimension() { return dim_; }
+        public IRNG factory(int dimensionality, ulong seed) => throw new NotImplementedException();
+
+        public int dimension() => dim_;
 
         private int factors_, steps_, dim_;
         private Sample<List<double>> seq_;

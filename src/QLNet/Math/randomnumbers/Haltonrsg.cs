@@ -43,7 +43,7 @@ namespace QLNet.Math.randomnumbers
           their discrepancy against known good values.
     */
 
-    public class HaltonRsg : IRNG
+    [JetBrains.Annotations.PublicAPI] public class HaltonRsg : IRNG
     {
         private int dimensionality_;
         private ulong sequenceCounter_;
@@ -66,7 +66,7 @@ namespace QLNet.Math.randomnumbers
 
             if (randomStart || randomShift)
             {
-                RandomSequenceGenerator<MersenneTwisterUniformRng> uniformRsg =
+                var uniformRsg =
                    new RandomSequenceGenerator<MersenneTwisterUniformRng>(dimensionality_, seed);
                 if (randomStart)
                     randomStart_ = uniformRsg.nextInt32Sequence();
@@ -80,7 +80,7 @@ namespace QLNet.Math.randomnumbers
             ++sequenceCounter_;
             ulong b, k;
             double f, h;
-            for (int i = 0; i < dimensionality_; ++i)
+            for (var i = 0; i < dimensionality_; ++i)
             {
                 h = 0.0;
                 b = PrimeNumbers.get(i);
@@ -98,20 +98,11 @@ namespace QLNet.Math.randomnumbers
             return sequence_;
         }
 
-        public Sample<List<double>> lastSequence()
-        {
-            return sequence_;
-        }
+        public Sample<List<double>> lastSequence() => sequence_;
 
-        public IRNG factory(int dimensionality, ulong seed)
-        {
-            throw new System.NotImplementedException();
-        }
+        public IRNG factory(int dimensionality, ulong seed) => throw new System.NotImplementedException();
 
-        public int dimension()
-        {
-            return dimensionality_;
-        }
+        public int dimension() => dimensionality_;
     }
 }
 

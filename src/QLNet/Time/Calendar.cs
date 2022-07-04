@@ -40,7 +40,7 @@ namespace QLNet.Time
     /// or for general country holiday schedule. Legacy city holiday schedule
     /// calendars will be moved to the exchange/country convention.
     /// </summary>
-    public class Calendar
+    [JetBrains.Annotations.PublicAPI] public class Calendar
     {
         protected Calendar calendar_;
         public List<Date> addedHolidays { get; set; }
@@ -48,14 +48,8 @@ namespace QLNet.Time
 
         public Calendar calendar
         {
-            get
-            {
-                return calendar_;
-            }
-            set
-            {
-                calendar_ = value;
-            }
+            get => calendar_;
+            set => calendar_ = value;
         }
 
         // constructors
@@ -79,12 +73,13 @@ namespace QLNet.Time
         // <summary>
         // This method is used for output and comparison between
         // calendars. It is <b>not</b> meant to be used for writing
-        // switch-on-type code.
+        // switch-on-ExerciseType code.
         // </summary>
         // <returns>
         // The name of the calendar.
         // </returns>
-        public virtual string name() { return calendar.name(); }
+        public virtual string name() => calendar.name();
+
         // <param name="d">Date</param>
         // <returns>Returns <tt>true</tt> iff the date is a business day for the
         // given market.</returns>
@@ -100,27 +95,29 @@ namespace QLNet.Time
         // Returns <tt>true</tt> iff the weekday is part of the
         // weekend for the given market.
         //</summary>
-        public virtual bool isWeekend(DayOfWeek w) { return calendar.isWeekend(w); }
+        public virtual bool isWeekend(DayOfWeek w) => calendar.isWeekend(w);
 
         // other functions
         // <summary>
         // Returns whether or not the calendar is initialized
         // </summary>
-        public bool empty() { return (object)calendar == null; }           //!  Returns whether or not the calendar is initialized
+        public bool empty() => (object)calendar == null; //!  Returns whether or not the calendar is initialized
         /// <summary>
         /// Returns <tt>true</tt> iff the date is a holiday for the given
         /// market.
         /// </summary>
-        public bool isHoliday(Date d) { return !isBusinessDay(d); }
+        public bool isHoliday(Date d) => !isBusinessDay(d);
+
         /// <summary>
         /// Returns <tt>true</tt> iff the date is last business day for the
         /// month in given market.
         /// </summary>
-        public bool isEndOfMonth(Date d) { return d.Month != adjust(d + 1).Month; }
+        public bool isEndOfMonth(Date d) => d.Month != adjust(d + 1).Month;
+
         /// <summary>
         /// last business day of the month to which the given date belongs
         /// </summary>
-        public Date endOfMonth(Date d) { return adjust(Date.endOfMonth(d), BusinessDayConvention.Preceding); }
+        public Date endOfMonth(Date d) => adjust(Date.endOfMonth(d), BusinessDayConvention.Preceding);
 
         /// <summary>
         /// Adjusts a non-business day to the appropriate near business day  with respect
@@ -133,7 +130,7 @@ namespace QLNet.Time
             if (c == BusinessDayConvention.Unadjusted)
                 return d;
 
-            Date d1 = d;
+            var d1 = d;
             if (c == BusinessDayConvention.Following || c == BusinessDayConvention.ModifiedFollowing ||
                 c == BusinessDayConvention.HalfMonthModifiedFollowing)
             {
@@ -161,7 +158,7 @@ namespace QLNet.Time
             }
             else if (c == BusinessDayConvention.Nearest)
             {
-                Date d2 = d;
+                var d2 = d;
                 while (isHoliday(d1) && isHoliday(d2))
                 {
                     d1++;
@@ -190,7 +187,7 @@ namespace QLNet.Time
                 return adjust(d, c);
             else if (unit == TimeUnit.Days)
             {
-                Date d1 = d;
+                var d1 = d;
                 if (n > 0)
                 {
                     while (n > 0)
@@ -215,12 +212,12 @@ namespace QLNet.Time
             }
             else if (unit == TimeUnit.Weeks)
             {
-                Date d1 = d + new Period(n, unit);
+                var d1 = d + new Period(n, unit);
                 return adjust(d1, c);
             }
             else
             {
-                Date d1 = d + new Period(n, unit);
+                var d1 = d + new Period(n, unit);
                 if (endOfMonth && (unit == TimeUnit.Months || unit == TimeUnit.Years) && isEndOfMonth(d))
                     return this.endOfMonth(d1);
                 return adjust(d1, c);
@@ -231,10 +228,7 @@ namespace QLNet.Time
         /// returns the result.
         /// </summary>
         /// <remarks>The input date is not modified.</remarks>
-        public Date advance(Date d, Period p, BusinessDayConvention c = BusinessDayConvention.Following, bool endOfMonth = false)
-        {
-            return advance(d, p.length(), p.units(), c, endOfMonth);
-        }
+        public Date advance(Date d, Period p, BusinessDayConvention c = BusinessDayConvention.Following, bool endOfMonth = false) => advance(d, p.length(), p.units(), c, endOfMonth);
 
         /// <summary>
         /// Calculates the number of business days between two given
@@ -242,13 +236,13 @@ namespace QLNet.Time
         /// </summary>
         public int businessDaysBetween(Date from, Date to, bool includeFirst = true, bool includeLast = false)
         {
-            int wd = 0;
+            var wd = 0;
             if (from != to)
             {
                 if (from < to)
                 {
                     // the last one is treated separately to avoid incrementing Date::maxDate()
-                    for (Date d = from; d < to; ++d)
+                    for (var d = from; d < to; ++d)
                     {
                         if (isBusinessDay(d))
                             ++wd;
@@ -258,7 +252,7 @@ namespace QLNet.Time
                 }
                 else
                 {
-                    for (Date d = to; d < from; ++d)
+                    for (var d = to; d < from; ++d)
                     {
                         if (isBusinessDay(d))
                             ++wd;
@@ -313,9 +307,9 @@ namespace QLNet.Time
         public static List<Date> holidayList(Calendar calendar, Date from, Date to, bool includeWeekEnds = false)
         {
             Utils.QL_REQUIRE(to > from, () => "'from' date (" + from + ") must be earlier than 'to' date (" + to + ")");
-            List<Date> result = new List<Date>();
+            var result = new List<Date>();
 
-            for (Date d = from; d <= to; ++d)
+            for (var d = from; d <= to; ++d)
             {
                 if (calendar.isHoliday(d)
                     && (includeWeekEnds || !calendar.isWeekend(d.DayOfWeek)))
@@ -329,7 +323,7 @@ namespace QLNet.Time
         /// Monday for a given year, as well as specifying Saturdays
         /// and Sundays as weekend days.
         /// </summary>
-        public class WesternImpl : Calendar
+        [JetBrains.Annotations.PublicAPI] public class WesternImpl : Calendar
         {
             // Western calendars
             public WesternImpl() { }
@@ -369,23 +363,21 @@ namespace QLNet.Time
             116, 101,  93, 112,  97,  89, 109, 100,  85, 105    // 2190-2199
          };
 
-            public override bool isWeekend(DayOfWeek w) { return w == DayOfWeek.Saturday || w == DayOfWeek.Sunday; }
+            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
+
             /// <summary>
             /// Expressed relative to first day of year
             /// </summary>
             /// <param name="y"></param>
             /// <returns></returns>
-            public int easterMonday(int y)
-            {
-                return EasterMonday[y - 1901];
-            }
+            public int easterMonday(int y) => EasterMonday[y - 1901];
         }
         /// <summary>
         /// This class provides the means of determining the Orthodox
         /// Easter Monday for a given year, as well as specifying
         /// Saturdays and Sundays as weekend days.
         /// </summary>
-        public class OrthodoxImpl : Calendar
+        [JetBrains.Annotations.PublicAPI] public class OrthodoxImpl : Calendar
         {
             // Orthodox calendars
             public OrthodoxImpl() { }
@@ -425,16 +417,14 @@ namespace QLNet.Time
             116, 108, 128, 119, 104, 124, 116, 100, 120, 112    // 2190-2199
          };
 
-            public override bool isWeekend(DayOfWeek w) { return w == DayOfWeek.Saturday || w == DayOfWeek.Sunday; }
+            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
+
             /// <summary>
             /// expressed relative to first day of year
             /// </summary>
             /// <param name="y"></param>
             /// <returns></returns>
-            public int easterMonday(int y)
-            {
-                return EasterMonday[y - 1901];
-            }
+            public int easterMonday(int y) => EasterMonday[y - 1901];
         }
 
         // Operators
@@ -456,11 +446,10 @@ namespace QLNet.Time
                    || !c1.empty() && !c2.empty() && c1.name() == c2.name();
         }
 
-        public static bool operator !=(Calendar c1, Calendar c2)
-        {
-            return !(c1 == c2);
-        }
-        public override bool Equals(object o) { return this == (Calendar)o; }
-        public override int GetHashCode() { return 0; }
+        public static bool operator !=(Calendar c1, Calendar c2) => !(c1 == c2);
+
+        public override bool Equals(object o) => this == (Calendar)o;
+
+        public override int GetHashCode() => 0;
     }
 }

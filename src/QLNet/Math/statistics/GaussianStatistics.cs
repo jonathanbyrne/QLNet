@@ -29,7 +29,7 @@ namespace QLNet.Math.statistics
         shortfall, etc.) based on the mean and variance provided by
         the underlying statistic tool.
     */
-    public class GenericGaussianStatistics<Stat> : IGeneralStatistics where Stat : IGeneralStatistics, new()
+    [JetBrains.Annotations.PublicAPI] public class GenericGaussianStatistics<Stat> : IGeneralStatistics where Stat : IGeneralStatistics, new()
     {
         public GenericGaussianStatistics() { }
         public GenericGaussianStatistics(Stat s)
@@ -40,17 +40,27 @@ namespace QLNet.Math.statistics
         #region wrap-up Stat
         protected Stat impl_ = FastActivator<Stat>.Create();
 
-        public int samples() { return impl_.samples(); }
-        public double mean() { return impl_.mean(); }
-        public double min() { return impl_.min(); }
-        public double max() { return impl_.max(); }
-        public double standardDeviation() { return impl_.standardDeviation(); }
-        public double variance() { return impl_.variance(); }
-        public double skewness() { return impl_.skewness(); }
-        public double kurtosis() { return impl_.kurtosis(); }
-        public double percentile(double percent) { return impl_.percentile(percent); }
-        public double weightSum() { return impl_.weightSum(); }
-        public double errorEstimate() { return impl_.errorEstimate(); }
+        public int samples() => impl_.samples();
+
+        public double mean() => impl_.mean();
+
+        public double min() => impl_.min();
+
+        public double max() => impl_.max();
+
+        public double standardDeviation() => impl_.standardDeviation();
+
+        public double variance() => impl_.variance();
+
+        public double skewness() => impl_.skewness();
+
+        public double kurtosis() => impl_.kurtosis();
+
+        public double percentile(double percent) => impl_.percentile(percent);
+
+        public double weightSum() => impl_.weightSum();
+
+        public double errorEstimate() => impl_.errorEstimate();
 
         public void reset() { impl_.reset(); }
         public void add
@@ -59,36 +69,35 @@ namespace QLNet.Math.statistics
         public void addSequence(List<double> data, List<double> weight) { impl_.addSequence(data, weight); }
 
         public KeyValuePair<double, int> expectationValue(Func<KeyValuePair<double, double>, double> f,
-                                                          Func<KeyValuePair<double, double>, bool> inRange)
-        {
-            return impl_.expectationValue(f, inRange);
-        }
+                                                          Func<KeyValuePair<double, double>, bool> inRange) =>
+            impl_.expectationValue(f, inRange);
+
         #endregion
 
 
         // Gaussian risk measures
         /*! returns the downside variance
         */
-        public double gaussianDownsideVariance() { return gaussianRegret(0.0); }
+        public double gaussianDownsideVariance() => gaussianRegret(0.0);
 
         /*! returns the downside deviation, defined as the square root of the downside variance. */
-        public double gaussianDownsideDeviation() { return System.Math.Sqrt(gaussianDownsideVariance()); }
+        public double gaussianDownsideDeviation() => System.Math.Sqrt(gaussianDownsideVariance());
 
         /*! returns the variance of observations below target
             See Dembo, Freeman "The Rules Of Risk", Wiley (2001)
         */
         public double gaussianRegret(double target)
         {
-            double m = mean();
-            double std = standardDeviation();
-            double variance = std * std;
-            CumulativeNormalDistribution gIntegral = new CumulativeNormalDistribution(m, std);
-            NormalDistribution g = new NormalDistribution(m, std);
-            double firstTerm = variance + m * m - 2.0 * target * m + target * target;
-            double alfa = gIntegral.value(target);
-            double secondTerm = m - target;
-            double beta = variance * g.value(target);
-            double result = alfa * firstTerm - beta * secondTerm;
+            var m = mean();
+            var std = standardDeviation();
+            var variance = std * std;
+            var gIntegral = new CumulativeNormalDistribution(m, std);
+            var g = new NormalDistribution(m, std);
+            var firstTerm = variance + m * m - 2.0 * target * m + target * target;
+            var alfa = gIntegral.value(target);
+            var secondTerm = m - target;
+            var beta = variance * g.value(target);
+            var result = alfa * firstTerm - beta * secondTerm;
             return result / alfa;
         }
 
@@ -99,17 +108,17 @@ namespace QLNet.Math.statistics
         {
             Utils.QL_REQUIRE(percentile > 0.0 && percentile < 1.0, () => "percentile (" + percentile + ") must be in (0.0, 1.0)");
 
-            InverseCumulativeNormal gInverse = new InverseCumulativeNormal(mean(), standardDeviation());
+            var gInverse = new InverseCumulativeNormal(mean(), standardDeviation());
             return gInverse.value(percentile);
         }
-        public double gaussianTopPercentile(double percentile) { return gaussianPercentile(1.0 - percentile); }
+        public double gaussianTopPercentile(double percentile) => gaussianPercentile(1.0 - percentile);
 
         //! gaussian-assumption Potential-Upside at a given percentile
         public double gaussianPotentialUpside(double percentile)
         {
             Utils.QL_REQUIRE(percentile < 1.0 && percentile >= 0.9, () => "percentile (" + percentile + ") out of range [0.9, 1)");
 
-            double result = gaussianPercentile(percentile);
+            var result = gaussianPercentile(percentile);
             // potential upside must be a gain, i.e., floored at 0.0
             return System.Math.Max(result, 0.0);
         }
@@ -119,7 +128,7 @@ namespace QLNet.Math.statistics
         {
             Utils.QL_REQUIRE(percentile < 1.0 && percentile >= 0.9, () => "percentile (" + percentile + ") out of range [0.9, 1)");
 
-            double result = gaussianPercentile(1.0 - percentile);
+            var result = gaussianPercentile(1.0 - percentile);
             // VAR must be a loss
             // this means that it has to be MIN(dist(1.0-percentile), 0.0)
             // VAR must also be a positive quantity, so -MIN(*)
@@ -142,12 +151,12 @@ namespace QLNet.Math.statistics
         {
             Utils.QL_REQUIRE(percentile < 1.0 && percentile >= 0.9, () => "percentile (" + percentile + ") out of range [0.9, 1)");
 
-            double m = mean();
-            double std = standardDeviation();
-            InverseCumulativeNormal gInverse = new InverseCumulativeNormal(m, std);
-            double var = gInverse.value(1.0 - percentile);
-            NormalDistribution g = new NormalDistribution(m, std);
-            double result = m - std * std * g.value(var) / (1.0 - percentile);
+            var m = mean();
+            var std = standardDeviation();
+            var gInverse = new InverseCumulativeNormal(m, std);
+            var var = gInverse.value(1.0 - percentile);
+            var g = new NormalDistribution(m, std);
+            var result = m - std * std * g.value(var) / (1.0 - percentile);
             // expectedShortfall must be a loss
             // this means that it has to be MIN(result, 0.0)
             // expectedShortfall must also be a positive quantity, so -MIN(*)
@@ -157,31 +166,32 @@ namespace QLNet.Math.statistics
         //! gaussian-assumption Shortfall (observations below target)
         public double gaussianShortfall(double target)
         {
-            CumulativeNormalDistribution gIntegral = new CumulativeNormalDistribution(mean(), standardDeviation());
+            var gIntegral = new CumulativeNormalDistribution(mean(), standardDeviation());
             return gIntegral.value(target);
         }
 
         //! gaussian-assumption Average Shortfall (averaged shortfallness)
         public double gaussianAverageShortfall(double target)
         {
-            double m = mean();
-            double std = standardDeviation();
-            CumulativeNormalDistribution gIntegral = new CumulativeNormalDistribution(m, std);
-            NormalDistribution g = new NormalDistribution(m, std);
+            var m = mean();
+            var std = standardDeviation();
+            var gIntegral = new CumulativeNormalDistribution(m, std);
+            var g = new NormalDistribution(m, std);
             return target - m + std * std * g.value(target) / gIntegral.value(target);
         }
     }
 
     //! default gaussian statistic tool
-    public class GaussianStatistics : GenericGaussianStatistics<GeneralStatistics> { }
+    [JetBrains.Annotations.PublicAPI] public class GaussianStatistics : GenericGaussianStatistics<GeneralStatistics> { }
 
 
     //! Helper class for precomputed distributions
-    public class StatsHolder : IGeneralStatistics
+    [JetBrains.Annotations.PublicAPI] public class StatsHolder : IGeneralStatistics
     {
         private double mean_, standardDeviation_;
-        public double mean() { return mean_; }
-        public double standardDeviation() { return standardDeviation_; }
+        public double mean() => mean_;
+
+        public double standardDeviation() => standardDeviation_;
 
         public StatsHolder() { } // required for generics
         public StatsHolder(double mean, double standardDeviation)
@@ -191,15 +201,23 @@ namespace QLNet.Math.statistics
         }
 
         #region IGeneralStatistics
-        public int samples() { throw new NotSupportedException(); }
-        public double min() { throw new NotSupportedException(); }
-        public double max() { throw new NotSupportedException(); }
-        public double variance() { throw new NotSupportedException(); }
-        public double skewness() { throw new NotSupportedException(); }
-        public double kurtosis() { throw new NotSupportedException(); }
-        public double percentile(double percent) { throw new NotSupportedException(); }
-        public double weightSum() { throw new NotSupportedException(); }
-        public double errorEstimate() { throw new NotSupportedException(); }
+        public int samples() => throw new NotSupportedException();
+
+        public double min() => throw new NotSupportedException();
+
+        public double max() => throw new NotSupportedException();
+
+        public double variance() => throw new NotSupportedException();
+
+        public double skewness() => throw new NotSupportedException();
+
+        public double kurtosis() => throw new NotSupportedException();
+
+        public double percentile(double percent) => throw new NotSupportedException();
+
+        public double weightSum() => throw new NotSupportedException();
+
+        public double errorEstimate() => throw new NotSupportedException();
 
         public void reset() { throw new NotSupportedException(); }
         public void add
@@ -208,10 +226,9 @@ namespace QLNet.Math.statistics
         public void addSequence(List<double> data, List<double> weight) { throw new NotSupportedException(); }
 
         public KeyValuePair<double, int> expectationValue(Func<KeyValuePair<double, double>, double> f,
-                                                          Func<KeyValuePair<double, double>, bool> inRange)
-        {
+                                                          Func<KeyValuePair<double, double>, bool> inRange) =>
             throw new NotSupportedException();
-        }
+
         #endregion
     }
 }

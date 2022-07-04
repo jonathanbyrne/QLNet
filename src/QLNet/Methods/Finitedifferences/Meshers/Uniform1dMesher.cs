@@ -22,16 +22,16 @@ namespace QLNet.Methods.Finitedifferences.Meshers
     /// <summary>
     ///  One-dimensional simple uniform grid mesher
     /// </summary>
-    public class Uniform1dMesher : Fdm1dMesher
+    [JetBrains.Annotations.PublicAPI] public class Uniform1dMesher : Fdm1dMesher
     {
         public Uniform1dMesher(double start, double end, int size)
            : base(size)
         {
             Utils.QL_REQUIRE(end > start, () => "end must be large than start");
 
-            double dx = (end - start) / (size - 1);
+            var dx = (end - start) / (size - 1);
 
-            for (int i = 0; i < size - 1; ++i)
+            for (var i = 0; i < size - 1; ++i)
             {
                 locations_[i] = start + i * dx;
                 dplus_[i] = dminus_[i + 1] = dx;

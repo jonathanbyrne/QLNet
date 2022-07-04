@@ -21,7 +21,7 @@ using System.Collections.Generic;
 namespace QLNet.Math.Interpolations
 {
     // backflat interpolation in first component, linear in second component
-    public class BackwardflatLinearInterpolationImpl : Interpolation2D.templateImpl
+    [JetBrains.Annotations.PublicAPI] public class BackwardflatLinearInterpolationImpl : Interpolation2D.templateImpl
     {
         public BackwardflatLinearInterpolationImpl(List<double> xBegin, int xEnd, List<double> yBegin, int yEnd,
                                                    Matrix zData)
@@ -34,7 +34,7 @@ namespace QLNet.Math.Interpolations
 
         public override double value(double x, double y)
         {
-            int j = locateY(y);
+            var j = locateY(y);
             double z1, z2;
             if (x <= xBegin_[0])
             {
@@ -43,7 +43,7 @@ namespace QLNet.Math.Interpolations
             }
             else
             {
-                int i = locateX(x);
+                var i = locateX(x);
                 if (x.IsEqual(xBegin_[i]))
                 {
                     z1 = zData_[j, i];
@@ -56,7 +56,7 @@ namespace QLNet.Math.Interpolations
                 }
             }
 
-            double u = (y - yBegin_[j]) / (yBegin_[j + 1] - yBegin_[j]);
+            var u = (y - yBegin_[j]) / (yBegin_[j + 1] - yBegin_[j]);
 
             return (1.0 - u) * z1 + u * z2;
 
@@ -64,7 +64,7 @@ namespace QLNet.Math.Interpolations
 
     }
 
-    public class BackwardflatLinearInterpolation : Interpolation2D
+    [JetBrains.Annotations.PublicAPI] public class BackwardflatLinearInterpolation : Interpolation2D
     {
         /*! \pre the \f$ x \f$ and \f$ y \f$ values must be sorted. */
         public BackwardflatLinearInterpolation(List<double> xBegin, int xEnd, List<double> yBegin, int yEnd, Matrix zData)
@@ -73,12 +73,9 @@ namespace QLNet.Math.Interpolations
         }
     }
 
-    public class BackwardflatLinear
+    [JetBrains.Annotations.PublicAPI] public class BackwardflatLinear
     {
-        public Interpolation2D interpolate(List<double> xBegin, int xEnd, List<double> yBegin, int yEnd, Matrix z)
-        {
-            return new BackwardflatLinearInterpolation(xBegin, xEnd, yBegin, yEnd, z);
-        }
+        public Interpolation2D interpolate(List<double> xBegin, int xEnd, List<double> yBegin, int yEnd, Matrix z) => new BackwardflatLinearInterpolation(xBegin, xEnd, yBegin, yEnd, z);
     }
 
 

@@ -91,26 +91,30 @@ namespace QLNet.Termstructures
         #region Dates and Time
 
         //! the day counter used for date/time conversion
-        public virtual DayCounter dayCounter() { return dayCounter_; }
+        public virtual DayCounter dayCounter() => dayCounter_;
+
         //! date/time conversion
-        public double timeFromReference(Date date) { return dayCounter().yearFraction(referenceDate(), date); }
+        public double timeFromReference(Date date) => dayCounter().yearFraction(referenceDate(), date);
+
         //! the latest date for which the curve can return values
         public abstract Date maxDate();
         //! the latest time for which the curve can return values
-        public virtual double maxTime() { return timeFromReference(maxDate()); }
+        public virtual double maxTime() => timeFromReference(maxDate());
+
         //! the date at which discount = 1.0 and/or variance = 0.0
         public virtual Date referenceDate()
         {
             if (!updated_)
             {
-                Date today = Settings.evaluationDate();
+                var today = Settings.evaluationDate();
                 referenceDate_ = calendar().advance(today, settlementDays(), TimeUnit.Days);
                 updated_ = true;
             }
             return referenceDate_;
         }
         //! the calendar used for reference and/or option date calculation
-        public virtual Calendar calendar() { return calendar_; }
+        public virtual Calendar calendar() => calendar_;
+
         //! the settlementDays used for reference date calculation
         public virtual int settlementDays()
         {

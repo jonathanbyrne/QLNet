@@ -27,7 +27,7 @@ namespace QLNet.Instruments.Bonds
 {
     //! floating-rate bond (possibly capped and/or floored)
     //! \test calculations are tested by checking results against cached values.
-    public class FloatingRateBond : Bond
+    [JetBrains.Annotations.PublicAPI] public class FloatingRateBond : Bond
     {
         public FloatingRateBond(int settlementDays, double faceAmount, Schedule schedule, IborIndex index,
                                 DayCounter paymentDayCounter)
@@ -114,7 +114,7 @@ namespace QLNet.Instruments.Bonds
                     break;
             }
 
-            Schedule schedule = new Schedule(startDate, maturityDate_, new Period(couponFrequency), calendar_,
+            var schedule = new Schedule(startDate, maturityDate_, new Period(couponFrequency), calendar_,
                                              accrualConvention, accrualConvention, rule, endOfMonth, firstDate, nextToLastDate);
 
             cashflows_ = new IborLeg(schedule, index)

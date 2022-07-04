@@ -25,21 +25,15 @@ namespace QLNet.Math
     //! This class contains a sampled curve.
     /*! Initially the class will contain one indexed curve */
 
-    public class SampledCurve : ICloneable
+    [JetBrains.Annotations.PublicAPI] public class SampledCurve : ICloneable
     {
         private Vector grid_;
 
-        public Vector grid()
-        {
-            return grid_;
-        }
+        public Vector grid() => grid_;
 
         private Vector values_;
 
-        public Vector values()
-        {
-            return values_;
-        }
+        public Vector values() => values_;
 
         public SampledCurve(int gridSize)
         {
@@ -54,35 +48,20 @@ namespace QLNet.Math
         }
 
         // instead of "=" overload
-        public object Clone()
-        {
-            return MemberwiseClone();
-        }
+        public object Clone() => MemberwiseClone();
 
-        public double gridValue(int i)
-        {
-            return grid_[i];
-        }
+        public double gridValue(int i) => grid_[i];
 
-        public double value(int i)
-        {
-            return values_[i];
-        }
+        public double value(int i) => values_[i];
 
         public void setValue(int i, double v)
         {
             values_[i] = v;
         }
 
-        public int size()
-        {
-            return grid_.Count;
-        }
+        public int size() => grid_.Count;
 
-        public bool empty()
-        {
-            return grid_.Count == 0;
-        }
+        public bool empty() => grid_.Count == 0;
 
         // modifiers
         public void setGrid(Vector g)
@@ -97,7 +76,7 @@ namespace QLNet.Math
 
         public void sample(Func<double, double> f)
         {
-            for (int i = 0; i < grid_.Count; i++)
+            for (var i = 0; i < grid_.Count; i++)
                 values_[i] = f(grid_[i]);
         }
 
@@ -108,7 +87,7 @@ namespace QLNet.Math
         {
             Utils.QL_REQUIRE(!empty(), () => "empty sampled curve");
 
-            int jmid = size() / 2;
+            var jmid = size() / 2;
             if (size() % 2 == 1)
                 return values_[jmid];
 
@@ -121,7 +100,7 @@ namespace QLNet.Math
         {
             Utils.QL_REQUIRE(size() >= 3, () => "the size of the curve must be at least 3");
 
-            int jmid = size() / 2;
+            var jmid = size() / 2;
             if (size() % 2 == 1)
             {
                 return (values_[jmid + 1] - values_[jmid - 1]) / (grid_[jmid + 1] - grid_[jmid - 1]);
@@ -134,18 +113,18 @@ namespace QLNet.Math
         public double secondDerivativeAtCenter()
         {
             Utils.QL_REQUIRE(size() >= 4, () => "the size of the curve must be at least 4");
-            int jmid = size() / 2;
+            var jmid = size() / 2;
             if (size() % 2 == 1)
             {
-                double deltaPlus = (values_[jmid + 1] - values_[jmid]) / (grid_[jmid + 1] - grid_[jmid]);
-                double deltaMinus = (values_[jmid] - values_[jmid - 1]) / (grid_[jmid] - grid_[jmid - 1]);
-                double dS = (grid_[jmid + 1] - grid_[jmid - 1]) / 2.0;
+                var deltaPlus = (values_[jmid + 1] - values_[jmid]) / (grid_[jmid + 1] - grid_[jmid]);
+                var deltaMinus = (values_[jmid] - values_[jmid - 1]) / (grid_[jmid] - grid_[jmid - 1]);
+                var dS = (grid_[jmid + 1] - grid_[jmid - 1]) / 2.0;
                 return (deltaPlus - deltaMinus) / dS;
             }
             else
             {
-                double deltaPlus = (values_[jmid + 1] - values_[jmid - 1]) / (grid_[jmid + 1] - grid_[jmid - 1]);
-                double deltaMinus = (values_[jmid] - values_[jmid - 2]) / (grid_[jmid] - grid_[jmid - 2]);
+                var deltaPlus = (values_[jmid + 1] - values_[jmid - 1]) / (grid_[jmid + 1] - grid_[jmid - 1]);
+                var deltaMinus = (values_[jmid] - values_[jmid - 2]) / (grid_[jmid] - grid_[jmid - 2]);
                 return (deltaPlus - deltaMinus) / (grid_[jmid] - grid_[jmid - 1]);
             }
         }
@@ -173,14 +152,14 @@ namespace QLNet.Math
 
         public void regrid(Vector new_grid)
         {
-            CubicInterpolation priceSpline = new CubicInterpolation(grid_, grid_.Count, values_,
+            var priceSpline = new CubicInterpolation(grid_, grid_.Count, values_,
                                                                     CubicInterpolation.DerivativeApprox.Spline, false,
                                                                     CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
                                                                     CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0);
             priceSpline.update();
-            Vector newValues = new Vector(new_grid.Count);
+            var newValues = new Vector(new_grid.Count);
 
-            for (int i = 0; i < new_grid.Count; i++)
+            for (var i = 0; i < new_grid.Count; i++)
                 newValues[i] = priceSpline.value(new_grid[i], true);
 
             values_ = newValues;
@@ -189,23 +168,23 @@ namespace QLNet.Math
 
         public void regrid(Vector new_grid, Func<double, double> func)
         {
-            Vector transformed_grid = new Vector(grid_.Count);
+            var transformed_grid = new Vector(grid_.Count);
 
-            for (int i = 0; i < grid_.Count; i++)
+            for (var i = 0; i < grid_.Count; i++)
                 transformed_grid[i] = func(grid_[i]);
 
-            CubicInterpolation priceSpline = new CubicInterpolation(transformed_grid, transformed_grid.Count, values_,
+            var priceSpline = new CubicInterpolation(transformed_grid, transformed_grid.Count, values_,
                                                                     CubicInterpolation.DerivativeApprox.Spline, false,
                                                                     CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
                                                                     CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0);
             priceSpline.update();
 
-            Vector newValues = new_grid.Clone();
+            var newValues = new_grid.Clone();
 
-            for (int i = 0; i < grid_.Count; i++)
+            for (var i = 0; i < grid_.Count; i++)
                 newValues[i] = func(newValues[i]);
 
-            for (int j = 0; j < grid_.Count; j++)
+            for (var j = 0; j < grid_.Count; j++)
                 newValues[j] = priceSpline.value(newValues[j], true);
 
             values_ = newValues;
@@ -214,14 +193,14 @@ namespace QLNet.Math
 
         public SampledCurve transform(Func<double, double> x)
         {
-            for (int i = 0; i < values_.Count; i++)
+            for (var i = 0; i < values_.Count; i++)
                 values_[i] = x(values_[i]);
             return this;
         }
 
         public SampledCurve transformGrid(Func<double, double> x)
         {
-            for (int i = 0; i < grid_.Count; i++)
+            for (var i = 0; i < grid_.Count; i++)
                 grid_[i] = x(grid_[i]);
             return this;
         }

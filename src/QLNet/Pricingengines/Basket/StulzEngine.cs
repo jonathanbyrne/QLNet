@@ -39,7 +39,7 @@ namespace QLNet.Pricingengines.Basket
         \test the correctness of the returned value is tested by
               reproducing results available in literature.
     */
-    public class StulzEngine : BasketOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class StulzEngine : BasketOption.Engine
     {
         public StulzEngine(GeneralizedBlackScholesProcess process1, GeneralizedBlackScholesProcess process2, double correlation)
         {
@@ -52,36 +52,36 @@ namespace QLNet.Pricingengines.Basket
         public override void calculate()
         {
 
-            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European, () => "not an European Option");
+            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European Option");
 
-            EuropeanExercise exercise = arguments_.exercise as EuropeanExercise;
+            var exercise = arguments_.exercise as EuropeanExercise;
             Utils.QL_REQUIRE(exercise != null, () => "not an European Option");
 
-            BasketPayoff basket_payoff = arguments_.payoff as BasketPayoff;
+            var basket_payoff = arguments_.payoff as BasketPayoff;
 
-            MinBasketPayoff min_basket = arguments_.payoff as MinBasketPayoff;
+            var min_basket = arguments_.payoff as MinBasketPayoff;
 
-            MaxBasketPayoff max_basket = arguments_.payoff as MaxBasketPayoff;
+            var max_basket = arguments_.payoff as MaxBasketPayoff;
 
-            Utils.QL_REQUIRE(min_basket != null || max_basket != null, () => "unknown basket type");
+            Utils.QL_REQUIRE(min_basket != null || max_basket != null, () => "unknown basket ExerciseType");
 
-            PlainVanillaPayoff payoff = basket_payoff.basePayoff() as PlainVanillaPayoff;
+            var payoff = basket_payoff.basePayoff() as PlainVanillaPayoff;
 
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
-            double strike = payoff.strike();
+            var strike = payoff.strike();
 
-            double variance1 = process1_.blackVolatility().link.blackVariance(exercise.lastDate(), strike);
-            double variance2 = process2_.blackVolatility().link.blackVariance(exercise.lastDate(), strike);
+            var variance1 = process1_.blackVolatility().link.blackVariance(exercise.lastDate(), strike);
+            var variance2 = process2_.blackVolatility().link.blackVariance(exercise.lastDate(), strike);
 
-            double riskFreeDiscount = process1_.riskFreeRate().link.discount(exercise.lastDate());
+            var riskFreeDiscount = process1_.riskFreeRate().link.discount(exercise.lastDate());
 
             // cannot handle non zero dividends, so don't believe this...
-            double dividendDiscount1 = process1_.dividendYield().link.discount(exercise.lastDate());
-            double dividendDiscount2 = process2_.dividendYield().link.discount(exercise.lastDate());
+            var dividendDiscount1 = process1_.dividendYield().link.discount(exercise.lastDate());
+            var dividendDiscount2 = process2_.dividendYield().link.discount(exercise.lastDate());
 
-            double forward1 = process1_.stateVariable().link.value() * dividendDiscount1 / riskFreeDiscount;
-            double forward2 = process2_.stateVariable().link.value() * dividendDiscount2 / riskFreeDiscount;
+            var forward1 = process1_.stateVariable().link.value() * dividendDiscount1 / riskFreeDiscount;
+            var forward2 = process2_.stateVariable().link.value() * dividendDiscount2 / riskFreeDiscount;
 
             if (max_basket != null)
             {
@@ -106,7 +106,7 @@ namespace QLNet.Pricingengines.Basket
                                                                    variance1, variance2, rho_);
                         break;
                     default:
-                        Utils.QL_FAIL("unknown option type");
+                        Utils.QL_FAIL("unknown option ExerciseType");
                         break;
 
                 }
@@ -133,14 +133,14 @@ namespace QLNet.Pricingengines.Basket
                                                                    variance1, variance2, rho_);
                         break;
                     default:
-                        Utils.QL_FAIL("unknown option type");
+                        Utils.QL_FAIL("unknown option ExerciseType");
                         break;
                 }
 
             }
             else
             {
-                Utils.QL_FAIL("unknown type");
+                Utils.QL_FAIL("unknown ExerciseType");
             }
 
         }
@@ -149,33 +149,33 @@ namespace QLNet.Pricingengines.Basket
         private double euroTwoAssetMinBasketCall(double forward1, double forward2, double strike, double riskFreeDiscount,
                                                  double variance1, double variance2, double rho)
         {
-            double stdDev1 = System.Math.Sqrt(variance1);
-            double stdDev2 = System.Math.Sqrt(variance2);
+            var stdDev1 = System.Math.Sqrt(variance1);
+            var stdDev2 = System.Math.Sqrt(variance2);
 
-            double variance = variance1 + variance2 - 2 * rho * stdDev1 * stdDev2;
-            double stdDev = System.Math.Sqrt(variance);
+            var variance = variance1 + variance2 - 2 * rho * stdDev1 * stdDev2;
+            var stdDev = System.Math.Sqrt(variance);
 
-            double modRho1 = (rho * stdDev2 - stdDev1) / stdDev;
-            double modRho2 = (rho * stdDev1 - stdDev2) / stdDev;
+            var modRho1 = (rho * stdDev2 - stdDev1) / stdDev;
+            var modRho2 = (rho * stdDev1 - stdDev2) / stdDev;
 
-            double D1 = (System.Math.Log(forward1 / forward2) + 0.5 * variance) / stdDev;
+            var D1 = (System.Math.Log(forward1 / forward2) + 0.5 * variance) / stdDev;
 
             double alfa, beta, gamma;
             if (strike.IsNotEqual(0.0))
             {
-                BivariateCumulativeNormalDistribution bivCNorm = new BivariateCumulativeNormalDistribution(rho);
-                BivariateCumulativeNormalDistribution bivCNormMod2 = new BivariateCumulativeNormalDistribution(modRho2);
-                BivariateCumulativeNormalDistribution bivCNormMod1 = new BivariateCumulativeNormalDistribution(modRho1);
+                var bivCNorm = new BivariateCumulativeNormalDistribution(rho);
+                var bivCNormMod2 = new BivariateCumulativeNormalDistribution(modRho2);
+                var bivCNormMod1 = new BivariateCumulativeNormalDistribution(modRho1);
 
-                double D1_1 = (System.Math.Log(forward1 / strike) + 0.5 * variance1) / stdDev1;
-                double D1_2 = (System.Math.Log(forward2 / strike) + 0.5 * variance2) / stdDev2;
+                var D1_1 = (System.Math.Log(forward1 / strike) + 0.5 * variance1) / stdDev1;
+                var D1_2 = (System.Math.Log(forward2 / strike) + 0.5 * variance2) / stdDev2;
                 alfa = bivCNormMod1.value(D1_1, -D1);
                 beta = bivCNormMod2.value(D1_2, D1 - stdDev);
                 gamma = bivCNorm.value(D1_1 - stdDev1, D1_2 - stdDev2);
             }
             else
             {
-                CumulativeNormalDistribution cum = new CumulativeNormalDistribution();
+                var cum = new CumulativeNormalDistribution();
                 alfa = cum.value(-D1);
                 beta = cum.value(D1 - stdDev);
                 gamma = 1.0;
@@ -191,10 +191,10 @@ namespace QLNet.Pricingengines.Basket
         {
             StrikedTypePayoff payoff = new PlainVanillaPayoff(QLNet.Option.Type.Call, strike);
 
-            double black1 = Utils.blackFormula(payoff.optionType(), payoff.strike(), forward1,
+            var black1 = Utils.blackFormula(payoff.optionType(), payoff.strike(), forward1,
                                                System.Math.Sqrt(variance1)) * riskFreeDiscount;
 
-            double black2 = Utils.blackFormula(payoff.optionType(), payoff.strike(), forward2,
+            var black2 = Utils.blackFormula(payoff.optionType(), payoff.strike(), forward2,
                                                System.Math.Sqrt(variance2)) * riskFreeDiscount;
 
             return black1 + black2 -

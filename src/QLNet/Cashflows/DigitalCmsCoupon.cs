@@ -26,7 +26,7 @@ namespace QLNet.Cashflows
 {
 
     //! Cms-rate coupon with digital digital call/put option
-    public class DigitalCmsCoupon : DigitalCoupon
+    [JetBrains.Annotations.PublicAPI] public class DigitalCmsCoupon : DigitalCoupon
     {
         // need by CashFlowVectors
         public DigitalCmsCoupon() { }
@@ -46,15 +46,12 @@ namespace QLNet.Cashflows
         }
 
         // Factory - for Leg generators
-        public virtual CashFlow factory(CmsCoupon underlying, double? callStrike, Position.Type callPosition, bool isCallATMIncluded, double? callDigitalPayoff, double? putStrike, Position.Type putPosition, bool isPutATMIncluded, double? putDigitalPayoff, DigitalReplication replication)
-        {
-            return new DigitalCmsCoupon(underlying, callStrike, callPosition, isCallATMIncluded, callDigitalPayoff, putStrike, putPosition, isPutATMIncluded, putDigitalPayoff, replication);
-        }
+        public virtual CashFlow factory(CmsCoupon underlying, double? callStrike, Position.Type callPosition, bool isCallATMIncluded, double? callDigitalPayoff, double? putStrike, Position.Type putPosition, bool isPutATMIncluded, double? putDigitalPayoff, DigitalReplication replication) => new DigitalCmsCoupon(underlying, callStrike, callPosition, isCallATMIncluded, callDigitalPayoff, putStrike, putPosition, isPutATMIncluded, putDigitalPayoff, replication);
     }
 
 
     //! helper class building a sequence of digital ibor-rate coupons
-    public class DigitalCmsLeg
+    [JetBrains.Annotations.PublicAPI] public class DigitalCmsLeg
     {
         public DigitalCmsLeg(Schedule schedule, SwapIndex index)
         {
@@ -117,10 +114,8 @@ namespace QLNet.Cashflows
             spreads_ = spreads;
             return this;
         }
-        public DigitalCmsLeg inArrears()
-        {
-            return inArrears(true);
-        }
+        public DigitalCmsLeg inArrears() => inArrears(true);
+
         public DigitalCmsLeg inArrears(bool flag)
         {
             inArrears_ = flag;
@@ -141,10 +136,8 @@ namespace QLNet.Cashflows
             longCallOption_ = type;
             return this;
         }
-        public DigitalCmsLeg withCallATM()
-        {
-            return withCallATM(true);
-        }
+        public DigitalCmsLeg withCallATM() => withCallATM(true);
+
         public DigitalCmsLeg withCallATM(bool flag)
         {
             callATM_ = flag;
@@ -175,10 +168,8 @@ namespace QLNet.Cashflows
             longPutOption_ = type;
             return this;
         }
-        public DigitalCmsLeg withPutATM()
-        {
-            return withPutATM(true);
-        }
+        public DigitalCmsLeg withPutATM() => withPutATM(true);
+
         public DigitalCmsLeg withPutATM(bool flag)
         {
             putATM_ = flag;
@@ -194,19 +185,14 @@ namespace QLNet.Cashflows
             putPayoffs_ = payoffs;
             return this;
         }
-        public DigitalCmsLeg withReplication()
-        {
-            return withReplication(new DigitalReplication());
-        }
+        public DigitalCmsLeg withReplication() => withReplication(new DigitalReplication());
+
         public DigitalCmsLeg withReplication(DigitalReplication replication)
         {
             replication_ = replication;
             return this;
         }
-        public List<CashFlow> value()
-        {
-            return CashFlowVectors.FloatingDigitalLeg<SwapIndex, CmsCoupon, DigitalCmsCoupon>(notionals_, schedule_, index_, paymentDayCounter_, paymentAdjustment_, fixingDays_, gearings_, spreads_, inArrears_, callStrikes_, longCallOption_, callATM_, callPayoffs_, putStrikes_, longPutOption_, putATM_, putPayoffs_, replication_);
-        }
+        public List<CashFlow> value() => CashFlowVectors.FloatingDigitalLeg<SwapIndex, CmsCoupon, DigitalCmsCoupon>(notionals_, schedule_, index_, paymentDayCounter_, paymentAdjustment_, fixingDays_, gearings_, spreads_, inArrears_, callStrikes_, longCallOption_, callATM_, callPayoffs_, putStrikes_, longPutOption_, putATM_, putPayoffs_, replication_);
 
         private Schedule schedule_;
         private SwapIndex index_;

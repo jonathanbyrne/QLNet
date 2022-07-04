@@ -39,9 +39,9 @@ using QLNet.Quotes;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_PiecewiseyieldCurve : IDisposable
+    [JetBrains.Annotations.PublicAPI] public class T_PiecewiseyieldCurve : IDisposable
     {
-        public class CommonVars
+        [JetBrains.Annotations.PublicAPI] public class CommonVars
         {
             #region Values
             public struct Datum
@@ -175,23 +175,23 @@ namespace QLNet.Tests
                 fraRates = new List<SimpleQuote>(fras);
                 prices = new List<SimpleQuote>(bonds);
                 fractions = new List<SimpleQuote>(bmas);
-                for (int i = 0; i < deposits; i++)
+                for (var i = 0; i < deposits; i++)
                 {
                     rates.Add(new SimpleQuote(depositData[i].rate / 100));
                 }
-                for (int i = 0; i < swaps; i++)
+                for (var i = 0; i < swaps; i++)
                 {
                     rates.Add(new SimpleQuote(swapData[i].rate / 100));
                 }
-                for (int i = 0; i < fras; i++)
+                for (var i = 0; i < fras; i++)
                 {
                     fraRates.Add(new SimpleQuote(fraData[i].rate / 100));
                 }
-                for (int i = 0; i < bonds; i++)
+                for (var i = 0; i < bonds; i++)
                 {
                     prices.Add(new SimpleQuote(bondData[i].price));
                 }
-                for (int i = 0; i < bmas; i++)
+                for (var i = 0; i < bmas; i++)
                 {
                     fractions.Add(new SimpleQuote(bmaData[i].rate / 100));
                 }
@@ -204,26 +204,26 @@ namespace QLNet.Tests
                 bmaHelpers = new List<RateHelper>(bmas);
 
                 IborIndex euribor6m = new Euribor6M();
-                for (int i = 0; i < deposits; i++)
+                for (var i = 0; i < deposits; i++)
                 {
-                    Handle<Quote> r = new Handle<Quote>(rates[i]);
+                    var r = new Handle<Quote>(rates[i]);
                     instruments.Add(new DepositRateHelper(r, new Period(depositData[i].n, depositData[i].units),
                                                           euribor6m.fixingDays(), calendar,
                                                           euribor6m.businessDayConvention(),
                                                           euribor6m.endOfMonth(),
                                                           euribor6m.dayCounter()));
                 }
-                for (int i = 0; i < swaps; i++)
+                for (var i = 0; i < swaps; i++)
                 {
-                    Handle<Quote> r = new Handle<Quote>(rates[i + deposits]);
+                    var r = new Handle<Quote>(rates[i + deposits]);
                     instruments.Add(new SwapRateHelper(r, new Period(swapData[i].n, swapData[i].units), calendar,
                                                        fixedLegFrequency, fixedLegConvention, fixedLegDayCounter, euribor6m));
                 }
 
-                Euribor3M euribor3m = new Euribor3M();
-                for (int i = 0; i < fras; i++)
+                var euribor3m = new Euribor3M();
+                for (var i = 0; i < fras; i++)
                 {
-                    Handle<Quote> r = new Handle<Quote>(fraRates[i]);
+                    var r = new Handle<Quote>(fraRates[i]);
                     fraHelpers.Add(new FraRateHelper(r, fraData[i].n, fraData[i].n + 3,
                                                      euribor3m.fixingDays(),
                                                      euribor3m.fixingCalendar(),
@@ -232,12 +232,12 @@ namespace QLNet.Tests
                                                      euribor3m.dayCounter()));
                 }
 
-                for (int i = 0; i < bonds; i++)
+                for (var i = 0; i < bonds; i++)
                 {
-                    Handle<Quote> p = new Handle<Quote>(prices[i]);
-                    Date maturity = calendar.advance(today, bondData[i].n, bondData[i].units);
-                    Date issue = calendar.advance(maturity, -bondData[i].length, TimeUnit.Years);
-                    List<double> coupons = new List<double>() { bondData[i].coupon / 100.0 };
+                    var p = new Handle<Quote>(prices[i]);
+                    var maturity = calendar.advance(today, bondData[i].n, bondData[i].units);
+                    var issue = calendar.advance(maturity, -bondData[i].length, TimeUnit.Years);
+                    var coupons = new List<double>() { bondData[i].coupon / 100.0 };
                     schedules.Add(new Schedule(issue, maturity, new Period(bondData[i].frequency), calendar,
                                                bondConvention, bondConvention, DateGeneration.Rule.Backward, false));
                     bondHelpers.Add(new FixedRateBondHelper(p, bondSettlementDays, bondRedemption, schedules[i],
@@ -285,7 +285,7 @@ namespace QLNet.Tests
         {
             // "Testing consistency of piecewise-log-linear discount curve...");
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             testCurveConsistency<Discount, LogLinear, IterativeBootstrapForYield>(vars);
             testBMACurveConsistency<Discount, LogLinear, IterativeBootstrapForYield>(vars);
@@ -296,7 +296,7 @@ namespace QLNet.Tests
         {
             // "Testing consistency of piecewise-linear discount curve..."
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             testCurveConsistency<Discount, Linear, IterativeBootstrapForYield>(vars);
             testBMACurveConsistency<Discount, Linear, IterativeBootstrapForYield>(vars);
@@ -311,7 +311,7 @@ namespace QLNet.Tests
                 return;
             else
             {
-                CommonVars vars = new CommonVars();
+                var vars = new CommonVars();
 
                 testCurveConsistency<ZeroYield, LogLinear, IterativeBootstrapForYield>(vars);
                 testBMACurveConsistency<ZeroYield, LogLinear, IterativeBootstrapForYield>(vars);
@@ -323,7 +323,7 @@ namespace QLNet.Tests
         {
             // "Testing consistency of piecewise-linear zero-yield curve...");
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             testCurveConsistency<ZeroYield, Linear, IterativeBootstrapForYield>(vars);
             testBMACurveConsistency<ZeroYield, Linear, IterativeBootstrapForYield>(vars);
@@ -335,7 +335,7 @@ namespace QLNet.Tests
 
             //"Testing consistency of piecewise-cubic zero-yield curve...");
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             testCurveConsistency<ZeroYield, Cubic, IterativeBootstrapForYield>(
                vars,
@@ -354,7 +354,7 @@ namespace QLNet.Tests
         {
             // "Testing consistency of piecewise-linear forward-rate curve...");
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             testCurveConsistency<ForwardRate, Linear, IterativeBootstrapForYield>(vars);
             testBMACurveConsistency<ForwardRate, Linear, IterativeBootstrapForYield>(vars);
@@ -366,7 +366,7 @@ namespace QLNet.Tests
 
             //"Testing consistency of piecewise-flat forward-rate curve...");
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             testCurveConsistency<ForwardRate, BackwardFlat, IterativeBootstrapForYield>(vars);
             testBMACurveConsistency<ForwardRate, BackwardFlat, IterativeBootstrapForYield>(vars);
@@ -396,7 +396,7 @@ namespace QLNet.Tests
         {
             //"Testing consistency of convex monotone forward-rate curve...");
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             testCurveConsistency<ForwardRate, ConvexMonotone, IterativeBootstrapForYield>(vars);
             testBMACurveConsistency<ForwardRate, ConvexMonotone, IterativeBootstrapForYield>(vars);
@@ -407,7 +407,7 @@ namespace QLNet.Tests
         {
             //"Testing consistency of local-bootstrap algorithm...");
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
             testCurveConsistency<ForwardRate, ConvexMonotone, LocalBootstrapForYield>(vars, new ConvexMonotone(), 1.0e-7);
             testBMACurveConsistency<ForwardRate, ConvexMonotone, LocalBootstrapForYield>(vars, new ConvexMonotone(), 1.0e-9);
         }
@@ -417,22 +417,22 @@ namespace QLNet.Tests
         {
             // "Testing observability of piecewise yield curve...");
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             vars.termStructure = new PiecewiseYieldCurve<Discount, LogLinear>(vars.settlementDays,
                                                                               vars.calendar, vars.instruments, new Actual360());
-            Flag f = new Flag();
+            var f = new Flag();
             vars.termStructure.registerWith(f.update);
 
-            for (int i = 0; i < vars.deposits + vars.swaps; i++)
+            for (var i = 0; i < vars.deposits + vars.swaps; i++)
             {
-                double testTime = new Actual360().yearFraction(vars.settlement, vars.instruments[i].latestDate());
-                double discount = vars.termStructure.discount(testTime);
+                var testTime = new Actual360().yearFraction(vars.settlement, vars.instruments[i].latestDate());
+                var discount = vars.termStructure.discount(testTime);
                 f.lower();
                 vars.rates[i].setValue(vars.rates[i].value() * 1.01);
                 if (!f.isUp())
                     QAssert.Fail("Observer was not notified of underlying rate change");
-                double discount_new = vars.termStructure.discount(testTime, true);
+                var discount_new = vars.termStructure.discount(testTime, true);
                 if (discount_new == discount)
                     QAssert.Fail("rate change did not trigger recalculation");
                 vars.rates[i].setValue(vars.rates[i].value() / 1.01);
@@ -450,14 +450,14 @@ namespace QLNet.Tests
 
             // "Testing use of today's LIBOR fixings in swap curve...");
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             var swapHelpers = new InitializedList<RateHelper>();
             IborIndex euribor6m = new Euribor6M();
 
-            for (int i = 0; i < vars.swaps; i++)
+            for (var i = 0; i < vars.swaps; i++)
             {
-                Handle<Quote> r = new Handle<Quote>(vars.rates[i + vars.deposits]);
+                var r = new Handle<Quote>(vars.rates[i + vars.deposits]);
                 swapHelpers.Add(new SwapRateHelper(r, new Period(vars.swapData[i].n, vars.swapData[i].units),
                                                    vars.calendar,
                                                    vars.fixedLegFrequency, vars.fixedLegConvention,
@@ -466,14 +466,14 @@ namespace QLNet.Tests
 
             vars.termStructure = new PiecewiseYieldCurve<Discount, LogLinear>(vars.settlement, swapHelpers, new Actual360());
 
-            Handle<YieldTermStructure> curveHandle = new Handle<YieldTermStructure>(vars.termStructure);
+            var curveHandle = new Handle<YieldTermStructure>(vars.termStructure);
 
             IborIndex index = new Euribor6M(curveHandle);
-            for (int i = 0; i < vars.swaps; i++)
+            for (var i = 0; i < vars.swaps; i++)
             {
-                Period tenor = new Period(vars.swapData[i].n, vars.swapData[i].units);
+                var tenor = new Period(vars.swapData[i].n, vars.swapData[i].units);
 
-                VanillaSwap swap = new MakeVanillaSwap(tenor, index, 0.0)
+                var swap = new MakeVanillaSwap(tenor, index, 0.0)
                 .withEffectiveDate(vars.settlement)
                 .withFixedLegDayCount(vars.fixedLegDayCounter)
                 .withFixedLegTenor(new Period(vars.fixedLegFrequency))
@@ -483,7 +483,7 @@ namespace QLNet.Tests
 
                 double expectedRate = vars.swapData[i].rate / 100,
                        estimatedRate = swap.fairRate();
-                double tolerance = 1.0e-9;
+                var tolerance = 1.0e-9;
                 if (System.Math.Abs(expectedRate - estimatedRate) > tolerance)
                 {
                     QAssert.Fail("before LIBOR fixing:\n"
@@ -495,7 +495,7 @@ namespace QLNet.Tests
                 }
             }
 
-            Flag f = new Flag();
+            var f = new Flag();
             vars.termStructure.registerWith(f.update);
             f.lower();
 
@@ -504,11 +504,11 @@ namespace QLNet.Tests
             if (!f.isUp())
                 QAssert.Fail("Observer was not notified of rate fixing");
 
-            for (int i = 0; i < vars.swaps; i++)
+            for (var i = 0; i < vars.swaps; i++)
             {
-                Period tenor = new Period(vars.swapData[i].n, vars.swapData[i].units);
+                var tenor = new Period(vars.swapData[i].n, vars.swapData[i].units);
 
-                VanillaSwap swap = new MakeVanillaSwap(tenor, index, 0.0)
+                var swap = new MakeVanillaSwap(tenor, index, 0.0)
                 .withEffectiveDate(vars.settlement)
                 .withFixedLegDayCount(vars.fixedLegDayCounter)
                 .withFixedLegTenor(new Period(vars.fixedLegFrequency))
@@ -518,7 +518,7 @@ namespace QLNet.Tests
 
                 double expectedRate = vars.swapData[i].rate / 100,
                        estimatedRate = swap.fairRate();
-                double tolerance = 1.0e-9;
+                var tolerance = 1.0e-9;
                 if (System.Math.Abs(expectedRate - estimatedRate) > tolerance)
                 {
                     QAssert.Fail("after LIBOR fixing:\n"
@@ -535,14 +535,14 @@ namespace QLNet.Tests
         public void testForwardRateDayCounter()
         {
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
             DayCounter d = new ActualActual();
             DayCounter d1 = new Actual360();
 
             vars.termStructure = new PiecewiseYieldCurve<Discount, LogLinear>(vars.settlementDays,
                                                                               vars.calendar, vars.instruments, d);
 
-            InterestRate ir = vars.termStructure.forwardRate(vars.settlement, vars.settlement + 30, d1, Compounding.Simple);
+            var ir = vars.termStructure.forwardRate(vars.settlement, vars.settlement + 30, d1, Compounding.Simple);
 
             if (ir.dayCounter().name() != d1.name())
                 QAssert.Fail("PiecewiseYieldCurve forwardRate dayCounter error" +
@@ -557,7 +557,7 @@ namespace QLNet.Tests
         {
             //"Testing bootstrap over JPY LIBOR swaps...");
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             vars.today = new Date(4, Month.October, 2007);
             Settings.setEvaluationDate(vars.today);
@@ -567,7 +567,7 @@ namespace QLNet.Tests
 
             // market elements
             vars.rates = new InitializedList<SimpleQuote>(vars.swaps);
-            for (int i = 0; i < vars.swaps; i++)
+            for (var i = 0; i < vars.swaps; i++)
             {
                 vars.rates[i] = new SimpleQuote(vars.swapData[i].rate / 100);
             }
@@ -576,9 +576,9 @@ namespace QLNet.Tests
             vars.instruments = new InitializedList<RateHelper>(vars.swaps);
 
             IborIndex index = new JPYLibor(new Period(6, TimeUnit.Months));
-            for (int i = 0; i < vars.swaps; i++)
+            for (var i = 0; i < vars.swaps; i++)
             {
-                Handle<Quote> r = new Handle<Quote>(vars.rates[i]);
+                var r = new Handle<Quote>(vars.rates[i]);
                 vars.instruments[i] = new SwapRateHelper(r, new Period(vars.swapData[i].n, vars.swapData[i].units),
                                                          vars.calendar,
                                                          vars.fixedLegFrequency, vars.fixedLegConvention,
@@ -592,16 +592,16 @@ namespace QLNet.Tests
                new List<Date>(),
                1.0e-12);
 
-            RelinkableHandle<YieldTermStructure> curveHandle = new RelinkableHandle<YieldTermStructure>();
+            var curveHandle = new RelinkableHandle<YieldTermStructure>();
             curveHandle.linkTo(vars.termStructure);
 
             // check swaps
             IborIndex jpylibor6m = new JPYLibor(new Period(6, TimeUnit.Months), curveHandle);
-            for (int i = 0; i < vars.swaps; i++)
+            for (var i = 0; i < vars.swaps; i++)
             {
-                Period tenor = new Period(vars.swapData[i].n, vars.swapData[i].units);
+                var tenor = new Period(vars.swapData[i].n, vars.swapData[i].units);
 
-                VanillaSwap swap = new MakeVanillaSwap(tenor, jpylibor6m, 0.0)
+                var swap = new MakeVanillaSwap(tenor, jpylibor6m, 0.0)
                 .withEffectiveDate(vars.settlement)
                 .withFixedLegDayCount(vars.fixedLegDayCounter)
                 .withFixedLegTenor(new Period(vars.fixedLegFrequency))
@@ -613,8 +613,8 @@ namespace QLNet.Tests
 
                 double expectedRate = vars.swapData[i].rate / 100,
                        estimatedRate = swap.fairRate();
-                double error = System.Math.Abs(expectedRate - estimatedRate);
-                double tolerance = 1.0e-9;
+                var error = System.Math.Abs(expectedRate - estimatedRate);
+                var tolerance = 1.0e-9;
 
                 if (error > tolerance)
                 {
@@ -632,7 +632,7 @@ namespace QLNet.Tests
         {
             //BOOST_MESSAGE("Testing copying of discount curve...");
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
             testCurveCopy<Discount, LogLinear>(vars);
         }
 
@@ -641,7 +641,7 @@ namespace QLNet.Tests
         {
             //BOOST_MESSAGE("Testing copying of forward-rate curve...");
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
             testCurveCopy<ForwardRate, BackwardFlat>(vars);
         }
 
@@ -650,7 +650,7 @@ namespace QLNet.Tests
         {
             //BOOST_MESSAGE("Testing copying of zero-rate curve...");
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
             testCurveCopy<ZeroYield, Linear>(vars);
         }
 
@@ -674,13 +674,13 @@ namespace QLNet.Tests
             vars.termStructure = new PiecewiseYieldCurve<T, I, B>(vars.settlement, vars.instruments,
                                                                   new Actual360(), new List<Handle<Quote>>(), new List<Date>(), 1.0e-12, interpolator);
 
-            RelinkableHandle<YieldTermStructure> curveHandle = new RelinkableHandle<YieldTermStructure>();
+            var curveHandle = new RelinkableHandle<YieldTermStructure>();
             curveHandle.linkTo(vars.termStructure);
 
             // check deposits
-            for (int i = 0; i < vars.deposits; i++)
+            for (var i = 0; i < vars.deposits; i++)
             {
-                Euribor index = new Euribor(new Period(vars.depositData[i].n, vars.depositData[i].units), curveHandle);
+                var index = new Euribor(new Period(vars.depositData[i].n, vars.depositData[i].units), curveHandle);
                 double expectedRate = vars.depositData[i].rate / 100,
                        estimatedRate = index.fixing(vars.today);
                 QAssert.IsTrue(System.Math.Abs(expectedRate - estimatedRate) < tolerance,
@@ -693,9 +693,9 @@ namespace QLNet.Tests
 
             // check swaps
             IborIndex euribor6m = new Euribor6M(curveHandle);
-            for (int i = 0; i < vars.swaps; i++)
+            for (var i = 0; i < vars.swaps; i++)
             {
-                Period tenor = new Period(vars.swapData[i].n, vars.swapData[i].units);
+                var tenor = new Period(vars.swapData[i].n, vars.swapData[i].units);
 
                 VanillaSwap swap = new MakeVanillaSwap(tenor, euribor6m, 0.0)
                 .withEffectiveDate(vars.settlement)
@@ -706,7 +706,7 @@ namespace QLNet.Tests
 
                 double expectedRate = vars.swapData[i].rate / 100,
                        estimatedRate = swap.fairRate();
-                double error = System.Math.Abs(expectedRate - estimatedRate);
+                var error = System.Math.Abs(expectedRate - estimatedRate);
                 QAssert.IsTrue(error < tolerance,
                                vars.swapData[i].n + " year(s) swap:\n"
                                + "\n estimated rate: " + estimatedRate
@@ -720,13 +720,13 @@ namespace QLNet.Tests
                                                                   new Actual360(), new List<Handle<Quote>>(), new List<Date>(), 1.0e-12, interpolator);
             curveHandle.linkTo(vars.termStructure);
 
-            for (int i = 0; i < vars.bonds; i++)
+            for (var i = 0; i < vars.bonds; i++)
             {
-                Date maturity = vars.calendar.advance(vars.today, vars.bondData[i].n, vars.bondData[i].units);
-                Date issue = vars.calendar.advance(maturity, -vars.bondData[i].length, TimeUnit.Years);
-                List<double> coupons = new List<double>() { vars.bondData[i].coupon / 100.0 };
+                var maturity = vars.calendar.advance(vars.today, vars.bondData[i].n, vars.bondData[i].units);
+                var issue = vars.calendar.advance(maturity, -vars.bondData[i].length, TimeUnit.Years);
+                var coupons = new List<double>() { vars.bondData[i].coupon / 100.0 };
 
-                FixedRateBond bond = new FixedRateBond(vars.bondSettlementDays, 100.0,
+                var bond = new FixedRateBond(vars.bondSettlementDays, 100.0,
                                                        vars.schedules[i], coupons,
                                                        vars.bondDayCounter, vars.bondConvention,
                                                        vars.bondRedemption, issue);
@@ -748,18 +748,18 @@ namespace QLNet.Tests
             curveHandle.linkTo(vars.termStructure);
 
             IborIndex euribor3m = new Euribor3M(curveHandle);
-            for (int i = 0; i < vars.fras; i++)
+            for (var i = 0; i < vars.fras; i++)
             {
-                Date start = vars.calendar.advance(vars.settlement,
+                var start = vars.calendar.advance(vars.settlement,
                                                    vars.fraData[i].n,
                                                    vars.fraData[i].units,
                                                    euribor3m.businessDayConvention(),
                                                    euribor3m.endOfMonth());
-                Date end = vars.calendar.advance(start, 3, TimeUnit.Months,
+                var end = vars.calendar.advance(start, 3, TimeUnit.Months,
                                                  euribor3m.businessDayConvention(),
                                                  euribor3m.endOfMonth());
 
-                ForwardRateAgreement fra = new ForwardRateAgreement(start, end, Position.Type.Long, vars.fraData[i].rate / 100,
+                var fra = new ForwardRateAgreement(start, end, Position.Type.Long, vars.fraData[i].rate / 100,
                                                                     100.0, euribor3m, curveHandle);
                 double expectedRate = vars.fraData[i].rate / 100,
                        estimatedRate = fra.forwardRate().rate();
@@ -794,14 +794,14 @@ namespace QLNet.Tests
             Settings.setEvaluationDate(vars.today);
             vars.settlement = vars.calendar.advance(vars.today, vars.settlementDays, TimeUnit.Days);
 
-            Handle<YieldTermStructure> riskFreeCurve = new Handle<YieldTermStructure>(
+            var riskFreeCurve = new Handle<YieldTermStructure>(
                new FlatForward(vars.settlement, 0.04, new Actual360()));
 
-            BMAIndex bmaIndex = new BMAIndex();
+            var bmaIndex = new BMAIndex();
             IborIndex liborIndex = new USDLibor(new Period(3, TimeUnit.Months), riskFreeCurve);
-            for (int i = 0; i < vars.bmas; ++i)
+            for (var i = 0; i < vars.bmas; ++i)
             {
-                Handle<Quote> f = new Handle<Quote>(vars.fractions[i]);
+                var f = new Handle<Quote>(vars.fractions[i]);
                 vars.bmaHelpers.Add(new BMASwapRateHelper(f, new Period(vars.bmaData[i].n, vars.bmaData[i].units),
                                                           vars.settlementDays,
                                                           vars.calendar,
@@ -812,25 +812,25 @@ namespace QLNet.Tests
                                                           liborIndex));
             }
 
-            int w = vars.today.weekday();
-            Date lastWednesday = w >= 4 ? vars.today - (w - 4) : vars.today + (4 - w - 7);
-            Date lastFixing = bmaIndex.fixingCalendar().adjust(lastWednesday);
+            var w = vars.today.weekday();
+            var lastWednesday = w >= 4 ? vars.today - (w - 4) : vars.today + (4 - w - 7);
+            var lastFixing = bmaIndex.fixingCalendar().adjust(lastWednesday);
             bmaIndex.addFixing(lastFixing, 0.03);
 
             vars.termStructure = new PiecewiseYieldCurve<T, I, B>(vars.settlement, vars.bmaHelpers,
                                                                   new Actual360(), new List<Handle<Quote>>(), new List<Date>(), 1.0e-12, interpolator);
 
-            RelinkableHandle<YieldTermStructure> curveHandle = new RelinkableHandle<YieldTermStructure>();
+            var curveHandle = new RelinkableHandle<YieldTermStructure>();
             curveHandle.linkTo(vars.termStructure);
 
             // check BMA swaps
-            BMAIndex bma = new BMAIndex(curveHandle);
+            var bma = new BMAIndex(curveHandle);
             IborIndex libor3m = new USDLibor(new Period(3, TimeUnit.Months), riskFreeCurve);
-            for (int i = 0; i < vars.bmas; i++)
+            for (var i = 0; i < vars.bmas; i++)
             {
-                Period tenor = new Period(vars.bmaData[i].n, vars.bmaData[i].units);
+                var tenor = new Period(vars.bmaData[i].n, vars.bmaData[i].units);
 
-                Schedule bmaSchedule = new MakeSchedule().from(vars.settlement)
+                var bmaSchedule = new MakeSchedule().from(vars.settlement)
                 .to(vars.settlement + tenor)
                 .withFrequency(vars.bmaFrequency)
                 .withCalendar(bma.fixingCalendar())
@@ -838,7 +838,7 @@ namespace QLNet.Tests
                 .backwards()
                 .value();
 
-                Schedule liborSchedule = new MakeSchedule().from(vars.settlement)
+                var liborSchedule = new MakeSchedule().from(vars.settlement)
                 .to(vars.settlement + tenor)
                 .withTenor(libor3m.tenor())
                 .withCalendar(libor3m.fixingCalendar())
@@ -847,13 +847,13 @@ namespace QLNet.Tests
                 .backwards()
                 .value();
 
-                BMASwap swap = new BMASwap(BMASwap.Type.Payer, 100.0, liborSchedule, 0.75, 0.0,
+                var swap = new BMASwap(BMASwap.Type.Payer, 100.0, liborSchedule, 0.75, 0.0,
                                            libor3m, libor3m.dayCounter(), bmaSchedule, bma, vars.bmaDayCounter);
                 swap.setPricingEngine(new DiscountingSwapEngine(libor3m.forwardingTermStructure()));
 
                 double expectedFraction = vars.bmaData[i].rate / 100,
                        estimatedFraction = swap.fairLiborFraction();
-                double error = System.Math.Abs(expectedFraction - estimatedFraction);
+                var error = System.Math.Abs(expectedFraction - estimatedFraction);
                 QAssert.IsTrue(error < tolerance,
                                vars.bmaData[i].n + " year(s) BMA swap:\n"
                                + "\n estimated libor fraction: " + estimatedFraction
@@ -878,7 +878,7 @@ namespace QLNet.Tests
            where I : IInterpolationFactory, new()
         {
 
-            PiecewiseYieldCurve<T, I> curve = new PiecewiseYieldCurve<T, I>(vars.settlement, vars.instruments,
+            var curve = new PiecewiseYieldCurve<T, I>(vars.settlement, vars.instruments,
                                                                             new Actual360(),
                                                                             new List<Handle<Quote>>(),
                                                                             new List<Date>(),
@@ -887,10 +887,10 @@ namespace QLNet.Tests
             // necessary to trigger bootstrap
             curve.recalculate();
 
-            PiecewiseYieldCurve copiedCurve = curve.Clone() as PiecewiseYieldCurve;
+            var copiedCurve = curve.Clone() as PiecewiseYieldCurve;
 
             // the two curves should be the same.
-            double t = 2.718;
+            var t = 2.718;
             var r1 = curve.zeroRate(t, Compounding.Continuous).value();
             var r2 = copiedCurve.zeroRate(t, Compounding.Continuous).value();
             if (!Utils.close(r1, r2))
@@ -898,15 +898,15 @@ namespace QLNet.Tests
                 QAssert.Fail("failed to link original and copied curve");
             }
 
-            for (int i = 0; i < vars.rates.Count; ++i)
+            for (var i = 0; i < vars.rates.Count; ++i)
             {
                 vars.rates[i].setValue(vars.rates[i].value() + 0.001);
             }
 
             // now the original curve should have changed; the copied
             // curve should not.
-            double r3 = curve.zeroRate(t, Compounding.Continuous).value();
-            double r4 = copiedCurve.zeroRate(t, Compounding.Continuous).value();
+            var r3 = curve.zeroRate(t, Compounding.Continuous).value();
+            var r4 = copiedCurve.zeroRate(t, Compounding.Continuous).value();
             if (Utils.close(r1, r3))
             {
                 QAssert.Fail("failed to modify original curve");

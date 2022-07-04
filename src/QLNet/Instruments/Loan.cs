@@ -27,7 +27,7 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Instruments
 {
-    public class Loan : Instrument
+    [JetBrains.Annotations.PublicAPI] public class Loan : Instrument
     {
         public enum Type { Deposit = -1, Loan = 1 }
         public enum Amortising
@@ -53,7 +53,7 @@ namespace QLNet.Instruments
         // Instrument interface
         public override bool isExpired()
         {
-            Date today = Settings.evaluationDate();
+            var today = Settings.evaluationDate();
             return !legs_.Any(leg => leg.Any(cf => !cf.hasOccurred(today)));
         }
 
@@ -65,9 +65,9 @@ namespace QLNet.Instruments
 
         public override void setupArguments(IPricingEngineArguments args)
         {
-            Arguments arguments = args as Arguments;
+            var arguments = args as Arguments;
             if (arguments == null)
-                throw new ArgumentException("wrong argument type");
+                throw new ArgumentException("wrong argument ExerciseType");
 
             arguments.legs = legs_;
             arguments.payer = payer_;
@@ -77,9 +77,9 @@ namespace QLNet.Instruments
         {
             base.fetchResults(r);
 
-            Results results = r as Results;
+            var results = r as Results;
             if (results == null)
-                throw new ArgumentException("wrong result type");
+                throw new ArgumentException("wrong result ExerciseType");
 
             if (results.legNPV.Count != 0)
             {
@@ -96,7 +96,7 @@ namespace QLNet.Instruments
 
         ////////////////////////////////////////////////////////////////
         // arguments, results, pricing engine
-        public class Arguments : IPricingEngineArguments
+        [JetBrains.Annotations.PublicAPI] public class Arguments : IPricingEngineArguments
         {
             public List<List<CashFlow>> legs { get; set; }
             public List<double> payer { get; set; }
@@ -121,12 +121,12 @@ namespace QLNet.Instruments
             }
         }
 
-        public class Engine : GenericEngine<Arguments, Results> { }
+        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results> { }
 
     }
 
 
-    public class FixedLoan : Loan
+    [JetBrains.Annotations.PublicAPI] public class FixedLoan : Loan
     {
         private Type type_;
         private double nominal_;
@@ -160,9 +160,9 @@ namespace QLNet.Instruments
             .withSign(type == Type.Loan ? -1 : 1);
 
             // temporary
-            for (int i = 0; i < principalLeg.Count - 1; i++)
+            for (var i = 0; i < principalLeg.Count - 1; i++)
             {
-                Principal p = (Principal)principalLeg[i];
+                var p = (Principal)principalLeg[i];
                 notionals_.Add(p.nominal());
             }
 
@@ -186,11 +186,12 @@ namespace QLNet.Instruments
             }
         }
 
-        public List<CashFlow> fixedLeg() { return legs_[0]; }
-        public List<CashFlow> principalLeg() { return legs_[1]; }
+        public List<CashFlow> fixedLeg() => legs_[0];
+
+        public List<CashFlow> principalLeg() => legs_[1];
     }
 
-    public class FloatingLoan : Loan
+    [JetBrains.Annotations.PublicAPI] public class FloatingLoan : Loan
     {
         private Type type_;
         private double nominal_;
@@ -226,9 +227,9 @@ namespace QLNet.Instruments
             .withSign(type == Type.Loan ? -1 : 1);
 
             // temporary
-            for (int i = 0; i < principalLeg.Count - 1; i++)
+            for (var i = 0; i < principalLeg.Count - 1; i++)
             {
-                Principal p = (Principal)principalLeg[i];
+                var p = (Principal)principalLeg[i];
                 notionals_.Add(p.nominal());
             }
 
@@ -253,11 +254,12 @@ namespace QLNet.Instruments
             }
         }
 
-        public List<CashFlow> floatingLeg() { return legs_[0]; }
-        public List<CashFlow> principalLeg() { return legs_[1]; }
+        public List<CashFlow> floatingLeg() => legs_[0];
+
+        public List<CashFlow> principalLeg() => legs_[1];
     }
 
-    public class CommercialPaper : Loan
+    [JetBrains.Annotations.PublicAPI] public class CommercialPaper : Loan
     {
         private Type type_;
         private double nominal_;
@@ -291,9 +293,9 @@ namespace QLNet.Instruments
             .withSign(type == Type.Loan ? -1 : 1);
 
             // temporary
-            for (int i = 0; i < principalLeg.Count - 1; i++)
+            for (var i = 0; i < principalLeg.Count - 1; i++)
             {
-                Principal p = (Principal)principalLeg[i];
+                var p = (Principal)principalLeg[i];
                 notionals_.Add(p.nominal());
             }
 
@@ -305,9 +307,9 @@ namespace QLNet.Instruments
             // Discounting Pricipal
             notionals_.Clear();
             double n;
-            for (int i = 0; i < fixedLeg.Count; i++)
+            for (var i = 0; i < fixedLeg.Count; i++)
             {
-                FixedRateCoupon c = (FixedRateCoupon)fixedLeg[i];
+                var c = (FixedRateCoupon)fixedLeg[i];
                 n = i > 0 ? notionals_.Last() : c.nominal();
                 notionals_.Add(n / (1 + c.rate() * c.dayCounter().yearFraction(c.referencePeriodStart, c.referencePeriodEnd)));
             }
@@ -318,7 +320,7 @@ namespace QLNet.Instruments
             .withPaymentAdjustment(paymentConvention_)
             .withNotionals(notionals_);
             // Adjust Principal
-            Principal p0 = (Principal)principalLeg[0];
+            var p0 = (Principal)principalLeg[0];
             p0.setAmount(notionals_.Last());
 
             legs_[0] = discountedFixedLeg;
@@ -335,11 +337,12 @@ namespace QLNet.Instruments
             }
         }
 
-        public List<CashFlow> fixedLeg() { return legs_[0]; }
-        public List<CashFlow> principalLeg() { return legs_[1]; }
+        public List<CashFlow> fixedLeg() => legs_[0];
+
+        public List<CashFlow> principalLeg() => legs_[1];
     }
 
-    public class Cash : Loan
+    [JetBrains.Annotations.PublicAPI] public class Cash : Loan
     {
         private Type type_;
         private double nominal_;
@@ -372,7 +375,7 @@ namespace QLNet.Instruments
             }
         }
 
-        public List<CashFlow> principalLeg() { return legs_[0]; }
+        public List<CashFlow> principalLeg() => legs_[0];
     }
 
 }

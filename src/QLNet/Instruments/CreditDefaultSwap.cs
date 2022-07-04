@@ -59,7 +59,7 @@ namespace QLNet.Instruments
     /// use the mid-point engine, which is not ISDA conform.
     /// </remarks>
     /// </summary>
-    public class CreditDefaultSwap : Instrument
+    [JetBrains.Annotations.PublicAPI] public class CreditDefaultSwap : Instrument
     {
         /// <summary>
         /// CDS quoted as running-spread only
@@ -112,13 +112,13 @@ namespace QLNet.Instruments
             .withNotionals(notional)
             .withPaymentAdjustment(convention);
 
-            Date effectiveUpfrontDate = schedule.calendar().advance(protectionStart_, 2, TimeUnit.Days, convention);
+            var effectiveUpfrontDate = schedule.calendar().advance(protectionStart_, 2, TimeUnit.Days, convention);
             // '2' is used above since the protection start is assumed to be on trade_date + 1
             if (rebatesAccrual)
             {
-                FixedRateCoupon firstCoupon = leg_[0] as FixedRateCoupon;
+                var firstCoupon = leg_[0] as FixedRateCoupon;
 
-                Date rebateDate = effectiveUpfrontDate;
+                var rebateDate = effectiveUpfrontDate;
                 accrualRebate_ = new SimpleCashFlow(firstCoupon.accruedAmount(protectionStart_), rebateDate);
             }
 
@@ -186,7 +186,7 @@ namespace QLNet.Instruments
 
             // If empty, adjust to T+3 standard settlement, alternatively add
             //  an arbitrary date to the constructor
-            Date effectiveUpfrontDate = upfrontDate == null ?
+            var effectiveUpfrontDate = upfrontDate == null ?
                                         schedule.calendar().advance(protectionStart_, 2, TimeUnit.Days, convention) : upfrontDate;
             // '2' is used above since the protection start is assumed to be
             //   on trade_date + 1
@@ -195,11 +195,11 @@ namespace QLNet.Instruments
 
             if (rebatesAccrual)
             {
-                FixedRateCoupon firstCoupon = leg_[0] as FixedRateCoupon;
+                var firstCoupon = leg_[0] as FixedRateCoupon;
                 // adjust to T+3 standard settlement, alternatively add
                 //  an arbitrary date to the constructor
 
-                Date rebateDate = effectiveUpfrontDate;
+                var rebateDate = effectiveUpfrontDate;
 
                 accrualRebate_ = new SimpleCashFlow(firstCoupon.accruedAmount(protectionStart_), rebateDate);
             }
@@ -216,7 +216,7 @@ namespace QLNet.Instruments
         /// </summary>
         public override bool isExpired()
         {
-            for (int i = leg_.Count; i > 0; --i)
+            for (var i = leg_.Count; i > 0; --i)
                 if (!leg_[i - 1].hasOccurred())
                     return false;
             return true;
@@ -224,8 +224,8 @@ namespace QLNet.Instruments
 
         public override void setupArguments(IPricingEngineArguments args)
         {
-            Arguments arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong argument type");
+            var arguments = args as Arguments;
+            Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
 
             arguments.side = side_;
             arguments.notional = notional_;
@@ -244,8 +244,8 @@ namespace QLNet.Instruments
         public override void fetchResults(IPricingEngineResults r)
         {
             base.fetchResults(r);
-            Results results = r as Results;
-            Utils.QL_REQUIRE(results != null, () => "wrong result type");
+            var results = r as Results;
+            Utils.QL_REQUIRE(results != null, () => "wrong result ExerciseType");
 
             fairSpread_ = results.fairSpread;
             fairUpfront_ = results.fairUpfront;
@@ -258,24 +258,34 @@ namespace QLNet.Instruments
         }
 
         // Inspectors
-        public Protection.Side side() { return side_; }
-        public double? notional() { return notional_; }
-        public double runningSpread() { return runningSpread_; }
-        public double? upfront() { return upfront_; }
-        public bool settlesAccrual() { return settlesAccrual_; }
-        public bool paysAtDefaultTime() { return paysAtDefaultTime_; }
-        public List<CashFlow> coupons() { return leg_; }
+        public Protection.Side side() => side_;
+
+        public double? notional() => notional_;
+
+        public double runningSpread() => runningSpread_;
+
+        public double? upfront() => upfront_;
+
+        public bool settlesAccrual() => settlesAccrual_;
+
+        public bool paysAtDefaultTime() => paysAtDefaultTime_;
+
+        public List<CashFlow> coupons() => leg_;
+
         /// <summary>
         /// The first date for which defaults will trigger the contract
         /// </summary>
         /// <returns></returns>
-        public Date protectionStartDate() { return protectionStart_; }
+        public Date protectionStartDate() => protectionStart_;
+
         /// <summary>
         /// The last date for which defaults will trigger the contract
         /// </summary>
         /// <returns></returns>
-        public Date protectionEndDate() { return ((Coupon)leg_.Last()).accrualEndDate(); }
-        public bool rebatesAccrual() { return accrualRebate_ != null; }
+        public Date protectionEndDate() => ((Coupon)leg_.Last()).accrualEndDate();
+
+        public bool rebatesAccrual() => accrualRebate_ != null;
+
         // Results
         /// <summary>
         /// Returns the upfront spread that, given the running spread
@@ -382,9 +392,9 @@ namespace QLNet.Instruments
                                         double accuracy = 1.0e-6,
                                         PricingModel model = PricingModel.Midpoint)
         {
-            SimpleQuote flatRate = new SimpleQuote(0.0);
+            var flatRate = new SimpleQuote(0.0);
 
-            Handle<DefaultProbabilityTermStructure> probability = new Handle<DefaultProbabilityTermStructure>(
+            var probability = new Handle<DefaultProbabilityTermStructure>(
                new FlatHazardRate(0, new WeekendsOnly(), new Handle<Quote>(flatRate), dayCounter));
 
             IPricingEngine engine = null;
@@ -403,11 +413,11 @@ namespace QLNet.Instruments
 
 
             setupArguments(engine.getArguments());
-            Results results = engine.getResults() as Results;
+            var results = engine.getResults() as Results;
 
-            ObjectiveFunction f = new ObjectiveFunction(targetNPV, flatRate, engine, results);
-            double guess = runningSpread_ / (1 - recoveryRate) * 365.0 / 360.0;
-            double step = guess * 0.1;
+            var f = new ObjectiveFunction(targetNPV, flatRate, engine, results);
+            var guess = runningSpread_ / (1 - recoveryRate) * 365.0 / 360.0;
+            var step = guess * 0.1;
 
             return new Brent().solve(f, accuracy, guess, step);
         }
@@ -453,9 +463,9 @@ namespace QLNet.Instruments
                                           DayCounter dayCounter,
                                           PricingModel model = PricingModel.Midpoint)
         {
-            SimpleQuote flatRate = new SimpleQuote(0.0);
+            var flatRate = new SimpleQuote(0.0);
 
-            Handle<DefaultProbabilityTermStructure> probability = new Handle<DefaultProbabilityTermStructure>(
+            var probability = new Handle<DefaultProbabilityTermStructure>(
                new FlatHazardRate(0, new WeekendsOnly(), new Handle<Quote>(flatRate), dayCounter));
 
             IPricingEngine engine = null;
@@ -473,11 +483,11 @@ namespace QLNet.Instruments
             }
 
             setupArguments(engine.getArguments());
-            Results results = engine.getResults() as Results;
+            var results = engine.getResults() as Results;
 
-            ObjectiveFunction f = new ObjectiveFunction(0.0, flatRate, engine, results);
-            double guess = runningSpread_ / (1 - conventionalRecovery) * 365.0 / 360.0;
-            double step = guess * 0.1;
+            var f = new ObjectiveFunction(0.0, flatRate, engine, results);
+            var guess = runningSpread_ / (1 - conventionalRecovery) * 365.0 / 360.0;
+            var step = guess * 0.1;
 
             new Brent().solve(f, 1e-9, guess, step);
 
@@ -537,7 +547,7 @@ namespace QLNet.Instruments
 
         }
 
-        public class Arguments : IPricingEngineArguments
+        [JetBrains.Annotations.PublicAPI] public class Arguments : IPricingEngineArguments
         {
             public Arguments()
             {

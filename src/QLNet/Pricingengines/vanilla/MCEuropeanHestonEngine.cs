@@ -29,7 +29,7 @@ namespace QLNet.Pricingengines.vanilla
         \test the correctness of the returned value is tested by
               reproducing results available in web/literature
     */
-    public class MCEuropeanHestonEngine<RNG, S> : MCVanillaEngine<MultiVariate, RNG, S>
+    [JetBrains.Annotations.PublicAPI] public class MCEuropeanHestonEngine<RNG, S> : MCVanillaEngine<MultiVariate, RNG, S>
       where RNG : IRSG, new()
       where S : IGeneralStatistics, new()
     {
@@ -47,10 +47,10 @@ namespace QLNet.Pricingengines.vanilla
 
         protected override PathPricer<IPath> pathPricer()
         {
-            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
-            HestonProcess process = process_ as HestonProcess;
+            var process = process_ as HestonProcess;
             Utils.QL_REQUIRE(process != null, () => "Heston process required");
 
             return new EuropeanHestonPathPricer(payoff.optionType(),
@@ -61,7 +61,7 @@ namespace QLNet.Pricingengines.vanilla
     }
 
     //! Monte Carlo Heston European engine factory
-    public class MakeMCEuropeanHestonEngine<RNG, S>
+    [JetBrains.Annotations.PublicAPI] public class MakeMCEuropeanHestonEngine<RNG, S>
        where RNG : IRSG, new()
        where S : IGeneralStatistics, new()
     {
@@ -148,7 +148,7 @@ namespace QLNet.Pricingengines.vanilla
     }
 
 
-    public class EuropeanHestonPathPricer : PathPricer<IPath>
+    [JetBrains.Annotations.PublicAPI] public class EuropeanHestonPathPricer : PathPricer<IPath>
     {
         public EuropeanHestonPathPricer(QLNet.Option.Type type, double strike, double discount)
         {
@@ -160,10 +160,10 @@ namespace QLNet.Pricingengines.vanilla
 
         public double value(IPath multiPath)
         {
-            MultiPath m = multiPath as MultiPath;
+            var m = multiPath as MultiPath;
             Utils.QL_REQUIRE(m != null, () => "the path is invalid");
-            Path path = m[0];
-            int n = m.pathSize();
+            var path = m[0];
+            var n = m.pathSize();
             Utils.QL_REQUIRE(n > 0, () => "the path cannot be empty");
 
             return payoff_.value(path.back()) * discount_;

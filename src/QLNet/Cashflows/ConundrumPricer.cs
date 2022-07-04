@@ -45,7 +45,7 @@ namespace QLNet.Cashflows
     //===========================================================================//
     //                          BlackVanillaOptionPricer                         //
     //===========================================================================//
-    public class BlackVanillaOptionPricer : VanillaOptionPricer
+    [JetBrains.Annotations.PublicAPI] public class BlackVanillaOptionPricer : VanillaOptionPricer
     {
         private double forwardValue_;
         private Date expiryDate_;
@@ -68,7 +68,7 @@ namespace QLNet.Cashflows
 
         public override double value(double strike, QLNet.Option.Type optionType, double deflator)
         {
-            double variance = smile_.variance(strike);
+            var variance = smile_.variance(strike);
             return deflator * Utils.blackFormula(optionType, strike, forwardValue_, System.Math.Sqrt(variance));
         }
     }
@@ -80,7 +80,7 @@ namespace QLNet.Cashflows
         public abstract double secondDerivative(double x);
     }
 
-    public class GFunctionFactory
+    [JetBrains.Annotations.PublicAPI] public class GFunctionFactory
     {
         public enum YieldCurveModel
         {
@@ -89,18 +89,11 @@ namespace QLNet.Cashflows
             ParallelShifts,
             NonParallelShifts
         }
-        public static GFunction newGFunctionStandard(int q, double delta, int swapLength)
-        {
-            return new GFunctionStandard(q, delta, swapLength) as GFunction;
-        }
-        public static GFunction newGFunctionExactYield(CmsCoupon coupon)
-        {
-            return new GFunctionExactYield(coupon) as GFunction;
-        }
-        public static GFunction newGFunctionWithShifts(CmsCoupon coupon, Handle<Quote> meanReversion)
-        {
-            return new GFunctionWithShifts(coupon, meanReversion) as GFunction;
-        }
+        public static GFunction newGFunctionStandard(int q, double delta, int swapLength) => new GFunctionStandard(q, delta, swapLength) as GFunction;
+
+        public static GFunction newGFunctionExactYield(CmsCoupon coupon) => new GFunctionExactYield(coupon) as GFunction;
+
+        public static GFunction newGFunctionWithShifts(CmsCoupon coupon, Handle<Quote> meanReversion) => new GFunctionWithShifts(coupon, meanReversion) as GFunction;
 
         //===========================================================================//
         //                              GFunctionStandard                            //
@@ -130,13 +123,13 @@ namespace QLNet.Cashflows
             public override double firstDerivative(double x)
             {
                 double n = swapLength_ * q_;
-                double a = 1.0 + x / q_;
-                double AA = a - delta_ / q_ * x;
-                double B = System.Math.Pow(a, n - delta_ - 1.0) / (System.Math.Pow(a, n) - 1.0);
+                var a = 1.0 + x / q_;
+                var AA = a - delta_ / q_ * x;
+                var B = System.Math.Pow(a, n - delta_ - 1.0) / (System.Math.Pow(a, n) - 1.0);
 
-                double secNum = n * x * System.Math.Pow(a, n - 1.0);
-                double secDen = q_ * System.Math.Pow(a, delta_) * (System.Math.Pow(a, n) - 1.0) * (System.Math.Pow(a, n) - 1.0);
-                double sec = secNum / secDen;
+                var secNum = n * x * System.Math.Pow(a, n - 1.0);
+                var secDen = q_ * System.Math.Pow(a, delta_) * (System.Math.Pow(a, n) - 1.0) * (System.Math.Pow(a, n) - 1.0);
+                var sec = secNum / secDen;
 
                 return AA * B - sec;
             }
@@ -144,19 +137,19 @@ namespace QLNet.Cashflows
             public override double secondDerivative(double x)
             {
                 double n = swapLength_ * q_;
-                double a = 1.0 + x / q_;
-                double AA = a - delta_ / q_ * x;
-                double A1 = (1.0 - delta_) / q_;
-                double B = System.Math.Pow(a, n - delta_ - 1.0) / (System.Math.Pow(a, n) - 1.0);
-                double Num = (1.0 + delta_ - n) * System.Math.Pow(a, n - delta_ - 2.0) - (1.0 + delta_) * System.Math.Pow(a, 2.0 * n - delta_ - 2.0);
-                double Den = (System.Math.Pow(a, n) - 1.0) * (System.Math.Pow(a, n) - 1.0);
-                double B1 = 1.0 / q_ * Num / Den;
+                var a = 1.0 + x / q_;
+                var AA = a - delta_ / q_ * x;
+                var A1 = (1.0 - delta_) / q_;
+                var B = System.Math.Pow(a, n - delta_ - 1.0) / (System.Math.Pow(a, n) - 1.0);
+                var Num = (1.0 + delta_ - n) * System.Math.Pow(a, n - delta_ - 2.0) - (1.0 + delta_) * System.Math.Pow(a, 2.0 * n - delta_ - 2.0);
+                var Den = (System.Math.Pow(a, n) - 1.0) * (System.Math.Pow(a, n) - 1.0);
+                var B1 = 1.0 / q_ * Num / Den;
 
-                double C = x / System.Math.Pow(a, delta_);
-                double C1 = (System.Math.Pow(a, delta_) - delta_ / q_ * x * System.Math.Pow(a, delta_ - 1.0)) / System.Math.Pow(a, 2 * delta_);
+                var C = x / System.Math.Pow(a, delta_);
+                var C1 = (System.Math.Pow(a, delta_) - delta_ / q_ * x * System.Math.Pow(a, delta_ - 1.0)) / System.Math.Pow(a, 2 * delta_);
 
-                double D = System.Math.Pow(a, n - 1.0) / ((System.Math.Pow(a, n) - 1.0) * (System.Math.Pow(a, n) - 1.0));
-                double D1 = ((n - 1.0) * System.Math.Pow(a, n - 2.0) * (System.Math.Pow(a, n) - 1.0) - 2 * n * System.Math.Pow(a, 2 * (n - 1.0))) / (q_ * (System.Math.Pow(a, n) - 1.0) * (System.Math.Pow(a, n) - 1.0) * (System.Math.Pow(a, n) - 1.0));
+                var D = System.Math.Pow(a, n - 1.0) / ((System.Math.Pow(a, n) - 1.0) * (System.Math.Pow(a, n) - 1.0));
+                var D1 = ((n - 1.0) * System.Math.Pow(a, n - 2.0) * (System.Math.Pow(a, n) - 1.0) - 2 * n * System.Math.Pow(a, 2 * (n - 1.0))) / (q_ * (System.Math.Pow(a, n) - 1.0) * (System.Math.Pow(a, n) - 1.0) * (System.Math.Pow(a, n) - 1.0));
 
                 return A1 * B + AA * B1 - n / q_ * (C1 * D + C * D1);
             }
@@ -175,35 +168,35 @@ namespace QLNet.Cashflows
             public GFunctionExactYield(CmsCoupon coupon)
             {
 
-                SwapIndex swapIndex = coupon.swapIndex();
-                VanillaSwap swap = swapIndex.underlyingSwap(coupon.fixingDate());
+                var swapIndex = coupon.swapIndex();
+                var swap = swapIndex.underlyingSwap(coupon.fixingDate());
 
-                Schedule schedule = swap.fixedSchedule();
-                Handle<YieldTermStructure> rateCurve = swapIndex.forwardingTermStructure();
+                var schedule = swap.fixedSchedule();
+                var rateCurve = swapIndex.forwardingTermStructure();
 
-                DayCounter dc = swapIndex.dayCounter();
+                var dc = swapIndex.dayCounter();
 
-                double swapStartTime = dc.yearFraction(rateCurve.link.referenceDate(), schedule.startDate());
-                double swapFirstPaymentTime = dc.yearFraction(rateCurve.link.referenceDate(), schedule.date(1));
+                var swapStartTime = dc.yearFraction(rateCurve.link.referenceDate(), schedule.startDate());
+                var swapFirstPaymentTime = dc.yearFraction(rateCurve.link.referenceDate(), schedule.date(1));
 
-                double paymentTime = dc.yearFraction(rateCurve.link.referenceDate(), coupon.date());
+                var paymentTime = dc.yearFraction(rateCurve.link.referenceDate(), coupon.date());
 
                 delta_ = (paymentTime - swapStartTime) / (swapFirstPaymentTime - swapStartTime);
 
-                List<CashFlow> fixedLeg = new List<CashFlow>(swap.fixedLeg());
-                int n = fixedLeg.Count;
+                var fixedLeg = new List<CashFlow>(swap.fixedLeg());
+                var n = fixedLeg.Count;
                 accruals_ = new List<double>();
-                for (int i = 0; i < n; ++i)
+                for (var i = 0; i < n; ++i)
                 {
-                    Coupon coupon1 = fixedLeg[i] as Coupon;
+                    var coupon1 = fixedLeg[i] as Coupon;
                     accruals_.Add(coupon1.accrualPeriod());
                 }
             }
 
             public override double value(double x)
             {
-                double product = 1.0;
-                for (int i = 0; i < accruals_.Count; i++)
+                var product = 1.0;
+                for (var i = 0; i < accruals_.Count; i++)
                 {
                     product *= 1.0 / (1.0 + accruals_[i] * x);
                 }
@@ -212,12 +205,12 @@ namespace QLNet.Cashflows
 
             public override double firstDerivative(double x)
             {
-                double c = -1.0;
-                double derC = 0.0;
-                List<double> b = new List<double>();
-                for (int i = 0; i < accruals_.Count; i++)
+                var c = -1.0;
+                var derC = 0.0;
+                var b = new List<double>();
+                for (var i = 0; i < accruals_.Count; i++)
                 {
-                    double temp = 1.0 / (1.0 + accruals_[i] * x);
+                    var temp = 1.0 / (1.0 + accruals_[i] * x);
                     b.Add(temp);
                     c *= temp;
                     derC += accruals_[i] * temp;
@@ -231,13 +224,13 @@ namespace QLNet.Cashflows
 
             public override double secondDerivative(double x)
             {
-                double c = -1.0;
-                double sum = 0.0;
-                double sumOfSquare = 0.0;
-                List<double> b = new List<double>();
-                for (int i = 0; i < accruals_.Count; i++)
+                var c = -1.0;
+                var sum = 0.0;
+                var sumOfSquare = 0.0;
+                var b = new List<double>();
+                for (var i = 0; i < accruals_.Count; i++)
                 {
-                    double temp = 1.0 / (1.0 + accruals_[i] * x);
+                    var temp = 1.0 / (1.0 + accruals_[i] * x);
                     b.Add(temp);
                     c *= temp;
                     sum += accruals_[i] * temp;
@@ -245,7 +238,7 @@ namespace QLNet.Cashflows
                 }
                 c += 1.0;
                 c = 1.0 / c;
-                double derC = sum * (c - c * c);
+                var derC = sum * (c - c * c);
 
                 return (-delta_ * accruals_[0] * System.Math.Pow(b[0], delta_ + 1.0) * c + System.Math.Pow(b[0], delta_) * derC) * (-delta_ * accruals_[0] * b[0] * x + 1.0 + x * (1.0 - c) * sum) + System.Math.Pow(b[0], delta_) * c * (delta_ * System.Math.Pow(accruals_[0] * b[0], 2.0) * x - delta_ * accruals_[0] * b[0] - x * derC * sum + (1.0 - c) * sum - x * (1.0 - c) * sumOfSquare);
             }
@@ -275,8 +268,8 @@ namespace QLNet.Cashflows
             //* function describing the non-parallel shape of the curve shift*/
             private double shapeOfShift(double s)
             {
-                double x = s - swapStartTime_;
-                double meanReversion = meanReversion_.link.value();
+                var x = s - swapStartTime_;
+                var meanReversion = meanReversion_.link.value();
                 if (meanReversion > 0)
                 {
                     return (1.0 - System.Math.Exp(-meanReversion * x)) / meanReversion;
@@ -294,7 +287,7 @@ namespace QLNet.Cashflows
                     double initialGuess;
                     double N = 0;
                     double D = 0;
-                    for (int i = 0; i < accruals_.Count; i++)
+                    for (var i = 0; i < accruals_.Count; i++)
                     {
                         N += accruals_[i] * swapPaymentDiscounts_[i];
                         D += accruals_[i] * swapPaymentDiscounts_[i] * shapedSwapPaymentTimes_[i];
@@ -306,7 +299,7 @@ namespace QLNet.Cashflows
                     initialGuess = N / D;
 
                     objectiveFunction_.setSwapRateValue(Rs);
-                    Newton solver = new Newton();
+                    var solver = new Newton();
                     solver.setMaxEvaluations(1000);
 
                     // these boundaries migth not be big enough if the volatility
@@ -314,7 +307,7 @@ namespace QLNet.Cashflows
                     // is not even integrable, so better to fix the vol than increasing
                     // these values
                     double lower = -20;
-                    double upper = 20.0;
+                    var upper = 20.0;
 
                     try
                     {
@@ -329,21 +322,18 @@ namespace QLNet.Cashflows
                 return calibratedShift_;
             }
 
-            private double functionZ(double x)
-            {
-                return System.Math.Exp(-shapedPaymentTime_ * x) / (1.0 - discountRatio_ * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x));
-            }
+            private double functionZ(double x) => System.Math.Exp(-shapedPaymentTime_ * x) / (1.0 - discountRatio_ * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x));
 
             private double derRs_derX(double x)
             {
                 double sqrtDenominator = 0;
                 double derSqrtDenominator = 0;
-                for (int i = 0; i < accruals_.Count; i++)
+                for (var i = 0; i < accruals_.Count; i++)
                 {
                     sqrtDenominator += accruals_[i] * swapPaymentDiscounts_[i] * System.Math.Exp(-shapedSwapPaymentTimes_[i] * x);
                     derSqrtDenominator -= shapedSwapPaymentTimes_[i] * accruals_[i] * swapPaymentDiscounts_[i] * System.Math.Exp(-shapedSwapPaymentTimes_[i] * x);
                 }
-                double denominator = sqrtDenominator * sqrtDenominator;
+                var denominator = sqrtDenominator * sqrtDenominator;
 
                 double numerator = 0;
                 numerator += shapedSwapPaymentTimes_.Last() * swapPaymentDiscounts_.Last() * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x) * sqrtDenominator;
@@ -355,8 +345,8 @@ namespace QLNet.Cashflows
 
             private double derZ_derX(double x)
             {
-                double sqrtDenominator = 1.0 - discountRatio_ * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x);
-                double denominator = sqrtDenominator * sqrtDenominator;
+                var sqrtDenominator = 1.0 - discountRatio_ * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x);
+                var denominator = sqrtDenominator * sqrtDenominator;
                 if (denominator.IsEqual(0.0))
                     Utils.QL_FAIL("GFunctionWithShifts::derZ_derX: denominator == 0");
 
@@ -369,34 +359,34 @@ namespace QLNet.Cashflows
 
             private double der2Rs_derX2(double x)
             {
-                double denOfRfunztion = 0.0;
-                double derDenOfRfunztion = 0.0;
-                double der2DenOfRfunztion = 0.0;
-                for (int i = 0; i < accruals_.Count; i++)
+                var denOfRfunztion = 0.0;
+                var derDenOfRfunztion = 0.0;
+                var der2DenOfRfunztion = 0.0;
+                for (var i = 0; i < accruals_.Count; i++)
                 {
                     denOfRfunztion += accruals_[i] * swapPaymentDiscounts_[i] * System.Math.Exp(-shapedSwapPaymentTimes_[i] * x);
                     derDenOfRfunztion -= shapedSwapPaymentTimes_[i] * accruals_[i] * swapPaymentDiscounts_[i] * System.Math.Exp(-shapedSwapPaymentTimes_[i] * x);
                     der2DenOfRfunztion += shapedSwapPaymentTimes_[i] * shapedSwapPaymentTimes_[i] * accruals_[i] * swapPaymentDiscounts_[i] * System.Math.Exp(-shapedSwapPaymentTimes_[i] * x);
                 }
 
-                double denominator = System.Math.Pow(denOfRfunztion, 4);
+                var denominator = System.Math.Pow(denOfRfunztion, 4);
 
                 double numOfDerR = 0;
                 numOfDerR += shapedSwapPaymentTimes_.Last() * swapPaymentDiscounts_.Last() * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x) * denOfRfunztion;
                 numOfDerR -= (discountAtStart_ - swapPaymentDiscounts_.Last() * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x)) * derDenOfRfunztion;
 
-                double denOfDerR = System.Math.Pow(denOfRfunztion, 2);
+                var denOfDerR = System.Math.Pow(denOfRfunztion, 2);
 
-                double derNumOfDerR = 0.0;
+                var derNumOfDerR = 0.0;
                 derNumOfDerR -= shapedSwapPaymentTimes_.Last() * shapedSwapPaymentTimes_.Last() * swapPaymentDiscounts_.Last() * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x) * denOfRfunztion;
                 derNumOfDerR += shapedSwapPaymentTimes_.Last() * swapPaymentDiscounts_.Last() * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x) * derDenOfRfunztion;
 
                 derNumOfDerR -= shapedSwapPaymentTimes_.Last() * swapPaymentDiscounts_.Last() * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x) * derDenOfRfunztion;
                 derNumOfDerR -= (discountAtStart_ - swapPaymentDiscounts_.Last() * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x)) * der2DenOfRfunztion;
 
-                double derDenOfDerR = 2 * denOfRfunztion * derDenOfRfunztion;
+                var derDenOfDerR = 2 * denOfRfunztion * derDenOfRfunztion;
 
-                double numerator = derNumOfDerR * denOfDerR - numOfDerR * derDenOfDerR;
+                var numerator = derNumOfDerR * denOfDerR - numOfDerR * derDenOfDerR;
                 if (denominator.IsEqual(0.0))
                     Utils.QL_FAIL("GFunctionWithShifts::der2Rs_derX2: denominator == 0");
                 return numerator / denominator;
@@ -404,9 +394,9 @@ namespace QLNet.Cashflows
 
             private double der2Z_derX2(double x)
             {
-                double denOfZfunction = 1.0 - discountRatio_ * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x);
-                double derDenOfZfunction = shapedSwapPaymentTimes_.Last() * discountRatio_ * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x);
-                double denominator = System.Math.Pow(denOfZfunction, 4);
+                var denOfZfunction = 1.0 - discountRatio_ * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x);
+                var derDenOfZfunction = shapedSwapPaymentTimes_.Last() * discountRatio_ * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x);
+                var denominator = System.Math.Pow(denOfZfunction, 4);
                 if (denominator.IsEqual(0))
                     Utils.QL_FAIL("GFunctionWithShifts::der2Z_derX2: denominator == 0");
 
@@ -414,11 +404,11 @@ namespace QLNet.Cashflows
                 numOfDerZ -= shapedPaymentTime_ * System.Math.Exp(-shapedPaymentTime_ * x) * denOfZfunction;
                 numOfDerZ -= shapedSwapPaymentTimes_.Last() * System.Math.Exp(-shapedPaymentTime_ * x) * (1.0 - denOfZfunction);
 
-                double denOfDerZ = System.Math.Pow(denOfZfunction, 2);
-                double derNumOfDerZ = -shapedPaymentTime_ * System.Math.Exp(-shapedPaymentTime_ * x) * (-shapedPaymentTime_ + (shapedPaymentTime_ * discountRatio_ - shapedSwapPaymentTimes_.Last() * discountRatio_) * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x)) - shapedSwapPaymentTimes_.Last() * System.Math.Exp(-shapedPaymentTime_ * x) * (shapedPaymentTime_ * discountRatio_ - shapedSwapPaymentTimes_.Last() * discountRatio_) * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x);
+                var denOfDerZ = System.Math.Pow(denOfZfunction, 2);
+                var derNumOfDerZ = -shapedPaymentTime_ * System.Math.Exp(-shapedPaymentTime_ * x) * (-shapedPaymentTime_ + (shapedPaymentTime_ * discountRatio_ - shapedSwapPaymentTimes_.Last() * discountRatio_) * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x)) - shapedSwapPaymentTimes_.Last() * System.Math.Exp(-shapedPaymentTime_ * x) * (shapedPaymentTime_ * discountRatio_ - shapedSwapPaymentTimes_.Last() * discountRatio_) * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x);
 
-                double derDenOfDerZ = 2 * denOfZfunction * derDenOfZfunction;
-                double numerator = derNumOfDerZ * denOfDerZ - numOfDerZ * derDenOfDerZ;
+                var derDenOfDerZ = 2 * denOfZfunction * derDenOfZfunction;
+                var numerator = derNumOfDerZ * denOfDerZ - numOfDerZ * derDenOfDerZ;
 
                 return numerator / denominator;
             }
@@ -438,24 +428,25 @@ namespace QLNet.Cashflows
                 {
                     double result = 0;
                     derivative_ = 0;
-                    for (int i = 0; i < o_.accruals_.Count; i++)
+                    for (var i = 0; i < o_.accruals_.Count; i++)
                     {
-                        double temp = o_.accruals_[i] * o_.swapPaymentDiscounts_[i] * System.Math.Exp(-o_.shapedSwapPaymentTimes_[i] * x);
+                        var temp = o_.accruals_[i] * o_.swapPaymentDiscounts_[i] * System.Math.Exp(-o_.shapedSwapPaymentTimes_[i] * x);
                         result += temp;
                         derivative_ -= o_.shapedSwapPaymentTimes_[i] * temp;
                     }
                     result *= Rs_;
                     derivative_ *= Rs_;
-                    double temp1 = o_.swapPaymentDiscounts_.Last() * System.Math.Exp(-o_.shapedSwapPaymentTimes_.Last() * x);
+                    var temp1 = o_.swapPaymentDiscounts_.Last() * System.Math.Exp(-o_.shapedSwapPaymentTimes_.Last() * x);
 
                     result += temp1 - o_.discountAtStart_;
                     derivative_ -= o_.shapedSwapPaymentTimes_.Last() * temp1;
                     return result;
                 }
 
-                public override double derivative(double UnnamedParameter1) { return derivative_; }
+                public override double derivative(double UnnamedParameter1) => derivative_;
+
                 public void setSwapRateValue(double x) { Rs_ = x; }
-                public GFunctionWithShifts gFunctionWithShifts() { return o_; }
+                public GFunctionWithShifts gFunctionWithShifts() => o_;
             }
 
             //===========================================================================//
@@ -468,37 +459,37 @@ namespace QLNet.Cashflows
                 tmpRs_ = 10000000.0;
                 accuracy_ = 1.0e-14;
 
-                SwapIndex swapIndex = coupon.swapIndex();
-                VanillaSwap swap = swapIndex.underlyingSwap(coupon.fixingDate());
+                var swapIndex = coupon.swapIndex();
+                var swap = swapIndex.underlyingSwap(coupon.fixingDate());
 
                 swapRateValue_ = swap.fairRate();
 
                 objectiveFunction_ = new ObjectiveFunction(this, swapRateValue_);
 
-                Schedule schedule = swap.fixedSchedule();
-                Handle<YieldTermStructure> rateCurve = swapIndex.forwardingTermStructure();
-                DayCounter dc = swapIndex.dayCounter();
+                var schedule = swap.fixedSchedule();
+                var rateCurve = swapIndex.forwardingTermStructure();
+                var dc = swapIndex.dayCounter();
 
                 swapStartTime_ = dc.yearFraction(rateCurve.link.referenceDate(), schedule.startDate());
                 discountAtStart_ = rateCurve.link.discount(schedule.startDate());
 
-                double paymentTime = dc.yearFraction(rateCurve.link.referenceDate(), coupon.date());
+                var paymentTime = dc.yearFraction(rateCurve.link.referenceDate(), coupon.date());
 
                 shapedPaymentTime_ = shapeOfShift(paymentTime);
 
-                List<CashFlow> fixedLeg = new List<CashFlow>(swap.fixedLeg());
-                int n = fixedLeg.Count;
+                var fixedLeg = new List<CashFlow>(swap.fixedLeg());
+                var n = fixedLeg.Count;
 
                 shapedSwapPaymentTimes_ = new List<double>();
                 swapPaymentDiscounts_ = new List<double>();
                 accruals_ = new List<double>();
 
-                for (int i = 0; i < n; ++i)
+                for (var i = 0; i < n; ++i)
                 {
-                    Coupon coupon1 = fixedLeg[i] as Coupon;
+                    var coupon1 = fixedLeg[i] as Coupon;
                     accruals_.Add(coupon1.accrualPeriod());
-                    Date paymentDate = new Date(coupon1.date().serialNumber());
-                    double swapPaymentTime = dc.yearFraction(rateCurve.link.referenceDate(), paymentDate);
+                    var paymentDate = new Date(coupon1.date().serialNumber());
+                    var swapPaymentTime = dc.yearFraction(rateCurve.link.referenceDate(), paymentDate);
                     shapedSwapPaymentTimes_.Add(shapeOfShift(swapPaymentTime));
                     swapPaymentDiscounts_.Add(rateCurve.link.discount(paymentDate));
                 }
@@ -507,19 +498,19 @@ namespace QLNet.Cashflows
 
             public override double value(double Rs)
             {
-                double calibratedShift = calibrationOfShift(Rs);
+                var calibratedShift = calibrationOfShift(Rs);
                 return Rs * functionZ(calibratedShift);
             }
 
             public override double firstDerivative(double Rs)
             {
-                double calibratedShift = calibrationOfShift(Rs);
+                var calibratedShift = calibrationOfShift(Rs);
                 return functionZ(calibratedShift) + Rs * derZ_derX(calibratedShift) / derRs_derX(calibratedShift);
             }
 
             public override double secondDerivative(double Rs)
             {
-                double calibratedShift = calibrationOfShift(Rs);
+                var calibratedShift = calibrationOfShift(Rs);
                 return 2.0 * derZ_derX(calibratedShift) / derRs_derX(calibratedShift) + Rs * der2Z_derX2(calibratedShift) / System.Math.Pow(derRs_derX(calibratedShift), 2.0) - Rs * derZ_derX(calibratedShift) * der2Rs_derX2(calibratedShift) / System.Math.Pow(derRs_derX(calibratedShift), 3.0);
             }
         }
@@ -532,72 +523,62 @@ namespace QLNet.Cashflows
     //! Base class for the pricing of a CMS coupon via static replication as in Hagan's "Conundrums..." article
     public abstract class HaganPricer : CmsCouponPricer
     {
-        public override double swapletRate()
-        {
-            return swapletPrice() / (coupon_.accrualPeriod() * discount_);
-        }
+        public override double swapletRate() => swapletPrice() / (coupon_.accrualPeriod() * discount_);
 
         public override double capletPrice(double effectiveCap)
         {
             // caplet is equivalent to call option on fixing
-            Date today = Settings.evaluationDate();
+            var today = Settings.evaluationDate();
             if (fixingDate_ <= today)
             {
                 // the fixing is determined
-                double Rs = System.Math.Max(coupon_.swapIndex().fixing(fixingDate_) - effectiveCap, 0.0);
-                double price = gearing_ * Rs * (coupon_.accrualPeriod() * discount_);
+                var Rs = System.Math.Max(coupon_.swapIndex().fixing(fixingDate_) - effectiveCap, 0.0);
+                var price = gearing_ * Rs * (coupon_.accrualPeriod() * discount_);
                 return price;
             }
             else
             {
-                double cutoffNearZero = 1e-10;
+                var cutoffNearZero = 1e-10;
                 double capletPrice = 0;
                 if (effectiveCap < cutoffForCaplet_)
                 {
-                    double effectiveStrikeForMax = System.Math.Max(effectiveCap, cutoffNearZero);
+                    var effectiveStrikeForMax = System.Math.Max(effectiveCap, cutoffNearZero);
                     capletPrice = optionletPrice(QLNet.Option.Type.Call, effectiveStrikeForMax);
                 }
                 return gearing_ * capletPrice;
             }
         }
 
-        public override double capletRate(double effectiveCap)
-        {
-            return capletPrice(effectiveCap) / (coupon_.accrualPeriod() * discount_);
-        }
+        public override double capletRate(double effectiveCap) => capletPrice(effectiveCap) / (coupon_.accrualPeriod() * discount_);
 
         public override double floorletPrice(double effectiveFloor)
         {
             // floorlet is equivalent to put option on fixing
-            Date today = Settings.evaluationDate();
+            var today = Settings.evaluationDate();
             if (fixingDate_ <= today)
             {
                 // the fixing is determined
-                double Rs = System.Math.Max(effectiveFloor - coupon_.swapIndex().fixing(fixingDate_), 0.0);
-                double price = gearing_ * Rs * (coupon_.accrualPeriod() * discount_);
+                var Rs = System.Math.Max(effectiveFloor - coupon_.swapIndex().fixing(fixingDate_), 0.0);
+                var price = gearing_ * Rs * (coupon_.accrualPeriod() * discount_);
                 return price;
             }
             else
             {
-                double cutoffNearZero = 1e-10;
+                var cutoffNearZero = 1e-10;
                 double floorletPrice = 0;
                 if (effectiveFloor > cutoffForFloorlet_)
                 {
-                    double effectiveStrikeForMin = System.Math.Max(effectiveFloor, cutoffNearZero);
+                    var effectiveStrikeForMin = System.Math.Max(effectiveFloor, cutoffNearZero);
                     floorletPrice = optionletPrice(QLNet.Option.Type.Put, effectiveStrikeForMin);
                 }
                 return gearing_ * floorletPrice;
             }
         }
-        public override double floorletRate(double effectiveFloor)
-        {
-            return floorletPrice(effectiveFloor) / (coupon_.accrualPeriod() * discount_);
-        }
+        public override double floorletRate(double effectiveFloor) => floorletPrice(effectiveFloor) / (coupon_.accrualPeriod() * discount_);
+
         //
-        public double meanReversion()
-        {
-            return meanReversion_.link.value();
-        }
+        public double meanReversion() => meanReversion_.link.value();
+
         public void setMeanReversion(Handle<Quote> meanReversion)
         {
             if (meanReversion_ != null)
@@ -620,10 +601,8 @@ namespace QLNet.Cashflows
                 meanReversion_.registerWith(update);
         }
 
-        protected virtual double optionletPrice(Option.Type optionType, double strike)
-        {
-            throw new NotImplementedException();
-        }
+        protected virtual double optionletPrice(Option.Type optionType, double strike) => throw new NotImplementedException();
+
         public override void initialize(FloatingRateCoupon coupon)
         {
             coupon_ = coupon as CmsCoupon;
@@ -633,10 +612,10 @@ namespace QLNet.Cashflows
 
             fixingDate_ = coupon_.fixingDate();
             paymentDate_ = coupon_.date();
-            SwapIndex swapIndex = coupon_.swapIndex();
+            var swapIndex = coupon_.swapIndex();
             rateCurve_ = swapIndex.forwardingTermStructure().link;
 
-            Date today = Settings.evaluationDate();
+            var today = Settings.evaluationDate();
 
             if (paymentDate_ > today)
                 discount_ = rateCurve_.discount(paymentDate_);
@@ -648,19 +627,19 @@ namespace QLNet.Cashflows
             if (fixingDate_ > today)
             {
                 swapTenor_ = swapIndex.tenor();
-                VanillaSwap swap = swapIndex.underlyingSwap(fixingDate_);
+                var swap = swapIndex.underlyingSwap(fixingDate_);
 
                 swapRateValue_ = swap.fairRate();
 
                 annuity_ = System.Math.Abs(swap.fixedLegBPS() / Const.BASIS_POINT);
 
-                int q = (int)swapIndex.fixedLegTenor().frequency();
-                Schedule schedule = swap.fixedSchedule();
-                DayCounter dc = swapIndex.dayCounter();
-                double startTime = dc.yearFraction(rateCurve_.referenceDate(), swap.startDate());
-                double swapFirstPaymentTime = dc.yearFraction(rateCurve_.referenceDate(), schedule.date(1));
-                double paymentTime = dc.yearFraction(rateCurve_.referenceDate(), paymentDate_);
-                double delta = (paymentTime - startTime) / (swapFirstPaymentTime - startTime);
+                var q = (int)swapIndex.fixedLegTenor().frequency();
+                var schedule = swap.fixedSchedule();
+                var dc = swapIndex.dayCounter();
+                var startTime = dc.yearFraction(rateCurve_.referenceDate(), swap.startDate());
+                var swapFirstPaymentTime = dc.yearFraction(rateCurve_.referenceDate(), schedule.date(1));
+                var paymentTime = dc.yearFraction(rateCurve_.referenceDate(), paymentDate_);
+                var delta = (paymentTime - startTime) / (swapFirstPaymentTime - startTime);
 
                 switch (modelOfYieldCurve_)
                 {
@@ -672,7 +651,7 @@ namespace QLNet.Cashflows
                         break;
                     case GFunctionFactory.YieldCurveModel.ParallelShifts:
                         {
-                            Handle<Quote> nullMeanReversionQuote = new Handle<Quote>(new SimpleQuote(0.0));
+                            var nullMeanReversionQuote = new Handle<Quote>(new SimpleQuote(0.0));
                             gFunction_ = GFunctionFactory.newGFunctionWithShifts(coupon_, nullMeanReversionQuote);
                         }
                         break;
@@ -680,7 +659,7 @@ namespace QLNet.Cashflows
                         gFunction_ = GFunctionFactory.newGFunctionWithShifts(coupon_, meanReversion_);
                         break;
                     default:
-                        Utils.QL_FAIL("unknown/illegal gFunction type");
+                        Utils.QL_FAIL("unknown/illegal gFunction ExerciseType");
                         break;
                 }
                 vanillaOptionPricer_ = new BlackVanillaOptionPricer(swapRateValue_, fixingDate_, swapTenor_, swaptionVolatility().link);
@@ -713,7 +692,7 @@ namespace QLNet.Cashflows
     //    ! Prices a cms coupon via static replication as in Hagan's
     //        "Conundrums..." article via numerical integration based on
     //        prices of vanilla swaptions
-    public class NumericHaganPricer : HaganPricer
+    [JetBrains.Annotations.PublicAPI] public class NumericHaganPricer : HaganPricer
     {
         private double upperLimit_;
         private double stdDeviationsForUpperLimit_;
@@ -742,7 +721,7 @@ namespace QLNet.Cashflows
 
         protected override double optionletPrice(Option.Type optionType, double strike)
         {
-            ConundrumIntegrand integrand = new ConundrumIntegrand(vanillaOptionPricer_, rateCurve_, gFunction_, fixingDate_, paymentDate_, annuity_, swapRateValue_, strike, optionType);
+            var integrand = new ConundrumIntegrand(vanillaOptionPricer_, rateCurve_, gFunction_, fixingDate_, paymentDate_, annuity_, swapRateValue_, strike, optionType);
             stdDeviationsForUpperLimit_ = requiredStdDeviations_;
             double a;
             double b;
@@ -759,37 +738,38 @@ namespace QLNet.Cashflows
                 integralValue = integrate(a, b, integrand);
             }
 
-            double dFdK = integrand.firstDerivativeOfF(strike);
-            double swaptionPrice = vanillaOptionPricer_.value(strike, optionType, annuity_);
+            var dFdK = integrand.firstDerivativeOfF(strike);
+            var swaptionPrice = vanillaOptionPricer_.value(strike, optionType, annuity_);
 
             // v. HAGAN, Conundrums..., formule 2.17a, 2.18a
             return coupon_.accrualPeriod() * (discount_ / annuity_) * ((1 + dFdK) * swaptionPrice + (int)optionType * integralValue);
         }
 
-        public double upperLimit() { return upperLimit_; }
-        public double stdDeviations() { return stdDeviationsForUpperLimit_; }
+        public double upperLimit() => upperLimit_;
+
+        public double stdDeviations() => stdDeviationsForUpperLimit_;
 
         public double integrate(double a, double b, ConundrumIntegrand integrand)
         {
-            double result = .0;
+            var result = .0;
             // we use the non adaptive algorithm only for semi infinite interval
             if (a > 0)
             {
                 // we estimate the actual boudary by testing integrand values
-                double upperBoundary = 2 * a;
+                var upperBoundary = 2 * a;
                 while (integrand.value(upperBoundary) > precision_)
                     upperBoundary *= 2.0;
                 // sometimes b < a because of a wrong estimation of b based on stdev
                 if (b > a)
                     upperBoundary = System.Math.Min(upperBoundary, b);
 
-                GaussKronrodNonAdaptive gaussKronrodNonAdaptive = new GaussKronrodNonAdaptive(precision_, 1000000, 1.0);
+                var gaussKronrodNonAdaptive = new GaussKronrodNonAdaptive(precision_, 1000000, 1.0);
                 // if the integration intervall is wide enough we use the
                 // following change variable x -> a + (b-a)*(t/(a-b))^3
                 upperBoundary = System.Math.Max(a, System.Math.Min(upperBoundary, hardUpperLimit_));
                 if (upperBoundary > 2 * a)
                 {
-                    VariableChange variableChange = new VariableChange(integrand.value, a, upperBoundary, 3);
+                    var variableChange = new VariableChange(integrand.value, a, upperBoundary, 3);
                     result = gaussKronrodNonAdaptive.value(variableChange.value, .0, 1.0);
                 }
                 else
@@ -800,7 +780,7 @@ namespace QLNet.Cashflows
                 // if the expected precision has not been reached we use the old algorithm
                 if (!gaussKronrodNonAdaptive.integrationSuccess())
                 {
-                    GaussKronrodAdaptive integrator = new GaussKronrodAdaptive(precision_, 100000);
+                    var integrator = new GaussKronrodAdaptive(precision_, 100000);
                     b = System.Math.Max(a, System.Math.Min(b, hardUpperLimit_));
                     result = integrator.value(integrand.value, a, b);
                 }
@@ -808,7 +788,7 @@ namespace QLNet.Cashflows
             else
             {
                 b = System.Math.Max(a, System.Math.Min(b, hardUpperLimit_));
-                GaussKronrodAdaptive integrator = new GaussKronrodAdaptive(precision_, 100000);
+                var integrator = new GaussKronrodAdaptive(precision_, 100000);
                 result = integrator.value(integrand.value, a, b);
             }
             return result;
@@ -816,37 +796,37 @@ namespace QLNet.Cashflows
 
         public override double swapletPrice()
         {
-            Date today = Settings.evaluationDate();
+            var today = Settings.evaluationDate();
             if (fixingDate_ <= today)
             {
                 // the fixing is determined
-                double Rs = coupon_.swapIndex().fixing(fixingDate_);
-                double price = (gearing_ * Rs + spread_) * (coupon_.accrualPeriod() * discount_);
+                var Rs = coupon_.swapIndex().fixing(fixingDate_);
+                var price = (gearing_ * Rs + spread_) * (coupon_.accrualPeriod() * discount_);
                 return price;
             }
             else
             {
-                double atmCapletPrice = optionletPrice(QLNet.Option.Type.Call, swapRateValue_);
-                double atmFloorletPrice = optionletPrice(QLNet.Option.Type.Put, swapRateValue_);
+                var atmCapletPrice = optionletPrice(QLNet.Option.Type.Call, swapRateValue_);
+                var atmFloorletPrice = optionletPrice(QLNet.Option.Type.Put, swapRateValue_);
                 return gearing_ * (coupon_.accrualPeriod() * discount_ * swapRateValue_ + atmCapletPrice - atmFloorletPrice) + spreadLegValue_;
             }
         }
 
         public double resetUpperLimit(double stdDeviationsForUpperLimit)
         {
-            double variance = swaptionVolatility().link.blackVariance(fixingDate_, swapTenor_, swapRateValue_);
+            var variance = swaptionVolatility().link.blackVariance(fixingDate_, swapTenor_, swapRateValue_);
             return swapRateValue_ * System.Math.Exp(stdDeviationsForUpperLimit * System.Math.Sqrt(variance));
         }
 
         public double refineIntegration(double integralValue, ConundrumIntegrand integrand)
         {
-            double percDiff = 1000.0;
+            var percDiff = 1000.0;
             while (System.Math.Abs(percDiff) < refiningIntegrationTolerance_)
             {
                 stdDeviationsForUpperLimit_ += 1.0;
-                double lowerLimit = upperLimit_;
+                var lowerLimit = upperLimit_;
                 upperLimit_ = resetUpperLimit(stdDeviationsForUpperLimit_);
-                double diff = integrate(lowerLimit, upperLimit_, integrand);
+                var diff = integrate(lowerLimit, upperLimit_, integrand);
                 percDiff = diff / integralValue;
                 integralValue += diff;
             }
@@ -854,7 +834,7 @@ namespace QLNet.Cashflows
         }
 
         #region Nested classes
-        public class VariableChange
+        [JetBrains.Annotations.PublicAPI] public class VariableChange
         {
             private double a_, width_;
             private Func<double, double> f_;
@@ -871,8 +851,8 @@ namespace QLNet.Cashflows
             public double value(double x)
             {
                 double newVar;
-                double temp = width_;
-                for (int i = 1; i < k_; ++i)
+                var temp = width_;
+                for (var i = 1; i < k_; ++i)
                 {
                     temp *= x;
                 }
@@ -881,7 +861,7 @@ namespace QLNet.Cashflows
             }
         }
 
-        public class Spy
+        [JetBrains.Annotations.PublicAPI] public class Spy
         {
             Func<double, double> f_;
             private List<double> abscissas = new List<double>();
@@ -894,7 +874,7 @@ namespace QLNet.Cashflows
             public double value(double x)
             {
                 abscissas.Add(x);
-                double value = f_(x);
+                var value = f_(x);
                 functionValues.Add(value);
                 return value;
             }
@@ -903,7 +883,7 @@ namespace QLNet.Cashflows
         //===========================================================================//
         //                              ConundrumIntegrand                           //
         //===========================================================================//
-        public class ConundrumIntegrand : IValue
+        [JetBrains.Annotations.PublicAPI] public class ConundrumIntegrand : IValue
         {
             public ConundrumIntegrand(VanillaOptionPricer o, YieldTermStructure curve, GFunction gFunction, Date fixingDate, Date paymentDate, double annuity, double forwardValue, double strike, QLNet.Option.Type optionType)
             {
@@ -919,36 +899,39 @@ namespace QLNet.Cashflows
 
             public double value(double x)
             {
-                double option = vanillaOptionPricer_.value(x, optionType_, annuity_);
+                var option = vanillaOptionPricer_.value(x, optionType_, annuity_);
                 return option * secondDerivativeOfF(x);
             }
 
             protected double functionF(double x)
             {
-                double Gx = gFunction_.value(x);
-                double GR = gFunction_.value(forwardValue_);
+                var Gx = gFunction_.value(x);
+                var GR = gFunction_.value(forwardValue_);
                 return (x - strike_) * (Gx / GR - 1.0);
             }
 
             public double firstDerivativeOfF(double x)
             {
-                double Gx = gFunction_.value(x);
-                double GR = gFunction_.value(forwardValue_);
-                double G1 = gFunction_.firstDerivative(x);
+                var Gx = gFunction_.value(x);
+                var GR = gFunction_.value(forwardValue_);
+                var G1 = gFunction_.firstDerivative(x);
                 return Gx / GR - 1.0 + G1 / GR * (x - strike_);
             }
 
             public double secondDerivativeOfF(double x)
             {
-                double GR = gFunction_.value(forwardValue_);
-                double G1 = gFunction_.firstDerivative(x);
-                double G2 = gFunction_.secondDerivative(x);
+                var GR = gFunction_.value(forwardValue_);
+                var G1 = gFunction_.firstDerivative(x);
+                var G2 = gFunction_.secondDerivative(x);
                 return 2.0 * G1 / GR + (x - strike_) * G2 / GR;
             }
 
-            protected double strike() { return strike_; }
-            protected double annuity() { return annuity_; }
-            protected Date fixingDate() { return fixingDate_; }
+            protected double strike() => strike_;
+
+            protected double annuity() => annuity_;
+
+            protected Date fixingDate() => fixingDate_;
+
             protected void setStrike(double strike) { strike_ = strike; }
 
             protected VanillaOptionPricer vanillaOptionPricer_;
@@ -966,7 +949,7 @@ namespace QLNet.Cashflows
     //===========================================================================//
     //                          AnalyticHaganPricer                           //
     //===========================================================================//
-    public class AnalyticHaganPricer : HaganPricer
+    [JetBrains.Annotations.PublicAPI] public class AnalyticHaganPricer : HaganPricer
     {
         public AnalyticHaganPricer(Handle<SwaptionVolatilityStructure> swaptionVol, GFunctionFactory.YieldCurveModel modelOfYieldCurve, Handle<Quote> meanReversion)
            : base(swaptionVol, modelOfYieldCurve, meanReversion)
@@ -976,22 +959,22 @@ namespace QLNet.Cashflows
         //Hagan, 3.5b, 3.5c
         protected override double optionletPrice(Option.Type optionType, double strike)
         {
-            double variance = swaptionVolatility().link.blackVariance(fixingDate_, swapTenor_, swapRateValue_);
-            double firstDerivativeOfGAtForwardValue = gFunction_.firstDerivative(swapRateValue_);
+            var variance = swaptionVolatility().link.blackVariance(fixingDate_, swapTenor_, swapRateValue_);
+            var firstDerivativeOfGAtForwardValue = gFunction_.firstDerivative(swapRateValue_);
             double price = 0;
 
-            double CK = vanillaOptionPricer_.value(strike, optionType, annuity_);
+            var CK = vanillaOptionPricer_.value(strike, optionType, annuity_);
             price += discount_ / annuity_ * CK;
-            double sqrtSigma2T = System.Math.Sqrt(variance);
-            double lnRoverK = System.Math.Log(swapRateValue_ / strike);
-            double d32 = (lnRoverK + 1.5 * variance) / sqrtSigma2T;
-            double d12 = (lnRoverK + .5 * variance) / sqrtSigma2T;
-            double dminus12 = (lnRoverK - .5 * variance) / sqrtSigma2T;
+            var sqrtSigma2T = System.Math.Sqrt(variance);
+            var lnRoverK = System.Math.Log(swapRateValue_ / strike);
+            var d32 = (lnRoverK + 1.5 * variance) / sqrtSigma2T;
+            var d12 = (lnRoverK + .5 * variance) / sqrtSigma2T;
+            var dminus12 = (lnRoverK - .5 * variance) / sqrtSigma2T;
 
-            CumulativeNormalDistribution cumulativeOfNormal = new CumulativeNormalDistribution();
-            double N32 = cumulativeOfNormal.value((int)optionType * d32);
-            double N12 = cumulativeOfNormal.value((int)optionType * d12);
-            double Nminus12 = cumulativeOfNormal.value((int)optionType * dminus12);
+            var cumulativeOfNormal = new CumulativeNormalDistribution();
+            var N32 = cumulativeOfNormal.value((int)optionType * d32);
+            var N12 = cumulativeOfNormal.value((int)optionType * d12);
+            var Nminus12 = cumulativeOfNormal.value((int)optionType * dminus12);
 
             price += (int)optionType * firstDerivativeOfGAtForwardValue * annuity_ * swapRateValue_ * (swapRateValue_ * System.Math.Exp(variance) * N32 - (swapRateValue_ + strike) * N12 + strike * Nminus12);
             price *= coupon_.accrualPeriod();
@@ -1001,18 +984,18 @@ namespace QLNet.Cashflows
         //Hagan 3.4c
         public override double swapletPrice()
         {
-            Date today = Settings.evaluationDate();
+            var today = Settings.evaluationDate();
             if (fixingDate_ <= today)
             {
                 // the fixing is determined
-                double Rs = coupon_.swapIndex().fixing(fixingDate_);
-                double price = (gearing_ * Rs + spread_) * (coupon_.accrualPeriod() * discount_);
+                var Rs = coupon_.swapIndex().fixing(fixingDate_);
+                var price = (gearing_ * Rs + spread_) * (coupon_.accrualPeriod() * discount_);
                 return price;
             }
             else
             {
-                double variance = swaptionVolatility().link.blackVariance(fixingDate_, swapTenor_, swapRateValue_);
-                double firstDerivativeOfGAtForwardValue = gFunction_.firstDerivative(swapRateValue_);
+                var variance = swaptionVolatility().link.blackVariance(fixingDate_, swapTenor_, swapRateValue_);
+                var firstDerivativeOfGAtForwardValue = gFunction_.firstDerivative(swapRateValue_);
                 double price = 0;
                 price += discount_ * swapRateValue_;
                 price += firstDerivativeOfGAtForwardValue * annuity_ * swapRateValue_ * swapRateValue_ * (System.Math.Exp(variance) - 1.0);

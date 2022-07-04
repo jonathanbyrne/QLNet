@@ -24,13 +24,13 @@ using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Meshers
 {
-    public class FdmMesherComposite : FdmMesher
+    [JetBrains.Annotations.PublicAPI] public class FdmMesherComposite : FdmMesher
     {
         public FdmMesherComposite(FdmLinearOpLayout layout, List<Fdm1dMesher> mesher)
            : base(layout)
         {
             mesher_ = mesher;
-            for (int i = 0; i < mesher.Count; ++i)
+            for (var i = 0; i < mesher.Count; ++i)
             {
                 Utils.QL_REQUIRE(mesher[i].size() == layout.dim()[i],
                                  () => "size of 1d mesher " + i + " does not fit to layout");
@@ -67,28 +67,20 @@ namespace QLNet.Methods.Finitedifferences.Meshers
             mesher_ = new List<Fdm1dMesher>() { m1, m2, m3, m4 };
         }
 
-        public override double? dplus(FdmLinearOpIterator iter, int direction)
-        {
-            return mesher_[direction].dplus(iter.coordinates()[direction]);
-        }
+        public override double? dplus(FdmLinearOpIterator iter, int direction) => mesher_[direction].dplus(iter.coordinates()[direction]);
 
-        public override double? dminus(FdmLinearOpIterator iter, int direction)
-        {
-            return mesher_[direction].dminus(iter.coordinates()[direction]);
-        }
+        public override double? dminus(FdmLinearOpIterator iter, int direction) => mesher_[direction].dminus(iter.coordinates()[direction]);
 
         public override double location(FdmLinearOpIterator iter,
-                                        int direction)
-        {
-            return mesher_[direction].location(iter.coordinates()[direction]);
-        }
+                                        int direction) =>
+            mesher_[direction].location(iter.coordinates()[direction]);
 
         public override Vector locations(int direction)
         {
-            Vector retVal = new Vector(layout_.size());
+            var retVal = new Vector(layout_.size());
 
-            FdmLinearOpIterator endIter = layout_.end();
-            for (FdmLinearOpIterator iter = layout_.begin();
+            var endIter = layout_.end();
+            for (var iter = layout_.begin();
                  iter != endIter; ++iter)
             {
                 retVal[iter.index()] =
@@ -98,15 +90,12 @@ namespace QLNet.Methods.Finitedifferences.Meshers
             return retVal;
         }
 
-        public List<Fdm1dMesher> getFdm1dMeshers()
-        {
-            return mesher_;
-        }
+        public List<Fdm1dMesher> getFdm1dMeshers() => mesher_;
 
         protected static FdmLinearOpLayout getLayoutFromMeshers(List<Fdm1dMesher> meshers)
         {
             List<int> dim = new InitializedList<int>(meshers.Count);
-            for (int i = 0; i < dim.Count; ++i)
+            for (var i = 0; i < dim.Count; ++i)
             {
                 dim[i] = meshers[i].size();
             }

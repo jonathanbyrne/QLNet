@@ -28,12 +28,12 @@ using System.Linq;
 
 namespace QLNet.Math.Interpolations
 {
-    public interface IWrapper
+    [JetBrains.Annotations.PublicAPI] public interface IWrapper
     {
         double volatility(double x);
     }
 
-    public interface IModel
+    [JetBrains.Annotations.PublicAPI] public interface IModel
     {
         void defaultValues(List<double?> param, List<bool> b, double forward, double expiryTime, List<double?> addParams);
         double dilationFactor();
@@ -50,7 +50,7 @@ namespace QLNet.Math.Interpolations
         double weight(double strike, double forward, double stdDev, List<double?> addParams);
     }
 
-    public class XABRCoeffHolder<Model> where Model : IModel, new()
+    [JetBrains.Annotations.PublicAPI] public class XABRCoeffHolder<Model> where Model : IModel, new()
     {
         public XABRCoeffHolder(double t, double forward, List<double?> _params, List<bool> paramIsFixed,
                                List<double?> addParams)
@@ -73,7 +73,7 @@ namespace QLNet.Math.Interpolations
                              "wrong number of fixed parameters flags (" + paramIsFixed.Count + "), should be " +
                              model_.dimension());
 
-            for (int i = 0; i < _params.Count; ++i)
+            for (var i = 0; i < _params.Count; ++i)
             {
                 if (_params[i] != null)
                     paramIsFixed_[i] = paramIsFixed[i];
@@ -113,7 +113,7 @@ namespace QLNet.Math.Interpolations
     }
 
     //template <class I1, class I2, typename Model>
-    public class XABRInterpolationImpl<Model> : Interpolation.templateImpl where Model : IModel, new()
+    [JetBrains.Annotations.PublicAPI] public class XABRInterpolationImpl<Model> : Interpolation.templateImpl where Model : IModel, new()
     {
         public XABRInterpolationImpl(List<double> xBegin, int size, List<double> yBegin, double t,
                                      double forward, List<double?> _params,
@@ -147,17 +147,17 @@ namespace QLNet.Math.Interpolations
             if (vegaWeighted_)
             {
                 coeff_.weights_.Clear();
-                double weightsSum = 0.0;
+                var weightsSum = 0.0;
 
-                for (int i = 0; i < xBegin_.Count; i++)
+                for (var i = 0; i < xBegin_.Count; i++)
                 {
-                    double stdDev = System.Math.Sqrt(yBegin_[i] * yBegin_[i] * coeff_.t_);
+                    var stdDev = System.Math.Sqrt(yBegin_[i] * yBegin_[i] * coeff_.t_);
                     coeff_.weights_.Add(coeff_.model_.weight(xBegin_[i], forward_, stdDev, coeff_.addParams_));
                     weightsSum += coeff_.weights_.Last();
                 }
 
                 // weight normalization
-                for (int i = 0; i < coeff_.weights_.Count; i++)
+                for (var i = 0; i < coeff_.weights_.Count; i++)
                     coeff_.weights_[i] /= weightsSum;
             }
 
@@ -170,20 +170,20 @@ namespace QLNet.Math.Interpolations
                 return;
             }
 
-            XABRError costFunction = new XABRError(this);
+            var costFunction = new XABRError(this);
 
-            Vector guess = new Vector(coeff_.model_.dimension());
-            for (int i = 0; i < guess.size(); ++i)
+            var guess = new Vector(coeff_.model_.dimension());
+            for (var i = 0; i < guess.size(); ++i)
                 guess[i] = coeff_.params_[i].GetValueOrDefault();
 
-            int iterations = 0;
-            int freeParameters = 0;
-            double bestError = double.MaxValue;
-            Vector bestParameters = new Vector();
-            for (int i = 0; i < coeff_.model_.dimension(); ++i)
+            var iterations = 0;
+            var freeParameters = 0;
+            var bestError = double.MaxValue;
+            var bestParameters = new Vector();
+            for (var i = 0; i < coeff_.model_.dimension(); ++i)
                 if (!coeff_.paramIsFixed_[i])
                     ++freeParameters;
-            HaltonRsg halton = new HaltonRsg(freeParameters, 42);
+            var halton = new HaltonRsg(freeParameters, 42);
             EndCriteria.Type tmpEndCriteria;
             double tmpInterpolationError;
 
@@ -191,28 +191,28 @@ namespace QLNet.Math.Interpolations
             {
                 if (iterations > 0)
                 {
-                    Sample<List<double>> s = halton.nextSequence();
+                    var s = halton.nextSequence();
                     coeff_.model_.guess(guess, coeff_.paramIsFixed_, forward_, coeff_.t_, s.value, coeff_.addParams_);
-                    for (int i = 0; i < coeff_.paramIsFixed_.Count; ++i)
+                    for (var i = 0; i < coeff_.paramIsFixed_.Count; ++i)
                         if (coeff_.paramIsFixed_[i])
                             guess[i] = coeff_.params_[i].GetValueOrDefault();
                 }
 
-                Vector inversedTransformatedGuess =
+                var inversedTransformatedGuess =
                    new Vector(coeff_.model_.inverse(guess, coeff_.paramIsFixed_, coeff_.params_, forward_));
 
-                ProjectedCostFunction rainedXABRError = new ProjectedCostFunction(costFunction,
+                var rainedXABRError = new ProjectedCostFunction(costFunction,
                                                                                   inversedTransformatedGuess,
                                                                                   coeff_.paramIsFixed_);
 
-                Vector projectedGuess = new Vector(rainedXABRError.project(inversedTransformatedGuess));
+                var projectedGuess = new Vector(rainedXABRError.project(inversedTransformatedGuess));
 
                 constraint_.config(rainedXABRError, coeff_, forward_);
-                Problem problem = new Problem(rainedXABRError, constraint_, projectedGuess);
+                var problem = new Problem(rainedXABRError, constraint_, projectedGuess);
                 tmpEndCriteria = optMethod_.minimize(problem, endCriteria_);
-                Vector projectedResult = new Vector(problem.currentValue());
-                Vector transfResult = new Vector(rainedXABRError.include(projectedResult));
-                Vector result = coeff_.model_.direct(transfResult, coeff_.paramIsFixed_, coeff_.params_, forward_);
+                var projectedResult = new Vector(problem.currentValue());
+                var transfResult = new Vector(rainedXABRError.include(projectedResult));
+                var result = coeff_.model_.direct(transfResult, coeff_.paramIsFixed_, coeff_.params_, forward_);
                 tmpInterpolationError = useMaxError_
                                         ? interpolationMaxError()
                                         : interpolationError();
@@ -227,17 +227,14 @@ namespace QLNet.Math.Interpolations
             while (++iterations < maxGuesses_ &&
                    tmpInterpolationError > errorAccept_);
 
-            for (int i = 0; i < bestParameters.size(); ++i)
+            for (var i = 0; i < bestParameters.size(); ++i)
                 coeff_.params_[i] = bestParameters[i];
 
             coeff_.error_ = interpolationError();
             coeff_.maxError_ = interpolationMaxError();
         }
 
-        public override double value(double x)
-        {
-            return coeff_.modelInstance_.volatility(x);
-        }
+        public override double value(double x) => coeff_.modelInstance_.volatility(x);
 
         public override double primitive(double d)
         {
@@ -261,7 +258,7 @@ namespace QLNet.Math.Interpolations
         public double interpolationSquaredError()
         {
             double error, totalError = 0.0;
-            for (int i = 0; i < xBegin_.Count; i++)
+            for (var i = 0; i < xBegin_.Count; i++)
             {
                 error = value(xBegin_[i]) - yBegin_[i];
                 totalError += error * error * coeff_.weights_[i];
@@ -273,9 +270,9 @@ namespace QLNet.Math.Interpolations
         // calculate weighted differences
         public Vector interpolationErrors(Vector v)
         {
-            Vector results = new Vector(xBegin_.Count);
+            var results = new Vector(xBegin_.Count);
 
-            for (int i = 0; i < xBegin_.Count; i++)
+            for (var i = 0; i < xBegin_.Count; i++)
                 results[i] = (value(xBegin_[i]) - yBegin_[i]) * System.Math.Sqrt(coeff_.weights_[i]);
 
             return results;
@@ -283,8 +280,8 @@ namespace QLNet.Math.Interpolations
 
         public double interpolationError()
         {
-            int n = xBegin_.Count;
-            double squaredError = interpolationSquaredError();
+            var n = xBegin_.Count;
+            var squaredError = interpolationSquaredError();
             return System.Math.Sqrt(n * squaredError / (n - 1));
         }
 
@@ -292,7 +289,7 @@ namespace QLNet.Math.Interpolations
         {
             double error, maxError = double.MinValue;
 
-            for (int i = 0; i < xBegin_.Count; i++)
+            for (var i = 0; i < xBegin_.Count; i++)
             {
                 error = System.Math.Abs(value(xBegin_[i]) - yBegin_[i]);
                 maxError = System.Math.Max(maxError, error);
@@ -310,8 +307,8 @@ namespace QLNet.Math.Interpolations
 
             public override double value(Vector x)
             {
-                Vector y = xabr_.coeff_.model_.direct(x, xabr_.coeff_.paramIsFixed_, xabr_.coeff_.params_, xabr_.forward_);
-                for (int i = 0; i < xabr_.coeff_.params_.Count; ++i)
+                var y = xabr_.coeff_.model_.direct(x, xabr_.coeff_.paramIsFixed_, xabr_.coeff_.params_, xabr_.forward_);
+                for (var i = 0; i < xabr_.coeff_.params_.Count; ++i)
                     xabr_.coeff_.params_[i] = y[i];
                 xabr_.coeff_.updateModelInstance();
                 return xabr_.interpolationSquaredError();
@@ -319,8 +316,8 @@ namespace QLNet.Math.Interpolations
 
             public override Vector values(Vector x)
             {
-                Vector y = xabr_.coeff_.model_.direct(x, xabr_.coeff_.paramIsFixed_, xabr_.coeff_.params_, xabr_.forward_);
-                for (int i = 0; i < xabr_.coeff_.params_.Count; ++i)
+                var y = xabr_.coeff_.model_.direct(x, xabr_.coeff_.paramIsFixed_, xabr_.coeff_.params_, xabr_.forward_);
+                for (var i = 0; i < xabr_.coeff_.params_.Count; ++i)
                     xabr_.coeff_.params_[i] = y[i];
                 xabr_.coeff_.updateModelInstance();
                 return xabr_.interpolationErrors(x);
@@ -340,7 +337,7 @@ namespace QLNet.Math.Interpolations
         public XABRCoeffHolder<Model> coeff_ { get; set; }
     }
 
-    public class XABRConstraint : Constraint
+    [JetBrains.Annotations.PublicAPI] public class XABRConstraint : Constraint
     {
         public XABRConstraint() : base(null)
         { }
@@ -356,24 +353,15 @@ namespace QLNet.Math.Interpolations
     }
 
     //! No constraint
-    public class NoXABRConstraint : XABRConstraint
+    [JetBrains.Annotations.PublicAPI] public class NoXABRConstraint : XABRConstraint
     {
         private class Impl : IConstraint
         {
-            public bool test(Vector param)
-            {
-                return true;
-            }
+            public bool test(Vector param) => true;
 
-            public Vector upperBound(Vector parameters)
-            {
-                return new Vector(parameters.size(), double.MaxValue);
-            }
+            public Vector upperBound(Vector parameters) => new Vector(parameters.size(), double.MaxValue);
 
-            public Vector lowerBound(Vector parameters)
-            {
-                return new Vector(parameters.size(), double.MinValue);
-            }
+            public Vector lowerBound(Vector parameters) => new Vector(parameters.size(), double.MinValue);
         }
 
         public NoXABRConstraint() : base(new Impl())

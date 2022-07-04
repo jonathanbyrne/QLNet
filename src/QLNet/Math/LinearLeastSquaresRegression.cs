@@ -32,25 +32,25 @@ namespace QLNet.Math
         \test the correctness of the returned values is tested by
               checking their properties.
     */
-    public class LinearLeastSquaresRegression : LinearLeastSquaresRegression<double>
+    [JetBrains.Annotations.PublicAPI] public class LinearLeastSquaresRegression : LinearLeastSquaresRegression<double>
     {
         public LinearLeastSquaresRegression(List<double> x, List<double> y, List<Func<double, double>> v)
            : base(x, y, v) { }
     }
 
-    public class LinearLeastSquaresRegression<ArgumentType>
+    [JetBrains.Annotations.PublicAPI] public class LinearLeastSquaresRegression<ArgumentType>
     {
         private Vector a_, err_, residuals_, standardErrors_;
 
-        public Vector coefficients() { return a_; }
-        public Vector residuals() { return residuals_; }
+        public Vector coefficients() => a_;
+
+        public Vector residuals() => residuals_;
 
         //! standard parameter errors as given by Excel, R etc.
-        public Vector standardErrors() { return standardErrors_; }
+        public Vector standardErrors() => standardErrors_;
         //! modeling uncertainty as definied in Numerical Recipes
 
-        public Vector error() { return err_; }
-
+        public Vector error() => err_;
 
         public LinearLeastSquaresRegression(List<ArgumentType> x, List<double> y, List<Func<ArgumentType, double>> v)
         {
@@ -63,18 +63,18 @@ namespace QLNet.Math
             Utils.QL_REQUIRE(x.Count >= v.Count, () => "sample set is too small");
 
             int i;
-            int n = x.Count;
-            int m = v.Count;
+            var n = x.Count;
+            var m = v.Count;
 
-            Matrix A = new Matrix(n, m);
+            var A = new Matrix(n, m);
             for (i = 0; i < m; ++i)
                 x.ForEach((jj, xx) => A[jj, i] = v[i](xx));
 
-            SVD svd = new SVD(A);
-            Matrix V = svd.V();
-            Matrix U = svd.U();
-            Vector w = svd.singularValues();
-            double threshold = n * Const.QL_EPSILON;
+            var svd = new SVD(A);
+            var V = svd.V();
+            var U = svd.U();
+            var w = svd.singularValues();
+            var threshold = n * Const.QL_EPSILON;
 
             for (i = 0; i < m; ++i)
             {
@@ -84,7 +84,7 @@ namespace QLNet.Math
                     U.column(i).ForEach((ii, vv) => u += vv * y[ii]);
                     u /= w[i];
 
-                    for (int j = 0; j < m; ++j)
+                    for (var j = 0; j < m; ++j)
                     {
                         a_[j] += u * V[j, i];
                         err_[j] += V[j, i] * V[j, i] / (w[i] * w[i]);
@@ -94,13 +94,13 @@ namespace QLNet.Math
             err_ = Vector.Sqrt(err_);
             residuals_ = A * a_ - new Vector(y);
 
-            double chiSq = residuals_.Sum(r => r * r);
+            var chiSq = residuals_.Sum(r => r * r);
             err_.ForEach((ii, vv) => standardErrors_[ii] = vv * System.Math.Sqrt(chiSq / (n - 2)));
         }
     }
 
     //! linear regression y_i = a_0 + a_1*x_0 +..+a_n*x_{n-1} + eps
-    public class LinearRegression
+    [JetBrains.Annotations.PublicAPI] public class LinearRegression
     {
         private LinearLeastSquaresRegression<List<double>> reg_;
 
@@ -117,11 +117,11 @@ namespace QLNet.Math
             reg_ = new LinearLeastSquaresRegression<List<double>>(x, y, linearFcts(x[0].Count));
         }
 
-        public Vector coefficients() { return reg_.coefficients(); }
+        public Vector coefficients() => reg_.coefficients();
 
-        public Vector residuals() { return reg_.residuals(); }
-        public Vector standardErrors() { return reg_.standardErrors(); }
+        public Vector residuals() => reg_.residuals();
 
+        public Vector standardErrors() => reg_.standardErrors();
 
         class LinearFct
         {
@@ -132,18 +132,15 @@ namespace QLNet.Math
                 i_ = i;
             }
 
-            public double value(List<double> x)
-            {
-                return x[i_];
-            }
+            public double value(List<double> x) => x[i_];
         }
 
         private List<Func<List<double>, double>> linearFcts(int dims)
         {
-            List<Func<List<double>, double>> retVal = new List<Func<List<double>, double>>();
+            var retVal = new List<Func<List<double>, double>>();
             retVal.Add(x => 1.0);
 
-            for (int i = 0; i < dims; ++i)
+            for (var i = 0; i < dims; ++i)
             {
                 retVal.Add(new LinearFct(i).value);
             }
@@ -153,7 +150,7 @@ namespace QLNet.Math
 
         private List<List<double>> argumentWrapper(List<double> x)
         {
-            List<List<double>> retVal = new List<List<double>>();
+            var retVal = new List<List<double>>();
 
             foreach (var v in x)
                 retVal.Add(new List<double>() { v });

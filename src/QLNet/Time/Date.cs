@@ -23,7 +23,7 @@ using System;
 
 namespace QLNet.Time
 {
-    public class Date : IComparable
+    [JetBrains.Annotations.PublicAPI] public class Date : IComparable
     {
         private readonly DateTime date;
 
@@ -55,89 +55,57 @@ namespace QLNet.Time
             date = d;
         }
 
-        public int serialNumber()
-        {
-            return (date - new DateTime(1899, 12, 31).Date).Days + 1;
-        }
+        public int serialNumber() => (date - new DateTime(1899, 12, 31).Date).Days + 1;
 
-        public int Day { get { return date.Day; } }
+        public int Day => date.Day;
 
-        public int Month { get { return date.Month; } }
+        public int Month => date.Month;
 
-        public int month()
-        {
-            return date.Month;
-        }
+        public int month() => date.Month;
 
-        public int Year { get { return date.Year; } }
+        public int Year => date.Year;
 
-        public int year()
-        {
-            return date.Year;
-        }
+        public int year() => date.Year;
 
-        public int DayOfYear { get { return date.DayOfYear; } }
+        public int DayOfYear => date.DayOfYear;
 
-        public int weekday()
-        {
-            return (int)date.DayOfWeek + 1;
-        } // QL compatible definition
+        public int weekday() => (int)date.DayOfWeek + 1;  // QL compatible definition
 
-        public DayOfWeek DayOfWeek { get { return date.DayOfWeek; } }
+        public DayOfWeek DayOfWeek => date.DayOfWeek;
 
-        public int hours { get { return date.Hour; } }
-        public int minutes { get { return date.Minute; } }
-        public int seconds { get { return date.Second; } }
-        public int milliseconds { get { return date.Millisecond; } }
-        public double fractionOfSecond { get { return (double)date.Millisecond / 1000; } }
+        public int hours => date.Hour;
 
-        public double fractionOfDay()
-        {
-            return date.TimeOfDay.TotalSeconds / 86400.0;
-        }
+        public int minutes => date.Minute;
+
+        public int seconds => date.Second;
+
+        public int milliseconds => date.Millisecond;
+
+        public double fractionOfSecond => (double)date.Millisecond / 1000;
+
+        public double fractionOfDay() => date.TimeOfDay.TotalSeconds / 86400.0;
 
         // static properties
-        public static Date minDate()
-        {
-            return new Date(1, 1, 1901);
-        }
+        public static Date minDate() => new Date(1, 1, 1901);
 
-        public static Date maxDate()
-        {
-            return new Date(31, 12, 2199);
-        }
+        public static Date maxDate() => new Date(31, 12, 2199);
 
-        public static Date Today { get { return new Date(DateTime.Today); } }
+        public static Date Today => new Date(DateTime.Today);
 
-        public static bool IsLeapYear(int y)
-        {
-            return DateTime.IsLeapYear(y);
-        }
+        public static bool IsLeapYear(int y) => DateTime.IsLeapYear(y);
 
-        public static int DaysInMonth(int y, int m)
-        {
-            return DateTime.DaysInMonth(y, m);
-        }
+        public static int DaysInMonth(int y, int m) => DateTime.DaysInMonth(y, m);
 
-        public static Date endOfMonth(Date d)
-        {
-            return d - d.Day + DaysInMonth(d.Year, d.Month);
-        }
+        public static Date endOfMonth(Date d) => d - d.Day + DaysInMonth(d.Year, d.Month);
 
-        public static bool isEndOfMonth(Date d)
-        {
-            return d.Day == DaysInMonth(d.Year, d.Month);
-        }
+        public static bool isEndOfMonth(Date d) => d.Day == DaysInMonth(d.Year, d.Month);
 
-        public static double daysBetween(Date d1, Date d2)
-        {
-            return (d2.date - d1.date).TotalDays;
-        }
+        public static double daysBetween(Date d1, Date d2) => (d2.date - d1.date).TotalDays;
 
         //! next given weekday following or equal to the given date
         public static Date nextWeekday(Date d, DayOfWeek dayOfWeek)
         {
-            int wd = dayOfWeek - d.DayOfWeek;
+            var wd = dayOfWeek - d.DayOfWeek;
             return d + (wd >= 0 ? wd : 7 + wd);
         }
 
@@ -146,8 +114,8 @@ namespace QLNet.Time
         {
             Utils.QL_REQUIRE(nth > 0, () => "zeroth day of week in a given (month, year) is undefined");
             Utils.QL_REQUIRE(nth < 6, () => "no more than 5 weekday in a given (month, year)");
-            DayOfWeek first = new DateTime(y, m, 1).DayOfWeek;
-            int skip = nth - (dayOfWeek >= first ? 1 : 0);
+            var first = new DateTime(y, m, 1).DayOfWeek;
+            var skip = nth - (dayOfWeek >= first ? 1 : 0);
             return new Date(1, m, y) + (dayOfWeek - first + skip * 7);
         }
 
@@ -172,12 +140,12 @@ namespace QLNet.Time
                     return d + 7 * n;
                 case TimeUnit.Months:
                     {
-                        DateTime t = d.date;
+                        var t = d.date;
                         return new Date(t.AddMonths(n));
                     }
                 case TimeUnit.Years:
                     {
-                        DateTime t = d.date;
+                        var t = d.date;
                         return new Date(t.AddYears(n));
                     }
                 default:
@@ -186,42 +154,27 @@ namespace QLNet.Time
         }
 
         // operator overloads
-        public static int operator -(Date d1, Date d2)
-        {
-            return (d1.date.Date - d2.date.Date).Days;
-        }
+        public static int operator -(Date d1, Date d2) => (d1.date.Date - d2.date.Date).Days;
 
         public static Date operator +(Date d, int days)
         {
-            DateTime t = d.date;
+            var t = d.date;
             return new Date(t.AddDays(days));
         }
 
         public static Date operator -(Date d, int days)
         {
-            DateTime t = d.date;
+            var t = d.date;
             return new Date(t.AddDays(-days));
         }
 
-        public static Date operator +(Date d, TimeUnit u)
-        {
-            return advance(d, 1, u);
-        }
+        public static Date operator +(Date d, TimeUnit u) => advance(d, 1, u);
 
-        public static Date operator -(Date d, TimeUnit u)
-        {
-            return advance(d, -1, u);
-        }
+        public static Date operator -(Date d, TimeUnit u) => advance(d, -1, u);
 
-        public static Date operator +(Date d, Period p)
-        {
-            return advance(d, p.length(), p.units());
-        }
+        public static Date operator +(Date d, Period p) => advance(d, p.length(), p.units());
 
-        public static Date operator -(Date d, Period p)
-        {
-            return advance(d, -p.length(), p.units());
-        }
+        public static Date operator -(Date d, Period p) => advance(d, -p.length(), p.units());
 
         public static Date operator ++(Date d)
         {
@@ -235,100 +188,47 @@ namespace QLNet.Time
             return d;
         }
 
-        public static Date Min(Date d1, Date d2)
-        {
-            return d1 < d2 ? d1 : d2;
-        }
+        public static Date Min(Date d1, Date d2) => d1 < d2 ? d1 : d2;
 
-        public static Date Max(Date d1, Date d2)
-        {
-            return d1 > d2 ? d1 : d2;
-        }
+        public static Date Max(Date d1, Date d2) => d1 > d2 ? d1 : d2;
 
         // this is the overload for DateTime operations
-        public static implicit operator DateTime(Date d)
-        {
-            return d.date;
-        }
+        public static implicit operator DateTime(Date d) => d.date;
 
-        public static implicit operator Date(DateTime d)
-        {
-            return new Date(d.Day, d.Month, d.Year);
-        }
+        public static implicit operator Date(DateTime d) => new Date(d.Day, d.Month, d.Year);
 
-        public static bool operator ==(Date d1, Date d2)
-        {
-            return (object)d1 == null || (object)d2 == null ?
-                   (object)d1 == null && (object)d2 == null :
-                   d1.date == d2.date;
-        }
+        public static bool operator ==(Date d1, Date d2) =>
+            (object)d1 == null || (object)d2 == null ?
+                (object)d1 == null && (object)d2 == null :
+                d1.date == d2.date;
 
-        public static bool operator !=(Date d1, Date d2)
-        {
-            return !(d1 == d2);
-        }
+        public static bool operator !=(Date d1, Date d2) => !(d1 == d2);
 
-        public static bool operator <(Date d1, Date d2)
-        {
-            return d1.date < d2.date;
-        }
+        public static bool operator <(Date d1, Date d2) => d1.date < d2.date;
 
-        public static bool operator <=(Date d1, Date d2)
-        {
-            return d1.date <= d2.date;
-        }
+        public static bool operator <=(Date d1, Date d2) => d1.date <= d2.date;
 
-        public static bool operator >(Date d1, Date d2)
-        {
-            return d1.date > d2.date;
-        }
+        public static bool operator >(Date d1, Date d2) => d1.date > d2.date;
 
-        public static bool operator >=(Date d1, Date d2)
-        {
-            return d1.date >= d2.date;
-        }
+        public static bool operator >=(Date d1, Date d2) => d1.date >= d2.date;
 
         public DateTime ToDateTime() => date;
 
-        public string ToLongDateString()
-        {
-            return date.ToString("D");
-        }
+        public string ToLongDateString() => date.ToString("D");
 
-        public string ToShortDateString()
-        {
-            return date.ToString("d");
-        }
+        public string ToShortDateString() => date.ToString("d");
 
-        public override string ToString()
-        {
-            return ToShortDateString();
-        }
+        public override string ToString() => ToShortDateString();
 
-        public string ToString(IFormatProvider provider)
-        {
-            return date.ToString(provider);
-        }
+        public string ToString(IFormatProvider provider) => date.ToString(provider);
 
-        public string ToString(string format)
-        {
-            return date.ToString(format);
-        }
+        public string ToString(string format) => date.ToString(format);
 
-        public string ToString(string format, IFormatProvider provider)
-        {
-            return date.ToString(format, provider);
-        }
+        public string ToString(string format, IFormatProvider provider) => date.ToString(format, provider);
 
-        public override bool Equals(object o)
-        {
-            return this == (Date)o;
-        }
+        public override bool Equals(object o) => this == (Date)o;
 
-        public override int GetHashCode()
-        {
-            return date.GetHashCode();
-        }
+        public override int GetHashCode() => date.GetHashCode();
 
         // IComparable interface
         public int CompareTo(object obj)

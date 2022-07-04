@@ -32,7 +32,7 @@ namespace QLNet.Math.randomnumbers
         The inverse cumulative distribution is supplied by IC.
     */
 
-    public class InverseCumulativeRng<RNG, IC> where RNG : IRNGTraits where IC : IValue, new()
+    [JetBrains.Annotations.PublicAPI] public class InverseCumulativeRng<RNG, IC> where RNG : IRNGTraits where IC : IValue, new()
     {
         private RNG uniformGenerator_;
         private IC ICND_ = FastActivator<IC>.Create();
@@ -45,7 +45,7 @@ namespace QLNet.Math.randomnumbers
         //! returns a sample from a Gaussian distribution
         public Sample<double> next()
         {
-            Sample<double> sample = uniformGenerator_.next();
+            var sample = uniformGenerator_.next();
             return new Sample<double>(ICND_.value(sample.value), sample.weight);
         }
     }

@@ -35,7 +35,7 @@ namespace QLNet.Instruments
         \test
         - price/yield calculations are cross-checked for consistency.
         - price/yield calculations are checked against known good values. */
-    public class Bond : Instrument
+    [JetBrains.Annotations.PublicAPI] public class Bond : Instrument
     {
         #region Constructors
         //! constructor for amortizing or non-amortizing bonds.
@@ -119,21 +119,22 @@ namespace QLNet.Instruments
 
         #region Instrument interface
 
-        public override bool isExpired()
-        {
+        public override bool isExpired() =>
             // this is the Instrument interface, so it doesn't use
             // BondFunctions, and includeSettlementDateFlows is true
             // (unless QL_TODAY_PAYMENTS will set it to false later on)
-            return CashFlows.isExpired(cashflows_, true, Settings.evaluationDate());
-        }
+            CashFlows.isExpired(cashflows_, true, Settings.evaluationDate());
 
         #endregion
 
         #region Inspectors
 
-        public int settlementDays() { return settlementDays_; }
-        public Calendar calendar() { return calendar_; }
-        public List<double> notionals() { return notionals_; }
+        public int settlementDays() => settlementDays_;
+
+        public Calendar calendar() => calendar_;
+
+        public List<double> notionals() => notionals_;
+
         public virtual double notional(Date d = null)
         {
             if (d == null)
@@ -148,7 +149,7 @@ namespace QLNet.Instruments
             // date, since the first is null.  After the call to
             // lower_bound, *i is the earliest date which is greater or
             // equal than d.  Its index is greater or equal to 1.
-            int index = notionalSchedule_.FindIndex(x => d <= x);
+            var index = notionalSchedule_.FindIndex(x => d <= x);
 
             if (d < notionalSchedule_[index])
             {
@@ -164,25 +165,31 @@ namespace QLNet.Instruments
             }
         }
         // \note returns all the cashflows, including the redemptions.
-        public List<CashFlow> cashflows() { return cashflows_; }
+        public List<CashFlow> cashflows() => cashflows_;
+
         //! returns just the redemption flows (not interest payments)
-        public List<CashFlow> redemptions() { return redemptions_; }
+        public List<CashFlow> redemptions() => redemptions_;
+
         // returns the redemption, if only one is defined
         public CashFlow redemption()
         {
             Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemption cash flows given");
             return redemptions_.Last();
         }
-        public Date startDate() { return BondFunctions.startDate(this); }
-        public Date maturityDate() { return maturityDate_ ?? BondFunctions.maturityDate(this); }
-        public Date issueDate() { return issueDate_; }
-        public bool isTradable(Date d = null) { return BondFunctions.isTradable(this, d); }
+        public Date startDate() => BondFunctions.startDate(this);
+
+        public Date maturityDate() => maturityDate_ ?? BondFunctions.maturityDate(this);
+
+        public Date issueDate() => issueDate_;
+
+        public bool isTradable(Date d = null) => BondFunctions.isTradable(this, d);
+
         public Date settlementDate(Date date = null)
         {
-            Date d = date ?? Settings.evaluationDate();
+            var d = date ?? Settings.evaluationDate();
 
             // usually, the settlement is at T+n...
-            Date settlement = calendar_.advance(d, settlementDays_, TimeUnit.Days);
+            var settlement = calendar_.advance(d, settlementDays_, TimeUnit.Days);
             // ...but the bond won't be traded until the issue date (if given.)
             if (issueDate_ == null)
                 return settlement;
@@ -200,7 +207,7 @@ namespace QLNet.Instruments
             \warning the theoretical price calculated from a flat term structure might differ slightly from the price
                      calculated from the corresponding yield by means of the other overload of this function. If the
                      price from a constant yield is desired, it is advisable to use such other overload. */
-        public double cleanPrice() { return dirtyPrice() - accruedAmount(settlementDate()); }
+        public double cleanPrice() => dirtyPrice() - accruedAmount(settlementDate());
 
         //! theoretical dirty price
         /*! The default bond settlement is used for calculation.
@@ -211,7 +218,7 @@ namespace QLNet.Instruments
         */
         public double dirtyPrice()
         {
-            double currentNotional = notional(settlementDate());
+            var currentNotional = notional(settlementDate());
             if (currentNotional.IsEqual(0.0))
                 return 0.0;
             else
@@ -227,7 +234,7 @@ namespace QLNet.Instruments
 
         public double settlementValue(double cleanPrice)
         {
-            double dirtyPrice = cleanPrice + accruedAmount(settlementDate());
+            var dirtyPrice = cleanPrice + accruedAmount(settlementDate());
             return dirtyPrice / 100.0 * notional(settlementDate());
         }
 
@@ -235,7 +242,7 @@ namespace QLNet.Instruments
         /*! The default bond settlement and theoretical price are used for calculation. */
         public double yield(DayCounter dc, Compounding comp, Frequency freq, double accuracy = 1.0e-8, int maxEvaluations = 100)
         {
-            double currentNotional = notional(settlementDate());
+            var currentNotional = notional(settlementDate());
 
             if (currentNotional.IsEqual(0.0))
                 return 0.0;
@@ -245,16 +252,13 @@ namespace QLNet.Instruments
 
         //! clean price given a yield and settlement date
         /*! The default bond settlement is used if no date is given. */
-        public double cleanPrice(double yield, DayCounter dc, Compounding comp, Frequency freq, Date settlement = null)
-        {
-            return BondFunctions.cleanPrice(this, yield, dc, comp, freq, settlement);
-        }
+        public double cleanPrice(double yield, DayCounter dc, Compounding comp, Frequency freq, Date settlement = null) => BondFunctions.cleanPrice(this, yield, dc, comp, freq, settlement);
 
         //! dirty price given a yield and settlement date
         /*! The default bond settlement is used if no date is given. */
         public double dirtyPrice(double yield, DayCounter dc, Compounding comp, Frequency freq, Date settlement = null)
         {
-            double currentNotional = notional(settlement);
+            var currentNotional = notional(settlement);
             if (currentNotional.IsEqual(0.0))
                 return 0.0;
 
@@ -266,7 +270,7 @@ namespace QLNet.Instruments
         public double yield(double cleanPrice, DayCounter dc, Compounding comp, Frequency freq, Date settlement = null,
                             double accuracy = 1.0e-8, int maxEvaluations = 100)
         {
-            double currentNotional = notional(settlement);
+            var currentNotional = notional(settlement);
             if (currentNotional.IsEqual(0.0))
                 return 0.0;
 
@@ -277,7 +281,7 @@ namespace QLNet.Instruments
         /*! The default bond settlement is used if no date is given. */
         public virtual double accruedAmount(Date settlement = null)
         {
-            double currentNotional = notional(settlement);
+            var currentNotional = notional(settlement);
 
             if (currentNotional.IsEqual(0.0))
                 return 0.0;
@@ -295,10 +299,7 @@ namespace QLNet.Instruments
 
             The current bond settlement is used if no date is given.
         */
-        public virtual double nextCouponRate(Date settlement = null)
-        {
-            return BondFunctions.nextCouponRate(this, settlement);
-        }
+        public virtual double nextCouponRate(Date settlement = null) => BondFunctions.nextCouponRate(this, settlement);
 
         //! Previous coupon already paid at a given date
         /*! Expected previous coupon: depending on (the bond and) the given
@@ -308,20 +309,11 @@ namespace QLNet.Instruments
 
             The current bond settlement is used if no date is given.
         */
-        public double previousCouponRate(Date settlement = null)
-        {
-            return BondFunctions.previousCouponRate(this, settlement);
-        }
+        public double previousCouponRate(Date settlement = null) => BondFunctions.previousCouponRate(this, settlement);
 
-        public Date nextCashFlowDate(Date settlement = null)
-        {
-            return BondFunctions.nextCashFlowDate(this, settlement);
-        }
+        public Date nextCashFlowDate(Date settlement = null) => BondFunctions.nextCashFlowDate(this, settlement);
 
-        public Date previousCashFlowDate(Date settlement = null)
-        {
-            return BondFunctions.previousCashFlowDate(this, settlement);
-        }
+        public Date previousCashFlowDate(Date settlement = null) => BondFunctions.previousCashFlowDate(this, settlement);
 
         protected override void setupExpired()
         {
@@ -331,8 +323,8 @@ namespace QLNet.Instruments
 
         public override void setupArguments(IPricingEngineArguments args)
         {
-            Arguments arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong argument type");
+            var arguments = args as Arguments;
+            Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
 
             arguments.settlementDate = settlementDate();
             arguments.cashflows = cashflows_;
@@ -343,8 +335,8 @@ namespace QLNet.Instruments
         {
             base.fetchResults(r);
 
-            Results results = r as Results;
-            Utils.QL_REQUIRE(results != null, () => "wrong result type");
+            var results = r as Results;
+            Utils.QL_REQUIRE(results != null, () => "wrong result ExerciseType");
 
             settlementValue_ = results.settlementValue;
         }
@@ -374,12 +366,12 @@ namespace QLNet.Instruments
             // information and we add them to the cashflows vector after
             // the coupons.
             redemptions_.Clear();
-            for (int i = 1; i < notionalSchedule_.Count; ++i)
+            for (var i = 1; i < notionalSchedule_.Count; ++i)
             {
-                double R = i < redemptions.Count ? redemptions[i] :
+                var R = i < redemptions.Count ? redemptions[i] :
                            !redemptions.empty() ? redemptions.Last() :
                            100.0;
-                double amount = R / 100.0 * (notionals_[i - 1] - notionals_[i]);
+                var amount = R / 100.0 * (notionals_[i - 1] - notionals_[i]);
                 CashFlow payment;
                 if (i < notionalSchedule_.Count - 1)
                     payment = new AmortizingPayment(amount, notionalSchedule_[i]);
@@ -433,15 +425,15 @@ namespace QLNet.Instruments
             notionalSchedule_.Clear();
             notionals_.Clear();
 
-            Date lastPaymentDate = new Date();
+            var lastPaymentDate = new Date();
             notionalSchedule_.Add(new Date());
-            for (int i = 0; i < cashflows_.Count; ++i)
+            for (var i = 0; i < cashflows_.Count; ++i)
             {
-                Coupon coupon = cashflows_[i] as Coupon;
+                var coupon = cashflows_[i] as Coupon;
                 if (coupon == null)
                     continue;
 
-                double notional = coupon.nominal();
+                var notional = coupon.nominal();
                 // we add the notional only if it is the first one...
                 if (notionals_.empty())
                 {
@@ -485,7 +477,7 @@ namespace QLNet.Instruments
 
         #endregion
 
-        public class Engine : GenericEngine<Arguments, Results> { }
+        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results> { }
 
         public new class Results : Instrument.Results
         {
@@ -497,7 +489,7 @@ namespace QLNet.Instruments
             }
         }
 
-        public class Arguments : IPricingEngineArguments
+        [JetBrains.Annotations.PublicAPI] public class Arguments : IPricingEngineArguments
         {
             public Date settlementDate { get; set; }
             public List<CashFlow> cashflows { get; set; }
@@ -507,7 +499,7 @@ namespace QLNet.Instruments
             {
                 Utils.QL_REQUIRE(settlementDate != null, () => "no settlement date provided");
                 Utils.QL_REQUIRE(!cashflows.empty(), () => "no cash flow provided");
-                for (int i = 0; i < cashflows.Count; ++i)
+                for (var i = 0; i < cashflows.Count; ++i)
                     Utils.QL_REQUIRE(cashflows[i] != null, () => "null cash flow provided");
             }
         }

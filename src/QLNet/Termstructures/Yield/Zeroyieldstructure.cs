@@ -75,7 +75,7 @@ namespace QLNet.Termstructures.Yield
             if (t.IsEqual(0.0))     // this acts as a safe guard in cases where
                 return 1.0;   // zeroYieldImpl(0.0) would throw.
 
-            double r = zeroYieldImpl(t);
+            var r = zeroYieldImpl(t);
             return System.Math.Exp(-r * t);
         }
 

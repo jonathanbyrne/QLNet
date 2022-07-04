@@ -29,7 +29,7 @@ namespace QLNet.Indexes.Ibor
     //! %SEK %LIBOR rate
     /*! Sweden Krone LIBOR discontinued as of 2013.
     */
-    public class SEKLibor : Libor
+    [JetBrains.Annotations.PublicAPI] public class SEKLibor : Libor
     {
         public SEKLibor(Period tenor)
            : base("SEKLibor", tenor, 2, new SEKCurrency(), new Sweden(), new Actual360(), new Handle<YieldTermStructure>())

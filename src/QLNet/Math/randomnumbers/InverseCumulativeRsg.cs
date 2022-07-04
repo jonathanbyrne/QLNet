@@ -33,7 +33,7 @@ namespace QLNet.Math.randomnumbers
         The inverse cumulative distribution is supplied by IC.
     */
 
-    public class InverseCumulativeRsg<USG, IC> : IRNG where USG : IRNG where IC : IValue
+    [JetBrains.Annotations.PublicAPI] public class InverseCumulativeRsg<USG, IC> : IRNG where USG : IRNG where IC : IValue
     {
         private USG uniformSequenceGenerator_;
         private int dimension_;
@@ -57,29 +57,20 @@ namespace QLNet.Math.randomnumbers
         //! returns next sample from the Gaussian distribution
         public Sample<List<double>> nextSequence()
         {
-            Sample<List<double>> sample = uniformSequenceGenerator_.nextSequence();
+            var sample = uniformSequenceGenerator_.nextSequence();
             x_.weight = sample.weight;
-            for (int i = 0; i < dimension_; i++)
+            for (var i = 0; i < dimension_; i++)
             {
                 x_.value[i] = ICD_.value(sample.value[i]);
             }
             return x_;
         }
 
-        public Sample<List<double>> lastSequence()
-        {
-            return x_;
-        }
+        public Sample<List<double>> lastSequence() => x_;
 
-        public int dimension()
-        {
-            return dimension_;
-        }
+        public int dimension() => dimension_;
 
-        public IRNG factory(int dimensionality, ulong seed)
-        {
-            throw new NotSupportedException();
-        }
+        public IRNG factory(int dimensionality, ulong seed) => throw new NotSupportedException();
 
         #endregion
     }

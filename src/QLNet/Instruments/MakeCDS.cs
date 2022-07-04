@@ -23,7 +23,7 @@ namespace QLNet.Instruments
     /// <summary>
     /// This class provides a more comfortable way to instantiate standard cds.
     /// </summary>
-    public class MakeCreditDefaultSwap
+    [JetBrains.Annotations.PublicAPI] public class MakeCreditDefaultSwap
     {
         public MakeCreditDefaultSwap(Period tenor, double couponRate)
         {
@@ -50,9 +50,9 @@ namespace QLNet.Instruments
 
         public CreditDefaultSwap value()
         {
-            Date evaluation = Settings.evaluationDate();
-            Date start = evaluation + 1;
-            Date upfrontDate = new WeekendsOnly().advance(evaluation, new Period(3, TimeUnit.Days));
+            var evaluation = Settings.evaluationDate();
+            var start = evaluation + 1;
+            var upfrontDate = new WeekendsOnly().advance(evaluation, new Period(3, TimeUnit.Days));
             Date end;
             if (tenor_ != null)
             {
@@ -63,11 +63,11 @@ namespace QLNet.Instruments
                 end = termDate_;
             }
 
-            Schedule schedule = new Schedule(start, end, couponTenor_, new WeekendsOnly(),
+            var schedule = new Schedule(start, end, couponTenor_, new WeekendsOnly(),
                                              BusinessDayConvention.Following, BusinessDayConvention.Unadjusted, DateGeneration.Rule.CDS,
                                              false, null, null);
 
-            CreditDefaultSwap cds = new CreditDefaultSwap(side_, nominal_, upfrontRate_, couponRate_, schedule,
+            var cds = new CreditDefaultSwap(side_, nominal_, upfrontRate_, couponRate_, schedule,
                                                           BusinessDayConvention.Following, dayCounter_, true, true, start, upfrontDate, null, lastPeriodDayCounter_);
 
             cds.setPricingEngine(engine_);

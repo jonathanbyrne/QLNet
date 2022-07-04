@@ -57,14 +57,12 @@ namespace QLNet.Termstructures
         #endregion
 
         //! the business day convention used in tenor to date conversion
-        public virtual BusinessDayConvention businessDayConvention() { return bdc_; }
+        public virtual BusinessDayConvention businessDayConvention() => bdc_;
 
         //! period/date conversion
-        public virtual Date optionDateFromTenor(Period p)
-        {
+        public virtual Date optionDateFromTenor(Period p) =>
             // swaption style
-            return calendar().advance(referenceDate(), p, businessDayConvention());
-        }
+            calendar().advance(referenceDate(), p, businessDayConvention());
 
         //! the minimum strike for which the term structure can return vols
         public abstract double minStrike();

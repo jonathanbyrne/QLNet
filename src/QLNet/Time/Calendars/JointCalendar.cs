@@ -22,7 +22,7 @@ using System.Linq;
 
 namespace QLNet.Time.Calendars
 {
-    public class JointCalendar : Calendar
+    [JetBrains.Annotations.PublicAPI] public class JointCalendar : Calendar
     {
         //! rules for joining calendars
         public enum JointCalendarRule
@@ -62,7 +62,7 @@ namespace QLNet.Time.Calendars
 
             public override string name()
             {
-                string result = "";
+                var result = "";
                 switch (rule_)
                 {
                     case JointCalendarRule.JoinHolidays:
@@ -76,7 +76,7 @@ namespace QLNet.Time.Calendars
                         break;
                 }
                 result += calendars_.First().name();
-                for (int i = 1; i < calendars_.Count; i++)
+                for (var i = 1; i < calendars_.Count; i++)
                     result += ", " + calendars_[i].name();
                 result += ")";
                 return result;
@@ -87,12 +87,12 @@ namespace QLNet.Time.Calendars
                 switch (rule_)
                 {
                     case JointCalendarRule.JoinHolidays:
-                        foreach (Calendar c in calendars_)
+                        foreach (var c in calendars_)
                             if (c.isWeekend(w))
                                 return true;
                         return false;
                     case JointCalendarRule.JoinBusinessDays:
-                        foreach (Calendar c in calendars_)
+                        foreach (var c in calendars_)
                             if (c.isWeekend(w))
                                 return false;
                         return true;
@@ -107,12 +107,12 @@ namespace QLNet.Time.Calendars
                 switch (rule_)
                 {
                     case JointCalendarRule.JoinHolidays:
-                        foreach (Calendar c in calendars_)
+                        foreach (var c in calendars_)
                             if (c.isHoliday(date))
                                 return false;
                         return true;
                     case JointCalendarRule.JoinBusinessDays:
-                        foreach (Calendar c in calendars_)
+                        foreach (var c in calendars_)
                             if (c.isBusinessDay(date))
                                 return true;
                         return false;

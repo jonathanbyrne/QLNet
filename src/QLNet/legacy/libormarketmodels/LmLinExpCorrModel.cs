@@ -35,7 +35,7 @@ namespace QLNet.legacy.libormarketmodels
         Caps/Swaptions Calibration,
         (<http://www.business.uts.edu.au/qfrc/conferences/qmf2001/Brigo_D.pdf>)
     */
-    public class LmLinearExponentialCorrelationModel : LmCorrelationModel
+    [JetBrains.Annotations.PublicAPI] public class LmLinearExponentialCorrelationModel : LmCorrelationModel
     {
         public LmLinearExponentialCorrelationModel(int size, double rho, double beta, int? factors = null)
         : base(size, 2)
@@ -49,36 +49,30 @@ namespace QLNet.legacy.libormarketmodels
 
         public override Matrix correlation(double t, Vector x = null)
         {
-            Matrix tmp = new Matrix(corrMatrix_);
+            var tmp = new Matrix(corrMatrix_);
             return tmp;
         }
 
         public override Matrix pseudoSqrt(double t, Vector x = null)
         {
-            Matrix tmp = new Matrix(pseudoSqrt_);
+            var tmp = new Matrix(pseudoSqrt_);
             return tmp;
         }
 
-        public override double correlation(int i, int j, double t, Vector x = null)
-        {
-            return corrMatrix_[i, j];
-        }
+        public override double correlation(int i, int j, double t, Vector x = null) => corrMatrix_[i, j];
 
-        public override int factors() { return factors_; }
+        public override int factors() => factors_;
 
-        public override bool isTimeIndependent()
-        {
-            return true;
-        }
+        public override bool isTimeIndependent() => true;
 
         protected override void generateArguments()
         {
-            double rho = arguments_[0].value(0.0);
-            double beta = arguments_[1].value(0.0);
+            var rho = arguments_[0].value(0.0);
+            var beta = arguments_[1].value(0.0);
 
-            for (int i = 0; i < size_; ++i)
+            for (var i = 0; i < size_; ++i)
             {
-                for (int j = i; j < size_; ++j)
+                for (var j = i; j < size_; ++j)
                 {
                     corrMatrix_[i, j] = corrMatrix_[j, i]
                                         = rho + (1 - rho) * System.Math.Exp(-beta * System.Math.Abs(i - (double)j));

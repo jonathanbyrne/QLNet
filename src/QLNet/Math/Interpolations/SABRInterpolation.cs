@@ -23,7 +23,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Math.Interpolations
 {
-    public class SABRWrapper : IWrapper
+    [JetBrains.Annotations.PublicAPI] public class SABRWrapper : IWrapper
     {
         public SABRWrapper(double t, double forward, List<double?> param, List<double?> addParams)
         {
@@ -63,7 +63,8 @@ namespace QLNet.Math.Interpolations
 
     public struct SABRSpecs : IModel
     {
-        public int dimension() { return 4; }
+        public int dimension() => 4;
+
         public void defaultValues(List<double?> param, List<bool> b, double forward, double expiryTime, List<double?> addParams)
         {
             shift_ = addParams == null ? 0.0 : Convert.ToDouble(addParams[0]);
@@ -88,7 +89,7 @@ namespace QLNet.Math.Interpolations
         {
             shift_ = addParams == null ? 0.0 : Convert.ToDouble(addParams[0]);
             volatilityType_ = addParams == null ? VolatilityType.ShiftedLognormal : addParams[1] > 0.0 ? VolatilityType.Normal : VolatilityType.ShiftedLognormal;
-            int j = 0;
+            var j = 0;
             if (!paramIsFixed[1])
                 values[1] = (1.0 - 2E-6) * r[j++] + 1E-6;
             if (!paramIsFixed[0])
@@ -105,12 +106,15 @@ namespace QLNet.Math.Interpolations
                 values[3] = (2.0 * r[j++] - 1.0) * (1.0 - 1E-6);
         }
 
-        public double eps1() { return .0000001; }
-        public double eps2() { return .9999; }
-        public double dilationFactor() { return 0.001; }
+        public double eps1() => .0000001;
+
+        public double eps2() => .9999;
+
+        public double dilationFactor() => 0.001;
+
         public Vector inverse(Vector y, List<bool> b, List<double?> c, double d)
         {
-            Vector x = new Vector(4);
+            var x = new Vector(4);
             x[0] = y[0] < 25.0 + eps1() ? System.Math.Sqrt(System.Math.Max(eps1(), y[0]) - eps1())
                    : (y[0] - eps1() + 25.0) / 10.0;
             x[1] = y[1] == 0.0 ? 0.0 : System.Math.Sqrt(-System.Math.Log(y[1]));
@@ -121,7 +125,7 @@ namespace QLNet.Math.Interpolations
         }
         public Vector direct(Vector x, List<bool> b, List<double?> c, double d)
         {
-            Vector y = new Vector(4);
+            var y = new Vector(4);
             y[0] = System.Math.Abs(x[0]) < 5.0
                    ? x[0] * x[0] + eps1()
                    : 10.0 * System.Math.Abs(x[0]) - 25.0 + eps1();
@@ -155,8 +159,8 @@ namespace QLNet.Math.Interpolations
     }
 
     //! %SABR smile interpolation between discrete volatility points.
-    // For volatility type Normal and when the forward < 0, it is suggested to fix beta = 0.0
-    public class SABRInterpolation : Interpolation
+    // For volatility ExerciseType Normal and when the forward < 0, it is suggested to fix beta = 0.0
+    [JetBrains.Annotations.PublicAPI] public class SABRInterpolation : Interpolation
     {
         public SABRInterpolation(List<double> xBegin,   // x = strikes
                                  int xEnd,
@@ -181,7 +185,7 @@ namespace QLNet.Math.Interpolations
                                  VolatilityType volatilityType = VolatilityType.ShiftedLognormal,
                                  SabrApproximationModel approximationModel = SabrApproximationModel.Hagan2002)
         {
-            List<double?> addParams = new List<double?>();
+            var addParams = new List<double?>();
             addParams.Add(shift);
             addParams.Add(volatilityType == VolatilityType.ShiftedLognormal ? 0.0 : 1.0);
             addParams.Add((double?)approximationModel);
@@ -196,22 +200,31 @@ namespace QLNet.Math.Interpolations
             maxGuesses, addParams);
             coeffs_ = (impl_ as XABRInterpolationImpl<SABRSpecs>).coeff_;
         }
-        public double expiry() { return coeffs_.t_; }
-        public double forward() { return coeffs_.forward_; }
-        public double alpha() { return coeffs_.params_[0].Value; }
-        public double beta() { return coeffs_.params_[1].Value; }
-        public double nu() { return coeffs_.params_[2].Value; }
-        public double rho() { return coeffs_.params_[3].Value; }
-        public double rmsError() { return coeffs_.error_.Value; }
-        public double maxError() { return coeffs_.maxError_.Value; }
-        public List<double> interpolationWeights() { return coeffs_.weights_; }
-        public EndCriteria.Type endCriteria() { return coeffs_.XABREndCriteria_; }
+        public double expiry() => coeffs_.t_;
+
+        public double forward() => coeffs_.forward_;
+
+        public double alpha() => coeffs_.params_[0].Value;
+
+        public double beta() => coeffs_.params_[1].Value;
+
+        public double nu() => coeffs_.params_[2].Value;
+
+        public double rho() => coeffs_.params_[3].Value;
+
+        public double rmsError() => coeffs_.error_.Value;
+
+        public double maxError() => coeffs_.maxError_.Value;
+
+        public List<double> interpolationWeights() => coeffs_.weights_;
+
+        public EndCriteria.Type endCriteria() => coeffs_.XABREndCriteria_;
 
         private XABRCoeffHolder<SABRSpecs> coeffs_;
     }
 
     //! %SABR interpolation factory and traits
-    public class SABR
+    [JetBrains.Annotations.PublicAPI] public class SABR
     {
         public SABR(double t, double forward, double alpha, double beta, double nu, double rho,
                     bool alphaIsFixed, bool betaIsFixed, bool nuIsFixed, bool rhoIsFixed,
@@ -243,13 +256,11 @@ namespace QLNet.Math.Interpolations
             approximationModel_ = approximationModel;
         }
 
-        public Interpolation interpolate(List<double> xBegin, int xEnd, List<double> yBegin)
-        {
-            return new SABRInterpolation(xBegin, xEnd, yBegin, t_, forward_, alpha_, beta_, nu_, rho_,
-                                         alphaIsFixed_, betaIsFixed_, nuIsFixed_, rhoIsFixed_, vegaWeighted_,
-                                         endCriteria_, optMethod_, errorAccept_, useMaxError_, maxGuesses_, shift_,
-                                         volatilityType_, approximationModel_);
-        }
+        public Interpolation interpolate(List<double> xBegin, int xEnd, List<double> yBegin) =>
+            new SABRInterpolation(xBegin, xEnd, yBegin, t_, forward_, alpha_, beta_, nu_, rho_,
+                alphaIsFixed_, betaIsFixed_, nuIsFixed_, rhoIsFixed_, vegaWeighted_,
+                endCriteria_, optMethod_, errorAccept_, useMaxError_, maxGuesses_, shift_,
+                volatilityType_, approximationModel_);
 
         public const bool global = true;
 

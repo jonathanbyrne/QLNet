@@ -28,7 +28,7 @@ namespace QLNet.Methods.lattices
         (with discount) a discretized asset object. It will be based
         on one or more trees.
     */
-    public interface IGenericLattice
+    [JetBrains.Annotations.PublicAPI] public interface IGenericLattice
     {
         int size(int i);
         double discount(int i, int j);
@@ -38,10 +38,10 @@ namespace QLNet.Methods.lattices
         double probability(int i, int index, int branch);
     }
 
-    public class TreeLattice<T> : Lattice where T : IGenericLattice
+    [JetBrains.Annotations.PublicAPI] public class TreeLattice<T> : Lattice where T : IGenericLattice
     {
         // this should be overriden in the dering class
-        protected virtual T impl() { throw new NotSupportedException(); }
+        protected virtual T impl() => throw new NotSupportedException();
 
         private int n_;
         private int statePricesLimit_;
@@ -61,7 +61,7 @@ namespace QLNet.Methods.lattices
         // Lattice interface
         public override void initialize(DiscretizedAsset asset, double t)
         {
-            int i = t_.index(t);
+            var i = t_.index(t);
             asset.setTime(t);
             asset.reset(impl().size(i));
         }
@@ -74,19 +74,19 @@ namespace QLNet.Methods.lattices
 
         public override void partialRollback(DiscretizedAsset asset, double to)
         {
-            double from = asset.time();
+            var from = asset.time();
 
             if (Utils.close(from, to))
                 return;
 
             Utils.QL_REQUIRE(from > to, () => "cannot roll the asset back to" + to + " (it is already at t = " + from + ")");
 
-            int iFrom = t_.index(from);
-            int iTo = t_.index(to);
+            var iFrom = t_.index(from);
+            var iTo = t_.index(to);
 
-            for (int i = iFrom - 1; i >= iTo; --i)
+            for (var i = iFrom - 1; i >= iTo; --i)
             {
-                Vector newValues = new Vector(impl().size(i));
+                var newValues = new Vector(impl().size(i));
                 impl().stepback(i, asset.values(), newValues);
                 asset.setTime(t_[i]);
                 asset.setValues(newValues);
@@ -99,7 +99,7 @@ namespace QLNet.Methods.lattices
         //! Computes the present value of an asset using Arrow-Debrew prices
         public override double presentValue(DiscretizedAsset asset)
         {
-            int i = t_.index(asset.time());
+            var i = t_.index(asset.time());
             return Vector.DotProduct(asset.values(), statePrices(i));
         }
 
@@ -112,10 +112,10 @@ namespace QLNet.Methods.lattices
 
         public virtual void stepback(int i, Vector values, Vector newValues)
         {
-            for (int j = 0; j < impl().size(i); j++)
+            for (var j = 0; j < impl().size(i); j++)
             {
-                double value = 0.0;
-                for (int l = 0; l < n_; l++)
+                var value = 0.0;
+                for (var l = 0; l < n_; l++)
                 {
                     double d1, d2;
                     d1 = impl().probability(i, j, l);
@@ -129,14 +129,14 @@ namespace QLNet.Methods.lattices
 
         protected void computeStatePrices(int until)
         {
-            for (int i = statePricesLimit_; i < until; i++)
+            for (var i = statePricesLimit_; i < until; i++)
             {
                 statePrices_.Add(new Vector(impl().size(i + 1), 0.0));
-                for (int j = 0; j < impl().size(i); j++)
+                for (var j = 0; j < impl().size(i); j++)
                 {
-                    double disc = impl().discount(i, j);
-                    double statePrice = statePrices_[i][j];
-                    for (int l = 0; l < n_; l++)
+                    var disc = impl().discount(i, j);
+                    var statePrice = statePrices_[i][j];
+                    for (var l = 0; l < n_; l++)
                     {
                         statePrices_[i + 1][impl().descendant(i, j, l)] += statePrice * disc * impl().probability(i, j, l);
                     }

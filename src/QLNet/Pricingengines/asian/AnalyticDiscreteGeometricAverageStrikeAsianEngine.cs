@@ -36,7 +36,7 @@ namespace QLNet.Pricingengines.asian
 
         \ingroup asianengines
     */
-    public class AnalyticDiscreteGeometricAverageStrikeAsianEngine : DiscreteAveragingAsianOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class AnalyticDiscreteGeometricAverageStrikeAsianEngine : DiscreteAveragingAsianOption.Engine
     {
         public AnalyticDiscreteGeometricAverageStrikeAsianEngine(GeneralizedBlackScholesProcess process)
         {
@@ -48,82 +48,82 @@ namespace QLNet.Pricingengines.asian
             Utils.QL_REQUIRE(arguments_.averageType == Average.Type.Geometric, () =>
                              "not a geometric average option");
 
-            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European, () =>
+            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () =>
                              "not an European option");
 
             Utils.QL_REQUIRE(arguments_.runningAccumulator > 0.0, () =>
                              "positive running product required: " + arguments_.runningAccumulator + "not allowed");
 
-            double runningLog = System.Math.Log(arguments_.runningAccumulator.GetValueOrDefault());
-            int? pastFixings = arguments_.pastFixings;
+            var runningLog = System.Math.Log(arguments_.runningAccumulator.GetValueOrDefault());
+            var pastFixings = arguments_.pastFixings;
             Utils.QL_REQUIRE(pastFixings == 0, () => "past fixings currently not managed");
 
-            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
-            DayCounter rfdc = process_.riskFreeRate().link.dayCounter();
-            DayCounter divdc = process_.dividendYield().link.dayCounter();
-            DayCounter voldc = process_.blackVolatility().link.dayCounter();
+            var rfdc = process_.riskFreeRate().link.dayCounter();
+            var divdc = process_.dividendYield().link.dayCounter();
+            var voldc = process_.blackVolatility().link.dayCounter();
 
-            List<double> fixingTimes = new List<double>();
-            for (int i = 0; i < arguments_.fixingDates.Count; i++)
+            var fixingTimes = new List<double>();
+            for (var i = 0; i < arguments_.fixingDates.Count; i++)
             {
                 if (arguments_.fixingDates[i] >= arguments_.fixingDates[0])
                 {
-                    double t = voldc.yearFraction(arguments_.fixingDates[0], arguments_.fixingDates[i]);
+                    var t = voldc.yearFraction(arguments_.fixingDates[0], arguments_.fixingDates[i]);
                     fixingTimes.Add(t);
                 }
             }
 
-            int remainingFixings = fixingTimes.Count;
-            int numberOfFixings = pastFixings.GetValueOrDefault() + remainingFixings;
+            var remainingFixings = fixingTimes.Count;
+            var numberOfFixings = pastFixings.GetValueOrDefault() + remainingFixings;
             double N = numberOfFixings;
 
-            double pastWeight = pastFixings.GetValueOrDefault() / N;
-            double futureWeight = 1.0 - pastWeight;
+            var pastWeight = pastFixings.GetValueOrDefault() / N;
+            var futureWeight = 1.0 - pastWeight;
 
             double timeSum = 0;
             fixingTimes.ForEach((ii, vv) => timeSum += fixingTimes[ii]);
 
-            double residualTime = rfdc.yearFraction(arguments_.fixingDates[pastFixings.GetValueOrDefault()],
+            var residualTime = rfdc.yearFraction(arguments_.fixingDates[pastFixings.GetValueOrDefault()],
                                                     arguments_.exercise.lastDate());
 
 
-            double underlying = process_.stateVariable().link.value();
+            var underlying = process_.stateVariable().link.value();
             Utils.QL_REQUIRE(underlying > 0.0, () => "positive underlying value required");
 
-            double volatility = process_.blackVolatility().link.blackVol(arguments_.exercise.lastDate(), underlying);
+            var volatility = process_.blackVolatility().link.blackVol(arguments_.exercise.lastDate(), underlying);
 
-            Date exDate = arguments_.exercise.lastDate();
-            double dividendRate = process_.dividendYield().link.zeroRate(exDate, divdc,
+            var exDate = arguments_.exercise.lastDate();
+            var dividendRate = process_.dividendYield().link.zeroRate(exDate, divdc,
                                                                          Compounding.Continuous, Frequency.NoFrequency).value();
 
-            double riskFreeRate = process_.riskFreeRate().link.zeroRate(exDate, rfdc,
+            var riskFreeRate = process_.riskFreeRate().link.zeroRate(exDate, rfdc,
                                                                         Compounding.Continuous, Frequency.NoFrequency).value();
 
-            double nu = riskFreeRate - dividendRate - 0.5 * volatility * volatility;
+            var nu = riskFreeRate - dividendRate - 0.5 * volatility * volatility;
 
-            double temp = 0.0;
-            for (int i = pastFixings.GetValueOrDefault() + 1; i < numberOfFixings; i++)
+            var temp = 0.0;
+            for (var i = pastFixings.GetValueOrDefault() + 1; i < numberOfFixings; i++)
                 temp += fixingTimes[i - pastFixings.GetValueOrDefault() - 1] * (N - i);
-            double variance = volatility * volatility / N / N * (timeSum + 2.0 * temp);
-            double covarianceTerm = volatility * volatility / N * timeSum;
-            double sigmaSum_2 = variance + volatility * volatility * residualTime - 2.0 * covarianceTerm;
+            var variance = volatility * volatility / N / N * (timeSum + 2.0 * temp);
+            var covarianceTerm = volatility * volatility / N * timeSum;
+            var sigmaSum_2 = variance + volatility * volatility * residualTime - 2.0 * covarianceTerm;
 
-            int M = pastFixings.GetValueOrDefault() == 0 ? 1 : pastFixings.GetValueOrDefault();
-            double runningLogAverage = runningLog / M;
+            var M = pastFixings.GetValueOrDefault() == 0 ? 1 : pastFixings.GetValueOrDefault();
+            var runningLogAverage = runningLog / M;
 
-            double muG = pastWeight * runningLogAverage +
-                         futureWeight * System.Math.Log(underlying) +
-                         nu * timeSum / N;
+            var muG = pastWeight * runningLogAverage +
+                      futureWeight * System.Math.Log(underlying) +
+                      nu * timeSum / N;
 
-            CumulativeNormalDistribution f = new CumulativeNormalDistribution();
+            var f = new CumulativeNormalDistribution();
 
-            double y1 = (System.Math.Log(underlying) +
+            var y1 = (System.Math.Log(underlying) +
                          (riskFreeRate - dividendRate) * residualTime -
                          muG - variance / 2.0 + sigmaSum_2 / 2.0)
-                        / System.Math.Sqrt(sigmaSum_2);
-            double y2 = y1 - System.Math.Sqrt(sigmaSum_2);
+                     / System.Math.Sqrt(sigmaSum_2);
+            var y2 = y1 - System.Math.Sqrt(sigmaSum_2);
 
             switch (payoff.optionType())
             {
@@ -136,7 +136,7 @@ namespace QLNet.Pricingengines.asian
                                      * f.value(-y1) + System.Math.Exp(muG + variance / 2.0 - riskFreeRate * residualTime) * f.value(-y2);
                     break;
                 default:
-                    Utils.QL_FAIL("invalid option type");
+                    Utils.QL_FAIL("invalid option ExerciseType");
                     break;
             }
         }

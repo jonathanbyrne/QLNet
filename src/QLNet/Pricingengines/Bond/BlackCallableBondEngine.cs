@@ -42,7 +42,7 @@ namespace QLNet.Pricingengines.Bond
 
         \ingroup callablebondengines
     */
-    public class BlackCallableFixedRateBondEngine : CallableBond.Engine
+    [JetBrains.Annotations.PublicAPI] public class BlackCallableFixedRateBondEngine : CallableBond.Engine
     {
         //! volatility is the quoted fwd yield volatility, not price vol
         public BlackCallableFixedRateBondEngine(Handle<Quote> fwdYieldVol, Handle<YieldTermStructure> discountCurve)
@@ -70,30 +70,30 @@ namespace QLNet.Pricingengines.Bond
             // validate args for Black engine
             Utils.QL_REQUIRE(arguments_.putCallSchedule.Count == 1, () => "Must have exactly one call/put date to use Black Engine");
 
-            Date settle = arguments_.settlementDate;
-            Date exerciseDate = arguments_.callabilityDates[0];
+            var settle = arguments_.settlementDate;
+            var exerciseDate = arguments_.callabilityDates[0];
             Utils.QL_REQUIRE(exerciseDate >= settle, () => "must have exercise Date >= settlement Date");
 
-            List<CashFlow> fixedLeg = arguments_.cashflows;
+            var fixedLeg = arguments_.cashflows;
 
-            double value = CashFlows.npv(fixedLeg, discountCurve_, false, settle);
+            var value = CashFlows.npv(fixedLeg, discountCurve_, false, settle);
 
-            double npv = CashFlows.npv(fixedLeg, discountCurve_, false, discountCurve_.link.referenceDate());
+            var npv = CashFlows.npv(fixedLeg, discountCurve_, false, discountCurve_.link.referenceDate());
 
-            double fwdCashPrice = (value - spotIncome()) /
-                                  discountCurve_.link.discount(exerciseDate);
+            var fwdCashPrice = (value - spotIncome()) /
+                               discountCurve_.link.discount(exerciseDate);
 
-            double cashStrike = arguments_.callabilityPrices[0];
+            var cashStrike = arguments_.callabilityPrices[0];
 
-            QLNet.Option.Type type = arguments_.putCallSchedule[0].type() ==
-                                Callability.Type.Call ? QLNet.Option.Type.Call : QLNet.Option.Type.Put;
+            var type = arguments_.putCallSchedule[0].type() ==
+                       Callability.Type.Call ? QLNet.Option.Type.Call : QLNet.Option.Type.Put;
 
-            double priceVol = forwardPriceVolatility();
+            var priceVol = forwardPriceVolatility();
 
-            double exerciseTime = volatility_.link.dayCounter().yearFraction(
+            var exerciseTime = volatility_.link.dayCounter().yearFraction(
                                      volatility_.link.referenceDate(),
                                      exerciseDate);
-            double embeddedOptionValue = Utils.blackFormula(type,
+            var embeddedOptionValue = Utils.blackFormula(type,
                                                             cashStrike,
                                                             fwdCashPrice,
                                                             priceVol * System.Math.Sqrt(exerciseTime));
@@ -116,16 +116,16 @@ namespace QLNet.Pricingengines.Bond
         private double spotIncome()
         {
             //! settle date of embedded option assumed same as that of bond
-            Date settlement = arguments_.settlementDate;
-            List<CashFlow> cf = arguments_.cashflows;
-            Date optionMaturity = arguments_.putCallSchedule[0].date();
+            var settlement = arguments_.settlementDate;
+            var cf = arguments_.cashflows;
+            var optionMaturity = arguments_.putCallSchedule[0].date();
 
             /* the following assumes
                1. cashflows are in ascending order !
                2. income = coupons paid between settlementDate() and put/call date
             */
-            double income = 0.0;
-            for (int i = 0; i < cf.Count - 1; ++i)
+            var income = 0.0;
+            for (var i = 0; i < cf.Count - 1; ++i)
             {
                 if (!cf[i].hasOccurred(settlement, false))
                 {
@@ -146,21 +146,21 @@ namespace QLNet.Pricingengines.Bond
         // converts the yield volatility into a forward price volatility
         private double forwardPriceVolatility()
         {
-            Date bondMaturity = arguments_.redemptionDate;
-            Date exerciseDate = arguments_.callabilityDates[0];
-            List<CashFlow> fixedLeg = arguments_.cashflows;
+            var bondMaturity = arguments_.redemptionDate;
+            var exerciseDate = arguments_.callabilityDates[0];
+            var fixedLeg = arguments_.cashflows;
 
             // value of bond cash flows at option maturity
-            double fwdNpv = CashFlows.npv(fixedLeg, discountCurve_, false, exerciseDate);
+            var fwdNpv = CashFlows.npv(fixedLeg, discountCurve_, false, exerciseDate);
 
-            DayCounter dayCounter = arguments_.paymentDayCounter;
-            Frequency frequency = arguments_.frequency;
+            var dayCounter = arguments_.paymentDayCounter;
+            var frequency = arguments_.frequency;
 
             // adjust if zero coupon bond (see also bond.cpp)
             if (frequency == Frequency.NoFrequency || frequency == Frequency.Once)
                 frequency = Frequency.Annual;
 
-            double fwdYtm = CashFlows.yield(fixedLeg,
+            var fwdYtm = CashFlows.yield(fixedLeg,
                                             fwdNpv,
                                             dayCounter,
                                             Compounding.Compounded,
@@ -168,24 +168,24 @@ namespace QLNet.Pricingengines.Bond
                                             false,
                                             exerciseDate);
 
-            InterestRate fwdRate = new InterestRate(fwdYtm, dayCounter, Compounding.Compounded, frequency);
+            var fwdRate = new InterestRate(fwdYtm, dayCounter, Compounding.Compounded, frequency);
 
-            double fwdDur = CashFlows.duration(fixedLeg,
+            var fwdDur = CashFlows.duration(fixedLeg,
                                                fwdRate,
                                                Duration.Type.Modified, false,
                                                exerciseDate);
 
-            double cashStrike = arguments_.callabilityPrices[0];
+            var cashStrike = arguments_.callabilityPrices[0];
             dayCounter = volatility_.link.dayCounter();
-            Date referenceDate = volatility_.link.referenceDate();
-            double exerciseTime = dayCounter.yearFraction(referenceDate,
+            var referenceDate = volatility_.link.referenceDate();
+            var exerciseTime = dayCounter.yearFraction(referenceDate,
                                                           exerciseDate);
-            double maturityTime = dayCounter.yearFraction(referenceDate,
+            var maturityTime = dayCounter.yearFraction(referenceDate,
                                                           bondMaturity);
-            double yieldVol = volatility_.link.volatility(exerciseTime,
+            var yieldVol = volatility_.link.volatility(exerciseTime,
                                                           maturityTime - exerciseTime,
                                                           cashStrike);
-            double fwdPriceVol = yieldVol * fwdDur * fwdYtm;
+            var fwdPriceVol = yieldVol * fwdDur * fwdYtm;
             return fwdPriceVol;
         }
     }
@@ -200,7 +200,7 @@ namespace QLNet.Pricingengines.Bond
 
         \ingroup callablebondengines
     */
-    public class BlackCallableZeroCouponBondEngine : BlackCallableFixedRateBondEngine
+    [JetBrains.Annotations.PublicAPI] public class BlackCallableZeroCouponBondEngine : BlackCallableFixedRateBondEngine
     {
 
         //! volatility is the quoted fwd yield volatility, not price vol

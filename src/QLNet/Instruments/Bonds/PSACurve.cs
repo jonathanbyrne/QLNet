@@ -22,7 +22,7 @@ using System;
 
 namespace QLNet.Instruments.Bonds
 {
-    public class PSACurve : IPrepayModel
+    [JetBrains.Annotations.PublicAPI] public class PSACurve : IPrepayModel
     {
 
         public PSACurve(Date startdate)
@@ -36,16 +36,13 @@ namespace QLNet.Instruments.Bonds
 
         public double getCPR(Date valDate)
         {
-            Thirty360 dayCounter = new Thirty360();
-            int d = dayCounter.dayCount(_startDate, valDate) / 30 + 1;
+            var dayCounter = new Thirty360();
+            var d = dayCounter.dayCount(_startDate, valDate) / 30 + 1;
 
             return (d <= 30 ? 0.06 * (d / 30d) : 0.06) * _multi;
         }
 
-        public double getSMM(Date valDate)
-        {
-            return 1 - System.Math.Pow(1 - getCPR(valDate), 1 / 12d);
-        }
+        public double getSMM(Date valDate) => 1 - System.Math.Pow(1 - getCPR(valDate), 1 / 12d);
 
         private Date _startDate;
         private double _multi;

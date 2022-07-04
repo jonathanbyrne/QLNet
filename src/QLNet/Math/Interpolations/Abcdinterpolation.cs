@@ -22,7 +22,7 @@ using System.Collections.Generic;
 namespace QLNet.Math.Interpolations
 {
 
-    public class AbcdCoeffHolder
+    [JetBrains.Annotations.PublicAPI] public class AbcdCoeffHolder
     {
         public AbcdCoeffHolder(double? a,
                                double? b,
@@ -81,7 +81,7 @@ namespace QLNet.Math.Interpolations
         public EndCriteria.Type abcdEndCriteria_ { get; set; }
     }
 
-    public class AbcdInterpolationImpl : Interpolation.templateImpl
+    [JetBrains.Annotations.PublicAPI] public class AbcdInterpolationImpl : Interpolation.templateImpl
     {
         public AbcdInterpolationImpl(List<double> xBegin, int size, List<double> yBegin,
                                      double a, double b, double c, double d,
@@ -104,7 +104,7 @@ namespace QLNet.Math.Interpolations
         public override void update()
         {
             List<double> times = new List<double>(), blackVols = new List<double>();
-            for (int i = 0; i < xBegin_.Count; ++i)
+            for (var i = 0; i < xBegin_.Count; ++i)
             {
                 times.Add(xBegin_[i]);
                 blackVols.Add(yBegin_[i]);
@@ -160,11 +160,12 @@ namespace QLNet.Math.Interpolations
 
         public double k(double t)
         {
-            LinearInterpolation li = new LinearInterpolation(xBegin_, size_, yBegin_);
+            var li = new LinearInterpolation(xBegin_, size_, yBegin_);
             return li.value(t);
         }
 
-        public AbcdCoeffHolder AbcdCoeffHolder() { return abcdCoeffHolder_; }
+        public AbcdCoeffHolder AbcdCoeffHolder() => abcdCoeffHolder_;
+
         private EndCriteria endCriteria_;
         private OptimizationMethod optMethod_;
         private bool vegaWeighted_;
@@ -175,7 +176,7 @@ namespace QLNet.Math.Interpolations
 
     //! %Abcd interpolation between discrete points.
     /*! \ingroup interpolations */
-    public class AbcdInterpolation : Interpolation
+    [JetBrains.Annotations.PublicAPI] public class AbcdInterpolation : Interpolation
     {
         /*! Constructor */
         public AbcdInterpolation(List<double> xBegin, int size, List<double> yBegin,
@@ -203,17 +204,25 @@ namespace QLNet.Math.Interpolations
         }
 
         // Inspectors
-        public double? a() { return coeffs_.a_; }
-        public double? b() { return coeffs_.b_; }
-        public double? c() { return coeffs_.c_; }
-        public double? d() { return coeffs_.d_; }
-        public List<double> k() { return coeffs_.k_; }
-        public double? rmsError() { return coeffs_.error_; }
-        public double? maxError() { return coeffs_.maxError_; }
-        public EndCriteria.Type endCriteria() { return coeffs_.abcdEndCriteria_; }
+        public double? a() => coeffs_.a_;
+
+        public double? b() => coeffs_.b_;
+
+        public double? c() => coeffs_.c_;
+
+        public double? d() => coeffs_.d_;
+
+        public List<double> k() => coeffs_.k_;
+
+        public double? rmsError() => coeffs_.error_;
+
+        public double? maxError() => coeffs_.maxError_;
+
+        public EndCriteria.Type endCriteria() => coeffs_.abcdEndCriteria_;
+
         public double k(double t, List<double> xBegin, int size)
         {
-            LinearInterpolation li = new LinearInterpolation(xBegin, size, coeffs_.k_);
+            var li = new LinearInterpolation(xBegin, size, coeffs_.k_);
             return li.value(t);
         }
 
@@ -223,7 +232,7 @@ namespace QLNet.Math.Interpolations
 
     //! %Abcd interpolation factory and traits
     /*! \ingroup interpolations */
-    public class Abcd
+    [JetBrains.Annotations.PublicAPI] public class Abcd
     {
         public Abcd(double a, double b, double c, double d,
                     bool aIsFixed, bool bIsFixed,
@@ -246,15 +255,13 @@ namespace QLNet.Math.Interpolations
             global = true;
         }
 
-        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin)
-        {
-            return new AbcdInterpolation(xBegin, size, yBegin,
-                                         a_, b_, c_, d_,
-                                         aIsFixed_, bIsFixed_,
-                                         cIsFixed_, dIsFixed_,
-                                         vegaWeighted_,
-                                         endCriteria_, optMethod_);
-        }
+        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin) =>
+            new AbcdInterpolation(xBegin, size, yBegin,
+                a_, b_, c_, d_,
+                aIsFixed_, bIsFixed_,
+                cIsFixed_, dIsFixed_,
+                vegaWeighted_,
+                endCriteria_, optMethod_);
 
         public bool global { get; set; }
 

@@ -40,14 +40,8 @@ namespace QLNet.Models
         private readonly WeakEventSource eventSource = new WeakEventSource();
         public event Callback notifyObserversEvent
         {
-            add
-            {
-                eventSource.Subscribe(value);
-            }
-            remove
-            {
-                eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
         }
 
         public void registerWith(Callback handler) { notifyObserversEvent += handler; }
@@ -60,7 +54,7 @@ namespace QLNet.Models
 
     //Affince Model Interface used for multihritage in
     //liborforwardmodel.cs & analyticcapfloorengine.cs
-    public interface IAffineModel : IObservable
+    [JetBrains.Annotations.PublicAPI] public interface IAffineModel : IObservable
     {
         double discount(double t);
         double discountBond(double now, double maturity, Vector factors);
@@ -68,30 +62,22 @@ namespace QLNet.Models
     }
 
     //TermStructureConsistentModel used in analyticcapfloorengine.cs
-    public class TermStructureConsistentModel : IObservable
+    [JetBrains.Annotations.PublicAPI] public class TermStructureConsistentModel : IObservable
     {
         public TermStructureConsistentModel(Handle<YieldTermStructure> termStructure)
         {
             termStructure_ = termStructure;
         }
 
-        public Handle<YieldTermStructure> termStructure()
-        {
-            return termStructure_;
-        }
+        public Handle<YieldTermStructure> termStructure() => termStructure_;
+
         private Handle<YieldTermStructure> termStructure_;
 
         private readonly WeakEventSource eventSource = new WeakEventSource();
         public event Callback notifyObserversEvent
         {
-            add
-            {
-                eventSource.Subscribe(value);
-            }
-            remove
-            {
-                eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
         }
 
         public void registerWith(Callback handler) { notifyObserversEvent += handler; }
@@ -103,7 +89,7 @@ namespace QLNet.Models
     }
 
     //ITermStructureConsistentModel used ins shortratemodel blackkarasinski.cs/hullwhite.cs
-    public interface ITermStructureConsistentModel
+    [JetBrains.Annotations.PublicAPI] public interface ITermStructureConsistentModel
     {
         Handle<YieldTermStructure> termStructure();
         Handle<YieldTermStructure> termStructure_ { get; set; }
@@ -115,16 +101,15 @@ namespace QLNet.Models
     }
 
     //! Calibrated model class
-    public class CalibratedModel : IObserver, IObservable
+    [JetBrains.Annotations.PublicAPI] public class CalibratedModel : IObserver, IObservable
     {
         protected List<Parameter> arguments_;
 
         protected Constraint constraint_;
-        public Constraint constraint() { return constraint_; }
+        public Constraint constraint() => constraint_;
 
         protected EndCriteria.Type shortRateEndCriteria_;
-        public EndCriteria.Type endCriteria() { return shortRateEndCriteria_; }
-
+        public EndCriteria.Type endCriteria() => shortRateEndCriteria_;
 
         public CalibratedModel(int nArguments)
         {
@@ -158,18 +143,18 @@ namespace QLNet.Models
                 c = constraint_;
             else
                 c = new CompositeConstraint(constraint_, additionalConstraint);
-            List<double> w = weights.Count == 0 ? new InitializedList<double>(instruments.Count, 1.0) : weights;
+            var w = weights.Count == 0 ? new InitializedList<double>(instruments.Count, 1.0) : weights;
 
-            Vector prms = parameters();
+            var prms = parameters();
             List<bool> all = new InitializedList<bool>(prms.size(), false);
-            Projection proj = new Projection(prms, fixParameters ?? all);
-            CalibrationFunction f = new CalibrationFunction(this, instruments, w, proj);
-            ProjectedConstraint pc = new ProjectedConstraint(c, proj);
-            Problem prob = new Problem(f, pc, proj.project(prms));
+            var proj = new Projection(prms, fixParameters ?? all);
+            var f = new CalibrationFunction(this, instruments, w, proj);
+            var pc = new ProjectedConstraint(c, proj);
+            var prob = new Problem(f, pc, proj.project(prms));
             shortRateEndCriteria_ = method.minimize(prob, endCriteria);
-            Vector result = new Vector(prob.currentValue());
+            var result = new Vector(prob.currentValue());
             setParams(proj.include(result));
-            Vector shortRateProblemValues_ = prob.values(result);
+            var shortRateProblemValues_ = prob.values(result);
 
             notifyObservers();
         }
@@ -177,8 +162,8 @@ namespace QLNet.Models
         public double value(Vector parameters, List<CalibrationHelper> instruments)
         {
             List<double> w = new InitializedList<double>(instruments.Count, 1.0);
-            Projection p = new Projection(parameters);
-            CalibrationFunction f = new CalibrationFunction(this, instruments, w, p);
+            var p = new Projection(parameters);
+            var f = new CalibrationFunction(this, instruments, w, p);
             return f.value(parameters);
         }
 
@@ -188,11 +173,11 @@ namespace QLNet.Models
             int size = 0, i;
             for (i = 0; i < arguments_.Count; i++)
                 size += arguments_[i].size();
-            Vector p = new Vector(size);
-            int k = 0;
+            var p = new Vector(size);
+            var k = 0;
             for (i = 0; i < arguments_.Count; i++)
             {
-                for (int j = 0; j < arguments_[i].size(); j++, k++)
+                for (var j = 0; j < arguments_[i].size(); j++, k++)
                 {
                     p[k] = arguments_[i].parameters()[j];
                 }
@@ -202,10 +187,10 @@ namespace QLNet.Models
 
         public virtual void setParams(Vector parameters)
         {
-            int p = 0;
-            for (int i = 0; i < arguments_.Count; ++i)
+            var p = 0;
+            for (var i = 0; i < arguments_.Count; ++i)
             {
-                for (int j = 0; j < arguments_[i].size(); ++j)
+                for (var j = 0; j < arguments_[i].size(); ++j)
                 {
                     Utils.QL_REQUIRE(p != parameters.Count, () => "parameter array too small");
                     arguments_[i].setParam(j, parameters[p++]);
@@ -235,12 +220,12 @@ namespace QLNet.Models
 
                 public bool test(Vector p)
                 {
-                    int k = 0;
-                    for (int i = 0; i < arguments_.Count; i++)
+                    var k = 0;
+                    for (var i = 0; i < arguments_.Count; i++)
                     {
-                        int size = arguments_[i].size();
-                        Vector testParams = new Vector(size);
-                        for (int j = 0; j < size; j++, k++)
+                        var size = arguments_[i].size();
+                        var testParams = new Vector(size);
+                        for (var j = 0; j < size; j++, k++)
                             testParams[j] = p[k];
                         if (!arguments_[i].testParams(testParams))
                             return false;
@@ -251,21 +236,21 @@ namespace QLNet.Models
                 public Vector upperBound(Vector parameters)
                 {
                     int k = 0, k2 = 0;
-                    int totalSize = 0;
-                    for (int i = 0; i < arguments_.Count; i++)
+                    var totalSize = 0;
+                    for (var i = 0; i < arguments_.Count; i++)
                     {
                         totalSize += arguments_[i].size();
                     }
 
-                    Vector result = new Vector(totalSize);
-                    for (int i = 0; i < arguments_.Count; i++)
+                    var result = new Vector(totalSize);
+                    for (var i = 0; i < arguments_.Count; i++)
                     {
-                        int size = arguments_[i].size();
-                        Vector partialParams = new Vector(size);
-                        for (int j = 0; j < size; j++, k++)
+                        var size = arguments_[i].size();
+                        var partialParams = new Vector(size);
+                        for (var j = 0; j < size; j++, k++)
                             partialParams[j] = parameters[k];
-                        Vector tmpBound = arguments_[i].constraint().upperBound(partialParams);
-                        for (int j = 0; j < size; j++, k2++)
+                        var tmpBound = arguments_[i].constraint().upperBound(partialParams);
+                        for (var j = 0; j < size; j++, k2++)
                             result[k2] = tmpBound[j];
                     }
                     return result;
@@ -274,20 +259,20 @@ namespace QLNet.Models
                 public Vector lowerBound(Vector parameters)
                 {
                     int k = 0, k2 = 0;
-                    int totalSize = 0;
-                    for (int i = 0; i < arguments_.Count; i++)
+                    var totalSize = 0;
+                    for (var i = 0; i < arguments_.Count; i++)
                     {
                         totalSize += arguments_[i].size();
                     }
-                    Vector result = new Vector(totalSize);
-                    for (int i = 0; i < arguments_.Count; i++)
+                    var result = new Vector(totalSize);
+                    for (var i = 0; i < arguments_.Count; i++)
                     {
-                        int size = arguments_[i].size();
-                        Vector partialParams = new Vector(size);
-                        for (int j = 0; j < size; j++, k++)
+                        var size = arguments_[i].size();
+                        var partialParams = new Vector(size);
+                        for (var j = 0; j < size; j++, k++)
                             partialParams[j] = parameters[k];
-                        Vector tmpBound = arguments_[i].constraint().lowerBound(partialParams);
-                        for (int j = 0; j < size; j++, k2++)
+                        var tmpBound = arguments_[i].constraint().lowerBound(partialParams);
+                        for (var j = 0; j < size; j++, k2++)
                             result[k2] = tmpBound[j];
                     }
                     return result;
@@ -314,10 +299,10 @@ namespace QLNet.Models
             {
                 model_.setParams(projection_.include(p));
 
-                double value = 0.0;
-                for (int i = 0; i < instruments_.Count; i++)
+                var value = 0.0;
+                for (var i = 0; i < instruments_.Count; i++)
                 {
-                    double diff = instruments_[i].calibrationError();
+                    var diff = instruments_[i].calibrationError();
                     value += diff * diff * weights_[i];
                 }
 
@@ -328,15 +313,15 @@ namespace QLNet.Models
             {
                 model_.setParams(projection_.include(p));
 
-                Vector values = new Vector(instruments_.Count);
-                for (int i = 0; i < instruments_.Count; i++)
+                var values = new Vector(instruments_.Count);
+                for (var i = 0; i < instruments_.Count; i++)
                 {
                     values[i] = instruments_[i].calibrationError() * System.Math.Sqrt(weights_[i]);
                 }
                 return values;
             }
 
-            public override double finiteDifferenceEpsilon() { return 1e-6; }
+            public override double finiteDifferenceEpsilon() => 1e-6;
 
             private CalibratedModel model_;
             private List<CalibrationHelper> instruments_;
@@ -350,14 +335,8 @@ namespace QLNet.Models
         private readonly WeakEventSource eventSource = new WeakEventSource();
         public event Callback notifyObserversEvent
         {
-            add
-            {
-                eventSource.Subscribe(value);
-            }
-            remove
-            {
-                eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
         }
 
         public void registerWith(Callback handler) { notifyObserversEvent += handler; }

@@ -74,7 +74,7 @@ namespace QLNet.Time.Calendars
         \test the correctness of the returned results is tested  against a list of known holidays.
     */
 
-    public class UnitedKingdom : Calendar
+    [JetBrains.Annotations.PublicAPI] public class UnitedKingdom : Calendar
     {
         public enum Market { Settlement, Exchange, Metals }
 
@@ -97,39 +97,37 @@ namespace QLNet.Time.Calendars
             }
         }
 
-        protected static bool isBankHoliday(int d, DayOfWeek w, Month m, int y)
-        {
-            return
-               // first Monday of May (Early May Bank Holiday)
-               // moved to May 8th in 1995 and 2020 for V.E. day
-               d <= 7 && w == DayOfWeek.Monday && m == Month.May && y != 1995 && y != 2020
-               || d == 8 && m == Month.May && (y == 1995 || y == 2020)
-               // last Monday of May (Spring Bank Holiday)
-               // moved to in 2002, 2012 and 2022 for the Golden, Diamond and Platinum
-               // Jubilee with an additional holiday
-               || d >= 25 && w == DayOfWeek.Monday && m == Month.May && y != 2002 && y != 2012 && y != 2022
-               || (d == 3 || d == 4) && m == Month.June && y == 2002
-               || (d == 4 || d == 5) && m == Month.June && y == 2012
-               || (d == 2 || d == 3) && m == Month.June && y == 2022
-               // last Monday of August (Summer Bank Holiday)
-               || d >= 25 && w == DayOfWeek.Monday && m == Month.August
-               // April 29th, 2011 only (Royal Wedding Bank Holiday)
-               || d == 29 && m == Month.April && y == 2011;
-        }
+        protected static bool isBankHoliday(int d, DayOfWeek w, Month m, int y) =>
+            // first Monday of May (Early May Bank Holiday)
+            // moved to May 8th in 1995 and 2020 for V.E. day
+            d <= 7 && w == DayOfWeek.Monday && m == Month.May && y != 1995 && y != 2020
+            || d == 8 && m == Month.May && (y == 1995 || y == 2020)
+            // last Monday of May (Spring Bank Holiday)
+            // moved to in 2002, 2012 and 2022 for the Golden, Diamond and Platinum
+            // Jubilee with an additional holiday
+            || d >= 25 && w == DayOfWeek.Monday && m == Month.May && y != 2002 && y != 2012 && y != 2022
+            || (d == 3 || d == 4) && m == Month.June && y == 2002
+            || (d == 4 || d == 5) && m == Month.June && y == 2012
+            || (d == 2 || d == 3) && m == Month.June && y == 2022
+            // last Monday of August (Summer Bank Holiday)
+            || d >= 25 && w == DayOfWeek.Monday && m == Month.August
+            // April 29th, 2011 only (Royal Wedding Bank Holiday)
+            || d == 29 && m == Month.April && y == 2011;
 
         private class Settlement : WesternImpl
         {
             public static readonly Settlement Singleton = new Settlement();
             private Settlement() { }
 
-            public override string name() { return "UK settlement"; }
+            public override string name() => "UK settlement";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
 
                 if (isWeekend(w)
                     // New Year's Day (possibly moved to Monday)
@@ -154,14 +152,15 @@ namespace QLNet.Time.Calendars
             internal static readonly Exchange Singleton = new Exchange();
             private Exchange() { }
 
-            public override string name() { return "London stock exchange"; }
+            public override string name() => "London stock exchange";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
                 if (isWeekend(w)
                     // New Year's Day (possibly moved to Monday)
                     || (d == 1 || (d == 2 || d == 3) && w == DayOfWeek.Monday) && m == Month.January
@@ -185,14 +184,15 @@ namespace QLNet.Time.Calendars
             internal static readonly Metals Singleton = new Metals();
             private Metals() { }
 
-            public override string name() { return "London metals exchange"; }
+            public override string name() => "London metals exchange";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
                 if (isWeekend(w)
                     // New Year's Day (possibly moved to Monday)
                     || (d == 1 || (d == 2 || d == 3) && w == DayOfWeek.Monday) && m == Month.January

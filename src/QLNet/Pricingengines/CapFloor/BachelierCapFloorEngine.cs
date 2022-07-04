@@ -26,7 +26,7 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Pricingengines.CapFloor
 {
-    public class BachelierCapFloorEngine : CapFloorEngine
+    [JetBrains.Annotations.PublicAPI] public class BachelierCapFloorEngine : CapFloorEngine
     {
         public BachelierCapFloorEngine(Handle<YieldTermStructure> discountCurve, double vol, DayCounter dc = null) // new Actual365Fixed()
         {
@@ -56,39 +56,39 @@ namespace QLNet.Pricingengines.CapFloor
 
         public override void calculate()
         {
-            double value = 0.0;
-            double vega = 0.0;
-            int optionlets = arguments_.startDates.Count;
+            var value = 0.0;
+            var vega = 0.0;
+            var optionlets = arguments_.startDates.Count;
             List<double> values = new InitializedList<double>(optionlets, 0.0);
             List<double> vegas = new InitializedList<double>(optionlets, 0.0);
             List<double> stdDevs = new InitializedList<double>(optionlets, 0.0);
-            CapFloorType type = arguments_.type;
-            Date today = vol_.link.referenceDate();
-            Date settlement = discountCurve_.link.referenceDate();
+            var type = arguments_.type;
+            var today = vol_.link.referenceDate();
+            var settlement = discountCurve_.link.referenceDate();
 
-            for (int i = 0; i < optionlets; ++i)
+            for (var i = 0; i < optionlets; ++i)
             {
-                Date paymentDate = arguments_.endDates[i];
+                var paymentDate = arguments_.endDates[i];
                 // handling of settlementDate, npvDate and includeSettlementFlows
                 // should be implemented.
                 // For the double being just discard expired caplets
                 if (paymentDate > settlement)
                 {
-                    double d = arguments_.nominals[i] *
-                               arguments_.gearings[i] *
-                               discountCurve_.link.discount(paymentDate) *
-                               arguments_.accrualTimes[i];
+                    var d = arguments_.nominals[i] *
+                            arguments_.gearings[i] *
+                            discountCurve_.link.discount(paymentDate) *
+                            arguments_.accrualTimes[i];
 
-                    double forward = arguments_.forwards[i].Value;
+                    var forward = arguments_.forwards[i].Value;
 
-                    Date fixingDate = arguments_.fixingDates[i];
-                    double sqrtTime = 0.0;
+                    var fixingDate = arguments_.fixingDates[i];
+                    var sqrtTime = 0.0;
                     if (fixingDate > today)
                         sqrtTime = System.Math.Sqrt(vol_.link.timeFromReference(fixingDate));
 
                     if (type == CapFloorType.Cap || type == CapFloorType.Collar)
                     {
-                        double strike = arguments_.capRates[i].Value;
+                        var strike = arguments_.capRates[i].Value;
                         if (sqrtTime > 0.0)
                         {
                             stdDevs[i] = System.Math.Sqrt(vol_.link.blackVariance(fixingDate, strike));
@@ -99,14 +99,14 @@ namespace QLNet.Pricingengines.CapFloor
                     }
                     if (type == CapFloorType.Floor || type == CapFloorType.Collar)
                     {
-                        double strike = arguments_.floorRates[i].Value;
-                        double floorletVega = 0.0;
+                        var strike = arguments_.floorRates[i].Value;
+                        var floorletVega = 0.0;
                         if (sqrtTime > 0.0)
                         {
                             stdDevs[i] = System.Math.Sqrt(vol_.link.blackVariance(fixingDate, strike));
                             floorletVega = Utils.bachelierBlackFormulaStdDevDerivative(strike, forward, stdDevs[i], d) * sqrtTime;
                         }
-                        double floorlet = Utils.bachelierBlackFormula(QLNet.Option.Type.Put, strike, forward, stdDevs[i], d);
+                        var floorlet = Utils.bachelierBlackFormula(QLNet.Option.Type.Put, strike, forward, stdDevs[i], d);
                         if (type == CapFloorType.Floor)
                         {
                             values[i] = floorlet;
@@ -134,8 +134,9 @@ namespace QLNet.Pricingengines.CapFloor
         }
 
 
-        public Handle<YieldTermStructure> termStructure() { return discountCurve_; }
-        public Handle<OptionletVolatilityStructure> volatility() { return vol_; }
+        public Handle<YieldTermStructure> termStructure() => discountCurve_;
+
+        public Handle<OptionletVolatilityStructure> volatility() => vol_;
 
         private Handle<YieldTermStructure> discountCurve_;
         private Handle<OptionletVolatilityStructure> vol_;

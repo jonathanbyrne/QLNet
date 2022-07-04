@@ -66,7 +66,7 @@ namespace QLNet.Time.Calendars
         \test the correctness of the returned results is tested
               against a list of known holidays.
     */
-    public class Brazil : Calendar
+    [JetBrains.Annotations.PublicAPI] public class Brazil : Calendar
     {
         //! Brazilian calendars
         public enum Market
@@ -99,15 +99,16 @@ namespace QLNet.Time.Calendars
             public static readonly SettlementImpl Singleton = new SettlementImpl();
             private SettlementImpl() { }
 
-            public override string name() { return "Brazil"; }
+            public override string name() => "Brazil";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
-                int d = date.Day;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int dd = date.DayOfYear;
-                int em = easterMonday(y);
+                var w = date.DayOfWeek;
+                var d = date.Day;
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var dd = date.DayOfYear;
+                var em = easterMonday(y);
 
                 if (isWeekend(w)
                     // New Year's Day
@@ -143,15 +144,16 @@ namespace QLNet.Time.Calendars
             public static readonly ExchangeImpl Singleton = new ExchangeImpl();
             private ExchangeImpl() { }
 
-            public override string name() { return "BOVESPA"; }
+            public override string name() => "BOVESPA";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
-                int d = date.Day;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int dd = date.DayOfYear;
-                int em = easterMonday(y);
+                var w = date.DayOfWeek;
+                var d = date.Day;
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var dd = date.DayOfYear;
+                var em = easterMonday(y);
 
                 if (isWeekend(w)
                     // New Year's Day

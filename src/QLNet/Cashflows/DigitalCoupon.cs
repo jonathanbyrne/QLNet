@@ -68,7 +68,7 @@ namespace QLNet.Cashflows
     //        - the correctness of the returned value is tested by the relationship
     //          between prices in case of different replication types.
     //
-    public class DigitalCoupon : FloatingRateCoupon
+    [JetBrains.Annotations.PublicAPI] public class DigitalCoupon : FloatingRateCoupon
     {
         // need by CashFlowVectors
         public DigitalCoupon() { }
@@ -131,7 +131,7 @@ namespace QLNet.Cashflows
                         callCsi_ = -1.0;
                         break;
                     default:
-                        Utils.QL_FAIL("unsupported position type");
+                        Utils.QL_FAIL("unsupported position ExerciseType");
                         break;
                 }
                 if (callDigitalPayoff != null)
@@ -154,7 +154,7 @@ namespace QLNet.Cashflows
                         putCsi_ = -1.0;
                         break;
                     default:
-                        Utils.QL_FAIL("unsupported position type");
+                        Utils.QL_FAIL("unsupported position ExerciseType");
                         break;
                 }
                 if (putDigitalPayoff != null)
@@ -183,7 +183,7 @@ namespace QLNet.Cashflows
                                 callRightEps_ = 0.0;
                                 break;
                             default:
-                                Utils.QL_FAIL("unsupported position type");
+                                Utils.QL_FAIL("unsupported position ExerciseType");
                                 break;
                         }
                     }
@@ -200,7 +200,7 @@ namespace QLNet.Cashflows
                                 putRightEps_ = replication.gap();
                                 break;
                             default:
-                                Utils.QL_FAIL("unsupported position type");
+                                Utils.QL_FAIL("unsupported position ExerciseType");
                                 break;
                         }
                     }
@@ -219,7 +219,7 @@ namespace QLNet.Cashflows
                                 callRightEps_ = replication.gap();
                                 break;
                             default:
-                                Utils.QL_FAIL("unsupported position type");
+                                Utils.QL_FAIL("unsupported position ExerciseType");
                                 break;
                         }
                     }
@@ -236,13 +236,13 @@ namespace QLNet.Cashflows
                                 putRightEps_ = 0.0;
                                 break;
                             default:
-                                Utils.QL_FAIL("unsupported position type");
+                                Utils.QL_FAIL("unsupported position ExerciseType");
                                 break;
                         }
                     }
                     break;
                 default:
-                    Utils.QL_FAIL("unsupported position type");
+                    Utils.QL_FAIL("unsupported position ExerciseType");
                     break;
             }
 
@@ -255,10 +255,10 @@ namespace QLNet.Cashflows
 
             Utils.QL_REQUIRE(underlying_.pricer() != null, () => "pricer not set");
 
-            Date fixingDate = underlying_.fixingDate();
-            Date today = Settings.evaluationDate();
-            bool enforceTodaysHistoricFixings = Settings.enforcesTodaysHistoricFixings;
-            double underlyingRate = underlying_.rate();
+            var fixingDate = underlying_.fixingDate();
+            var today = Settings.evaluationDate();
+            var enforceTodaysHistoricFixings = Settings.enforcesTodaysHistoricFixings;
+            var underlyingRate = underlying_.rate();
             if (fixingDate < today || fixingDate == today && enforceTodaysHistoricFixings)
             {
                 // must have been fixed
@@ -267,7 +267,7 @@ namespace QLNet.Cashflows
             if (fixingDate == today)
             {
                 // might have been fixed
-                double? pastFixing = IndexManager.instance().getHistory(underlying_.index().name())[fixingDate];
+                var pastFixing = IndexManager.instance().getHistory(underlying_.index().name())[fixingDate];
                 if (pastFixing != null)
                 {
                     return underlyingRate + callCsi_ * callPayoff() + putCsi_ * putPayoff();
@@ -277,10 +277,8 @@ namespace QLNet.Cashflows
             }
             return underlyingRate + callCsi_ * callOptionRate() + putCsi_ * putOptionRate();
         }
-        public override double convexityAdjustment()
-        {
-            return underlying_.convexityAdjustment();
-        }
+        public override double convexityAdjustment() => underlying_.convexityAdjustment();
+
         // Digital inspectors
         public double? callStrike()
         {
@@ -310,49 +308,37 @@ namespace QLNet.Cashflows
 
             return null;
         }
-        public bool hasPut()
-        {
-            return hasPutStrike_;
-        }
-        public bool hasCall()
-        {
-            return hasCallStrike_;
-        }
-        public bool hasCollar()
-        {
-            return hasCallStrike_ && hasPutStrike_;
-        }
-        public bool isLongPut()
-        {
-            return putCsi_.IsEqual(1.0);
-        }
-        public bool isLongCall()
-        {
-            return callCsi_.IsEqual(1.0);
-        }
-        public FloatingRateCoupon underlying()
-        {
-            return underlying_;
-        }
+        public bool hasPut() => hasPutStrike_;
+
+        public bool hasCall() => hasCallStrike_;
+
+        public bool hasCollar() => hasCallStrike_ && hasPutStrike_;
+
+        public bool isLongPut() => putCsi_.IsEqual(1.0);
+
+        public bool isLongCall() => callCsi_.IsEqual(1.0);
+
+        public FloatingRateCoupon underlying() => underlying_;
+
         //        ! Returns the call option rate
         //           (multiplied by: nominal*accrualperiod*discount is the NPV of the option)
         //
         public double callOptionRate()
         {
 
-            double callOptionRate = 0.0;
+            var callOptionRate = 0.0;
             if (hasCallStrike_)
             {
                 // Step function
                 callOptionRate = isCallCashOrNothing_ ? callDigitalPayoff_ : callStrike_;
-                CappedFlooredCoupon next = new CappedFlooredCoupon(underlying_, callStrike_ + callRightEps_);
-                CappedFlooredCoupon previous = new CappedFlooredCoupon(underlying_, callStrike_ - callLeftEps_);
+                var next = new CappedFlooredCoupon(underlying_, callStrike_ + callRightEps_);
+                var previous = new CappedFlooredCoupon(underlying_, callStrike_ - callLeftEps_);
                 callOptionRate *= (next.rate() - previous.rate()) / (callLeftEps_ + callRightEps_);
                 if (!isCallCashOrNothing_)
                 {
                     // Call
-                    CappedFlooredCoupon atStrike = new CappedFlooredCoupon(underlying_, callStrike_);
-                    double call = underlying_.rate() - atStrike.rate();
+                    var atStrike = new CappedFlooredCoupon(underlying_, callStrike_);
+                    var call = underlying_.rate() - atStrike.rate();
                     // Sum up
                     callOptionRate += call;
                 }
@@ -365,19 +351,19 @@ namespace QLNet.Cashflows
         public double putOptionRate()
         {
 
-            double putOptionRate = 0.0;
+            var putOptionRate = 0.0;
             if (hasPutStrike_)
             {
                 // Step function
                 putOptionRate = isPutCashOrNothing_ ? putDigitalPayoff_ : putStrike_;
-                CappedFlooredCoupon next = new CappedFlooredCoupon(underlying_, null, putStrike_ + putRightEps_);
-                CappedFlooredCoupon previous = new CappedFlooredCoupon(underlying_, null, putStrike_ - putLeftEps_);
+                var next = new CappedFlooredCoupon(underlying_, null, putStrike_ + putRightEps_);
+                var previous = new CappedFlooredCoupon(underlying_, null, putStrike_ - putLeftEps_);
                 putOptionRate *= (next.rate() - previous.rate()) / (putLeftEps_ + putRightEps_);
                 if (!isPutCashOrNothing_)
                 {
                     // Put
-                    CappedFlooredCoupon atStrike = new CappedFlooredCoupon(underlying_, null, putStrike_);
-                    double put = -underlying_.rate() + atStrike.rate();
+                    var atStrike = new CappedFlooredCoupon(underlying_, null, putStrike_);
+                    var put = -underlying_.rate() + atStrike.rate();
                     // Sum up
                     putOptionRate -= put;
                 }
@@ -397,10 +383,7 @@ namespace QLNet.Cashflows
         }
 
         // Factory - for Leg generators
-        public virtual CashFlow factory(FloatingRateCoupon underlying, double? callStrike, Position.Type callPosition, bool isCallATMIncluded, double? callDigitalPayoff, double? putStrike, Position.Type putPosition, bool isPutATMIncluded, double? putDigitalPayoff, DigitalReplication replication)
-        {
-            return new DigitalCoupon(underlying, callStrike, callPosition, isCallATMIncluded, callDigitalPayoff, putStrike, putPosition, isPutATMIncluded, putDigitalPayoff, replication);
-        }
+        public virtual CashFlow factory(FloatingRateCoupon underlying, double? callStrike, Position.Type callPosition, bool isCallATMIncluded, double? callDigitalPayoff, double? putStrike, Position.Type putPosition, bool isPutATMIncluded, double? putDigitalPayoff, DigitalReplication replication) => new DigitalCoupon(underlying, callStrike, callPosition, isCallATMIncluded, callDigitalPayoff, putStrike, putPosition, isPutATMIncluded, putDigitalPayoff, replication);
 
         // Data members
         protected FloatingRateCoupon underlying_;
@@ -416,9 +399,9 @@ namespace QLNet.Cashflows
         protected bool isCallATMIncluded_;
         //! inclusion flag og the put payoff if the put option ends at-the-money
         protected bool isPutATMIncluded_;
-        //! digital call option type: if true, cash-or-nothing, if false asset-or-nothing
+        //! digital call option ExerciseType: if true, cash-or-nothing, if false asset-or-nothing
         protected bool isCallCashOrNothing_;
-        //! digital put option type: if true, cash-or-nothing, if false asset-or-nothing
+        //! digital put option ExerciseType: if true, cash-or-nothing, if false asset-or-nothing
         protected bool isPutCashOrNothing_;
         //! digital call option payoff rate, if any
         protected double callDigitalPayoff_;
@@ -439,10 +422,10 @@ namespace QLNet.Cashflows
         private double callPayoff()
         {
             // to use only if index has fixed
-            double payoff = 0.0;
+            var payoff = 0.0;
             if (hasCallStrike_)
             {
-                double underlyingRate = underlying_.rate();
+                var underlyingRate = underlying_.rate();
                 if (underlyingRate - callStrike_ > 1.0e-16)
                 {
                     payoff = isCallCashOrNothing_ ? callDigitalPayoff_ : underlyingRate;
@@ -458,10 +441,10 @@ namespace QLNet.Cashflows
         private double putPayoff()
         {
             // to use only if index has fixed
-            double payoff = 0.0;
+            var payoff = 0.0;
             if (hasPutStrike_)
             {
-                double underlyingRate = underlying_.rate();
+                var underlyingRate = underlying_.rate();
                 if (putStrike_ - underlyingRate > 1.0e-16)
                 {
                     payoff = isPutCashOrNothing_ ? putDigitalPayoff_ : underlyingRate;

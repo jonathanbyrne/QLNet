@@ -27,38 +27,38 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_DefaultProbabilityCurves
+    [JetBrains.Annotations.PublicAPI] public class T_DefaultProbabilityCurves
     {
         [Fact]
         public void testDefaultProbability()
         {
             // Testing default-probability structure...
 
-            double hazardRate = 0.0100;
-            Handle<Quote> hazardRateQuote = new Handle<Quote>(new SimpleQuote(hazardRate));
+            var hazardRate = 0.0100;
+            var hazardRateQuote = new Handle<Quote>(new SimpleQuote(hazardRate));
             DayCounter dayCounter = new Actual360();
             Calendar calendar = new TARGET();
-            int n = 20;
+            var n = 20;
 
-            double tolerance = 1.0e-10;
-            Date today = Settings.evaluationDate();
-            Date startDate = today;
-            Date endDate = startDate;
+            var tolerance = 1.0e-10;
+            var today = Settings.evaluationDate();
+            var startDate = today;
+            var endDate = startDate;
 
-            FlatHazardRate flatHazardRate = new FlatHazardRate(startDate, hazardRateQuote, dayCounter);
+            var flatHazardRate = new FlatHazardRate(startDate, hazardRateQuote, dayCounter);
 
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
             {
                 startDate = endDate;
                 endDate = calendar.advance(endDate, 1, TimeUnit.Years);
 
-                double pStart = flatHazardRate.defaultProbability(startDate);
-                double pEnd = flatHazardRate.defaultProbability(endDate);
+                var pStart = flatHazardRate.defaultProbability(startDate);
+                var pEnd = flatHazardRate.defaultProbability(endDate);
 
-                double pBetweenComputed =
+                var pBetweenComputed =
                    flatHazardRate.defaultProbability(startDate, endDate);
 
-                double pBetween = pEnd - pStart;
+                var pBetween = pEnd - pStart;
 
                 if (System.Math.Abs(pBetween - pBetweenComputed) > tolerance)
                     QAssert.Fail("Failed to reproduce probability(d1, d2) "
@@ -66,9 +66,9 @@ namespace QLNet.Tests
                                  + "    calculated probability: " + pBetweenComputed + "\n"
                                  + "    expected probability:   " + pBetween);
 
-                double t2 = dayCounter.yearFraction(today, endDate);
-                double timeProbability = flatHazardRate.defaultProbability(t2);
-                double dateProbability =
+                var t2 = dayCounter.yearFraction(today, endDate);
+                var timeProbability = flatHazardRate.defaultProbability(t2);
+                var dateProbability =
                    flatHazardRate.defaultProbability(endDate);
 
                 if (System.Math.Abs(timeProbability - dateProbability) > tolerance)
@@ -76,7 +76,7 @@ namespace QLNet.Tests
                                  + "    time probability: " + timeProbability + "\n"
                                  + "    date probability: " + dateProbability);
 
-                double t1 = dayCounter.yearFraction(today, startDate);
+                var t1 = dayCounter.yearFraction(today, startDate);
                 timeProbability = flatHazardRate.defaultProbability(t1, t2);
                 dateProbability = flatHazardRate.defaultProbability(startDate, endDate);
 
@@ -94,25 +94,25 @@ namespace QLNet.Tests
 
             // Testing flat hazard rate...
 
-            double hazardRate = 0.0100;
-            Handle<Quote> hazardRateQuote = new Handle<Quote>(new SimpleQuote(hazardRate));
+            var hazardRate = 0.0100;
+            var hazardRateQuote = new Handle<Quote>(new SimpleQuote(hazardRate));
             DayCounter dayCounter = new Actual360();
             Calendar calendar = new TARGET();
-            int n = 20;
+            var n = 20;
 
-            double tolerance = 1.0e-10;
-            Date today = Settings.evaluationDate();
-            Date startDate = today;
-            Date endDate = startDate;
+            var tolerance = 1.0e-10;
+            var today = Settings.evaluationDate();
+            var startDate = today;
+            var endDate = startDate;
 
-            FlatHazardRate flatHazardRate = new FlatHazardRate(today, hazardRateQuote, dayCounter);
+            var flatHazardRate = new FlatHazardRate(today, hazardRateQuote, dayCounter);
 
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
             {
                 endDate = calendar.advance(endDate, 1, TimeUnit.Years);
-                double t = dayCounter.yearFraction(startDate, endDate);
-                double probability = 1.0 - System.Math.Exp(-hazardRate * t);
-                double computedProbability = flatHazardRate.defaultProbability(t);
+                var t = dayCounter.yearFraction(startDate, endDate);
+                var probability = 1.0 - System.Math.Exp(-hazardRate * t);
+                var computedProbability = flatHazardRate.defaultProbability(t);
 
                 if (System.Math.Abs(probability - computedProbability) > tolerance)
                     QAssert.Fail("Failed to reproduce probability for flat hazard rate\n"

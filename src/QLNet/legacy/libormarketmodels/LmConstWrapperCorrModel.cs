@@ -22,7 +22,7 @@ using QLNet.Math;
 
 namespace QLNet.legacy.libormarketmodels
 {
-    public class LmConstWrapperCorrelationModel : LmCorrelationModel
+    [JetBrains.Annotations.PublicAPI] public class LmConstWrapperCorrelationModel : LmCorrelationModel
     {
         public LmConstWrapperCorrelationModel(LmCorrelationModel corrModel)
            : base(corrModel.size(), 0)
@@ -30,30 +30,15 @@ namespace QLNet.legacy.libormarketmodels
             corrModel_ = corrModel;
         }
 
-        public override int factors()
-        {
-            return corrModel_.factors();
-        }
+        public override int factors() => corrModel_.factors();
 
-        public override Matrix correlation(double t, Vector x = null)
-        {
-            return corrModel_.correlation(t, x);
-        }
+        public override Matrix correlation(double t, Vector x = null) => corrModel_.correlation(t, x);
 
-        public override Matrix pseudoSqrt(double t, Vector x = null)
-        {
-            return corrModel_.pseudoSqrt(t, x);
-        }
+        public override Matrix pseudoSqrt(double t, Vector x = null) => corrModel_.pseudoSqrt(t, x);
 
-        public override double correlation(int i, int j, double t, Vector x = null)
-        {
-            return corrModel_.correlation(i, j, t, x);
-        }
+        public override double correlation(int i, int j, double t, Vector x = null) => corrModel_.correlation(i, j, t, x);
 
-        public new bool isTimeIndependent()
-        {
-            return corrModel_.isTimeIndependent();
-        }
+        public new bool isTimeIndependent() => corrModel_.isTimeIndependent();
 
         protected override void generateArguments()
         { }

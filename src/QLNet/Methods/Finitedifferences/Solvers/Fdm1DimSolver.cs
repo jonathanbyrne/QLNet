@@ -29,7 +29,7 @@ using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Solvers
 {
-    public class Fdm1DimSolver : LazyObject
+    [JetBrains.Annotations.PublicAPI] public class Fdm1DimSolver : LazyObject
     {
         public Fdm1DimSolver(FdmSolverDesc solverDesc,
                              FdmSchemeDesc schemeDesc,
@@ -50,11 +50,11 @@ namespace QLNet.Methods.Finitedifferences.Solvers
             initialValues_ = new InitializedList<double>(solverDesc.mesher.layout().size());
             resultValues_ = new Vector(solverDesc.mesher.layout().size());
 
-            FdmMesher mesher = solverDesc.mesher;
-            FdmLinearOpLayout layout = mesher.layout();
+            var mesher = solverDesc.mesher;
+            var layout = mesher.layout();
 
-            FdmLinearOpIterator endIter = layout.end();
-            for (FdmLinearOpIterator iter = layout.begin(); iter != endIter;
+            var endIter = layout.end();
+            for (var iter = layout.begin(); iter != endIter;
                  ++iter)
             {
                 initialValues_[iter.index()]
@@ -75,10 +75,10 @@ namespace QLNet.Methods.Finitedifferences.Solvers
                              () => "stopping time at zero-> can't calculate theta");
 
             calculate();
-            Vector thetaValues = new Vector(resultValues_.size());
+            var thetaValues = new Vector(resultValues_.size());
             thetaValues = thetaCondition_.getValues();
 
-            double temp = new MonotonicCubicNaturalSpline(
+            var temp = new MonotonicCubicNaturalSpline(
                x_, x_.Count, thetaValues).value(x);
             return (temp - interpolateAt(x)) / thetaCondition_.getTime();
         }
@@ -95,14 +95,14 @@ namespace QLNet.Methods.Finitedifferences.Solvers
         protected override void performCalculations()
         {
             object rhs = new Vector(initialValues_.Count);
-            for (int i = 0; i < initialValues_.Count; i++)
+            for (var i = 0; i < initialValues_.Count; i++)
                 (rhs as Vector)[i] = initialValues_[i];
 
             new FdmBackwardSolver(op_, solverDesc_.bcSet, conditions_, schemeDesc_)
             .rollback(ref rhs, solverDesc_.maturity, 0.0,
                       solverDesc_.timeSteps, solverDesc_.dampingSteps);
 
-            for (int i = 0; i < initialValues_.Count; i++)
+            for (var i = 0; i < initialValues_.Count; i++)
                 resultValues_[i] = (rhs as Vector)[i];
 
             interpolation_ = new MonotonicCubicNaturalSpline(x_, x_.Count, resultValues_);

@@ -22,7 +22,7 @@ using System.Collections.Generic;
 namespace QLNet.Math.Interpolations
 {
     /* linear interpolation between discrete points */
-    public class LinearInterpolationImpl : Interpolation.templateImpl
+    [JetBrains.Annotations.PublicAPI] public class LinearInterpolationImpl : Interpolation.templateImpl
     {
         private List<double> primitiveConst_, s_;
 
@@ -36,9 +36,9 @@ namespace QLNet.Math.Interpolations
         public override void update()
         {
             primitiveConst_[0] = 0.0;
-            for (int i = 1; i < size_; ++i)
+            for (var i = 1; i < size_; ++i)
             {
-                double dx = xBegin_[i] - xBegin_[i - 1];
+                var dx = xBegin_[i] - xBegin_[i - 1];
                 s_[i - 1] = (yBegin_[i] - yBegin_[i - 1]) / dx;
                 primitiveConst_[i] = primitiveConst_[i - 1] + dx * (yBegin_[i - 1] + 0.5 * dx * s_[i - 1]);
             }
@@ -46,26 +46,26 @@ namespace QLNet.Math.Interpolations
 
         public override double value(double x)
         {
-            int i = locate(x);
-            double result = yBegin_[i] + (x - xBegin_[i]) * s_[i];
+            var i = locate(x);
+            var result = yBegin_[i] + (x - xBegin_[i]) * s_[i];
             return result;
         }
         public override double primitive(double x)
         {
-            int i = locate(x);
-            double dx = x - xBegin_[i];
+            var i = locate(x);
+            var dx = x - xBegin_[i];
             return primitiveConst_[i] + dx * (yBegin_[i] + 0.5 * dx * s_[i]);
         }
         public override double derivative(double x)
         {
-            int i = locate(x);
+            var i = locate(x);
             return s_[i];
         }
-        public override double secondDerivative(double x) { return 0.0; }
+        public override double secondDerivative(double x) => 0.0;
     }
 
     //! %Linear interpolation between discrete points
-    public class LinearInterpolation : Interpolation
+    [JetBrains.Annotations.PublicAPI] public class LinearInterpolation : Interpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public LinearInterpolation(List<double> xBegin, int size, List<double> yBegin)
@@ -76,13 +76,12 @@ namespace QLNet.Math.Interpolations
     }
 
     //! %Linear-interpolation factory and traits
-    public class Linear : IInterpolationFactory
+    [JetBrains.Annotations.PublicAPI] public class Linear : IInterpolationFactory
     {
-        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin)
-        {
-            return new LinearInterpolation(xBegin, size, yBegin);
-        }
-        public bool global { get { return false; } }
-        public int requiredPoints { get { return 2; } }
+        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin) => new LinearInterpolation(xBegin, size, yBegin);
+
+        public bool global => false;
+
+        public int requiredPoints => 2;
     }
 }

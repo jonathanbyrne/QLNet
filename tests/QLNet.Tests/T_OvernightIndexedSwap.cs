@@ -32,7 +32,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_OvernightIndexedSwap : IDisposable
+    [JetBrains.Annotations.PublicAPI] public class T_OvernightIndexedSwap : IDisposable
     {
         #region Initialize&Cleanup
         private SavedSettings backup;
@@ -171,7 +171,7 @@ namespace QLNet.Tests
          new SwapDatum(2, 3, TimeUnit.Months, 30, TimeUnit.Years, 3.687)
       };
 
-        public class CommonVars
+        [JetBrains.Annotations.PublicAPI] public class CommonVars
         {
             // global data
             public Date today, settlement;
@@ -195,14 +195,12 @@ namespace QLNet.Tests
             // utilities
             public OvernightIndexedSwap makeSwap(Period length,
                                                  double fixedRate,
-                                                 double spread)
-            {
-                return new MakeOIS(length, eoniaIndex, fixedRate)
-                       .withEffectiveDate(settlement)
-                       .withOvernightLegSpread(spread)
-                       .withNominal(nominal)
-                       .withDiscountingTermStructure(eoniaTermStructure);
-            }
+                                                 double spread) =>
+                new MakeOIS(length, eoniaIndex, fixedRate)
+                    .withEffectiveDate(settlement)
+                    .withOvernightLegSpread(spread)
+                    .withNominal(nominal)
+                    .withDiscountingTermStructure(eoniaTermStructure);
 
             public CommonVars()
             {
@@ -234,16 +232,16 @@ namespace QLNet.Tests
         {
             // Testing Eonia-swap calculation of fair fixed rate...
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            Period[] lengths = new Period[] { new Period(1, TimeUnit.Years), new Period(2, TimeUnit.Years), new Period(5, TimeUnit.Years), new Period(10, TimeUnit.Years), new Period(20, TimeUnit.Years) };
+            var lengths = new Period[] { new Period(1, TimeUnit.Years), new Period(2, TimeUnit.Years), new Period(5, TimeUnit.Years), new Period(10, TimeUnit.Years), new Period(20, TimeUnit.Years) };
             double[] spreads = { -0.001, -0.01, 0.0, 0.01, 0.001 };
 
-            for (int i = 0; i < lengths.Length; i++)
+            for (var i = 0; i < lengths.Length; i++)
             {
-                for (int j = 0; j < spreads.Length; j++)
+                for (var j = 0; j < spreads.Length; j++)
                 {
-                    OvernightIndexedSwap swap = vars.makeSwap(lengths[i], 0.0, spreads[j]);
+                    var swap = vars.makeSwap(lengths[i], 0.0, spreads[j]);
 
                     swap = vars.makeSwap(lengths[i], swap.fairRate().Value, spreads[j]);
 
@@ -265,7 +263,7 @@ namespace QLNet.Tests
         public void testFairSpread()
         {
             // Testing Eonia-swap calculation of fair floating spread...
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             Period[] lengths = { new Period(1, TimeUnit.Years),
                    new Period(2, TimeUnit.Years),
@@ -275,12 +273,12 @@ namespace QLNet.Tests
          };
             double[] rates = { 0.04, 0.05, 0.06, 0.07 };
 
-            for (int i = 0; i < lengths.Length; i++)
+            for (var i = 0; i < lengths.Length; i++)
             {
-                for (int j = 0; j < rates.Length; j++)
+                for (var j = 0; j < rates.Length; j++)
                 {
-                    OvernightIndexedSwap swap = vars.makeSwap(lengths[i], rates[j], 0.0);
-                    double? fairSpread = swap.fairSpread();
+                    var swap = vars.makeSwap(lengths[i], rates[j], 0.0);
+                    var fairSpread = swap.fairSpread();
                     swap = vars.makeSwap(lengths[i], rates[j], fairSpread.Value);
 
                     if (System.Math.Abs(swap.NPV()) > 1.0e-10)
@@ -299,16 +297,16 @@ namespace QLNet.Tests
         public void testCachedValue()
         {
             // Testing Eonia-swap calculation against cached value...
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             Settings.setEvaluationDate(vars.today);
             vars.settlement = vars.calendar.advance(vars.today, vars.settlementDays, TimeUnit.Days);
-            double flat = 0.05;
+            var flat = 0.05;
             vars.eoniaTermStructure.linkTo(Utilities.flatRate(vars.settlement, flat, new Actual360()));
-            double fixedRate = System.Math.Exp(flat) - 1;
-            OvernightIndexedSwap swap = vars.makeSwap(new Period(1, TimeUnit.Years), fixedRate, 0.0);
-            double cachedNPV = 0.001730450147;
-            double tolerance = 1.0e-11;
+            var fixedRate = System.Math.Exp(flat) - 1;
+            var swap = vars.makeSwap(new Period(1, TimeUnit.Years), fixedRate, 0.0);
+            var cachedNPV = 0.001730450147;
+            var tolerance = 1.0e-11;
 
             if (System.Math.Abs(swap.NPV() - cachedNPV) > tolerance)
                 QAssert.Fail("\nfailed to reproduce cached swap value:" +
@@ -321,21 +319,21 @@ namespace QLNet.Tests
         public void testBootstrap()
         {
             // Testing Eonia-swap curve building...
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            List<RateHelper> eoniaHelpers = new List<RateHelper>();
-            List<RateHelper> swap3mHelpers = new List<RateHelper>();
+            var eoniaHelpers = new List<RateHelper>();
+            var swap3mHelpers = new List<RateHelper>();
 
             IborIndex euribor3m = new Euribor3M();
-            Eonia eonia = new Eonia();
+            var eonia = new Eonia();
 
-            for (int i = 0; i < depositData.Length; i++)
+            for (var i = 0; i < depositData.Length; i++)
             {
-                double rate = 0.01 * depositData[i].rate;
-                SimpleQuote simple = new SimpleQuote(rate);
-                Handle<Quote> quote = new Handle<Quote>(simple);
+                var rate = 0.01 * depositData[i].rate;
+                var simple = new SimpleQuote(rate);
+                var quote = new Handle<Quote>(simple);
 
-                Period term = new Period(depositData[i].n, depositData[i].unit);
+                var term = new Period(depositData[i].n, depositData[i].unit);
                 RateHelper helper = new DepositRateHelper(quote,
                                                           term,
                                                           depositData[i].settlementDays,
@@ -352,12 +350,12 @@ namespace QLNet.Tests
             }
 
 
-            for (int i = 0; i < fraData.Length; i++)
+            for (var i = 0; i < fraData.Length; i++)
             {
 
-                double rate = 0.01 * fraData[i].rate;
-                SimpleQuote simple = new SimpleQuote(rate);
-                Handle<Quote> quote = new Handle<Quote>(simple);
+                var rate = 0.01 * fraData[i].rate;
+                var simple = new SimpleQuote(rate);
+                var quote = new Handle<Quote>(simple);
                 RateHelper helper = new FraRateHelper(quote,
                                                       fraData[i].nExpiry,
                                                       fraData[i].nMaturity,
@@ -369,13 +367,13 @@ namespace QLNet.Tests
                 swap3mHelpers.Add(helper);
             }
 
-            for (int i = 0; i < eoniaSwapData.Length; i++)
+            for (var i = 0; i < eoniaSwapData.Length; i++)
             {
 
-                double rate = 0.01 * eoniaSwapData[i].rate;
-                SimpleQuote simple = new SimpleQuote(rate);
-                Handle<Quote> quote = new Handle<Quote>(simple);
-                Period term = new Period(eoniaSwapData[i].n, eoniaSwapData[i].unit);
+                var rate = 0.01 * eoniaSwapData[i].rate;
+                var simple = new SimpleQuote(rate);
+                var quote = new Handle<Quote>(simple);
+                var term = new Period(eoniaSwapData[i].n, eoniaSwapData[i].unit);
                 RateHelper helper = new OISRateHelper(eoniaSwapData[i].settlementDays,
                                                       term,
                                                       quote,
@@ -384,13 +382,13 @@ namespace QLNet.Tests
             }
 
 
-            for (int i = 0; i < swapData.Length; i++)
+            for (var i = 0; i < swapData.Length; i++)
             {
-                double rate = 0.01 * swapData[i].rate;
-                SimpleQuote simple = new SimpleQuote(rate);
-                Handle<Quote> quote = new Handle<Quote>(simple);
-                Period tenor = new Period(swapData[i].nIndexUnits, swapData[i].indexUnit);
-                Period term = new Period(swapData[i].nTermUnits, swapData[i].termUnit);
+                var rate = 0.01 * swapData[i].rate;
+                var simple = new SimpleQuote(rate);
+                var quote = new Handle<Quote>(simple);
+                var tenor = new Period(swapData[i].nIndexUnits, swapData[i].indexUnit);
+                var term = new Period(swapData[i].nTermUnits, swapData[i].termUnit);
 
                 RateHelper helper = new SwapRateHelper(quote,
                                                        term,
@@ -404,25 +402,25 @@ namespace QLNet.Tests
             }
 
 
-            PiecewiseYieldCurve<Discount, LogLinear> eoniaTS = new PiecewiseYieldCurve<Discount, LogLinear>(vars.today,
+            var eoniaTS = new PiecewiseYieldCurve<Discount, LogLinear>(vars.today,
                   eoniaHelpers,
                   new Actual365Fixed());
 
-            PiecewiseYieldCurve<Discount, LogLinear> swapTS = new PiecewiseYieldCurve<Discount, LogLinear>(vars.today,
+            var swapTS = new PiecewiseYieldCurve<Discount, LogLinear>(vars.today,
                   swap3mHelpers,
                   new Actual365Fixed());
 
             vars.eoniaTermStructure.linkTo(eoniaTS);
 
             // test curve consistency
-            double tolerance = 1.0e-10;
-            for (int i = 0; i < eoniaSwapData.Length; i++)
+            var tolerance = 1.0e-10;
+            for (var i = 0; i < eoniaSwapData.Length; i++)
             {
 
-                double expected = eoniaSwapData[i].rate;
-                Period term = new Period(eoniaSwapData[i].n, eoniaSwapData[i].unit);
-                OvernightIndexedSwap swap = vars.makeSwap(term, 0.0, 0.0);
-                double? calculated = 100.0 * swap.fairRate();
+                var expected = eoniaSwapData[i].rate;
+                var term = new Period(eoniaSwapData[i].n, eoniaSwapData[i].unit);
+                var swap = vars.makeSwap(term, 0.0, 0.0);
+                var calculated = 100.0 * swap.fairRate();
 
                 if (System.Math.Abs(expected - calculated.Value) > tolerance)
                     QAssert.Fail("curve inconsistency:\n"

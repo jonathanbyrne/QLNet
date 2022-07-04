@@ -25,7 +25,7 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.Ibor
 {
-    public class Sonia : OvernightIndex
+    [JetBrains.Annotations.PublicAPI] public class Sonia : OvernightIndex
     {
         //! %Sonia (Sterling Overnight Index Average) rate.
         public Sonia(Handle<YieldTermStructure> h = null)

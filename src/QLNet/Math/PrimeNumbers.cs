@@ -36,7 +36,7 @@ namespace QLNet.Math
     //! Prime numbers calculator
     /*! Taken from "Monte Carlo Methods in Finance", by Peter Jäckel
      */
-    public class PrimeNumbers
+    [JetBrains.Annotations.PublicAPI] public class PrimeNumbers
     {
         //! Get and store one after another.
 
@@ -74,7 +74,7 @@ namespace QLNet.Math
                 m += 2;
                 n = (ulong)System.Math.Sqrt((double)m);
                 // i=1 since the even numbers have already been skipped
-                int i = 1;
+                var i = 1;
                 do
                 {
                     p = primeNumbers_[i];

@@ -39,7 +39,7 @@ namespace QLNet.Indexes.Ibor
     /// you're interested in the Canadian fixing by IDA.
     /// </remarks>
     /// </summary>
-    public class CADLibor : Libor
+    [JetBrains.Annotations.PublicAPI] public class CADLibor : Libor
     {
         public CADLibor(Period tenor)
            : base("CADLibor", tenor, 0, new CADCurrency(), new Canada(), new Actual365Fixed(), new Handle<YieldTermStructure>())
@@ -53,7 +53,7 @@ namespace QLNet.Indexes.Ibor
     /// <summary>
     /// Overnight CAD Libor index
     /// </summary>
-    public class CADLiborON : DailyTenorLibor
+    [JetBrains.Annotations.PublicAPI] public class CADLiborON : DailyTenorLibor
     {
         public CADLiborON()
            : base("CADLibor", 0, new CADCurrency(), new Canada(), new Actual365Fixed(), new Handle<YieldTermStructure>())

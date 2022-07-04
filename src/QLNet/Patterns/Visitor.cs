@@ -20,7 +20,7 @@
 namespace QLNet.Patterns
 {
     // to make the objects Visitor-ready
-    public interface IAcyclicVisitor
+    [JetBrains.Annotations.PublicAPI] public interface IAcyclicVisitor
     {
         void visit(object o);
     }

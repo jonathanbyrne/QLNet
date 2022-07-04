@@ -39,13 +39,13 @@ namespace QLNet.legacy.libormarketmodels
         (<http://www.business.uts.edu.au/qfrc/conferences/qmf2001/Brigo_D.pdf>)
     */
 
-    public class LmExtLinearExponentialVolModel : LmLinearExponentialVolatilityModel
+    [JetBrains.Annotations.PublicAPI] public class LmExtLinearExponentialVolModel : LmLinearExponentialVolatilityModel
     {
         public LmExtLinearExponentialVolModel(List<double> fixingTimes, double a, double b, double c, double d)
            : base(fixingTimes, a, b, c, d)
         {
             arguments_.Capacity += size_;
-            for (int i = 0; i < size_; ++i)
+            for (var i = 0; i < size_; ++i)
             {
                 arguments_.Add(new ConstantParameter(1.0, new PositiveConstraint()));
             }
@@ -53,22 +53,16 @@ namespace QLNet.legacy.libormarketmodels
 
         public override Vector volatility(double t, Vector x = null)
         {
-            Vector tmp = base.volatility(t, x);
-            for (int i = 0; i < size_; ++i)
+            var tmp = base.volatility(t, x);
+            for (var i = 0; i < size_; ++i)
             {
                 tmp[i] *= arguments_[i + 4].value(0.0);
             }
             return tmp;
         }
 
-        public override double volatility(int i, double t, Vector x = null)
-        {
-            return arguments_[i + 4].value(0.0) * base.volatility(i, t, x);
-        }
+        public override double volatility(int i, double t, Vector x = null) => arguments_[i + 4].value(0.0) * base.volatility(i, t, x);
 
-        public override double integratedVariance(int i, int j, double u, Vector x = null)
-        {
-            return arguments_[i + 4].value(0.0) * arguments_[j + 4].value(0.0) * base.integratedVariance(i, j, u, x);
-        }
+        public override double integratedVariance(int i, int j, double u, Vector x = null) => arguments_[i + 4].value(0.0) * arguments_[j + 4].value(0.0) * base.integratedVariance(i, j, u, x);
     }
 }

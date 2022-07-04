@@ -28,8 +28,8 @@ namespace QLNet.Methods.Finitedifferences.Utilities
     {
         public static T accumulate<T>(this IList<T> list, int first, int last, T init, Func<T, T, T> func)
         {
-            T result = init;
-            for (int i = first; i < last; i++)
+            var result = init;
+            for (var i = first; i < last; i++)
             {
                 result = func(result, list[i]);
             }
@@ -39,16 +39,16 @@ namespace QLNet.Methods.Finitedifferences.Utilities
 
         public static int distance<T>(this IList<T> list, T first, T last)
         {
-            int iFirst = list.IndexOf(first);
-            int iLast = list.IndexOf(last);
+            var iFirst = list.IndexOf(first);
+            var iLast = list.IndexOf(last);
 
             return System.Math.Abs(iLast - iFirst + 1) * (iLast < iFirst ? -1 : 1);
         }
 
         public static void copy<T>(this IList<T> input1, int first1, int last1, int first2, IList<T> output)
         {
-            int index = first2;
-            for (int i = first1; i < last1; i++)
+            var index = first2;
+            for (var i = first1; i < last1; i++)
             {
                 output[index++] = input1[i];
             }
@@ -56,9 +56,9 @@ namespace QLNet.Methods.Finitedifferences.Utilities
 
         public static double inner_product(this IList<double> input1, int first1, int last1, int first2, IList<double> v, double init)
         {
-            double sum = init;
-            int index = first2;
-            for (int i = first1; i < last1; i++)
+            var sum = init;
+            var index = first2;
+            for (var i = first1; i < last1; i++)
             {
                 sum += v[index++] * input1[i];
             }
@@ -67,9 +67,9 @@ namespace QLNet.Methods.Finitedifferences.Utilities
 
         public static int inner_product(this IList<int> input1, int first1, int last1, int first2, IList<int> v, int init)
         {
-            int sum = init;
-            int index = first2;
-            for (int i = first1; i < last1; i++)
+            var sum = init;
+            var index = first2;
+            for (var i = first1; i < last1; i++)
             {
                 sum += v[index++] * input1[i];
             }

@@ -24,7 +24,7 @@ using QLNet.Math;
 
 namespace QLNet.Pricingengines.CapFloor
 {
-    public class DiscretizedCapFloor : DiscretizedAsset
+    [JetBrains.Annotations.PublicAPI] public class DiscretizedCapFloor : DiscretizedAsset
     {
         private QLNet.Instruments.CapFloor.Arguments arguments_;
         private List<double> startTimes_;
@@ -37,12 +37,12 @@ namespace QLNet.Pricingengines.CapFloor
             arguments_ = args;
 
             startTimes_ = new InitializedList<double>(args.startDates.Count);
-            for (int i = 0; i < startTimes_.Count; ++i)
+            for (var i = 0; i < startTimes_.Count; ++i)
                 startTimes_[i] = dayCounter.yearFraction(referenceDate,
                                                          args.startDates[i]);
 
             endTimes_ = new InitializedList<double>(args.endDates.Count);
-            for (int i = 0; i < endTimes_.Count; ++i)
+            for (var i = 0; i < endTimes_.Count; ++i)
                 endTimes_[i] = dayCounter.yearFraction(referenceDate,
                                                        args.endDates[i]);
         }
@@ -55,35 +55,35 @@ namespace QLNet.Pricingengines.CapFloor
 
         public override List<double> mandatoryTimes()
         {
-            List<double> times = startTimes_;
+            var times = startTimes_;
 
-            for (int j = 0; j < endTimes_.Count; j++)
+            for (var j = 0; j < endTimes_.Count; j++)
                 times.Insert(0, endTimes_[j]);
             return times;
         }
 
         protected override void preAdjustValuesImpl()
         {
-            for (int i = 0; i < startTimes_.Count; i++)
+            for (var i = 0; i < startTimes_.Count; i++)
             {
                 if (isOnTime(startTimes_[i]))
                 {
-                    double end = endTimes_[i];
-                    double tenor = arguments_.accrualTimes[i];
-                    DiscretizedDiscountBond bond = new DiscretizedDiscountBond();
+                    var end = endTimes_[i];
+                    var tenor = arguments_.accrualTimes[i];
+                    var bond = new DiscretizedDiscountBond();
                     bond.initialize(method(), end);
                     bond.rollback(time_);
 
-                    CapFloorType type = arguments_.type;
-                    double gearing = arguments_.gearings[i];
-                    double nominal = arguments_.nominals[i];
+                    var type = arguments_.type;
+                    var gearing = arguments_.gearings[i];
+                    var nominal = arguments_.nominals[i];
 
                     if (type == CapFloorType.Cap ||
                         type == CapFloorType.Collar)
                     {
-                        double accrual = (double)(1.0 + arguments_.capRates[i] * tenor);
-                        double strike = 1.0 / accrual;
-                        for (int j = 0; j < values_.size(); j++)
+                        var accrual = (double)(1.0 + arguments_.capRates[i] * tenor);
+                        var strike = 1.0 / accrual;
+                        for (var j = 0; j < values_.size(); j++)
                             values_[j] += nominal * accrual * gearing *
                                           System.Math.Max(strike - bond.values()[j], 0.0);
                     }
@@ -91,10 +91,10 @@ namespace QLNet.Pricingengines.CapFloor
                     if (type == CapFloorType.Floor ||
                         type == CapFloorType.Collar)
                     {
-                        double accrual = (double)(1.0 + arguments_.floorRates[i] * tenor);
-                        double strike = 1.0 / accrual;
-                        double mult = type == CapFloorType.Floor ? 1.0 : -1.0;
-                        for (int j = 0; j < values_.size(); j++)
+                        var accrual = (double)(1.0 + arguments_.floorRates[i] * tenor);
+                        var strike = 1.0 / accrual;
+                        var mult = type == CapFloorType.Floor ? 1.0 : -1.0;
+                        for (var j = 0; j < values_.size(); j++)
                             values_[j] += nominal * accrual * mult * gearing *
                                           System.Math.Max(bond.values()[j] - strike, 0.0);
                     }
@@ -104,29 +104,29 @@ namespace QLNet.Pricingengines.CapFloor
 
         protected override void postAdjustValuesImpl()
         {
-            for (int i = 0; i < endTimes_.Count; i++)
+            for (var i = 0; i < endTimes_.Count; i++)
             {
                 if (isOnTime(endTimes_[i]))
                 {
                     if (startTimes_[i] < 0.0)
                     {
-                        double nominal = arguments_.nominals[i];
-                        double accrual = arguments_.accrualTimes[i];
-                        double fixing = (double)arguments_.forwards[i];
-                        double gearing = arguments_.gearings[i];
-                        CapFloorType type = arguments_.type;
+                        var nominal = arguments_.nominals[i];
+                        var accrual = arguments_.accrualTimes[i];
+                        var fixing = (double)arguments_.forwards[i];
+                        var gearing = arguments_.gearings[i];
+                        var type = arguments_.type;
 
                         if (type == CapFloorType.Cap || type == CapFloorType.Collar)
                         {
-                            double cap = (double)arguments_.capRates[i];
-                            double capletRate = System.Math.Max(fixing - cap, 0.0);
+                            var cap = (double)arguments_.capRates[i];
+                            var capletRate = System.Math.Max(fixing - cap, 0.0);
                             values_ += capletRate * accrual * nominal * gearing;
                         }
 
                         if (type == CapFloorType.Floor || type == CapFloorType.Collar)
                         {
-                            double floor = (double)arguments_.floorRates[i];
-                            double floorletRate = System.Math.Max(floor - fixing, 0.0);
+                            var floor = (double)arguments_.floorRates[i];
+                            var floorletRate = System.Math.Max(floor - fixing, 0.0);
                             if (type == CapFloorType.Floor)
                                 values_ += floorletRate * accrual * nominal * gearing;
                             else

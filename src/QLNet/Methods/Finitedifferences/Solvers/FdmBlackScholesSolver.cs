@@ -25,7 +25,7 @@ using System;
 
 namespace QLNet.Methods.Finitedifferences.Solvers
 {
-    public class FdmBlackScholesSolver : LazyObject
+    [JetBrains.Annotations.PublicAPI] public class FdmBlackScholesSolver : LazyObject
     {
         public FdmBlackScholesSolver(
            Handle<GeneralizedBlackScholesProcess> process,
@@ -65,15 +65,11 @@ namespace QLNet.Methods.Finitedifferences.Solvers
             return (solver_.derivativeXX(System.Math.Log(s))
                     - solver_.derivativeX(System.Math.Log(s))) / (s * s);
         }
-        public double thetaAt(double s)
-        {
-            return solver_.thetaAt(System.Math.Log(s));
-        }
-
+        public double thetaAt(double s) => solver_.thetaAt(System.Math.Log(s));
 
         protected override void performCalculations()
         {
-            FdmBlackScholesOp op = new FdmBlackScholesOp(
+            var op = new FdmBlackScholesOp(
                solverDesc_.mesher, process_.currentLink(), strike_,
                localVol_, illegalLocalVolOverwrite_, 0,
                quantoHelper_.empty()

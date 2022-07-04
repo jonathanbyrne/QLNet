@@ -25,7 +25,7 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
     /*! Incremental Brownian generator using a Sobol generator,
         inverse-cumulative Gaussian method, and Brownian bridging.
     */
-    public class SobolBrownianGenerator : IBrownianGenerator
+    [JetBrains.Annotations.PublicAPI] public class SobolBrownianGenerator : IBrownianGenerator
     {
         public enum Ordering
         {
@@ -50,7 +50,7 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
             lastStep_ = 0;
             orderedIndices_ = new InitializedList<List<int>>(factors);
             bridgedVariates_ = new InitializedList<List<double>>(factors);
-            for (int i = 0; i < factors; i++)
+            for (var i = 0; i < factors; i++)
             {
                 orderedIndices_[i] = new InitializedList<int>(steps);
                 bridgedVariates_[i] = new InitializedList<double>(steps);
@@ -75,11 +75,11 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
 
         public double nextPath()
         {
-            Sample<List<double>> sample = generator_.nextSequence();
+            var sample = generator_.nextSequence();
             // Brownian-bridge the variates according to the ordered indices
-            for (int i = 0; i < factors_; ++i)
+            for (var i = 0; i < factors_; ++i)
             {
-                List<double> permList = new List<double>();
+                var permList = new List<double>();
                 foreach (var index in orderedIndices_[i])
                 {
                     permList.Add(sample.value[index]);
@@ -96,41 +96,43 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
          Utils.QL_REQUIRE(output.Count == factors_, () => "size mismatch");
          Utils.QL_REQUIRE(lastStep_<steps_, () => "sequence exhausted");
 #endif
-            for (int i = 0; i < factors_; ++i)
+            for (var i = 0; i < factors_; ++i)
                 output[i] = bridgedVariates_[i][lastStep_];
             ++lastStep_;
             return 1.0;
         }
 
-        public int numberOfFactors() { return factors_; }
-        public int numberOfSteps() { return steps_; }
+        public int numberOfFactors() => factors_;
+
+        public int numberOfSteps() => steps_;
 
         // test interface
-        public List<List<int>> orderedIndices() { return orderedIndices_; }
+        public List<List<int>> orderedIndices() => orderedIndices_;
+
         public List<List<double>> transform(List<List<double>> variates)
         {
             Utils.QL_REQUIRE(variates.Count == factors_ * steps_, () => "inconsistent variate vector");
 
-            int dim = factors_ * steps_;
-            int nPaths = variates.First().Count;
+            var dim = factors_ * steps_;
+            var nPaths = variates.First().Count;
 
             List<List<double>> retVal = new InitializedList<List<double>>(factors_, new InitializedList<double>(nPaths * steps_));
 
-            for (int j = 0; j < nPaths; ++j)
+            for (var j = 0; j < nPaths; ++j)
             {
                 List<double> sample = new InitializedList<double>(steps_ * factors_);
-                for (int k = 0; k < dim; ++k)
+                for (var k = 0; k < dim; ++k)
                 {
                     sample[k] = variates[k][j];
                 }
-                for (int i = 0; i < factors_; ++i)
+                for (var i = 0; i < factors_; ++i)
                 {
-                    List<double> permList = new List<double>();
+                    var permList = new List<double>();
                     foreach (var index in orderedIndices_[i])
                     {
                         permList.Add(sample[index]);
                     }
-                    List<double> temp = retVal[i].GetRange(j * steps_, retVal[i].Count - j * steps_);
+                    var temp = retVal[i].GetRange(j * steps_, retVal[i].Count - j * steps_);
                     bridge_.transform(permList, temp);   // TODO Check
                 }
             }
@@ -139,17 +141,17 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
 
         private void fillByFactor(List<List<int>> M, int factors, int steps)
         {
-            int counter = 0;
-            for (int i = 0; i < factors; ++i)
-                for (int j = 0; j < steps; ++j)
+            var counter = 0;
+            for (var i = 0; i < factors; ++i)
+                for (var j = 0; j < steps; ++j)
                     M[i][j] = counter++;
         }
 
         private void fillByStep(List<List<int>> M, int factors, int steps)
         {
-            int counter = 0;
-            for (int j = 0; j < steps; ++j)
-                for (int i = 0; i < factors; ++i)
+            var counter = 0;
+            for (var j = 0; j < steps; ++j)
+                for (var i = 0; i < factors; ++i)
                     M[i][j] = counter++;
         }
 
@@ -160,7 +162,7 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
             int i0 = 0, j0 = 0;
             // current position
             int i = 0, j = 0;
-            int counter = 0;
+            var counter = 0;
             while (counter < factors * steps)
             {
                 M[i][j] = counter++;
@@ -201,7 +203,7 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
         private List<List<double>> bridgedVariates_;
     }
 
-    public class SobolBrownianGeneratorFactory : IBrownianGeneratorFactory
+    [JetBrains.Annotations.PublicAPI] public class SobolBrownianGeneratorFactory : IBrownianGeneratorFactory
     {
         public SobolBrownianGeneratorFactory(SobolBrownianGenerator.Ordering ordering, ulong seed = 0,
                                              SobolRsg.DirectionIntegers integers = SobolRsg.DirectionIntegers.Jaeckel)
@@ -211,10 +213,7 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
             integers_ = integers;
         }
 
-        public IBrownianGenerator create(int factors, int steps)
-        {
-            return new SobolBrownianGenerator(factors, steps, ordering_, seed_, integers_);
-        }
+        public IBrownianGenerator create(int factors, int steps) => new SobolBrownianGenerator(factors, steps, ordering_, seed_, integers_);
 
         private SobolBrownianGenerator.Ordering ordering_;
         private ulong seed_;

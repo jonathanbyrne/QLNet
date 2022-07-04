@@ -37,43 +37,28 @@ namespace QLNet.Math.Optimization
         }
 
         //! return last x value
-        public Vector lastX()
-        {
-            return xtd_;
-        }
+        public Vector lastX() => xtd_;
 
         //! return last cost function value
-        public double lastFunctionValue()
-        {
-            return qt_;
-        }
+        public double lastFunctionValue() => qt_;
 
         //! return last gradient
-        public Vector lastGradient()
-        {
-            return gradient_;
-        }
+        public Vector lastGradient() => gradient_;
 
         //! return square norm of last gradient
-        public double lastGradientNorm2()
-        {
-            return qpt_;
-        }
+        public double lastGradientNorm2() => qpt_;
 
-        public bool succeed()
-        {
-            return succeed_;
-        }
+        public bool succeed() => succeed_;
 
         //! Perform line search
         public abstract double value(Problem P, ref EndCriteria.Type ecType, EndCriteria NamelessParameter3, double t_ini); // initial value of line-search step
 
         public double update(ref Vector data, Vector direction, double beta, Constraint constraint)
         {
-            double diff = beta;
-            Vector newParams = data + diff * direction;
-            bool valid = constraint.test(newParams);
-            int icount = 0;
+            var diff = beta;
+            var newParams = data + diff * direction;
+            var valid = constraint.test(newParams);
+            var icount = 0;
             while (!valid)
             {
                 Utils.QL_REQUIRE(icount <= 200, () => "can't update linesearch");
@@ -89,14 +74,8 @@ namespace QLNet.Math.Optimization
         //! current value of the search direction
         public Vector searchDirection
         {
-            get
-            {
-                return searchDirection_;
-            }
-            set
-            {
-                searchDirection_ = value;
-            }
+            get => searchDirection_;
+            set => searchDirection_ = value;
         }
 
         //! current values of the search direction

@@ -25,21 +25,21 @@ namespace QLNet.Instruments.Bonds
         public abstract Date paymentDate(Date eventDate);
     }
 
-    public class NoOffset : EventPaymentOffset
+    [JetBrains.Annotations.PublicAPI] public class NoOffset : EventPaymentOffset
     {
-        public override Date paymentDate(Date eventDate) { return eventDate; }
+        public override Date paymentDate(Date eventDate) => eventDate;
     }
 
-    public class NotionalPath
+    [JetBrains.Annotations.PublicAPI] public class NotionalPath
     {
         public NotionalPath()
         {
-            double previous = 1.0;//full notional at the beginning
+            var previous = 1.0;//full notional at the beginning
             notionalRate_ = new List<KeyValuePair<Date, double>> { new KeyValuePair<Date, double>(new Date(), previous) };
         }
         public double notionalRate(Date date)  //The fraction of the original notional left on a given date
         {
-            int i = 0;
+            var i = 0;
             for (; i < notionalRate_.Count && notionalRate_[i].Key <= date; ++i) //TODO do we take notional after reductions or before?
             { }
             return notionalRate_[i - 1].Value;
@@ -56,10 +56,7 @@ namespace QLNet.Instruments.Bonds
             notionalRate_.Add(new KeyValuePair<Date, double>(date, newRate));
         }
 
-        public double loss()
-        {
-            return 1.0 - notionalRate_.Last().Value;
-        }
+        public double loss() => 1.0 - notionalRate_.Last().Value;
 
         private List<KeyValuePair<Date, double>> notionalRate_;
     }
@@ -76,7 +73,7 @@ namespace QLNet.Instruments.Bonds
         protected EventPaymentOffset paymentOffset_;
     }
 
-    public class DigitalNotionalRisk : NotionalRisk
+    [JetBrains.Annotations.PublicAPI] public class DigitalNotionalRisk : NotionalRisk
     {
         public DigitalNotionalRisk(EventPaymentOffset paymentOffset, double threshold)
            : base(paymentOffset)
@@ -88,7 +85,7 @@ namespace QLNet.Instruments.Bonds
                                         NotionalPath path)
         {
             path.reset();
-            for (int i = 0; i < events.Count; ++i)
+            for (var i = 0; i < events.Count; ++i)
             {
                 if (events[i].Value >= threshold_)
                     path.addReduction(paymentOffset_.paymentDate(events[i].Key), 0.0);
@@ -98,7 +95,7 @@ namespace QLNet.Instruments.Bonds
         protected double threshold_;
     }
 
-    public class ProportionalNotionalRisk : NotionalRisk
+    [JetBrains.Annotations.PublicAPI] public class ProportionalNotionalRisk : NotionalRisk
     {
         public ProportionalNotionalRisk(EventPaymentOffset paymentOffset, double attachement, double exhaustion)
            : base(paymentOffset)
@@ -114,7 +111,7 @@ namespace QLNet.Instruments.Bonds
             path.reset();
             double losses = 0;
             double previousNotional = 1;
-            for (int i = 0; i < events.Count; ++i)
+            for (var i = 0; i < events.Count; ++i)
             {
                 losses += events[i].Value;
                 if (losses > attachement_ && previousNotional > 0)

@@ -83,7 +83,7 @@ namespace QLNet.Instruments
         \todo add greeks and explicit exercise lag
     */
 
-    public class Swaption : Option
+    [JetBrains.Annotations.PublicAPI] public class Swaption : Option
     {
 
         public Arguments arguments { get; set; }
@@ -107,18 +107,15 @@ namespace QLNet.Instruments
         }
 
         // Instrument interface
-        public override bool isExpired()
-        {
-            return new simple_event(exercise_.dates().Last()).hasOccurred();
-        }
+        public override bool isExpired() => new simple_event(exercise_.dates().Last()).hasOccurred();
 
         public override void setupArguments(IPricingEngineArguments args)
         {
             swap_.setupArguments(args);
 
-            Arguments arguments = args as Arguments;
+            var arguments = args as Arguments;
             if (arguments == null)
-                throw new ArgumentException("wrong argument type");
+                throw new ArgumentException("wrong argument ExerciseType");
             arguments.swap = swap_;
             arguments.settlementType = settlementType_;
             arguments.settlementMethod = settlementMethod_;
@@ -137,25 +134,13 @@ namespace QLNet.Instruments
         }
 
         // Inspectors
-        public Settlement.Type settlementType()
-        {
-            return settlementType_;
-        }
+        public Settlement.Type settlementType() => settlementType_;
 
-        public Settlement.Method settlementMethod()
-        {
-            return settlementMethod_;
-        }
+        public Settlement.Method settlementMethod() => settlementMethod_;
 
-        public VanillaSwap.Type type()
-        {
-            return swap_.swapType;
-        }
+        public VanillaSwap.Type type() => swap_.swapType;
 
-        public VanillaSwap underlyingSwap()
-        {
-            return swap_;
-        }
+        public VanillaSwap underlyingSwap() => swap_;
 
         //! implied volatility
         public double impliedVolatility(double targetValue,
@@ -171,8 +156,8 @@ namespace QLNet.Instruments
             calculate();
             if (isExpired())
                 throw new ArgumentException("instrument expired");
-            ImpliedVolHelper_ f = new ImpliedVolHelper_(this, discountCurve, targetValue, displacement, type);
-            NewtonSafe solver = new NewtonSafe();
+            var f = new ImpliedVolHelper_(this, discountCurve, targetValue, displacement, type);
+            var solver = new NewtonSafe();
             solver.setMaxEvaluations(maxEvaluations);
             return solver.solve(f, accuracy, guess, minVol, maxVol);
         }
@@ -194,7 +179,7 @@ namespace QLNet.Instruments
     //! base class for swaption engines
     public abstract class SwaptionEngine : GenericEngine<Swaption.Arguments, Instrument.Results> { }
 
-    public class ImpliedVolHelper_ : ISolver1d
+    [JetBrains.Annotations.PublicAPI] public class ImpliedVolHelper_ : ISolver1d
     {
 
         private IPricingEngine engine_;
@@ -214,7 +199,7 @@ namespace QLNet.Instruments
             // set an implausible value, so that calculation is forced
             // at first ImpliedVolHelper::operator()(Volatility x) call
             vol_ = new SimpleQuote(-1.0);
-            Handle<Quote> h = new Handle<Quote>(vol_);
+            var h = new Handle<Quote>(vol_);
             switch (type)
             {
                 case VolatilityType.ShiftedLognormal:

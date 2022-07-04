@@ -30,27 +30,27 @@ using QLNet.Math.Interpolations;
 
 namespace QLNet.Termstructures
 {
-    public interface IBootStrap<T>
+    [JetBrains.Annotations.PublicAPI] public interface IBootStrap<T>
     {
         void setup(T ts);
         void calculate();
     }
 
-    public class IterativeBootstrapForYield : IterativeBootstrap<PiecewiseYieldCurve, YieldTermStructure>
+    [JetBrains.Annotations.PublicAPI] public class IterativeBootstrapForYield : IterativeBootstrap<PiecewiseYieldCurve, YieldTermStructure>
     {
     }
 
-    public class IterativeBootstrapForInflation : IterativeBootstrap<PiecewiseZeroInflationCurve, ZeroInflationTermStructure>
+    [JetBrains.Annotations.PublicAPI] public class IterativeBootstrapForInflation : IterativeBootstrap<PiecewiseZeroInflationCurve, ZeroInflationTermStructure>
     {
     }
 
-    public class IterativeBootstrapForYoYInflation : IterativeBootstrap<PiecewiseYoYInflationCurve, YoYInflationTermStructure>
+    [JetBrains.Annotations.PublicAPI] public class IterativeBootstrapForYoYInflation : IterativeBootstrap<PiecewiseYoYInflationCurve, YoYInflationTermStructure>
     {
     }
 
 
     //! Universal piecewise-term-structure boostrapper.
-    public class IterativeBootstrap<T, U> : IBootStrap<T>
+    [JetBrains.Annotations.PublicAPI] public class IterativeBootstrap<T, U> : IBootStrap<T>
        where T : Curve<U>, new()
        where U : TermStructure
     {
@@ -74,7 +74,7 @@ namespace QLNet.Termstructures
         private void initialize()
         {
             // skip expired helpers
-            Date firstDate = ts_.initialDate();
+            var firstDate = ts_.initialDate();
             Utils.QL_REQUIRE(ts_.instruments_[n_ - 1].pillarDate() > firstDate, () => "all instruments expired");
             firstAliveHelper_ = 0;
             while (ts_.instruments_[firstAliveHelper_].pillarDate() <= firstDate)
@@ -97,8 +97,8 @@ namespace QLNet.Termstructures
                 ts_.times_.Resize(alive_ + 1);
             }
 
-            List<Date> dates = ts_.dates_;
-            List<double> times = ts_.times_;
+            var dates = ts_.dates_;
+            var times = ts_.times_;
 
 
             errors_ = new List<BootstrapError<T, U>>(alive_ + 1);
@@ -107,7 +107,7 @@ namespace QLNet.Termstructures
             Date latestRelevantDate, maxDate = firstDate;
             for (int i = 1, j = firstAliveHelper_; j < n_; ++i, ++j)
             {
-                BootstrapHelper<U> helper = ts_.instruments_[j];
+                var helper = ts_.instruments_[j];
                 dates[i] = helper.pillarDate();
                 times[i] = ts_.timeFromReference(dates[i]);
                 // check for duplicated maturity
@@ -171,9 +171,9 @@ namespace QLNet.Termstructures
                 initialize();
 
             // setup helpers
-            for (int j = firstAliveHelper_; j < n_; ++j)
+            for (var j = firstAliveHelper_; j < n_; ++j)
             {
-                BootstrapHelper<U> helper = ts_.instruments_[j];
+                var helper = ts_.instruments_[j];
                 // check for valid quote
                 Utils.QL_REQUIRE(helper.quote().link.isValid(), () =>
                                  j + 1 + " instrument (maturity: " +
@@ -184,26 +184,26 @@ namespace QLNet.Termstructures
                 ts_.setTermStructure(ts_.instruments_[j]);
             }
 
-            List<double> times = ts_.times_;
-            List<double> data = ts_.data_;
-            double accuracy = ts_.accuracy_;
-            int maxIterations = ts_.maxIterations() - 1;
+            var times = ts_.times_;
+            var data = ts_.data_;
+            var accuracy = ts_.accuracy_;
+            var maxIterations = ts_.maxIterations() - 1;
 
             // there might be a valid curve state to use as guess
-            bool validData = validCurve_;
+            var validData = validCurve_;
 
-            for (int iteration = 0; ; ++iteration)
+            for (var iteration = 0; ; ++iteration)
             {
                 previousData_ = new List<double>(ts_.data_);
 
-                for (int i = 1; i <= alive_; ++i)
+                for (var i = 1; i <= alive_; ++i)
                 {
                     // pillar loop
 
                     // bracket root and calculate guess
-                    double min = ts_.minValueAfter(i, ts_, validData, firstAliveHelper_);
-                    double max = ts_.maxValueAfter(i, ts_, validData, firstAliveHelper_);
-                    double guess = ts_.guess(i, ts_, validData, firstAliveHelper_);
+                    var min = ts_.minValueAfter(i, ts_, validData, firstAliveHelper_);
+                    var max = ts_.maxValueAfter(i, ts_, validData, firstAliveHelper_);
+                    var guess = ts_.guess(i, ts_, validData, firstAliveHelper_);
                     // adjust guess if needed
                     if (guess >= max)
                         guess = max - (max - min) / 5.0;
@@ -262,8 +262,8 @@ namespace QLNet.Termstructures
                     break;     // no need for convergence loop
 
                 // exit condition
-                double change = System.Math.Abs(data[1] - previousData_[1]);
-                for (int i = 2; i <= alive_; ++i)
+                var change = System.Math.Abs(data[1] - previousData_[1]);
+                for (var i = 2; i <= alive_; ++i)
                     change = System.Math.Max(change, System.Math.Abs(data[i] - previousData_[i]));
                 if (change <= accuracy)    // convergence reached
                     break;

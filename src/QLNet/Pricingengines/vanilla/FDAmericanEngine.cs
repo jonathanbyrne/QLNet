@@ -30,7 +30,7 @@ namespace QLNet.Pricingengines.vanilla
         - the correctness of the returned value is tested by reproducing results available in literature.
         - the correctness of the returned greeks is tested by reproducing numerical derivatives.
     */
-    public class FDAmericanEngine : FDEngineAdapter<FDAmericanCondition<FDStepConditionEngine>, OneAssetOption.Engine>,
+    [JetBrains.Annotations.PublicAPI] public class FDAmericanEngine : FDEngineAdapter<FDAmericanCondition<FDStepConditionEngine>, OneAssetOption.Engine>,
       IFDEngine
     {
         // required for generics
@@ -40,9 +40,6 @@ namespace QLNet.Pricingengines.vanilla
                                 bool timeDependent = false)
            : base(process, timeSteps, gridPoints, timeDependent) { }
 
-        public IFDEngine factory(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100)
-        {
-            return new FDAmericanEngine(process, timeSteps, gridPoints);
-        }
+        public IFDEngine factory(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100) => new FDAmericanEngine(process, timeSteps, gridPoints);
     }
 }

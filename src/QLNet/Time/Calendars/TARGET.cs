@@ -35,7 +35,7 @@ namespace QLNet.Time.Calendars
         <li>December 31st (1998, 1999, and 2001)</li>
         </ul>
     */
-    public class TARGET : Calendar
+    [JetBrains.Annotations.PublicAPI] public class TARGET : Calendar
     {
         public TARGET() : base(Impl.Singleton) { }
 
@@ -44,14 +44,15 @@ namespace QLNet.Time.Calendars
             internal static readonly Impl Singleton = new Impl();
             private Impl() { }
 
-            public override string name() { return "TARGET calendar"; }
+            public override string name() => "TARGET calendar";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
 
                 if (isWeekend(w)
                     // New Year's Day

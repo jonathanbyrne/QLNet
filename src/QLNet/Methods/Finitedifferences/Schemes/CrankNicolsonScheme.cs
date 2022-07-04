@@ -28,7 +28,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         Douglas scheme and in higher dimensions it is usually inferior to
         operator splitting methods like Craig-Sneyd or Hundsdorfer-Verwer.
     */
-    public class CrankNicolsonScheme : IMixedScheme, ISchemeFactory
+    [JetBrains.Annotations.PublicAPI] public class CrankNicolsonScheme : IMixedScheme, ISchemeFactory
     {
         public CrankNicolsonScheme()
         { }
@@ -49,9 +49,9 @@ namespace QLNet.Methods.Finitedifferences.Schemes
 
         public IMixedScheme factory(object L, object bcs, object[] additionalInputs = null)
         {
-            double? theta = additionalInputs[0] as double?;
-            double? relTol = additionalInputs[1] as double?;
-            ImplicitEulerScheme.SolverType? solverType = additionalInputs[2] as ImplicitEulerScheme.SolverType?;
+            var theta = additionalInputs[0] as double?;
+            var relTol = additionalInputs[1] as double?;
+            var solverType = additionalInputs[2] as ImplicitEulerScheme.SolverType?;
             return new CrankNicolsonScheme(theta.Value, L as FdmLinearOpComposite,
                                            bcs as List<BoundaryCondition<FdmLinearOp>>, relTol.Value, solverType.Value);
         }
@@ -75,10 +75,8 @@ namespace QLNet.Methods.Finitedifferences.Schemes
             implicit_.setStep(dt_.Value);
         }
 
-        public int numberOfIterations()
-        {
-            return implicit_.numberOfIterations();
-        }
+        public int numberOfIterations() => implicit_.numberOfIterations();
+
         protected double? dt_;
         protected double theta_;
         protected ExplicitEulerScheme explicit_;

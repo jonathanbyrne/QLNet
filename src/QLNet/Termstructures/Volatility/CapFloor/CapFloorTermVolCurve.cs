@@ -29,7 +29,7 @@ namespace QLNet.Termstructures.Volatility.CapFloor
         interpolating a volatility vector whose elements are the market
         volatilities of a set of caps/floors with given length.
     */
-    public class CapFloorTermVolCurve : CapFloorTermVolatilityStructure
+    [JetBrains.Annotations.PublicAPI] public class CapFloorTermVolCurve : CapFloorTermVolatilityStructure
     {
         //! floating reference date, floating market data
         public CapFloorTermVolCurve(int settlementDays,
@@ -93,7 +93,7 @@ namespace QLNet.Termstructures.Volatility.CapFloor
             checkInputs();
             initializeOptionDatesAndTimes();
             // fill dummy handles to allow generic handle-based computations later
-            for (int i = 0; i < nOptionTenors_; ++i)
+            for (var i = 0; i < nOptionTenors_; ++i)
                 volHandles_[i] = new Handle<Quote>(new SimpleQuote(vols_[i]));
             interpolate();
         }
@@ -116,7 +116,7 @@ namespace QLNet.Termstructures.Volatility.CapFloor
             checkInputs();
             initializeOptionDatesAndTimes();
             // fill dummy handles to allow generic handle-based computations later
-            for (int i = 0; i < nOptionTenors_; ++i)
+            for (var i = 0; i < nOptionTenors_; ++i)
                 volHandles_[i] = new Handle<Quote>(new SimpleQuote(vols_[i]));
             interpolate();
 
@@ -129,15 +129,17 @@ namespace QLNet.Termstructures.Volatility.CapFloor
         }
 
         // VolatilityTermStructure interface
-        public override double minStrike() { return double.MinValue; }
-        public override double maxStrike() { return double.MaxValue; }
+        public override double minStrike() => double.MinValue;
+
+        public override double maxStrike() => double.MaxValue;
+
         // LazyObject interface
         public override void update()
         {
             // recalculate dates if necessary...
             if (moving_)
             {
-                Date d = Settings.evaluationDate();
+                var d = Settings.evaluationDate();
                 if (evaluationDate_ != d)
                 {
                     evaluationDate_ = d;
@@ -151,13 +153,14 @@ namespace QLNet.Termstructures.Volatility.CapFloor
         {
             // check if date recalculation must be called here
 
-            for (int i = 0; i < vols_.Count; ++i)
+            for (var i = 0; i < vols_.Count; ++i)
                 vols_[i] = volHandles_[i].link.value();
 
             interpolation_.update();
         }
         // some inspectors
-        public List<Period> optionTenors() { return optionTenors_; }
+        public List<Period> optionTenors() => optionTenors_;
+
         public List<Date> optionDates()
         {
             // what if quotes are not available?
@@ -186,7 +189,7 @@ namespace QLNet.Termstructures.Volatility.CapFloor
                              vols_.Count + ")");
             Utils.QL_REQUIRE(optionTenors_[0] > new Period(0, TimeUnit.Days), () =>
                              "negative first option tenor: " + optionTenors_[0]);
-            for (int i = 1; i < nOptionTenors_; ++i)
+            for (var i = 1; i < nOptionTenors_; ++i)
                 Utils.QL_REQUIRE(optionTenors_[i] > optionTenors_[i - 1], () =>
                                  "non increasing option tenor: " + i +
                                  " is " + optionTenors_[i - 1] + ", " +
@@ -194,7 +197,7 @@ namespace QLNet.Termstructures.Volatility.CapFloor
         }
         private void initializeOptionDatesAndTimes()
         {
-            for (int i = 0; i < nOptionTenors_; ++i)
+            for (var i = 0; i < nOptionTenors_; ++i)
             {
                 optionDates_[i] = optionDateFromTenor(optionTenors_[i]);
                 optionTimes_[i] = timeFromReference(optionDates_[i]);
@@ -203,7 +206,7 @@ namespace QLNet.Termstructures.Volatility.CapFloor
 
         private void registerWithMarketData()
         {
-            for (int i = 0; i < volHandles_.Count; ++i)
+            for (var i = 0; i < volHandles_.Count; ++i)
                 volHandles_[i].registerWith(update);
         }
         private void interpolate()

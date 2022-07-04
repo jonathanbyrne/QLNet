@@ -26,7 +26,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_InterestRate
+    [JetBrains.Annotations.PublicAPI] public class T_InterestRate
     {
         public struct InterestRateData
         {
@@ -102,7 +102,7 @@ namespace QLNet.Tests
             Rounding roundingPrecision;
             double r3;
             double r2;
-            Date d1 = Date.Today;
+            var d1 = Date.Today;
             Date d2;
             InterestRate ir;
             InterestRate ir2;
@@ -112,7 +112,7 @@ namespace QLNet.Tests
             double error;
             double disc;
 
-            for (int i = 0; i < cases.Length - 1; i++)
+            for (var i = 0; i < cases.Length - 1; i++)
             {
                 ir = new InterestRate(cases[i].r, new Actual360(), cases[i].comp, cases[i].freq);
                 d2 = d1 + new Period((int)(360 * cases[i].t + 0.5), TimeUnit.Days);

@@ -31,7 +31,7 @@ namespace QLNet.Methods.montecarlo
         \test the generated paths are checked against cached results
     */
 
-    public class PathGenerator<GSG> : IPathGenerator<GSG> where GSG : IRNG
+    [JetBrains.Annotations.PublicAPI] public class PathGenerator<GSG> : IPathGenerator<GSG> where GSG : IRNG
     {
         private bool brownianBridge_;
         private GSG generator_;
@@ -72,19 +72,13 @@ namespace QLNet.Methods.montecarlo
                              "sequence generator dimensionality (" + dimension_ + ") != timeSteps (" + (timeGrid_.size() - 1) + ")");
         }
 
-        public Sample<IPath> next()
-        {
-            return next(false);
-        }
+        public Sample<IPath> next() => next(false);
 
-        public Sample<IPath> antithetic()
-        {
-            return next(true);
-        }
+        public Sample<IPath> antithetic() => next(true);
 
         private Sample<IPath> next(bool antithetic)
         {
-            Sample<List<double>> sequence_ =
+            var sequence_ =
                antithetic
                ? generator_.lastSequence()
                : generator_.nextSequence();
@@ -100,13 +94,13 @@ namespace QLNet.Methods.montecarlo
 
             next_.weight = sequence_.weight;
 
-            Path path = (Path)next_.value;
+            var path = (Path)next_.value;
             path.setFront(process_.x0());
 
-            for (int i = 1; i < path.length(); i++)
+            for (var i = 1; i < path.length(); i++)
             {
-                double t = timeGrid_[i - 1];
-                double dt = timeGrid_.dt(i - 1);
+                var t = timeGrid_[i - 1];
+                var dt = timeGrid_.dt(i - 1);
                 path[i] = process_.evolve(t, path[i - 1], dt,
                                           antithetic
                                           ? -temp_[i - 1]

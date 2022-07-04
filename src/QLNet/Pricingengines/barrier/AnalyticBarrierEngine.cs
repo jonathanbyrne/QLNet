@@ -33,7 +33,7 @@ namespace QLNet.Pricingengines.barrier
     //        \test the correctness of the returned value is tested by
     //              reproducing results available in literature.
     //
-    public class AnalyticBarrierEngine : BarrierOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class AnalyticBarrierEngine : BarrierOption.Engine
     {
         public AnalyticBarrierEngine(GeneralizedBlackScholesProcess process)
         {
@@ -43,18 +43,18 @@ namespace QLNet.Pricingengines.barrier
         public override void calculate()
         {
 
-            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
 
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
             Utils.QL_REQUIRE(payoff.strike() > 0.0, () => "strike must be positive");
 
-            double strike = payoff.strike();
-            double spot = process_.x0();
+            var strike = payoff.strike();
+            var spot = process_.x0();
 
             Utils.QL_REQUIRE(spot >= 0.0, () => "negative or null underlying given");
             Utils.QL_REQUIRE(!triggered(spot), () => "barrier touched");
 
-            Barrier.Type barrierType = arguments_.barrierType;
+            var barrierType = arguments_.barrierType;
 
             switch (payoff.optionType())
             {
@@ -117,112 +117,89 @@ namespace QLNet.Pricingengines.barrier
                     }
                     break;
                 default:
-                    Utils.QL_FAIL("unknown type");
+                    Utils.QL_FAIL("unknown ExerciseType");
                     break;
             }
         }
         private GeneralizedBlackScholesProcess process_;
         private CumulativeNormalDistribution f_ = new CumulativeNormalDistribution();
 
-        private double underlying()
-        {
-            return process_.x0();
-        }
+        private double underlying() => process_.x0();
 
         private double strike()
         {
-            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
             return payoff.strike();
         }
-        private double residualTime()
-        {
-            return process_.time(arguments_.exercise.lastDate());
-        }
-        private double volatility()
-        {
-            return process_.blackVolatility().link.blackVol(residualTime(), strike());
-        }
-        private double barrier()
-        {
-            return arguments_.barrier.GetValueOrDefault();
-        }
-        private double rebate()
-        {
-            return arguments_.rebate.GetValueOrDefault();
-        }
-        private double stdDeviation()
-        {
-            return volatility() * System.Math.Sqrt(residualTime());
-        }
-        private double riskFreeRate()
-        {
-            return process_.riskFreeRate().link.zeroRate(residualTime(), Compounding.Continuous, Frequency.NoFrequency).rate();
-        }
-        private double riskFreeDiscount()
-        {
-            return process_.riskFreeRate().link.discount(residualTime());
-        }
-        private double dividendYield()
-        {
-            return process_.dividendYield().link.zeroRate(residualTime(), Compounding.Continuous, Frequency.NoFrequency).rate();
-        }
-        private double dividendDiscount()
-        {
-            return process_.dividendYield().link.discount(residualTime());
-        }
+        private double residualTime() => process_.time(arguments_.exercise.lastDate());
+
+        private double volatility() => process_.blackVolatility().link.blackVol(residualTime(), strike());
+
+        private double barrier() => arguments_.barrier.GetValueOrDefault();
+
+        private double rebate() => arguments_.rebate.GetValueOrDefault();
+
+        private double stdDeviation() => volatility() * System.Math.Sqrt(residualTime());
+
+        private double riskFreeRate() => process_.riskFreeRate().link.zeroRate(residualTime(), Compounding.Continuous, Frequency.NoFrequency).rate();
+
+        private double riskFreeDiscount() => process_.riskFreeRate().link.discount(residualTime());
+
+        private double dividendYield() => process_.dividendYield().link.zeroRate(residualTime(), Compounding.Continuous, Frequency.NoFrequency).rate();
+
+        private double dividendDiscount() => process_.dividendYield().link.discount(residualTime());
+
         private double mu()
         {
-            double vol = volatility();
+            var vol = volatility();
             return (riskFreeRate() - dividendYield()) / (vol * vol) - 0.5;
         }
-        private double muSigma()
-        {
-            return (1 + mu()) * stdDeviation();
-        }
+        private double muSigma() => (1 + mu()) * stdDeviation();
+
         private double A(double phi)
         {
-            double x1 = System.Math.Log(underlying() / strike()) / stdDeviation() + muSigma();
-            double N1 = f_.value(phi * x1);
-            double N2 = f_.value(phi * (x1 - stdDeviation()));
+            var x1 = System.Math.Log(underlying() / strike()) / stdDeviation() + muSigma();
+            var N1 = f_.value(phi * x1);
+            var N2 = f_.value(phi * (x1 - stdDeviation()));
             return phi * (underlying() * dividendDiscount() * N1 - strike() * riskFreeDiscount() * N2);
         }
         private double B(double phi)
         {
-            double x2 = System.Math.Log(underlying() / barrier()) / stdDeviation() + muSigma();
-            double N1 = f_.value(phi * x2);
-            double N2 = f_.value(phi * (x2 - stdDeviation()));
+            var x2 = System.Math.Log(underlying() / barrier()) / stdDeviation() + muSigma();
+            var N1 = f_.value(phi * x2);
+            var N2 = f_.value(phi * (x2 - stdDeviation()));
             return phi * (underlying() * dividendDiscount() * N1 - strike() * riskFreeDiscount() * N2);
         }
         private double C(double eta, double phi)
         {
-            double HS = barrier() / underlying();
-            double powHS0 = System.Math.Pow(HS, 2 * mu());
-            double powHS1 = powHS0 * HS * HS;
-            double y1 = System.Math.Log(barrier() * HS / strike()) / stdDeviation() + muSigma();
-            double N1 = f_.value(eta * y1);
-            double N2 = f_.value(eta * (y1 - stdDeviation()));
+            var HS = barrier() / underlying();
+            var powHS0 = System.Math.Pow(HS, 2 * mu());
+            var powHS1 = powHS0 * HS * HS;
+            var y1 = System.Math.Log(barrier() * HS / strike()) / stdDeviation() + muSigma();
+            var N1 = f_.value(eta * y1);
+            var N2 = f_.value(eta * (y1 - stdDeviation()));
             return phi * (underlying() * dividendDiscount() * powHS1 * N1 - strike() * riskFreeDiscount() * powHS0 * N2);
         }
         private double D(double eta, double phi)
         {
-            double HS = barrier() / underlying();
-            double powHS0 = System.Math.Pow(HS, 2 * mu());
-            double powHS1 = powHS0 * HS * HS;
-            double y2 = System.Math.Log(barrier() / underlying()) / stdDeviation() + muSigma();
-            double N1 = f_.value(eta * y2);
-            double N2 = f_.value(eta * (y2 - stdDeviation()));
+            var HS = barrier() / underlying();
+            var powHS0 = System.Math.Pow(HS, 2 * mu());
+            var powHS1 = powHS0 * HS * HS;
+            var y2 = System.Math.Log(barrier() / underlying()) / stdDeviation() + muSigma();
+            var N1 = f_.value(eta * y2);
+            var N2 = f_.value(eta * (y2 - stdDeviation()));
             return phi * (underlying() * dividendDiscount() * powHS1 * N1 - strike() * riskFreeDiscount() * powHS0 * N2);
         }
         private double E(double eta)
         {
             if (rebate() > 0)
             {
-                double powHS0 = System.Math.Pow(barrier() / underlying(), 2 * mu());
-                double x2 = System.Math.Log(underlying() / barrier()) / stdDeviation() + muSigma();
-                double y2 = System.Math.Log(barrier() / underlying()) / stdDeviation() + muSigma();
-                double N1 = f_.value(eta * (x2 - stdDeviation()));
-                double N2 = f_.value(eta * (y2 - stdDeviation()));
+                var powHS0 = System.Math.Pow(barrier() / underlying(), 2 * mu());
+                var x2 = System.Math.Log(underlying() / barrier()) / stdDeviation() + muSigma();
+                var y2 = System.Math.Log(barrier() / underlying()) / stdDeviation() + muSigma();
+                var N1 = f_.value(eta * (x2 - stdDeviation()));
+                var N2 = f_.value(eta * (y2 - stdDeviation()));
                 return rebate() * riskFreeDiscount() * (N1 - powHS0 * N2);
             }
             else
@@ -234,18 +211,18 @@ namespace QLNet.Pricingengines.barrier
         {
             if (rebate() > 0)
             {
-                double m = mu();
-                double vol = volatility();
-                double lambda = System.Math.Sqrt(m * m + 2.0 * riskFreeRate() / (vol * vol));
-                double HS = barrier() / underlying();
-                double powHSplus = System.Math.Pow(HS, m + lambda);
-                double powHSminus = System.Math.Pow(HS, m - lambda);
+                var m = mu();
+                var vol = volatility();
+                var lambda = System.Math.Sqrt(m * m + 2.0 * riskFreeRate() / (vol * vol));
+                var HS = barrier() / underlying();
+                var powHSplus = System.Math.Pow(HS, m + lambda);
+                var powHSminus = System.Math.Pow(HS, m - lambda);
 
-                double sigmaSqrtT = stdDeviation();
-                double z = System.Math.Log(barrier() / underlying()) / sigmaSqrtT + lambda * sigmaSqrtT;
+                var sigmaSqrtT = stdDeviation();
+                var z = System.Math.Log(barrier() / underlying()) / sigmaSqrtT + lambda * sigmaSqrtT;
 
-                double N1 = f_.value(eta * z);
-                double N2 = f_.value(eta * (z - 2.0 * lambda * sigmaSqrtT));
+                var N1 = f_.value(eta * z);
+                var N2 = f_.value(eta * (z - 2.0 * lambda * sigmaSqrtT));
                 return rebate() * (powHSplus * N1 + powHSminus * N2);
             }
             else

@@ -23,7 +23,7 @@ using System;
 
 namespace QLNet.Math.Solvers1d
 {
-    public class FalsePosition : Solver1D
+    [JetBrains.Annotations.PublicAPI] public class FalsePosition : Solver1D
     {
         protected override double solveImpl(ISolver1d f, double xAccuracy)
         {

@@ -33,7 +33,7 @@ namespace QLNet
    {
       // Returns the name of the index.
       // This method is used for output and comparison between indexes.
-      // It is not meant to be used for writing switch-on-type code.
+      // It is not meant to be used for writing switch-on-ExerciseType code.
       public abstract string name();
 
       // Returns the calendar defining valid fixing dates
@@ -47,11 +47,11 @@ namespace QLNet
       public abstract double fixing(Date fixingDate, bool forecastTodaysFixing = false);
 
       // Returns the fixing TimeSeries
-      public TimeSeries < double? > timeSeries() { return IndexManager.instance().getHistory(name()); }
+      public TimeSeries < double? > timeSeries() => IndexManager.instance().getHistory(name());
 
       // Check if index allows for native fixings.
       // If this returns false, calls to addFixing and similar methods will raise an exception.
-      public virtual bool allowsNativeFixings() { return true; }
+      public virtual bool allowsNativeFixings() => true;
 
       // Stores the historical fixing at the given date
       // The date passed as arguments must be the actual calendar date of the fixing; no settlement days must be used.
@@ -66,8 +66,8 @@ namespace QLNet
       public void addFixings(TimeSeries < double? > source, bool forceOverwrite = false)
       {
          checkNativeFixingsAllowed();
-         TimeSeries < double? > target = IndexManager.instance().getHistory(name());
-         foreach (Date d in source.Keys)
+         var target = IndexManager.instance().getHistory(name());
+         foreach (var d in source.Keys)
          {
             if (isValidFixingDate(d))
                if (!target.ContainsKey(d))
@@ -93,8 +93,8 @@ namespace QLNet
          if ((d.Count != v.Count) || d.Count == 0)
             throw new ArgumentException("Wrong collection dimensions when creating index fixings");
 
-         TimeSeries < double? > t = new TimeSeries < double? >();
-         for (int i = 0; i < d.Count; i++)
+         var t = new TimeSeries < double? >();
+         for (var i = 0; i < d.Count; i++)
             t.Add(d[i], v[i]);
          addFixings(t, forceOverwrite);
       }
@@ -119,14 +119,8 @@ namespace QLNet
       private readonly WeakEventSource eventSource = new WeakEventSource();
       public event Callback notifyObserversEvent
       {
-         add
-         {
-            eventSource.Subscribe(value);
-         }
-         remove
-         {
-            eventSource.Unsubscribe(value);
-         }
+         add => eventSource.Subscribe(value);
+         remove => eventSource.Unsubscribe(value);
       }
 
       public void registerWith(Callback handler) { notifyObserversEvent += handler; }

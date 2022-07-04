@@ -24,7 +24,7 @@ using System;
 
 namespace QLNet.Termstructures.Yield
 {
-    public class OISRateHelper : RelativeDateRateHelper
+    [JetBrains.Annotations.PublicAPI] public class OISRateHelper : RelativeDateRateHelper
     {
         public OISRateHelper(int settlementDays,
                              Period tenor, // swap maturity
@@ -39,7 +39,7 @@ namespace QLNet.Termstructures.Yield
             initializeDates();
         }
 
-        public OvernightIndexedSwap swap() { return swap_; }
+        public OvernightIndexedSwap swap() => swap_;
 
         protected override void initializeDates()
         {
@@ -47,7 +47,7 @@ namespace QLNet.Termstructures.Yield
             // dummy OvernightIndex with curve/swap arguments
             // review here
             IborIndex clonedIborIndex = overnightIndex_.clone(termStructureHandle_);
-            OvernightIndex clonedOvernightIndex = clonedIborIndex as OvernightIndex;
+            var clonedOvernightIndex = clonedIborIndex as OvernightIndex;
 
             swap_ = new MakeOIS(tenor_, clonedOvernightIndex, 0.0)
             .withSettlementDays(settlementDays_)
@@ -83,7 +83,7 @@ namespace QLNet.Termstructures.Yield
 
 
     //! Rate helper for bootstrapping over Overnight Indexed Swap rates
-    public class DatedOISRateHelper : RateHelper
+    [JetBrains.Annotations.PublicAPI] public class DatedOISRateHelper : RateHelper
     {
 
         public DatedOISRateHelper(Date startDate,
@@ -99,7 +99,7 @@ namespace QLNet.Termstructures.Yield
             // dummy OvernightIndex with curve/swap arguments
             // review here
             IborIndex clonedIborIndex = overnightIndex.clone(termStructureHandle_);
-            OvernightIndex clonedOvernightIndex = clonedIborIndex as OvernightIndex;
+            var clonedOvernightIndex = clonedIborIndex as OvernightIndex;
 
             swap_ = new MakeOIS(new Period(), clonedOvernightIndex, 0.0)
             .withEffectiveDate(startDate)

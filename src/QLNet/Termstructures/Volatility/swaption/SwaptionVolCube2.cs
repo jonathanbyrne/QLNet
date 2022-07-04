@@ -37,7 +37,7 @@ namespace QLNet.Termstructures.Volatility.swaption
         while swap vs 3M Euribor is used for the 1Y length. The
         shortSwapIndexBase is used to identify this second family.
     */
-    public class SwaptionVolCube2 : SwaptionVolatilityCube
+    [JetBrains.Annotations.PublicAPI] public class SwaptionVolCube2 : SwaptionVolatilityCube
     {
         public SwaptionVolCube2(Handle<SwaptionVolatilityStructure> atmVolStructure,
                                 List<Period> optionTenors,
@@ -52,7 +52,7 @@ namespace QLNet.Termstructures.Volatility.swaption
         {
             volSpreadsInterpolator_ = new List<Interpolation2D>();
             volSpreadsMatrix_ = new List<Matrix>(nStrikes_);
-            for (int i = 0; i < nStrikes_; i++)
+            for (var i = 0; i < nStrikes_; i++)
                 volSpreadsMatrix_.Add(new Matrix(optionTenors.Count, swapTenors.Count, 0.0));
         }
         // LazyObject interface
@@ -60,15 +60,15 @@ namespace QLNet.Termstructures.Volatility.swaption
         {
             base.performCalculations();
             //! set volSpreadsMatrix_ by volSpreads_ quotes
-            for (int i = 0; i < nStrikes_; i++)
-                for (int j = 0; j < nOptionTenors_; j++)
-                    for (int k = 0; k < nSwapTenors_; k++)
+            for (var i = 0; i < nStrikes_; i++)
+                for (var j = 0; j < nOptionTenors_; j++)
+                    for (var k = 0; k < nSwapTenors_; k++)
                     {
-                        Matrix p = volSpreadsMatrix_[i];
+                        var p = volSpreadsMatrix_[i];
                         p[j, k] = volSpreads_[j * nSwapTenors_ + k][i].link.value();
                     }
             //! create volSpreadsInterpolator_
-            for (int i = 0; i < nStrikes_; i++)
+            for (var i = 0; i < nStrikes_; i++)
             {
                 volSpreadsInterpolator_.Add(new BilinearInterpolation(swapLengths_, swapLengths_.Count,
                                                                       optionTimes_, optionTimes_.Count, volSpreadsMatrix_[i]));
@@ -77,25 +77,25 @@ namespace QLNet.Termstructures.Volatility.swaption
         }
 
         // SwaptionVolatilityCube inspectors
-        public Matrix volSpreads(int i) { return volSpreadsMatrix_[i]; }
+        public Matrix volSpreads(int i) => volSpreadsMatrix_[i];
 
         protected override SmileSection smileSectionImpl(Date optionDate, Period swapTenor)
         {
             calculate();
-            double atmForward = atmStrike(optionDate, swapTenor);
-            double atmVol = atmVol_.link.volatility(optionDate, swapTenor, atmForward);
-            double optionTime = timeFromReference(optionDate);
-            double exerciseTimeSqrt = System.Math.Sqrt(optionTime);
+            var atmForward = atmStrike(optionDate, swapTenor);
+            var atmVol = atmVol_.link.volatility(optionDate, swapTenor, atmForward);
+            var optionTime = timeFromReference(optionDate);
+            var exerciseTimeSqrt = System.Math.Sqrt(optionTime);
             List<double> strikes, stdDevs;
             strikes = new List<double>(nStrikes_);
             stdDevs = new List<double>(nStrikes_);
-            double length = swapLength(swapTenor);
-            for (int i = 0; i < nStrikes_; ++i)
+            var length = swapLength(swapTenor);
+            for (var i = 0; i < nStrikes_; ++i)
             {
                 strikes.Add(atmForward + strikeSpreads_[i]);
                 stdDevs.Add(exerciseTimeSqrt * (atmVol + volSpreadsInterpolator_[i].value(length, optionTime)));
             }
-            double shift = atmVol_.link.shift(optionTime, length);
+            var shift = atmVol_.link.shift(optionTime, length);
             return new InterpolatedSmileSection<Linear>(optionTime, strikes, stdDevs, atmForward, new Linear(),
                                                         new Actual365Fixed(), volatilityType(), shift);
         }
@@ -103,9 +103,9 @@ namespace QLNet.Termstructures.Volatility.swaption
         protected override SmileSection smileSectionImpl(double optionTime, double swapLength)
         {
             calculate();
-            Date optionDate = optionDateFromTime(optionTime);
-            Rounding rounder = new Rounding(0);
-            Period swapTenor = new Period((int)rounder.Round(swapLength * 12.0), TimeUnit.Months);
+            var optionDate = optionDateFromTime(optionTime);
+            var rounder = new Rounding(0);
+            var swapTenor = new Period((int)rounder.Round(swapLength * 12.0), TimeUnit.Months);
             // ensure that option date is valid fixing date
             optionDate =
                swapTenor > shortSwapIndexBase_.tenor()

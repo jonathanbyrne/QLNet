@@ -23,7 +23,7 @@ using System.Text;
 
 namespace QLNet.Termstructures.Volatility.Optionlet
 {
-    public class SpreadedOptionletVolatility : OptionletVolatilityStructure
+    [JetBrains.Annotations.PublicAPI] public class SpreadedOptionletVolatility : OptionletVolatilityStructure
     {
         public SpreadedOptionletVolatility(Handle<OptionletVolatilityStructure> baseVol, Handle<Quote> spread)
         {
@@ -35,33 +35,38 @@ namespace QLNet.Termstructures.Volatility.Optionlet
         }
         // All virtual methods of base classes must be forwarded
         // VolatilityTermStructure interface
-        public override BusinessDayConvention businessDayConvention() { return baseVol_.link.businessDayConvention(); }
-        public override double minStrike() { return baseVol_.link.minStrike(); }
-        public override double maxStrike() { return baseVol_.link.maxStrike(); }
+        public override BusinessDayConvention businessDayConvention() => baseVol_.link.businessDayConvention();
+
+        public override double minStrike() => baseVol_.link.minStrike();
+
+        public override double maxStrike() => baseVol_.link.maxStrike();
+
         // TermStructure interface
-        public override DayCounter dayCounter() { return baseVol_.link.dayCounter(); }
-        public override Date maxDate() { return baseVol_.link.maxDate(); }
-        public override double maxTime() { return baseVol_.link.maxTime(); }
-        public override Date referenceDate() { return baseVol_.link.referenceDate(); }
-        public override Calendar calendar() { return baseVol_.link.calendar(); }
-        public override int settlementDays() { return baseVol_.link.settlementDays(); }
+        public override DayCounter dayCounter() => baseVol_.link.dayCounter();
+
+        public override Date maxDate() => baseVol_.link.maxDate();
+
+        public override double maxTime() => baseVol_.link.maxTime();
+
+        public override Date referenceDate() => baseVol_.link.referenceDate();
+
+        public override Calendar calendar() => baseVol_.link.calendar();
+
+        public override int settlementDays() => baseVol_.link.settlementDays();
 
         // All virtual methods of base classes must be forwarded
         // OptionletVolatilityStructure interface
         protected override SmileSection smileSectionImpl(Date d)
         {
-            SmileSection baseSmile = baseVol_.link.smileSection(d, true);
+            var baseSmile = baseVol_.link.smileSection(d, true);
             return new SpreadedSmileSection(baseSmile, spread_);
         }
         protected override SmileSection smileSectionImpl(double optionTime)
         {
-            SmileSection baseSmile = baseVol_.link.smileSection(optionTime, true);
+            var baseSmile = baseVol_.link.smileSection(optionTime, true);
             return new SpreadedSmileSection(baseSmile, spread_);
         }
-        protected override double volatilityImpl(double t, double s)
-        {
-            return baseVol_.link.volatility(t, s, true) + spread_.link.value();
-        }
+        protected override double volatilityImpl(double t, double s) => baseVol_.link.volatility(t, s, true) + spread_.link.value();
 
         private Handle<OptionletVolatilityStructure> baseVol_;
         private Handle<Quote> spread_;

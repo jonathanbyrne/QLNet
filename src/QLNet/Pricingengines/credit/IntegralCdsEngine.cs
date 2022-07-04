@@ -25,7 +25,7 @@ using QLNet.Time;
 
 namespace QLNet.Pricingengines.credit
 {
-    public class IntegralCdsEngine : CreditDefaultSwap.Engine
+    [JetBrains.Annotations.PublicAPI] public class IntegralCdsEngine : CreditDefaultSwap.Engine
     {
         public IntegralCdsEngine(Period step, Handle<DefaultProbabilityTermStructure> probability,
                                  double recoveryRate, Handle<YieldTermStructure> discountCurve, bool? includeSettlementDateFlows = null)
@@ -46,17 +46,17 @@ namespace QLNet.Pricingengines.credit
             Utils.QL_REQUIRE(!discountCurve_.empty(), () => "no discount term structure set");
             Utils.QL_REQUIRE(!probability_.empty(), () => "no probability term structure set");
 
-            Date today = Settings.evaluationDate();
-            Date settlementDate = discountCurve_.link.referenceDate();
+            var today = Settings.evaluationDate();
+            var settlementDate = discountCurve_.link.referenceDate();
 
             // Upfront Flow NPV. Either we are on-the-run (no flow)
             // or we are forward start
-            double upfPVO1 = 0.0;
+            var upfPVO1 = 0.0;
             if (!arguments_.upfrontPayment.hasOccurred(settlementDate, includeSettlementDateFlows_))
             {
                 // date determining the probability survival so we have to pay
                 // the upfront (did not knock out)
-                Date effectiveUpfrontDate =
+                var effectiveUpfrontDate =
                    arguments_.protectionStart > probability_.link.referenceDate() ?
                    arguments_.protectionStart : probability_.link.referenceDate();
                 upfPVO1 =
@@ -67,13 +67,13 @@ namespace QLNet.Pricingengines.credit
 
             results_.couponLegNPV = 0.0;
             results_.defaultLegNPV = 0.0;
-            for (int i = 0; i < arguments_.leg.Count; ++i)
+            for (var i = 0; i < arguments_.leg.Count; ++i)
             {
                 if (arguments_.leg[i].hasOccurred(settlementDate,
                                                   includeSettlementDateFlows_))
                     continue;
 
-                FixedRateCoupon coupon = arguments_.leg[i] as FixedRateCoupon;
+                var coupon = arguments_.leg[i] as FixedRateCoupon;
 
                 // In order to avoid a few switches, we calculate the NPV
                 // of both legs as a positive quantity. We'll give them
@@ -83,11 +83,11 @@ namespace QLNet.Pricingengines.credit
                      startDate = i == 0 ? arguments_.protectionStart :
                                   coupon.accrualStartDate(),
                                  endDate = coupon.accrualEndDate();
-                Date effectiveStartDate =
+                var effectiveStartDate =
                    startDate <= today && today <= endDate ? today : startDate;
-                double couponAmount = coupon.amount();
+                var couponAmount = coupon.amount();
 
-                double S = probability_.link.survivalProbability(paymentDate);
+                var S = probability_.link.survivalProbability(paymentDate);
 
                 // On one side, we add the fixed rate payments in case of
                 // survival.
@@ -97,20 +97,20 @@ namespace QLNet.Pricingengines.credit
                 // On the other side, we add the payment (and possibly the
                 // accrual) in case of default.
 
-                Period step = integrationStep_;
-                Date d0 = effectiveStartDate;
-                Date d1 = Date.Min(d0 + step, endDate);
-                double P0 = probability_.link.defaultProbability(d0);
-                double endDiscount = discountCurve_.link.discount(paymentDate);
+                var step = integrationStep_;
+                var d0 = effectiveStartDate;
+                var d1 = Date.Min(d0 + step, endDate);
+                var P0 = probability_.link.defaultProbability(d0);
+                var endDiscount = discountCurve_.link.discount(paymentDate);
                 do
                 {
-                    double B =
+                    var B =
                        arguments_.paysAtDefaultTime ?
                        discountCurve_.link.discount(d1) :
                        endDiscount;
 
-                    double P1 = probability_.link.defaultProbability(d1);
-                    double dP = P1 - P0;
+                    var P1 = probability_.link.defaultProbability(d1);
+                    var dP = P1 - P0;
 
                     // accrual...
                     if (arguments_.settlesAccrual)
@@ -124,7 +124,7 @@ namespace QLNet.Pricingengines.credit
                     }
 
                     // ...and claim.
-                    double claim = arguments_.claim.amount(d1,
+                    var claim = arguments_.claim.amount(d1,
                                                            arguments_.notional.Value,
                                                            recoveryRate_);
                     results_.defaultLegNPV += claim * B * dP;
@@ -137,7 +137,7 @@ namespace QLNet.Pricingengines.credit
                 while (d0 < endDate);
             }
 
-            double upfrontSign = 1.0;
+            var upfrontSign = 1.0;
             switch (arguments_.side)
             {
                 case Protection.Side.Seller:
@@ -167,7 +167,7 @@ namespace QLNet.Pricingengines.credit
                 results_.fairSpread = null;
             }
 
-            double upfrontSensitivity = upfPVO1 * arguments_.notional.Value;
+            var upfrontSensitivity = upfPVO1 * arguments_.notional.Value;
             if (upfrontSensitivity.IsNotEqual(0.0))
             {
                 results_.fairUpfront =

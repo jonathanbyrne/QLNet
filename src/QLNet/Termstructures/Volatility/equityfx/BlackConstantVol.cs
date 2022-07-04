@@ -26,7 +26,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
     //! Constant Black volatility, no time-strike dependence
     /*! This class implements the BlackVolatilityTermStructure interface for a constant Black volatility (no time/strike
         dependence). */
-    public class BlackConstantVol : BlackVolatilityTermStructure
+    [JetBrains.Annotations.PublicAPI] public class BlackConstantVol : BlackVolatilityTermStructure
     {
         private Handle<Quote> volatility_;
 
@@ -59,10 +59,12 @@ namespace QLNet.Termstructures.Volatility.equityfx
         }
 
 
-        public override Date maxDate() { return Date.maxDate(); }
-        public override double minStrike() { return double.MinValue; }
-        public override double maxStrike() { return double.MaxValue; }
+        public override Date maxDate() => Date.maxDate();
 
-        protected override double blackVolImpl(double t, double x) { return volatility_.link.value(); }
+        public override double minStrike() => double.MinValue;
+
+        public override double maxStrike() => double.MaxValue;
+
+        protected override double blackVolImpl(double t, double x) => volatility_.link.value();
     }
 }

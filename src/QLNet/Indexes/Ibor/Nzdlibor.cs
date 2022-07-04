@@ -29,7 +29,7 @@ namespace QLNet.Indexes.Ibor
     //! %NZD %LIBOR rate
     /*! New Zealand Dollar LIBOR discontinued as of 2013.
     */
-    public class NZDLibor : Libor
+    [JetBrains.Annotations.PublicAPI] public class NZDLibor : Libor
     {
         public NZDLibor(Period tenor)
            : base("NZDLibor", tenor, 2, new NZDCurrency(), new NewZealand(), new Actual360(), new Handle<YieldTermStructure>())

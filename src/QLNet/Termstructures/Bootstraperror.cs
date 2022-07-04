@@ -24,7 +24,7 @@ using QLNet.Math;
 namespace QLNet.Termstructures
 {
     //! bootstrap error
-    public class BootstrapError<T, U> : ISolver1d
+    [JetBrains.Annotations.PublicAPI] public class BootstrapError<T, U> : ISolver1d
       where T : Curve<U>
       where U : TermStructure
     {

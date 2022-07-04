@@ -23,7 +23,7 @@ using QLNet.Time;
 namespace QLNet.Indexes.Inflation
 {
     //! US CPI index
-    public class USCPI : ZeroInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class USCPI : ZeroInflationIndex
     {
         public USCPI(bool interpolated)
            : this(interpolated, new Handle<ZeroInflationTermStructure>()) { }
@@ -42,7 +42,7 @@ namespace QLNet.Indexes.Inflation
     }
 
     //! Genuine year-on-year US CPI (i.e. not a ratio of US CPI)
-    public class YYUSCPI : YoYInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class YYUSCPI : YoYInflationIndex
     {
         public YYUSCPI(bool interpolated)
            : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
@@ -62,7 +62,7 @@ namespace QLNet.Indexes.Inflation
     }
 
     //! Fake year-on-year US CPI (i.e. a ratio of US CPI)
-    public class YYUSCPIr : YoYInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class YYUSCPIr : YoYInflationIndex
     {
         public YYUSCPIr(bool interpolated)
            : this(interpolated, new Handle<YoYInflationTermStructure>()) { }

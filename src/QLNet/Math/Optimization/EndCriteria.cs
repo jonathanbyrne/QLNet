@@ -28,7 +28,7 @@ namespace QLNet.Math.Optimization
     //        - y=f(x) (dependent variable) stationary point
     //        - stationary gradient
     //
-    public class EndCriteria
+    [JetBrains.Annotations.PublicAPI] public class EndCriteria
     {
         public enum Type
         {
@@ -66,33 +66,19 @@ namespace QLNet.Math.Optimization
         // Inspectors
 
         // Inspectors
-        public int maxIterations()
-        {
-            return maxIterations_;
-        }
-        public int maxStationaryStateIterations()
-        {
-            return maxStationaryStateIterations_.GetValueOrDefault();
-        }
-        public double rootEpsilon()
-        {
-            return rootEpsilon_;
-        }
-        public double functionEpsilon()
-        {
-            return functionEpsilon_;
-        }
-        public double gradientNormEpsilon()
-        {
-            return gradientNormEpsilon_.GetValueOrDefault();
-        }
+        public int maxIterations() => maxIterations_;
+
+        public int maxStationaryStateIterations() => maxStationaryStateIterations_.GetValueOrDefault();
+
+        public double rootEpsilon() => rootEpsilon_;
+
+        public double functionEpsilon() => functionEpsilon_;
+
+        public double gradientNormEpsilon() => gradientNormEpsilon_.GetValueOrDefault();
 
         //        ! Test if the number of iterations is not too big
         //            and if a minimum point is not reached
-        public bool value(int iteration, ref int statStateIterations, bool positiveOptimization, double fold, double UnnamedParameter1, double fnew, double normgnew, ref Type ecType)
-        {
-            return checkMaxIterations(iteration, ref ecType) || checkStationaryFunctionValue(fold, fnew, ref statStateIterations, ref ecType) || checkStationaryFunctionAccuracy(fnew, positiveOptimization, ref ecType) || checkZeroGradientNorm(normgnew, ref ecType);
-        }
+        public bool value(int iteration, ref int statStateIterations, bool positiveOptimization, double fold, double UnnamedParameter1, double fnew, double normgnew, ref Type ecType) => checkMaxIterations(iteration, ref ecType) || checkStationaryFunctionValue(fold, fnew, ref statStateIterations, ref ecType) || checkStationaryFunctionAccuracy(fnew, positiveOptimization, ref ecType) || checkZeroGradientNorm(normgnew, ref ecType);
 
         //! Test if the number of iteration is below MaxIterations
         public bool checkMaxIterations(int iteration, ref Type ecType)

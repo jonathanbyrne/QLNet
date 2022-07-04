@@ -37,7 +37,7 @@ namespace QLNet.Pricingengines.vanilla
         \test the correctness of the returned value is tested by
               reproducing results available in web/literature
     */
-    public class MCAmericanEngine<RNG, S> : MCLongstaffSchwartzEngine<OneAssetOption.Engine, SingleVariate, RNG, S>
+    [JetBrains.Annotations.PublicAPI] public class MCAmericanEngine<RNG, S> : MCLongstaffSchwartzEngine<OneAssetOption.Engine, SingleVariate, RNG, S>
       where RNG : IRSG, new()
       where S : IGeneralStatistics, new()
     {
@@ -79,38 +79,38 @@ namespace QLNet.Pricingengines.vanilla
 
         protected override LongstaffSchwartzPathPricer<IPath> lsmPathPricer()
         {
-            GeneralizedBlackScholesProcess process = process_ as GeneralizedBlackScholesProcess;
+            var process = process_ as GeneralizedBlackScholesProcess;
             Utils.QL_REQUIRE(process != null, () => "generalized Black-Scholes process required");
 
-            EarlyExercise exercise = arguments_.exercise as EarlyExercise;
+            var exercise = arguments_.exercise as EarlyExercise;
             Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
             Utils.QL_REQUIRE(!exercise.payoffAtExpiry(), () => "payoff at expiry not handled");
 
-            AmericanPathPricer earlyExercisePathPricer = new AmericanPathPricer(arguments_.payoff, polynomOrder_, polynomType_);
+            var earlyExercisePathPricer = new AmericanPathPricer(arguments_.payoff, polynomOrder_, polynomType_);
 
             return new LongstaffSchwartzPathPricer<IPath>(timeGrid(), earlyExercisePathPricer, process.riskFreeRate());
         }
 
         protected override double? controlVariateValue()
         {
-            IPricingEngine controlPE = controlPricingEngine();
+            var controlPE = controlPricingEngine();
 
             Utils.QL_REQUIRE(controlPE != null, () => "engine does not provide control variation pricing engine");
 
-            QLNet.Option.Arguments controlArguments = controlPE.getArguments() as QLNet.Option.Arguments;
+            var controlArguments = controlPE.getArguments() as QLNet.Option.Arguments;
             controlArguments = arguments_;
             controlArguments.exercise = new EuropeanExercise(arguments_.exercise.lastDate());
 
             controlPE.calculate();
 
-            OneAssetOption.Results controlResults = controlPE.getResults() as OneAssetOption.Results;
+            var controlResults = controlPE.getResults() as OneAssetOption.Results;
 
             return controlResults.value;
         }
 
         protected override IPricingEngine controlPricingEngine()
         {
-            GeneralizedBlackScholesProcess process = process_ as GeneralizedBlackScholesProcess;
+            var process = process_ as GeneralizedBlackScholesProcess;
             Utils.QL_REQUIRE(process != null, () => "generalized Black-Scholes process required");
 
             return new AnalyticEuropeanEngine(process);
@@ -118,10 +118,10 @@ namespace QLNet.Pricingengines.vanilla
 
         protected override PathPricer<IPath> controlPathPricer()
         {
-            StrikedTypePayoff payoff = arguments_.payoff as StrikedTypePayoff;
+            var payoff = arguments_.payoff as StrikedTypePayoff;
             Utils.QL_REQUIRE(payoff != null, () => "StrikedTypePayoff needed for control variate");
 
-            GeneralizedBlackScholesProcess process = process_ as GeneralizedBlackScholesProcess;
+            var process = process_ as GeneralizedBlackScholesProcess;
             Utils.QL_REQUIRE(process != null, () => "generalized Black-Scholes process required");
 
             return new EuropeanPathPricer(payoff.optionType(), payoff.strike(),
@@ -130,7 +130,7 @@ namespace QLNet.Pricingengines.vanilla
     }
 
 
-    public class AmericanPathPricer : IEarlyExercisePathPricer<IPath, double>
+    [JetBrains.Annotations.PublicAPI] public class AmericanPathPricer : IEarlyExercisePathPricer<IPath, double>
     {
         protected double scalingValue_;
         protected Payoff payoff_;
@@ -146,12 +146,12 @@ namespace QLNet.Pricingengines.vanilla
                               || polynomType == LsmBasisSystem.PolynomType.Laguerre
                               || polynomType == LsmBasisSystem.PolynomType.Hermite
                               || polynomType == LsmBasisSystem.PolynomType.Hyperbolic
-                              || polynomType == LsmBasisSystem.PolynomType.Chebyshev2th, () => "insufficient polynom type");
+                              || polynomType == LsmBasisSystem.PolynomType.Chebyshev2th, () => "insufficient polynom ExerciseType");
 
             // the payoff gives an additional value
             v_.Add(this.payoff);
 
-            StrikedTypePayoff strikePayoff = payoff_ as StrikedTypePayoff;
+            var strikePayoff = payoff_ as StrikedTypePayoff;
 
             if (strikePayoff != null)
             {
@@ -160,22 +160,25 @@ namespace QLNet.Pricingengines.vanilla
         }
 
         // scale values of the underlying to increase numerical stability
-        public double state(IPath path, int t) { return (path as Path)[t] * scalingValue_; }
-        public double value(IPath path, int t) { return payoff(state(path, t)); }
-        public List<Func<double, double>> basisSystem() { return v_; }
-        protected double payoff(double state) { return payoff_.value(state / scalingValue_); }
+        public double state(IPath path, int t) => (path as Path)[t] * scalingValue_;
+
+        public double value(IPath path, int t) => payoff(state(path, t));
+
+        public List<Func<double, double>> basisSystem() => v_;
+
+        protected double payoff(double state) => payoff_.value(state / scalingValue_);
     }
 
 
     //! Monte Carlo American engine factory
     //template <class RNG = PseudoRandom, class S = Statistics>
-    public class MakeMCAmericanEngine<RNG> : MakeMCAmericanEngine<RNG, Statistics>
+    [JetBrains.Annotations.PublicAPI] public class MakeMCAmericanEngine<RNG> : MakeMCAmericanEngine<RNG, Statistics>
        where RNG : IRSG, new()
     {
         public MakeMCAmericanEngine(GeneralizedBlackScholesProcess process) : base(process) { }
     }
 
-    public class MakeMCAmericanEngine<RNG, S>
+    [JetBrains.Annotations.PublicAPI] public class MakeMCAmericanEngine<RNG, S>
        where RNG : IRSG, new()
        where S : IGeneralStatistics, new()
     {
@@ -241,7 +244,8 @@ namespace QLNet.Pricingengines.vanilla
             seed_ = seed;
             return this;
         }
-        public MakeMCAmericanEngine<RNG, S> withAntitheticVariate() { return withAntitheticVariate(true); }
+        public MakeMCAmericanEngine<RNG, S> withAntitheticVariate() => withAntitheticVariate(true);
+
         public MakeMCAmericanEngine<RNG, S> withAntitheticVariate(bool b)
         {
             antithetic_ = b;

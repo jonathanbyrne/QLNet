@@ -23,7 +23,7 @@ namespace QLNet.Quotes
 {
     // simple quote class
     //! market element returning a stored value
-    public class SimpleQuote : Quote
+    [JetBrains.Annotations.PublicAPI] public class SimpleQuote : Quote
     {
         private double? value_;
 
@@ -37,12 +37,12 @@ namespace QLNet.Quotes
                 throw new ArgumentException("invalid SimpleQuote");
             return value_.GetValueOrDefault();
         }
-        public override bool isValid() { return value_ != null; }
+        public override bool isValid() => value_ != null;
 
         //! returns the difference between the new value and the old value
         public double setValue(double? value)
         {
-            double? diff = value - value_;
+            var diff = value - value_;
             if (diff.IsNotEqual(0.0))
             {
                 value_ = value;

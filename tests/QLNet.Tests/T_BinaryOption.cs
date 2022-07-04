@@ -28,7 +28,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_BinaryOption
+    [JetBrains.Annotations.PublicAPI] public class T_BinaryOption
     {
         private void REPORT_FAILURE(string greekName,
                                     StrikedTypePayoff payoff,
@@ -46,7 +46,7 @@ namespace QLNet.Tests
                                     double tolerance)
         {
             QAssert.Fail(payoff.optionType() + " option with "
-                         + barrierType + " barrier type:\n"
+                         + barrierType + " barrier ExerciseType:\n"
                          + "    barrier:          " + barrier + "\n"
                          + payoff + " payoff:\n"
                          + exercise + " "
@@ -109,7 +109,7 @@ namespace QLNet.Tests
                Note:
                q is the dividend rate, while the book gives b, the cost of carry (q=r-b)
             */
-            //    barrierType, barrier,  cash,         type, strike,   spot,    q,    r,   t,  vol,   value, tol
+            //    barrierType, barrier,  cash,         ExerciseType, strike,   spot,    q,    r,   t,  vol,   value, tol
             new BinaryOptionData(Barrier.Type.DownIn,  100.00, 15.00, QLNet.Option.Type.Call, 102.00, 105.00, 0.00, 0.10, 0.5, 0.20,  4.9289, 1e-4),
             new BinaryOptionData(Barrier.Type.DownIn,  100.00, 15.00, QLNet.Option.Type.Call,  98.00, 105.00, 0.00, 0.10, 0.5, 0.20,  6.2150, 1e-4),
             // following value is wrong in book.
@@ -149,21 +149,21 @@ namespace QLNet.Tests
          };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(100.0);
-            SimpleQuote qRate = new SimpleQuote(0.04);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.01);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol = new SimpleQuote(0.25);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
+            var spot = new SimpleQuote(100.0);
+            var qRate = new SimpleQuote(0.04);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.01);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol = new SimpleQuote(0.25);
+            var volTS = Utilities.flatVol(today, vol, dc);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 StrikedTypePayoff payoff = new CashOrNothingPayoff(values[i].type, values[i].strike, values[i].cash);
 
-                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                var exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
                 Exercise amExercise = new AmericanExercise(today, exDate, true);
 
                 spot.setValue(values[i].s);
@@ -171,7 +171,7 @@ namespace QLNet.Tests
                 rRate.setValue(values[i].r);
                 vol.setValue(values[i].v);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(
+                var stochProcess = new BlackScholesMertonProcess(
                    new Handle<Quote>(spot),
                    new Handle<YieldTermStructure>(qTS),
                    new Handle<YieldTermStructure>(rTS),
@@ -179,12 +179,12 @@ namespace QLNet.Tests
 
                 IPricingEngine engine = new AnalyticBinaryBarrierEngine(stochProcess);
 
-                BarrierOption opt = new BarrierOption(values[i].barrierType, values[i].barrier, 0, payoff, amExercise);
+                var opt = new BarrierOption(values[i].barrierType, values[i].barrier, 0, payoff, amExercise);
 
                 opt.setPricingEngine(engine);
 
-                double calculated = opt.NPV();
-                double error = System.Math.Abs(calculated - values[i].result);
+                var calculated = opt.NPV();
+                var error = System.Math.Abs(calculated - values[i].result);
                 if (error > values[i].tol)
                 {
                     REPORT_FAILURE("value", payoff, amExercise, values[i].barrierType,
@@ -207,7 +207,7 @@ namespace QLNet.Tests
                Note:
                q is the dividend rate, while the book gives b, the cost of carry (q=r-b)
             */
-            //    barrierType, barrier,  cash,         type, strike,   spot,    q,    r,   t,  vol,   value, tol
+            //    barrierType, barrier,  cash,         ExerciseType, strike,   spot,    q,    r,   t,  vol,   value, tol
             new BinaryOptionData(Barrier.Type.DownIn,  100.00,  0.00, QLNet.Option.Type.Call, 102.00, 105.00, 0.00, 0.10, 0.5, 0.20, 37.2782, 1e-4),
             new BinaryOptionData(Barrier.Type.DownIn,  100.00,  0.00, QLNet.Option.Type.Call,  98.00, 105.00, 0.00, 0.10, 0.5, 0.20, 45.8530, 1e-4),
             new BinaryOptionData(Barrier.Type.UpIn,    100.00,  0.00, QLNet.Option.Type.Call, 102.00,  95.00, 0.00, 0.10, 0.5, 0.20, 44.5294, 1e-4),
@@ -231,20 +231,20 @@ namespace QLNet.Tests
          };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(100.0);
-            SimpleQuote qRate = new SimpleQuote(0.04);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.01);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol = new SimpleQuote(0.25);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
+            var spot = new SimpleQuote(100.0);
+            var qRate = new SimpleQuote(0.04);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.01);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol = new SimpleQuote(0.25);
+            var volTS = Utilities.flatVol(today, vol, dc);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 StrikedTypePayoff payoff = new AssetOrNothingPayoff(values[i].type, values[i].strike);
-                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                var exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
                 Exercise amExercise = new AmericanExercise(today, exDate, true);
 
                 spot.setValue(values[i].s);
@@ -252,7 +252,7 @@ namespace QLNet.Tests
                 rRate.setValue(values[i].r);
                 vol.setValue(values[i].v);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(
+                var stochProcess = new BlackScholesMertonProcess(
                    new Handle<Quote>(spot),
                    new Handle<YieldTermStructure>(qTS),
                    new Handle<YieldTermStructure>(rTS),
@@ -260,12 +260,12 @@ namespace QLNet.Tests
 
                 IPricingEngine engine = new AnalyticBinaryBarrierEngine(stochProcess);
 
-                BarrierOption opt = new BarrierOption(values[i].barrierType, values[i].barrier, 0, payoff, amExercise);
+                var opt = new BarrierOption(values[i].barrierType, values[i].barrier, 0, payoff, amExercise);
 
                 opt.setPricingEngine(engine);
 
-                double calculated = opt.NPV();
-                double error = System.Math.Abs(calculated - values[i].result);
+                var calculated = opt.NPV();
+                var error = System.Math.Abs(calculated - values[i].result);
                 if (error > values[i].tol)
                 {
                     REPORT_FAILURE("value", payoff, amExercise, values[i].barrierType,

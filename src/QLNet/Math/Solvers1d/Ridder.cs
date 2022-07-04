@@ -24,7 +24,7 @@ using System;
 
 namespace QLNet.Math.Solvers1d
 {
-    public class Ridder : Solver1D
+    [JetBrains.Annotations.PublicAPI] public class Ridder : Solver1D
     {
         protected override double solveImpl(ISolver1d f, double xAcc)
         {
@@ -40,7 +40,7 @@ namespace QLNet.Math.Solvers1d
             // test on Black-Scholes implied volatility show that
             // Ridder solver algorithm actually provides an
             // accuracy 100 times below promised
-            double xAccuracy = xAcc / 100.0;
+            var xAccuracy = xAcc / 100.0;
 
             // Any highly unlikely value, to simplify logic below
             root_ = double.MinValue;
@@ -98,10 +98,6 @@ namespace QLNet.Math.Solvers1d
                           QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
             return 0;
         }
-        private double sign(double a, double b)
-        {
-            return b >= 0.0 ? System.Math.Abs(a) : -System.Math.Abs(a);
-        }
-
+        private double sign(double a, double b) => b >= 0.0 ? System.Math.Abs(a) : -System.Math.Abs(a);
     }
 }

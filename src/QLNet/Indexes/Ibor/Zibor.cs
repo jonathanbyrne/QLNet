@@ -36,7 +36,7 @@ namespace QLNet.Indexes.Ibor
     //        \todo check settlement days, end-of-month adjustment,
     //              and day-count convention.
     //
-    public class Zibor : IborIndex
+    [JetBrains.Annotations.PublicAPI] public class Zibor : IborIndex
     {
         public Zibor(Period tenor)
            : base("Zibor", tenor, 2, new CHFCurrency(), new Switzerland(), BusinessDayConvention.ModifiedFollowing, false, new Actual360(), new Handle<YieldTermStructure>())

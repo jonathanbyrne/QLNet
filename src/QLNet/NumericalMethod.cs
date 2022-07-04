@@ -27,10 +27,7 @@ namespace QLNet
    {
       protected TimeGrid t_;
 
-      public TimeGrid timeGrid()
-      {
-         return t_;
-      }
+      public TimeGrid timeGrid() => t_;
 
       protected Lattice(TimeGrid timeGrid)
       {
@@ -60,9 +57,6 @@ namespace QLNet
       public abstract double presentValue(DiscretizedAsset a);
 
       // this is a smell, but we need it. We'll rethink it later.
-      public virtual Vector grid(double t)
-      {
-         throw new NotImplementedException();
-      }
+      public virtual Vector grid(double t) => throw new NotImplementedException();
    }
 }

@@ -36,54 +36,54 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_CreditDefaultSwap
+    [JetBrains.Annotations.PublicAPI] public class T_CreditDefaultSwap
     {
         [Fact]
         public void testCachedValue()
         {
             // Testing credit-default swap against cached values...
 
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
 
                 // Initialize curves
                 Settings.setEvaluationDate(new Date(9, Month.June, 2006));
-                Date today = Settings.evaluationDate();
+                var today = Settings.evaluationDate();
                 Calendar calendar = new TARGET();
 
-                Handle<Quote> hazardRate = new Handle<Quote>(new SimpleQuote(0.01234));
-                RelinkableHandle<DefaultProbabilityTermStructure> probabilityCurve = new RelinkableHandle<DefaultProbabilityTermStructure>();
+                var hazardRate = new Handle<Quote>(new SimpleQuote(0.01234));
+                var probabilityCurve = new RelinkableHandle<DefaultProbabilityTermStructure>();
                 probabilityCurve.linkTo(new FlatHazardRate(0, calendar, hazardRate, new Actual360()));
 
-                RelinkableHandle<YieldTermStructure> discountCurve = new RelinkableHandle<YieldTermStructure>();
+                var discountCurve = new RelinkableHandle<YieldTermStructure>();
 
                 discountCurve.linkTo(new FlatForward(today, 0.06, new Actual360()));
 
                 // Build the schedule
-                Date issueDate = calendar.advance(today, -1, TimeUnit.Years);
-                Date maturity = calendar.advance(issueDate, 10, TimeUnit.Years);
-                Frequency frequency = Frequency.Semiannual;
-                BusinessDayConvention convention = BusinessDayConvention.ModifiedFollowing;
+                var issueDate = calendar.advance(today, -1, TimeUnit.Years);
+                var maturity = calendar.advance(issueDate, 10, TimeUnit.Years);
+                var frequency = Frequency.Semiannual;
+                var convention = BusinessDayConvention.ModifiedFollowing;
 
-                Schedule schedule = new Schedule(issueDate, maturity, new Period(frequency), calendar,
+                var schedule = new Schedule(issueDate, maturity, new Period(frequency), calendar,
                                                  convention, convention, DateGeneration.Rule.Forward, false);
 
                 // Build the CDS
-                double fixedRate = 0.0120;
+                var fixedRate = 0.0120;
                 DayCounter dayCount = new Actual360();
-                double notional = 10000.0;
-                double recoveryRate = 0.4;
+                var notional = 10000.0;
+                var recoveryRate = 0.4;
 
-                CreditDefaultSwap cds = new CreditDefaultSwap(Protection.Side.Seller, notional, fixedRate,
+                var cds = new CreditDefaultSwap(Protection.Side.Seller, notional, fixedRate,
                                                               schedule, convention, dayCount, true, true);
                 cds.setPricingEngine(new MidPointCdsEngine(probabilityCurve, recoveryRate, discountCurve));
 
-                double npv = 295.0153398;
-                double fairRate = 0.007517539081;
+                var npv = 295.0153398;
+                var fairRate = 0.007517539081;
 
-                double calculatedNpv = cds.NPV();
-                double calculatedFairRate = cds.fairSpread();
-                double tolerance = 1.0e-7;
+                var calculatedNpv = cds.NPV();
+                var calculatedFairRate = cds.fairSpread();
+                var tolerance = 1.0e-7;
 
                 if (System.Math.Abs(calculatedNpv - npv) > tolerance)
                     QAssert.Fail(
@@ -145,14 +145,14 @@ namespace QLNet.Tests
         {
             // Testing credit-default swap against cached market values...
 
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
 
                 Settings.setEvaluationDate(new Date(9, Month.June, 2006));
-                Date evalDate = Settings.evaluationDate();
+                var evalDate = Settings.evaluationDate();
                 Calendar calendar = new UnitedStates();
 
-                List<Date> discountDates = new List<Date>();
+                var discountDates = new List<Date>();
                 discountDates.Add(evalDate);
                 discountDates.Add(calendar.advance(evalDate, 1, TimeUnit.Weeks, BusinessDayConvention.ModifiedFollowing));
                 discountDates.Add(calendar.advance(evalDate, 1, TimeUnit.Months, BusinessDayConvention.ModifiedFollowing));
@@ -171,7 +171,7 @@ namespace QLNet.Tests
                 discountDates.Add(calendar.advance(evalDate, 10, TimeUnit.Years, BusinessDayConvention.ModifiedFollowing));
                 discountDates.Add(calendar.advance(evalDate, 15, TimeUnit.Years, BusinessDayConvention.ModifiedFollowing));
 
-                List<double> dfs = new List<double>();
+                var dfs = new List<double>();
                 dfs.Add(1.0);
                 dfs.Add(0.9990151375768731);
                 dfs.Add(0.99570502636871183);
@@ -192,11 +192,11 @@ namespace QLNet.Tests
 
                 DayCounter curveDayCounter = new Actual360();
 
-                RelinkableHandle<YieldTermStructure> discountCurve = new RelinkableHandle<YieldTermStructure>();
+                var discountCurve = new RelinkableHandle<YieldTermStructure>();
                 discountCurve.linkTo(new InterpolatedDiscountCurve<LogLinear>(discountDates, dfs, curveDayCounter, null, null, null, new LogLinear()));
 
                 DayCounter dayCounter = new Thirty360();
-                List<Date> dates = new List<Date>();
+                var dates = new List<Date>();
                 dates.Add(evalDate);
                 dates.Add(calendar.advance(evalDate, 6, TimeUnit.Months, BusinessDayConvention.ModifiedFollowing));
                 dates.Add(calendar.advance(evalDate, 1, TimeUnit.Years, BusinessDayConvention.ModifiedFollowing));
@@ -207,7 +207,7 @@ namespace QLNet.Tests
                 dates.Add(calendar.advance(evalDate, 7, TimeUnit.Years, BusinessDayConvention.ModifiedFollowing));
                 dates.Add(calendar.advance(evalDate, 10, TimeUnit.Years, BusinessDayConvention.ModifiedFollowing));
 
-                List<double> defaultProbabilities = new List<double>();
+                var defaultProbabilities = new List<double>();
                 defaultProbabilities.Add(0.0000);
                 defaultProbabilities.Add(0.0047);
                 defaultProbabilities.Add(0.0093);
@@ -218,49 +218,49 @@ namespace QLNet.Tests
                 defaultProbabilities.Add(0.2288);
                 defaultProbabilities.Add(0.3666);
 
-                List<double> hazardRates = new List<double>();
+                var hazardRates = new List<double>();
                 hazardRates.Add(0.0);
-                for (int i = 1; i < dates.Count; ++i)
+                for (var i = 1; i < dates.Count; ++i)
                 {
-                    double t1 = dayCounter.yearFraction(dates[0], dates[i - 1]);
-                    double t2 = dayCounter.yearFraction(dates[0], dates[i]);
-                    double S1 = 1.0 - defaultProbabilities[i - 1];
-                    double S2 = 1.0 - defaultProbabilities[i];
+                    var t1 = dayCounter.yearFraction(dates[0], dates[i - 1]);
+                    var t2 = dayCounter.yearFraction(dates[0], dates[i]);
+                    var S1 = 1.0 - defaultProbabilities[i - 1];
+                    var S2 = 1.0 - defaultProbabilities[i];
                     hazardRates.Add(System.Math.Log(S1 / S2) / (t2 - t1));
                 }
 
-                RelinkableHandle<DefaultProbabilityTermStructure> piecewiseFlatHazardRate = new RelinkableHandle<DefaultProbabilityTermStructure>();
+                var piecewiseFlatHazardRate = new RelinkableHandle<DefaultProbabilityTermStructure>();
                 piecewiseFlatHazardRate.linkTo(new InterpolatedHazardRateCurve<BackwardFlat>(dates, hazardRates, new Thirty360()));
 
                 // Testing credit default swap
 
                 // Build the schedule
-                Date issueDate = new Date(20, Month.March, 2006);
-                Date maturity = new Date(20, Month.June, 2013);
-                Frequency cdsFrequency = Frequency.Semiannual;
-                BusinessDayConvention cdsConvention = BusinessDayConvention.ModifiedFollowing;
+                var issueDate = new Date(20, Month.March, 2006);
+                var maturity = new Date(20, Month.June, 2013);
+                var cdsFrequency = Frequency.Semiannual;
+                var cdsConvention = BusinessDayConvention.ModifiedFollowing;
 
-                Schedule schedule = new Schedule(issueDate, maturity, new Period(cdsFrequency), calendar,
+                var schedule = new Schedule(issueDate, maturity, new Period(cdsFrequency), calendar,
                                                  cdsConvention, cdsConvention,
                                                  DateGeneration.Rule.Forward, false);
 
                 // Build the CDS
-                double recoveryRate = 0.25;
-                double fixedRate = 0.0224;
+                var recoveryRate = 0.25;
+                var fixedRate = 0.0224;
                 DayCounter dayCount = new Actual360();
-                double cdsNotional = 100.0;
+                var cdsNotional = 100.0;
 
-                CreditDefaultSwap cds = new CreditDefaultSwap(Protection.Side.Seller, cdsNotional, fixedRate,
+                var cds = new CreditDefaultSwap(Protection.Side.Seller, cdsNotional, fixedRate,
                                                               schedule, cdsConvention, dayCount, true, true);
                 cds.setPricingEngine(new MidPointCdsEngine(piecewiseFlatHazardRate, recoveryRate, discountCurve));
 
-                double calculatedNpv = cds.NPV();
-                double calculatedFairRate = cds.fairSpread();
+                var calculatedNpv = cds.NPV();
+                var calculatedFairRate = cds.fairSpread();
 
-                double npv = -1.364048777;        // from Bloomberg we have 98.15598868 - 100.00;
-                double fairRate = 0.0248429452; // from Bloomberg we have 0.0258378;
+                var npv = -1.364048777;        // from Bloomberg we have 98.15598868 - 100.00;
+                var fairRate = 0.0248429452; // from Bloomberg we have 0.0258378;
 
-                double tolerance = 1e-9;
+                var tolerance = 1e-9;
 
                 if (System.Math.Abs(npv - calculatedNpv) > tolerance)
                     QAssert.Fail(
@@ -280,19 +280,19 @@ namespace QLNet.Tests
         {
             // Testing implied hazard-rate for credit-default swaps...
 
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
 
                 // Initialize curves
                 Calendar calendar = new TARGET();
-                Date today = calendar.adjust(Date.Today);
+                var today = calendar.adjust(Date.Today);
                 Settings.setEvaluationDate(today);
 
                 double h1 = 0.30, h2 = 0.40;
                 DayCounter dayCounter = new Actual365Fixed();
 
-                List<Date> dates = new List<Date>(3);
-                List<double> hazardRates = new List<double>(3);
+                var dates = new List<Date>(3);
+                var hazardRates = new List<double>(3);
                 dates.Add(today);
                 hazardRates.Add(h1);
 
@@ -302,38 +302,38 @@ namespace QLNet.Tests
                 dates.Add(today + new Period(10, TimeUnit.Years));
                 hazardRates.Add(h2);
 
-                RelinkableHandle<DefaultProbabilityTermStructure> probabilityCurve =
+                var probabilityCurve =
                    new RelinkableHandle<DefaultProbabilityTermStructure>();
                 probabilityCurve.linkTo(new InterpolatedHazardRateCurve<BackwardFlat>(dates,
                                                                                       hazardRates,
                                                                                       dayCounter));
 
-                RelinkableHandle<YieldTermStructure> discountCurve = new RelinkableHandle<YieldTermStructure>();
+                var discountCurve = new RelinkableHandle<YieldTermStructure>();
                 discountCurve.linkTo(new FlatForward(today, 0.03, new Actual360()));
 
-                Frequency frequency = Frequency.Semiannual;
-                BusinessDayConvention convention = BusinessDayConvention.ModifiedFollowing;
+                var frequency = Frequency.Semiannual;
+                var convention = BusinessDayConvention.ModifiedFollowing;
 
-                Date issueDate = calendar.advance(today, -6, TimeUnit.Months);
-                double fixedRate = 0.0120;
+                var issueDate = calendar.advance(today, -6, TimeUnit.Months);
+                var fixedRate = 0.0120;
                 DayCounter cdsDayCount = new Actual360();
-                double notional = 10000.0;
-                double recoveryRate = 0.4;
+                var notional = 10000.0;
+                var recoveryRate = 0.4;
 
                 double? latestRate = null;
-                for (int n = 6; n <= 10; ++n)
+                for (var n = 6; n <= 10; ++n)
                 {
-                    Date maturity = calendar.advance(issueDate, n, TimeUnit.Years);
-                    Schedule schedule = new Schedule(issueDate, maturity, new Period(frequency), calendar,
+                    var maturity = calendar.advance(issueDate, n, TimeUnit.Years);
+                    var schedule = new Schedule(issueDate, maturity, new Period(frequency), calendar,
                                                      convention, convention,
                                                      DateGeneration.Rule.Forward, false);
 
-                    CreditDefaultSwap cds = new CreditDefaultSwap(Protection.Side.Seller, notional, fixedRate,
+                    var cds = new CreditDefaultSwap(Protection.Side.Seller, notional, fixedRate,
                                                                   schedule, convention, cdsDayCount, true, true);
                     cds.setPricingEngine(new MidPointCdsEngine(probabilityCurve, recoveryRate, discountCurve));
 
-                    double NPV = cds.NPV();
-                    double flatRate = cds.impliedHazardRate(NPV, discountCurve,
+                    var NPV = cds.NPV();
+                    var flatRate = cds.impliedHazardRate(NPV, discountCurve,
                                                             dayCounter,
                                                             recoveryRate);
 
@@ -356,15 +356,15 @@ namespace QLNet.Tests
 
                     latestRate = flatRate;
 
-                    RelinkableHandle<DefaultProbabilityTermStructure> probability = new RelinkableHandle<DefaultProbabilityTermStructure>();
+                    var probability = new RelinkableHandle<DefaultProbabilityTermStructure>();
                     probability.linkTo(new FlatHazardRate(today, new Handle<Quote>(new SimpleQuote(flatRate)), dayCounter));
 
-                    CreditDefaultSwap cds2 = new CreditDefaultSwap(Protection.Side.Seller, notional, fixedRate,
+                    var cds2 = new CreditDefaultSwap(Protection.Side.Seller, notional, fixedRate,
                                                                    schedule, convention, cdsDayCount, true, true);
                     cds2.setPricingEngine(new MidPointCdsEngine(probability, recoveryRate, discountCurve));
 
-                    double NPV2 = cds2.NPV();
-                    double tolerance = 1.0;
+                    var NPV2 = cds2.NPV();
+                    var tolerance = 1.0;
                     if (System.Math.Abs(NPV - NPV2) > tolerance)
                     {
                         QAssert.Fail("failed to reproduce NPV with implied rate\n"
@@ -380,29 +380,29 @@ namespace QLNet.Tests
         {
             // Testing fair-spread calculation for credit-default swaps...
 
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
 
                 // Initialize curves
                 Calendar calendar = new TARGET();
-                Date today = calendar.adjust(Date.Today);
+                var today = calendar.adjust(Date.Today);
                 Settings.setEvaluationDate(today);
 
-                Handle<Quote> hazardRate = new Handle<Quote>(new SimpleQuote(0.01234));
-                RelinkableHandle<DefaultProbabilityTermStructure> probabilityCurve =
+                var hazardRate = new Handle<Quote>(new SimpleQuote(0.01234));
+                var probabilityCurve =
                    new RelinkableHandle<DefaultProbabilityTermStructure>();
                 probabilityCurve.linkTo(new FlatHazardRate(0, calendar, hazardRate, new Actual360()));
 
-                RelinkableHandle<YieldTermStructure> discountCurve =
+                var discountCurve =
                    new RelinkableHandle<YieldTermStructure>();
                 discountCurve.linkTo(new FlatForward(today, 0.06, new Actual360()));
 
                 // Build the schedule
-                Date issueDate = calendar.advance(today, -1, TimeUnit.Years);
-                Date maturity = calendar.advance(issueDate, 10, TimeUnit.Years);
-                BusinessDayConvention convention = BusinessDayConvention.Following;
+                var issueDate = calendar.advance(today, -1, TimeUnit.Years);
+                var maturity = calendar.advance(issueDate, 10, TimeUnit.Years);
+                var convention = BusinessDayConvention.Following;
 
-                Schedule schedule =
+                var schedule =
                    new MakeSchedule().from(issueDate)
                 .to(maturity)
                 .withFrequency(Frequency.Quarterly)
@@ -411,25 +411,25 @@ namespace QLNet.Tests
                 .withRule(DateGeneration.Rule.TwentiethIMM).value();
 
                 // Build the CDS
-                double fixedRate = 0.001;
+                var fixedRate = 0.001;
                 DayCounter dayCount = new Actual360();
-                double notional = 10000.0;
-                double recoveryRate = 0.4;
+                var notional = 10000.0;
+                var recoveryRate = 0.4;
 
                 IPricingEngine engine = new MidPointCdsEngine(probabilityCurve, recoveryRate, discountCurve);
 
-                CreditDefaultSwap cds = new CreditDefaultSwap(Protection.Side.Seller, notional, fixedRate,
+                var cds = new CreditDefaultSwap(Protection.Side.Seller, notional, fixedRate,
                                                               schedule, convention, dayCount, true, true);
                 cds.setPricingEngine(engine);
 
-                double fairRate = cds.fairSpread();
+                var fairRate = cds.fairSpread();
 
-                CreditDefaultSwap fairCds = new CreditDefaultSwap(Protection.Side.Seller, notional, fairRate,
+                var fairCds = new CreditDefaultSwap(Protection.Side.Seller, notional, fairRate,
                                                                   schedule, convention, dayCount, true, true);
                 fairCds.setPricingEngine(engine);
 
-                double fairNPV = fairCds.NPV();
-                double tolerance = 1e-10;
+                var fairNPV = fairCds.NPV();
+                var tolerance = 1e-10;
 
                 if (System.Math.Abs(fairNPV) > tolerance)
                     QAssert.Fail(
@@ -444,28 +444,28 @@ namespace QLNet.Tests
         {
             // Testing fair-upfront calculation for credit-default swaps...
 
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
                 // Initialize curves
                 Calendar calendar = new TARGET();
-                Date today = calendar.adjust(Date.Today);
+                var today = calendar.adjust(Date.Today);
                 Settings.setEvaluationDate(today);
 
-                Handle<Quote> hazardRate = new Handle<Quote>(new SimpleQuote(0.01234));
-                RelinkableHandle<DefaultProbabilityTermStructure> probabilityCurve =
+                var hazardRate = new Handle<Quote>(new SimpleQuote(0.01234));
+                var probabilityCurve =
                    new RelinkableHandle<DefaultProbabilityTermStructure>();
                 probabilityCurve.linkTo(new FlatHazardRate(0, calendar, hazardRate, new Actual360()));
 
-                RelinkableHandle<YieldTermStructure> discountCurve =
+                var discountCurve =
                    new RelinkableHandle<YieldTermStructure>();
                 discountCurve.linkTo(new FlatForward(today, 0.06, new Actual360()));
 
                 // Build the schedule
-                Date issueDate = today;
-                Date maturity = calendar.advance(issueDate, 10, TimeUnit.Years);
-                BusinessDayConvention convention = BusinessDayConvention.Following;
+                var issueDate = today;
+                var maturity = calendar.advance(issueDate, 10, TimeUnit.Years);
+                var convention = BusinessDayConvention.Following;
 
-                Schedule schedule =
+                var schedule =
                    new MakeSchedule().from(issueDate)
                 .to(maturity)
                 .withFrequency(Frequency.Quarterly)
@@ -474,26 +474,26 @@ namespace QLNet.Tests
                 .withRule(DateGeneration.Rule.TwentiethIMM).value();
 
                 // Build the CDS
-                double fixedRate = 0.05;
-                double upfront = 0.001;
+                var fixedRate = 0.05;
+                var upfront = 0.001;
                 DayCounter dayCount = new Actual360();
-                double notional = 10000.0;
-                double recoveryRate = 0.4;
+                var notional = 10000.0;
+                var recoveryRate = 0.4;
 
                 IPricingEngine engine = new MidPointCdsEngine(probabilityCurve, recoveryRate, discountCurve, true);
 
-                CreditDefaultSwap cds = new CreditDefaultSwap(Protection.Side.Seller, notional, upfront, fixedRate,
+                var cds = new CreditDefaultSwap(Protection.Side.Seller, notional, upfront, fixedRate,
                                                               schedule, convention, dayCount, true, true);
                 cds.setPricingEngine(engine);
 
-                double fairUpfront = cds.fairUpfront();
+                var fairUpfront = cds.fairUpfront();
 
-                CreditDefaultSwap fairCds = new CreditDefaultSwap(Protection.Side.Seller, notional,
+                var fairCds = new CreditDefaultSwap(Protection.Side.Seller, notional,
                                                                   fairUpfront, fixedRate, schedule, convention, dayCount, true, true);
                 fairCds.setPricingEngine(engine);
 
-                double fairNPV = fairCds.NPV();
-                double tolerance = 1e-10;
+                var fairNPV = fairCds.NPV();
+                var tolerance = 1e-10;
 
                 if (System.Math.Abs(fairNPV) > tolerance)
                     QAssert.Fail(
@@ -503,13 +503,13 @@ namespace QLNet.Tests
 
                 // same with null upfront to begin with
                 upfront = 0.0;
-                CreditDefaultSwap cds2 = new CreditDefaultSwap(Protection.Side.Seller, notional, upfront, fixedRate,
+                var cds2 = new CreditDefaultSwap(Protection.Side.Seller, notional, upfront, fixedRate,
                                                                schedule, convention, dayCount, true, true);
                 cds2.setPricingEngine(engine);
 
                 fairUpfront = cds2.fairUpfront();
 
-                CreditDefaultSwap fairCds2 = new CreditDefaultSwap(Protection.Side.Seller, notional,
+                var fairCds2 = new CreditDefaultSwap(Protection.Side.Seller, notional,
                                                                    fairUpfront, fixedRate, schedule, convention, dayCount, true, true);
                 fairCds2.setPricingEngine(engine);
 
@@ -528,15 +528,15 @@ namespace QLNet.Tests
         {
             // Testing ISDA engine calculations for credit-default swaps
 
-            SavedSettings backup = new SavedSettings();
+            var backup = new SavedSettings();
 
-            Date tradeDate = new Date(21, Month.May, 2009);
+            var tradeDate = new Date(21, Month.May, 2009);
             Settings.setEvaluationDate(tradeDate);
 
 
             //build an ISDA compliant yield curve
             //data comes from Markit published rates
-            List<RateHelper> isdaRateHelpers = new List<RateHelper>();
+            var isdaRateHelpers = new List<RateHelper>();
             int[] dep_tenors = { 1, 2, 3, 6, 9, 12 };
             double[] dep_quotes = {0.003081,
                                 0.005525,
@@ -546,7 +546,7 @@ namespace QLNet.Tests
                                 0.015488
                                };
 
-            for (int i = 0; i < dep_tenors.Length; i++)
+            for (var i = 0; i < dep_tenors.Length; i++)
             {
                 isdaRateHelpers.Add(new DepositRateHelper(dep_quotes[i], new Period(dep_tenors[i], TimeUnit.Months), 2,
                                                           new WeekendsOnly(), BusinessDayConvention.ModifiedFollowing, false, new Actual360())
@@ -569,21 +569,21 @@ namespace QLNet.Tests
                                  0.037605
                                 };
 
-            IborIndex isda_ibor = new IborIndex("IsdaIbor", new Period(3, TimeUnit.Months), 2, new USDCurrency(),
+            var isda_ibor = new IborIndex("IsdaIbor", new Period(3, TimeUnit.Months), 2, new USDCurrency(),
                                                 new WeekendsOnly(), BusinessDayConvention.ModifiedFollowing, false, new Actual360());
-            for (int i = 0; i < swap_tenors.Length; i++)
+            for (var i = 0; i < swap_tenors.Length; i++)
             {
                 isdaRateHelpers.Add(new SwapRateHelper(swap_quotes[i], new Period(swap_tenors[i], TimeUnit.Years),
                                                        new WeekendsOnly(), Frequency.Semiannual, BusinessDayConvention.ModifiedFollowing, new Thirty360(),
                                                        isda_ibor));
             }
 
-            RelinkableHandle<YieldTermStructure> discountCurve = new RelinkableHandle<YieldTermStructure>();
+            var discountCurve = new RelinkableHandle<YieldTermStructure>();
             discountCurve.linkTo(new PiecewiseYieldCurve<Discount, LogLinear>(0, new WeekendsOnly(), isdaRateHelpers,
                                                                               new Actual365Fixed()));
 
 
-            RelinkableHandle<DefaultProbabilityTermStructure> probabilityCurve = new RelinkableHandle<DefaultProbabilityTermStructure>();
+            var probabilityCurve = new RelinkableHandle<DefaultProbabilityTermStructure>();
             Date[] termDates = { new Date(20, Month.June, 2010),
                  new Date(20, Month.June, 2011),
                  new Date(20, Month.June, 2012),
@@ -615,7 +615,7 @@ namespace QLNet.Tests
                                   -4042340.999
                                  };
 #if !QL_USE_INDEXED_COUPON
-            double tolerance = 1.0e-2; //TODO Check calculation , tolerance must be 1.0e-6;
+            var tolerance = 1.0e-2; //TODO Check calculation , tolerance must be 1.0e-6;
 #else
          /* The risk-free curve is a bit off. We might skip the tests
             altogether and rely on running them with indexed coupons
@@ -623,19 +623,19 @@ namespace QLNet.Tests
          double tolerance = 1.0e-3;
 #endif
 
-            int l = 0;
+            var l = 0;
 
-            for (int i = 0; i < termDates.Length; i++)
+            for (var i = 0; i < termDates.Length; i++)
             {
-                for (int j = 0; j < 2; j++)
+                for (var j = 0; j < 2; j++)
                 {
-                    for (int k = 0; k < 2; k++)
+                    for (var k = 0; k < 2; k++)
                     {
 
-                        CreditDefaultSwap quotedTrade = new MakeCreditDefaultSwap(termDates[i], spreads[j])
+                        var quotedTrade = new MakeCreditDefaultSwap(termDates[i], spreads[j])
                         .withNominal(10000000.0).value();
 
-                        double h = quotedTrade.impliedHazardRate(0.0,
+                        var h = quotedTrade.impliedHazardRate(0.0,
                                                                  discountCurve,
                                                                  new Actual365Fixed(),
                                                                  recoveries[k],
@@ -644,16 +644,16 @@ namespace QLNet.Tests
 
                         probabilityCurve.linkTo(new FlatHazardRate(0, new WeekendsOnly(), h, new Actual365Fixed()));
 
-                        IsdaCdsEngine engine = new IsdaCdsEngine(probabilityCurve, recoveries[k], discountCurve);
+                        var engine = new IsdaCdsEngine(probabilityCurve, recoveries[k], discountCurve);
 
-                        CreditDefaultSwap conventionalTrade = new MakeCreditDefaultSwap(termDates[i], 0.01)
+                        var conventionalTrade = new MakeCreditDefaultSwap(termDates[i], 0.01)
                         .withNominal(10000000.0)
                         .withPricingEngine(engine).value();
 
-                        double x = conventionalTrade.notional().Value;
-                        double y = conventionalTrade.fairUpfront();
+                        var x = conventionalTrade.notional().Value;
+                        var y = conventionalTrade.fairUpfront();
 
-                        double calculated = System.Math.Abs(x * y - markitValues[l]);
+                        var calculated = System.Math.Abs(x * y - markitValues[l]);
 
                         QAssert.IsTrue(calculated <= tolerance);
 

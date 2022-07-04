@@ -42,10 +42,10 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_ShortRateModels
+    [JetBrains.Annotations.PublicAPI] public class T_ShortRateModels
     {
 
-        public class CalibrationData
+        [JetBrains.Annotations.PublicAPI] public class CalibrationData
         {
             public int start;
             public int length;
@@ -63,13 +63,13 @@ namespace QLNet.Tests
         {
             //("Testing Hull-White calibration against cached values...");
 
-            Date today = new Date(15, Month.February, 2002);
-            Date settlement = new Date(19, Month.February, 2002);
+            var today = new Date(15, Month.February, 2002);
+            var settlement = new Date(19, Month.February, 2002);
             Settings.setEvaluationDate(today);
-            Handle<YieldTermStructure> termStructure =
+            var termStructure =
                new Handle<YieldTermStructure>(Utilities.flatRate(settlement, 0.04875825, new Actual365Fixed()));
             //termStructure.link
-            HullWhite model = new HullWhite(termStructure);
+            var model = new HullWhite(termStructure);
 
             CalibrationData[] data = { new CalibrationData(1, 5, 0.1148),
                             new CalibrationData(2, 4, 0.1108),
@@ -81,8 +81,8 @@ namespace QLNet.Tests
 
             IPricingEngine engine = new JamshidianSwaptionEngine(model);
 
-            List<CalibrationHelper> swaptions = new List<CalibrationHelper>();
-            for (int i = 0; i < data.Length; i++)
+            var swaptions = new List<CalibrationHelper>();
+            for (var i = 0; i < data.Length; i++)
             {
                 Quote vol = new SimpleQuote(data[i].volatility);
                 CalibrationHelper helper =
@@ -101,12 +101,12 @@ namespace QLNet.Tests
             // Set up the optimization problem
             // Real simplexLambda = 0.1;
             // Simplex optimizationMethod(simplexLambda);
-            LevenbergMarquardt optimizationMethod = new LevenbergMarquardt(1.0e-8, 1.0e-8, 1.0e-8);
-            EndCriteria endCriteria = new EndCriteria(10000, 100, 1e-6, 1e-8, 1e-8);
+            var optimizationMethod = new LevenbergMarquardt(1.0e-8, 1.0e-8, 1.0e-8);
+            var endCriteria = new EndCriteria(10000, 100, 1e-6, 1e-8, 1e-8);
 
             //Optimize
             model.calibrate(swaptions, optimizationMethod, endCriteria, new Constraint(), new List<double>());
-            EndCriteria.Type ecType = model.endCriteria();
+            var ecType = model.endCriteria();
 
             // Check and print out results
 #if QL_USE_INDEXED_COUPON
@@ -114,14 +114,14 @@ namespace QLNet.Tests
 #else
             double cachedA = 0.0488565, cachedSigma = 0.00593662;
 #endif
-            double tolerance = 1.120e-5;
+            var tolerance = 1.120e-5;
             //double tolerance = 1.0e-6;
-            Vector xMinCalculated = model.parameters();
-            double yMinCalculated = model.value(xMinCalculated, swaptions);
-            Vector xMinExpected = new Vector(2);
+            var xMinCalculated = model.parameters();
+            var yMinCalculated = model.value(xMinCalculated, swaptions);
+            var xMinExpected = new Vector(2);
             xMinExpected[0] = cachedA;
             xMinExpected[1] = cachedSigma;
-            double yMinExpected = model.value(xMinExpected, swaptions);
+            var yMinExpected = model.value(xMinExpected, swaptions);
             if (System.Math.Abs(xMinCalculated[0] - cachedA) > tolerance
                 || System.Math.Abs(xMinCalculated[1] - cachedSigma) > tolerance)
             {
@@ -150,7 +150,7 @@ namespace QLNet.Tests
             today = calendar.adjust(Date.Today);
             Settings.setEvaluationDate(today);
 
-            Date settlement = calendar.advance(today, 2, TimeUnit.Days);
+            var settlement = calendar.advance(today, 2, TimeUnit.Days);
 
             Date[] dates =
             {
@@ -186,9 +186,9 @@ namespace QLNet.Tests
             //for (int i = 0; i < dates.Length; i++)
             //    dates[i] + dates.Length;
 
-            LogLinear Interpolator = new LogLinear();
+            var Interpolator = new LogLinear();
 
-            Handle<YieldTermStructure> termStructure =
+            var termStructure =
                new Handle<YieldTermStructure>(
                new InterpolatedDiscountCurve<LogLinear>(
                   dates.ToList(),
@@ -196,7 +196,7 @@ namespace QLNet.Tests
                   new Actual365Fixed(), new Calendar(), null, null, Interpolator)
             );
 
-            HullWhite model = new HullWhite(termStructure);
+            var model = new HullWhite(termStructure);
 
             int[] start = { -3, 0, 3 };
             int[] length = { 2, 5, 10 };
@@ -208,43 +208,43 @@ namespace QLNet.Tests
 #if QL_USE_INDEXED_COUPON
          double tolerance = 4.0e-3;
 #else
-            double tolerance = 1.0e-8;
+            var tolerance = 1.0e-8;
 #endif
 
-            for (int i = 0; i < start.Length; i++)
+            for (var i = 0; i < start.Length; i++)
             {
 
-                Date startDate = calendar.advance(settlement, start[i], TimeUnit.Months);
+                var startDate = calendar.advance(settlement, start[i], TimeUnit.Months);
                 if (startDate < today)
                 {
-                    Date fixingDate = calendar.advance(startDate, -2, TimeUnit.Days);
-                    TimeSeries<double?> pastFixings = new TimeSeries<double?>();
+                    var fixingDate = calendar.advance(startDate, -2, TimeUnit.Days);
+                    var pastFixings = new TimeSeries<double?>();
                     pastFixings[fixingDate] = 0.03;
                     IndexManager.instance().setHistory(euribor.name(), pastFixings);
                 }
 
-                for (int j = 0; j < length.Length; j++)
+                for (var j = 0; j < length.Length; j++)
                 {
 
-                    Date maturity = calendar.advance(startDate, length[i], TimeUnit.Years);
-                    Schedule fixedSchedule = new Schedule(startDate, maturity, new Period(Frequency.Annual),
+                    var maturity = calendar.advance(startDate, length[i], TimeUnit.Years);
+                    var fixedSchedule = new Schedule(startDate, maturity, new Period(Frequency.Annual),
                                                           calendar, BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
                                                           DateGeneration.Rule.Forward, false);
-                    Schedule floatSchedule = new Schedule(startDate, maturity, new Period(Frequency.Semiannual),
+                    var floatSchedule = new Schedule(startDate, maturity, new Period(Frequency.Semiannual),
                                                           calendar, BusinessDayConvention.Following, BusinessDayConvention.Following,
                                                           DateGeneration.Rule.Forward, false);
-                    for (int k = 0; k < rates.Length; k++)
+                    for (var k = 0; k < rates.Length; k++)
                     {
 
-                        VanillaSwap swap = new VanillaSwap(VanillaSwap.Type.Payer, 1000000.0,
+                        var swap = new VanillaSwap(VanillaSwap.Type.Payer, 1000000.0,
                                                            fixedSchedule, rates[k], new Thirty360(),
                                                            floatSchedule, euribor, 0.0, new Actual360());
                         swap.setPricingEngine(new DiscountingSwapEngine(termStructure));
-                        double expected = swap.NPV();
+                        var expected = swap.NPV();
                         swap.setPricingEngine(engine);
-                        double calculated = swap.NPV();
+                        var calculated = swap.NPV();
 
-                        double error = System.Math.Abs((expected - calculated) / expected);
+                        var error = System.Math.Abs((expected - calculated) / expected);
                         if (error > tolerance)
                         {
                             QAssert.Fail("Failed to reproduce swap NPV:"
@@ -265,20 +265,20 @@ namespace QLNet.Tests
             //BOOST_MESSAGE("Testing Hull-White futures convexity bias...");
 
             // G. Kirikos, D. Novak, "Convexity Conundrums", Risk Magazine, March 1997
-            double futureQuote = 94.0;
-            double a = 0.03;
-            double sigma = 0.015;
-            double t = 5.0;
-            double T = 5.25;
+            var futureQuote = 94.0;
+            var a = 0.03;
+            var sigma = 0.015;
+            var t = 5.0;
+            var T = 5.25;
 
-            double expectedForward = 0.0573037;
-            double tolerance = 0.0000001;
+            var expectedForward = 0.0573037;
+            var tolerance = 0.0000001;
 
-            double futureImpliedRate = (100.0 - futureQuote) / 100.0;
-            double calculatedForward =
+            var futureImpliedRate = (100.0 - futureQuote) / 100.0;
+            var calculatedForward =
                futureImpliedRate - HullWhite.convexityBias(futureQuote, t, T, sigma, a);
 
-            double error = System.Math.Abs(calculatedForward - expectedForward);
+            var error = System.Math.Abs(calculatedForward - expectedForward);
 
             if (error > tolerance)
             {

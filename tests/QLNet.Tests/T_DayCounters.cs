@@ -30,7 +30,7 @@ using QLNet.Time.Calendars;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_DayCounters
+    [JetBrains.Annotations.PublicAPI] public class T_DayCounters
     {
         public struct SingleCase
         {
@@ -65,12 +65,12 @@ namespace QLNet.Tests
         {
 
             DayCounter daycounter = new ActualActual(ActualActual.Convention.ISMA, schedule);
-            double yearFraction = 0.0;
+            var yearFraction = 0.0;
 
-            for (int i = 1; i < schedule.size() - 1; i++)
+            for (var i = 1; i < schedule.size() - 1; i++)
             {
-                Date referenceStart = schedule.date(i);
-                Date referenceEnd = schedule.date(i + 1);
+                var referenceStart = schedule.date(i);
+                var referenceEnd = schedule.date(i + 1);
                 if (start < referenceEnd && end > referenceStart)
                 {
                     yearFraction += ISMAYearFractionWithReferenceDates(
@@ -90,7 +90,7 @@ namespace QLNet.Tests
         {
             double referenceDayCount = dayCounter.dayCount(refStart, refEnd);
             // guess how many coupon periods per year:
-            int couponsPerYear = (int)(0.5 + 365.0 / referenceDayCount);
+            var couponsPerYear = (int)(0.5 + 365.0 / referenceDayCount);
             // the above is good enough for annual or semi annual payments.
             return dayCounter.dayCount(start, end)
                    / (referenceDayCount * couponsPerYear);
@@ -181,15 +181,15 @@ namespace QLNet.Tests
                            0.41530054644)
          };
 
-            int n = testCases.Length; /// sizeof(SingleCase);
-            for (int i = 0; i < n; i++)
+            var n = testCases.Length; /// sizeof(SingleCase);
+            for (var i = 0; i < n; i++)
             {
-                ActualActual dayCounter = new ActualActual(testCases[i]._convention);
-                Date d1 = testCases[i]._start;
-                Date d2 = testCases[i]._end;
-                Date rd1 = testCases[i]._refStart;
-                Date rd2 = testCases[i]._refEnd;
-                double calculated = dayCounter.yearFraction(d1, d2, rd1, rd2);
+                var dayCounter = new ActualActual(testCases[i]._convention);
+                var d1 = testCases[i]._start;
+                var d2 = testCases[i]._end;
+                var rd1 = testCases[i]._refStart;
+                var rd2 = testCases[i]._refEnd;
+                var calculated = dayCounter.yearFraction(d1, d2, rd1, rd2);
 
                 if (System.Math.Abs(calculated - testCases[i]._result) > 1.0e-10)
                 {
@@ -206,12 +206,12 @@ namespace QLNet.Tests
             // Testing actual/actual with schedule for undefined semiannual reference periods
 
             Calendar calendar = new UnitedStates();
-            Date fromDate = new Date(10, Month.January, 2017);
-            Date firstCoupon = new Date(31, Month.August, 2017);
-            Date quasiCoupon = new Date(28, Month.February, 2017);
-            Date quasiCoupon2 = new Date(31, Month.August, 2016);
+            var fromDate = new Date(10, Month.January, 2017);
+            var firstCoupon = new Date(31, Month.August, 2017);
+            var quasiCoupon = new Date(28, Month.February, 2017);
+            var quasiCoupon2 = new Date(31, Month.August, 2016);
 
-            Schedule schedule = new MakeSchedule()
+            var schedule = new MakeSchedule()
             .from(fromDate)
             .withFirstDate(firstCoupon)
             .to(new Date(28, Month.February, 2026))
@@ -220,12 +220,12 @@ namespace QLNet.Tests
             .withConvention(BusinessDayConvention.Unadjusted)
             .backwards().endOfMonth(true).value();
 
-            Date testDate = schedule.date(1);
+            var testDate = schedule.date(1);
             DayCounter dayCounter = new ActualActual(ActualActual.Convention.ISMA, schedule);
             DayCounter dayCounterNoSchedule = new ActualActual(ActualActual.Convention.ISMA);
 
-            Date referencePeriodStart = schedule.date(1);
-            Date referencePeriodEnd = schedule.date(2);
+            var referencePeriodStart = schedule.date(1);
+            var referencePeriodEnd = schedule.date(2);
 
             // Test
             QAssert.IsTrue(dayCounter.yearFraction(referencePeriodStart,
@@ -250,7 +250,7 @@ namespace QLNet.Tests
 
             while (testDate < referencePeriodEnd)
             {
-                double difference =
+                var difference =
                    dayCounter.yearFraction(testDate, referencePeriodEnd,
                                            referencePeriodStart, referencePeriodEnd) -
                    dayCounter.yearFraction(testDate, referencePeriodEnd);
@@ -262,9 +262,9 @@ namespace QLNet.Tests
             }
 
             //Test long first coupon
-            double calculatedYearFraction =
+            var calculatedYearFraction =
                dayCounter.yearFraction(fromDate, firstCoupon);
-            double expectedYearFraction =
+            var expectedYearFraction =
                0.5 + (double)dayCounter.dayCount(fromDate, quasiCoupon)
                / (2 * dayCounter.dayCount(quasiCoupon2, quasiCoupon));
 
@@ -284,18 +284,18 @@ namespace QLNet.Tests
             .withConvention(BusinessDayConvention.Unadjusted)
             .backwards().endOfMonth(false).value();
 
-            Date periodStartDate = schedule.date(1);
-            Date periodEndDate = schedule.date(2);
+            var periodStartDate = schedule.date(1);
+            var periodEndDate = schedule.date(2);
 
             dayCounter = new ActualActual(ActualActual.Convention.ISMA, schedule);
 
             while (periodEndDate < schedule.date(schedule.size() - 2))
             {
-                double expected =
+                var expected =
                    actualActualDaycountComputation(schedule,
                                                    periodStartDate,
                                                    periodEndDate);
-                double calculated = dayCounter.yearFraction(periodStartDate,
+                var calculated = dayCounter.yearFraction(periodStartDate,
                                                             periodEndDate);
 
                 if (System.Math.Abs(expected - calculated) > 1e-8)
@@ -317,7 +317,7 @@ namespace QLNet.Tests
 
             // Now do an annual schedule
             Calendar calendar = new UnitedStates();
-            Schedule schedule = new MakeSchedule()
+            var schedule = new MakeSchedule()
             .from(new Date(10, Month.January, 2017))
             .withFirstDate(new Date(31, Month.August, 2017))
             .to(new Date(28, Month.February, 2026))
@@ -326,15 +326,15 @@ namespace QLNet.Tests
             .withConvention(BusinessDayConvention.Unadjusted)
             .backwards().endOfMonth(false).value();
 
-            Date referencePeriodStart = schedule.date(1);
-            Date referencePeriodEnd = schedule.date(2);
+            var referencePeriodStart = schedule.date(1);
+            var referencePeriodEnd = schedule.date(2);
 
-            Date testDate = schedule.date(1);
+            var testDate = schedule.date(1);
             DayCounter dayCounter = new ActualActual(ActualActual.Convention.ISMA, schedule);
 
             while (testDate < referencePeriodEnd)
             {
-                double difference =
+                var difference =
                    ISMAYearFractionWithReferenceDates(dayCounter,
                                                       testDate, referencePeriodEnd,
                                                       referencePeriodStart, referencePeriodEnd) -
@@ -358,10 +358,10 @@ namespace QLNet.Tests
             // Testing actual/actual day counter with schedule
 
             // long first coupon
-            Date issueDateExpected = new Date(17, Month.January, 2017);
-            Date firstCouponDateExpected = new Date(31, Month.August, 2017);
+            var issueDateExpected = new Date(17, Month.January, 2017);
+            var firstCouponDateExpected = new Date(31, Month.August, 2017);
 
-            Schedule schedule =
+            var schedule =
                new MakeSchedule()
             .from(issueDateExpected)
             .withFirstDate(firstCouponDateExpected)
@@ -372,27 +372,27 @@ namespace QLNet.Tests
             .backwards()
             .endOfMonth().value();
 
-            Date issueDate = schedule.date(0);
+            var issueDate = schedule.date(0);
             Utils.QL_REQUIRE(issueDate == issueDateExpected, () =>
                              "This is not the expected issue date " + issueDate
                              + " expected " + issueDateExpected);
-            Date firstCouponDate = schedule.date(1);
+            var firstCouponDate = schedule.date(1);
             Utils.QL_REQUIRE(firstCouponDate == firstCouponDateExpected, () =>
                              "This is not the expected first coupon date " + firstCouponDate
                              + " expected: " + firstCouponDateExpected);
 
             //Make thw quasi coupon dates:
-            Date quasiCouponDate2 = schedule.calendar().advance(firstCouponDate,
+            var quasiCouponDate2 = schedule.calendar().advance(firstCouponDate,
                                                                 -schedule.tenor(),
                                                                 schedule.businessDayConvention(),
                                                                 schedule.endOfMonth());
-            Date quasiCouponDate1 = schedule.calendar().advance(quasiCouponDate2,
+            var quasiCouponDate1 = schedule.calendar().advance(quasiCouponDate2,
                                                                 -schedule.tenor(),
                                                                 schedule.businessDayConvention(),
                                                                 schedule.endOfMonth());
 
-            Date quasiCouponDate1Expected = new Date(31, Month.August, 2016);
-            Date quasiCouponDate2Expected = new Date(28, Month.February, 2017);
+            var quasiCouponDate1Expected = new Date(31, Month.August, 2016);
+            var quasiCouponDate2Expected = new Date(28, Month.February, 2017);
 
             Utils.QL_REQUIRE(quasiCouponDate2 == quasiCouponDate2Expected, () =>
                              "Expected " + quasiCouponDate2Expected
@@ -406,20 +406,20 @@ namespace QLNet.Tests
             DayCounter dayCounter = new ActualActual(ActualActual.Convention.ISMA, schedule);
 
             // full coupon
-            double t_with_reference = dayCounter.yearFraction(
+            var t_with_reference = dayCounter.yearFraction(
                                          issueDate, firstCouponDate,
                                          quasiCouponDate2, firstCouponDate
                                       );
-            double t_no_reference = dayCounter.yearFraction(
+            var t_no_reference = dayCounter.yearFraction(
                                        issueDate,
                                        firstCouponDate
                                     );
-            double t_total =
+            var t_total =
                ISMAYearFractionWithReferenceDates(dayCounter,
                                                   issueDate, quasiCouponDate2,
                                                   quasiCouponDate1, quasiCouponDate2)
                + 0.5;
-            double expected = 0.6160220994;
+            var expected = 0.6160220994;
 
 
             if (System.Math.Abs(t_total - expected) > 1.0e-10)
@@ -440,7 +440,7 @@ namespace QLNet.Tests
             }
 
             // settlement date in the first quasi-period
-            Date settlementDate = new Date(29, Month.January, 2017);
+            var settlementDate = new Date(29, Month.January, 2017);
 
             t_with_reference = ISMAYearFractionWithReferenceDates(
                                   dayCounter,
@@ -448,7 +448,7 @@ namespace QLNet.Tests
                                   quasiCouponDate1, quasiCouponDate2
                                );
             t_no_reference = dayCounter.yearFraction(issueDate, settlementDate);
-            double t_expected_first_qp = 0.03314917127071823; //12.0/362
+            var t_expected_first_qp = 0.03314917127071823; //12.0/362
             if (System.Math.Abs(t_with_reference - t_expected_first_qp) > 1.0e-10)
             {
                 QAssert.Fail("Failed to reproduce expected time:\n"
@@ -459,7 +459,7 @@ namespace QLNet.Tests
             {
                 QAssert.Fail("Should produce the same time whether or not references are present");
             }
-            double t2 = dayCounter.yearFraction(settlementDate, firstCouponDate);
+            var t2 = dayCounter.yearFraction(settlementDate, firstCouponDate);
             if (System.Math.Abs(t_expected_first_qp + t2 - expected) > 1.0e-10)
             {
                 QAssert.Fail("Sum of quasiperiod2 split is not consistent");
@@ -495,18 +495,18 @@ namespace QLNet.Tests
         {
             Period[] p = { new Period(3, TimeUnit.Months), new Period(6, TimeUnit.Months), new Period(1, TimeUnit.Years) };
             double[] expected = { 0.25, 0.5, 1.0 };
-            int n = p.Length;
+            var n = p.Length;
 
             // 4 years should be enough
             Date first = new Date(1, Month.January, 2002), last = new Date(31, Month.December, 2005);
             DayCounter dayCounter = new SimpleDayCounter();
 
-            for (Date start = first; start <= last; start++)
+            for (var start = first; start <= last; start++)
             {
-                for (int i = 0; i < n; i++)
+                for (var i = 0; i < n; i++)
                 {
-                    Date end = start + p[i];
-                    double calculated = dayCounter.yearFraction(start, end, null, null);
+                    var end = start + p[i];
+                    var calculated = dayCounter.yearFraction(start, end, null, null);
                     if (System.Math.Abs(calculated - expected[i]) > 1.0e-12)
                     {
                         QAssert.Fail("from " + start + " to " + end +
@@ -523,18 +523,18 @@ namespace QLNet.Tests
         {
             Period[] p = { new Period(3, TimeUnit.Months), new Period(6, TimeUnit.Months), new Period(1, TimeUnit.Years) };
             double[] expected = { 1.0, 1.0, 1.0 };
-            int n = p.Length;
+            var n = p.Length;
 
             // 1 years should be enough
             Date first = new Date(1, Month.January, 2004), last = new Date(31, Month.December, 2004);
             DayCounter dayCounter = new OneDayCounter();
 
-            for (Date start = first; start <= last; start++)
+            for (var start = first; start <= last; start++)
             {
-                for (int i = 0; i < n; i++)
+                for (var i = 0; i < n; i++)
                 {
-                    Date end = start + p[i];
-                    double calculated = dayCounter.yearFraction(start, end, null, null);
+                    var end = start + p[i];
+                    var calculated = dayCounter.yearFraction(start, end, null, null);
                     if (System.Math.Abs(calculated - expected[i]) > 1.0e-12)
                     {
                         QAssert.Fail("from " + start + " to " + end +
@@ -551,7 +551,7 @@ namespace QLNet.Tests
         {
             // Testing business/252 day counter
 
-            List<Date> testDates = new List<Date>();
+            var testDates = new List<Date>();
             testDates.Add(new Date(1, Month.February, 2002));
             testDates.Add(new Date(4, Month.February, 2002));
             testDates.Add(new Date(16, Month.May, 2003));
@@ -590,7 +590,7 @@ namespace QLNet.Tests
 
             double calculated;
 
-            for (int i = 1; i < testDates.Count; i++)
+            for (var i = 1; i < testDates.Count; i++)
             {
                 calculated = dayCounter1.yearFraction(testDates[i - 1], testDates[i]);
                 if (System.Math.Abs(calculated - expected[i - 1]) > 1.0e-12)
@@ -604,7 +604,7 @@ namespace QLNet.Tests
 
             DayCounter dayCounter2 = new Business252();
 
-            for (int i = 1; i < testDates.Count; i++)
+            for (var i = 1; i < testDates.Count; i++)
             {
                 calculated = dayCounter2.yearFraction(testDates[i - 1], testDates[i]);
                 if (System.Math.Abs(calculated - expected[i - 1]) > 1.0e-12)
@@ -627,8 +627,8 @@ namespace QLNet.Tests
             // 30/360 (or Bond Basis)
 
             DayCounter dayCounter = new Thirty360(Thirty360.Thirty360Convention.BondBasis);
-            List<Date> testStartDates = new List<Date>();
-            List<Date> testEndDates = new List<Date>();
+            var testStartDates = new List<Date>();
+            var testEndDates = new List<Date>();
             int calculated;
 
             // ISDA - Example 1: End dates do not involve the last day of February
@@ -671,7 +671,7 @@ namespace QLNet.Tests
                             359,  32,  33
                           };
 
-            for (int i = 0; i < testStartDates.Count; i++)
+            for (var i = 0; i < testStartDates.Count; i++)
             {
                 calculated = dayCounter.dayCount(testStartDates[i], testEndDates[i]);
                 if (calculated != expected[i])
@@ -693,8 +693,8 @@ namespace QLNet.Tests
             // Based on ICMA (Rule 251) and FBF; this is the version of 30E/360 used by Excel
 
             DayCounter dayCounter = new Thirty360(Thirty360.Thirty360Convention.EurobondBasis);
-            List<Date> testStartDates = new List<Date>();
-            List<Date> testEndDates = new List<Date>();
+            var testStartDates = new List<Date>();
+            var testEndDates = new List<Date>();
             int calculated;
 
             // ISDA - Example 1: End dates do not involve the last day of February
@@ -744,7 +744,7 @@ namespace QLNet.Tests
                             359,  32,  32
                           };
 
-            for (int i = 0; i < testStartDates.Count; i++)
+            for (var i = 0; i < testStartDates.Count; i++)
             {
                 calculated = dayCounter.dayCount(testStartDates[i], testEndDates[i]);
                 if (calculated != expected[i])
@@ -762,20 +762,20 @@ namespace QLNet.Tests
         {
             // Testing intraday behavior of day counter
 
-            Date d1 = new Date(12, Month.February, 2015);
-            Date d2 = new Date(14, Month.February, 2015, 12, 34, 17, 1);
+            var d1 = new Date(12, Month.February, 2015);
+            var d2 = new Date(14, Month.February, 2015, 12, 34, 17, 1);
 
-            double tol = 100 * Const.QL_EPSILON;
+            var tol = 100 * Const.QL_EPSILON;
 
             DayCounter[] dayCounters = { new ActualActual(), new Actual365Fixed(), new Actual360() };
 
-            for (int i = 0; i < dayCounters.Length; ++i)
+            for (var i = 0; i < dayCounters.Length; ++i)
             {
-                DayCounter dc = dayCounters[i];
+                var dc = dayCounters[i];
 
-                double expected = ((12 * 60 + 34) * 60 + 17 + 0.001)
-                                  * dc.yearFraction(d1, d1 + 1) / 86400
-                                  + dc.yearFraction(d1, d1 + 2);
+                var expected = ((12 * 60 + 34) * 60 + 17 + 0.001)
+                               * dc.yearFraction(d1, d1 + 1) / 86400
+                               + dc.yearFraction(d1, d1 + 2);
 
                 QAssert.IsTrue(System.Math.Abs(dc.yearFraction(d1, d2) - expected) < tol,
                                "can not reproduce result for day counter " + dc.name());

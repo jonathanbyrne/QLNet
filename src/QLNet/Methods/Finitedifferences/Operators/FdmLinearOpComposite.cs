@@ -36,15 +36,12 @@ namespace QLNet.Methods.Finitedifferences.Operators
         public abstract Vector solve_splitting(int direction, Vector r, double s);
         public abstract Vector preconditioner(Vector r, double s);
 
-        public virtual List<SparseMatrix> toMatrixDecomp()
-        {
-            return null;
-        }
+        public virtual List<SparseMatrix> toMatrixDecomp() => null;
 
         public override SparseMatrix toMatrix()
         {
-            List<SparseMatrix> dcmp = toMatrixDecomp();
-            SparseMatrix retVal = dcmp.accumulate(1, dcmp.Count, dcmp.First(), (a, b) => a + b);
+            var dcmp = toMatrixDecomp();
+            var retVal = dcmp.accumulate(1, dcmp.Count, dcmp.First(), (a, b) => a + b);
             return retVal;
         }
     }

@@ -32,7 +32,7 @@ namespace QLNet.Pricingengines.vanilla
         - the invariance of the results upon addition of null
           dividends is tested.
     */
-    public class FDDividendAmericanEngine : FDEngineAdapter<FDAmericanCondition<FDDividendEngine>, DividendVanillaOption.Engine>,
+    [JetBrains.Annotations.PublicAPI] public class FDDividendAmericanEngine : FDEngineAdapter<FDAmericanCondition<FDDividendEngine>, DividendVanillaOption.Engine>,
       IFDEngine
     {
         public FDDividendAmericanEngine()
@@ -43,10 +43,6 @@ namespace QLNet.Pricingengines.vanilla
            : base(process, timeSteps, gridPoints, timeDependent)
         { }
 
-        public IFDEngine factory(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100)
-        {
-            return new FDDividendAmericanEngine(process, timeSteps, gridPoints);
-        }
-
+        public IFDEngine factory(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100) => new FDDividendAmericanEngine(process, timeSteps, gridPoints);
     }
 }

@@ -30,7 +30,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_ForwardOption
+    [JetBrains.Annotations.PublicAPI] public class T_ForwardOption
     {
         void REPORT_FAILURE(string greekName,
                             StrikedTypePayoff payoff,
@@ -66,7 +66,7 @@ namespace QLNet.Tests
         }
 
 
-        public class ForwardOptionData
+        [JetBrains.Annotations.PublicAPI] public class ForwardOptionData
         {
             public ForwardOptionData(Option.Type type_, double moneyness_, double s_, double q_, double r_, double start_,
                                      double t_, double v_, double result_, double tol_)
@@ -105,7 +105,7 @@ namespace QLNet.Tests
             */
             ForwardOptionData[] values =
             {
-            //  type, moneyness, spot,  div, rate,start,   t,  vol, result, tol
+            //  ExerciseType, moneyness, spot,  div, rate,start,   t,  vol, result, tol
             // "Option pricing formulas", pag. 37
             new ForwardOptionData(QLNet.Option.Type.Call, 1.1, 60.0, 0.04, 0.08, 0.25, 1.0, 0.30, 4.4064, 1.0e-4),
             // "Option pricing formulas", VBA code
@@ -113,41 +113,41 @@ namespace QLNet.Tests
          };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            SimpleQuote qRate = new SimpleQuote(0.0);
-            Handle<YieldTermStructure> qTS = new Handle<YieldTermStructure>(Utilities.flatRate(today, qRate, dc));
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            Handle<YieldTermStructure> rTS = new Handle<YieldTermStructure>(Utilities.flatRate(today, rRate, dc));
-            SimpleQuote vol = new SimpleQuote(0.0);
-            Handle<BlackVolTermStructure> volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(today, vol, dc));
+            var spot = new SimpleQuote(0.0);
+            var qRate = new SimpleQuote(0.0);
+            var qTS = new Handle<YieldTermStructure>(Utilities.flatRate(today, qRate, dc));
+            var rRate = new SimpleQuote(0.0);
+            var rTS = new Handle<YieldTermStructure>(Utilities.flatRate(today, rRate, dc));
+            var vol = new SimpleQuote(0.0);
+            var volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(today, vol, dc));
 
-            BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
+            var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
                                                                                    new Handle<YieldTermStructure>(qTS), new Handle<YieldTermStructure>(rTS),
                                                                                    new Handle<BlackVolTermStructure>(volTS));
 
             IPricingEngine engine = new ForwardVanillaEngine(stochProcess, process => new AnalyticEuropeanEngine(process));  // AnalyticEuropeanEngine
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
 
                 StrikedTypePayoff payoff = new PlainVanillaPayoff(values[i].type, 0.0);
-                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                var exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
                 Exercise exercise = new EuropeanExercise(exDate);
-                Date reset = today + Convert.ToInt32(values[i].start * 360 + 0.5);
+                var reset = today + Convert.ToInt32(values[i].start * 360 + 0.5);
 
                 spot.setValue(values[i].s);
                 qRate.setValue(values[i].q);
                 rRate.setValue(values[i].r);
                 vol.setValue(values[i].v);
 
-                ForwardVanillaOption option = new ForwardVanillaOption(values[i].moneyness, reset, payoff, exercise);
+                var option = new ForwardVanillaOption(values[i].moneyness, reset, payoff, exercise);
                 option.setPricingEngine(engine);
 
-                double calculated = option.NPV();
-                double error = System.Math.Abs(calculated - values[i].result);
-                double tolerance = 1e-4;
+                var calculated = option.NPV();
+                var error = System.Math.Abs(calculated - values[i].result);
+                var tolerance = 1e-4;
                 if (error > tolerance)
                 {
                     REPORT_FAILURE("value", payoff, exercise, values[i].s,
@@ -170,46 +170,46 @@ namespace QLNet.Tests
             */
             ForwardOptionData[] values =
             {
-            //  type, moneyness, spot,  div, rate,start, maturity,  vol,                       result, tol
+            //  ExerciseType, moneyness, spot,  div, rate,start, maturity,  vol,                       result, tol
             new ForwardOptionData(QLNet.Option.Type.Call, 1.1, 60.0, 0.04, 0.08, 0.25,      1.0, 0.30, 4.4064 / 60 * System.Math.Exp(-0.04 * 0.25), 1.0e-4),
             new ForwardOptionData(QLNet.Option.Type.Put, 1.1, 60.0, 0.04, 0.08, 0.25,      1.0, 0.30, 8.2971 / 60 * System.Math.Exp(-0.04 * 0.25), 1.0e-4)
          };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            SimpleQuote qRate = new SimpleQuote(0.0);
-            Handle<YieldTermStructure> qTS = new Handle<YieldTermStructure>(Utilities.flatRate(today, qRate, dc));
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            Handle<YieldTermStructure> rTS = new Handle<YieldTermStructure>(Utilities.flatRate(today, rRate, dc));
-            SimpleQuote vol = new SimpleQuote(0.0);
-            Handle<BlackVolTermStructure> volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(today, vol, dc));
+            var spot = new SimpleQuote(0.0);
+            var qRate = new SimpleQuote(0.0);
+            var qTS = new Handle<YieldTermStructure>(Utilities.flatRate(today, qRate, dc));
+            var rRate = new SimpleQuote(0.0);
+            var rTS = new Handle<YieldTermStructure>(Utilities.flatRate(today, rRate, dc));
+            var vol = new SimpleQuote(0.0);
+            var volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(today, vol, dc));
 
-            BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
+            var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
                                                                                    new Handle<YieldTermStructure>(qTS), new Handle<YieldTermStructure>(rTS),
                                                                                    new Handle<BlackVolTermStructure>(volTS));
 
             IPricingEngine engine = new ForwardPerformanceVanillaEngine(stochProcess, process => new AnalyticEuropeanEngine(process));     // AnalyticEuropeanEngine
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 StrikedTypePayoff payoff = new PlainVanillaPayoff(values[i].type, 0.0);
-                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                var exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
                 Exercise exercise = new EuropeanExercise(exDate);
-                Date reset = today + Convert.ToInt32(values[i].start * 360 + 0.5);
+                var reset = today + Convert.ToInt32(values[i].start * 360 + 0.5);
 
                 spot.setValue(values[i].s);
                 qRate.setValue(values[i].q);
                 rRate.setValue(values[i].r);
                 vol.setValue(values[i].v);
 
-                ForwardVanillaOption option = new ForwardVanillaOption(values[i].moneyness, reset, payoff, exercise);
+                var option = new ForwardVanillaOption(values[i].moneyness, reset, payoff, exercise);
                 option.setPricingEngine(engine);
 
-                double calculated = option.NPV();
-                double error = System.Math.Abs(calculated - values[i].result);
-                double tolerance = 1e-4;
+                var calculated = option.NPV();
+                var error = System.Math.Abs(calculated - values[i].result);
+                var tolerance = 1e-4;
                 if (error > tolerance)
                 {
                     REPORT_FAILURE("value", payoff, exercise, values[i].s,
@@ -243,59 +243,59 @@ namespace QLNet.Tests
             double[] vols = { 0.11, 0.50, 1.20 };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
             Settings.setEvaluationDate(today);
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            SimpleQuote qRate = new SimpleQuote(0.0);
-            Handle<YieldTermStructure> qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            Handle<YieldTermStructure> rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
-            SimpleQuote vol = new SimpleQuote(0.0);
-            Handle<BlackVolTermStructure> volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
+            var spot = new SimpleQuote(0.0);
+            var qRate = new SimpleQuote(0.0);
+            var qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
+            var rRate = new SimpleQuote(0.0);
+            var rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
+            var vol = new SimpleQuote(0.0);
+            var volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
 
-            BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot), qTS, rTS, volTS);
+            var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot), qTS, rTS, volTS);
 
             IPricingEngine engine = engine_type == typeof(ForwardVanillaEngine) ? new ForwardVanillaEngine(stochProcess, process => new AnalyticEuropeanEngine(process)) :
                                     new ForwardPerformanceVanillaEngine(stochProcess, process => new AnalyticEuropeanEngine(process));
 
-            for (int i = 0; i < types.Length; i++)
+            for (var i = 0; i < types.Length; i++)
             {
-                for (int j = 0; j < moneyness.Length; j++)
+                for (var j = 0; j < moneyness.Length; j++)
                 {
-                    for (int k = 0; k < lengths.Length; k++)
+                    for (var k = 0; k < lengths.Length; k++)
                     {
-                        for (int h = 0; h < startMonths.Length; h++)
+                        for (var h = 0; h < startMonths.Length; h++)
                         {
 
-                            Date exDate = today + new Period(lengths[k], TimeUnit.Years);
+                            var exDate = today + new Period(lengths[k], TimeUnit.Years);
                             Exercise exercise = new EuropeanExercise(exDate);
 
-                            Date reset = today + new Period(startMonths[h], TimeUnit.Months);
+                            var reset = today + new Period(startMonths[h], TimeUnit.Months);
 
                             StrikedTypePayoff payoff = new PlainVanillaPayoff(types[i], 0.0);
 
-                            ForwardVanillaOption option = new ForwardVanillaOption(moneyness[j], reset, payoff, exercise);
+                            var option = new ForwardVanillaOption(moneyness[j], reset, payoff, exercise);
                             option.setPricingEngine(engine);
 
-                            for (int l = 0; l < underlyings.Length; l++)
+                            for (var l = 0; l < underlyings.Length; l++)
                             {
-                                for (int m = 0; m < qRates.Length; m++)
+                                for (var m = 0; m < qRates.Length; m++)
                                 {
-                                    for (int n = 0; n < rRates.Length; n++)
+                                    for (var n = 0; n < rRates.Length; n++)
                                     {
-                                        for (int p = 0; p < vols.Length; p++)
+                                        for (var p = 0; p < vols.Length; p++)
                                         {
-                                            double u = underlyings[l];
+                                            var u = underlyings[l];
                                             double q = qRates[m],
                                                    r = rRates[n];
-                                            double v = vols[p];
+                                            var v = vols[p];
                                             spot.setValue(u);
                                             qRate.setValue(q);
                                             rRate.setValue(r);
                                             vol.setValue(v);
 
-                                            double value = option.NPV();
+                                            var value = option.NPV();
                                             calculated["delta"] = option.delta();
                                             calculated["gamma"] = option.gamma();
                                             calculated["theta"] = option.theta();
@@ -306,7 +306,7 @@ namespace QLNet.Tests
                                             if (value > spot.value() * 1.0e-5)
                                             {
                                                 // perturb spot and get delta and gamma
-                                                double du = u * 1.0e-4;
+                                                var du = u * 1.0e-4;
                                                 spot.setValue(u + du);
                                                 double value_p = option.NPV(),
                                                        delta_p = option.delta();
@@ -318,7 +318,7 @@ namespace QLNet.Tests
                                                 expected["gamma"] = (delta_p - delta_m) / (2 * du);
 
                                                 // perturb rates and get rho and dividend rho
-                                                double dr = r * 1.0e-4;
+                                                var dr = r * 1.0e-4;
                                                 rRate.setValue(r + dr);
                                                 value_p = option.NPV();
                                                 rRate.setValue(r - dr);
@@ -326,7 +326,7 @@ namespace QLNet.Tests
                                                 rRate.setValue(r);
                                                 expected["rho"] = (value_p - value_m) / (2 * dr);
 
-                                                double dq = q * 1.0e-4;
+                                                var dq = q * 1.0e-4;
                                                 qRate.setValue(q + dq);
                                                 value_p = option.NPV();
                                                 qRate.setValue(q - dq);
@@ -335,7 +335,7 @@ namespace QLNet.Tests
                                                 expected["divRho"] = (value_p - value_m) / (2 * dq);
 
                                                 // perturb volatility and get vega
-                                                double dv = v * 1.0e-4;
+                                                var dv = v * 1.0e-4;
                                                 vol.setValue(v + dv);
                                                 value_p = option.NPV();
                                                 vol.setValue(v - dv);
@@ -344,7 +344,7 @@ namespace QLNet.Tests
                                                 expected["vega"] = (value_p - value_m) / (2 * dv);
 
                                                 // perturb date and get theta
-                                                double dT = dc.yearFraction(today - 1, today + 1);
+                                                var dT = dc.yearFraction(today - 1, today + 1);
                                                 Settings.setEvaluationDate(today - 1);
                                                 value_m = option.NPV();
                                                 Settings.setEvaluationDate(today + 1);
@@ -354,13 +354,13 @@ namespace QLNet.Tests
 
                                                 // compare
                                                 //std::map<std::string,double>::iterator it;
-                                                foreach (KeyValuePair<string, double> it in calculated)
+                                                foreach (var it in calculated)
                                                 {
-                                                    string greek = it.Key;
+                                                    var greek = it.Key;
                                                     double expct = expected[greek],
                                                            calcl = calculated[greek],
                                                            tol = tolerance[greek];
-                                                    double error = Utilities.relativeError(expct, calcl, u);
+                                                    var error = Utilities.relativeError(expct, calcl, u);
                                                     if (error > tol)
                                                     {
                                                         REPORT_FAILURE(greek, payoff, exercise,
@@ -384,7 +384,7 @@ namespace QLNet.Tests
         public void testGreeks()
         {
             // Testing forward option greeks
-            SavedSettings backup = new SavedSettings();
+            var backup = new SavedSettings();
 
             testForwardGreeks(typeof(ForwardVanillaEngine));
         }
@@ -393,7 +393,7 @@ namespace QLNet.Tests
         public void testPerformanceGreeks()
         {
             // Testing forward performance option greeks
-            SavedSettings backup = new SavedSettings();
+            var backup = new SavedSettings();
 
             testForwardGreeks(typeof(ForwardPerformanceVanillaEngine));
         }
@@ -411,31 +411,31 @@ namespace QLNet.Tests
         {
             // Testing forward option greeks initialization
             DayCounter dc = new Actual360();
-            SavedSettings backup = new SavedSettings();
-            Date today = Date.Today;
+            var backup = new SavedSettings();
+            var today = Date.Today;
             Settings.setEvaluationDate(today);
 
-            SimpleQuote spot = new SimpleQuote(100.0);
-            SimpleQuote qRate = new SimpleQuote(0.04);
-            Handle<YieldTermStructure> qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
-            SimpleQuote rRate = new SimpleQuote(0.01);
-            Handle<YieldTermStructure> rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
-            SimpleQuote vol = new SimpleQuote(0.11);
-            Handle<BlackVolTermStructure> volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
+            var spot = new SimpleQuote(100.0);
+            var qRate = new SimpleQuote(0.04);
+            var qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
+            var rRate = new SimpleQuote(0.01);
+            var rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
+            var vol = new SimpleQuote(0.11);
+            var volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
 
-            BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot), qTS, rTS, volTS);
+            var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot), qTS, rTS, volTS);
 
             IPricingEngine engine = new ForwardVanillaEngine(stochProcess, process => new TestBinomialEngine(process));
-            Date exDate = today + new Period(1, TimeUnit.Years);
+            var exDate = today + new Period(1, TimeUnit.Years);
             Exercise exercise = new EuropeanExercise(exDate);
-            Date reset = today + new Period(6, TimeUnit.Months);
+            var reset = today + new Period(6, TimeUnit.Months);
             StrikedTypePayoff payoff = new PlainVanillaPayoff(QLNet.Option.Type.Call, 0.0);
 
-            ForwardVanillaOption option = new ForwardVanillaOption(0.9, reset, payoff, exercise);
+            var option = new ForwardVanillaOption(0.9, reset, payoff, exercise);
             option.setPricingEngine(engine);
 
             IPricingEngine ctrlengine = new TestBinomialEngine(stochProcess);
-            VanillaOption ctrloption = new VanillaOption(payoff, exercise);
+            var ctrloption = new VanillaOption(payoff, exercise);
             ctrloption.setPricingEngine(ctrlengine);
 
             double? delta = 0;

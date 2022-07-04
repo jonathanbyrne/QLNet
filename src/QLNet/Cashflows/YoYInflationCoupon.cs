@@ -22,8 +22,8 @@ using System.Collections.Generic;
 
 namespace QLNet.Cashflows
 {
-    //! %Coupon paying a YoY-inflation type index
-    public class YoYInflationCoupon : InflationCoupon
+    //! %Coupon paying a YoY-inflation ExerciseType index
+    [JetBrains.Annotations.PublicAPI] public class YoYInflationCoupon : InflationCoupon
     {
         public YoYInflationCoupon(Date paymentDate,
                                   double nominal,
@@ -48,26 +48,26 @@ namespace QLNet.Cashflows
 
         // Inspectors
         // index gearing, i.e. multiplicative coefficient for the index
-        public double gearing() { return gearing_; }
+        public double gearing() => gearing_;
+
         //! spread paid over the fixing of the underlying index
-        public double spread() { return spread_; }
-        public double adjustedFixing() { return (rate() - spread()) / gearing(); }
-        public YoYInflationIndex yoyIndex() { return yoyIndex_; }
+        public double spread() => spread_;
+
+        public double adjustedFixing() => (rate() - spread()) / gearing();
+
+        public YoYInflationIndex yoyIndex() => yoyIndex_;
 
         private YoYInflationIndex yoyIndex_;
         protected double gearing_;
         protected double spread_;
 
-        protected override bool checkPricerImpl(InflationCouponPricer i)
-        {
-            return i is YoYInflationCouponPricer;
-        }
+        protected override bool checkPricerImpl(InflationCouponPricer i) => i is YoYInflationCouponPricer;
     }
 
 
     //! Helper class building a sequence of capped/floored yoy inflation coupons
     //! payoff is: spread + gearing x index
-    public class yoyInflationLeg : yoyInflationLegBase
+    [JetBrains.Annotations.PublicAPI] public class yoyInflationLeg : yoyInflationLegBase
     {
         public yoyInflationLeg(Schedule schedule, Calendar cal,
                                YoYInflationIndex index,
@@ -81,21 +81,18 @@ namespace QLNet.Cashflows
         }
 
 
-        public override List<CashFlow> value()
-        {
-            return CashFlowVectors.yoyInflationLeg(notionals_,
-                                                   schedule_,
-                                                   paymentAdjustment_,
-                                                   index_,
-                                                   gearings_,
-                                                   spreads_,
-                                                   paymentDayCounter_,
-                                                   caps_,
-                                                   floors_,
-                                                   paymentCalendar_,
-                                                   fixingDays_,
-                                                   observationLag_);
-        }
-
+        public override List<CashFlow> value() =>
+            CashFlowVectors.yoyInflationLeg(notionals_,
+                schedule_,
+                paymentAdjustment_,
+                index_,
+                gearings_,
+                spreads_,
+                paymentDayCounter_,
+                caps_,
+                floors_,
+                paymentCalendar_,
+                fixingDays_,
+                observationLag_);
     }
 }

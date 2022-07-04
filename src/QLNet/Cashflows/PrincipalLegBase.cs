@@ -28,7 +28,8 @@ namespace QLNet.Cashflows
         protected BusinessDayConvention paymentAdjustment_;
         protected DayCounter dayCounter_;
         protected int sign_;
-        public static implicit operator List<CashFlow>(PrincipalLegBase o) { return o.value(); }
+        public static implicit operator List<CashFlow>(PrincipalLegBase o) => o.value();
+
         public abstract List<CashFlow> value();
 
 
@@ -63,7 +64,7 @@ namespace QLNet.Cashflows
     }
 
     //! helper class building a Bullet Principal leg
-    public class PricipalLeg : PrincipalLegBase
+    [JetBrains.Annotations.PublicAPI] public class PricipalLeg : PrincipalLegBase
     {
         // constructor
         public PricipalLeg(Schedule schedule, DayCounter paymentDayCounter)
@@ -76,16 +77,16 @@ namespace QLNet.Cashflows
         // creator
         public override List<CashFlow> value()
         {
-            List<CashFlow> leg = new List<CashFlow>();
+            var leg = new List<CashFlow>();
 
             // the following is not always correct
-            Calendar calendar = schedule_.calendar();
+            var calendar = schedule_.calendar();
 
             // first period
             Date start = schedule_[0], end = schedule_[schedule_.Count - 1];
-            Date paymentDate = calendar.adjust(start, paymentAdjustment_);
-            double nominal = notionals_[0];
-            double quota = nominal / (schedule_.Count - 1);
+            var paymentDate = calendar.adjust(start, paymentAdjustment_);
+            var nominal = notionals_[0];
+            var quota = nominal / (schedule_.Count - 1);
 
             leg.Add(new Principal(nominal * sign_, nominal, paymentDate, start, end, dayCounter_, start, end));
 
@@ -98,7 +99,7 @@ namespace QLNet.Cashflows
             {
                 end = schedule_[0];
                 // regular periods
-                for (int i = 1; i <= schedule_.Count - 1; ++i)
+                for (var i = 1; i <= schedule_.Count - 1; ++i)
                 {
                     start = end; end = schedule_[i];
                     paymentDate = calendar.adjust(start, paymentAdjustment_);
@@ -113,7 +114,7 @@ namespace QLNet.Cashflows
     }
 
     //! helper class building a Bullet Principal leg
-    public class BulletPricipalLeg : PrincipalLegBase
+    [JetBrains.Annotations.PublicAPI] public class BulletPricipalLeg : PrincipalLegBase
     {
         // constructor
         public BulletPricipalLeg(Schedule schedule)
@@ -125,15 +126,15 @@ namespace QLNet.Cashflows
         // creator
         public override List<CashFlow> value()
         {
-            List<CashFlow> leg = new List<CashFlow>();
+            var leg = new List<CashFlow>();
 
             // the following is not always correct
-            Calendar calendar = schedule_.calendar();
+            var calendar = schedule_.calendar();
 
             // first period might be short or long
             Date start = schedule_[0], end = schedule_[1];
-            Date paymentDate = calendar.adjust(start, paymentAdjustment_);
-            double nominal = notionals_[0];
+            var paymentDate = calendar.adjust(start, paymentAdjustment_);
+            var nominal = notionals_[0];
 
             leg.Add(new Principal(nominal, nominal, paymentDate, start, end, dayCounter_, start, end));
 

@@ -25,7 +25,7 @@ using QLNet.Pricingengines.vanilla;
 namespace QLNet.Instruments
 {
     //! Vanilla option (no discrete dividends, no barriers) on a single asset
-    public class VanillaOption : OneAssetOption
+    [JetBrains.Annotations.PublicAPI] public class VanillaOption : OneAssetOption
     {
         public VanillaOption(StrikedTypePayoff payoff, Exercise exercise)
            : base(payoff, exercise) { }
@@ -58,13 +58,13 @@ namespace QLNet.Instruments
 
             Utils.QL_REQUIRE(!isExpired(), () => "option expired");
 
-            SimpleQuote volQuote = new SimpleQuote();
+            var volQuote = new SimpleQuote();
 
-            GeneralizedBlackScholesProcess newProcess = ImpliedVolatilityHelper.clone(process, volQuote);
+            var newProcess = ImpliedVolatilityHelper.clone(process, volQuote);
 
             // engines are built-in for the time being
             IPricingEngine engine;
-            switch (exercise_.type())
+            switch (exercise_.ExerciseType())
             {
                 case Exercise.Type.European:
                     engine = new AnalyticEuropeanEngine(newProcess);
@@ -76,7 +76,7 @@ namespace QLNet.Instruments
                     engine = new FDBermudanEngine(newProcess);
                     break;
                 default:
-                    throw new ArgumentException("unknown exercise type");
+                    throw new ArgumentException("unknown exercise ExerciseType");
             }
 
             return ImpliedVolatilityHelper.calculate(this, engine, volQuote, targetValue, accuracy,

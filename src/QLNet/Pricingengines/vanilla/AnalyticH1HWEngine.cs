@@ -41,7 +41,7 @@ namespace QLNet.Pricingengines.vanilla
               the Black-Scholes-Merton Hull-White engine and
               the finite difference Heston-Hull-White engine
     */
-    public class AnalyticH1HWEngine : AnalyticHestonHullWhiteEngine
+    [JetBrains.Annotations.PublicAPI] public class AnalyticH1HWEngine : AnalyticHestonHullWhiteEngine
     {
         public AnalyticH1HWEngine(HestonModel model, HullWhite hullWhiteModel, double rhoSr, int integrationOrder = 144)
            : base(model, hullWhiteModel, integrationOrder)
@@ -58,11 +58,9 @@ namespace QLNet.Pricingengines.vanilla
             rhoSr_ = rhoSr;
         }
 
-        protected override Complex addOnTerm(double u, double t, int j)
-        {
-            return base.addOnTerm(u, t, j)
-                    + new Fj_Helper(model_, hullWhiteModel_, rhoSr_, t, 0.0, j).value(u);
-        }
+        protected override Complex addOnTerm(double u, double t, int j) =>
+            base.addOnTerm(u, t, j)
+            + new Fj_Helper(model_, hullWhiteModel_, rhoSr_, t, 0.0, j).value(u);
 
         private class Fj_Helper
         {
@@ -83,7 +81,7 @@ namespace QLNet.Pricingengines.vanilla
 
             public Complex value(double u)
             {
-                double gamma2 = gamma_ * gamma_;
+                var gamma2 = gamma_ * gamma_;
 
                 double a, b, c;
                 if (8.0 * kappa_ * theta_ / gamma2 > 1.0)
@@ -98,17 +96,17 @@ namespace QLNet.Pricingengines.vanilla
                         * System.Math.Exp(GammaFunction.logValue(0.5 * (d_ + 1.0))
                                    - GammaFunction.logValue(0.5 * d_));
 
-                    double t1 = 0.0;
-                    double t2 = 1.0 / kappa_;
+                    var t1 = 0.0;
+                    var t2 = 1.0 / kappa_;
 
-                    double Lambda_t1 = System.Math.Sqrt(v0_);
-                    double Lambda_t2 = Lambda(t2);
+                    var Lambda_t1 = System.Math.Sqrt(v0_);
+                    var Lambda_t2 = Lambda(t2);
 
                     c = System.Math.Log((Lambda_t2 - a) / (Lambda_t1 - a)) / (t1 - t2);
                     b = System.Math.Exp(c * t1) * (Lambda_t1 - a);
                 }
 
-                Complex I4 =
+                var I4 =
                    -1.0 / lambda_ * new Complex(u * u, j_ == 1u ? -u : u)
                    * (b / c * (1.0 - System.Math.Exp(-c * term_))
                      + a * term_
@@ -120,17 +118,16 @@ namespace QLNet.Pricingengines.vanilla
             }
 
 
-            private double c(double t) { return gamma_ * gamma_ / (4 * kappa_) * (1.0 - System.Math.Exp(-kappa_ * t)); }
-            private double lambda(double t)
-            {
-                return 4.0 * kappa_ * v0_ * System.Math.Exp(-kappa_ * t) / (gamma_ * gamma_ * (1.0 - System.Math.Exp(-kappa_ * t)));
-            }
+            private double c(double t) => gamma_ * gamma_ / (4 * kappa_) * (1.0 - System.Math.Exp(-kappa_ * t));
+
+            private double lambda(double t) => 4.0 * kappa_ * v0_ * System.Math.Exp(-kappa_ * t) / (gamma_ * gamma_ * (1.0 - System.Math.Exp(-kappa_ * t)));
+
             private double Lambda(double t)
             {
-                int maxIter = 1000;
-                double lambdaT = lambda(t);
+                var maxIter = 1000;
+                var lambdaT = lambda(t);
 
-                int i = 0;
+                var i = 0;
                 double retVal = 0.0, s;
 
                 do
@@ -148,10 +145,7 @@ namespace QLNet.Pricingengines.vanilla
                 return retVal;
             }
 
-            private double LambdaApprox(double t)
-            {
-                return System.Math.Sqrt(c(t) * (lambda(t) - 1.0) + c(t) * d_ * (1.0 + 1.0 / (2.0 * (d_ + lambda(t)))));
-            }
+            private double LambdaApprox(double t) => System.Math.Sqrt(c(t) * (lambda(t) - 1.0) + c(t) * d_ * (1.0 + 1.0 / (2.0 * (d_ + lambda(t)))));
 
             private int j_;
             private double lambda_, eta_;

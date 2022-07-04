@@ -27,7 +27,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_SpreadOption
+    [JetBrains.Annotations.PublicAPI] public class T_SpreadOption
     {
         private void REPORT_FAILURE(string greekName,
                                     StrikedTypePayoff payoff,
@@ -112,39 +112,39 @@ namespace QLNet.Tests
             new Case(122.0, 120.0, 3.0, 0.10, 0.20, 0.25,  0.5, 180,  6.9284,  6.6761)
          };
 
-            for (int i = 0; i < cases.Length; ++i)
+            for (var i = 0; i < cases.Length; ++i)
             {
 
                 // First step: preparing the test values
                 // Useful dates
                 DayCounter dc = new Actual360();
-                Date today = Date.Today;
-                Date exerciseDate = today + cases[i].length;
+                var today = Date.Today;
+                var exerciseDate = today + cases[i].length;
 
                 // Futures values
-                SimpleQuote F1 = new SimpleQuote(cases[i].F1);
-                SimpleQuote F2 = new SimpleQuote(cases[i].F2);
+                var F1 = new SimpleQuote(cases[i].F1);
+                var F2 = new SimpleQuote(cases[i].F2);
 
                 // Risk-free interest rate
-                double riskFreeRate = cases[i].r;
-                YieldTermStructure forwardRate = Utilities.flatRate(today, riskFreeRate, dc);
+                var riskFreeRate = cases[i].r;
+                var forwardRate = Utilities.flatRate(today, riskFreeRate, dc);
 
                 // Correlation
                 Quote rho = new SimpleQuote(cases[i].rho);
 
                 // Volatilities
-                double vol1 = cases[i].sigma1;
-                double vol2 = cases[i].sigma2;
-                BlackVolTermStructure volTS1 = Utilities.flatVol(today, vol1, dc);
-                BlackVolTermStructure volTS2 = Utilities.flatVol(today, vol2, dc);
+                var vol1 = cases[i].sigma1;
+                var vol2 = cases[i].sigma2;
+                var volTS1 = Utilities.flatVol(today, vol1, dc);
+                var volTS2 = Utilities.flatVol(today, vol2, dc);
 
                 // Black-Scholes Processes
                 // The BlackProcess is the relevant class for futures contracts
-                BlackProcess stochProcess1 = new BlackProcess(new Handle<Quote>(F1),
+                var stochProcess1 = new BlackProcess(new Handle<Quote>(F1),
                                                               new Handle<YieldTermStructure>(forwardRate),
                                                               new Handle<BlackVolTermStructure>(volTS1));
 
-                BlackProcess stochProcess2 = new BlackProcess(new Handle<Quote>(F2),
+                var stochProcess2 = new BlackProcess(new Handle<Quote>(F2),
                                                               new Handle<YieldTermStructure>(forwardRate),
                                                               new Handle<BlackVolTermStructure>(volTS2));
 
@@ -153,18 +153,18 @@ namespace QLNet.Tests
                                                                    stochProcess2, new Handle<Quote>(rho));
 
                 // Finally, create the option:
-                QLNet.Option.Type type = QLNet.Option.Type.Call;
-                double strike = cases[i].X;
-                PlainVanillaPayoff payoff = new PlainVanillaPayoff(type, strike);
+                var type = QLNet.Option.Type.Call;
+                var strike = cases[i].X;
+                var payoff = new PlainVanillaPayoff(type, strike);
                 Exercise exercise = new EuropeanExercise(exerciseDate);
 
-                SpreadOption option = new SpreadOption(payoff, exercise);
+                var option = new SpreadOption(payoff, exercise);
                 option.setPricingEngine(engine);
 
                 // And test the data
-                double value = option.NPV();
-                double theta = option.theta();
-                double tolerance = 1e-4;
+                var value = option.NPV();
+                var theta = option.theta();
+                var tolerance = 1e-4;
 
                 if (System.Math.Abs(value - cases[i].value) > tolerance)
                 {

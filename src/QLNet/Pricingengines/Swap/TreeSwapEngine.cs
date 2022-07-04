@@ -31,7 +31,7 @@ namespace QLNet.Pricingengines.Swap
     /// <summary>
     /// Numerical lattice engine for swaps
     /// </summary>
-    public class TreeVanillaSwapEngine : LatticeShortRateModelEngine<VanillaSwap.Arguments, VanillaSwap.Results>
+    [JetBrains.Annotations.PublicAPI] public class TreeVanillaSwapEngine : LatticeShortRateModelEngine<VanillaSwap.Arguments, VanillaSwap.Results>
     {
         private Handle<YieldTermStructure> termStructure_;
 
@@ -66,7 +66,7 @@ namespace QLNet.Pricingengines.Swap
             Date referenceDate;
             DayCounter dayCounter;
 
-            ITermStructureConsistentModel tsmodel =
+            var tsmodel =
                (ITermStructureConsistentModel)model_.link;
             try
             {
@@ -87,8 +87,8 @@ namespace QLNet.Pricingengines.Swap
                 dayCounter = termStructure_.link.dayCounter();
             }
 
-            DiscretizedSwap swap = new DiscretizedSwap(arguments_, referenceDate, dayCounter);
-            List<double> times = swap.mandatoryTimes();
+            var swap = new DiscretizedSwap(arguments_, referenceDate, dayCounter);
+            var times = swap.mandatoryTimes();
             Lattice lattice;
 
             if (lattice_ != null)
@@ -97,7 +97,7 @@ namespace QLNet.Pricingengines.Swap
             }
             else
             {
-                TimeGrid timeGrid = new TimeGrid(times, times.Count, timeSteps_);
+                var timeGrid = new TimeGrid(times, times.Count, timeSteps_);
                 lattice = model_.link.tree(timeGrid);
             }
 

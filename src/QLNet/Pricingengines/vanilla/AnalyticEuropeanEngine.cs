@@ -51,7 +51,7 @@ namespace QLNet.Pricingengines.vanilla
           cash-or-nothing digital payoff is tested by reproducing
           numerical derivatives.
     */
-    public class AnalyticEuropeanEngine : OneAssetOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class AnalyticEuropeanEngine : OneAssetOption.Engine
     {
         private GeneralizedBlackScholesProcess process_;
 
@@ -65,19 +65,19 @@ namespace QLNet.Pricingengines.vanilla
         public override void calculate()
         {
 
-            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European, () => "not an European option");
+            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
 
-            StrikedTypePayoff payoff = arguments_.payoff as StrikedTypePayoff;
+            var payoff = arguments_.payoff as StrikedTypePayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
-            double variance = process_.blackVolatility().link.blackVariance(arguments_.exercise.lastDate(), payoff.strike());
-            double dividendDiscount = process_.dividendYield().link.discount(arguments_.exercise.lastDate());
-            double riskFreeDiscount = process_.riskFreeRate().link.discount(arguments_.exercise.lastDate());
-            double spot = process_.stateVariable().link.value();
+            var variance = process_.blackVolatility().link.blackVariance(arguments_.exercise.lastDate(), payoff.strike());
+            var dividendDiscount = process_.dividendYield().link.discount(arguments_.exercise.lastDate());
+            var riskFreeDiscount = process_.riskFreeRate().link.discount(arguments_.exercise.lastDate());
+            var spot = process_.stateVariable().link.value();
             Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
-            double forwardPrice = spot * dividendDiscount / riskFreeDiscount;
+            var forwardPrice = spot * dividendDiscount / riskFreeDiscount;
 
-            BlackCalculator black = new BlackCalculator(payoff, forwardPrice, System.Math.Sqrt(variance), riskFreeDiscount);
+            var black = new BlackCalculator(payoff, forwardPrice, System.Math.Sqrt(variance), riskFreeDiscount);
 
             results_.value = black.value();
             results_.delta = black.delta(spot);
@@ -85,10 +85,10 @@ namespace QLNet.Pricingengines.vanilla
             results_.elasticity = black.elasticity(spot);
             results_.gamma = black.gamma(spot);
 
-            DayCounter rfdc = process_.riskFreeRate().link.dayCounter();
-            DayCounter divdc = process_.dividendYield().link.dayCounter();
-            DayCounter voldc = process_.blackVolatility().link.dayCounter();
-            double t = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(), arguments_.exercise.lastDate());
+            var rfdc = process_.riskFreeRate().link.dayCounter();
+            var divdc = process_.dividendYield().link.dayCounter();
+            var voldc = process_.blackVolatility().link.dayCounter();
+            var t = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(), arguments_.exercise.lastDate());
             results_.rho = black.rho(t);
 
             t = divdc.yearFraction(process_.dividendYield().link.referenceDate(), arguments_.exercise.lastDate());

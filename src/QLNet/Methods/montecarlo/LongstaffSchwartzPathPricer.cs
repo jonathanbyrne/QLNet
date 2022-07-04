@@ -35,7 +35,7 @@ namespace QLNet.Methods.montecarlo
         \test the correctness of the returned value is tested by
               reproducing results available in web/literature
     */
-    public class LongstaffSchwartzPathPricer<PathType> : PathPricer<PathType> where PathType : IPath
+    [JetBrains.Annotations.PublicAPI] public class LongstaffSchwartzPathPricer<PathType> : PathPricer<PathType> where PathType : IPath
     {
         protected bool calibrationPhase_;
         protected IEarlyExercisePathPricer<PathType, double> pathPricer_;
@@ -55,7 +55,7 @@ namespace QLNet.Methods.montecarlo
             dF_ = new InitializedList<double>(times.size() - 1);
             v_ = pathPricer_.basisSystem();
 
-            for (int i = 0; i < times.size() - 1; ++i)
+            for (var i = 0; i < times.size() - 1; ++i)
             {
                 dF_[i] = termStructure.discount(times[i + 1])
                            / termStructure.discount(times[i]);
@@ -73,19 +73,19 @@ namespace QLNet.Methods.montecarlo
                 return 0.0;
             }
 
-            int len = EarlyExerciseTraits<PathType>.pathLength(path);
-            double price = pathPricer_.value(path, len - 1);
-            for (int i = len - 2; i > 0; --i)
+            var len = EarlyExerciseTraits<PathType>.pathLength(path);
+            var price = pathPricer_.value(path, len - 1);
+            for (var i = len - 2; i > 0; --i)
             {
                 price *= dF_[i];
 
-                double exercise = pathPricer_.value(path, i);
+                var exercise = pathPricer_.value(path, i);
                 if (exercise > 0.0)
                 {
-                    double regValue = pathPricer_.state(path, i);
+                    var regValue = pathPricer_.state(path, i);
 
-                    double continuationValue = 0.0;
-                    for (int l = 0; l < v_.Count; ++l)
+                    var continuationValue = 0.0;
+                    for (var l = 0; l < v_.Count; ++l)
                     {
                         continuationValue += coeff_[i][l] * v_[l](regValue);
                     }
@@ -102,20 +102,20 @@ namespace QLNet.Methods.montecarlo
 
         public void calibrate()
         {
-            int n = paths_.Count;
+            var n = paths_.Count;
             Vector prices = new Vector(n), exercise = new Vector(n);
-            int len = EarlyExerciseTraits<PathType>.pathLength(paths_[0]);
+            var len = EarlyExerciseTraits<PathType>.pathLength(paths_[0]);
 
-            for (int i = 0; i < paths_.Count; i++)
+            for (var i = 0; i < paths_.Count; i++)
                 prices[i] = pathPricer_.value(paths_[i], len - 1);
 
-            for (int i = len - 2; i > 0; --i)
+            for (var i = len - 2; i > 0; --i)
             {
-                List<double> y = new List<double>();
-                List<double> x = new List<double>();
+                var y = new List<double>();
+                var x = new List<double>();
 
                 //roll back step
-                for (int j = 0; j < n; ++j)
+                for (var j = 0; j < n; ++j)
                 {
                     exercise[j] = pathPricer_.value(paths_[j], i);
 
@@ -142,8 +142,8 @@ namespace QLNet.Methods.montecarlo
                     prices[j] *= dF_[i];
                     if (exercise[j] > 0.0)
                     {
-                        double continuationValue = 0.0;
-                        for (int l = 0; l < v_.Count; ++l)
+                        var continuationValue = 0.0;
+                        for (var l = 0; l < v_.Count; ++l)
                         {
                             continuationValue += coeff_[i][l] * v_[l](x[k]);
                         }

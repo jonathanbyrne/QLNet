@@ -31,8 +31,8 @@ namespace QLNet
       //! utility function giving the inflation period for a given date
       public static KeyValuePair<Date, Date> inflationPeriod(Date d, Frequency frequency)
       {
-         Month month = (Month) d.Month;
-         int year = d.Year;
+         var month = (Month) d.Month;
+         var year = d.Year;
 
          Month startMonth = 0;
          Month endMonth = 0;
@@ -58,8 +58,8 @@ namespace QLNet
                break;
          }
 
-         Date startDate = new Date(1, startMonth, year);
-         Date endDate = Date.endOfMonth(new Date(1, endMonth, year));
+         var startDate = new Date(1, startMonth, year);
+         var endDate = Date.endOfMonth(new Date(1, endMonth, year));
 
          return new KeyValuePair<Date, Date>(startDate, endDate);
       }
@@ -81,8 +81,8 @@ namespace QLNet
             // I.e. fixing is constant for the whole inflation period.
             // Use the value for half way along the period.
             // But the inflation time is the time between period starts
-            KeyValuePair<Date, Date> limD1 = inflationPeriod(d1, f);
-            KeyValuePair<Date, Date> limD2 = inflationPeriod(d2, f);
+            var limD1 = inflationPeriod(d1, f);
+            var limD2 = inflationPeriod(d2, f);
             t = dayCounter.yearFraction(limD1.Key, limD2.Key);
          }
          return t;
@@ -159,30 +159,15 @@ namespace QLNet
       //! The TS observes with a lag that is usually different from the
       //! availability lag of the index.  An inflation rate is given,
       //! by default, for the maturity requested assuming this lag.
-      public virtual Period observationLag()
-      {
-         return observationLag_;
-      }
+      public virtual Period observationLag() => observationLag_;
 
-      public virtual Frequency frequency()
-      {
-         return frequency_;
-      }
+      public virtual Frequency frequency() => frequency_;
 
-      public virtual bool indexIsInterpolated()
-      {
-         return indexIsInterpolated_;
-      }
+      public virtual bool indexIsInterpolated() => indexIsInterpolated_;
 
-      public virtual double baseRate()
-      {
-         return baseRate_;
-      }
+      public virtual double baseRate() => baseRate_;
 
-      public virtual Handle<YieldTermStructure> nominalTermStructure()
-      {
-         return nominalTermStructure_;
-      }
+      public virtual Handle<YieldTermStructure> nominalTermStructure() => nominalTermStructure_;
 
       //! minimum (base) date
       /*! Important in inflation since it starts before nominal
@@ -213,15 +198,9 @@ namespace QLNet
          notifyObservers();
       }
 
-      public Seasonality seasonality()
-      {
-         return seasonality_;
-      }
+      public Seasonality seasonality() => seasonality_;
 
-      public bool hasSeasonality()
-      {
-         return seasonality_ != null;
-      }
+      public bool hasSeasonality() => seasonality_ != null;
 
       protected Handle<YieldTermStructure> nominalTermStructure_;
       protected Period observationLag_;
@@ -311,26 +290,17 @@ namespace QLNet
           index.
       */
 
-      public double zeroRate(Date d)
-      {
-         return zeroRate(d, new Period(-1, TimeUnit.Days), false, false);
-      }
+      public double zeroRate(Date d) => zeroRate(d, new Period(-1, TimeUnit.Days), false, false);
 
-      public double zeroRate(Date d, Period instObsLag)
-      {
-         return zeroRate(d, instObsLag, false, false);
-      }
+      public double zeroRate(Date d, Period instObsLag) => zeroRate(d, instObsLag, false, false);
 
-      public double zeroRate(Date d, Period instObsLag, bool forceLinearInterpolation)
-      {
-         return zeroRate(d, instObsLag, forceLinearInterpolation, false);
-      }
+      public double zeroRate(Date d, Period instObsLag, bool forceLinearInterpolation) => zeroRate(d, instObsLag, forceLinearInterpolation, false);
 
       public double zeroRate(Date d, Period instObsLag,
                              bool forceLinearInterpolation,
                              bool extrapolate)
       {
-         Period useLag = instObsLag;
+         var useLag = instObsLag;
          if (instObsLag == new Period(-1, TimeUnit.Days))
          {
             useLag = observationLag();
@@ -339,15 +309,15 @@ namespace QLNet
          double zeroRate;
          if (forceLinearInterpolation)
          {
-            KeyValuePair<Date, Date> dd = Utils.inflationPeriod(d - useLag, frequency());
-            Date ddValue = dd.Value + new Period(1, TimeUnit.Days);
+            var dd = Utils.inflationPeriod(d - useLag, frequency());
+            var ddValue = dd.Value + new Period(1, TimeUnit.Days);
             double dp = ddValue - dd.Key;
             double dt = d - dd.Key;
             // if we are interpolating we only check the exact point
             // this prevents falling off the end at curve maturity
             base.checkRange(d, extrapolate);
-            double t1 = timeFromReference(dd.Key);
-            double t2 = timeFromReference(ddValue);
+            var t1 = timeFromReference(dd.Key);
+            var t2 = timeFromReference(ddValue);
             zeroRate = zeroRateImpl(t1) + zeroRateImpl(t2) * (dt / dp);
          }
          else
@@ -355,14 +325,14 @@ namespace QLNet
             if (indexIsInterpolated())
             {
                base.checkRange(d - useLag, extrapolate);
-               double t = timeFromReference(d - useLag);
+               var t = timeFromReference(d - useLag);
                zeroRate = zeroRateImpl(t);
             }
             else
             {
-               KeyValuePair<Date, Date> dd = Utils.inflationPeriod(d - useLag, frequency());
+               var dd = Utils.inflationPeriod(d - useLag, frequency());
                base.checkRange(dd.Key, extrapolate);
-               double t = timeFromReference(dd.Key);
+               var t = timeFromReference(dd.Key);
                zeroRate = zeroRateImpl(t);
             }
          }
@@ -432,25 +402,16 @@ namespace QLNet
       //! we do NOT provide a "time" version of the rate lookup.
       /*! \note this is not the year-on-year swap (YYIIS) rate. */
 
-      public double yoyRate(Date d)
-      {
-         return yoyRate(d, new Period(-1, TimeUnit.Days), false, false);
-      }
+      public double yoyRate(Date d) => yoyRate(d, new Period(-1, TimeUnit.Days), false, false);
 
-      public double yoyRate(Date d, Period instObsLag)
-      {
-         return yoyRate(d, instObsLag, false, false);
-      }
+      public double yoyRate(Date d, Period instObsLag) => yoyRate(d, instObsLag, false, false);
 
-      public double yoyRate(Date d, Period instObsLag, bool forceLinearInterpolation)
-      {
-         return yoyRate(d, instObsLag, forceLinearInterpolation, false);
-      }
+      public double yoyRate(Date d, Period instObsLag, bool forceLinearInterpolation) => yoyRate(d, instObsLag, forceLinearInterpolation, false);
 
       public double yoyRate(Date d, Period instObsLag, bool forceLinearInterpolation,
                             bool extrapolate)
       {
-         Period useLag = instObsLag;
+         var useLag = instObsLag;
          if (instObsLag == new Period(-1, TimeUnit.Days))
          {
             useLag = observationLag();
@@ -459,15 +420,15 @@ namespace QLNet
          double yoyRate;
          if (forceLinearInterpolation)
          {
-            KeyValuePair<Date, Date> dd = Utils.inflationPeriod(d - useLag, frequency());
-            Date ddValue = dd.Value + new Period(1, TimeUnit.Days);
+            var dd = Utils.inflationPeriod(d - useLag, frequency());
+            var ddValue = dd.Value + new Period(1, TimeUnit.Days);
             double dp = ddValue - dd.Key;
             double dt = (d - useLag) - dd.Key;
             // if we are interpolating we only check the exact point
             // this prevents falling off the end at curve maturity
             base.checkRange(d, extrapolate);
-            double t1 = timeFromReference(dd.Key);
-            double t2 = timeFromReference(dd.Value);
+            var t1 = timeFromReference(dd.Key);
+            var t2 = timeFromReference(dd.Value);
             yoyRate = yoyRateImpl(t1) + (yoyRateImpl(t2) - yoyRateImpl(t1)) * (dt / dp);
          }
          else
@@ -475,14 +436,14 @@ namespace QLNet
             if (indexIsInterpolated())
             {
                base.checkRange(d - useLag, extrapolate);
-               double t = timeFromReference(d - useLag);
+               var t = timeFromReference(d - useLag);
                yoyRate = yoyRateImpl(t);
             }
             else
             {
-               KeyValuePair<Date, Date> dd = Utils.inflationPeriod(d - useLag, frequency());
+               var dd = Utils.inflationPeriod(d - useLag, frequency());
                base.checkRange(dd.Key, extrapolate);
-               double t = timeFromReference(dd.Key);
+               var t = timeFromReference(dd.Key);
                yoyRate = yoyRateImpl(t);
             }
          }

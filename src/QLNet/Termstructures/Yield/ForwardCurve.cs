@@ -28,16 +28,17 @@ using System.Linq;
 
 namespace QLNet.Termstructures.Yield
 {
-    public class InterpolatedForwardCurve<Interpolator> : ForwardRateStructure, InterpolatedCurve
+    [JetBrains.Annotations.PublicAPI] public class InterpolatedForwardCurve<Interpolator> : ForwardRateStructure, InterpolatedCurve
       where Interpolator : class, IInterpolationFactory, new()
     {
 
         #region InterpolatedCurve
         public List<double> times_ { get; set; }
-        public List<double> times() { return times_; }
+        public List<double> times() => times_;
 
         public List<Date> dates_ { get; set; }
-        public List<Date> dates() { return dates_; }
+        public List<Date> dates() => dates_;
+
         public Date maxDate_ { get; set; }
         public override Date maxDate()
         {
@@ -47,15 +48,16 @@ namespace QLNet.Termstructures.Yield
         }
 
         public List<double> data_ { get; set; }
-        public List<double> forwards() { return data_; }
-        public List<double> data() { return forwards(); }
+        public List<double> forwards() => data_;
+
+        public List<double> data() => forwards();
 
         public Interpolation interpolation_ { get; set; }
         public IInterpolationFactory interpolator_ { get; set; }
 
         public Dictionary<Date, double> nodes()
         {
-            Dictionary<Date, double> results = new Dictionary<Date, double>();
+            var results = new Dictionary<Date, double>();
             dates_.ForEach((i, x) => results.Add(x, data_[i]));
             return results;
         }
@@ -67,7 +69,7 @@ namespace QLNet.Termstructures.Yield
 
         public object Clone()
         {
-            InterpolatedCurve copy = MemberwiseClone() as InterpolatedCurve;
+            var copy = MemberwiseClone() as InterpolatedCurve;
             copy.times_ = new List<double>(times_);
             copy.data_ = new List<double>(data_);
             copy.interpolator_ = interpolator_;
@@ -173,7 +175,7 @@ namespace QLNet.Termstructures.Yield
 
             times_ = new InitializedList<double>(dates_.Count);
             times_[0] = 0.0;
-            for (int i = 1; i < dates_.Count; i++)
+            for (var i = 1; i < dates_.Count; i++)
             {
                 Utils.QL_REQUIRE(dates_[i] > dates_[i - 1],
                                  () => "invalid date (" + dates_[i] + ", vs " + dates_[i - 1] + ")");

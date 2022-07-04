@@ -21,9 +21,9 @@
 //namespace TestSuite
 //{
 
-//   public class T_SwaptionVolatilityCube
+//   [JetBrains.Annotations.PublicAPI] public class T_SwaptionVolatilityCube
 //   {
-//      public class CommonVars
+//      [JetBrains.Annotations.PublicAPI] public class CommonVars
 //      {
 //         // global data
 //         public SwaptionMarketConventions conventions = new SwaptionMarketConventions();

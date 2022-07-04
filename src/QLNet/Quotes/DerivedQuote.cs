@@ -21,7 +21,7 @@ using System;
 
 namespace QLNet.Quotes
 {
-    public class DerivedQuote : Quote
+    [JetBrains.Annotations.PublicAPI] public class DerivedQuote : Quote
     {
         //! market quote whose value depends on another quote
         /*! \test the correctness of the returned values is tested by
@@ -46,10 +46,7 @@ namespace QLNet.Quotes
             return f_(element_.link.value());
         }
 
-        public override bool isValid()
-        {
-            return element_.link.isValid();
-        }
+        public override bool isValid() => element_.link.isValid();
 
         public void update()
         {

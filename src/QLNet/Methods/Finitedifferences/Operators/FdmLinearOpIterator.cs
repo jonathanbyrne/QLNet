@@ -21,7 +21,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Methods.Finitedifferences.Operators
 {
-    public class FdmLinearOpIterator
+    [JetBrains.Annotations.PublicAPI] public class FdmLinearOpIterator
     {
         public FdmLinearOpIterator(int index = 0)
         {
@@ -52,7 +52,7 @@ namespace QLNet.Methods.Finitedifferences.Operators
         public static FdmLinearOpIterator operator ++(FdmLinearOpIterator a)
         {
             ++a.index_;
-            for (int i = 0; i < a.dim_.Count; ++i)
+            for (var i = 0; i < a.dim_.Count; ++i)
             {
                 if (++a.coordinates_[i] == a.dim_[i])
                     a.coordinates_[i] = 0;
@@ -62,42 +62,27 @@ namespace QLNet.Methods.Finitedifferences.Operators
             return a;
         }
 
-        public static bool operator !=(FdmLinearOpIterator a, FdmLinearOpIterator b)
-        {
-            return a.index_ != b.index_;
-        }
+        public static bool operator !=(FdmLinearOpIterator a, FdmLinearOpIterator b) => a.index_ != b.index_;
 
-        public static bool operator ==(FdmLinearOpIterator a, FdmLinearOpIterator b)
-        {
-            return a.index_ == b.index_;
-        }
+        public static bool operator ==(FdmLinearOpIterator a, FdmLinearOpIterator b) => a.index_ == b.index_;
 
-        public override int GetHashCode()
-        {
-            return 0;
-        }
+        public override int GetHashCode() => 0;
 
         public override bool Equals(object obj)
         {
             if (obj == null)
                 return false;
 
-            FdmLinearOpIterator iter = obj as FdmLinearOpIterator;
+            var iter = obj as FdmLinearOpIterator;
             if (iter == null)
                 return false;
 
             return iter.index_ == index_;
         }
 
-        public int index()
-        {
-            return index_;
-        }
+        public int index() => index_;
 
-        public List<int> coordinates()
-        {
-            return coordinates_;
-        }
+        public List<int> coordinates() => coordinates_;
 
         public void swap(FdmLinearOpIterator iter)
         {

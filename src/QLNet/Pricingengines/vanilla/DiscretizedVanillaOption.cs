@@ -23,7 +23,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Pricingengines.vanilla
 {
-    public class DiscretizedVanillaOption : DiscretizedAsset
+    [JetBrains.Annotations.PublicAPI] public class DiscretizedVanillaOption : DiscretizedAsset
     {
         private QLNet.Option.Arguments arguments_;
         private List<double> stoppingTimes_;
@@ -33,7 +33,7 @@ namespace QLNet.Pricingengines.vanilla
             arguments_ = args;
 
             stoppingTimes_ = new InitializedList<double>(args.exercise.dates().Count);
-            for (int i = 0; i < stoppingTimes_.Count; ++i)
+            for (var i = 0; i < stoppingTimes_.Count; ++i)
             {
                 stoppingTimes_[i] = process.time(args.exercise.date(i));
                 if (!grid.empty())
@@ -50,15 +50,12 @@ namespace QLNet.Pricingengines.vanilla
             adjustValues();
         }
 
-        public override List<double> mandatoryTimes()
-        {
-            return stoppingTimes_;
-        }
+        public override List<double> mandatoryTimes() => stoppingTimes_;
 
         protected override void postAdjustValuesImpl()
         {
-            double now = time();
-            switch (arguments_.exercise.type())
+            var now = time();
+            switch (arguments_.exercise.ExerciseType())
             {
                 case Exercise.Type.American:
                     if (now <= stoppingTimes_[1] && now >= stoppingTimes_[0])
@@ -69,22 +66,22 @@ namespace QLNet.Pricingengines.vanilla
                         applySpecificCondition();
                     break;
                 case Exercise.Type.Bermudan:
-                    for (int i = 0; i < stoppingTimes_.Count; i++)
+                    for (var i = 0; i < stoppingTimes_.Count; i++)
                     {
                         if (isOnTime(stoppingTimes_[i]))
                             applySpecificCondition();
                     }
                     break;
                 default:
-                    Utils.QL_FAIL("invalid option type");
+                    Utils.QL_FAIL("invalid option ExerciseType");
                     break;
             }
         }
 
         private void applySpecificCondition()
         {
-            Vector grid = method().grid(time());
-            for (int j = 0; j < values_.size(); j++)
+            var grid = method().grid(time());
+            for (var j = 0; j < values_.size(); j++)
             {
                 values_[j] = System.Math.Max(values_[j], arguments_.payoff.value(grid[j]));
             }

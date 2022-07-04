@@ -29,10 +29,7 @@ namespace QLNet.Math
     {
         public abstract double value(double v);
 
-        public virtual double derivative(double x)
-        {
-            return 0;
-        }
+        public virtual double derivative(double x) => 0;
     }
 
     //! Base class for 1-D solvers
@@ -70,7 +67,7 @@ namespace QLNet.Math
             accuracy = System.Math.Max(accuracy, Const.QL_EPSILON);
 
             const double growthFactor = 1.6;
-            int flipflop = -1;
+            var flipflop = -1;
 
             root_ = guess;
             fxMax_ = f.value(root_);

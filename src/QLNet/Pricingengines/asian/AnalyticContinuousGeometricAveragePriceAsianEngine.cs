@@ -40,7 +40,7 @@ namespace QLNet.Pricingengines.asian
 
         \todo handle seasoned options
     */
-    public class AnalyticContinuousGeometricAveragePriceAsianEngine : ContinuousAveragingAsianOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class AnalyticContinuousGeometricAveragePriceAsianEngine : ContinuousAveragingAsianOption.Engine
     {
         public AnalyticContinuousGeometricAveragePriceAsianEngine(GeneralizedBlackScholesProcess process)
         {
@@ -50,22 +50,22 @@ namespace QLNet.Pricingengines.asian
         public override void calculate()
         {
             Utils.QL_REQUIRE(arguments_.averageType == Average.Type.Geometric, () => "not a geometric average option");
-            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European, () => "not an European Option");
+            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European Option");
 
-            Date exercise = arguments_.exercise.lastDate();
+            var exercise = arguments_.exercise.lastDate();
 
-            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
-            double volatility = process_.blackVolatility().link.blackVol(exercise, payoff.strike());
-            double variance = process_.blackVolatility().link.blackVariance(exercise, payoff.strike());
-            double riskFreeDiscount = process_.riskFreeRate().link.discount(exercise);
+            var volatility = process_.blackVolatility().link.blackVol(exercise, payoff.strike());
+            var variance = process_.blackVolatility().link.blackVariance(exercise, payoff.strike());
+            var riskFreeDiscount = process_.riskFreeRate().link.discount(exercise);
 
-            DayCounter rfdc = process_.riskFreeRate().link.dayCounter();
-            DayCounter divdc = process_.dividendYield().link.dayCounter();
-            DayCounter voldc = process_.blackVolatility().link.dayCounter();
+            var rfdc = process_.riskFreeRate().link.dayCounter();
+            var divdc = process_.dividendYield().link.dayCounter();
+            var voldc = process_.blackVolatility().link.dayCounter();
 
-            double dividendYield = 0.5 * (
+            var dividendYield = 0.5 * (
                                       process_.riskFreeRate().link.zeroRate(exercise, rfdc,
                                                                             Compounding.Continuous,
                                                                             Frequency.NoFrequency).rate() +
@@ -74,15 +74,15 @@ namespace QLNet.Pricingengines.asian
                                                                              Frequency.NoFrequency).rate() +
                                       volatility * volatility / 6.0);
 
-            double t_q = divdc.yearFraction(process_.dividendYield().link.referenceDate(), exercise);
-            double dividendDiscount = System.Math.Exp(-dividendYield * t_q);
+            var t_q = divdc.yearFraction(process_.dividendYield().link.referenceDate(), exercise);
+            var dividendDiscount = System.Math.Exp(-dividendYield * t_q);
 
-            double spot = process_.stateVariable().link.value();
+            var spot = process_.stateVariable().link.value();
             Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying");
 
-            double forward = spot * dividendDiscount / riskFreeDiscount;
+            var forward = spot * dividendDiscount / riskFreeDiscount;
 
-            BlackCalculator black = new BlackCalculator(payoff, forward, System.Math.Sqrt(variance / 3.0), riskFreeDiscount);
+            var black = new BlackCalculator(payoff, forward, System.Math.Sqrt(variance / 3.0), riskFreeDiscount);
 
             results_.value = black.value();
             results_.delta = black.delta(spot);
@@ -90,10 +90,10 @@ namespace QLNet.Pricingengines.asian
 
             results_.dividendRho = black.dividendRho(t_q) / 2.0;
 
-            double t_r = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(), arguments_.exercise.lastDate());
+            var t_r = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(), arguments_.exercise.lastDate());
             results_.rho = black.rho(t_r) + 0.5 * black.dividendRho(t_q);
 
-            double t_v = voldc.yearFraction(process_.blackVolatility().link.referenceDate(), arguments_.exercise.lastDate());
+            var t_v = voldc.yearFraction(process_.blackVolatility().link.referenceDate(), arguments_.exercise.lastDate());
             results_.vega = black.vega(t_v) / System.Math.Sqrt(3.0) +
                             black.dividendRho(t_q) * volatility / 6.0;
             try

@@ -28,7 +28,7 @@ namespace QLNet.Instruments
     /*! This class provides a more comfortable way
         to instantiate overnight indexed swaps.
     */
-    public class MakeOIS
+    [JetBrains.Annotations.PublicAPI] public class MakeOIS
     {
         private Period swapTenor_;
         private OvernightIndex overnightIndex_;
@@ -157,7 +157,7 @@ namespace QLNet.Instruments
         }
 
         // OIswap creator
-        public static implicit operator OvernightIndexedSwap(MakeOIS o) { return o.value(); }
+        public static implicit operator OvernightIndexedSwap(MakeOIS o) => o.value();
 
         public OvernightIndexedSwap value()
         {
@@ -167,11 +167,11 @@ namespace QLNet.Instruments
                 startDate = effectiveDate_;
             else
             {
-                Date refDate = Settings.evaluationDate();
+                var refDate = Settings.evaluationDate();
                 // if the evaluation date is not a business day
                 // then move to the next business day
                 refDate = calendar_.adjust(refDate);
-                Date spotDate = calendar_.advance(refDate, new Period(settlementDays_, TimeUnit.Days));
+                var spotDate = calendar_.advance(refDate, new Period(settlementDays_, TimeUnit.Days));
                 startDate = spotDate + forwardStart_;
                 if (forwardStart_.length() < 0)
                     startDate = calendar_.adjust(startDate, BusinessDayConvention.Preceding);
@@ -180,10 +180,10 @@ namespace QLNet.Instruments
             }
 
             // OIS end of month default
-            bool usedEndOfMonth =
+            var usedEndOfMonth =
                isDefaultEOM_ ? calendar_.isEndOfMonth(startDate) : endOfMonth_;
 
-            Date endDate = terminationDate_;
+            var endDate = terminationDate_;
             if (endDate == null)
                 if (usedEndOfMonth)
                     endDate = calendar_.advance(startDate,
@@ -195,7 +195,7 @@ namespace QLNet.Instruments
 
 
 
-            Schedule schedule = new Schedule(startDate, endDate,
+            var schedule = new Schedule(startDate, endDate,
                                              new Period(paymentFrequency_),
                                              calendar_,
                                              BusinessDayConvention.ModifiedFollowing,
@@ -203,20 +203,20 @@ namespace QLNet.Instruments
                                              rule_,
                                              usedEndOfMonth);
 
-            double? usedFixedRate = fixedRate_;
+            var usedFixedRate = fixedRate_;
             if (fixedRate_ == null)
             {
-                OvernightIndexedSwap temp = new OvernightIndexedSwap(type_, nominal_,
+                var temp = new OvernightIndexedSwap(type_, nominal_,
                                                                      schedule,
                                                                      0.0, // fixed rate
                                                                      fixedDayCount_,
                                                                      overnightIndex_, overnightSpread_);
                 if (engine_ == null)
                 {
-                    Handle<YieldTermStructure> disc = overnightIndex_.forwardingTermStructure();
+                    var disc = overnightIndex_.forwardingTermStructure();
                     Utils.QL_REQUIRE(!disc.empty(), () => "null term structure set to this instance of " +
                                      overnightIndex_.name());
-                    bool includeSettlementDateFlows = false;
+                    var includeSettlementDateFlows = false;
                     IPricingEngine engine = new DiscountingSwapEngine(disc, includeSettlementDateFlows);
                     temp.setPricingEngine(engine);
                 }
@@ -226,15 +226,15 @@ namespace QLNet.Instruments
                 usedFixedRate = temp.fairRate();
             }
 
-            OvernightIndexedSwap ois = new OvernightIndexedSwap(type_, nominal_,
+            var ois = new OvernightIndexedSwap(type_, nominal_,
                                                                 schedule,
                                                                 usedFixedRate.Value, fixedDayCount_,
                                                                 overnightIndex_, overnightSpread_);
 
             if (engine_ == null)
             {
-                Handle<YieldTermStructure> disc = overnightIndex_.forwardingTermStructure();
-                bool includeSettlementDateFlows = false;
+                var disc = overnightIndex_.forwardingTermStructure();
+                var includeSettlementDateFlows = false;
                 IPricingEngine engine = new DiscountingSwapEngine(disc, includeSettlementDateFlows);
                 ois.setPricingEngine(engine);
             }

@@ -37,10 +37,10 @@ namespace QLNet.Cashflows
     /// Before weights are computed, the fixing schedule is adjusted
     /// for the index's fixing day gap. See rate() method for details.
     /// </remarks>
-    public class AverageBMACoupon : FloatingRateCoupon
+    [JetBrains.Annotations.PublicAPI] public class AverageBmaCoupon : FloatingRateCoupon
     {
 
-        public AverageBMACoupon(Date paymentDate,
+        public AverageBmaCoupon(Date paymentDate,
                                 double nominal,
                                 Date startDate,
                                 Date endDate,
@@ -57,7 +57,7 @@ namespace QLNet.Cashflows
                                  index.fixingCalendar()
                                  .advance(startDate, new Period(-index.fixingDays(), TimeUnit.Days),
                                           BusinessDayConvention.Preceding), endDate);
-            setPricer(new AverageBMACouponPricer());
+            setPricer(new AverageBmaCouponPricer());
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace QLNet.Cashflows
         /// Get the fixing dates of the rates to be averaged
         /// </summary>
         /// <returns>A list of dates</returns>
-        public List<Date> fixingDates() { return fixingSchedule_.dates(); }
+        public List<Date> FixingDates() => fixingSchedule_.dates();
 
         /// <summary>
         /// not applicable here; use indexFixings() instead
@@ -90,7 +90,7 @@ namespace QLNet.Cashflows
         /// fixings of the underlying index to be averaged
         /// </summary>
         /// <returns>A list of double</returns>
-        public List<double> indexFixings() { return fixingSchedule_.dates().Select(d => index_.fixing(d)).ToList(); }
+        public List<double> IndexFixings() { return fixingSchedule_.dates().Select(d => index_.fixing(d)).ToList(); }
 
         /// <summary>
         /// not applicable here
@@ -104,20 +104,20 @@ namespace QLNet.Cashflows
         private Schedule fixingSchedule_;
     }
 
-    public class AverageBMACouponPricer : FloatingRateCouponPricer
+    [JetBrains.Annotations.PublicAPI] public class AverageBmaCouponPricer : FloatingRateCouponPricer
     {
         public override void initialize(FloatingRateCoupon coupon)
         {
-            coupon_ = coupon as AverageBMACoupon;
-            Utils.QL_REQUIRE(coupon_ != null, () => "wrong coupon type");
+            coupon_ = coupon as AverageBmaCoupon;
+            Utils.QL_REQUIRE(coupon_ != null, () => "wrong coupon ExerciseType");
         }
 
         public override double swapletRate()
         {
-            List<Date> fixingDates = coupon_.fixingDates();
-            InterestRateIndex index = coupon_.index();
+            var fixingDates = coupon_.FixingDates();
+            var index = coupon_.index();
 
-            int cutoffDays = 0; // to be verified
+            var cutoffDays = 0; // to be verified
             Date startDate = coupon_.accrualStartDate() - cutoffDays,
                  endDate = coupon_.accrualEndDate() - cutoffDays,
                  d1 = startDate;
@@ -126,31 +126,31 @@ namespace QLNet.Cashflows
             Utils.QL_REQUIRE(index.valueDate(fixingDates.First()) <= startDate, () => "first fixing date valid after period start");
             Utils.QL_REQUIRE(index.valueDate(fixingDates.Last()) >= endDate, () => "last fixing date valid before period end");
 
-            double avgBMA = 0.0;
-            int days = 0;
-            for (int i = 0; i < fixingDates.Count - 1; ++i)
+            var avgBma = 0.0;
+            var days = 0;
+            for (var i = 0; i < fixingDates.Count - 1; ++i)
             {
-                Date valueDate = index.valueDate(fixingDates[i]);
-                Date nextValueDate = index.valueDate(fixingDates[i + 1]);
+                var valueDate = index.valueDate(fixingDates[i]);
+                var nextValueDate = index.valueDate(fixingDates[i + 1]);
 
                 if (fixingDates[i] >= endDate || valueDate >= endDate)
                     break;
                 if (fixingDates[i + 1] < startDate || nextValueDate <= startDate)
                     continue;
 
-                Date d2 = Date.Min(nextValueDate, endDate);
+                var d2 = Date.Min(nextValueDate, endDate);
 
-                avgBMA += index.fixing(fixingDates[i]) * (d2 - d1);
+                avgBma += index.fixing(fixingDates[i]) * (d2 - d1);
 
                 days += d2 - d1;
                 d1 = d2;
             }
-            avgBMA /= endDate - startDate;
+            avgBma /= endDate - startDate;
 
             Utils.QL_REQUIRE(days == endDate - startDate, () =>
                              "averaging days " + days + " differ from " + "interest days " + (endDate - startDate));
 
-            return coupon_.gearing() * avgBMA + coupon_.spread();
+            return coupon_.gearing() * avgBma + coupon_.spread();
         }
 
         /// <summary>
@@ -204,46 +204,46 @@ namespace QLNet.Cashflows
         //   throw new Exception( "not available" );
         //}
 
-        private AverageBMACoupon coupon_;
+        private AverageBmaCoupon coupon_;
     }
 
     /// <summary>
     /// Helper class building a sequence of average BMA coupons
     /// </summary>
-    public class AverageBMALeg : RateLegBase
+    [JetBrains.Annotations.PublicAPI] public class AverageBmaLeg : RateLegBase
     {
         private BMAIndex index_;
         private List<double> gearings_;
         private List<double> spreads_;
 
-        public AverageBMALeg(Schedule schedule, BMAIndex index)
+        public AverageBmaLeg(Schedule schedule, BMAIndex index)
         {
             schedule_ = schedule;
             index_ = index;
             paymentAdjustment_ = BusinessDayConvention.Following;
         }
 
-        public AverageBMALeg withPaymentDayCounter(DayCounter dayCounter)
+        public AverageBmaLeg WithPaymentDayCounter(DayCounter dayCounter)
         {
             paymentDayCounter_ = dayCounter;
             return this;
         }
-        public AverageBMALeg withGearings(double gearing)
+        public AverageBmaLeg WithGearings(double gearing)
         {
             gearings_ = new List<double>() { gearing };
             return this;
         }
-        public AverageBMALeg withGearings(List<double> gearings)
+        public AverageBmaLeg WithGearings(List<double> gearings)
         {
             gearings_ = gearings;
             return this;
         }
-        public AverageBMALeg withSpreads(double spread)
+        public AverageBmaLeg WithSpreads(double spread)
         {
             spreads_ = new List<double>() { spread };
             return this;
         }
-        public AverageBMALeg withSpreads(List<double> spreads)
+        public AverageBmaLeg WithSpreads(List<double> spreads)
         {
             spreads_ = spreads;
             return this;
@@ -253,16 +253,16 @@ namespace QLNet.Cashflows
         {
             Utils.QL_REQUIRE(!notionals_.empty(), () => "no notional given");
 
-            List<CashFlow> cashflows = new List<CashFlow>();
+            var cashflows = new List<CashFlow>();
 
             // the following is not always correct
-            Calendar calendar = schedule_.calendar();
+            var calendar = schedule_.calendar();
 
             Date refStart, start, refEnd, end;
             Date paymentDate;
 
-            int n = schedule_.Count - 1;
-            for (int i = 0; i < n; ++i)
+            var n = schedule_.Count - 1;
+            for (var i = 0; i < n; ++i)
             {
                 refStart = start = schedule_.date(i);
                 refEnd = end = schedule_.date(i + 1);
@@ -272,7 +272,7 @@ namespace QLNet.Cashflows
                 if (i == n - 1 && !schedule_.isRegular(i + 1))
                     refEnd = calendar.adjust(start + schedule_.tenor(), paymentAdjustment_);
 
-                cashflows.Add(new AverageBMACoupon(paymentDate,
+                cashflows.Add(new AverageBmaCoupon(paymentDate,
                                                    notionals_.Get(i, notionals_.Last()),
                                                    start, end,
                                                    index_,

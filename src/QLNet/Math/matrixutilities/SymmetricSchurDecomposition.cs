@@ -40,7 +40,7 @@ namespace QLNet.Math.matrixutilities
         \test the correctness of the returned values is tested by
               checking their properties.
     */
-    public class SymmetricSchurDecomposition
+    [JetBrains.Annotations.PublicAPI] public class SymmetricSchurDecomposition
     {
         private Vector diagonal_;
         private Matrix eigenVectors_;
@@ -54,26 +54,26 @@ namespace QLNet.Math.matrixutilities
             Utils.QL_REQUIRE(s.rows() > 0 && s.columns() > 0, () => "null matrix given");
             Utils.QL_REQUIRE(s.rows() == s.columns(), () => "input matrix must be square");
 
-            int size = s.rows();
-            for (int q = 0; q < size; q++)
+            var size = s.rows();
+            for (var q = 0; q < size; q++)
             {
                 diagonal_[q] = s[q, q];
                 eigenVectors_[q, q] = 1.0;
             }
-            Matrix ss = new Matrix(s);
+            var ss = new Matrix(s);
 
-            Vector tmpDiag = new Vector(diagonal_);
-            Vector tmpAccumulate = new Vector(size, 0.0);
+            var tmpDiag = new Vector(diagonal_);
+            var tmpAccumulate = new Vector(size, 0.0);
             double threshold, epsPrec = 1e-15;
-            bool keeplooping = true;
+            var keeplooping = true;
             int maxIterations = 100, ite = 1;
             do
             {
                 //main loop
                 double sum = 0;
-                for (int a = 0; a < size - 1; a++)
+                for (var a = 0; a < size - 1; a++)
                 {
-                    for (int b = a + 1; b < size; b++)
+                    for (var b = a + 1; b < size; b++)
                     {
                         sum += System.Math.Abs(ss[a, b]);
                     }
@@ -99,7 +99,7 @@ namespace QLNet.Math.matrixutilities
                         for (k = j + 1; k < size; k++)
                         {
                             double sine, rho, cosin, heig, tang, beta;
-                            double smll = System.Math.Abs(ss[j, k]);
+                            var smll = System.Math.Abs(ss[j, k]);
                             if (ite > 5 &&
                                 smll < epsPrec * System.Math.Abs(diagonal_[j]) &&
                                 smll < epsPrec * System.Math.Abs(diagonal_[k]))
@@ -159,18 +159,18 @@ namespace QLNet.Math.matrixutilities
             int row, col;
             for (col = 0; col < size; col++)
             {
-                Vector eigenVector = new Vector(size);
+                var eigenVector = new Vector(size);
                 eigenVectors_.column(col).ForEach((ii, xx) => eigenVector[ii] = xx);
                 temp[col] = new KeyValuePair<double, Vector>(diagonal_[col], eigenVector);
             }
             // sort descending: std::greater
             temp.Sort((x, y) => y.Key.CompareTo(x.Key));
-            double maxEv = temp[0].Key;
+            var maxEv = temp[0].Key;
             for (col = 0; col < size; col++)
             {
                 // check for round-off errors
                 diagonal_[col] = System.Math.Abs(temp[col].Key / maxEv) < 1e-16 ? 0.0 : temp[col].Key;
-                double sign = 1.0;
+                var sign = 1.0;
                 if (temp[col].Value[0] < 0.0)
                     sign = -1.0;
                 for (row = 0; row < size; row++)
@@ -181,8 +181,9 @@ namespace QLNet.Math.matrixutilities
         }
 
 
-        public Vector eigenvalues() { return diagonal_; }
-        public Matrix eigenvectors() { return eigenVectors_; }
+        public Vector eigenvalues() => diagonal_;
+
+        public Matrix eigenvectors() => eigenVectors_;
 
         private void jacobiRotate_(Matrix m, double rot, double dil, int j1, int k1, int j2, int k2)
         {

@@ -24,7 +24,7 @@ namespace QLNet.Pricingengines.Lookback
     /*! Formula from "Option Pricing Formulas",
         E.G. Haug, McGraw-Hill, 1998, p.63-64
     */
-    public class AnalyticContinuousFixedLookbackEngine : ContinuousFixedLookbackOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class AnalyticContinuousFixedLookbackEngine : ContinuousFixedLookbackOption.Engine
     {
         public AnalyticContinuousFixedLookbackEngine(GeneralizedBlackScholesProcess process)
         {
@@ -33,12 +33,12 @@ namespace QLNet.Pricingengines.Lookback
         }
         public override void calculate()
         {
-            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "Non-plain payoff given");
 
             Utils.QL_REQUIRE(process_.x0() > 0.0, () => "negative or null underlying");
 
-            double strike = payoff.strike();
+            var strike = payoff.strike();
 
             switch (payoff.optionType())
             {
@@ -57,7 +57,7 @@ namespace QLNet.Pricingengines.Lookback
                         results_.value = B(-1);
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown type");
+                    Utils.QL_FAIL("Unknown ExerciseType");
                     break;
             }
         }
@@ -65,40 +65,45 @@ namespace QLNet.Pricingengines.Lookback
         private GeneralizedBlackScholesProcess process_;
         private CumulativeNormalDistribution f_ = new CumulativeNormalDistribution();
         // helper methods
-        private double underlying() { return process_.x0(); }
+        private double underlying() => process_.x0();
+
         private double strike()
         {
-            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "Non-plain payoff given");
             return payoff.strike();
         }
-        private double residualTime() { return process_.time(arguments_.exercise.lastDate()); }
-        private double volatility() { return process_.blackVolatility().link.blackVol(residualTime(), strike()); }
-        private double minmax() { return arguments_.minmax.GetValueOrDefault(); }
-        private double stdDeviation() { return volatility() * System.Math.Sqrt(residualTime()); }
-        private double riskFreeRate()
-        {
-            return process_.riskFreeRate().link.zeroRate(residualTime(),
-                                                         Compounding.Continuous, Frequency.NoFrequency).value();
-        }
-        private double riskFreeDiscount() { return process_.riskFreeRate().link.discount(residualTime()); }
-        private double dividendYield()
-        {
-            return process_.dividendYield().link.zeroRate(residualTime(),
-                                                          Compounding.Continuous, Frequency.NoFrequency).value();
-        }
-        private double dividendDiscount() { return process_.dividendYield().link.discount(residualTime()); }
+        private double residualTime() => process_.time(arguments_.exercise.lastDate());
+
+        private double volatility() => process_.blackVolatility().link.blackVol(residualTime(), strike());
+
+        private double minmax() => arguments_.minmax.GetValueOrDefault();
+
+        private double stdDeviation() => volatility() * System.Math.Sqrt(residualTime());
+
+        private double riskFreeRate() =>
+            process_.riskFreeRate().link.zeroRate(residualTime(),
+                Compounding.Continuous, Frequency.NoFrequency).value();
+
+        private double riskFreeDiscount() => process_.riskFreeRate().link.discount(residualTime());
+
+        private double dividendYield() =>
+            process_.dividendYield().link.zeroRate(residualTime(),
+                Compounding.Continuous, Frequency.NoFrequency).value();
+
+        private double dividendDiscount() => process_.dividendYield().link.discount(residualTime());
+
         private double A(double eta)
         {
-            double vol = volatility();
-            double lambda = 2.0 * (riskFreeRate() - dividendYield()) / (vol * vol);
-            double ss = underlying() / minmax();
-            double d1 = System.Math.Log(ss) / stdDeviation() + 0.5 * (lambda + 1.0) * stdDeviation();
-            double N1 = f_.value(eta * d1);
-            double N2 = f_.value(eta * (d1 - stdDeviation()));
-            double N3 = f_.value(eta * (d1 - lambda * stdDeviation()));
-            double N4 = f_.value(eta * d1);
-            double powss = System.Math.Pow(ss, -lambda);
+            var vol = volatility();
+            var lambda = 2.0 * (riskFreeRate() - dividendYield()) / (vol * vol);
+            var ss = underlying() / minmax();
+            var d1 = System.Math.Log(ss) / stdDeviation() + 0.5 * (lambda + 1.0) * stdDeviation();
+            var N1 = f_.value(eta * d1);
+            var N2 = f_.value(eta * (d1 - stdDeviation()));
+            var N3 = f_.value(eta * (d1 - lambda * stdDeviation()));
+            var N4 = f_.value(eta * d1);
+            var powss = System.Math.Pow(ss, -lambda);
             return eta * (underlying() * dividendDiscount() * N1 -
                           minmax() * riskFreeDiscount() * N2 -
                           underlying() * riskFreeDiscount() *
@@ -106,23 +111,20 @@ namespace QLNet.Pricingengines.Lookback
         }
         private double B(double eta)
         {
-            double vol = volatility();
-            double lambda = 2.0 * (riskFreeRate() - dividendYield()) / (vol * vol);
-            double ss = underlying() / strike();
-            double d1 = System.Math.Log(ss) / stdDeviation() + 0.5 * (lambda + 1.0) * stdDeviation();
-            double N1 = f_.value(eta * d1);
-            double N2 = f_.value(eta * (d1 - stdDeviation()));
-            double N3 = f_.value(eta * (d1 - lambda * stdDeviation()));
-            double N4 = f_.value(eta * d1);
-            double powss = System.Math.Pow(ss, -lambda);
+            var vol = volatility();
+            var lambda = 2.0 * (riskFreeRate() - dividendYield()) / (vol * vol);
+            var ss = underlying() / strike();
+            var d1 = System.Math.Log(ss) / stdDeviation() + 0.5 * (lambda + 1.0) * stdDeviation();
+            var N1 = f_.value(eta * d1);
+            var N2 = f_.value(eta * (d1 - stdDeviation()));
+            var N3 = f_.value(eta * (d1 - lambda * stdDeviation()));
+            var N4 = f_.value(eta * d1);
+            var powss = System.Math.Pow(ss, -lambda);
             return eta * (underlying() * dividendDiscount() * N1 -
                           strike() * riskFreeDiscount() * N2 -
                           underlying() * riskFreeDiscount() *
                           (powss * N3 - dividendDiscount() * N4 / riskFreeDiscount()) / lambda);
         }
-        private double C(double eta)
-        {
-            return eta * (riskFreeDiscount() * (minmax() - strike()));
-        }
+        private double C(double eta) => eta * (riskFreeDiscount() * (minmax() - strike()));
     }
 }

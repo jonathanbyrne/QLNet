@@ -39,8 +39,8 @@ namespace QLNet
       */
       public virtual bool hasOccurred(Date d = null, bool? includeRefDate = null)
       {
-         Date refDate = d ?? Settings.evaluationDate();
-         bool includeRefDateEvent = includeRefDate ?? Settings.includeReferenceDateEvents;
+         var refDate = d ?? Settings.evaluationDate();
+         var includeRefDateEvent = includeRefDate ?? Settings.includeReferenceDateEvents;
          if (includeRefDateEvent)
             return date() < refDate;
          else
@@ -54,14 +54,8 @@ namespace QLNet
       private readonly WeakEventSource eventSource = new WeakEventSource();
       public event Callback notifyObserversEvent
       {
-         add
-         {
-            eventSource.Subscribe(value);
-         }
-         remove
-         {
-            eventSource.Unsubscribe(value);
-         }
+         add => eventSource.Subscribe(value);
+         remove => eventSource.Unsubscribe(value);
       }
 
       public void registerWith(Callback handler) { notifyObserversEvent += handler; }
@@ -87,13 +81,13 @@ namespace QLNet
 
    // used to create an Event instance.
    // to be replaced with specific events as soon as we find out which.
-   public class simple_event : Event
+   [JetBrains.Annotations.PublicAPI] public class simple_event : Event
    {
       public simple_event(Date date)
       {
          date_ = date;
       }
-      public override Date date() { return date_; }
+      public override Date date() => date_;
 
       private Date date_;
 

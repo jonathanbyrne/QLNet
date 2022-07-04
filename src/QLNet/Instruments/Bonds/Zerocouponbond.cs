@@ -27,14 +27,14 @@ namespace QLNet.Instruments.Bonds
 
         \test calculations are tested by checking results against cached values.
     */
-    public class ZeroCouponBond : Bond
+    [JetBrains.Annotations.PublicAPI] public class ZeroCouponBond : Bond
     {
         public ZeroCouponBond(int settlementDays, Calendar calendar, double faceAmount, Date maturityDate,
                               BusinessDayConvention paymentConvention, double redemption, Date issueDate)
            : base(settlementDays, calendar, issueDate)
         {
             maturityDate_ = maturityDate;
-            Date redemptionDate = calendar_.adjust(maturityDate, paymentConvention);
+            var redemptionDate = calendar_.adjust(maturityDate, paymentConvention);
             setSingleRedemption(faceAmount, redemption, redemptionDate);
         }
     }

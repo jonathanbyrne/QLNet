@@ -58,10 +58,10 @@ namespace QLNet.Models
         }
 
         //! returns the volatility Handle
-        public Handle<Quote> volatility() { return volatility_; }
+        public Handle<Quote> volatility() => volatility_;
 
-        //! returns the volatility type
-        public VolatilityType volatilityType() { return volatilityType_; }
+        //! returns the volatility ExerciseType
+        public VolatilityType volatilityType() => volatilityType_;
 
         //! returns the actual price of the instrument (from volatility)
         public double marketValue() { calculate(); return marketValue_; }
@@ -84,11 +84,11 @@ namespace QLNet.Models
                     break;
                 case CalibrationErrorType.ImpliedVolError:
                     {
-                        double minVol = volatilityType_ == VolatilityType.ShiftedLognormal ? 0.0010 : 0.00005;
-                        double maxVol = volatilityType_ == VolatilityType.ShiftedLognormal ? 10.0 : 0.50;
-                        double lowerPrice = blackPrice(minVol);
-                        double upperPrice = blackPrice(maxVol);
-                        double modelPrice = modelValue();
+                        var minVol = volatilityType_ == VolatilityType.ShiftedLognormal ? 0.0010 : 0.00005;
+                        var maxVol = volatilityType_ == VolatilityType.ShiftedLognormal ? 10.0 : 0.50;
+                        var lowerPrice = blackPrice(minVol);
+                        var upperPrice = blackPrice(maxVol);
+                        var modelPrice = modelValue();
 
                         double implied;
                         if (modelPrice <= lowerPrice)
@@ -116,8 +116,8 @@ namespace QLNet.Models
                                         double accuracy, int maxEvaluations, double minVol, double maxVol)
         {
 
-            ImpliedVolatilityHelper f = new ImpliedVolatilityHelper(this, targetValue);
-            Brent solver = new Brent();
+            var f = new ImpliedVolatilityHelper(this, targetValue);
+            var solver = new Brent();
             solver.setMaxEvaluations(maxEvaluations);
             return solver.solve(f, accuracy, volatility_.link.value(), minVol, maxVol);
         }
@@ -149,10 +149,7 @@ namespace QLNet.Models
                 value_ = value;
             }
 
-            public override double value(double x)
-            {
-                return value_ - helper_.blackPrice(x);
-            }
+            public override double value(double x) => value_ - helper_.blackPrice(x);
         }
 
     }

@@ -40,7 +40,7 @@ namespace QLNet.Termstructures
        It is advised that a bootstrap helper for an instrument contains an instance of the actual instrument
      * class to ensure consistancy between the algorithms used during bootstrapping
        and later instrument pricing. This is not yet fully enforced in the available rate helpers. */
-    public class BootstrapHelper<TS> : IObservable, IObserver
+    [JetBrains.Annotations.PublicAPI] public class BootstrapHelper<TS> : IObservable, IObserver
     {
         protected Handle<Quote> quote_;
         protected TS termStructure_;
@@ -61,12 +61,15 @@ namespace QLNet.Termstructures
 
 
         //! BootstrapHelper interface
-        public Handle<Quote> quote() { return quote_; }
-        public double quoteError() { return quote_.link.value() - impliedQuote(); }
-        public double quoteValue() { return quote_.link.value(); }
-        public bool quoteIsValid() { return quote_.link.isValid(); }
-        public virtual double impliedQuote() { throw new NotSupportedException(); }
+        public Handle<Quote> quote() => quote_;
 
+        public double quoteError() => quote_.link.value() - impliedQuote();
+
+        public double quoteValue() => quote_.link.value();
+
+        public bool quoteIsValid() => quote_.link.isValid();
+
+        public virtual double impliedQuote() => throw new NotSupportedException();
 
         //! sets the term structure to be used for pricing
         /*! \warning Being a pointer and not a shared_ptr, the term
@@ -87,7 +90,7 @@ namespace QLNet.Termstructures
 
         // earliest relevant date
         // The earliest date at which discounts are needed by the helper in order to provide a quote.
-        public virtual Date earliestDate() { return earliestDate_; }
+        public virtual Date earliestDate() => earliestDate_;
 
         //! instrument's maturity date
         public virtual Date maturityDate()
@@ -132,14 +135,8 @@ namespace QLNet.Termstructures
         private readonly WeakEventSource eventSource = new WeakEventSource();
         public event Callback notifyObserversEvent
         {
-            add
-            {
-                eventSource.Subscribe(value);
-            }
-            remove
-            {
-                eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
         }
 
         public void registerWith(Callback handler) { notifyObserversEvent += handler; }
@@ -153,7 +150,7 @@ namespace QLNet.Termstructures
         #endregion
     }
 
-    public class RateHelper : BootstrapHelper<YieldTermStructure>
+    [JetBrains.Annotations.PublicAPI] public class RateHelper : BootstrapHelper<YieldTermStructure>
     {
         public RateHelper() : base() { } // required for generics
         public RateHelper(Handle<Quote> quote) : base(quote) { }

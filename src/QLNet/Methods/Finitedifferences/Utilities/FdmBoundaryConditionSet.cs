@@ -23,7 +23,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Methods.Finitedifferences.Utilities
 {
-    public class FdmBoundaryConditionSet : List<BoundaryCondition<FdmLinearOp>>
+    [JetBrains.Annotations.PublicAPI] public class FdmBoundaryConditionSet : List<BoundaryCondition<FdmLinearOp>>
     {
 
     }

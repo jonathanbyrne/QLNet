@@ -34,7 +34,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
 
         \bug this class is untested, probably unreliable.
     */
-    public class LocalVolSurface : LocalVolTermStructure
+    [JetBrains.Annotations.PublicAPI] public class LocalVolSurface : LocalVolTermStructure
     {
         Handle<BlackVolTermStructure> blackTS_;
         Handle<YieldTermStructure> riskFreeTS_, dividendTS_;
@@ -71,20 +71,23 @@ namespace QLNet.Termstructures.Volatility.equityfx
         }
 
         // TermStructure interface
-        public override Date referenceDate() { return blackTS_.link.referenceDate(); }
-        public override DayCounter dayCounter() { return blackTS_.link.dayCounter(); }
-        public override Date maxDate() { return blackTS_.link.maxDate(); }
+        public override Date referenceDate() => blackTS_.link.referenceDate();
+
+        public override DayCounter dayCounter() => blackTS_.link.dayCounter();
+
+        public override Date maxDate() => blackTS_.link.maxDate();
 
         // VolatilityTermStructure interface
-        public override double minStrike() { return blackTS_.link.minStrike(); }
-        public override double maxStrike() { return blackTS_.link.maxStrike(); }
+        public override double minStrike() => blackTS_.link.minStrike();
+
+        public override double maxStrike() => blackTS_.link.maxStrike();
 
         protected override double localVolImpl(double t, double underlyingLevel)
         {
 
-            double dr = riskFreeTS_.currentLink().discount(t, true);
-            double dq = dividendTS_.currentLink().discount(t, true);
-            double forwardValue = underlying_.currentLink().value() * dq / dr;
+            var dr = riskFreeTS_.currentLink().discount(t, true);
+            var dq = dividendTS_.currentLink().discount(t, true);
+            var forwardValue = underlying_.currentLink().value() * dq / dr;
 
             // strike derivatives
             double strike, y, dy, strikep, strikem;
@@ -105,9 +108,9 @@ namespace QLNet.Termstructures.Volatility.equityfx
             if (t.IsEqual(0.0))
             {
                 dt = 0.0001;
-                double drpt = riskFreeTS_.currentLink().discount(t + dt, true);
-                double dqpt = dividendTS_.currentLink().discount(t + dt, true);
-                double strikept = strike * dr * dqpt / (drpt * dq);
+                var drpt = riskFreeTS_.currentLink().discount(t + dt, true);
+                var dqpt = dividendTS_.currentLink().discount(t + dt, true);
+                var strikept = strike * dr * dqpt / (drpt * dq);
 
                 wpt = blackTS_.link.blackVariance(t + dt, strikept, true);
 
@@ -118,13 +121,13 @@ namespace QLNet.Termstructures.Volatility.equityfx
             else
             {
                 dt = System.Math.Min(0.0001, t / 2.0);
-                double drpt = riskFreeTS_.currentLink().discount(t + dt, true);
-                double drmt = riskFreeTS_.currentLink().discount(t - dt, true);
-                double dqpt = dividendTS_.currentLink().discount(t + dt, true);
-                double dqmt = dividendTS_.currentLink().discount(t - dt, true);
+                var drpt = riskFreeTS_.currentLink().discount(t + dt, true);
+                var drmt = riskFreeTS_.currentLink().discount(t - dt, true);
+                var dqpt = dividendTS_.currentLink().discount(t + dt, true);
+                var dqmt = dividendTS_.currentLink().discount(t - dt, true);
 
-                double strikept = strike * dr * dqpt / (drpt * dq);
-                double strikemt = strike * dr * dqmt / (drmt * dq);
+                var strikept = strike * dr * dqpt / (drpt * dq);
+                var strikemt = strike * dr * dqmt / (drmt * dq);
 
                 wpt = blackTS_.link.blackVariance(t + dt, strikept, true);
                 wmt = blackTS_.link.blackVariance(t - dt, strikemt, true);
@@ -141,11 +144,11 @@ namespace QLNet.Termstructures.Volatility.equityfx
             }
             else
             {
-                double den1 = 1.0 - y / w * dwdy;
-                double den2 = 0.25 * (-0.25 - 1.0 / w + y * y / w / w) * dwdy * dwdy;
-                double den3 = 0.5 * d2wdy2;
-                double den = den1 + den2 + den3;
-                double result = dwdt / den;
+                var den1 = 1.0 - y / w * dwdy;
+                var den2 = 0.25 * (-0.25 - 1.0 / w + y * y / w / w) * dwdy * dwdy;
+                var den3 = 0.5 * d2wdy2;
+                var den = den1 + den2 + den3;
+                var result = dwdt / den;
                 Utils.QL_REQUIRE(result >= 0.0, () =>
                                  "negative local vol^2 at strike " + strike + " and time " + t + "; the black vol surface is not smooth enough");
                 return System.Math.Sqrt(result);

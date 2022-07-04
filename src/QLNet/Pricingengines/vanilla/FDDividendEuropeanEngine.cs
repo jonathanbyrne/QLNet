@@ -22,7 +22,7 @@ using QLNet.processes;
 
 namespace QLNet.Pricingengines.vanilla
 {
-    public class FDDividendEuropeanEngine : FDEngineAdapter<FDDividendEngine, DividendVanillaOption.Engine>, IFDEngine
+    [JetBrains.Annotations.PublicAPI] public class FDDividendEuropeanEngine : FDEngineAdapter<FDDividendEngine, DividendVanillaOption.Engine>, IFDEngine
     {
         public FDDividendEuropeanEngine()
         { }
@@ -32,9 +32,6 @@ namespace QLNet.Pricingengines.vanilla
            : base(process, timeSteps, gridPoints, timeDependent) { }
 
 
-        public IFDEngine factory(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100)
-        {
-            return new FDDividendEuropeanEngine(process, timeSteps, gridPoints);
-        }
+        public IFDEngine factory(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100) => new FDDividendEuropeanEngine(process, timeSteps, gridPoints);
     }
 }

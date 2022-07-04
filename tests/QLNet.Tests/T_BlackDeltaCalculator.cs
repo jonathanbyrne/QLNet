@@ -31,13 +31,11 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_BlackDeltaCalculator
+    [JetBrains.Annotations.PublicAPI] public class T_BlackDeltaCalculator
     {
-        private int timeToDays(double t)
-        {
+        private int timeToDays(double t) =>
             // FLOATING_POINT_EXCEPTION
-            return (int)(t * 360 + 0.5);
-        }
+            (int)(t * 360 + 0.5);
 
         private struct DeltaData
         {
@@ -129,7 +127,7 @@ namespace QLNet.Tests
             double error;
             double tolerance;
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 currOt = values[i].ot;
                 currDt = values[i].dt;
@@ -140,7 +138,7 @@ namespace QLNet.Tests
                 currStrike = values[i].strike;
                 currDelta = values[i].value;
 
-                BlackDeltaCalculator myCalc = new BlackDeltaCalculator(currOt, currDt, currSpot, currdDf, currfDf, currStdDev);
+                var myCalc = new BlackDeltaCalculator(currOt, currDt, currSpot, currdDf, currfDf, currStdDev);
 
                 tolerance = 1.0e-3;
 
@@ -186,12 +184,12 @@ namespace QLNet.Tests
             // Black Scholes calculator, since premium adjusted deltas can be calculated
             // from spot deltas by adding/subtracting the premium.
 
-            SavedSettings backup = new SavedSettings();
+            var backup = new SavedSettings();
 
             // actually, value and tol won't be needed for testing
             EuropeanOptionData[] values =
             {
-            //        type, strike,   spot,    rd,    rf,    t,  vol,   value,    tol
+            //        ExerciseType, strike,   spot,    rd,    rf,    t,  vol,   value,    tol
             new EuropeanOptionData(QLNet.Option.Type.Call,  0.9123,  1.2212, 0.0231, 0.0000, 0.25, 0.301,  0.0, 0.0),
             new EuropeanOptionData(QLNet.Option.Type.Call,  0.9234,  1.2212, 0.0231, 0.0000, 0.35, 0.111,  0.0, 0.0),
             new EuropeanOptionData(QLNet.Option.Type.Call,  0.9783,  1.2212, 0.0231, 0.0000, 0.45, 0.071,  0.0, 0.0),
@@ -220,30 +218,30 @@ namespace QLNet.Tests
 
             DayCounter dc = new Actual360();
             Calendar calendar = new TARGET();
-            Date today = Date.Today;
+            var today = Date.Today;
 
             // Start setup of market data
 
-            double discFor = 0.0;
-            double discDom = 0.0;
-            double implVol = 0.0;
-            double expectedVal = 0.0;
-            double calculatedVal = 0.0;
-            double error = 0.0;
+            var discFor = 0.0;
+            var discDom = 0.0;
+            var implVol = 0.0;
+            var expectedVal = 0.0;
+            var calculatedVal = 0.0;
+            var error = 0.0;
 
-            SimpleQuote spotQuote = new SimpleQuote(0.0);
-            Handle<Quote> spotHandle = new Handle<Quote>(spotQuote);
+            var spotQuote = new SimpleQuote(0.0);
+            var spotHandle = new Handle<Quote>(spotQuote);
 
-            SimpleQuote qQuote = new SimpleQuote(0.0);
-            Handle<Quote> qHandle = new Handle<Quote>(qQuote);
+            var qQuote = new SimpleQuote(0.0);
+            var qHandle = new Handle<Quote>(qQuote);
             YieldTermStructure qTS = new FlatForward(today, qHandle, dc);
 
-            SimpleQuote rQuote = new SimpleQuote(0.0);
-            Handle<Quote> rHandle = new Handle<Quote>(qQuote);
+            var rQuote = new SimpleQuote(0.0);
+            var rHandle = new Handle<Quote>(qQuote);
             YieldTermStructure rTS = new FlatForward(today, rHandle, dc);
 
-            SimpleQuote volQuote = new SimpleQuote(0.0);
-            Handle<Quote> volHandle = new Handle<Quote>(volQuote);
+            var volQuote = new SimpleQuote(0.0);
+            var volHandle = new Handle<Quote>(volQuote);
             BlackVolTermStructure volTS = new BlackConstantVol(today, calendar, volHandle, dc);
 
             BlackScholesMertonProcess stochProcess;
@@ -253,9 +251,9 @@ namespace QLNet.Tests
             Exercise exercise;
             // Setup of market data finished
 
-            double tolerance = 1.0e-10;
+            var tolerance = 1.0e-10;
 
-            for (int i = 0; i < values.Length; ++i)
+            for (var i = 0; i < values.Length; ++i)
             {
 
                 payoff = new PlainVanillaPayoff(values[i].type, values[i].strike);
@@ -271,7 +269,7 @@ namespace QLNet.Tests
                 discFor = qTS.discount(exDate);
                 implVol = System.Math.Sqrt(volTS.blackVariance(exDate, 0.0));
 
-                BlackDeltaCalculator myCalc = new BlackDeltaCalculator(values[i].type, DeltaVolQuote.DeltaType.PaSpot,
+                var myCalc = new BlackDeltaCalculator(values[i].type, DeltaVolQuote.DeltaType.PaSpot,
                                                                        spotQuote.value(), discDom, discFor, implVol);
 
                 stochProcess = new BlackScholesMertonProcess(spotHandle,
@@ -281,7 +279,7 @@ namespace QLNet.Tests
 
                 engine = new AnalyticEuropeanEngine(stochProcess);
 
-                EuropeanOption option = new EuropeanOption(payoff, exercise);
+                var option = new EuropeanOption(payoff, exercise);
                 option.setPricingEngine(engine);
 
                 calculatedVal = myCalc.deltaFromStrike(values[i].strike);
@@ -335,7 +333,7 @@ namespace QLNet.Tests
 
             // Test for put call parity between put and call deltas.
 
-            SavedSettings backup = new SavedSettings();
+            var backup = new SavedSettings();
 
             /* The data below are from
                "Option pricing formulas", E.G. Haug, McGraw-Hill 1998
@@ -345,7 +343,7 @@ namespace QLNet.Tests
             EuropeanOptionData[] values =
             {
             // pag 2-8
-            //        type, strike,   spot,    q,    r,    t,  vol,   value,    tol
+            //        ExerciseType, strike,   spot,    q,    r,    t,  vol,   value,    tol
             new EuropeanOptionData(QLNet.Option.Type.Call,  65.00,  60.00, 0.00, 0.08, 0.25, 0.30,  2.1334, 1.0e-4),
             new EuropeanOptionData(QLNet.Option.Type.Put,   95.00, 100.00, 0.05, 0.10, 0.50, 0.20,  2.4648, 1.0e-4),
             new EuropeanOptionData(QLNet.Option.Type.Put,   19.00,  19.00, 0.10, 0.10, 0.75, 0.28,  1.7011, 1.0e-4),
@@ -395,39 +393,39 @@ namespace QLNet.Tests
 
             DayCounter dc = new Actual360();
             Calendar calendar = new TARGET();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            double discFor = 0.0;
-            double discDom = 0.0;
-            double implVol = 0.0;
-            double deltaCall = 0.0;
-            double deltaPut = 0.0;
-            double expectedDiff = 0.0;
-            double calculatedDiff = 0.0;
-            double error = 0.0;
-            double forward = 0.0;
+            var discFor = 0.0;
+            var discDom = 0.0;
+            var implVol = 0.0;
+            var deltaCall = 0.0;
+            var deltaPut = 0.0;
+            var expectedDiff = 0.0;
+            var calculatedDiff = 0.0;
+            var error = 0.0;
+            var forward = 0.0;
 
-            SimpleQuote spotQuote = new SimpleQuote(0.0);
+            var spotQuote = new SimpleQuote(0.0);
 
-            SimpleQuote qQuote = new SimpleQuote(0.0);
-            Handle<Quote> qHandle = new Handle<Quote>(qQuote);
+            var qQuote = new SimpleQuote(0.0);
+            var qHandle = new Handle<Quote>(qQuote);
             YieldTermStructure qTS = new FlatForward(today, qHandle, dc);
 
-            SimpleQuote rQuote = new SimpleQuote(0.0);
-            Handle<Quote> rHandle = new Handle<Quote>(qQuote);
+            var rQuote = new SimpleQuote(0.0);
+            var rHandle = new Handle<Quote>(qQuote);
             YieldTermStructure rTS = new FlatForward(today, rHandle, dc);
 
-            SimpleQuote volQuote = new SimpleQuote(0.0);
-            Handle<Quote> volHandle = new Handle<Quote>(volQuote);
+            var volQuote = new SimpleQuote(0.0);
+            var volHandle = new Handle<Quote>(volQuote);
             BlackVolTermStructure volTS = new BlackConstantVol(today, calendar, volHandle, dc);
 
             StrikedTypePayoff payoff;
             Date exDate;
             Exercise exercise;
 
-            double tolerance = 1.0e-10;
+            var tolerance = 1.0e-10;
 
-            for (int i = 0; i < values.Length; ++i)
+            for (var i = 0; i < values.Length; ++i)
             {
                 payoff = new PlainVanillaPayoff(QLNet.Option.Type.Call, values[i].strike);
                 exDate = today + timeToDays(values[i].t);
@@ -442,7 +440,7 @@ namespace QLNet.Tests
                 implVol = System.Math.Sqrt(volTS.blackVariance(exDate, 0.0));
                 forward = spotQuote.value() * discFor / discDom;
 
-                BlackDeltaCalculator myCalc = new BlackDeltaCalculator(QLNet.Option.Type.Call, DeltaVolQuote.DeltaType.Spot,
+                var myCalc = new BlackDeltaCalculator(QLNet.Option.Type.Call, DeltaVolQuote.DeltaType.Spot,
                                                                        spotQuote.value(), discDom, discFor, implVol);
 
                 deltaCall = myCalc.deltaFromStrike(values[i].strike);
@@ -528,7 +526,7 @@ namespace QLNet.Tests
         public void testAtmCalcs()
         {
             // Testing delta-neutral ATM quotations
-            SavedSettings backup = new SavedSettings();
+            var backup = new SavedSettings();
 
             DeltaData[] values =
             {
@@ -560,13 +558,13 @@ namespace QLNet.Tests
             double expected;
             double calculated;
             double error;
-            double tolerance = 1.0e-2; // not that small, but sufficient for strikes
+            var tolerance = 1.0e-2; // not that small, but sufficient for strikes
             double currAtmStrike;
             double currCallDelta;
             double currPutDelta;
             double currFwd;
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
 
                 currDt = values[i].dt;
@@ -576,7 +574,7 @@ namespace QLNet.Tests
                 currStdDev = values[i].stdDev;
                 currFwd = currSpot * currfDf / currdDf;
 
-                BlackDeltaCalculator myCalc = new BlackDeltaCalculator(QLNet.Option.Type.Call, currDt, currSpot, currdDf,
+                var myCalc = new BlackDeltaCalculator(QLNet.Option.Type.Call, currDt, currSpot, currdDf,
                                                                        currfDf, currStdDev);
 
                 currAtmStrike = myCalc.atmStrike(DeltaVolQuote.AtmType.AtmDeltaNeutral);
@@ -674,7 +672,7 @@ namespace QLNet.Tests
 
                 // Test ATM 0.50 delta calculations
                 myCalc.setDeltaType(DeltaVolQuote.DeltaType.Fwd);
-                double atmFiftyStrike = myCalc.atmStrike(DeltaVolQuote.AtmType.AtmPutCall50);
+                var atmFiftyStrike = myCalc.atmStrike(DeltaVolQuote.AtmType.AtmPutCall50);
                 calculated = System.Math.Abs(myCalc.deltaFromStrike(atmFiftyStrike));
                 expected = 0.50;
                 error = System.Math.Abs(expected - calculated);

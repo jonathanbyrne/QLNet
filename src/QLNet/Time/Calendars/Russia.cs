@@ -46,7 +46,7 @@ namespace QLNet.Time.Calendars
 
     \ingroup calendars
     */
-    public class Russia : Calendar
+    [JetBrains.Annotations.PublicAPI] public class Russia : Calendar
     {
         public enum Market
         {
@@ -78,7 +78,8 @@ namespace QLNet.Time.Calendars
             public static readonly SettlementImpl Singleton = new SettlementImpl();
             private SettlementImpl() { }
 
-            public override string name() { return "Russian settlement"; }
+            public override string name() => "Russian settlement";
+
             private bool isExtraHolidaySettlementImpl(int d, Month month, int year)
             {
                 switch (year)
@@ -121,11 +122,11 @@ namespace QLNet.Time.Calendars
             }
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
 
                 if (isWeekend(w)
                     // New Year's holidays
@@ -277,14 +278,15 @@ namespace QLNet.Time.Calendars
             }
 
 
-            public override string name() { return "Moscow exchange"; }
+            public override string name() => "Moscow exchange";
+
             public override bool isBusinessDay(Date date)
             {
 
-                DayOfWeek w = date.DayOfWeek;
-                int d = date.Day;
-                Month m = (Month)date.Month;
-                int y = date.Year;
+                var w = date.DayOfWeek;
+                var d = date.Day;
+                var m = (Month)date.Month;
+                var y = date.Year;
 
                 // the exchange was formally established in 2011, so data are only
                 // available from 2012 to present

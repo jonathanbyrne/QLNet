@@ -32,14 +32,8 @@ namespace QLNet.Patterns
         private readonly WeakEventSource eventSource = new WeakEventSource();
         public event Callback notifyObserversEvent
         {
-            add
-            {
-                eventSource.Subscribe(value);
-            }
-            remove
-            {
-                eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
         }
 
         public void registerWith(Callback handler) { notifyObserversEvent += handler; }
@@ -69,7 +63,7 @@ namespace QLNet.Patterns
            policy when possible. */
         public virtual void recalculate()
         {
-            bool wasFrozen = frozen_;
+            var wasFrozen = frozen_;
             calculated_ = frozen_ = false;
             try
             {

@@ -46,7 +46,7 @@ namespace QLNet.Indexes
 
             tenor_.normalize();
 
-            string res = familyName_;
+            var res = familyName_;
             if (tenor_ == new Period(1, TimeUnit.Days))
             {
                 if (fixingDays_ == 0)
@@ -69,17 +69,17 @@ namespace QLNet.Indexes
         }
 
         // Index interface
-        public override string name()
-        {
-            return name_;
-        }
-        public override Calendar fixingCalendar() { return fixingCalendar_; }
-        public override bool isValidFixingDate(Date fixingDate) { return fixingCalendar().isBusinessDay(fixingDate); }
+        public override string name() => name_;
+
+        public override Calendar fixingCalendar() => fixingCalendar_;
+
+        public override bool isValidFixingDate(Date fixingDate) => fixingCalendar().isBusinessDay(fixingDate);
+
         public override double fixing(Date fixingDate, bool forecastTodaysFixing = false)
         {
             Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => "Fixing date " + fixingDate + " is not valid");
 
-            Date today = Settings.evaluationDate();
+            var today = Settings.evaluationDate();
 
             if (fixingDate > today ||
                 fixingDate == today && forecastTodaysFixing)
@@ -89,7 +89,7 @@ namespace QLNet.Indexes
             {
                 // must have been fixed
                 // do not catch exceptions
-                double? result = pastFixing(fixingDate);
+                var result = pastFixing(fixingDate);
                 Utils.QL_REQUIRE(result != null, () => "Missing " + name() + " fixing for " + fixingDate);
                 return result.Value;
             }
@@ -97,7 +97,7 @@ namespace QLNet.Indexes
             try
             {
                 // might have been fixed
-                double? result = pastFixing(fixingDate);
+                var result = pastFixing(fixingDate);
                 if (result != null)
                     return result.Value;
 
@@ -113,16 +113,20 @@ namespace QLNet.Indexes
         public void update() { notifyObservers(); }
 
         // Inspectors
-        public string familyName() { return familyName_; }
-        public Period tenor() { return tenor_; }
-        public int fixingDays() { return fixingDays_; }
+        public string familyName() => familyName_;
+
+        public Period tenor() => tenor_;
+
+        public int fixingDays() => fixingDays_;
+
         public Date fixingDate(Date valueDate)
         {
-            Date fixingDate = fixingCalendar().advance(valueDate, -fixingDays_, TimeUnit.Days);
+            var fixingDate = fixingCalendar().advance(valueDate, -fixingDays_, TimeUnit.Days);
             return fixingDate;
         }
-        public Currency currency() { return currency_; }
-        public DayCounter dayCounter() { return dayCounter_; }
+        public Currency currency() => currency_;
+
+        public DayCounter dayCounter() => dayCounter_;
 
         // Date calculations
         // These methods can be overridden to implement particular conventions (e.g. EurLibor) */

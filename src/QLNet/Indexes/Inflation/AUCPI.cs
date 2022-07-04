@@ -23,7 +23,7 @@ using QLNet.Time;
 namespace QLNet.Indexes.Inflation
 {
     //! AU CPI index (either quarterly or annual)
-    public class AUCPI : ZeroInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class AUCPI : ZeroInflationIndex
     {
         public AUCPI(Frequency frequency,
                      bool revised,
@@ -47,7 +47,7 @@ namespace QLNet.Indexes.Inflation
     }
 
     //! Genuine year-on-year AU CPI (i.e. not a ratio)
-    public class YYAUCPI : YoYInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class YYAUCPI : YoYInflationIndex
     {
         public YYAUCPI(Frequency frequency,
                        bool revised,
@@ -72,7 +72,7 @@ namespace QLNet.Indexes.Inflation
 
 
     //! Fake year-on-year AUCPI (i.e. a ratio)
-    public class YYAUCPIr : YoYInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class YYAUCPIr : YoYInflationIndex
     {
         public YYAUCPIr(Frequency frequency,
                         bool revised,

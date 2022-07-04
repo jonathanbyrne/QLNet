@@ -25,7 +25,8 @@ namespace QLNet
     public static partial class Utils
    {
       // Follows somewhat the advice of Knuth on checking for floating-point equality.
-      public static bool close(double x, double y) { return close(x, y, 42); }
+      public static bool close(double x, double y) => close(x, y, 42);
+
       public static bool close(double x, double y, int n)
       {
          if (x.IsEqual(y))
@@ -40,15 +41,9 @@ namespace QLNet
                 diff <= tolerance * System.Math.Abs(y);
       }
 
-      public static bool close(Money m1, Money m2)
-      {
-         return close(m1, m2, 42);
-      }
+      public static bool close(Money m1, Money m2) => close(m1, m2, 42);
 
-      public static bool close_enough(double x, double y)
-      {
-         return close_enough(x, y, 42);
-      }
+      public static bool close_enough(double x, double y) => close_enough(x, y, 42);
 
       public static bool close_enough(double x, double y, int n)
       {
@@ -73,15 +68,15 @@ namespace QLNet
          }
          if (Money.conversionType == Money.ConversionType.BaseCurrencyConversion)
          {
-            Money tmp1 = m1;
+            var tmp1 = m1;
             Money.convertToBase(ref tmp1);
-            Money tmp2 = m2;
+            var tmp2 = m2;
             Money.convertToBase(ref tmp2);
             return close(tmp1, tmp2, n);
          }
          if (Money.conversionType == Money.ConversionType.AutomatedConversion)
          {
-            Money tmp = m2;
+            var tmp = m2;
             Money.convertTo(ref tmp, m1.currency);
             return close(m1, tmp, n);
          }

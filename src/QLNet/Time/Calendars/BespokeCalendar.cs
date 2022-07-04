@@ -31,10 +31,10 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    public class BespokeCalendar : Calendar
+    [JetBrains.Annotations.PublicAPI] public class BespokeCalendar : Calendar
     {
         private string name_;
-        public override string name() { return name_; }
+        public override string name() => name_;
 
         /*! \warning different bespoke calendars created with the same
                      name (or different bespoke calendars created with
@@ -49,7 +49,7 @@ namespace QLNet.Time.Calendars
         //! marks the passed day as part of the weekend
         public void addWeekend(DayOfWeek w)
         {
-            Impl impl = calendar_ as Impl;
+            var impl = calendar_ as Impl;
             if (impl != null)
                 impl.addWeekend(w);
         }
@@ -57,8 +57,10 @@ namespace QLNet.Time.Calendars
         // here implementation does not follow a singleton pattern
         class Impl : WesternImpl
         {
-            public override bool isWeekend(DayOfWeek w) { return weekend_.Contains(w); }
-            public override bool isBusinessDay(Date date) { return !isWeekend(date.DayOfWeek); }
+            public override bool isWeekend(DayOfWeek w) => weekend_.Contains(w);
+
+            public override bool isBusinessDay(Date date) => !isWeekend(date.DayOfWeek);
+
             public void addWeekend(DayOfWeek w) { weekend_.Add(w); }
 
             private List<DayOfWeek> weekend_ = new List<DayOfWeek>();

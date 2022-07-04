@@ -36,7 +36,7 @@ namespace QLNet.Models.Shortrate.Onefactormodels
     /// the underlying Vasicek model is not updated.
     /// </remarks>
     /// </summary>
-    public class HullWhite : Vasicek, ITermStructureConsistentModel
+    [JetBrains.Annotations.PublicAPI] public class HullWhite : Vasicek, ITermStructureConsistentModel
     {
         public HullWhite(Handle<YieldTermStructure> termStructure,
                          double a, double sigma)
@@ -61,23 +61,23 @@ namespace QLNet.Models.Shortrate.Onefactormodels
 
         public override Lattice tree(TimeGrid grid)
         {
-            TermStructureFittingParameter phi = new TermStructureFittingParameter(termStructure());
+            var phi = new TermStructureFittingParameter(termStructure());
             ShortRateDynamics numericDynamics = new Dynamics(phi, a(), sigma());
-            TrinomialTree trinomial = new TrinomialTree(numericDynamics.process(), grid);
-            ShortRateTree numericTree = new ShortRateTree(trinomial, numericDynamics, grid);
-            TermStructureFittingParameter.NumericalImpl impl =
+            var trinomial = new TrinomialTree(numericDynamics.process(), grid);
+            var numericTree = new ShortRateTree(trinomial, numericDynamics, grid);
+            var impl =
                (TermStructureFittingParameter.NumericalImpl)phi.implementation();
             impl.reset();
-            for (int i = 0; i < grid.size() - 1; i++)
+            for (var i = 0; i < grid.size() - 1; i++)
             {
-                double discountBond = termStructure().link.discount(grid[i + 1]);
-                Vector statePrices = numericTree.statePrices(i);
-                int size = numericTree.size(i);
-                double dt = numericTree.timeGrid().dt(i);
-                double dx = trinomial.dx(i);
-                double x = trinomial.underlying(i, 0);
-                double value = 0.0;
-                for (int j = 0; j < size; j++)
+                var discountBond = termStructure().link.discount(grid[i + 1]);
+                var statePrices = numericTree.statePrices(i);
+                var size = numericTree.size(i);
+                var dt = numericTree.timeGrid().dt(i);
+                var dx = trinomial.dx(i);
+                var x = trinomial.underlying(i, 0);
+                var value = 0.0;
+                for (var j = 0; j < size; j++)
                 {
                     value += statePrices[j] * System.Math.Exp(-x * dt);
                     x += dx;
@@ -88,17 +88,14 @@ namespace QLNet.Models.Shortrate.Onefactormodels
             return numericTree;
         }
 
-        public override ShortRateDynamics dynamics()
-        {
-            return new Dynamics(phi_, a(), sigma());
-        }
+        public override ShortRateDynamics dynamics() => new Dynamics(phi_, a(), sigma());
 
         public override double discountBondOption(Option.Type type,
                                                   double strike,
                                                   double maturity,
                                                   double bondMaturity)
         {
-            double _a = a();
+            var _a = a();
             double v;
             if (_a < System.Math.Sqrt(Const.QL_EPSILON))
             {
@@ -109,8 +106,8 @@ namespace QLNet.Models.Shortrate.Onefactormodels
                 v = sigma() * B(maturity, bondMaturity) *
                     System.Math.Sqrt(0.5 * (1.0 - System.Math.Exp(-2.0 * _a * maturity)) / _a);
             }
-            double f = termStructure().link.discount(bondMaturity);
-            double k = termStructure().link.discount(maturity) * strike;
+            var f = termStructure().link.discount(bondMaturity);
+            var k = termStructure().link.discount(maturity) * strike;
 
             return Utils.blackFormula(type, k, f, v);
         }
@@ -135,23 +132,23 @@ namespace QLNet.Models.Shortrate.Onefactormodels
             Utils.QL_REQUIRE(sigma >= 0.0, () => "negative sigma (" + sigma + ") not allowed");
             Utils.QL_REQUIRE(a >= 0.0, () => "negative a (" + a + ") not allowed");
 
-            double deltaT = T - t;
-            double tempDeltaT = (1.0 - System.Math.Exp(-a * deltaT)) / a;
-            double halfSigmaSquare = sigma * sigma / 2.0;
+            var deltaT = T - t;
+            var tempDeltaT = (1.0 - System.Math.Exp(-a * deltaT)) / a;
+            var halfSigmaSquare = sigma * sigma / 2.0;
 
             // lambda adjusts for the fact that the underlying is an interest rate
-            double lambda = halfSigmaSquare * (1.0 - System.Math.Exp(-2.0 * a * t)) / a *
-                            tempDeltaT * tempDeltaT;
+            var lambda = halfSigmaSquare * (1.0 - System.Math.Exp(-2.0 * a * t)) / a *
+                         tempDeltaT * tempDeltaT;
 
-            double tempT = (1.0 - System.Math.Exp(-a * t)) / a;
+            var tempT = (1.0 - System.Math.Exp(-a * t)) / a;
 
             // phi is the MtM adjustment
-            double phi = halfSigmaSquare * tempDeltaT * tempT * tempT;
+            var phi = halfSigmaSquare * tempDeltaT * tempT * tempT;
 
             // the adjustment
-            double z = lambda + phi;
+            var z = lambda + phi;
 
-            double futureRate = (100.0 - futuresPrice) / 100.0;
+            var futureRate = (100.0 - futuresPrice) / 100.0;
             return (1.0 - System.Math.Exp(-z)) * (futureRate + 1.0 / (T - t));
         }
 
@@ -163,11 +160,11 @@ namespace QLNet.Models.Shortrate.Onefactormodels
 
         protected override double A(double t, double T)
         {
-            double discount1 = termStructure().link.discount(t);
-            double discount2 = termStructure().link.discount(T);
-            double forward = termStructure().link.forwardRate(t, t, Compounding.Continuous, Frequency.NoFrequency).rate();
-            double temp = sigma() * B(t, T);
-            double value = B(t, T) * forward - 0.25 * temp * temp * B(0.0, 2.0 * t);
+            var discount1 = termStructure().link.discount(t);
+            var discount2 = termStructure().link.discount(T);
+            var forward = termStructure().link.forwardRate(t, t, Compounding.Continuous, Frequency.NoFrequency).rate();
+            var temp = sigma() * B(t, T);
+            var value = B(t, T) * forward - 0.25 * temp * temp * B(0.0, 2.0 * t);
             return System.Math.Exp(value) * discount2 / discount1;
         }
 
@@ -182,15 +179,9 @@ namespace QLNet.Models.Shortrate.Onefactormodels
                 fitting_ = fitting;
             }
 
-            public override double variable(double t, double r)
-            {
-                return r - fitting_.value(t);
-            }
+            public override double variable(double t, double r) => r - fitting_.value(t);
 
-            public override double shortRate(double t, double x)
-            {
-                return x + fitting_.value(t);
-            }
+            public override double shortRate(double t, double x) => x + fitting_.value(t);
 
             private Parameter fitting_;
         }
@@ -202,7 +193,7 @@ namespace QLNet.Models.Shortrate.Onefactormodels
             \f]
             where \f$ f(t) \f$ is the instantaneous forward rate at \f$ t \f$.
         */
-        public class FittingParameter : TermStructureFittingParameter
+        [JetBrains.Annotations.PublicAPI] public class FittingParameter : TermStructureFittingParameter
         {
             private new class Impl : Parameter.Impl
             {
@@ -219,9 +210,9 @@ namespace QLNet.Models.Shortrate.Onefactormodels
 
                 public override double value(Vector v, double t)
                 {
-                    double forwardRate =
+                    var forwardRate =
                        termStructure_.link.forwardRate(t, t, Compounding.Continuous, Frequency.NoFrequency).rate();
-                    double temp = a_ < System.Math.Sqrt(Const.QL_EPSILON) ? sigma_ * t : sigma_ * (1.0 - System.Math.Exp(-a_ * t)) / a_;
+                    var temp = a_ < System.Math.Sqrt(Const.QL_EPSILON) ? sigma_ * t : sigma_ * (1.0 - System.Math.Exp(-a_ * t)) / a_;
                     return forwardRate + 0.5 * temp * temp;
                 }
             }
@@ -234,10 +225,7 @@ namespace QLNet.Models.Shortrate.Onefactormodels
 
         #region ITermStructureConsistentModel
 
-        public Handle<YieldTermStructure> termStructure()
-        {
-            return termStructure_;
-        }
+        public Handle<YieldTermStructure> termStructure() => termStructure_;
 
         public Handle<YieldTermStructure> termStructure_ { get; set; }
 

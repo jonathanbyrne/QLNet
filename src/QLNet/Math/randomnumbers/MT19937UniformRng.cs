@@ -31,7 +31,7 @@ namespace QLNet.Math.randomnumbers
         \test the correctness of the returned values is tested by
               checking them against known good results.
     */
-    public class MersenneTwisterUniformRng : IRNGTraits
+    [JetBrains.Annotations.PublicAPI] public class MersenneTwisterUniformRng : IRNGTraits
     {
         private static int N = 624; // state size
         private static int M = 397; // shift size
@@ -79,20 +79,13 @@ namespace QLNet.Math.randomnumbers
             mt[0] = 0x80000000UL; /*MSB is 1; assuring non-zero initial array*/
         }
 
-        public IRNGTraits factory(ulong seed) { return new MersenneTwisterUniformRng(seed); }
-
+        public IRNGTraits factory(ulong seed) => new MersenneTwisterUniformRng(seed);
 
         /*! returns a sample with weight 1.0 containing a random number on (0.0, 1.0)-real-interval  */
-        public Sample<double> next()
-        {
-            return new Sample<double>(nextReal(), 1.0);
-        }
+        public Sample<double> next() => new Sample<double>(nextReal(), 1.0);
 
         //! return a random number in the (0.0, 1.0)-interval
-        public double nextReal()
-        {
-            return (nextInt32() + 0.5) / 4294967296.0;
-        }
+        public double nextReal() => (nextInt32() + 0.5) / 4294967296.0;
 
         //! return  a random number on [0,0xffffffff]-interval
         public ulong nextInt32()
@@ -100,7 +93,7 @@ namespace QLNet.Math.randomnumbers
             if (mti == N)
                 twist(); /* generate N words at a time */
 
-            ulong y = mt[mti++];
+            var y = mt[mti++];
 
             /* Tempering */
             y ^= y >> 11;
@@ -113,7 +106,7 @@ namespace QLNet.Math.randomnumbers
         private void seedInitialization(ulong seed)
         {
             /* initializes mt with a seed */
-            ulong s = seed != 0 ? seed : SeedGenerator.instance().get();
+            var s = seed != 0 ? seed : SeedGenerator.instance().get();
             mt[0] = s & 0xffffffffUL;
             for (mti = 1; mti < N; mti++)
             {

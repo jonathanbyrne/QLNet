@@ -21,10 +21,10 @@ using System;
 namespace QLNet.Instruments
 {
     //! Intermediate class for put/call payoffs
-    public class TypePayoff : Payoff
+    [JetBrains.Annotations.PublicAPI] public class TypePayoff : Payoff
     {
         protected QLNet.Option.Type type_;
-        public QLNet.Option.Type optionType() { return type_; }
+        public QLNet.Option.Type optionType() => type_;
 
         public TypePayoff(Option.Type type)
         {
@@ -32,22 +32,22 @@ namespace QLNet.Instruments
         }
 
         // Payoff interface
-        public override string description() { return name() + " " + optionType(); }
+        public override string description() => name() + " " + optionType();
     }
 
     //! %Payoff based on a floating strike
-    public class FloatingTypePayoff : TypePayoff
+    [JetBrains.Annotations.PublicAPI] public class FloatingTypePayoff : TypePayoff
     {
         public FloatingTypePayoff(Option.Type type) : base(type) { }
 
         // Payoff interface
-        public override string name() { return "FloatingType"; }
+        public override string name() => "FloatingType";
 
-        public override double value(double k) { throw new NotSupportedException("floating payoff not handled"); }
+        public override double value(double k) => throw new NotSupportedException("floating payoff not handled");
     }
 
     //! Intermediate class for payoffs based on a fixed strike
-    public class StrikedTypePayoff : TypePayoff
+    [JetBrains.Annotations.PublicAPI] public class StrikedTypePayoff : TypePayoff
     {
         protected double strike_;
 
@@ -63,21 +63,19 @@ namespace QLNet.Instruments
         }
 
         // Payoff interface
-        public override string description()
-        {
-            return base.description() + ", " + strike() + " strike";
-        }
+        public override string description() => base.description() + ", " + strike() + " strike";
 
-        public double strike() { return strike_; }
+        public double strike() => strike_;
     }
 
     //! Plain-vanilla payoff
-    public class PlainVanillaPayoff : StrikedTypePayoff
+    [JetBrains.Annotations.PublicAPI] public class PlainVanillaPayoff : StrikedTypePayoff
     {
         public PlainVanillaPayoff(Option.Type type, double strike) : base(type, strike) { }
 
         // Payoff interface
-        public override string name() { return "Vanilla"; }
+        public override string name() => "Vanilla";
+
         public override double value(double price)
         {
             switch (type_)
@@ -87,18 +85,19 @@ namespace QLNet.Instruments
                 case QLNet.Option.Type.Put:
                     return System.Math.Max(strike_ - price, 0.0);
                 default:
-                    throw new ArgumentException("unknown/illegal option type");
+                    throw new ArgumentException("unknown/illegal option ExerciseType");
             }
         }
     }
 
     //! %Payoff with strike expressed as percentage
-    public class PercentageStrikePayoff : StrikedTypePayoff
+    [JetBrains.Annotations.PublicAPI] public class PercentageStrikePayoff : StrikedTypePayoff
     {
         public PercentageStrikePayoff(Option.Type type, double moneyness) : base(type, moneyness) { }
 
         // Payoff interface
-        public override string name() { return "PercentageStrike"; }
+        public override string name() => "PercentageStrike";
+
         public override double value(double price)
         {
             switch (type_)
@@ -108,7 +107,7 @@ namespace QLNet.Instruments
                 case QLNet.Option.Type.Put:
                     return price * System.Math.Max(strike_ - 1.0, 0.0);
                 default:
-                    throw new ArgumentException("unknown/illegal option type");
+                    throw new ArgumentException("unknown/illegal option ExerciseType");
             }
         }
     }
@@ -118,12 +117,13 @@ namespace QLNet.Instruments
         (see: http://www.in-the-money.com/artandpap/Binary%20Options.doc)
     */
     //! Binary asset-or-nothing payoff
-    public class AssetOrNothingPayoff : StrikedTypePayoff
+    [JetBrains.Annotations.PublicAPI] public class AssetOrNothingPayoff : StrikedTypePayoff
     {
         public AssetOrNothingPayoff(Option.Type type, double strike) : base(type, strike) { }
 
         // Payoff interface
-        public override string name() { return "AssetOrNothing"; }
+        public override string name() => "AssetOrNothing";
+
         public override double value(double price)
         {
             switch (type_)
@@ -133,27 +133,26 @@ namespace QLNet.Instruments
                 case QLNet.Option.Type.Put:
                     return strike_ - price > 0.0 ? price : 0.0;
                 default:
-                    throw new ArgumentException("unknown/illegal option type");
+                    throw new ArgumentException("unknown/illegal option ExerciseType");
             }
         }
     }
 
     //! Binary cash-or-nothing payoff
-    public class CashOrNothingPayoff : StrikedTypePayoff
+    [JetBrains.Annotations.PublicAPI] public class CashOrNothingPayoff : StrikedTypePayoff
     {
         protected double cashPayoff_;
-        public double cashPayoff() { return cashPayoff_; }
+        public double cashPayoff() => cashPayoff_;
 
         public CashOrNothingPayoff(Option.Type type, double strike, double cashPayoff) : base(type, strike)
         {
             cashPayoff_ = cashPayoff;
         }
         // Payoff interface
-        public override string name() { return "CashOrNothing"; }
-        public override string description()
-        {
-            return base.description() + ", " + cashPayoff() + " cash payoff";
-        }
+        public override string name() => "CashOrNothing";
+
+        public override string description() => base.description() + ", " + cashPayoff() + " cash payoff";
+
         public override double value(double price)
         {
             switch (type_)
@@ -163,23 +162,23 @@ namespace QLNet.Instruments
                 case QLNet.Option.Type.Put:
                     return strike_ - price > 0.0 ? cashPayoff_ : 0.0;
                 default:
-                    throw new ArgumentException("unknown/illegal option type");
+                    throw new ArgumentException("unknown/illegal option ExerciseType");
             }
         }
     }
 
     //! Binary gap payoff
     /*! This payoff is equivalent to being a) long a PlainVanillaPayoff at
-        the first strike (same Call/Put type) and b) short a
-        CashOrNothingPayoff at the first strike (same Call/Put type) with
+        the first strike (same Call/Put ExerciseType) and b) short a
+        CashOrNothingPayoff at the first strike (same Call/Put ExerciseType) with
         cash payoff equal to the difference between the second and the first
         strike.
         \warning this payoff can be negative depending on the strikes
     */
-    public class GapPayoff : StrikedTypePayoff
+    [JetBrains.Annotations.PublicAPI] public class GapPayoff : StrikedTypePayoff
     {
         protected double secondStrike_;
-        public double secondStrike() { return secondStrike_; }
+        public double secondStrike() => secondStrike_;
 
         public GapPayoff(Option.Type type, double strike, double secondStrike) // a.k.a. payoff strike
            : base(type, strike)
@@ -188,11 +187,10 @@ namespace QLNet.Instruments
         }
 
         // Payoff interface
-        public override string name() { return "Gap"; }
-        public override string description()
-        {
-            return base.description() + ", " + secondStrike() + " strike payoff";
-        }
+        public override string name() => "Gap";
+
+        public override string description() => base.description() + ", " + secondStrike() + " strike payoff";
+
         public override double value(double price)
         {
             switch (type_)
@@ -202,7 +200,7 @@ namespace QLNet.Instruments
                 case QLNet.Option.Type.Put:
                     return strike_ - price >= 0.0 ? secondStrike_ - price : 0.0;
                 default:
-                    throw new ArgumentException("unknown/illegal option type");
+                    throw new ArgumentException("unknown/illegal option ExerciseType");
             }
         }
     }
@@ -218,10 +216,10 @@ namespace QLNet.Instruments
         Call (Put) at the lower strike and b) short (long) an AssetOrNothing
         Call (Put) at the higher strike
     */
-    public class SuperFundPayoff : StrikedTypePayoff
+    [JetBrains.Annotations.PublicAPI] public class SuperFundPayoff : StrikedTypePayoff
     {
         protected double secondStrike_;
-        public double secondStrike() { return secondStrike_; }
+        public double secondStrike() => secondStrike_;
 
         public SuperFundPayoff(double strike, double secondStrike) : base(QLNet.Option.Type.Call, strike)
         {
@@ -233,21 +231,19 @@ namespace QLNet.Instruments
         }
 
         // Payoff interface
-        public override string name() { return "SuperFund"; }
-        public override double value(double price)
-        {
-            return price >= strike_ && price < secondStrike_ ? price / strike_ : 0.0;
-        }
+        public override string name() => "SuperFund";
+
+        public override double value(double price) => price >= strike_ && price < secondStrike_ ? price / strike_ : 0.0;
     }
 
     //! Binary supershare payoff
-    public class SuperSharePayoff : StrikedTypePayoff
+    [JetBrains.Annotations.PublicAPI] public class SuperSharePayoff : StrikedTypePayoff
     {
         protected double secondStrike_;
-        public double secondStrike() { return secondStrike_; }
+        public double secondStrike() => secondStrike_;
 
         protected double cashPayoff_;
-        public double cashPayoff() { return cashPayoff_; }
+        public double cashPayoff() => cashPayoff_;
 
         public SuperSharePayoff(double strike, double secondStrike, double cashPayoff)
            : base(QLNet.Option.Type.Call, strike)
@@ -260,14 +256,10 @@ namespace QLNet.Instruments
         }
 
         // Payoff interface
-        public override string name() { return "SuperShare"; }
-        public override string description()
-        {
-            return base.description() + ", " + secondStrike() + " second strike" + ", " + cashPayoff() + " amount";
-        }
-        public override double value(double price)
-        {
-            return price >= strike_ && price < secondStrike_ ? cashPayoff_ : 0.0;
-        }
+        public override string name() => "SuperShare";
+
+        public override string description() => base.description() + ", " + secondStrike() + " second strike" + ", " + cashPayoff() + " amount";
+
+        public override double value(double price) => price >= strike_ && price < secondStrike_ ? cashPayoff_ : 0.0;
     }
 }

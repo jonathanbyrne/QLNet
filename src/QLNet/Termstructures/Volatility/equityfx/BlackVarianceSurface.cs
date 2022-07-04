@@ -40,7 +40,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
 
     */
 
-    public class BlackVarianceSurface : BlackVarianceTermStructure
+    [JetBrains.Annotations.PublicAPI] public class BlackVarianceSurface : BlackVarianceTermStructure
     {
         public enum Extrapolation
         {
@@ -59,26 +59,25 @@ namespace QLNet.Termstructures.Volatility.equityfx
         private Extrapolation lowerExtrapolation_, upperExtrapolation_;
 
         // TermStructure interface
-        public override DayCounter dayCounter() { return dayCounter_; }
-        public override Date maxDate()
-        {
-            return maxDate_;
-        }
+        public override DayCounter dayCounter() => dayCounter_;
+
+        public override Date maxDate() => maxDate_;
 
         // VolatilityTermStructure interface
-        public override double minStrike() { return strikes_.First(); }
+        public override double minStrike() => strikes_.First();
 
-        public override double maxStrike()
-        {
-            return strikes_.Last();
-        }
+        public override double maxStrike() => strikes_.Last();
 
         //public accessors
-        public virtual List<double> strikes() { return strikes_; }
-        public virtual List<double> times() { return times_; }
-        public virtual List<Date> dates() { return dates_; }
-        public virtual Matrix volatilities() { return volatilities_; }
-        public virtual Matrix variances() { return variances_; }
+        public virtual List<double> strikes() => strikes_;
+
+        public virtual List<double> times() => times_;
+
+        public virtual List<Date> dates() => dates_;
+
+        public virtual Matrix volatilities() => volatilities_;
+
+        public virtual Matrix variances() => variances_;
 
         // required for Handle
         public BlackVarianceSurface() { }

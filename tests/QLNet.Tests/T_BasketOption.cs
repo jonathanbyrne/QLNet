@@ -32,7 +32,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_BasketOption
+    [JetBrains.Annotations.PublicAPI] public class T_BasketOption
     {
         public enum BasketType { MinBasket, MaxBasket, SpreadBasket }
         public struct BasketOptionTwoData
@@ -83,7 +83,7 @@ namespace QLNet.Tests
                 case BasketType.SpreadBasket:
                     return new SpreadBasketPayoff(p);
             }
-            Utils.QL_FAIL("unknown basket option type");
+            Utils.QL_FAIL("unknown basket option ExerciseType");
             return null;
         }
         public string basketTypeToString(BasketType basketType)
@@ -97,7 +97,7 @@ namespace QLNet.Tests
                 case BasketType.SpreadBasket:
                     return "Spread";
             }
-            Utils.QL_FAIL("unknown basket option type");
+            Utils.QL_FAIL("unknown basket option ExerciseType");
             return string.Empty;
         }
 
@@ -217,33 +217,33 @@ namespace QLNet.Tests
             DayCounter dc = new Actual360();
 
 
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot1 = new SimpleQuote(0.0);
-            SimpleQuote spot2 = new SimpleQuote(0.0);
+            var spot1 = new SimpleQuote(0.0);
+            var spot2 = new SimpleQuote(0.0);
 
-            SimpleQuote qRate1 = new SimpleQuote(0.0);
-            YieldTermStructure qTS1 = Utilities.flatRate(today, qRate1, dc);
-            SimpleQuote qRate2 = new SimpleQuote(0.0);
-            YieldTermStructure qTS2 = Utilities.flatRate(today, qRate2, dc);
+            var qRate1 = new SimpleQuote(0.0);
+            var qTS1 = Utilities.flatRate(today, qRate1, dc);
+            var qRate2 = new SimpleQuote(0.0);
+            var qTS2 = Utilities.flatRate(today, qRate2, dc);
 
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
+            var rRate = new SimpleQuote(0.0);
+            var rTS = Utilities.flatRate(today, rRate, dc);
 
-            SimpleQuote vol1 = new SimpleQuote(0.0);
-            BlackVolTermStructure volTS1 = Utilities.flatVol(today, vol1, dc);
-            SimpleQuote vol2 = new SimpleQuote(0.0);
-            BlackVolTermStructure volTS2 = Utilities.flatVol(today, vol2, dc);
+            var vol1 = new SimpleQuote(0.0);
+            var volTS1 = Utilities.flatVol(today, vol1, dc);
+            var vol2 = new SimpleQuote(0.0);
+            var volTS2 = Utilities.flatVol(today, vol2, dc);
 
             //double mcRelativeErrorTolerance = 0.01;
             //double fdRelativeErrorTolerance = 0.01;
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
 
-                PlainVanillaPayoff payoff = new PlainVanillaPayoff(values[i].type, values[i].strike);
+                var payoff = new PlainVanillaPayoff(values[i].type, values[i].strike);
 
-                Date exDate = today + (int)(values[i].t * 360 + 0.5);
+                var exDate = today + (int)(values[i].t * 360 + 0.5);
                 Exercise exercise = new EuropeanExercise(exDate);
 
                 spot1.setValue(values[i].s1);
@@ -285,20 +285,20 @@ namespace QLNet.Tests
                         break;
 
                     default:
-                        Utils.QL_FAIL("unknown basket type");
+                        Utils.QL_FAIL("unknown basket ExerciseType");
                         break;
                 }
 
 
-                List<StochasticProcess1D> procs = new List<StochasticProcess1D> { p1, p2 };
+                var procs = new List<StochasticProcess1D> { p1, p2 };
 
-                Matrix correlationMatrix = new Matrix(2, 2, values[i].rho);
-                for (int j = 0; j < 2; j++)
+                var correlationMatrix = new Matrix(2, 2, values[i].rho);
+                for (var j = 0; j < 2; j++)
                 {
                     correlationMatrix[j, j] = 1.0;
                 }
 
-                StochasticProcessArray process = new StochasticProcessArray(procs, correlationMatrix);
+                var process = new StochasticProcessArray(procs, correlationMatrix);
 
                 //IPricingEngine mcEngine = MakeMCEuropeanBasketEngine<PseudoRandom, Statistics>(process)
                 //                           .withStepsPerYear(1)
@@ -309,13 +309,13 @@ namespace QLNet.Tests
 
                 //IPricingEngine fdEngine = new Fd2dBlackScholesVanillaEngine(p1, p2, values[i].rho, 50, 50, 15);
 
-                BasketOption basketOption = new BasketOption(basketTypeToPayoff(values[i].basketType, payoff), exercise);
+                var basketOption = new BasketOption(basketTypeToPayoff(values[i].basketType, payoff), exercise);
 
                 // analytic engine
                 basketOption.setPricingEngine(analyticEngine);
-                double calculated = basketOption.NPV();
-                double expected = values[i].result;
-                double error = System.Math.Abs(calculated - expected);
+                var calculated = basketOption.NPV();
+                var expected = values[i].result;
+                var error = System.Math.Abs(calculated - expected);
                 if (error > values[i].tol)
                 {
                     REPORT_FAILURE_2("value", values[i].basketType, payoff, exercise,

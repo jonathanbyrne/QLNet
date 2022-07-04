@@ -21,7 +21,7 @@ using QLNet.Math;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Vector
+    [JetBrains.Annotations.PublicAPI] public class T_Vector
     {
         /// <summary>
         /// Sample values.
@@ -34,8 +34,8 @@ namespace QLNet.Tests
         [Fact]
         public void testClone()
         {
-            Vector vector = new Vector(Data);
-            Vector clone = vector.Clone();
+            var vector = new Vector(Data);
+            var clone = vector.Clone();
 
             QAssert.AreNotSame(vector, clone);
             QAssert.AreEqual(vector.Count, clone.Count);
@@ -51,8 +51,8 @@ namespace QLNet.Tests
         [Fact]
         public void testCloneICloneable()
         {
-            Vector vector = new Vector(Data);
-            Vector clone = (Vector)((ICloneable)vector).Clone();
+            var vector = new Vector(Data);
+            var clone = (Vector)((ICloneable)vector).Clone();
 
             QAssert.AreNotSame(vector, clone);
             QAssert.AreEqual(vector.Count, clone.Count);
@@ -67,9 +67,9 @@ namespace QLNet.Tests
         [Fact]
         public void testEquals()
         {
-            Vector vector1 = new Vector(Data);
-            Vector vector2 = new Vector(Data);
-            Vector vector3 = new Vector(4);
+            var vector1 = new Vector(Data);
+            var vector2 = new Vector(Data);
+            var vector3 = new Vector(4);
             QAssert.IsTrue(vector1.Equals(vector1));
             QAssert.IsTrue(vector1.Equals(vector2));
             QAssert.IsFalse(vector1.Equals(vector3));
@@ -83,7 +83,7 @@ namespace QLNet.Tests
         [Fact]
         public void testHashCode()
         {
-            Vector vector = new Vector(Data);
+            var vector = new Vector(Data);
             QAssert.AreEqual(vector.GetHashCode(), vector.GetHashCode());
             QAssert.AreEqual(vector.GetHashCode(),
             new Vector(new List<double>() { 1, 2, 3, 4, 5 }).GetHashCode());

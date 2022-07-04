@@ -41,18 +41,15 @@ namespace QLNet
          return;
       }
 
-      public static double sviTotalVariance(double a, double b, double sigma, double rho, double m, double k)
-      {
-         return a + b * (rho * (k - m) + System.Math.Sqrt((k - m) * (k - m) + sigma* sigma));
-      }
+      public static double sviTotalVariance(double a, double b, double sigma, double rho, double m, double k) => a + b * (rho * (k - m) + System.Math.Sqrt((k - m) * (k - m) + sigma* sigma));
 
       public static double sviVolatility(double strike, double forward, double expiryTime, List<double? > param)
       {
-         List<double> params_ = new List<double>();
-         foreach (double? x in param)
+         var params_ = new List<double>();
+         foreach (var x in param)
             params_.Add(x.Value);
 
-         SviSmileSection sms = new SviSmileSection(expiryTime, forward, params_);
+         var sms = new SviSmileSection(expiryTime, forward, params_);
          return sms.volatility(strike);
       }
    }

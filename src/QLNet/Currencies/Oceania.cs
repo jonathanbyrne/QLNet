@@ -28,7 +28,7 @@ namespace QLNet.Currencies
     //
     //        \ingroup currencies
     //
-    public class AUDCurrency : Currency
+    [JetBrains.Annotations.PublicAPI] public class AUDCurrency : Currency
     {
         public AUDCurrency() : base("Australian dollar", "AUD", 36, "A$", "", 100, new Rounding(), "%3% %1$.2f") { }
     }
@@ -39,7 +39,7 @@ namespace QLNet.Currencies
     //
     //        \ingroup currencies
     //
-    public class NZDCurrency : Currency
+    [JetBrains.Annotations.PublicAPI] public class NZDCurrency : Currency
     {
         public NZDCurrency() : base("New Zealand dollar", "NZD", 554, "NZ$", "", 100, new Rounding(), "%3% %1$.2f") { }
     }

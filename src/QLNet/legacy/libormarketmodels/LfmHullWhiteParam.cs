@@ -26,7 +26,7 @@ using System.Linq;
 
 namespace QLNet.legacy.libormarketmodels
 {
-    public class LfmHullWhiteParameterization : LfmCovarianceParameterization
+    [JetBrains.Annotations.PublicAPI] public class LfmHullWhiteParameterization : LfmCovarianceParameterization
     {
         protected Matrix diffusion_, covariance_;
         protected List<double> fixingTimes_;
@@ -40,7 +40,7 @@ namespace QLNet.legacy.libormarketmodels
             diffusion_ = new Matrix(size_ - 1, factors_);
             fixingTimes_ = process.fixingTimes();
 
-            Matrix sqrtCorr = new Matrix(size_ - 1, factors_, 1.0);
+            var sqrtCorr = new Matrix(size_ - 1, factors_, 1.0);
             if (correlation.empty())
             {
                 Utils.QL_REQUIRE(factors_ == 1, () => "correlation matrix must be given for multi factor models");
@@ -52,43 +52,43 @@ namespace QLNet.legacy.libormarketmodels
 
                 Utils.QL_REQUIRE(factors_ <= size_ - 1, () => "too many factors for given LFM process");
 
-                Matrix tmpSqrtCorr = MatrixUtilitites.pseudoSqrt(correlation,
+                var tmpSqrtCorr = MatrixUtilitites.pseudoSqrt(correlation,
                                                                  MatrixUtilitites.SalvagingAlgorithm.Spectral);
 
                 // reduce to n factor model
                 // "Reconstructing a valid correlation matrix from invalid data"
                 // (<http://www.quarchome.org/correlationmatrix.pdf>)
-                for (int i = 0; i < size_ - 1; ++i)
+                for (var i = 0; i < size_ - 1; ++i)
                 {
                     double d = 0;
                     tmpSqrtCorr.row(i).GetRange(0, factors_).ForEach((ii, vv) => d += vv * tmpSqrtCorr.row(i)[ii]);
-                    for (int k = 0; k < factors_; ++k)
+                    for (var k = 0; k < factors_; ++k)
                     {
                         sqrtCorr[i, k] = tmpSqrtCorr.row(i).GetRange(0, factors_)[k] / System.Math.Sqrt(d);
                     }
                 }
             }
-            List<double> lambda = new List<double>();
-            DayCounter dayCounter = process.index().dayCounter();
-            List<double> fixingTimes = process.fixingTimes();
-            List<Date> fixingDates = process.fixingDates();
+            var lambda = new List<double>();
+            var dayCounter = process.index().dayCounter();
+            var fixingTimes = process.fixingTimes();
+            var fixingDates = process.fixingDates();
 
-            for (int i = 1; i < size_; ++i)
+            for (var i = 1; i < size_; ++i)
             {
-                double cumVar = 0.0;
-                for (int j = 1; j < i; ++j)
+                var cumVar = 0.0;
+                for (var j = 1; j < i; ++j)
                 {
                     cumVar += lambda[i - j - 1] * lambda[i - j - 1]
                                * (fixingTimes[j + 1] - fixingTimes[j]);
                 }
 
-                double vol = capletVol.volatility(fixingDates[i], 0.0, false);
-                double var = vol * vol
-                             * capletVol.dayCounter().yearFraction(fixingDates[0],
-                                                                   fixingDates[i]);
+                var vol = capletVol.volatility(fixingDates[i], 0.0, false);
+                var var = vol * vol
+                              * capletVol.dayCounter().yearFraction(fixingDates[0],
+                                  fixingDates[i]);
                 lambda.Add(System.Math.Sqrt((var - cumVar)
                                      / (fixingTimes[1] - fixingTimes[0])));
-                for (int q = 0; q < factors_; ++q)
+                for (var q = 0; q < factors_; ++q)
                 {
                     diffusion_[i - 1, q] = sqrtCorr[i - 1, q] * lambda.Last();
                 }
@@ -101,19 +101,16 @@ namespace QLNet.legacy.libormarketmodels
            OptionletVolatilityStructure capletVol)
            : this(process, capletVol, new Matrix(), 1) { }
 
-        public override Matrix diffusion(double t)
-        {
-            return diffusion(t, null);
-        }
+        public override Matrix diffusion(double t) => diffusion(t, null);
 
         public override Matrix diffusion(double t, Vector x)
         {
-            Matrix tmp = new Matrix(size_, factors_, 0.0);
-            int m = nextIndexReset(t);
+            var tmp = new Matrix(size_, factors_, 0.0);
+            var m = nextIndexReset(t);
 
-            for (int k = m; k < size_; ++k)
+            for (var k = m; k < size_; ++k)
             {
-                for (int q = 0; q < factors_; ++q)
+                for (var q = 0; q < factors_; ++q)
                 {
                     tmp[k, q] = diffusion_[k - m, q];
                 }
@@ -121,19 +118,16 @@ namespace QLNet.legacy.libormarketmodels
             return tmp;
         }
 
-        public override Matrix covariance(double t)
-        {
-            return covariance(t, null);
-        }
+        public override Matrix covariance(double t) => covariance(t, null);
 
         public override Matrix covariance(double t, Vector x)
         {
-            Matrix tmp = new Matrix(size_, size_, 0.0);
-            int m = nextIndexReset(t);
+            var tmp = new Matrix(size_, size_, 0.0);
+            var m = nextIndexReset(t);
 
-            for (int k = m; k < size_; ++k)
+            for (var k = m; k < size_; ++k)
             {
-                for (int i = m; i < size_; ++i)
+                for (var i = m; i < size_; ++i)
                 {
                     tmp[k, i] = covariance_[k - m, i - m];
                 }
@@ -144,8 +138,8 @@ namespace QLNet.legacy.libormarketmodels
 
         public override Matrix integratedCovariance(double t, Vector x = null)
         {
-            Matrix tmp = new Matrix(size_, size_, 0.0);
-            int last = fixingTimes_.BinarySearch(t);
+            var tmp = new Matrix(size_, size_, 0.0);
+            var last = fixingTimes_.BinarySearch(t);
             if (last < 0)
                 //Lower_bound is a version of binary search: it attempts to find the element value in an ordered range [first, last)
                 // [1]. Specifically, it returns the first position where value could be inserted without violating the ordering.
@@ -153,14 +147,14 @@ namespace QLNet.legacy.libormarketmodels
                 // lower_bound returns the furthermost iterator i in [first, last) such that, for every iterator j in [first, i), *j < value.
                 last = ~last;
 
-            for (int i = 0; i <= last; ++i)
+            for (var i = 0; i <= last; ++i)
             {
-                double dt = (i < last ? fixingTimes_[i + 1] : t)
-                            - fixingTimes_[i];
+                var dt = (i < last ? fixingTimes_[i + 1] : t)
+                         - fixingTimes_[i];
 
-                for (int k = i; k < size_ - 1; ++k)
+                for (var k = i; k < size_ - 1; ++k)
                 {
-                    for (int l = i; l < size_ - 1; ++l)
+                    for (var l = i; l < size_ - 1; ++l)
                     {
                         tmp[k + 1, l + 1] += covariance_[k - i, l - i] * dt;
                     }
@@ -171,7 +165,7 @@ namespace QLNet.legacy.libormarketmodels
 
         protected int nextIndexReset(double t)
         {
-            int result = fixingTimes_.BinarySearch(t);
+            var result = fixingTimes_.BinarySearch(t);
             if (result < 0)
                 // The upper_bound() algorithm finds the last position in a sequence that value can occupy
                 // without violating the sequence's ordering

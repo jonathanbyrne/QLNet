@@ -2,7 +2,7 @@
 
 namespace QLNet.Exceptions
 {
-    public class NotTradableException : Exception
+    [JetBrains.Annotations.PublicAPI] public class NotTradableException : Exception
     {
         public NotTradableException()
         {

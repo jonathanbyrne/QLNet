@@ -23,7 +23,7 @@ namespace QLNet.Math
     //! transformed grid
     /*! This package encapuslates an array of grid points.  It is used primarily in PDE calculations.
     */
-    public class TransformedGrid
+    [JetBrains.Annotations.PublicAPI] public class TransformedGrid
     {
         protected Vector grid_;
         protected Vector transformedGrid_;
@@ -31,11 +31,15 @@ namespace QLNet.Math
         protected Vector dxp_;
         protected Vector dx_;
 
-        public Vector gridArray() { return grid_; }
-        public Vector transformedGridArray() { return transformedGrid_; }
-        public Vector dxmArray() { return dxm_; }
-        public Vector dxpArray() { return dxp_; }
-        public Vector dxArray() { return dx_; }
+        public Vector gridArray() => grid_;
+
+        public Vector transformedGridArray() => transformedGrid_;
+
+        public Vector dxmArray() => dxm_;
+
+        public Vector dxpArray() => dxp_;
+
+        public Vector dxArray() => dx_;
 
         public TransformedGrid(Vector grid)
         {
@@ -45,7 +49,7 @@ namespace QLNet.Math
             dxp_ = new Vector(grid.size());
             dx_ = new Vector(grid.size());
 
-            for (int i = 1; i < transformedGrid_.size() - 1; i++)
+            for (var i = 1; i < transformedGrid_.size() - 1; i++)
             {
                 dxm_[i] = transformedGrid_[i] - transformedGrid_[i - 1];
                 dxp_[i] = transformedGrid_[i + 1] - transformedGrid_[i];
@@ -61,10 +65,10 @@ namespace QLNet.Math
             dxp_ = new Vector(grid.size());
             dx_ = new Vector(grid.size());
 
-            for (int i = 0; i < grid.size(); i++)
+            for (var i = 0; i < grid.size(); i++)
                 transformedGrid_[i] = func(grid_[i]);
 
-            for (int i = 1; i < transformedGrid_.size() - 1; i++)
+            for (var i = 1; i < transformedGrid_.size() - 1; i++)
             {
                 dxm_[i] = transformedGrid_[i] - transformedGrid_[i - 1];
                 dxp_[i] = transformedGrid_[i + 1] - transformedGrid_[i];
@@ -72,19 +76,25 @@ namespace QLNet.Math
             }
         }
 
-        public double grid(int i) { return grid_[i]; }
-        public double transformedGrid(int i) { return transformedGrid_[i]; }
-        public double dxm(int i) { return dxm_[i]; }
-        public double dxp(int i) { return dxp_[i]; }
-        public double dx(int i) { return dx_[i]; }
-        public int size() { return grid_.size(); }
+        public double grid(int i) => grid_[i];
+
+        public double transformedGrid(int i) => transformedGrid_[i];
+
+        public double dxm(int i) => dxm_[i];
+
+        public double dxp(int i) => dxp_[i];
+
+        public double dx(int i) => dx_[i];
+
+        public int size() => grid_.size();
     }
 
-    public class LogGrid : TransformedGrid
+    [JetBrains.Annotations.PublicAPI] public class LogGrid : TransformedGrid
     {
         public LogGrid(Vector grid) : base(grid, System.Math.Log) { }
 
-        public Vector logGridArray() { return transformedGridArray(); }
-        public double logGrid(int i) { return transformedGrid(i); }
+        public Vector logGridArray() => transformedGridArray();
+
+        public double logGrid(int i) => transformedGrid(i);
     }
 }

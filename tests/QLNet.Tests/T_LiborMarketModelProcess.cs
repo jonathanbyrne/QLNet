@@ -38,7 +38,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_LiborMarketModelProcess : IDisposable
+    [JetBrains.Annotations.PublicAPI] public class T_LiborMarketModelProcess : IDisposable
     {
         #region Initialize&Cleanup
         private SavedSettings backup;
@@ -59,19 +59,19 @@ namespace QLNet.Tests
         IborIndex makeIndex()
         {
             DayCounter dayCounter = new Actual360();
-            List<Date> dates = new List<Date>();
-            List<double> rates = new List<double>();
+            var dates = new List<Date>();
+            var rates = new List<double>();
             dates.Add(new Date(4, 9, 2005));
             dates.Add(new Date(4, 9, 2018));
             rates.Add(0.01);
             rates.Add(0.08);
-            Linear Interpolator = new Linear();
-            RelinkableHandle<YieldTermStructure> termStructure = new RelinkableHandle<YieldTermStructure>();
+            var Interpolator = new Linear();
+            var termStructure = new RelinkableHandle<YieldTermStructure>();
             //termStructure.linkTo(new InterpolatedZeroCurve<Linear>(dates, rates, dayCounter, Interpolator));
 
             IborIndex index = new Euribor1Y(termStructure);
 
-            Date todaysDate =
+            var todaysDate =
                index.fixingCalendar().adjust(new Date(4, 9, 2005));
             Settings.setEvaluationDate(todaysDate);
 
@@ -90,11 +90,11 @@ namespace QLNet.Tests
                           15.78, 15.40, 15.21, 14.86, 14.54
                          };
 
-            List<Date> dates = new List<Date>();
-            List<double> capletVols = new List<double>();
-            LiborForwardModelProcess process = new LiborForwardModelProcess(len + 1, makeIndex(), null);
+            var dates = new List<Date>();
+            var capletVols = new List<double>();
+            var process = new LiborForwardModelProcess(len + 1, makeIndex(), null);
 
-            for (int i = 0; i < len; ++i)
+            for (var i = 0; i < len; ++i)
             {
                 capletVols.Add(vols[i] / 100);
                 dates.Add(process.fixingDates()[i + 1]);
@@ -106,16 +106,16 @@ namespace QLNet.Tests
 
         LiborForwardModelProcess makeProcess()
         {
-            Matrix volaComp = new Matrix();
+            var volaComp = new Matrix();
             return makeProcess(volaComp);
         }
 
         LiborForwardModelProcess makeProcess(Matrix volaComp)
         {
-            int factors = volaComp.empty() ? 1 : volaComp.columns();
+            var factors = volaComp.empty() ? 1 : volaComp.columns();
 
-            IborIndex index = makeIndex();
-            LiborForwardModelProcess process = new LiborForwardModelProcess(len, index, null);
+            var index = makeIndex();
+            var process = new LiborForwardModelProcess(len, index, null);
 
             LfmCovarianceParameterization fct = new LfmHullWhiteParameterization(
                process,
@@ -132,7 +132,7 @@ namespace QLNet.Tests
         {
             // Testing caplet LMM process initialisation
             DayCounter dayCounter = new Actual360();
-            RelinkableHandle<YieldTermStructure> termStructure = new RelinkableHandle<YieldTermStructure>();
+            var termStructure = new RelinkableHandle<YieldTermStructure>();
             termStructure.linkTo(Utilities.flatRate(Date.Today, 0.04, dayCounter));
 
             IborIndex index = new Euribor6M(termStructure);
@@ -143,25 +143,25 @@ namespace QLNet.Tests
                0.2,
                termStructure.currentLink().dayCounter());
 
-            Calendar calendar = index.fixingCalendar();
+            var calendar = index.fixingCalendar();
 
-            for (int daysOffset = 0; daysOffset < 1825 /* 5 year*/; daysOffset += 8)
+            for (var daysOffset = 0; daysOffset < 1825 /* 5 year*/; daysOffset += 8)
             {
-                Date todaysDate = calendar.adjust(Date.Today + daysOffset);
+                var todaysDate = calendar.adjust(Date.Today + daysOffset);
                 Settings.setEvaluationDate(todaysDate);
-                Date settlementDate =
+                var settlementDate =
                    calendar.advance(todaysDate, index.fixingDays(), TimeUnit.Days);
 
                 termStructure.linkTo(Utilities.flatRate(settlementDate, 0.04, dayCounter));
 
-                LiborForwardModelProcess process = new LiborForwardModelProcess(60, index);
+                var process = new LiborForwardModelProcess(60, index);
 
-                List<double> fixings = process.fixingTimes();
-                for (int i = 1; i < fixings.Count - 1; ++i)
+                var fixings = process.fixingTimes();
+                for (var i = 1; i < fixings.Count - 1; ++i)
                 {
-                    int ileft = process.nextIndexReset(fixings[i] - 0.000001);
-                    int iright = process.nextIndexReset(fixings[i] + 0.000001);
-                    int ii = process.nextIndexReset(fixings[i]);
+                    var ileft = process.nextIndexReset(fixings[i] - 0.000001);
+                    var iright = process.nextIndexReset(fixings[i] + 0.000001);
+                    var ii = process.nextIndexReset(fixings[i]);
 
                     if (ileft != i || iright != i + 1 || ii != i + 1)
                     {
@@ -176,19 +176,19 @@ namespace QLNet.Tests
         public void testLambdaBootstrapping()
         {
             // Testing caplet LMM lambda bootstrapping
-            double tolerance = 1e-10;
+            var tolerance = 1e-10;
             double[] lambdaExpected = {14.3010297550, 19.3821411939, 15.9816590141,
                                     15.9953118303, 14.0570815635, 13.5687599894,
                                     12.7477197786, 13.7056638165, 11.6191989567
                                    };
 
-            LiborForwardModelProcess process = makeProcess();
-            Matrix covar = process.covariance(0.0, null, 1.0);
+            var process = makeProcess();
+            var covar = process.covariance(0.0, null, 1.0);
 
-            for (int i = 0; i < 9; ++i)
+            for (var i = 0; i < 9; ++i)
             {
-                double calculated = System.Math.Sqrt(covar[i + 1, i + 1]);
-                double expected = lambdaExpected[i] / 100;
+                var calculated = System.Math.Sqrt(covar[i + 1, i + 1]);
+                var expected = lambdaExpected[i] / 100;
 
                 if (System.Math.Abs(calculated - expected) > tolerance)
                     QAssert.Fail("Failed to reproduce expected lambda values"
@@ -196,20 +196,20 @@ namespace QLNet.Tests
                                  + "\n    expected:   " + expected);
             }
 
-            LfmCovarianceParameterization param = process.covarParam();
+            var param = process.covarParam();
 
-            List<double> tmp = process.fixingTimes();
-            TimeGrid grid = new TimeGrid(tmp.Last(), 14);
+            var tmp = process.fixingTimes();
+            var grid = new TimeGrid(tmp.Last(), 14);
 
-            for (int t = 0; t < grid.size(); ++t)
+            for (var t = 0; t < grid.size(); ++t)
             {
                 //verifier la presence du null
-                Matrix diff = param.integratedCovariance(grid[t])
-                              - param.integratedCovariance(grid[t]);
+                var diff = param.integratedCovariance(grid[t])
+                           - param.integratedCovariance(grid[t]);
 
-                for (int i = 0; i < diff.rows(); ++i)
+                for (var i = 0; i < diff.rows(); ++i)
                 {
-                    for (int j = 0; j < diff.columns(); ++j)
+                    for (var j = 0; j < diff.columns(); ++j)
                     {
                         if (System.Math.Abs(diff[i, j]) > tolerance)
                         {
@@ -241,25 +241,25 @@ namespace QLNet.Tests
                                 0.85549771, -0.46707264, 0.22353259
                                };
 
-            Matrix volaComp = new Matrix(9, 3);
+            var volaComp = new Matrix(9, 3);
             List<double> lcompValues = new InitializedList<double>(27, 0);
             List<double> ltemp = new InitializedList<double>(3, 0);
             lcompValues = compValues.ToList();
             //std::copy(compValues, compValues+9*3, volaComp.begin());
-            for (int i = 0; i < 9; i++)
+            for (var i = 0; i < 9; i++)
             {
                 ltemp = lcompValues.GetRange(3 * i, 3);
-                for (int j = 0; j < 3; j++)
+                for (var j = 0; j < 3; j++)
                     volaComp[i, j] = ltemp[j];
             }
-            LiborForwardModelProcess process1 = makeProcess();
-            LiborForwardModelProcess process2 = makeProcess(volaComp);
+            var process1 = makeProcess();
+            var process2 = makeProcess(volaComp);
 
-            List<double> tmp = process1.fixingTimes();
-            TimeGrid grid = new TimeGrid(tmp, tmp.Count, 12);
+            var tmp = process1.fixingTimes();
+            var grid = new TimeGrid(tmp, tmp.Count, 12);
 
-            List<int> location = new List<int>();
-            for (int i = 0; i < tmp.Count; ++i)
+            var location = new List<int>();
+            for (var i = 0; i < tmp.Count; ++i)
             {
                 location.Add(grid.index(tmp[i]));
             }
@@ -269,54 +269,54 @@ namespace QLNet.Tests
 
             ulong seed = 42;
             LowDiscrepancy.icInstance = new InverseCumulativeNormal();
-            IRNG rsg1 = new LowDiscrepancy().make_sequence_generator(
+            var rsg1 = new LowDiscrepancy().make_sequence_generator(
                            process1.factors() * (grid.size() - 1), seed);
-            IRNG rsg2 = new LowDiscrepancy().make_sequence_generator(
+            var rsg2 = new LowDiscrepancy().make_sequence_generator(
                            process2.factors() * (grid.size() - 1), seed);
 
-            MultiPathGenerator<IRNG> generator1 = new MultiPathGenerator<IRNG>(process1, grid, rsg1, false);
-            MultiPathGenerator<IRNG> generator2 = new MultiPathGenerator<IRNG>(process2, grid, rsg2, false);
+            var generator1 = new MultiPathGenerator<IRNG>(process1, grid, rsg1, false);
+            var generator2 = new MultiPathGenerator<IRNG>(process2, grid, rsg2, false);
 
             const int nrTrails = 250000;
             List<GeneralStatistics> stat1 = new InitializedList<GeneralStatistics>(process1.size());
             List<GeneralStatistics> stat2 = new InitializedList<GeneralStatistics>(process2.size());
             List<GeneralStatistics> stat3 = new InitializedList<GeneralStatistics>(process2.size() - 1);
-            for (int i = 0; i < nrTrails; ++i)
+            for (var i = 0; i < nrTrails; ++i)
             {
-                Sample<IPath> path1 = generator1.next();
-                Sample<IPath> path2 = generator2.next();
-                MultiPath value1 = path1.value as MultiPath;
+                var path1 = generator1.next();
+                var path2 = generator2.next();
+                var value1 = path1.value as MultiPath;
                 Utils.QL_REQUIRE(value1 != null, () => "Invalid Path");
-                MultiPath value2 = path2.value as MultiPath;
+                var value2 = path2.value as MultiPath;
                 Utils.QL_REQUIRE(value2 != null, () => "Invalid Path");
 
                 List<double> rates1 = new InitializedList<double>(len);
                 List<double> rates2 = new InitializedList<double>(len);
-                for (int j = 0; j < process1.size(); ++j)
+                for (var j = 0; j < process1.size(); ++j)
                 {
                     rates1[j] = value1[j][location[j]];
                     rates2[j] = value2[j][location[j]];
                 }
 
-                List<double> dis1 = process1.discountBond(rates1);
-                List<double> dis2 = process2.discountBond(rates2);
+                var dis1 = process1.discountBond(rates1);
+                var dis2 = process2.discountBond(rates2);
 
-                for (int k = 0; k < process1.size(); ++k)
+                for (var k = 0; k < process1.size(); ++k)
                 {
-                    double accrualPeriod = process1.accrualEndTimes()[k]
-                                            - process1.accrualStartTimes()[k];
+                    var accrualPeriod = process1.accrualEndTimes()[k]
+                                        - process1.accrualStartTimes()[k];
                     // caplet payoff function, cap rate at 4%
-                    double payoff1 = System.Math.Max(rates1[k] - 0.04, 0.0) * accrualPeriod;
+                    var payoff1 = System.Math.Max(rates1[k] - 0.04, 0.0) * accrualPeriod;
 
-                    double payoff2 = System.Math.Max(rates2[k] - 0.04, 0.0) * accrualPeriod;
+                    var payoff2 = System.Math.Max(rates2[k] - 0.04, 0.0) * accrualPeriod;
                     stat1[k].add(dis1[k] * payoff1);
                     stat2[k].add(dis2[k] * payoff2);
 
                     if (k != 0)
                     {
                         // ratchet cap payoff function
-                        double payoff3 = System.Math.Max(rates2[k] - (rates2[k - 1] + 0.0025), 0.0)
-                                          * accrualPeriod;
+                        var payoff3 = System.Math.Max(rates2[k] - (rates2[k - 1] + 0.0025), 0.0)
+                                      * accrualPeriod;
                         stat3[k - 1].add(dis2[k] * payoff3);
                     }
                 }
@@ -334,12 +334,12 @@ namespace QLNet.Tests
                                 0.0084173270, 0.0081803406, 0.0079533814
                                };
 
-            for (int k = 0; k < process1.size(); ++k)
+            for (var k = 0; k < process1.size(); ++k)
             {
 
-                double calculated1 = stat1[k].mean();
-                double tolerance1 = stat1[k].errorEstimate();
-                double expected = capletNpv[k];
+                var calculated1 = stat1[k].mean();
+                var tolerance1 = stat1[k].errorEstimate();
+                var expected = capletNpv[k];
 
                 if (System.Math.Abs(calculated1 - expected) > tolerance1)
                 {
@@ -349,8 +349,8 @@ namespace QLNet.Tests
                                  + "\n    expected:   " + expected);
                 }
 
-                double calculated2 = stat2[k].mean();
-                double tolerance2 = stat2[k].errorEstimate();
+                var calculated2 = stat2[k].mean();
+                var tolerance2 = stat2[k].errorEstimate();
 
                 if (System.Math.Abs(calculated2 - expected) > tolerance2)
                 {
@@ -362,11 +362,11 @@ namespace QLNet.Tests
 
                 if (k != 0)
                 {
-                    double calculated3 = stat3[k - 1].mean();
-                    double tolerance3 = stat3[k - 1].errorEstimate();
+                    var calculated3 = stat3[k - 1].mean();
+                    var tolerance3 = stat3[k - 1].errorEstimate();
                     expected = ratchetNpv[k - 1];
 
-                    double refError = 1e-5; // 1e-5. error bars of the reference values
+                    var refError = 1e-5; // 1e-5. error bars of the reference values
 
                     if (System.Math.Abs(calculated3 - expected) > tolerance3 + refError)
                     {

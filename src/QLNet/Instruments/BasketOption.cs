@@ -31,57 +31,36 @@ namespace QLNet.Instruments
             basePayoff_ = p;
         }
 
-        public override string name()
-        {
-            return basePayoff_.name();
-        }
+        public override string name() => basePayoff_.name();
 
-        public override string description()
-        {
-            return basePayoff_.description();
-        }
+        public override string description() => basePayoff_.description();
 
-        public override double value(double price)
-        {
-            return basePayoff_.value(price);
-        }
+        public override double value(double price) => basePayoff_.value(price);
 
-        public virtual double value(Vector a)
-        {
-            return basePayoff_.value(accumulate(a));
-        }
+        public virtual double value(Vector a) => basePayoff_.value(accumulate(a));
 
         public abstract double accumulate(Vector a);
 
-        public Payoff basePayoff()
-        {
-            return basePayoff_;
-        }
+        public Payoff basePayoff() => basePayoff_;
     }
 
-    public class MinBasketPayoff : BasketPayoff
+    [JetBrains.Annotations.PublicAPI] public class MinBasketPayoff : BasketPayoff
     {
         public MinBasketPayoff(Payoff p) : base(p)
         { }
 
-        public override double accumulate(Vector a)
-        {
-            return a.Min();
-        }
+        public override double accumulate(Vector a) => a.Min();
     }
 
-    public class MaxBasketPayoff : BasketPayoff
+    [JetBrains.Annotations.PublicAPI] public class MaxBasketPayoff : BasketPayoff
     {
         public MaxBasketPayoff(Payoff p) : base(p)
         { }
 
-        public override double accumulate(Vector a)
-        {
-            return a.Max();
-        }
+        public override double accumulate(Vector a) => a.Max();
     }
 
-    public class AverageBasketPayoff : BasketPayoff
+    [JetBrains.Annotations.PublicAPI] public class AverageBasketPayoff : BasketPayoff
     {
         public AverageBasketPayoff(Payoff p, Vector a) : base(p)
         {
@@ -95,14 +74,14 @@ namespace QLNet.Instruments
 
         public override double accumulate(Vector a)
         {
-            double tally = weights_ * a;
+            var tally = weights_ * a;
             return tally;
         }
 
         private Vector weights_;
     }
 
-    public class SpreadBasketPayoff : BasketPayoff
+    [JetBrains.Annotations.PublicAPI] public class SpreadBasketPayoff : BasketPayoff
     {
         public SpreadBasketPayoff(Payoff p)
            : base(p)
@@ -117,7 +96,7 @@ namespace QLNet.Instruments
 
     //! Basket option on a number of assets
     //! \ingroup instruments
-    public class BasketOption : MultiAssetOption
+    [JetBrains.Annotations.PublicAPI] public class BasketOption : MultiAssetOption
     {
         public new class Engine : GenericEngine<Arguments, Results>
         { }

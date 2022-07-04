@@ -36,7 +36,7 @@ namespace QLNet.Pricingengines.Forward
         - the correctness of the returned greeks is tested by
           reproducing numerical derivatives.
     */
-    public class ForwardVanillaEngine : GenericEngine<ForwardVanillaOption.Arguments, OneAssetOption.Results>
+    [JetBrains.Annotations.PublicAPI] public class ForwardVanillaEngine : GenericEngine<ForwardVanillaOption.Arguments, OneAssetOption.Results>
     {
 
         public delegate IPricingEngine GetOriginalEngine(GeneralizedBlackScholesProcess process);
@@ -56,7 +56,7 @@ namespace QLNet.Pricingengines.Forward
 
         protected void setup()
         {
-            StrikedTypePayoff argumentsPayoff = arguments_.payoff as StrikedTypePayoff;
+            var argumentsPayoff = arguments_.payoff as StrikedTypePayoff;
             Utils.QL_REQUIRE(argumentsPayoff != null, () => "wrong payoff given");
 
             StrikedTypePayoff payoff = new PlainVanillaPayoff(argumentsPayoff.optionType(),
@@ -65,21 +65,21 @@ namespace QLNet.Pricingengines.Forward
             // maybe the forward value is "better", in some fashion
             // the right level is needed in order to interpolate
             // the vol
-            Handle<Quote> spot = process_.stateVariable();
+            var spot = process_.stateVariable();
             Utils.QL_REQUIRE(spot.link.value() >= 0.0, () => "negative or null underlting given");
-            Handle<YieldTermStructure> dividendYield = new Handle<YieldTermStructure>(
+            var dividendYield = new Handle<YieldTermStructure>(
                new ImpliedTermStructure(process_.dividendYield(), arguments_.resetDate));
-            Handle<YieldTermStructure> riskFreeRate = new Handle<YieldTermStructure>(
+            var riskFreeRate = new Handle<YieldTermStructure>(
                new ImpliedTermStructure(process_.riskFreeRate(), arguments_.resetDate));
             // The following approach is ok if the vol is at most
             // time dependant. It is plain wrong if it is asset dependant.
             // In the latter case the right solution would be stochastic
             // volatility or at least local volatility (which unfortunately
             // implies an unrealistic time-decreasing smile)
-            Handle<BlackVolTermStructure> blackVolatility = new Handle<BlackVolTermStructure>(
+            var blackVolatility = new Handle<BlackVolTermStructure>(
                new ImpliedVolTermStructure(process_.blackVolatility(), arguments_.resetDate));
 
-            GeneralizedBlackScholesProcess fwdProcess = new GeneralizedBlackScholesProcess(spot, dividendYield,
+            var fwdProcess = new GeneralizedBlackScholesProcess(spot, dividendYield,
                                                                                            riskFreeRate, blackVolatility);
 
 
@@ -87,9 +87,9 @@ namespace QLNet.Pricingengines.Forward
             originalEngine_.reset();
 
             originalArguments_ = originalEngine_.getArguments() as QLNet.Option.Arguments;
-            Utils.QL_REQUIRE(originalArguments_ != null, () => "wrong engine type");
+            Utils.QL_REQUIRE(originalArguments_ != null, () => "wrong engine ExerciseType");
             originalResults_ = originalEngine_.getResults() as OneAssetOption.Results;
-            Utils.QL_REQUIRE(originalResults_ != null, () => "wrong engine type");
+            Utils.QL_REQUIRE(originalResults_ != null, () => "wrong engine ExerciseType");
 
             originalArguments_.payoff = payoff;
             originalArguments_.exercise = arguments_.exercise;
@@ -100,10 +100,10 @@ namespace QLNet.Pricingengines.Forward
 
         protected virtual void getOriginalResults()
         {
-            DayCounter rfdc = process_.riskFreeRate().link.dayCounter();
-            DayCounter divdc = process_.dividendYield().link.dayCounter();
-            double resetTime = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(), arguments_.resetDate);
-            double discQ = process_.dividendYield().link.discount(arguments_.resetDate);
+            var rfdc = process_.riskFreeRate().link.dayCounter();
+            var divdc = process_.dividendYield().link.dayCounter();
+            var resetTime = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(), arguments_.resetDate);
+            var discQ = process_.dividendYield().link.discount(arguments_.resetDate);
 
             results_.value = discQ * originalResults_.value;
             // I need the strike derivative here ...

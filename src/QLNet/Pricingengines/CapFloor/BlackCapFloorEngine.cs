@@ -32,7 +32,7 @@ namespace QLNet.Pricingengines.CapFloor
     /// Black-formula cap/floor engine
     /// \ingroup capfloorengines
     /// </summary>
-    public class BlackCapFloorEngine : CapFloorEngine
+    [JetBrains.Annotations.PublicAPI] public class BlackCapFloorEngine : CapFloorEngine
     {
         private Handle<YieldTermStructure> discountCurve_;
         private Handle<OptionletVolatilityStructure> vol_;
@@ -69,37 +69,37 @@ namespace QLNet.Pricingengines.CapFloor
 
         public override void calculate()
         {
-            double value = 0.0;
-            double vega = 0.0;
-            int optionlets = arguments_.startDates.Count;
+            var value = 0.0;
+            var vega = 0.0;
+            var optionlets = arguments_.startDates.Count;
             List<double> values = new InitializedList<double>(optionlets);
             List<double> vegas = new InitializedList<double>(optionlets);
             List<double> stdDevs = new InitializedList<double>(optionlets);
-            CapFloorType type = arguments_.type;
-            Date today = vol_.link.referenceDate();
-            Date settlement = discountCurve_.link.referenceDate();
+            var type = arguments_.type;
+            var today = vol_.link.referenceDate();
+            var settlement = discountCurve_.link.referenceDate();
 
-            for (int i = 0; i < optionlets; ++i)
+            for (var i = 0; i < optionlets; ++i)
             {
-                Date paymentDate = arguments_.endDates[i];
+                var paymentDate = arguments_.endDates[i];
                 if (paymentDate > settlement)
                 {
                     // discard expired caplets
-                    double d = arguments_.nominals[i] *
-                               arguments_.gearings[i] *
-                               discountCurve_.link.discount(paymentDate) *
-                               arguments_.accrualTimes[i];
+                    var d = arguments_.nominals[i] *
+                            arguments_.gearings[i] *
+                            discountCurve_.link.discount(paymentDate) *
+                            arguments_.accrualTimes[i];
 
-                    double? forward = arguments_.forwards[i];
+                    var forward = arguments_.forwards[i];
 
-                    Date fixingDate = arguments_.fixingDates[i];
-                    double sqrtTime = 0.0;
+                    var fixingDate = arguments_.fixingDates[i];
+                    var sqrtTime = 0.0;
                     if (fixingDate > today)
                         sqrtTime = System.Math.Sqrt(vol_.link.timeFromReference(fixingDate));
 
                     if (type == CapFloorType.Cap || type == CapFloorType.Collar)
                     {
-                        double? strike = arguments_.capRates[i];
+                        var strike = arguments_.capRates[i];
                         if (sqrtTime > 0.0)
                         {
                             stdDevs[i] = System.Math.Sqrt(vol_.link.blackVariance(fixingDate, strike.Value));
@@ -111,15 +111,15 @@ namespace QLNet.Pricingengines.CapFloor
                     }
                     if (type == CapFloorType.Floor || type == CapFloorType.Collar)
                     {
-                        double? strike = arguments_.floorRates[i];
-                        double floorletVega = 0.0;
+                        var strike = arguments_.floorRates[i];
+                        var floorletVega = 0.0;
 
                         if (sqrtTime > 0.0)
                         {
                             stdDevs[i] = System.Math.Sqrt(vol_.link.blackVariance(fixingDate, strike.Value));
                             floorletVega = Utils.blackFormulaStdDevDerivative(strike.Value, forward.Value, stdDevs[i], d, displacement_) * sqrtTime;
                         }
-                        double floorlet = Utils.blackFormula(QLNet.Option.Type.Put, strike.Value,
+                        var floorlet = Utils.blackFormula(QLNet.Option.Type.Put, strike.Value,
                                                              forward.Value, stdDevs[i], d, displacement_);
                         if (type == CapFloorType.Floor)
                         {
@@ -147,8 +147,10 @@ namespace QLNet.Pricingengines.CapFloor
                 results_.additionalResults["optionletsStdDev"] = stdDevs;
         }
 
-        public Handle<YieldTermStructure> termStructure() { return discountCurve_; }
-        public Handle<OptionletVolatilityStructure> volatility() { return vol_; }
-        public double displacement() { return displacement_; }
+        public Handle<YieldTermStructure> termStructure() => discountCurve_;
+
+        public Handle<OptionletVolatilityStructure> volatility() => vol_;
+
+        public double displacement() => displacement_;
     }
 }

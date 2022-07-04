@@ -30,7 +30,7 @@ using QLNet.Time.Calendars;
 namespace QLNet.Termstructures.Volatility.equityfx
 {
     //! Black volatility surface backed by Heston model
-    public class HestonBlackVolSurface : BlackVolTermStructure
+    [JetBrains.Annotations.PublicAPI] public class HestonBlackVolSurface : BlackVolTermStructure
     {
         private Handle<HestonModel> hestonModel_;
         private AnalyticHestonEngine.Integration integration_;
@@ -47,52 +47,40 @@ namespace QLNet.Termstructures.Volatility.equityfx
             hestonModel_.registerWith(update);
         }
 
-        public override Date maxDate()
-        {
-            return Date.maxDate();
-        }
+        public override Date maxDate() => Date.maxDate();
 
-        public override double maxStrike()
-        {
-            return double.MaxValue;
-        }
+        public override double maxStrike() => double.MaxValue;
 
-        public override double minStrike()
-        {
-            return 0.0;
-        }
+        public override double minStrike() => 0.0;
 
-        protected override double blackVarianceImpl(double t, double strike)
-        {
-            return System.Math.Pow(blackVolImpl(t, strike), 2.0) * t;
-        }
+        protected override double blackVarianceImpl(double t, double strike) => System.Math.Pow(blackVolImpl(t, strike), 2.0) * t;
 
         protected override double blackVolImpl(double t, double strike)
         {
-            HestonProcess process = hestonModel_.link.process();
+            var process = hestonModel_.link.process();
 
-            double df = process.riskFreeRate().link.discount(t, true);
-            double div = process.dividendYield().link.discount(t, true);
-            double spotPrice = process.s0().link.value();
+            var df = process.riskFreeRate().link.discount(t, true);
+            var div = process.dividendYield().link.discount(t, true);
+            var spotPrice = process.s0().link.value();
 
-            double fwd = spotPrice
-                         * process.dividendYield().link.discount(t, true)
-                         / process.riskFreeRate().link.discount(t, true);
+            var fwd = spotPrice
+                      * process.dividendYield().link.discount(t, true)
+                      / process.riskFreeRate().link.discount(t, true);
 
             var payoff = new PlainVanillaPayoff(fwd > strike ? QLNet.Option.Type.Put : QLNet.Option.Type.Call, strike);
 
-            double kappa = hestonModel_.link.kappa();
-            double theta = hestonModel_.link.theta();
-            double rho = hestonModel_.link.rho();
-            double sigma = hestonModel_.link.sigma();
-            double v0 = hestonModel_.link.v0();
+            var kappa = hestonModel_.link.kappa();
+            var theta = hestonModel_.link.theta();
+            var rho = hestonModel_.link.rho();
+            var sigma = hestonModel_.link.sigma();
+            var v0 = hestonModel_.link.v0();
 
-            AnalyticHestonEngine.ComplexLogFormula cpxLogFormula = AnalyticHestonEngine.ComplexLogFormula.Gatheral;
+            var cpxLogFormula = AnalyticHestonEngine.ComplexLogFormula.Gatheral;
 
             AnalyticHestonEngine hestonEnginePtr = null;
 
             double? npv = null;
-            int evaluations = 0;
+            var evaluations = 0;
 
             AnalyticHestonEngine.doCalculation(
                df, div, spotPrice, strike, t,
@@ -103,10 +91,10 @@ namespace QLNet.Termstructures.Volatility.equityfx
             if (npv <= 0.0)
                 return System.Math.Sqrt(theta);
 
-            Brent solver = new Brent();
+            var solver = new Brent();
             solver.setMaxEvaluations(10000);
-            double guess = System.Math.Sqrt(theta);
-            double accuracy = Const.QL_EPSILON;
+            var guess = System.Math.Sqrt(theta);
+            var accuracy = Const.QL_EPSILON;
 
             var f = new ImpliedVolHelper(payoff.optionType(), strike, fwd, t, df, npv.Value);
 
@@ -134,19 +122,14 @@ namespace QLNet.Termstructures.Volatility.equityfx
                 targetValue_ = targetValue;
             }
 
-            public override double value(double x)
-            {
-                return blackValue(optionType_, strike_, forward_, maturity_, x, discount_, targetValue_);
-            }
+            public override double value(double x) => blackValue(optionType_, strike_, forward_, maturity_, x, discount_, targetValue_);
 
             private double blackValue(Option.Type optionType, double strike,
                                       double forward, double maturity,
-                                      double vol, double discount, double npv)
-            {
-                return Utils.blackFormula(optionType, strike, forward,
-                                          System.Math.Max(0.0, vol) * System.Math.Sqrt(maturity),
-                                          discount) - npv;
-            }
+                                      double vol, double discount, double npv) =>
+                Utils.blackFormula(optionType, strike, forward,
+                    System.Math.Max(0.0, vol) * System.Math.Sqrt(maturity),
+                    discount) - npv;
         }
     }
 }

@@ -35,7 +35,7 @@ namespace QLNet.Termstructures.Yield
     /*! \warning This class assumes that the reference date
                  does not change between calls of setTermStructure().
     */
-    public class BondHelper : RateHelper
+    [JetBrains.Annotations.PublicAPI] public class BondHelper : RateHelper
     {
         /*! \warning Setting a pricing engine to the passed bond from
                      external code will cause the bootstrap to fail or
@@ -79,8 +79,9 @@ namespace QLNet.Termstructures.Yield
                 return bond_.dirtyPrice();
         }
 
-        public Bond bond() { return bond_; }
-        public bool useCleanPrice() { return useCleanPrice_; }
+        public Bond bond() => bond_;
+
+        public bool useCleanPrice() => useCleanPrice_;
 
         protected Bond bond_;
         protected RelinkableHandle<YieldTermStructure> termStructureHandle_;
@@ -89,7 +90,7 @@ namespace QLNet.Termstructures.Yield
     }
 
     //! Fixed-coupon bond helper for curve bootstrap
-    public class FixedRateBondHelper : BondHelper
+    [JetBrains.Annotations.PublicAPI] public class FixedRateBondHelper : BondHelper
     {
         public FixedRateBondHelper(Handle<Quote> price,
                                    int settlementDays,
@@ -115,12 +116,13 @@ namespace QLNet.Termstructures.Yield
             fixedRateBond_ = bond_ as FixedRateBond;
         }
 
-        public FixedRateBond fixedRateBond() { return fixedRateBond_; }
+        public FixedRateBond fixedRateBond() => fixedRateBond_;
+
         protected FixedRateBond fixedRateBond_;
     }
 
     //! CPI bond helper for curve bootstrap
-    public class CPIBondHelper : BondHelper
+    [JetBrains.Annotations.PublicAPI] public class CPIBondHelper : BondHelper
     {
         public CPIBondHelper(Handle<Quote> price,
                              int settlementDays,
@@ -150,7 +152,8 @@ namespace QLNet.Termstructures.Yield
             cpiBond_ = bond_ as CPIBond;
         }
 
-        public CPIBond cpiBond() { return cpiBond_; }
+        public CPIBond cpiBond() => cpiBond_;
+
         protected CPIBond cpiBond_;
 
     }

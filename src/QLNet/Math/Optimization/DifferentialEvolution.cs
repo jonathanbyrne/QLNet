@@ -44,7 +44,7 @@ namespace QLNet.Math.Optimization
     /// Differential Evolution configuration object
     /// OptimizationMethod using Differential Evolution algorithm
     /// </summary>
-    public class DifferentialEvolution : OptimizationMethod
+    [JetBrains.Annotations.PublicAPI] public class DifferentialEvolution : OptimizationMethod
     {
         public enum Strategy
         {
@@ -64,7 +64,7 @@ namespace QLNet.Math.Optimization
             Exponential
         }
 
-        public class Candidate : ICloneable
+        [JetBrains.Annotations.PublicAPI] public class Candidate : ICloneable
         {
             public Vector values { get; set; }
             public double cost { get; set; }
@@ -79,14 +79,14 @@ namespace QLNet.Math.Optimization
 
             public object Clone()
             {
-                Candidate c = new Candidate(values.size());
+                var c = new Candidate(values.size());
                 values.ForEach((ii, vv) => c.values[ii] = vv);
                 c.cost = cost;
                 return c;
             }
         }
 
-        public class sort_by_cost : IComparer<Candidate>
+        [JetBrains.Annotations.PublicAPI] public class sort_by_cost : IComparer<Candidate>
         {
             public int Compare(Candidate left, Candidate right)
             {
@@ -98,7 +98,7 @@ namespace QLNet.Math.Optimization
             }
         }
 
-        public class Configuration
+        [JetBrains.Annotations.PublicAPI] public class Configuration
         {
             public Strategy strategy { get; set; }
             public CrossoverType crossoverType { get; set; }
@@ -185,7 +185,7 @@ namespace QLNet.Math.Optimization
 
         public override EndCriteria.Type minimize(Problem P, EndCriteria endCriteria)
         {
-            EndCriteria.Type ecType = EndCriteria.Type.None;
+            var ecType = EndCriteria.Type.None;
 
             upperBound_ = P.constraint().upperBound(P.currentValue());
             lowerBound_ = P.constraint().lowerBound(P.currentValue());
@@ -200,7 +200,7 @@ namespace QLNet.Math.Optimization
             fillInitialPopulation(population, P);
 
             //original quantlib use partial_sort as only first elements is needed
-            double fxOld = population.Min(x => x.cost);
+            var fxOld = population.Min(x => x.cost);
             bestMemberEver_ = (Candidate)population.First(x => x.cost.IsEqual(fxOld)).Clone();
             int iteration = 0, stationaryPointIteration = 0;
 
@@ -209,8 +209,8 @@ namespace QLNet.Math.Optimization
             {
                 calculateNextGeneration(population, P.costFunction());
 
-                double fxNew = population.Min(x => x.cost);
-                Candidate tmp = (Candidate)population.First(x => x.cost.IsEqual(fxNew)).Clone();
+                var fxNew = population.Min(x => x.cost);
+                var tmp = (Candidate)population.First(x => x.cost.IsEqual(fxNew)).Clone();
 
                 if (fxNew < bestMemberEver_.cost)
                     bestMemberEver_ = tmp;
@@ -226,10 +226,7 @@ namespace QLNet.Math.Optimization
             return ecType;
         }
 
-        public Configuration configuration()
-        {
-            return configuration_;
-        }
+        public Configuration configuration() => configuration_;
 
         protected Configuration configuration_;
         protected Vector upperBound_, lowerBound_;
@@ -247,9 +244,9 @@ namespace QLNet.Math.Optimization
                 population.First().cost = double.MaxValue;
 
             // rest of the initial population is random
-            for (int j = 1; j < population.Count; ++j)
+            for (var j = 1; j < population.Count; ++j)
             {
-                for (int i = 0; i < p.currentValue().size(); ++i)
+                for (var i = 0; i < p.currentValue().size(); ++i)
                 {
                     double l = lowerBound_[i], u = upperBound_[i];
                     population[j].values[i] = l + (u - l) * rng_.nextReal();
@@ -266,9 +263,9 @@ namespace QLNet.Math.Optimization
                                         List<Vector> invCrossoverMask,
                                         Vector mutationProbabilities)
         {
-            for (int cmIter = 0; cmIter < crossoverMask.Count; cmIter++)
+            for (var cmIter = 0; cmIter < crossoverMask.Count; cmIter++)
             {
-                for (int memIter = 0; memIter < crossoverMask[cmIter].size(); memIter++)
+                for (var memIter = 0; memIter < crossoverMask[cmIter].size(); memIter++)
                 {
                     if (rng_.nextReal() < mutationProbabilities[cmIter])
                     {
@@ -285,7 +282,7 @@ namespace QLNet.Math.Optimization
         protected Vector getMutationProbabilities(
            List<Candidate> population)
         {
-            Vector mutationProbabilities = currGenCrossover_.Clone();
+            var mutationProbabilities = currGenCrossover_.Clone();
 
             switch (configuration().crossoverType)
             {
@@ -297,7 +294,7 @@ namespace QLNet.Math.Optimization
                                             + 1.0 / population.First().values.size();
                     break;
                 case CrossoverType.Exponential:
-                    for (int coIter = 0; coIter < currGenCrossover_.size(); coIter++)
+                    for (var coIter = 0; coIter < currGenCrossover_.size(); coIter++)
                     {
                         mutationProbabilities[coIter] =
                            (1.0 - System.Math.Pow(currGenCrossover_[coIter],
@@ -308,7 +305,7 @@ namespace QLNet.Math.Optimization
 
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown crossover type ("
+                    Utils.QL_FAIL("Unknown crossover ExerciseType ("
                                   + Convert.ToInt32(configuration().crossoverType) + ")");
                     break;
             }
@@ -324,8 +321,8 @@ namespace QLNet.Math.Optimization
             double sizeWeightLowerBound = 0.1, sizeWeightUpperBound = 0.9;
             // [=tau1] A Comparative Study on Numerical Benchmark
             // Problems." page 649 for reference
-            double sizeWeightChangeProb = 0.1;
-            for (int coIter = 0; coIter < currGenSizeWeights_.size(); coIter++)
+            var sizeWeightChangeProb = 0.1;
+            for (var coIter = 0; coIter < currGenSizeWeights_.size(); coIter++)
             {
                 if (rng_.nextReal() < sizeWeightChangeProb)
                     currGenSizeWeights_[coIter] = sizeWeightLowerBound + rng_.nextReal() * sizeWeightUpperBound;
@@ -334,8 +331,8 @@ namespace QLNet.Math.Optimization
 
         protected void adaptCrossover()
         {
-            double crossoverChangeProb = 0.1; // [=tau2]
-            for (int coIter = 0; coIter < currGenCrossover_.size(); coIter++)
+            var crossoverChangeProb = 0.1; // [=tau2]
+            for (var coIter = 0; coIter < currGenCrossover_.size(); coIter++)
             {
                 if (rng_.nextReal() < crossoverChangeProb)
                     currGenCrossover_[coIter] = rng_.nextReal();
@@ -346,20 +343,20 @@ namespace QLNet.Math.Optimization
                                                CostFunction costFunction)
         {
             List<Candidate> mirrorPopulation = null;
-            List<Candidate> oldPopulation = (List<Candidate>)population.Clone();
+            var oldPopulation = (List<Candidate>)population.Clone();
 
             switch (configuration().strategy)
             {
                 case Strategy.Rand1Standard:
                     {
                         population.Shuffle();
-                        List<Candidate> shuffledPop1 = (List<Candidate>)population.Clone();
+                        var shuffledPop1 = (List<Candidate>)population.Clone();
                         population.Shuffle();
-                        List<Candidate> shuffledPop2 = (List<Candidate>)population.Clone();
+                        var shuffledPop2 = (List<Candidate>)population.Clone();
                         population.Shuffle();
                         mirrorPopulation = (List<Candidate>)shuffledPop1.Clone();
 
-                        for (int popIter = 0; popIter < population.Count; popIter++)
+                        for (var popIter = 0; popIter < population.Count; popIter++)
                         {
                             population[popIter].values = population[popIter].values
                                                          + configuration().stepsizeWeight
@@ -371,13 +368,13 @@ namespace QLNet.Math.Optimization
                 case Strategy.BestMemberWithJitter:
                     {
                         population.Shuffle();
-                        List<Candidate> shuffledPop1 = (List<Candidate>)population.Clone();
+                        var shuffledPop1 = (List<Candidate>)population.Clone();
                         population.Shuffle();
-                        Vector jitter = new Vector(population[0].values.size(), 0.0);
+                        var jitter = new Vector(population[0].values.size(), 0.0);
 
-                        for (int popIter = 0; popIter < population.Count; popIter++)
+                        for (var popIter = 0; popIter < population.Count; popIter++)
                         {
-                            for (int jitterIter = 0; jitterIter < jitter.Count; jitterIter++)
+                            for (var jitterIter = 0; jitterIter < jitter.Count; jitterIter++)
                             {
                                 jitter[jitterIter] = rng_.nextReal();
                             }
@@ -396,10 +393,10 @@ namespace QLNet.Math.Optimization
                 case Strategy.CurrentToBest2Diffs:
                     {
                         population.Shuffle();
-                        List<Candidate> shuffledPop1 = (List<Candidate>)population.Clone();
+                        var shuffledPop1 = (List<Candidate>)population.Clone();
                         population.Shuffle();
 
-                        for (int popIter = 0; popIter < population.Count; popIter++)
+                        for (var popIter = 0; popIter < population.Count; popIter++)
                         {
                             population[popIter].values = oldPopulation[popIter].values
                                                          + configuration().stepsizeWeight
@@ -415,16 +412,16 @@ namespace QLNet.Math.Optimization
                 case Strategy.Rand1DiffWithPerVectorDither:
                     {
                         population.Shuffle();
-                        List<Candidate> shuffledPop1 = (List<Candidate>)population.Clone();
+                        var shuffledPop1 = (List<Candidate>)population.Clone();
                         population.Shuffle();
-                        List<Candidate> shuffledPop2 = (List<Candidate>)population.Clone();
+                        var shuffledPop2 = (List<Candidate>)population.Clone();
                         population.Shuffle();
                         mirrorPopulation = (List<Candidate>)shuffledPop1.Clone();
-                        Vector FWeight = new Vector(population.First().values.size(), 0.0);
-                        for (int fwIter = 0; fwIter < FWeight.Count; fwIter++)
+                        var FWeight = new Vector(population.First().values.size(), 0.0);
+                        for (var fwIter = 0; fwIter < FWeight.Count; fwIter++)
                             FWeight[fwIter] = (1.0 - configuration().stepsizeWeight)
                                               * rng_.nextReal() + configuration().stepsizeWeight;
-                        for (int popIter = 0; popIter < population.Count; popIter++)
+                        for (var popIter = 0; popIter < population.Count; popIter++)
                         {
                             population[popIter].values = population[popIter].values
                                                          + Vector.DirectMultiply(FWeight,
@@ -436,14 +433,14 @@ namespace QLNet.Math.Optimization
                 case Strategy.Rand1DiffWithDither:
                     {
                         population.Shuffle();
-                        List<Candidate> shuffledPop1 = (List<Candidate>)population.Clone();
+                        var shuffledPop1 = (List<Candidate>)population.Clone();
                         population.Shuffle();
-                        List<Candidate> shuffledPop2 = (List<Candidate>)population.Clone();
+                        var shuffledPop2 = (List<Candidate>)population.Clone();
                         population.Shuffle();
                         mirrorPopulation = (List<Candidate>)shuffledPop1.Clone();
-                        double FWeight = (1.0 - configuration().stepsizeWeight) * rng_.nextReal()
-                                         + configuration().stepsizeWeight;
-                        for (int popIter = 0; popIter < population.Count; popIter++)
+                        var FWeight = (1.0 - configuration().stepsizeWeight) * rng_.nextReal()
+                                      + configuration().stepsizeWeight;
+                        for (var popIter = 0; popIter < population.Count; popIter++)
                         {
                             population[popIter].values = population[popIter].values
                                                          + FWeight * (shuffledPop1[popIter].values -
@@ -455,15 +452,15 @@ namespace QLNet.Math.Optimization
                 case Strategy.EitherOrWithOptimalRecombination:
                     {
                         population.Shuffle();
-                        List<Candidate> shuffledPop1 = (List<Candidate>)population.Clone();
+                        var shuffledPop1 = (List<Candidate>)population.Clone();
                         population.Shuffle();
-                        List<Candidate> shuffledPop2 = (List<Candidate>)population.Clone();
+                        var shuffledPop2 = (List<Candidate>)population.Clone();
                         population.Shuffle();
                         mirrorPopulation = (List<Candidate>)shuffledPop1.Clone();
-                        double probFWeight = 0.5;
+                        var probFWeight = 0.5;
                         if (rng_.nextReal() < probFWeight)
                         {
-                            for (int popIter = 0; popIter < population.Count; popIter++)
+                            for (var popIter = 0; popIter < population.Count; popIter++)
                             {
                                 population[popIter].values = oldPopulation[popIter].values
                                                              + configuration().stepsizeWeight
@@ -472,8 +469,8 @@ namespace QLNet.Math.Optimization
                         }
                         else
                         {
-                            double K = 0.5 * (configuration().stepsizeWeight + 1); // invariant with respect to probFWeight used
-                            for (int popIter = 0; popIter < population.Count; popIter++)
+                            var K = 0.5 * (configuration().stepsizeWeight + 1); // invariant with respect to probFWeight used
+                            for (var popIter = 0; popIter < population.Count; popIter++)
                             {
                                 population[popIter].values = oldPopulation[popIter].values
                                                              + K
@@ -487,15 +484,15 @@ namespace QLNet.Math.Optimization
                 case Strategy.Rand1SelfadaptiveWithRotation:
                     {
                         population.Shuffle();
-                        List<Candidate> shuffledPop1 = (List<Candidate>)population.Clone();
+                        var shuffledPop1 = (List<Candidate>)population.Clone();
                         population.Shuffle();
-                        List<Candidate> shuffledPop2 = (List<Candidate>)population.Clone();
+                        var shuffledPop2 = (List<Candidate>)population.Clone();
                         population.Shuffle();
                         mirrorPopulation = (List<Candidate>)shuffledPop1.Clone();
 
                         adaptSizeWeights();
 
-                        for (int popIter = 0; popIter < population.Count; popIter++)
+                        for (var popIter = 0; popIter < population.Count; popIter++)
                         {
                             if (rng_.nextReal() < 0.1)
                             {
@@ -524,7 +521,7 @@ namespace QLNet.Math.Optimization
 
         protected Vector rotateArray(Vector inputVector)
         {
-            Vector shuffle = inputVector.Clone();
+            var shuffle = inputVector.Clone();
             shuffle.Shuffle();
             return shuffle;
         }
@@ -540,7 +537,7 @@ namespace QLNet.Math.Optimization
                 adaptCrossover();
             }
 
-            Vector mutationProbabilities = getMutationProbabilities(population);
+            var mutationProbabilities = getMutationProbabilities(population);
 
             List<Vector> crossoverMask = new InitializedList<Vector>(population.Count);
             crossoverMask.ForEach((ii, vv) => crossoverMask[ii] = new Vector(population.First().values.size(), 1.0));
@@ -551,7 +548,7 @@ namespace QLNet.Math.Optimization
             getCrossoverMask(crossoverMask, invCrossoverMask, mutationProbabilities);
 
             // crossover of the old and mutant population
-            for (int popIter = 0; popIter < population.Count; popIter++)
+            for (var popIter = 0; popIter < population.Count; popIter++)
             {
                 population[popIter].values = Vector.DirectMultiply(oldPopulation[popIter].values, invCrossoverMask[popIter])
                                              + Vector.DirectMultiply(mutantPopulation[popIter].values,
@@ -559,7 +556,7 @@ namespace QLNet.Math.Optimization
                 // immediately apply bounds if specified
                 if (configuration().applyBounds)
                 {
-                    for (int memIter = 0; memIter < population[popIter].values.size(); memIter++)
+                    for (var memIter = 0; memIter < population[popIter].values.size(); memIter++)
                     {
                         if (population[popIter].values[memIter] > upperBound_[memIter])
                             population[popIter].values[memIter] = upperBound_[memIter]

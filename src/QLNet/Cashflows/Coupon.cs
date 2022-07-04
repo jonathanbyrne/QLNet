@@ -54,21 +54,26 @@ namespace QLNet.Cashflows
         }
 
         // Event interface
-        public override Date date() { return paymentDate_; }
+        public override Date date() => paymentDate_;
 
         // CashFlow interface
-        public override Date exCouponDate() { return exCouponDate_; }
+        public override Date exCouponDate() => exCouponDate_;
 
         // Inspectors
-        public double nominal() { return nominal_; }
+        public double nominal() => nominal_;
+
         //! start of the accrual period
-        public Date accrualStartDate() { return accrualStartDate_; }
+        public Date accrualStartDate() => accrualStartDate_;
+
         //! end of the accrual period
-        public Date accrualEndDate() { return accrualEndDate_; }
+        public Date accrualEndDate() => accrualEndDate_;
+
         //! start date of the reference period
-        public Date referencePeriodStart { get { return refPeriodStart_; } }
+        public Date referencePeriodStart => refPeriodStart_;
+
         //! end date of the reference period
-        public Date referencePeriodEnd { get { return refPeriodEnd_; } }
+        public Date referencePeriodEnd => refPeriodEnd_;
+
         //! accrual period as fraction of year
         public double accrualPeriod()
         {
@@ -78,10 +83,8 @@ namespace QLNet.Cashflows
             return accrualPeriod_.Value;
         }
         //! accrual period in days
-        public int accrualDays()
-        {
-            return dayCounter().dayCount(accrualStartDate_, accrualEndDate_);
-        }
+        public int accrualDays() => dayCounter().dayCount(accrualStartDate_, accrualEndDate_);
+
         //! accrued rate
         public abstract double rate();
         //! day counter for accrual calculation

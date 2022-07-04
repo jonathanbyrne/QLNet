@@ -22,7 +22,7 @@ using System;
 
 namespace QLNet.Math.Optimization
 {
-    public class LineSearchBasedMethod : OptimizationMethod
+    [JetBrains.Annotations.PublicAPI] public class LineSearchBasedMethod : OptimizationMethod
     {
         public LineSearchBasedMethod(LineSearch lineSearch = null)
         {
@@ -32,31 +32,31 @@ namespace QLNet.Math.Optimization
         public override EndCriteria.Type minimize(Problem P, EndCriteria endCriteria)
         {
             // Initializations
-            double ftol = endCriteria.functionEpsilon();
-            int maxStationaryStateIterations_ = endCriteria.maxStationaryStateIterations();
-            EndCriteria.Type ecType = EndCriteria.Type.None;   // reset end criteria
+            var ftol = endCriteria.functionEpsilon();
+            var maxStationaryStateIterations_ = endCriteria.maxStationaryStateIterations();
+            var ecType = EndCriteria.Type.None;   // reset end criteria
             P.reset();                                      // reset problem
-            Vector x_ = P.currentValue();              // store the starting point
-            int iterationNumber_ = 0;
+            var x_ = P.currentValue();              // store the starting point
+            var iterationNumber_ = 0;
             // dimension line search
             lineSearch_.searchDirection = new Vector(x_.size());
-            bool done = false;
+            var done = false;
 
             // function and squared norm of gradient values
             double fnew, fold, gold2;
             double fdiff;
             // classical initial value for line-search step
-            double t = 1.0;
+            var t = 1.0;
             // Set gradient g at the size of the optimization problem
             // search direction
-            int sz = lineSearch_.searchDirection.size();
+            var sz = lineSearch_.searchDirection.size();
             Vector prevGradient = new Vector(sz), d = new Vector(sz), sddiff = new Vector(sz), direction = new Vector(sz);
             // Initialize cost function, gradient prevGradient and search direction
             P.setFunctionValue(P.valueAndGradient(ref prevGradient, x_));
             P.setGradientNormValue(Vector.DotProduct(prevGradient, prevGradient));
             lineSearch_.searchDirection = prevGradient * -1;
 
-            bool first_time = true;
+            var first_time = true;
             // Loop over iterations
             do
             {
@@ -111,10 +111,7 @@ namespace QLNet.Math.Optimization
             return ecType;
         }
         //! computes the new search direction
-        protected virtual Vector getUpdatedDirection(Problem P, double gold2, Vector gradient)
-        {
-            throw new NotImplementedException();
-        }
+        protected virtual Vector getUpdatedDirection(Problem P, double gold2, Vector gradient) => throw new NotImplementedException();
 
         //! line search
         protected LineSearch lineSearch_;

@@ -66,7 +66,7 @@ namespace QLNet.Instruments
        \ingroup instruments
     */
 
-    public class FixedRateBondForward : Forward
+    [JetBrains.Annotations.PublicAPI] public class FixedRateBondForward : Forward
     {
         protected FixedRateBond fixedCouponBond_;
 
@@ -95,16 +95,10 @@ namespace QLNet.Instruments
         // Calculations
 
         //! (dirty) forward bond price
-        public double forwardPrice()
-        {
-            return forwardValue();
-        }
+        public double forwardPrice() => forwardValue();
 
         //! (dirty) forward bond price minus accrued on bond at delivery
-        public double cleanForwardPrice()
-        {
-            return forwardValue() - fixedCouponBond_.accruedAmount(maturityDate_);
-        }
+        public double cleanForwardPrice() => forwardValue() - fixedCouponBond_.accruedAmount(maturityDate_);
 
         //!  NPV of bond coupons discounted using incomeDiscountCurve
         /*! Here only coupons between max(evaluation date,settlement
@@ -114,9 +108,9 @@ namespace QLNet.Instruments
 
         public override double spotIncome(Handle<YieldTermStructure> incomeDiscountCurve)
         {
-            double income = 0.0;
-            Date settlement = settlementDate();
-            List<CashFlow> cf = fixedCouponBond_.cashflows();
+            var income = 0.0;
+            var settlement = settlementDate();
+            var cf = fixedCouponBond_.cashflows();
 
             /*
               the following assumes
@@ -124,7 +118,7 @@ namespace QLNet.Instruments
               2. considers as income: all coupons paid between settlementDate()
               and contract delivery/maturity date
             */
-            for (int i = 0; i < cf.Count; ++i)
+            for (var i = 0; i < cf.Count; ++i)
             {
                 if (!cf[i].hasOccurred(settlement))
                 {
@@ -142,10 +136,7 @@ namespace QLNet.Instruments
         }
 
         //!  NPV of underlying bond
-        public override double spotValue()
-        {
-            return fixedCouponBond_.dirtyPrice();
-        }
+        public override double spotValue() => fixedCouponBond_.dirtyPrice();
 
         protected override void performCalculations()
         {

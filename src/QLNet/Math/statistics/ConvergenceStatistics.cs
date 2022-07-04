@@ -22,17 +22,18 @@ using System.Collections.Generic;
 
 namespace QLNet.Math.statistics
 {
-    public interface IConvergenceSteps
+    [JetBrains.Annotations.PublicAPI] public interface IConvergenceSteps
     {
         int initialSamples();
         int nextSamples(int current);
     }
 
-    public class DoublingConvergenceSteps : IConvergenceSteps
+    [JetBrains.Annotations.PublicAPI] public class DoublingConvergenceSteps : IConvergenceSteps
     {
 
-        public int initialSamples() { return 1; }
-        public int nextSamples(int current) { return 2 * current + 1; }
+        public int initialSamples() => 1;
+
+        public int nextSamples(int current) => 2 * current + 1;
     }
 
     //! statistics class with convergence table
@@ -53,7 +54,7 @@ namespace QLNet.Math.statistics
 
         \test results are tested against known good values.
     */
-    public class ConvergenceStatistics<T> : ConvergenceStatistics<T, DoublingConvergenceSteps>
+    [JetBrains.Annotations.PublicAPI] public class ConvergenceStatistics<T> : ConvergenceStatistics<T, DoublingConvergenceSteps>
        where T : IGeneralStatistics, new()
     {
         public ConvergenceStatistics(T stats, DoublingConvergenceSteps rule) : base(stats, rule) { }
@@ -61,13 +62,13 @@ namespace QLNet.Math.statistics
         public ConvergenceStatistics(DoublingConvergenceSteps rule) : base(rule) { }
     }
 
-    public class ConvergenceStatistics<T, U> : IGeneralStatistics
+    [JetBrains.Annotations.PublicAPI] public class ConvergenceStatistics<T, U> : IGeneralStatistics
        where T : IGeneralStatistics, new()
        where U : IConvergenceSteps, new()
     {
 
         private List<KeyValuePair<int, double>> table_ = new List<KeyValuePair<int, double>>();
-        public List<KeyValuePair<int, double>> convergenceTable() { return table_; }
+        public List<KeyValuePair<int, double>> convergenceTable() => table_;
 
         private U samplingRule_;
         private int nextSampleSize_;
@@ -111,14 +112,14 @@ namespace QLNet.Math.statistics
         //! adds a sequence of data to the set, with default weight
         public void addSequence(List<double> list)
         {
-            foreach (double v in list)
+            foreach (var v in list)
                 add
                    (v, 1);
         }
         //! adds a sequence of data to the set, each with its weight
         public void addSequence(List<double> data, List<double> weight)
         {
-            for (int i = 0; i < data.Count; i++)
+            for (var i = 0; i < data.Count; i++)
                 add
                    (data[i], weight[i]);
         }
@@ -126,23 +127,32 @@ namespace QLNet.Math.statistics
         #region wrap-up Stat
         protected T impl_ = FastActivator<T>.Create();
 
-        public int samples() { return impl_.samples(); }
-        public double mean() { return impl_.mean(); }
-        public double min() { return impl_.min(); }
-        public double max() { return impl_.max(); }
-        public double standardDeviation() { return impl_.standardDeviation(); }
-        public double variance() { return impl_.variance(); }
-        public double skewness() { return impl_.skewness(); }
-        public double kurtosis() { return impl_.kurtosis(); }
-        public double percentile(double percent) { return impl_.percentile(percent); }
-        public double weightSum() { return impl_.weightSum(); }
-        public double errorEstimate() { return impl_.errorEstimate(); }
+        public int samples() => impl_.samples();
+
+        public double mean() => impl_.mean();
+
+        public double min() => impl_.min();
+
+        public double max() => impl_.max();
+
+        public double standardDeviation() => impl_.standardDeviation();
+
+        public double variance() => impl_.variance();
+
+        public double skewness() => impl_.skewness();
+
+        public double kurtosis() => impl_.kurtosis();
+
+        public double percentile(double percent) => impl_.percentile(percent);
+
+        public double weightSum() => impl_.weightSum();
+
+        public double errorEstimate() => impl_.errorEstimate();
 
         public KeyValuePair<double, int> expectationValue(Func<KeyValuePair<double, double>, double> f,
-                                                          Func<KeyValuePair<double, double>, bool> inRange)
-        {
-            return impl_.expectationValue(f, inRange);
-        }
+                                                          Func<KeyValuePair<double, double>, bool> inRange) =>
+            impl_.expectationValue(f, inRange);
+
         #endregion
     }
 }

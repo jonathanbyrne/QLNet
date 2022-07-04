@@ -55,7 +55,7 @@ namespace QLNet.Time.Calendars
     ///  Boxing Day, December 26th
     ///  New Year's Eve, December 31st
     /// </remarks>
-    public class France : Calendar
+    [JetBrains.Annotations.PublicAPI] public class France : Calendar
     {
         // French calendars
         public enum Market
@@ -80,7 +80,8 @@ namespace QLNet.Time.Calendars
         {
             public static readonly Settlement Singleton = new Settlement();
             private Settlement() { }
-            public override string name() { return "French settlement"; }
+            public override string name() => "French settlement";
+
             public override bool isBusinessDay(Date date)
             {
                 var w = date.DayOfWeek;
@@ -120,7 +121,8 @@ namespace QLNet.Time.Calendars
         {
             public static readonly Exchange Singleton = new Exchange();
             private Exchange() { }
-            public override string name() { return "Paris stock exchange"; }
+            public override string name() => "Paris stock exchange";
+
             public override bool isBusinessDay(Date date)
             {
                 var w = date.DayOfWeek;

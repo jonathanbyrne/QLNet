@@ -35,7 +35,7 @@ using QLNet.Time.Calendars;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_AssetSwap : IDisposable
+    [JetBrains.Annotations.PublicAPI] public class T_AssetSwap : IDisposable
     {
         #region Initialize&Cleanup
         private SavedSettings backup;
@@ -72,32 +72,32 @@ namespace QLNet.Tests
             public CommonVars()
             {
                 termStructure = new RelinkableHandle<YieldTermStructure>();
-                int swapSettlementDays = 2;
+                var swapSettlementDays = 2;
                 faceAmount = 100.0;
-                BusinessDayConvention fixedConvention = BusinessDayConvention.Unadjusted;
+                var fixedConvention = BusinessDayConvention.Unadjusted;
                 compounding = Compounding.Continuous;
-                Frequency fixedFrequency = Frequency.Annual;
-                Frequency floatingFrequency = Frequency.Semiannual;
+                var fixedFrequency = Frequency.Annual;
+                var floatingFrequency = Frequency.Semiannual;
                 iborIndex = new Euribor(new Period(floatingFrequency), termStructure);
-                Calendar calendar = iborIndex.fixingCalendar();
+                var calendar = iborIndex.fixingCalendar();
                 swapIndex = new SwapIndex("EuriborSwapIsdaFixA", new Period(10, TimeUnit.Years), swapSettlementDays,
                                            iborIndex.currency(), calendar,
                                            new Period(fixedFrequency), fixedConvention,
                                            iborIndex.dayCounter(), iborIndex);
                 spread = 0.0;
                 nonnullspread = 0.003;
-                Date today = new Date(24, Month.April, 2007);
+                var today = new Date(24, Month.April, 2007);
                 Settings.setEvaluationDate(today);
 
                 //Date today = Settings::instance().evaluationDate();
                 termStructure.linkTo(Utilities.flatRate(today, 0.05, new Actual365Fixed()));
 
                 pricer = new BlackIborCouponPricer();
-                Handle<SwaptionVolatilityStructure> swaptionVolatilityStructure =
+                var swaptionVolatilityStructure =
                    new Handle<SwaptionVolatilityStructure>(new ConstantSwaptionVolatility(today,
                                                                                           new NullCalendar(), BusinessDayConvention.Following, 0.2, new Actual365Fixed()));
 
-                Handle<Quote> meanReversionQuote = new Handle<Quote>(new SimpleQuote(0.01));
+                var meanReversionQuote = new Handle<Quote>(new SimpleQuote(0.01));
                 cmspricer = new AnalyticHaganPricer(swaptionVolatilityStructure, GFunctionFactory.YieldCurveModel.Standard, meanReversionQuote);
             }
         }
@@ -107,15 +107,15 @@ namespace QLNet.Tests
         {
 
             // Testing consistency between fair price and fair spread...");
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             Calendar bondCalendar = new TARGET();
-            int settlementDays = 3;
+            var settlementDays = 3;
 
             // Fixed Underlying bond (Isin: DE0001135275 DBR 4 01/04/37)
             // maturity doesn't occur on a business day
 
-            Schedule bondSchedule = new Schedule(new Date(4, Month.January, 2005),
+            var bondSchedule = new Schedule(new Date(4, Month.January, 2005),
                                                  new Date(4, Month.January, 2037),
                                                  new Period(Frequency.Annual), bondCalendar,
                                                  BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -126,24 +126,24 @@ namespace QLNet.Tests
             BusinessDayConvention.Following,
             100.0, new Date(4, Month.January, 2005));
 
-            bool payFixedRate = true;
-            double bondPrice = 95.0;
+            var payFixedRate = true;
+            var bondPrice = 95.0;
 
-            bool isPar = true;
+            var isPar = true;
 
-            AssetSwap parAssetSwap = new AssetSwap(payFixedRate, bond, bondPrice, vars.iborIndex, vars.spread,
+            var parAssetSwap = new AssetSwap(payFixedRate, bond, bondPrice, vars.iborIndex, vars.spread,
                                                    null, vars.iborIndex.dayCounter(), isPar);
 
             IPricingEngine swapEngine = new DiscountingSwapEngine(vars.termStructure, true, bond.settlementDate(),
                                                                   Settings.evaluationDate());
 
             parAssetSwap.setPricingEngine(swapEngine);
-            double fairCleanPrice = parAssetSwap.fairCleanPrice();
-            double fairSpread = parAssetSwap.fairSpread();
+            var fairCleanPrice = parAssetSwap.fairCleanPrice();
+            var fairSpread = parAssetSwap.fairSpread();
 
-            double tolerance = 1.0e-13;
+            var tolerance = 1.0e-13;
 
-            AssetSwap assetSwap2 = new AssetSwap(payFixedRate, bond, fairCleanPrice, vars.iborIndex, vars.spread,
+            var assetSwap2 = new AssetSwap(payFixedRate, bond, fairCleanPrice, vars.iborIndex, vars.spread,
                                                  null, vars.iborIndex.dayCounter(), isPar);
 
             assetSwap2.setPricingEngine(swapEngine);
@@ -172,7 +172,7 @@ namespace QLNet.Tests
                              "\n  tolerance:    " + tolerance);
             }
 
-            AssetSwap assetSwap3 = new AssetSwap(payFixedRate, bond, bondPrice, vars.iborIndex, fairSpread,
+            var assetSwap3 = new AssetSwap(payFixedRate, bond, bondPrice, vars.iborIndex, fairSpread,
                                                  null, vars.iborIndex.dayCounter(), isPar);
 
             assetSwap3.setPricingEngine(swapEngine);
@@ -280,7 +280,7 @@ namespace QLNet.Tests
 
             // now market asset swap
             isPar = false;
-            AssetSwap mktAssetSwap = new AssetSwap(payFixedRate, bond, bondPrice, vars.iborIndex, vars.spread,
+            var mktAssetSwap = new AssetSwap(payFixedRate, bond, bondPrice, vars.iborIndex, vars.spread,
                                                    null, vars.iborIndex.dayCounter(), isPar);
 
             swapEngine = new DiscountingSwapEngine(vars.termStructure, true, bond.settlementDate(),
@@ -290,7 +290,7 @@ namespace QLNet.Tests
             fairCleanPrice = mktAssetSwap.fairCleanPrice();
             fairSpread = mktAssetSwap.fairSpread();
 
-            AssetSwap assetSwap4 = new AssetSwap(payFixedRate, bond, fairCleanPrice, vars.iborIndex, vars.spread,
+            var assetSwap4 = new AssetSwap(payFixedRate, bond, fairCleanPrice, vars.iborIndex, vars.spread,
                                                  null, vars.iborIndex.dayCounter(), isPar);
             assetSwap4.setPricingEngine(swapEngine);
             if (System.Math.Abs(assetSwap4.NPV()) > tolerance)
@@ -318,7 +318,7 @@ namespace QLNet.Tests
                              "\n  tolerance:    " + tolerance);
             }
 
-            AssetSwap assetSwap5 = new AssetSwap(payFixedRate, bond, bondPrice, vars.iborIndex, fairSpread,
+            var assetSwap5 = new AssetSwap(payFixedRate, bond, bondPrice, vars.iborIndex, fairSpread,
                                                  null, vars.iborIndex.dayCounter(), isPar);
             assetSwap5.setPricingEngine(swapEngine);
             if (System.Math.Abs(assetSwap5.NPV()) > tolerance)
@@ -427,19 +427,19 @@ namespace QLNet.Tests
         public void testImpliedValue()
         {
             // Testing implied bond value against asset-swap fair price with null spread
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             Calendar bondCalendar = new TARGET();
-            int settlementDays = 3;
-            int fixingDays = 2;
-            bool payFixedRate = true;
-            bool parAssetSwap = true;
-            bool inArrears = false;
+            var settlementDays = 3;
+            var fixingDays = 2;
+            var payFixedRate = true;
+            var parAssetSwap = true;
+            var inArrears = false;
 
             // Fixed Underlying bond (Isin: DE0001135275 DBR 4 01/04/37)
             // maturity doesn't occur on a business day
 
-            Schedule fixedBondSchedule1 = new Schedule(new Date(4, Month.January, 2005),
+            var fixedBondSchedule1 = new Schedule(new Date(4, Month.January, 2005),
                                                        new Date(4, Month.January, 2037),
                                                        new Period(Frequency.Annual), bondCalendar,
                                                        BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -455,13 +455,13 @@ namespace QLNet.Tests
             IPricingEngine swapEngine = new DiscountingSwapEngine(vars.termStructure);
             fixedBond1.setPricingEngine(bondEngine);
 
-            double fixedBondPrice1 = fixedBond1.cleanPrice();
-            AssetSwap fixedBondAssetSwap1 = new AssetSwap(payFixedRate, fixedBond1, fixedBondPrice1, vars.iborIndex, vars.spread,
+            var fixedBondPrice1 = fixedBond1.cleanPrice();
+            var fixedBondAssetSwap1 = new AssetSwap(payFixedRate, fixedBond1, fixedBondPrice1, vars.iborIndex, vars.spread,
                                                           null, vars.iborIndex.dayCounter(), parAssetSwap);
             fixedBondAssetSwap1.setPricingEngine(swapEngine);
-            double fixedBondAssetSwapPrice1 = fixedBondAssetSwap1.fairCleanPrice();
-            double tolerance = 1.0e-13;
-            double error1 = System.Math.Abs(fixedBondAssetSwapPrice1 - fixedBondPrice1);
+            var fixedBondAssetSwapPrice1 = fixedBondAssetSwap1.fairCleanPrice();
+            var tolerance = 1.0e-13;
+            var error1 = System.Math.Abs(fixedBondAssetSwapPrice1 - fixedBondPrice1);
 
             if (error1 > tolerance)
             {
@@ -475,7 +475,7 @@ namespace QLNet.Tests
             // Fixed Underlying bond (Isin: IT0006527060 IBRD 5 02/05/19)
             // maturity occurs on a business day
 
-            Schedule fixedBondSchedule2 = new Schedule(new Date(5, Month.February, 2005),
+            var fixedBondSchedule2 = new Schedule(new Date(5, Month.February, 2005),
                                                        new Date(5, Month.February, 2019),
                                                        new Period(Frequency.Annual), bondCalendar,
                                                        BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -489,12 +489,12 @@ namespace QLNet.Tests
 
             fixedBond2.setPricingEngine(bondEngine);
 
-            double fixedBondPrice2 = fixedBond2.cleanPrice();
-            AssetSwap fixedBondAssetSwap2 = new AssetSwap(payFixedRate, fixedBond2, fixedBondPrice2, vars.iborIndex, vars.spread,
+            var fixedBondPrice2 = fixedBond2.cleanPrice();
+            var fixedBondAssetSwap2 = new AssetSwap(payFixedRate, fixedBond2, fixedBondPrice2, vars.iborIndex, vars.spread,
                                                           null, vars.iborIndex.dayCounter(), parAssetSwap);
             fixedBondAssetSwap2.setPricingEngine(swapEngine);
-            double fixedBondAssetSwapPrice2 = fixedBondAssetSwap2.fairCleanPrice();
-            double error2 = System.Math.Abs(fixedBondAssetSwapPrice2 - fixedBondPrice2);
+            var fixedBondAssetSwapPrice2 = fixedBondAssetSwap2.fairCleanPrice();
+            var error2 = System.Math.Abs(fixedBondAssetSwapPrice2 - fixedBondPrice2);
 
             if (error2 > tolerance)
             {
@@ -508,7 +508,7 @@ namespace QLNet.Tests
             // FRN Underlying bond (Isin: IT0003543847 ISPIM 0 09/29/13)
             // maturity doesn't occur on a business day
 
-            Schedule floatingBondSchedule1 = new Schedule(new Date(29, Month.September, 2003),
+            var floatingBondSchedule1 = new Schedule(new Date(29, Month.September, 2003),
                                                           new Date(29, Month.September, 2013),
                                                           new Period(Frequency.Semiannual), bondCalendar,
                                                           BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -529,12 +529,12 @@ namespace QLNet.Tests
 
             Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(27, Month.March, 2007), 0.0402);
-            double floatingBondPrice1 = floatingBond1.cleanPrice();
-            AssetSwap floatingBondAssetSwap1 = new AssetSwap(payFixedRate, floatingBond1, floatingBondPrice1, vars.iborIndex, vars.spread,
+            var floatingBondPrice1 = floatingBond1.cleanPrice();
+            var floatingBondAssetSwap1 = new AssetSwap(payFixedRate, floatingBond1, floatingBondPrice1, vars.iborIndex, vars.spread,
                                                              null, vars.iborIndex.dayCounter(), parAssetSwap);
             floatingBondAssetSwap1.setPricingEngine(swapEngine);
-            double floatingBondAssetSwapPrice1 = floatingBondAssetSwap1.fairCleanPrice();
-            double error3 = System.Math.Abs(floatingBondAssetSwapPrice1 - floatingBondPrice1);
+            var floatingBondAssetSwapPrice1 = floatingBondAssetSwap1.fairCleanPrice();
+            var error3 = System.Math.Abs(floatingBondAssetSwapPrice1 - floatingBondPrice1);
 
             if (error3 > tolerance)
             {
@@ -548,7 +548,7 @@ namespace QLNet.Tests
             // FRN Underlying bond (Isin: XS0090566539 COE 0 09/24/18)
             // maturity occurs on a business day
 
-            Schedule floatingBondSchedule2 = new Schedule(new Date(24, Month.September, 2004),
+            var floatingBondSchedule2 = new Schedule(new Date(24, Month.September, 2004),
                                                           new Date(24, Month.September, 2018),
                                                           new Period(Frequency.Semiannual), bondCalendar,
                                                           BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
@@ -568,9 +568,9 @@ namespace QLNet.Tests
 
             Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(22, Month.March, 2007), 0.04013);
-            double currentCoupon = 0.04013 + 0.0025;
-            double floatingCurrentCoupon = floatingBond2.nextCouponRate();
-            double error4 = System.Math.Abs(floatingCurrentCoupon - currentCoupon);
+            var currentCoupon = 0.04013 + 0.0025;
+            var floatingCurrentCoupon = floatingBond2.nextCouponRate();
+            var error4 = System.Math.Abs(floatingCurrentCoupon - currentCoupon);
             if (error4 > tolerance)
             {
                 QAssert.Fail("wrong current coupon is returned for floater bond:" +
@@ -582,12 +582,12 @@ namespace QLNet.Tests
                              "\n  tolerance:             " + tolerance);
             }
 
-            double floatingBondPrice2 = floatingBond2.cleanPrice();
-            AssetSwap floatingBondAssetSwap2 = new AssetSwap(payFixedRate, floatingBond2, floatingBondPrice2, vars.iborIndex, vars.spread,
+            var floatingBondPrice2 = floatingBond2.cleanPrice();
+            var floatingBondAssetSwap2 = new AssetSwap(payFixedRate, floatingBond2, floatingBondPrice2, vars.iborIndex, vars.spread,
                                                              null, vars.iborIndex.dayCounter(), parAssetSwap);
             floatingBondAssetSwap2.setPricingEngine(swapEngine);
-            double floatingBondAssetSwapPrice2 = floatingBondAssetSwap2.fairCleanPrice();
-            double error5 = System.Math.Abs(floatingBondAssetSwapPrice2 - floatingBondPrice2);
+            var floatingBondAssetSwapPrice2 = floatingBondAssetSwap2.fairCleanPrice();
+            var error5 = System.Math.Abs(floatingBondAssetSwapPrice2 - floatingBondPrice2);
 
             if (error5 > tolerance)
             {
@@ -601,7 +601,7 @@ namespace QLNet.Tests
             // CMS Underlying bond (Isin: XS0228052402 CRDIT 0 8/22/20)
             // maturity doesn't occur on a business day
 
-            Schedule cmsBondSchedule1 = new Schedule(new Date(22, Month.August, 2005),
+            var cmsBondSchedule1 = new Schedule(new Date(22, Month.August, 2005),
                                                      new Date(22, Month.August, 2020),
                                                      new Period(Frequency.Annual), bondCalendar,
                                                      BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -621,12 +621,12 @@ namespace QLNet.Tests
 
             Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(18, Month.August, 2006), 0.04158);
-            double cmsBondPrice1 = cmsBond1.cleanPrice();
-            AssetSwap cmsBondAssetSwap1 = new AssetSwap(payFixedRate, cmsBond1, cmsBondPrice1, vars.iborIndex, vars.spread,
+            var cmsBondPrice1 = cmsBond1.cleanPrice();
+            var cmsBondAssetSwap1 = new AssetSwap(payFixedRate, cmsBond1, cmsBondPrice1, vars.iborIndex, vars.spread,
                                                         null, vars.iborIndex.dayCounter(), parAssetSwap);
             cmsBondAssetSwap1.setPricingEngine(swapEngine);
-            double cmsBondAssetSwapPrice1 = cmsBondAssetSwap1.fairCleanPrice();
-            double error6 = System.Math.Abs(cmsBondAssetSwapPrice1 - cmsBondPrice1);
+            var cmsBondAssetSwapPrice1 = cmsBondAssetSwap1.fairCleanPrice();
+            var error6 = System.Math.Abs(cmsBondAssetSwapPrice1 - cmsBondPrice1);
 
             if (error6 > tolerance)
             {
@@ -640,7 +640,7 @@ namespace QLNet.Tests
             // CMS Underlying bond (Isin: XS0218766664 ISPIM 0 5/6/15)
             // maturity occurs on a business day
 
-            Schedule cmsBondSchedule2 = new Schedule(new Date(06, Month.May, 2005),
+            var cmsBondSchedule2 = new Schedule(new Date(06, Month.May, 2005),
                                                      new Date(06, Month.May, 2015),
                                                      new Period(Frequency.Annual), bondCalendar,
                                                      BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -657,12 +657,12 @@ namespace QLNet.Tests
 
             Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(04, Month.May, 2006), 0.04217);
-            double cmsBondPrice2 = cmsBond2.cleanPrice();
-            AssetSwap cmsBondAssetSwap2 = new AssetSwap(payFixedRate, cmsBond2, cmsBondPrice2, vars.iborIndex, vars.spread,
+            var cmsBondPrice2 = cmsBond2.cleanPrice();
+            var cmsBondAssetSwap2 = new AssetSwap(payFixedRate, cmsBond2, cmsBondPrice2, vars.iborIndex, vars.spread,
                                                         null, vars.iborIndex.dayCounter(), parAssetSwap);
             cmsBondAssetSwap2.setPricingEngine(swapEngine);
-            double cmsBondAssetSwapPrice2 = cmsBondAssetSwap2.fairCleanPrice();
-            double error7 = System.Math.Abs(cmsBondAssetSwapPrice2 - cmsBondPrice2);
+            var cmsBondAssetSwapPrice2 = cmsBondAssetSwap2.fairCleanPrice();
+            var error7 = System.Math.Abs(cmsBondAssetSwapPrice2 - cmsBondPrice2);
 
             if (error7 > tolerance)
             {
@@ -683,12 +683,12 @@ namespace QLNet.Tests
 
             zeroCpnBond1.setPricingEngine(bondEngine);
 
-            double zeroCpnBondPrice1 = zeroCpnBond1.cleanPrice();
-            AssetSwap zeroCpnAssetSwap1 = new AssetSwap(payFixedRate, zeroCpnBond1, zeroCpnBondPrice1, vars.iborIndex, vars.spread,
+            var zeroCpnBondPrice1 = zeroCpnBond1.cleanPrice();
+            var zeroCpnAssetSwap1 = new AssetSwap(payFixedRate, zeroCpnBond1, zeroCpnBondPrice1, vars.iborIndex, vars.spread,
                                                         null, vars.iborIndex.dayCounter(), parAssetSwap);
             zeroCpnAssetSwap1.setPricingEngine(swapEngine);
-            double zeroCpnBondAssetSwapPrice1 = zeroCpnAssetSwap1.fairCleanPrice();
-            double error8 = System.Math.Abs(cmsBondAssetSwapPrice1 - cmsBondPrice1);
+            var zeroCpnBondAssetSwapPrice1 = zeroCpnAssetSwap1.fairCleanPrice();
+            var error8 = System.Math.Abs(cmsBondAssetSwapPrice1 - cmsBondPrice1);
 
             if (error8 > tolerance)
             {
@@ -709,12 +709,12 @@ namespace QLNet.Tests
 
             zeroCpnBond2.setPricingEngine(bondEngine);
 
-            double zeroCpnBondPrice2 = zeroCpnBond2.cleanPrice();
-            AssetSwap zeroCpnAssetSwap2 = new AssetSwap(payFixedRate, zeroCpnBond2, zeroCpnBondPrice2, vars.iborIndex, vars.spread,
+            var zeroCpnBondPrice2 = zeroCpnBond2.cleanPrice();
+            var zeroCpnAssetSwap2 = new AssetSwap(payFixedRate, zeroCpnBond2, zeroCpnBondPrice2, vars.iborIndex, vars.spread,
                                                         null, vars.iborIndex.dayCounter(), parAssetSwap);
             zeroCpnAssetSwap2.setPricingEngine(swapEngine);
-            double zeroCpnBondAssetSwapPrice2 = zeroCpnAssetSwap2.fairCleanPrice();
-            double error9 = System.Math.Abs(cmsBondAssetSwapPrice2 - cmsBondPrice2);
+            var zeroCpnBondAssetSwapPrice2 = zeroCpnAssetSwap2.fairCleanPrice();
+            var error9 = System.Math.Abs(cmsBondAssetSwapPrice2 - cmsBondPrice2);
 
             if (error9 > tolerance)
             {
@@ -731,20 +731,20 @@ namespace QLNet.Tests
         public void testMarketASWSpread()
         {
             // Testing relationship between market asset swap and par asset swap...
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             Calendar bondCalendar = new TARGET();
-            int settlementDays = 3;
-            int fixingDays = 2;
-            bool payFixedRate = true;
-            bool parAssetSwap = true;
-            bool mktAssetSwap = false;
-            bool inArrears = false;
+            var settlementDays = 3;
+            var fixingDays = 2;
+            var payFixedRate = true;
+            var parAssetSwap = true;
+            var mktAssetSwap = false;
+            var inArrears = false;
 
             // Fixed Underlying bond (Isin: DE0001135275 DBR 4 01/04/37)
             // maturity doesn't occur on a business day
 
-            Schedule fixedBondSchedule1 = new Schedule(new Date(4, Month.January, 2005),
+            var fixedBondSchedule1 = new Schedule(new Date(4, Month.January, 2005),
                                                        new Date(4, Month.January, 2037),
                                                        new Period(Frequency.Annual), bondCalendar,
                                                        BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -758,27 +758,27 @@ namespace QLNet.Tests
             IPricingEngine swapEngine = new DiscountingSwapEngine(vars.termStructure);
             fixedBond1.setPricingEngine(bondEngine);
 
-            double fixedBondMktPrice1 = 89.22; // market price observed on 7th June 2007
-            double fixedBondMktFullPrice1 = fixedBondMktPrice1 + fixedBond1.accruedAmount();
-            AssetSwap fixedBondParAssetSwap1 = new AssetSwap(payFixedRate,
+            var fixedBondMktPrice1 = 89.22; // market price observed on 7th June 2007
+            var fixedBondMktFullPrice1 = fixedBondMktPrice1 + fixedBond1.accruedAmount();
+            var fixedBondParAssetSwap1 = new AssetSwap(payFixedRate,
                                                              fixedBond1, fixedBondMktPrice1,
                                                              vars.iborIndex, vars.spread,
                                                              null,
                                                              vars.iborIndex.dayCounter(),
                                                              parAssetSwap);
             fixedBondParAssetSwap1.setPricingEngine(swapEngine);
-            double fixedBondParAssetSwapSpread1 = fixedBondParAssetSwap1.fairSpread();
-            AssetSwap fixedBondMktAssetSwap1 = new AssetSwap(payFixedRate,
+            var fixedBondParAssetSwapSpread1 = fixedBondParAssetSwap1.fairSpread();
+            var fixedBondMktAssetSwap1 = new AssetSwap(payFixedRate,
                                                              fixedBond1, fixedBondMktPrice1,
                                                              vars.iborIndex, vars.spread,
                                                              null,
                                                              vars.iborIndex.dayCounter(),
                                                              mktAssetSwap);
             fixedBondMktAssetSwap1.setPricingEngine(swapEngine);
-            double fixedBondMktAssetSwapSpread1 = fixedBondMktAssetSwap1.fairSpread();
+            var fixedBondMktAssetSwapSpread1 = fixedBondMktAssetSwap1.fairSpread();
 
-            double tolerance = 1.0e-13;
-            double error1 = System.Math.Abs(fixedBondMktAssetSwapSpread1 - 100 * fixedBondParAssetSwapSpread1 / fixedBondMktFullPrice1);
+            var tolerance = 1.0e-13;
+            var error1 = System.Math.Abs(fixedBondMktAssetSwapSpread1 - 100 * fixedBondParAssetSwapSpread1 / fixedBondMktFullPrice1);
 
             if (error1 > tolerance)
             {
@@ -792,7 +792,7 @@ namespace QLNet.Tests
             // Fixed Underlying bond (Isin: IT0006527060 IBRD 5 02/05/19)
             // maturity occurs on a business day
 
-            Schedule fixedBondSchedule2 = new Schedule(new Date(5, Month.February, 2005),
+            var fixedBondSchedule2 = new Schedule(new Date(5, Month.February, 2005),
                                                        new Date(5, Month.February, 2019),
                                                        new Period(Frequency.Annual), bondCalendar,
                                                        BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -804,26 +804,26 @@ namespace QLNet.Tests
 
             fixedBond2.setPricingEngine(bondEngine);
 
-            double fixedBondMktPrice2 = 99.98; // market price observed on 7th June 2007
-            double fixedBondMktFullPrice2 = fixedBondMktPrice2 + fixedBond2.accruedAmount();
-            AssetSwap fixedBondParAssetSwap2 = new AssetSwap(payFixedRate,
+            var fixedBondMktPrice2 = 99.98; // market price observed on 7th June 2007
+            var fixedBondMktFullPrice2 = fixedBondMktPrice2 + fixedBond2.accruedAmount();
+            var fixedBondParAssetSwap2 = new AssetSwap(payFixedRate,
                                                              fixedBond2, fixedBondMktPrice2,
                                                              vars.iborIndex, vars.spread,
                                                              null,
                                                              vars.iborIndex.dayCounter(),
                                                              parAssetSwap);
             fixedBondParAssetSwap2.setPricingEngine(swapEngine);
-            double fixedBondParAssetSwapSpread2 = fixedBondParAssetSwap2.fairSpread();
-            AssetSwap fixedBondMktAssetSwap2 = new AssetSwap(payFixedRate,
+            var fixedBondParAssetSwapSpread2 = fixedBondParAssetSwap2.fairSpread();
+            var fixedBondMktAssetSwap2 = new AssetSwap(payFixedRate,
                                                              fixedBond2, fixedBondMktPrice2,
                                                              vars.iborIndex, vars.spread,
                                                              null,
                                                              vars.iborIndex.dayCounter(),
                                                              mktAssetSwap);
             fixedBondMktAssetSwap2.setPricingEngine(swapEngine);
-            double fixedBondMktAssetSwapSpread2 = fixedBondMktAssetSwap2.fairSpread();
-            double error2 = System.Math.Abs(fixedBondMktAssetSwapSpread2 -
-                                     100 * fixedBondParAssetSwapSpread2 / fixedBondMktFullPrice2);
+            var fixedBondMktAssetSwapSpread2 = fixedBondMktAssetSwap2.fairSpread();
+            var error2 = System.Math.Abs(fixedBondMktAssetSwapSpread2 -
+                                         100 * fixedBondParAssetSwapSpread2 / fixedBondMktFullPrice2);
 
             if (error2 > tolerance)
             {
@@ -837,7 +837,7 @@ namespace QLNet.Tests
             // FRN Underlying bond (Isin: IT0003543847 ISPIM 0 09/29/13)
             // maturity doesn't occur on a business day
 
-            Schedule floatingBondSchedule1 = new Schedule(new Date(29, Month.September, 2003),
+            var floatingBondSchedule1 = new Schedule(new Date(29, Month.September, 2003),
                                                           new Date(29, Month.September, 2013),
                                                           new Period(Frequency.Semiannual), bondCalendar,
                                                           BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -857,26 +857,26 @@ namespace QLNet.Tests
             Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(27, Month.March, 2007), 0.0402);
             // market price observed on 7th June 2007
-            double floatingBondMktPrice1 = 101.64;
-            double floatingBondMktFullPrice1 = floatingBondMktPrice1 + floatingBond1.accruedAmount();
-            AssetSwap floatingBondParAssetSwap1 = new AssetSwap(payFixedRate,
+            var floatingBondMktPrice1 = 101.64;
+            var floatingBondMktFullPrice1 = floatingBondMktPrice1 + floatingBond1.accruedAmount();
+            var floatingBondParAssetSwap1 = new AssetSwap(payFixedRate,
                                                                 floatingBond1, floatingBondMktPrice1,
                                                                 vars.iborIndex, vars.spread,
                                                                 null,
                                                                 vars.iborIndex.dayCounter(),
                                                                 parAssetSwap);
             floatingBondParAssetSwap1.setPricingEngine(swapEngine);
-            double floatingBondParAssetSwapSpread1 = floatingBondParAssetSwap1.fairSpread();
-            AssetSwap floatingBondMktAssetSwap1 = new AssetSwap(payFixedRate,
+            var floatingBondParAssetSwapSpread1 = floatingBondParAssetSwap1.fairSpread();
+            var floatingBondMktAssetSwap1 = new AssetSwap(payFixedRate,
                                                                 floatingBond1, floatingBondMktPrice1,
                                                                 vars.iborIndex, vars.spread,
                                                                 null,
                                                                 vars.iborIndex.dayCounter(),
                                                                 mktAssetSwap);
             floatingBondMktAssetSwap1.setPricingEngine(swapEngine);
-            double floatingBondMktAssetSwapSpread1 = floatingBondMktAssetSwap1.fairSpread();
-            double error3 = System.Math.Abs(floatingBondMktAssetSwapSpread1 -
-                                     100 * floatingBondParAssetSwapSpread1 / floatingBondMktFullPrice1);
+            var floatingBondMktAssetSwapSpread1 = floatingBondMktAssetSwap1.fairSpread();
+            var error3 = System.Math.Abs(floatingBondMktAssetSwapSpread1 -
+                                         100 * floatingBondParAssetSwapSpread1 / floatingBondMktFullPrice1);
 
             if (error3 > tolerance)
             {
@@ -890,7 +890,7 @@ namespace QLNet.Tests
             // FRN Underlying bond (Isin: XS0090566539 COE 0 09/24/18)
             // maturity occurs on a business day
 
-            Schedule floatingBondSchedule2 = new Schedule(new Date(24, Month.September, 2004),
+            var floatingBondSchedule2 = new Schedule(new Date(24, Month.September, 2004),
                                                           new Date(24, Month.September, 2018),
                                                           new Period(Frequency.Semiannual), bondCalendar,
                                                           BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
@@ -909,26 +909,26 @@ namespace QLNet.Tests
             Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(22, Month.March, 2007), 0.04013);
             // market price observed on 7th June 2007
-            double floatingBondMktPrice2 = 101.248;
-            double floatingBondMktFullPrice2 = floatingBondMktPrice2 + floatingBond2.accruedAmount();
-            AssetSwap floatingBondParAssetSwap2 = new AssetSwap(payFixedRate,
+            var floatingBondMktPrice2 = 101.248;
+            var floatingBondMktFullPrice2 = floatingBondMktPrice2 + floatingBond2.accruedAmount();
+            var floatingBondParAssetSwap2 = new AssetSwap(payFixedRate,
                                                                 floatingBond2, floatingBondMktPrice2,
                                                                 vars.iborIndex, vars.spread,
                                                                 null,
                                                                 vars.iborIndex.dayCounter(),
                                                                 parAssetSwap);
             floatingBondParAssetSwap2.setPricingEngine(swapEngine);
-            double floatingBondParAssetSwapSpread2 = floatingBondParAssetSwap2.fairSpread();
-            AssetSwap floatingBondMktAssetSwap2 = new AssetSwap(payFixedRate,
+            var floatingBondParAssetSwapSpread2 = floatingBondParAssetSwap2.fairSpread();
+            var floatingBondMktAssetSwap2 = new AssetSwap(payFixedRate,
                                                                 floatingBond2, floatingBondMktPrice2,
                                                                 vars.iborIndex, vars.spread,
                                                                 null,
                                                                 vars.iborIndex.dayCounter(),
                                                                 mktAssetSwap);
             floatingBondMktAssetSwap2.setPricingEngine(swapEngine);
-            double floatingBondMktAssetSwapSpread2 = floatingBondMktAssetSwap2.fairSpread();
-            double error4 = System.Math.Abs(floatingBondMktAssetSwapSpread2 -
-                                     100 * floatingBondParAssetSwapSpread2 / floatingBondMktFullPrice2);
+            var floatingBondMktAssetSwapSpread2 = floatingBondMktAssetSwap2.fairSpread();
+            var error4 = System.Math.Abs(floatingBondMktAssetSwapSpread2 -
+                                         100 * floatingBondParAssetSwapSpread2 / floatingBondMktFullPrice2);
 
             if (error4 > tolerance)
             {
@@ -942,7 +942,7 @@ namespace QLNet.Tests
             // CMS Underlying bond (Isin: XS0228052402 CRDIT 0 8/22/20)
             // maturity doesn't occur on a business day
 
-            Schedule cmsBondSchedule1 = new Schedule(new Date(22, Month.August, 2005),
+            var cmsBondSchedule1 = new Schedule(new Date(22, Month.August, 2005),
                                                      new Date(22, Month.August, 2020),
                                                      new Period(Frequency.Annual), bondCalendar,
                                                      BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -959,26 +959,26 @@ namespace QLNet.Tests
 
             Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(18, Month.August, 2006), 0.04158);
-            double cmsBondMktPrice1 = 88.45; // market price observed on 7th June 2007
-            double cmsBondMktFullPrice1 = cmsBondMktPrice1 + cmsBond1.accruedAmount();
-            AssetSwap cmsBondParAssetSwap1 = new AssetSwap(payFixedRate,
+            var cmsBondMktPrice1 = 88.45; // market price observed on 7th June 2007
+            var cmsBondMktFullPrice1 = cmsBondMktPrice1 + cmsBond1.accruedAmount();
+            var cmsBondParAssetSwap1 = new AssetSwap(payFixedRate,
                                                            cmsBond1, cmsBondMktPrice1,
                                                            vars.iborIndex, vars.spread,
                                                            null,
                                                            vars.iborIndex.dayCounter(),
                                                            parAssetSwap);
             cmsBondParAssetSwap1.setPricingEngine(swapEngine);
-            double cmsBondParAssetSwapSpread1 = cmsBondParAssetSwap1.fairSpread();
-            AssetSwap cmsBondMktAssetSwap1 = new AssetSwap(payFixedRate,
+            var cmsBondParAssetSwapSpread1 = cmsBondParAssetSwap1.fairSpread();
+            var cmsBondMktAssetSwap1 = new AssetSwap(payFixedRate,
                                                            cmsBond1, cmsBondMktPrice1,
                                                            vars.iborIndex, vars.spread,
                                                            null,
                                                            vars.iborIndex.dayCounter(),
                                                            mktAssetSwap);
             cmsBondMktAssetSwap1.setPricingEngine(swapEngine);
-            double cmsBondMktAssetSwapSpread1 = cmsBondMktAssetSwap1.fairSpread();
-            double error5 = System.Math.Abs(cmsBondMktAssetSwapSpread1 -
-                                     100 * cmsBondParAssetSwapSpread1 / cmsBondMktFullPrice1);
+            var cmsBondMktAssetSwapSpread1 = cmsBondMktAssetSwap1.fairSpread();
+            var error5 = System.Math.Abs(cmsBondMktAssetSwapSpread1 -
+                                         100 * cmsBondParAssetSwapSpread1 / cmsBondMktFullPrice1);
 
             if (error5 > tolerance)
             {
@@ -992,7 +992,7 @@ namespace QLNet.Tests
             // CMS Underlying bond (Isin: XS0218766664 ISPIM 0 5/6/15)
             // maturity occurs on a business day
 
-            Schedule cmsBondSchedule2 = new Schedule(new Date(06, Month.May, 2005),
+            var cmsBondSchedule2 = new Schedule(new Date(06, Month.May, 2005),
                                                      new Date(06, Month.May, 2015),
                                                      new Period(Frequency.Annual), bondCalendar,
                                                      BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -1009,26 +1009,26 @@ namespace QLNet.Tests
 
             Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(04, Month.May, 2006), 0.04217);
-            double cmsBondMktPrice2 = 94.08; // market price observed on 7th June 2007
-            double cmsBondMktFullPrice2 = cmsBondMktPrice2 + cmsBond2.accruedAmount();
-            AssetSwap cmsBondParAssetSwap2 = new AssetSwap(payFixedRate,
+            var cmsBondMktPrice2 = 94.08; // market price observed on 7th June 2007
+            var cmsBondMktFullPrice2 = cmsBondMktPrice2 + cmsBond2.accruedAmount();
+            var cmsBondParAssetSwap2 = new AssetSwap(payFixedRate,
                                                            cmsBond2, cmsBondMktPrice2,
                                                            vars.iborIndex, vars.spread,
                                                            null,
                                                            vars.iborIndex.dayCounter(),
                                                            parAssetSwap);
             cmsBondParAssetSwap2.setPricingEngine(swapEngine);
-            double cmsBondParAssetSwapSpread2 = cmsBondParAssetSwap2.fairSpread();
-            AssetSwap cmsBondMktAssetSwap2 = new AssetSwap(payFixedRate,
+            var cmsBondParAssetSwapSpread2 = cmsBondParAssetSwap2.fairSpread();
+            var cmsBondMktAssetSwap2 = new AssetSwap(payFixedRate,
                                                            cmsBond2, cmsBondMktPrice2,
                                                            vars.iborIndex, vars.spread,
                                                            null,
                                                            vars.iborIndex.dayCounter(),
                                                            mktAssetSwap);
             cmsBondMktAssetSwap2.setPricingEngine(swapEngine);
-            double cmsBondMktAssetSwapSpread2 = cmsBondMktAssetSwap2.fairSpread();
-            double error6 = System.Math.Abs(cmsBondMktAssetSwapSpread2 -
-                                     100 * cmsBondParAssetSwapSpread2 / cmsBondMktFullPrice2);
+            var cmsBondMktAssetSwapSpread2 = cmsBondMktAssetSwap2.fairSpread();
+            var error6 = System.Math.Abs(cmsBondMktAssetSwapSpread2 -
+                                         100 * cmsBondParAssetSwapSpread2 / cmsBondMktFullPrice2);
 
             if (error6 > tolerance)
             {
@@ -1049,26 +1049,26 @@ namespace QLNet.Tests
             zeroCpnBond1.setPricingEngine(bondEngine);
 
             // market price observed on 12th June 2007
-            double zeroCpnBondMktPrice1 = 70.436;
-            double zeroCpnBondMktFullPrice1 = zeroCpnBondMktPrice1 + zeroCpnBond1.accruedAmount();
-            AssetSwap zeroCpnBondParAssetSwap1 = new AssetSwap(payFixedRate, zeroCpnBond1,
+            var zeroCpnBondMktPrice1 = 70.436;
+            var zeroCpnBondMktFullPrice1 = zeroCpnBondMktPrice1 + zeroCpnBond1.accruedAmount();
+            var zeroCpnBondParAssetSwap1 = new AssetSwap(payFixedRate, zeroCpnBond1,
                                                                zeroCpnBondMktPrice1,
                                                                vars.iborIndex, vars.spread,
                                                                null,
                                                                vars.iborIndex.dayCounter(),
                                                                parAssetSwap);
             zeroCpnBondParAssetSwap1.setPricingEngine(swapEngine);
-            double zeroCpnBondParAssetSwapSpread1 = zeroCpnBondParAssetSwap1.fairSpread();
-            AssetSwap zeroCpnBondMktAssetSwap1 = new AssetSwap(payFixedRate, zeroCpnBond1,
+            var zeroCpnBondParAssetSwapSpread1 = zeroCpnBondParAssetSwap1.fairSpread();
+            var zeroCpnBondMktAssetSwap1 = new AssetSwap(payFixedRate, zeroCpnBond1,
                                                                zeroCpnBondMktPrice1,
                                                                vars.iborIndex, vars.spread,
                                                                null,
                                                                vars.iborIndex.dayCounter(),
                                                                mktAssetSwap);
             zeroCpnBondMktAssetSwap1.setPricingEngine(swapEngine);
-            double zeroCpnBondMktAssetSwapSpread1 = zeroCpnBondMktAssetSwap1.fairSpread();
-            double error7 = System.Math.Abs(zeroCpnBondMktAssetSwapSpread1 -
-                                     100 * zeroCpnBondParAssetSwapSpread1 / zeroCpnBondMktFullPrice1);
+            var zeroCpnBondMktAssetSwapSpread1 = zeroCpnBondMktAssetSwap1.fairSpread();
+            var error7 = System.Math.Abs(zeroCpnBondMktAssetSwapSpread1 -
+                                         100 * zeroCpnBondParAssetSwapSpread1 / zeroCpnBondMktFullPrice1);
 
             if (error7 > tolerance)
             {
@@ -1092,26 +1092,26 @@ namespace QLNet.Tests
             // Real zeroCpnBondPrice2 = zeroCpnBond2->cleanPrice();
 
             // market price observed on 12th June 2007
-            double zeroCpnBondMktPrice2 = 35.160;
-            double zeroCpnBondMktFullPrice2 = zeroCpnBondMktPrice2 + zeroCpnBond2.accruedAmount();
-            AssetSwap zeroCpnBondParAssetSwap2 = new AssetSwap(payFixedRate, zeroCpnBond2,
+            var zeroCpnBondMktPrice2 = 35.160;
+            var zeroCpnBondMktFullPrice2 = zeroCpnBondMktPrice2 + zeroCpnBond2.accruedAmount();
+            var zeroCpnBondParAssetSwap2 = new AssetSwap(payFixedRate, zeroCpnBond2,
                                                                zeroCpnBondMktPrice2,
                                                                vars.iborIndex, vars.spread,
                                                                null,
                                                                vars.iborIndex.dayCounter(),
                                                                parAssetSwap);
             zeroCpnBondParAssetSwap2.setPricingEngine(swapEngine);
-            double zeroCpnBondParAssetSwapSpread2 = zeroCpnBondParAssetSwap2.fairSpread();
-            AssetSwap zeroCpnBondMktAssetSwap2 = new AssetSwap(payFixedRate, zeroCpnBond2,
+            var zeroCpnBondParAssetSwapSpread2 = zeroCpnBondParAssetSwap2.fairSpread();
+            var zeroCpnBondMktAssetSwap2 = new AssetSwap(payFixedRate, zeroCpnBond2,
                                                                zeroCpnBondMktPrice2,
                                                                vars.iborIndex, vars.spread,
                                                                null,
                                                                vars.iborIndex.dayCounter(),
                                                                mktAssetSwap);
             zeroCpnBondMktAssetSwap2.setPricingEngine(swapEngine);
-            double zeroCpnBondMktAssetSwapSpread2 = zeroCpnBondMktAssetSwap2.fairSpread();
-            double error8 = System.Math.Abs(zeroCpnBondMktAssetSwapSpread2 -
-                                     100 * zeroCpnBondParAssetSwapSpread2 / zeroCpnBondMktFullPrice2);
+            var zeroCpnBondMktAssetSwapSpread2 = zeroCpnBondMktAssetSwap2.fairSpread();
+            var error8 = System.Math.Abs(zeroCpnBondMktAssetSwapSpread2 -
+                                         100 * zeroCpnBondParAssetSwapSpread2 / zeroCpnBondMktFullPrice2);
 
             if (error8 > tolerance)
             {
@@ -1127,17 +1127,17 @@ namespace QLNet.Tests
         public void testZSpread()
         {
             // Testing clean and dirty price with null Z-spread against theoretical prices...
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             Calendar bondCalendar = new TARGET();
-            int settlementDays = 3;
-            int fixingDays = 2;
-            bool inArrears = false;
+            var settlementDays = 3;
+            var fixingDays = 2;
+            var inArrears = false;
 
             // Fixed bond (Isin: DE0001135275 DBR 4 01/04/37)
             // maturity doesn't occur on a business day
 
-            Schedule fixedBondSchedule1 = new Schedule(new Date(4, Month.January, 2005),
+            var fixedBondSchedule1 = new Schedule(new Date(4, Month.January, 2005),
                                                        new Date(4, Month.January, 2037),
                                                        new Period(Frequency.Annual), bondCalendar,
                                                        BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -1150,14 +1150,14 @@ namespace QLNet.Tests
             IPricingEngine bondEngine = new DiscountingBondEngine(vars.termStructure);
             fixedBond1.setPricingEngine(bondEngine);
 
-            double fixedBondImpliedValue1 = fixedBond1.cleanPrice();
-            Date fixedBondSettlementDate1 = fixedBond1.settlementDate();
+            var fixedBondImpliedValue1 = fixedBond1.cleanPrice();
+            var fixedBondSettlementDate1 = fixedBond1.settlementDate();
             // standard market conventions:
             // bond's frequency + coumpounding and daycounter of the YC...
-            double fixedBondCleanPrice1 = BondFunctions.cleanPrice(fixedBond1, vars.termStructure, vars.spread,
+            var fixedBondCleanPrice1 = BondFunctions.cleanPrice(fixedBond1, vars.termStructure, vars.spread,
                                                                    new Actual365Fixed(), vars.compounding, Frequency.Annual, fixedBondSettlementDate1);
-            double tolerance = 1.0e-13;
-            double error1 = System.Math.Abs(fixedBondImpliedValue1 - fixedBondCleanPrice1);
+            var tolerance = 1.0e-13;
+            var error1 = System.Math.Abs(fixedBondImpliedValue1 - fixedBondCleanPrice1);
             if (error1 > tolerance)
             {
                 QAssert.Fail("wrong clean price for fixed bond:" +
@@ -1171,7 +1171,7 @@ namespace QLNet.Tests
             // Fixed bond (Isin: IT0006527060 IBRD 5 02/05/19)
             // maturity occurs on a business day
 
-            Schedule fixedBondSchedule2 = new Schedule(new Date(5, Month.February, 2005),
+            var fixedBondSchedule2 = new Schedule(new Date(5, Month.February, 2005),
                                                        new Date(5, Month.February, 2019),
                                                        new Period(Frequency.Annual), bondCalendar,
                                                        BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -1183,13 +1183,13 @@ namespace QLNet.Tests
 
             fixedBond2.setPricingEngine(bondEngine);
 
-            double fixedBondImpliedValue2 = fixedBond2.cleanPrice();
-            Date fixedBondSettlementDate2 = fixedBond2.settlementDate();
+            var fixedBondImpliedValue2 = fixedBond2.cleanPrice();
+            var fixedBondSettlementDate2 = fixedBond2.settlementDate();
             // standard market conventions:
             // bond's frequency + coumpounding and daycounter of the YieldCurve
-            double fixedBondCleanPrice2 = BondFunctions.cleanPrice(fixedBond2, vars.termStructure, vars.spread,
+            var fixedBondCleanPrice2 = BondFunctions.cleanPrice(fixedBond2, vars.termStructure, vars.spread,
                                                                    new Actual365Fixed(), vars.compounding, Frequency.Annual, fixedBondSettlementDate2);
-            double error3 = System.Math.Abs(fixedBondImpliedValue2 - fixedBondCleanPrice2);
+            var error3 = System.Math.Abs(fixedBondImpliedValue2 - fixedBondCleanPrice2);
             if (error3 > tolerance)
             {
                 QAssert.Fail("wrong clean price for fixed bond:" +
@@ -1203,7 +1203,7 @@ namespace QLNet.Tests
             // FRN bond (Isin: IT0003543847 ISPIM 0 09/29/13)
             // maturity doesn't occur on a business day
 
-            Schedule floatingBondSchedule1 = new Schedule(new Date(29, Month.September, 2003),
+            var floatingBondSchedule1 = new Schedule(new Date(29, Month.September, 2003),
                                                           new Date(29, Month.September, 2013),
                                                           new Period(Frequency.Semiannual), bondCalendar,
                                                           BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -1222,12 +1222,12 @@ namespace QLNet.Tests
 
             Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(27, Month.March, 2007), 0.0402);
-            double floatingBondImpliedValue1 = floatingBond1.cleanPrice();
+            var floatingBondImpliedValue1 = floatingBond1.cleanPrice();
             // standard market conventions:
             // bond's frequency + coumpounding and daycounter of the YieldCurve
-            double floatingBondCleanPrice1 = BondFunctions.cleanPrice(floatingBond1, vars.termStructure, vars.spread,
+            var floatingBondCleanPrice1 = BondFunctions.cleanPrice(floatingBond1, vars.termStructure, vars.spread,
                                                                       new Actual365Fixed(), vars.compounding, Frequency.Semiannual, fixedBondSettlementDate1);
-            double error5 = System.Math.Abs(floatingBondImpliedValue1 - floatingBondCleanPrice1);
+            var error5 = System.Math.Abs(floatingBondImpliedValue1 - floatingBondCleanPrice1);
             if (error5 > tolerance)
             {
                 QAssert.Fail("wrong clean price for fixed bond:" +
@@ -1241,7 +1241,7 @@ namespace QLNet.Tests
             // FRN bond (Isin: XS0090566539 COE 0 09/24/18)
             // maturity occurs on a business day
 
-            Schedule floatingBondSchedule2 = new Schedule(new Date(24, Month.September, 2004),
+            var floatingBondSchedule2 = new Schedule(new Date(24, Month.September, 2004),
                                                           new Date(24, Month.September, 2018),
                                                           new Period(Frequency.Semiannual), bondCalendar,
                                                           BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
@@ -1259,12 +1259,12 @@ namespace QLNet.Tests
 
             Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(22, Month.March, 2007), 0.04013);
-            double floatingBondImpliedValue2 = floatingBond2.cleanPrice();
+            var floatingBondImpliedValue2 = floatingBond2.cleanPrice();
             // standard market conventions:
             // bond's frequency + coumpounding and daycounter of the YieldCurve
-            double floatingBondCleanPrice2 = BondFunctions.cleanPrice(floatingBond2, vars.termStructure,
+            var floatingBondCleanPrice2 = BondFunctions.cleanPrice(floatingBond2, vars.termStructure,
                                                                       vars.spread, new Actual365Fixed(), vars.compounding, Frequency.Semiannual, fixedBondSettlementDate1);
-            double error7 = System.Math.Abs(floatingBondImpliedValue2 - floatingBondCleanPrice2);
+            var error7 = System.Math.Abs(floatingBondImpliedValue2 - floatingBondCleanPrice2);
             if (error7 > tolerance)
             {
                 QAssert.Fail("wrong clean price for fixed bond:"
@@ -1278,7 +1278,7 @@ namespace QLNet.Tests
             //// CMS bond (Isin: XS0228052402 CRDIT 0 8/22/20)
             //// maturity doesn't occur on a business day
 
-            Schedule cmsBondSchedule1 = new Schedule(new Date(22, Month.August, 2005),
+            var cmsBondSchedule1 = new Schedule(new Date(22, Month.August, 2005),
                                                      new Date(22, Month.August, 2020),
                                                      new Period(Frequency.Annual), bondCalendar,
                                                      BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -1295,13 +1295,13 @@ namespace QLNet.Tests
 
             Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(18, Month.August, 2006), 0.04158);
-            double cmsBondImpliedValue1 = cmsBond1.cleanPrice();
-            Date cmsBondSettlementDate1 = cmsBond1.settlementDate();
+            var cmsBondImpliedValue1 = cmsBond1.cleanPrice();
+            var cmsBondSettlementDate1 = cmsBond1.settlementDate();
             // standard market conventions:
             // bond's frequency + coumpounding and daycounter of the YieldCurve
-            double cmsBondCleanPrice1 = BondFunctions.cleanPrice(cmsBond1, vars.termStructure, vars.spread,
+            var cmsBondCleanPrice1 = BondFunctions.cleanPrice(cmsBond1, vars.termStructure, vars.spread,
                                                                  new Actual365Fixed(), vars.compounding, Frequency.Annual, cmsBondSettlementDate1);
-            double error9 = System.Math.Abs(cmsBondImpliedValue1 - cmsBondCleanPrice1);
+            var error9 = System.Math.Abs(cmsBondImpliedValue1 - cmsBondCleanPrice1);
             if (error9 > tolerance)
             {
                 QAssert.Fail("wrong clean price for fixed bond:"
@@ -1314,7 +1314,7 @@ namespace QLNet.Tests
             // CMS bond (Isin: XS0218766664 ISPIM 0 5/6/15)
             // maturity occurs on a business day
 
-            Schedule cmsBondSchedule2 = new Schedule(new Date(06, Month.May, 2005),
+            var cmsBondSchedule2 = new Schedule(new Date(06, Month.May, 2005),
                                                      new Date(06, Month.May, 2015),
                                                      new Period(Frequency.Annual), bondCalendar,
                                                      BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -1331,13 +1331,13 @@ namespace QLNet.Tests
 
             Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(04, Month.May, 2006), 0.04217);
-            double cmsBondImpliedValue2 = cmsBond2.cleanPrice();
-            Date cmsBondSettlementDate2 = cmsBond2.settlementDate();
+            var cmsBondImpliedValue2 = cmsBond2.cleanPrice();
+            var cmsBondSettlementDate2 = cmsBond2.settlementDate();
             // standard market conventions:
             // bond's frequency + coumpounding and daycounter of the YieldCurve
-            double cmsBondCleanPrice2 = BondFunctions.cleanPrice(cmsBond2, vars.termStructure, vars.spread,
+            var cmsBondCleanPrice2 = BondFunctions.cleanPrice(cmsBond2, vars.termStructure, vars.spread,
                                                                  new Actual365Fixed(), vars.compounding, Frequency.Annual, cmsBondSettlementDate2);
-            double error11 = System.Math.Abs(cmsBondImpliedValue2 - cmsBondCleanPrice2);
+            var error11 = System.Math.Abs(cmsBondImpliedValue2 - cmsBondCleanPrice2);
             if (error11 > tolerance)
             {
                 QAssert.Fail("wrong clean price for fixed bond:"
@@ -1357,13 +1357,13 @@ namespace QLNet.Tests
 
             zeroCpnBond1.setPricingEngine(bondEngine);
 
-            double zeroCpnBondImpliedValue1 = zeroCpnBond1.cleanPrice();
-            Date zeroCpnBondSettlementDate1 = zeroCpnBond1.settlementDate();
+            var zeroCpnBondImpliedValue1 = zeroCpnBond1.cleanPrice();
+            var zeroCpnBondSettlementDate1 = zeroCpnBond1.settlementDate();
             // standard market conventions:
             // bond's frequency + coumpounding and daycounter of the YieldCurve
-            double zeroCpnBondCleanPrice1 = BondFunctions.cleanPrice(zeroCpnBond1, vars.termStructure, vars.spread,
+            var zeroCpnBondCleanPrice1 = BondFunctions.cleanPrice(zeroCpnBond1, vars.termStructure, vars.spread,
                                                                      new Actual365Fixed(), vars.compounding, Frequency.Annual, zeroCpnBondSettlementDate1);
-            double error13 = System.Math.Abs(zeroCpnBondImpliedValue1 - zeroCpnBondCleanPrice1);
+            var error13 = System.Math.Abs(zeroCpnBondImpliedValue1 - zeroCpnBondCleanPrice1);
             if (error13 > tolerance)
             {
                 QAssert.Fail("wrong clean price for zero coupon bond:"
@@ -1384,13 +1384,13 @@ namespace QLNet.Tests
 
             zeroCpnBond2.setPricingEngine(bondEngine);
 
-            double zeroCpnBondImpliedValue2 = zeroCpnBond2.cleanPrice();
-            Date zeroCpnBondSettlementDate2 = zeroCpnBond2.settlementDate();
+            var zeroCpnBondImpliedValue2 = zeroCpnBond2.cleanPrice();
+            var zeroCpnBondSettlementDate2 = zeroCpnBond2.settlementDate();
             // standard market conventions:
             // bond's frequency + coumpounding and daycounter of the YieldCurve
-            double zeroCpnBondCleanPrice2 = BondFunctions.cleanPrice(zeroCpnBond2, vars.termStructure, vars.spread,
+            var zeroCpnBondCleanPrice2 = BondFunctions.cleanPrice(zeroCpnBond2, vars.termStructure, vars.spread,
                                                                      new Actual365Fixed(), vars.compounding, Frequency.Annual, zeroCpnBondSettlementDate2);
-            double error15 = System.Math.Abs(zeroCpnBondImpliedValue2 - zeroCpnBondCleanPrice2);
+            var error15 = System.Math.Abs(zeroCpnBondImpliedValue2 - zeroCpnBondCleanPrice2);
             if (error15 > tolerance)
             {
                 QAssert.Fail("wrong clean price for zero coupon bond:"
@@ -1408,20 +1408,20 @@ namespace QLNet.Tests
 
             // Testing implied generic-bond value against asset-swap fair price with null spread...
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             Calendar bondCalendar = new TARGET();
-            int settlementDays = 3;
-            int fixingDays = 2;
-            bool payFixeddouble = true;
-            bool parAssetSwap = true;
-            bool inArrears = false;
+            var settlementDays = 3;
+            var fixingDays = 2;
+            var payFixeddouble = true;
+            var parAssetSwap = true;
+            var inArrears = false;
 
             // Fixed Underlying bond (Isin: DE0001135275 DBR 4 01/04/37)
             // maturity doesn't occur on a business day
-            Date fixedBondStartDate1 = new Date(4, Month.January, 2005);
-            Date fixedBondMaturityDate1 = new Date(4, Month.January, 2037);
-            Schedule fixedBondSchedule1 = new Schedule(fixedBondStartDate1,
+            var fixedBondStartDate1 = new Date(4, Month.January, 2005);
+            var fixedBondMaturityDate1 = new Date(4, Month.January, 2037);
+            var fixedBondSchedule1 = new Schedule(fixedBondStartDate1,
                                                        fixedBondMaturityDate1,
                                                        new Period(Frequency.Annual), bondCalendar,
                                                        BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -1429,26 +1429,26 @@ namespace QLNet.Tests
             List<CashFlow> fixedBondLeg1 = new FixedRateLeg(fixedBondSchedule1)
             .withCouponRates(0.04, new ActualActual(ActualActual.Convention.ISDA))
             .withNotionals(vars.faceAmount);
-            Date fixedbondRedemption1 = bondCalendar.adjust(fixedBondMaturityDate1,
+            var fixedbondRedemption1 = bondCalendar.adjust(fixedBondMaturityDate1,
                                                             BusinessDayConvention.Following);
             fixedBondLeg1.Add(new SimpleCashFlow(100.0, fixedbondRedemption1));
-            Bond fixedBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var fixedBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                        fixedBondMaturityDate1, fixedBondStartDate1, fixedBondLeg1);
             IPricingEngine bondEngine = new DiscountingBondEngine(vars.termStructure);
             IPricingEngine swapEngine = new DiscountingSwapEngine(vars.termStructure);
             fixedBond1.setPricingEngine(bondEngine);
 
-            double fixedBondPrice1 = fixedBond1.cleanPrice();
-            AssetSwap fixedBondAssetSwap1 = new AssetSwap(payFixeddouble,
+            var fixedBondPrice1 = fixedBond1.cleanPrice();
+            var fixedBondAssetSwap1 = new AssetSwap(payFixeddouble,
                                                           fixedBond1, fixedBondPrice1,
                                                           vars.iborIndex, vars.spread,
                                                           null,
                                                           vars.iborIndex.dayCounter(),
                                                           parAssetSwap);
             fixedBondAssetSwap1.setPricingEngine(swapEngine);
-            double fixedBondAssetSwapPrice1 = fixedBondAssetSwap1.fairCleanPrice();
-            double tolerance = 1.0e-13;
-            double error1 = System.Math.Abs(fixedBondAssetSwapPrice1 - fixedBondPrice1);
+            var fixedBondAssetSwapPrice1 = fixedBondAssetSwap1.fairCleanPrice();
+            var tolerance = 1.0e-13;
+            var error1 = System.Math.Abs(fixedBondAssetSwapPrice1 - fixedBondPrice1);
 
             if (error1 > tolerance)
             {
@@ -1461,9 +1461,9 @@ namespace QLNet.Tests
 
             // Fixed Underlying bond (Isin: IT0006527060 IBRD 5 02/05/19)
             // maturity occurs on a business day
-            Date fixedBondStartDate2 = new Date(5, Month.February, 2005);
-            Date fixedBondMaturityDate2 = new Date(5, Month.February, 2019);
-            Schedule fixedBondSchedule2 = new Schedule(fixedBondStartDate2,
+            var fixedBondStartDate2 = new Date(5, Month.February, 2005);
+            var fixedBondMaturityDate2 = new Date(5, Month.February, 2019);
+            var fixedBondSchedule2 = new Schedule(fixedBondStartDate2,
                                                        fixedBondMaturityDate2,
                                                        new Period(Frequency.Annual), bondCalendar,
                                                        BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -1471,22 +1471,22 @@ namespace QLNet.Tests
             List<CashFlow> fixedBondLeg2 = new FixedRateLeg(fixedBondSchedule2)
             .withCouponRates(0.05, new Thirty360(Thirty360.Thirty360Convention.BondBasis))
             .withNotionals(vars.faceAmount);
-            Date fixedbondRedemption2 = bondCalendar.adjust(fixedBondMaturityDate2, BusinessDayConvention.Following);
+            var fixedbondRedemption2 = bondCalendar.adjust(fixedBondMaturityDate2, BusinessDayConvention.Following);
             fixedBondLeg2.Add(new SimpleCashFlow(100.0, fixedbondRedemption2));
-            Bond fixedBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var fixedBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                        fixedBondMaturityDate2, fixedBondStartDate2, fixedBondLeg2);
             fixedBond2.setPricingEngine(bondEngine);
 
-            double fixedBondPrice2 = fixedBond2.cleanPrice();
-            AssetSwap fixedBondAssetSwap2 = new AssetSwap(payFixeddouble,
+            var fixedBondPrice2 = fixedBond2.cleanPrice();
+            var fixedBondAssetSwap2 = new AssetSwap(payFixeddouble,
                                                           fixedBond2, fixedBondPrice2,
                                                           vars.iborIndex, vars.spread,
                                                           null,
                                                           vars.iborIndex.dayCounter(),
                                                           parAssetSwap);
             fixedBondAssetSwap2.setPricingEngine(swapEngine);
-            double fixedBondAssetSwapPrice2 = fixedBondAssetSwap2.fairCleanPrice();
-            double error2 = System.Math.Abs(fixedBondAssetSwapPrice2 - fixedBondPrice2);
+            var fixedBondAssetSwapPrice2 = fixedBondAssetSwap2.fairCleanPrice();
+            var error2 = System.Math.Abs(fixedBondAssetSwapPrice2 - fixedBondPrice2);
 
             if (error2 > tolerance)
             {
@@ -1499,9 +1499,9 @@ namespace QLNet.Tests
 
             // FRN Underlying bond (Isin: IT0003543847 ISPIM 0 09/29/13)
             // maturity doesn't occur on a business day
-            Date floatingBondStartDate1 = new Date(29, Month.September, 2003);
-            Date floatingBondMaturityDate1 = new Date(29, Month.September, 2013);
-            Schedule floatingBondSchedule1 = new Schedule(floatingBondStartDate1,
+            var floatingBondStartDate1 = new Date(29, Month.September, 2003);
+            var floatingBondMaturityDate1 = new Date(29, Month.September, 2013);
+            var floatingBondSchedule1 = new Schedule(floatingBondStartDate1,
                                                           floatingBondMaturityDate1,
                                                           new Period(Frequency.Semiannual), bondCalendar,
                                                           BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -1512,25 +1512,25 @@ namespace QLNet.Tests
             .withSpreads(0.0056)
             .inArrears(inArrears)
             .withNotionals(vars.faceAmount);
-            Date floatingbondRedemption1 =
+            var floatingbondRedemption1 =
                bondCalendar.adjust(floatingBondMaturityDate1, BusinessDayConvention.Following);
             floatingBondLeg1.Add(new SimpleCashFlow(100.0, floatingbondRedemption1));
-            Bond floatingBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var floatingBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                           floatingBondMaturityDate1, floatingBondStartDate1, floatingBondLeg1);
             floatingBond1.setPricingEngine(bondEngine);
 
             Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(27, Month.March, 2007), 0.0402);
-            double floatingBondPrice1 = floatingBond1.cleanPrice();
-            AssetSwap floatingBondAssetSwap1 = new AssetSwap(payFixeddouble,
+            var floatingBondPrice1 = floatingBond1.cleanPrice();
+            var floatingBondAssetSwap1 = new AssetSwap(payFixeddouble,
                                                              floatingBond1, floatingBondPrice1,
                                                              vars.iborIndex, vars.spread,
                                                              null,
                                                              vars.iborIndex.dayCounter(),
                                                              parAssetSwap);
             floatingBondAssetSwap1.setPricingEngine(swapEngine);
-            double floatingBondAssetSwapPrice1 = floatingBondAssetSwap1.fairCleanPrice();
-            double error3 = System.Math.Abs(floatingBondAssetSwapPrice1 - floatingBondPrice1);
+            var floatingBondAssetSwapPrice1 = floatingBondAssetSwap1.fairCleanPrice();
+            var error3 = System.Math.Abs(floatingBondAssetSwapPrice1 - floatingBondPrice1);
 
             if (error3 > tolerance)
             {
@@ -1544,9 +1544,9 @@ namespace QLNet.Tests
 
             // FRN Underlying bond (Isin: XS0090566539 COE 0 09/24/18)
             // maturity occurs on a business day
-            Date floatingBondStartDate2 = new Date(24, Month.September, 2004);
-            Date floatingBondMaturityDate2 = new Date(24, Month.September, 2018);
-            Schedule floatingBondSchedule2 = new Schedule(floatingBondStartDate2,
+            var floatingBondStartDate2 = new Date(24, Month.September, 2004);
+            var floatingBondMaturityDate2 = new Date(24, Month.September, 2018);
+            var floatingBondSchedule2 = new Schedule(floatingBondStartDate2,
                                                           floatingBondMaturityDate2,
                                                           new Period(Frequency.Semiannual), bondCalendar,
                                                           BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
@@ -1558,18 +1558,18 @@ namespace QLNet.Tests
             .inArrears(inArrears)
             .withNotionals(vars.faceAmount)
             .withPaymentAdjustment(BusinessDayConvention.ModifiedFollowing);
-            Date floatingbondRedemption2 =
+            var floatingbondRedemption2 =
                bondCalendar.adjust(floatingBondMaturityDate2, BusinessDayConvention.ModifiedFollowing);
             floatingBondLeg2.Add(new SimpleCashFlow(100.0, floatingbondRedemption2));
-            Bond floatingBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var floatingBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                           floatingBondMaturityDate2, floatingBondStartDate2, floatingBondLeg2);
             floatingBond2.setPricingEngine(bondEngine);
 
             Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(22, Month.March, 2007), 0.04013);
-            double currentCoupon = 0.04013 + 0.0025;
-            double floatingCurrentCoupon = floatingBond2.nextCouponRate();
-            double error4 = System.Math.Abs(floatingCurrentCoupon - currentCoupon);
+            var currentCoupon = 0.04013 + 0.0025;
+            var floatingCurrentCoupon = floatingBond2.nextCouponRate();
+            var error4 = System.Math.Abs(floatingCurrentCoupon - currentCoupon);
             if (error4 > tolerance)
             {
                 QAssert.Fail("wrong current coupon is returned for floater bond:"
@@ -1581,16 +1581,16 @@ namespace QLNet.Tests
                              + "\n  tolerance:             " + tolerance);
             }
 
-            double floatingBondPrice2 = floatingBond2.cleanPrice();
-            AssetSwap floatingBondAssetSwap2 = new AssetSwap(payFixeddouble,
+            var floatingBondPrice2 = floatingBond2.cleanPrice();
+            var floatingBondAssetSwap2 = new AssetSwap(payFixeddouble,
                                                              floatingBond2, floatingBondPrice2,
                                                              vars.iborIndex, vars.spread,
                                                              null,
                                                              vars.iborIndex.dayCounter(),
                                                              parAssetSwap);
             floatingBondAssetSwap2.setPricingEngine(swapEngine);
-            double floatingBondAssetSwapPrice2 = floatingBondAssetSwap2.fairCleanPrice();
-            double error5 = System.Math.Abs(floatingBondAssetSwapPrice2 - floatingBondPrice2);
+            var floatingBondAssetSwapPrice2 = floatingBondAssetSwap2.fairCleanPrice();
+            var error5 = System.Math.Abs(floatingBondAssetSwapPrice2 - floatingBondPrice2);
 
             if (error5 > tolerance)
             {
@@ -1604,9 +1604,9 @@ namespace QLNet.Tests
 
             // CMS Underlying bond (Isin: XS0228052402 CRDIT 0 8/22/20)
             // maturity doesn't occur on a business day
-            Date cmsBondStartDate1 = new Date(22, Month.August, 2005);
-            Date cmsBondMaturityDate1 = new Date(22, Month.August, 2020);
-            Schedule cmsBondSchedule1 = new Schedule(cmsBondStartDate1,
+            var cmsBondStartDate1 = new Date(22, Month.August, 2005);
+            var cmsBondMaturityDate1 = new Date(22, Month.August, 2020);
+            var cmsBondSchedule1 = new Schedule(cmsBondStartDate1,
                                                      cmsBondMaturityDate1,
                                                      new Period(Frequency.Annual), bondCalendar,
                                                      BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -1618,24 +1618,24 @@ namespace QLNet.Tests
             .withFloors(0.025)
             .inArrears(inArrears)
             .withNotionals(vars.faceAmount);
-            Date cmsbondRedemption1 = bondCalendar.adjust(cmsBondMaturityDate1, BusinessDayConvention.Following);
+            var cmsbondRedemption1 = bondCalendar.adjust(cmsBondMaturityDate1, BusinessDayConvention.Following);
             cmsBondLeg1.Add(new SimpleCashFlow(100.0, cmsbondRedemption1));
-            Bond cmsBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var cmsBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                      cmsBondMaturityDate1, cmsBondStartDate1, cmsBondLeg1);
             cmsBond1.setPricingEngine(bondEngine);
 
             Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(18, Month.August, 2006), 0.04158);
-            double cmsBondPrice1 = cmsBond1.cleanPrice();
-            AssetSwap cmsBondAssetSwap1 = new AssetSwap(payFixeddouble,
+            var cmsBondPrice1 = cmsBond1.cleanPrice();
+            var cmsBondAssetSwap1 = new AssetSwap(payFixeddouble,
                                                         cmsBond1, cmsBondPrice1,
                                                         vars.iborIndex, vars.spread,
                                                         null,
                                                         vars.iborIndex.dayCounter(),
                                                         parAssetSwap);
             cmsBondAssetSwap1.setPricingEngine(swapEngine);
-            double cmsBondAssetSwapPrice1 = cmsBondAssetSwap1.fairCleanPrice();
-            double error6 = System.Math.Abs(cmsBondAssetSwapPrice1 - cmsBondPrice1);
+            var cmsBondAssetSwapPrice1 = cmsBondAssetSwap1.fairCleanPrice();
+            var error6 = System.Math.Abs(cmsBondAssetSwapPrice1 - cmsBondPrice1);
 
             if (error6 > tolerance)
             {
@@ -1648,9 +1648,9 @@ namespace QLNet.Tests
 
             // CMS Underlying bond (Isin: XS0218766664 ISPIM 0 5/6/15)
             // maturity occurs on a business day
-            Date cmsBondStartDate2 = new Date(06, Month.May, 2005);
-            Date cmsBondMaturityDate2 = new Date(06, Month.May, 2015);
-            Schedule cmsBondSchedule2 = new Schedule(cmsBondStartDate2,
+            var cmsBondStartDate2 = new Date(06, Month.May, 2005);
+            var cmsBondMaturityDate2 = new Date(06, Month.May, 2015);
+            var cmsBondSchedule2 = new Schedule(cmsBondStartDate2,
                                                      cmsBondMaturityDate2,
                                                      new Period(Frequency.Annual), bondCalendar,
                                                      BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -1661,24 +1661,24 @@ namespace QLNet.Tests
             .inArrears(inArrears)
             .withPaymentDayCounter(new Thirty360())
             .withNotionals(vars.faceAmount);
-            Date cmsbondRedemption2 = bondCalendar.adjust(cmsBondMaturityDate2, BusinessDayConvention.Following);
+            var cmsbondRedemption2 = bondCalendar.adjust(cmsBondMaturityDate2, BusinessDayConvention.Following);
             cmsBondLeg2.Add(new SimpleCashFlow(100.0, cmsbondRedemption2));
-            Bond cmsBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var cmsBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                      cmsBondMaturityDate2, cmsBondStartDate2, cmsBondLeg2);
             cmsBond2.setPricingEngine(bondEngine);
 
             Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(04, Month.May, 2006), 0.04217);
-            double cmsBondPrice2 = cmsBond2.cleanPrice();
-            AssetSwap cmsBondAssetSwap2 = new AssetSwap(payFixeddouble,
+            var cmsBondPrice2 = cmsBond2.cleanPrice();
+            var cmsBondAssetSwap2 = new AssetSwap(payFixeddouble,
                                                         cmsBond2, cmsBondPrice2,
                                                         vars.iborIndex, vars.spread,
                                                         null,
                                                         vars.iborIndex.dayCounter(),
                                                         parAssetSwap);
             cmsBondAssetSwap2.setPricingEngine(swapEngine);
-            double cmsBondAssetSwapPrice2 = cmsBondAssetSwap2.fairCleanPrice();
-            double error7 = System.Math.Abs(cmsBondAssetSwapPrice2 - cmsBondPrice2);
+            var cmsBondAssetSwapPrice2 = cmsBondAssetSwap2.fairCleanPrice();
+            var error7 = System.Math.Abs(cmsBondAssetSwapPrice2 - cmsBondPrice2);
 
             if (error7 > tolerance)
             {
@@ -1691,24 +1691,24 @@ namespace QLNet.Tests
 
             // Zero Coupon bond (Isin: DE0004771662 IBRD 0 12/20/15)
             // maturity doesn't occur on a business day
-            Date zeroCpnBondStartDate1 = new Date(19, Month.December, 1985);
-            Date zeroCpnBondMaturityDate1 = new Date(20, Month.December, 2015);
-            Date zeroCpnBondRedemption1 = bondCalendar.adjust(zeroCpnBondMaturityDate1, BusinessDayConvention.Following);
-            List<CashFlow> zeroCpnBondLeg1 = new List<CashFlow> { new SimpleCashFlow(100.0, zeroCpnBondRedemption1) };
-            Bond zeroCpnBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var zeroCpnBondStartDate1 = new Date(19, Month.December, 1985);
+            var zeroCpnBondMaturityDate1 = new Date(20, Month.December, 2015);
+            var zeroCpnBondRedemption1 = bondCalendar.adjust(zeroCpnBondMaturityDate1, BusinessDayConvention.Following);
+            var zeroCpnBondLeg1 = new List<CashFlow> { new SimpleCashFlow(100.0, zeroCpnBondRedemption1) };
+            var zeroCpnBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                          zeroCpnBondMaturityDate1, zeroCpnBondStartDate1, zeroCpnBondLeg1);
             zeroCpnBond1.setPricingEngine(bondEngine);
 
-            double zeroCpnBondPrice1 = zeroCpnBond1.cleanPrice();
-            AssetSwap zeroCpnAssetSwap1 = new AssetSwap(payFixeddouble,
+            var zeroCpnBondPrice1 = zeroCpnBond1.cleanPrice();
+            var zeroCpnAssetSwap1 = new AssetSwap(payFixeddouble,
                                                         zeroCpnBond1, zeroCpnBondPrice1,
                                                         vars.iborIndex, vars.spread,
                                                         null,
                                                         vars.iborIndex.dayCounter(),
                                                         parAssetSwap);
             zeroCpnAssetSwap1.setPricingEngine(swapEngine);
-            double zeroCpnBondAssetSwapPrice1 = zeroCpnAssetSwap1.fairCleanPrice();
-            double error8 = System.Math.Abs(zeroCpnBondAssetSwapPrice1 - zeroCpnBondPrice1);
+            var zeroCpnBondAssetSwapPrice1 = zeroCpnAssetSwap1.fairCleanPrice();
+            var error8 = System.Math.Abs(zeroCpnBondAssetSwapPrice1 - zeroCpnBondPrice1);
 
             if (error8 > tolerance)
             {
@@ -1721,24 +1721,24 @@ namespace QLNet.Tests
 
             // Zero Coupon bond (Isin: IT0001200390 ISPIM 0 02/17/28)
             // maturity occurs on a business day
-            Date zeroCpnBondStartDate2 = new Date(17, Month.February, 1998);
-            Date zeroCpnBondMaturityDate2 = new Date(17, Month.February, 2028);
-            Date zerocpbondRedemption2 = bondCalendar.adjust(zeroCpnBondMaturityDate2, BusinessDayConvention.Following);
-            List<CashFlow> zeroCpnBondLeg2 = new List<CashFlow> { new SimpleCashFlow(100.0, zerocpbondRedemption2) };
-            Bond zeroCpnBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var zeroCpnBondStartDate2 = new Date(17, Month.February, 1998);
+            var zeroCpnBondMaturityDate2 = new Date(17, Month.February, 2028);
+            var zerocpbondRedemption2 = bondCalendar.adjust(zeroCpnBondMaturityDate2, BusinessDayConvention.Following);
+            var zeroCpnBondLeg2 = new List<CashFlow> { new SimpleCashFlow(100.0, zerocpbondRedemption2) };
+            var zeroCpnBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                           zeroCpnBondMaturityDate2, zeroCpnBondStartDate2, zeroCpnBondLeg2);
             zeroCpnBond2.setPricingEngine(bondEngine);
 
-            double zeroCpnBondPrice2 = zeroCpnBond2.cleanPrice();
-            AssetSwap zeroCpnAssetSwap2 = new AssetSwap(payFixeddouble,
+            var zeroCpnBondPrice2 = zeroCpnBond2.cleanPrice();
+            var zeroCpnAssetSwap2 = new AssetSwap(payFixeddouble,
                                                         zeroCpnBond2, zeroCpnBondPrice2,
                                                         vars.iborIndex, vars.spread,
                                                         null,
                                                         vars.iborIndex.dayCounter(),
                                                         parAssetSwap);
             zeroCpnAssetSwap2.setPricingEngine(swapEngine);
-            double zeroCpnBondAssetSwapPrice2 = zeroCpnAssetSwap2.fairCleanPrice();
-            double error9 = System.Math.Abs(cmsBondAssetSwapPrice2 - cmsBondPrice2);
+            var zeroCpnBondAssetSwapPrice2 = zeroCpnAssetSwap2.fairCleanPrice();
+            var error9 = System.Math.Abs(cmsBondAssetSwapPrice2 - cmsBondPrice2);
 
             if (error9 > tolerance)
             {
@@ -1755,22 +1755,22 @@ namespace QLNet.Tests
         {
             // Testing market asset swap against par asset swap with generic bond...
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             Calendar bondCalendar = new TARGET();
-            int settlementDays = 3;
-            int fixingDays = 2;
-            bool payFixedRate = true;
-            bool parAssetSwap = true;
-            bool mktAssetSwap = false;
-            bool inArrears = false;
+            var settlementDays = 3;
+            var fixingDays = 2;
+            var payFixedRate = true;
+            var parAssetSwap = true;
+            var mktAssetSwap = false;
+            var inArrears = false;
 
             // Fixed Underlying bond (Isin: DE0001135275 DBR 4 01/04/37)
             // maturity doesn't occur on a business day
 
-            Date fixedBondStartDate1 = new Date(4, Month.January, 2005);
-            Date fixedBondMaturityDate1 = new Date(4, Month.January, 2037);
-            Schedule fixedBondSchedule1 = new Schedule(fixedBondStartDate1,
+            var fixedBondStartDate1 = new Date(4, Month.January, 2005);
+            var fixedBondMaturityDate1 = new Date(4, Month.January, 2037);
+            var fixedBondSchedule1 = new Schedule(fixedBondStartDate1,
                                                        fixedBondMaturityDate1,
                                                        new Period(Frequency.Annual), bondCalendar,
                                                        BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -1778,35 +1778,35 @@ namespace QLNet.Tests
             List<CashFlow> fixedBondLeg1 = new FixedRateLeg(fixedBondSchedule1)
             .withCouponRates(0.04, new ActualActual(ActualActual.Convention.ISDA))
             .withNotionals(vars.faceAmount);
-            Date fixedbondRedemption1 = bondCalendar.adjust(fixedBondMaturityDate1, BusinessDayConvention.Following);
+            var fixedbondRedemption1 = bondCalendar.adjust(fixedBondMaturityDate1, BusinessDayConvention.Following);
             fixedBondLeg1.Add(new SimpleCashFlow(100.0, fixedbondRedemption1));
-            Bond fixedBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount, fixedBondMaturityDate1,
+            var fixedBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount, fixedBondMaturityDate1,
                                        fixedBondStartDate1, fixedBondLeg1);
             IPricingEngine bondEngine = new DiscountingBondEngine(vars.termStructure);
             IPricingEngine swapEngine = new DiscountingSwapEngine(vars.termStructure);
             fixedBond1.setPricingEngine(bondEngine);
 
-            double fixedBondMktPrice1 = 89.22; // market price observed on 7th June 2007
-            double fixedBondMktFullPrice1 = fixedBondMktPrice1 + fixedBond1.accruedAmount();
-            AssetSwap fixedBondParAssetSwap1 = new AssetSwap(payFixedRate,
+            var fixedBondMktPrice1 = 89.22; // market price observed on 7th June 2007
+            var fixedBondMktFullPrice1 = fixedBondMktPrice1 + fixedBond1.accruedAmount();
+            var fixedBondParAssetSwap1 = new AssetSwap(payFixedRate,
                                                              fixedBond1, fixedBondMktPrice1,
                                                              vars.iborIndex, vars.spread,
                                                              null,
                                                              vars.iborIndex.dayCounter(),
                                                              parAssetSwap);
             fixedBondParAssetSwap1.setPricingEngine(swapEngine);
-            double fixedBondParAssetSwapSpread1 = fixedBondParAssetSwap1.fairSpread();
-            AssetSwap fixedBondMktAssetSwap1 = new AssetSwap(payFixedRate,
+            var fixedBondParAssetSwapSpread1 = fixedBondParAssetSwap1.fairSpread();
+            var fixedBondMktAssetSwap1 = new AssetSwap(payFixedRate,
                                                              fixedBond1, fixedBondMktPrice1,
                                                              vars.iborIndex, vars.spread,
                                                              null,
                                                              vars.iborIndex.dayCounter(),
                                                              mktAssetSwap);
             fixedBondMktAssetSwap1.setPricingEngine(swapEngine);
-            double fixedBondMktAssetSwapSpread1 = fixedBondMktAssetSwap1.fairSpread();
+            var fixedBondMktAssetSwapSpread1 = fixedBondMktAssetSwap1.fairSpread();
 
-            double tolerance = 1.0e-13;
-            double error1 =
+            var tolerance = 1.0e-13;
+            var error1 =
                System.Math.Abs(fixedBondMktAssetSwapSpread1 -
                         100 * fixedBondParAssetSwapSpread1 / fixedBondMktFullPrice1);
 
@@ -1820,9 +1820,9 @@ namespace QLNet.Tests
             // Fixed Underlying bond (Isin: IT0006527060 IBRD 5 02/05/19)
             // maturity occurs on a business day
 
-            Date fixedBondStartDate2 = new Date(5, Month.February, 2005);
-            Date fixedBondMaturityDate2 = new Date(5, Month.February, 2019);
-            Schedule fixedBondSchedule2 = new Schedule(fixedBondStartDate2,
+            var fixedBondStartDate2 = new Date(5, Month.February, 2005);
+            var fixedBondMaturityDate2 = new Date(5, Month.February, 2019);
+            var fixedBondSchedule2 = new Schedule(fixedBondStartDate2,
                                                        fixedBondMaturityDate2,
                                                        new Period(Frequency.Annual), bondCalendar,
                                                        BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -1830,32 +1830,32 @@ namespace QLNet.Tests
             List<CashFlow> fixedBondLeg2 = new FixedRateLeg(fixedBondSchedule2)
             .withCouponRates(0.05, new Thirty360(Thirty360.Thirty360Convention.BondBasis))
             .withNotionals(vars.faceAmount);
-            Date fixedbondRedemption2 = bondCalendar.adjust(fixedBondMaturityDate2, BusinessDayConvention.Following);
+            var fixedbondRedemption2 = bondCalendar.adjust(fixedBondMaturityDate2, BusinessDayConvention.Following);
             fixedBondLeg2.Add(new SimpleCashFlow(100.0, fixedbondRedemption2));
-            Bond fixedBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount, fixedBondMaturityDate2, fixedBondStartDate2,
+            var fixedBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount, fixedBondMaturityDate2, fixedBondStartDate2,
                                        fixedBondLeg2);
             fixedBond2.setPricingEngine(bondEngine);
 
-            double fixedBondMktPrice2 = 99.98; // market price observed on 7th June 2007
-            double fixedBondMktFullPrice2 = fixedBondMktPrice2 + fixedBond2.accruedAmount();
-            AssetSwap fixedBondParAssetSwap2 = new AssetSwap(payFixedRate,
+            var fixedBondMktPrice2 = 99.98; // market price observed on 7th June 2007
+            var fixedBondMktFullPrice2 = fixedBondMktPrice2 + fixedBond2.accruedAmount();
+            var fixedBondParAssetSwap2 = new AssetSwap(payFixedRate,
                                                              fixedBond2, fixedBondMktPrice2,
                                                              vars.iborIndex, vars.spread,
                                                              null,
                                                              vars.iborIndex.dayCounter(),
                                                              parAssetSwap);
             fixedBondParAssetSwap2.setPricingEngine(swapEngine);
-            double fixedBondParAssetSwapSpread2 = fixedBondParAssetSwap2.fairSpread();
-            AssetSwap fixedBondMktAssetSwap2 = new AssetSwap(payFixedRate,
+            var fixedBondParAssetSwapSpread2 = fixedBondParAssetSwap2.fairSpread();
+            var fixedBondMktAssetSwap2 = new AssetSwap(payFixedRate,
                                                              fixedBond2, fixedBondMktPrice2,
                                                              vars.iborIndex, vars.spread,
                                                              null,
                                                              vars.iborIndex.dayCounter(),
                                                              mktAssetSwap);
             fixedBondMktAssetSwap2.setPricingEngine(swapEngine);
-            double fixedBondMktAssetSwapSpread2 = fixedBondMktAssetSwap2.fairSpread();
-            double error2 = System.Math.Abs(fixedBondMktAssetSwapSpread2 -
-                                     100 * fixedBondParAssetSwapSpread2 / fixedBondMktFullPrice2);
+            var fixedBondMktAssetSwapSpread2 = fixedBondMktAssetSwap2.fairSpread();
+            var error2 = System.Math.Abs(fixedBondMktAssetSwapSpread2 -
+                                         100 * fixedBondParAssetSwapSpread2 / fixedBondMktFullPrice2);
 
             if (error2 > tolerance)
                 QAssert.Fail("wrong asset swap spreads for fixed bond:" +
@@ -1867,9 +1867,9 @@ namespace QLNet.Tests
             // FRN Underlying bond (Isin: IT0003543847 ISPIM 0 09/29/13)
             // maturity doesn't occur on a business day
 
-            Date floatingBondStartDate1 = new Date(29, Month.September, 2003);
-            Date floatingBondMaturityDate1 = new Date(29, Month.September, 2013);
-            Schedule floatingBondSchedule1 = new Schedule(floatingBondStartDate1,
+            var floatingBondStartDate1 = new Date(29, Month.September, 2003);
+            var floatingBondMaturityDate1 = new Date(29, Month.September, 2013);
+            var floatingBondSchedule1 = new Schedule(floatingBondStartDate1,
                                                           floatingBondMaturityDate1,
                                                           new Period(Frequency.Semiannual), bondCalendar,
                                                           BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -1880,39 +1880,39 @@ namespace QLNet.Tests
             .withSpreads(0.0056)
             .inArrears(inArrears)
             .withNotionals(vars.faceAmount);
-            Date floatingbondRedemption1 =
+            var floatingbondRedemption1 =
                bondCalendar.adjust(floatingBondMaturityDate1, BusinessDayConvention.Following);
             floatingBondLeg1.Add(new SimpleCashFlow(100.0, floatingbondRedemption1));
-            Bond floatingBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount, floatingBondMaturityDate1,
+            var floatingBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount, floatingBondMaturityDate1,
                                           floatingBondStartDate1, floatingBondLeg1);
             floatingBond1.setPricingEngine(bondEngine);
 
             Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(27, Month.March, 2007), 0.0402);
             // market price observed on 7th June 2007
-            double floatingBondMktPrice1 = 101.64;
-            double floatingBondMktFullPrice1 =
+            var floatingBondMktPrice1 = 101.64;
+            var floatingBondMktFullPrice1 =
                floatingBondMktPrice1 + floatingBond1.accruedAmount();
-            AssetSwap floatingBondParAssetSwap1 = new AssetSwap(payFixedRate,
+            var floatingBondParAssetSwap1 = new AssetSwap(payFixedRate,
                                                                 floatingBond1, floatingBondMktPrice1,
                                                                 vars.iborIndex, vars.spread,
                                                                 null,
                                                                 vars.iborIndex.dayCounter(),
                                                                 parAssetSwap);
             floatingBondParAssetSwap1.setPricingEngine(swapEngine);
-            double floatingBondParAssetSwapSpread1 =
+            var floatingBondParAssetSwapSpread1 =
                floatingBondParAssetSwap1.fairSpread();
-            AssetSwap floatingBondMktAssetSwap1 = new AssetSwap(payFixedRate,
+            var floatingBondMktAssetSwap1 = new AssetSwap(payFixedRate,
                                                                 floatingBond1, floatingBondMktPrice1,
                                                                 vars.iborIndex, vars.spread,
                                                                 null,
                                                                 vars.iborIndex.dayCounter(),
                                                                 mktAssetSwap);
             floatingBondMktAssetSwap1.setPricingEngine(swapEngine);
-            double floatingBondMktAssetSwapSpread1 =
+            var floatingBondMktAssetSwapSpread1 =
                floatingBondMktAssetSwap1.fairSpread();
-            double error3 = System.Math.Abs(floatingBondMktAssetSwapSpread1 -
-                                     100 * floatingBondParAssetSwapSpread1 / floatingBondMktFullPrice1);
+            var error3 = System.Math.Abs(floatingBondMktAssetSwapSpread1 -
+                                         100 * floatingBondParAssetSwapSpread1 / floatingBondMktFullPrice1);
 
             if (error3 > tolerance)
                 QAssert.Fail("wrong asset swap spreads for floating bond:" +
@@ -1924,9 +1924,9 @@ namespace QLNet.Tests
             // FRN Underlying bond (Isin: XS0090566539 COE 0 09/24/18)
             // maturity occurs on a business day
 
-            Date floatingBondStartDate2 = new Date(24, Month.September, 2004);
-            Date floatingBondMaturityDate2 = new Date(24, Month.September, 2018);
-            Schedule floatingBondSchedule2 = new Schedule(floatingBondStartDate2,
+            var floatingBondStartDate2 = new Date(24, Month.September, 2004);
+            var floatingBondMaturityDate2 = new Date(24, Month.September, 2018);
+            var floatingBondSchedule2 = new Schedule(floatingBondStartDate2,
                                                           floatingBondMaturityDate2,
                                                           new Period(Frequency.Semiannual), bondCalendar,
                                                           BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
@@ -1938,39 +1938,39 @@ namespace QLNet.Tests
             .withPaymentDayCounter(new Actual360())
             .withPaymentAdjustment(BusinessDayConvention.ModifiedFollowing)
             .withNotionals(vars.faceAmount);
-            Date floatingbondRedemption2 =
+            var floatingbondRedemption2 =
                bondCalendar.adjust(floatingBondMaturityDate2, BusinessDayConvention.ModifiedFollowing);
             floatingBondLeg2.Add(new
                                  SimpleCashFlow(100.0, floatingbondRedemption2));
-            Bond floatingBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount, floatingBondMaturityDate2,
+            var floatingBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount, floatingBondMaturityDate2,
                                           floatingBondStartDate2, floatingBondLeg2);
             floatingBond2.setPricingEngine(bondEngine);
 
             Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(22, Month.March, 2007), 0.04013);
             // market price observed on 7th June 2007
-            double floatingBondMktPrice2 = 101.248;
-            double floatingBondMktFullPrice2 =
+            var floatingBondMktPrice2 = 101.248;
+            var floatingBondMktFullPrice2 =
                floatingBondMktPrice2 + floatingBond2.accruedAmount();
-            AssetSwap floatingBondParAssetSwap2 = new AssetSwap(payFixedRate,
+            var floatingBondParAssetSwap2 = new AssetSwap(payFixedRate,
                                                                 floatingBond2, floatingBondMktPrice2,
                                                                 vars.iborIndex, vars.spread,
                                                                 null,
                                                                 vars.iborIndex.dayCounter(),
                                                                 parAssetSwap);
             floatingBondParAssetSwap2.setPricingEngine(swapEngine);
-            double floatingBondParAssetSwapSpread2 = floatingBondParAssetSwap2.fairSpread();
-            AssetSwap floatingBondMktAssetSwap2 = new AssetSwap(payFixedRate,
+            var floatingBondParAssetSwapSpread2 = floatingBondParAssetSwap2.fairSpread();
+            var floatingBondMktAssetSwap2 = new AssetSwap(payFixedRate,
                                                                 floatingBond2, floatingBondMktPrice2,
                                                                 vars.iborIndex, vars.spread,
                                                                 null,
                                                                 vars.iborIndex.dayCounter(),
                                                                 mktAssetSwap);
             floatingBondMktAssetSwap2.setPricingEngine(swapEngine);
-            double floatingBondMktAssetSwapSpread2 =
+            var floatingBondMktAssetSwapSpread2 =
                floatingBondMktAssetSwap2.fairSpread();
-            double error4 = System.Math.Abs(floatingBondMktAssetSwapSpread2 -
-                                     100 * floatingBondParAssetSwapSpread2 / floatingBondMktFullPrice2);
+            var error4 = System.Math.Abs(floatingBondMktAssetSwapSpread2 -
+                                         100 * floatingBondParAssetSwapSpread2 / floatingBondMktFullPrice2);
 
             if (error4 > tolerance)
                 QAssert.Fail("wrong asset swap spreads for floating bond:" +
@@ -1982,9 +1982,9 @@ namespace QLNet.Tests
             // CMS Underlying bond (Isin: XS0228052402 CRDIT 0 8/22/20)
             // maturity doesn't occur on a business day
 
-            Date cmsBondStartDate1 = new Date(22, Month.August, 2005);
-            Date cmsBondMaturityDate1 = new Date(22, Month.August, 2020);
-            Schedule cmsBondSchedule1 = new Schedule(cmsBondStartDate1,
+            var cmsBondStartDate1 = new Date(22, Month.August, 2005);
+            var cmsBondMaturityDate1 = new Date(22, Month.August, 2020);
+            var cmsBondSchedule1 = new Schedule(cmsBondStartDate1,
                                                      cmsBondMaturityDate1,
                                                      new Period(Frequency.Annual), bondCalendar,
                                                      BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -1996,33 +1996,33 @@ namespace QLNet.Tests
             .withFloors(0.025)
             .inArrears(inArrears)
             .withNotionals(vars.faceAmount);
-            Date cmsbondRedemption1 = bondCalendar.adjust(cmsBondMaturityDate1, BusinessDayConvention.Following);
+            var cmsbondRedemption1 = bondCalendar.adjust(cmsBondMaturityDate1, BusinessDayConvention.Following);
             cmsBondLeg1.Add(new SimpleCashFlow(100.0, cmsbondRedemption1));
-            Bond cmsBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount, cmsBondMaturityDate1, cmsBondStartDate1,
+            var cmsBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount, cmsBondMaturityDate1, cmsBondStartDate1,
                                      cmsBondLeg1);
             cmsBond1.setPricingEngine(bondEngine);
 
             Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(18, Month.August, 2006), 0.04158);
-            double cmsBondMktPrice1 = 88.45; // market price observed on 7th June 2007
-            double cmsBondMktFullPrice1 = cmsBondMktPrice1 + cmsBond1.accruedAmount();
-            AssetSwap cmsBondParAssetSwap1 = new AssetSwap(payFixedRate,
+            var cmsBondMktPrice1 = 88.45; // market price observed on 7th June 2007
+            var cmsBondMktFullPrice1 = cmsBondMktPrice1 + cmsBond1.accruedAmount();
+            var cmsBondParAssetSwap1 = new AssetSwap(payFixedRate,
                                                            cmsBond1, cmsBondMktPrice1,
                                                            vars.iborIndex, vars.spread,
                                                            null,
                                                            vars.iborIndex.dayCounter(),
                                                            parAssetSwap);
             cmsBondParAssetSwap1.setPricingEngine(swapEngine);
-            double cmsBondParAssetSwapSpread1 = cmsBondParAssetSwap1.fairSpread();
-            AssetSwap cmsBondMktAssetSwap1 = new AssetSwap(payFixedRate,
+            var cmsBondParAssetSwapSpread1 = cmsBondParAssetSwap1.fairSpread();
+            var cmsBondMktAssetSwap1 = new AssetSwap(payFixedRate,
                                                            cmsBond1, cmsBondMktPrice1,
                                                            vars.iborIndex, vars.spread,
                                                            null,
                                                            vars.iborIndex.dayCounter(),
                                                            mktAssetSwap);
             cmsBondMktAssetSwap1.setPricingEngine(swapEngine);
-            double cmsBondMktAssetSwapSpread1 = cmsBondMktAssetSwap1.fairSpread();
-            double error5 =
+            var cmsBondMktAssetSwapSpread1 = cmsBondMktAssetSwap1.fairSpread();
+            var error5 =
                System.Math.Abs(cmsBondMktAssetSwapSpread1 -
                         100 * cmsBondParAssetSwapSpread1 / cmsBondMktFullPrice1);
 
@@ -2036,9 +2036,9 @@ namespace QLNet.Tests
             // CMS Underlying bond (Isin: XS0218766664 ISPIM 0 5/6/15)
             // maturity occurs on a business day
 
-            Date cmsBondStartDate2 = new Date(06, Month.May, 2005);
-            Date cmsBondMaturityDate2 = new Date(06, Month.May, 2015);
-            Schedule cmsBondSchedule2 = new Schedule(cmsBondStartDate2,
+            var cmsBondStartDate2 = new Date(06, Month.May, 2005);
+            var cmsBondMaturityDate2 = new Date(06, Month.May, 2015);
+            var cmsBondSchedule2 = new Schedule(cmsBondStartDate2,
                                                      cmsBondMaturityDate2,
                                                      new Period(Frequency.Annual), bondCalendar,
                                                      BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -2049,33 +2049,33 @@ namespace QLNet.Tests
             .withGearings(0.84)
             .inArrears(inArrears)
             .withNotionals(vars.faceAmount);
-            Date cmsbondRedemption2 = bondCalendar.adjust(cmsBondMaturityDate2, BusinessDayConvention.Following);
+            var cmsbondRedemption2 = bondCalendar.adjust(cmsBondMaturityDate2, BusinessDayConvention.Following);
             cmsBondLeg2.Add(new SimpleCashFlow(100.0, cmsbondRedemption2));
-            Bond cmsBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount, cmsBondMaturityDate2, cmsBondStartDate2,
+            var cmsBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount, cmsBondMaturityDate2, cmsBondStartDate2,
                                      cmsBondLeg2);
             cmsBond2.setPricingEngine(bondEngine);
 
             Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(04, Month.May, 2006), 0.04217);
-            double cmsBondMktPrice2 = 94.08; // market price observed on 7th June 2007
-            double cmsBondMktFullPrice2 = cmsBondMktPrice2 + cmsBond2.accruedAmount();
-            AssetSwap cmsBondParAssetSwap2 = new AssetSwap(payFixedRate,
+            var cmsBondMktPrice2 = 94.08; // market price observed on 7th June 2007
+            var cmsBondMktFullPrice2 = cmsBondMktPrice2 + cmsBond2.accruedAmount();
+            var cmsBondParAssetSwap2 = new AssetSwap(payFixedRate,
                                                            cmsBond2, cmsBondMktPrice2,
                                                            vars.iborIndex, vars.spread,
                                                            null,
                                                            vars.iborIndex.dayCounter(),
                                                            parAssetSwap);
             cmsBondParAssetSwap2.setPricingEngine(swapEngine);
-            double cmsBondParAssetSwapSpread2 = cmsBondParAssetSwap2.fairSpread();
-            AssetSwap cmsBondMktAssetSwap2 = new AssetSwap(payFixedRate,
+            var cmsBondParAssetSwapSpread2 = cmsBondParAssetSwap2.fairSpread();
+            var cmsBondMktAssetSwap2 = new AssetSwap(payFixedRate,
                                                            cmsBond2, cmsBondMktPrice2,
                                                            vars.iborIndex, vars.spread,
                                                            null,
                                                            vars.iborIndex.dayCounter(),
                                                            mktAssetSwap);
             cmsBondMktAssetSwap2.setPricingEngine(swapEngine);
-            double cmsBondMktAssetSwapSpread2 = cmsBondMktAssetSwap2.fairSpread();
-            double error6 =
+            var cmsBondMktAssetSwapSpread2 = cmsBondMktAssetSwap2.fairSpread();
+            var error6 =
                System.Math.Abs(cmsBondMktAssetSwapSpread2 -
                         100 * cmsBondParAssetSwapSpread2 / cmsBondMktFullPrice2);
 
@@ -2089,36 +2089,36 @@ namespace QLNet.Tests
             // Zero Coupon bond (Isin: DE0004771662 IBRD 0 12/20/15)
             // maturity doesn't occur on a business day
 
-            Date zeroCpnBondStartDate1 = new Date(19, Month.December, 1985);
-            Date zeroCpnBondMaturityDate1 = new Date(20, Month.December, 2015);
-            Date zeroCpnBondRedemption1 = bondCalendar.adjust(zeroCpnBondMaturityDate1,
+            var zeroCpnBondStartDate1 = new Date(19, Month.December, 1985);
+            var zeroCpnBondMaturityDate1 = new Date(20, Month.December, 2015);
+            var zeroCpnBondRedemption1 = bondCalendar.adjust(zeroCpnBondMaturityDate1,
                                                               BusinessDayConvention.Following);
-            List<CashFlow> zeroCpnBondLeg1 = new List<CashFlow> { new SimpleCashFlow(100.0, zeroCpnBondRedemption1) };
-            Bond zeroCpnBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount, zeroCpnBondMaturityDate1,
+            var zeroCpnBondLeg1 = new List<CashFlow> { new SimpleCashFlow(100.0, zeroCpnBondRedemption1) };
+            var zeroCpnBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount, zeroCpnBondMaturityDate1,
                                           zeroCpnBondStartDate1, zeroCpnBondLeg1);
             zeroCpnBond1.setPricingEngine(bondEngine);
 
             // market price observed on 12th June 2007
-            double zeroCpnBondMktPrice1 = 70.436;
-            double zeroCpnBondMktFullPrice1 =
+            var zeroCpnBondMktPrice1 = 70.436;
+            var zeroCpnBondMktFullPrice1 =
                zeroCpnBondMktPrice1 + zeroCpnBond1.accruedAmount();
-            AssetSwap zeroCpnBondParAssetSwap1 = new AssetSwap(payFixedRate, zeroCpnBond1,
+            var zeroCpnBondParAssetSwap1 = new AssetSwap(payFixedRate, zeroCpnBond1,
                                                                zeroCpnBondMktPrice1,
                                                                vars.iborIndex, vars.spread,
                                                                null,
                                                                vars.iborIndex.dayCounter(),
                                                                parAssetSwap);
             zeroCpnBondParAssetSwap1.setPricingEngine(swapEngine);
-            double zeroCpnBondParAssetSwapSpread1 = zeroCpnBondParAssetSwap1.fairSpread();
-            AssetSwap zeroCpnBondMktAssetSwap1 = new AssetSwap(payFixedRate, zeroCpnBond1,
+            var zeroCpnBondParAssetSwapSpread1 = zeroCpnBondParAssetSwap1.fairSpread();
+            var zeroCpnBondMktAssetSwap1 = new AssetSwap(payFixedRate, zeroCpnBond1,
                                                                zeroCpnBondMktPrice1,
                                                                vars.iborIndex, vars.spread,
                                                                null,
                                                                vars.iborIndex.dayCounter(),
                                                                mktAssetSwap);
             zeroCpnBondMktAssetSwap1.setPricingEngine(swapEngine);
-            double zeroCpnBondMktAssetSwapSpread1 = zeroCpnBondMktAssetSwap1.fairSpread();
-            double error7 =
+            var zeroCpnBondMktAssetSwapSpread1 = zeroCpnBondMktAssetSwap1.fairSpread();
+            var error7 =
                System.Math.Abs(zeroCpnBondMktAssetSwapSpread1 -
                         100 * zeroCpnBondParAssetSwapSpread1 / zeroCpnBondMktFullPrice1);
 
@@ -2132,37 +2132,37 @@ namespace QLNet.Tests
             // Zero Coupon bond (Isin: IT0001200390 ISPIM 0 02/17/28)
             // maturity occurs on a business day
 
-            Date zeroCpnBondStartDate2 = new Date(17, Month.February, 1998);
-            Date zeroCpnBondMaturityDate2 = new Date(17, Month.February, 2028);
-            Date zerocpbondRedemption2 = bondCalendar.adjust(zeroCpnBondMaturityDate2,
+            var zeroCpnBondStartDate2 = new Date(17, Month.February, 1998);
+            var zeroCpnBondMaturityDate2 = new Date(17, Month.February, 2028);
+            var zerocpbondRedemption2 = bondCalendar.adjust(zeroCpnBondMaturityDate2,
                                                              BusinessDayConvention.Following);
-            List<CashFlow> zeroCpnBondLeg2 = new List<CashFlow> { new SimpleCashFlow(100.0, zerocpbondRedemption2) };
-            Bond zeroCpnBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var zeroCpnBondLeg2 = new List<CashFlow> { new SimpleCashFlow(100.0, zerocpbondRedemption2) };
+            var zeroCpnBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                          zeroCpnBondMaturityDate2, zeroCpnBondStartDate2, zeroCpnBondLeg2);
             zeroCpnBond2.setPricingEngine(bondEngine);
 
             // double zeroCpnBondPrice2 = zeroCpnBond2.cleanPrice();
             // market price observed on 12th June 2007
-            double zeroCpnBondMktPrice2 = 35.160;
-            double zeroCpnBondMktFullPrice2 =
+            var zeroCpnBondMktPrice2 = 35.160;
+            var zeroCpnBondMktFullPrice2 =
                zeroCpnBondMktPrice2 + zeroCpnBond2.accruedAmount();
-            AssetSwap zeroCpnBondParAssetSwap2 = new AssetSwap(payFixedRate, zeroCpnBond2,
+            var zeroCpnBondParAssetSwap2 = new AssetSwap(payFixedRate, zeroCpnBond2,
                                                                zeroCpnBondMktPrice2,
                                                                vars.iborIndex, vars.spread,
                                                                null,
                                                                vars.iborIndex.dayCounter(),
                                                                parAssetSwap);
             zeroCpnBondParAssetSwap2.setPricingEngine(swapEngine);
-            double zeroCpnBondParAssetSwapSpread2 = zeroCpnBondParAssetSwap2.fairSpread();
-            AssetSwap zeroCpnBondMktAssetSwap2 = new AssetSwap(payFixedRate, zeroCpnBond2,
+            var zeroCpnBondParAssetSwapSpread2 = zeroCpnBondParAssetSwap2.fairSpread();
+            var zeroCpnBondMktAssetSwap2 = new AssetSwap(payFixedRate, zeroCpnBond2,
                                                                zeroCpnBondMktPrice2,
                                                                vars.iborIndex, vars.spread,
                                                                null,
                                                                vars.iborIndex.dayCounter(),
                                                                mktAssetSwap);
             zeroCpnBondMktAssetSwap2.setPricingEngine(swapEngine);
-            double zeroCpnBondMktAssetSwapSpread2 = zeroCpnBondMktAssetSwap2.fairSpread();
-            double error8 =
+            var zeroCpnBondMktAssetSwapSpread2 = zeroCpnBondMktAssetSwap2.fairSpread();
+            var error8 =
                System.Math.Abs(zeroCpnBondMktAssetSwapSpread2 -
                         100 * zeroCpnBondParAssetSwapSpread2 / zeroCpnBondMktFullPrice2);
 
@@ -2179,19 +2179,19 @@ namespace QLNet.Tests
         {
             // Testing clean and dirty price with null Z-spread against theoretical prices...
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             Calendar bondCalendar = new TARGET();
-            int settlementDays = 3;
-            int fixingDays = 2;
-            bool inArrears = false;
+            var settlementDays = 3;
+            var fixingDays = 2;
+            var inArrears = false;
 
             // Fixed Underlying bond (Isin: DE0001135275 DBR 4 01/04/37)
             // maturity doesn't occur on a business day
 
-            Date fixedBondStartDate1 = new Date(4, Month.January, 2005);
-            Date fixedBondMaturityDate1 = new Date(4, Month.January, 2037);
-            Schedule fixedBondSchedule1 = new Schedule(fixedBondStartDate1,
+            var fixedBondStartDate1 = new Date(4, Month.January, 2005);
+            var fixedBondMaturityDate1 = new Date(4, Month.January, 2037);
+            var fixedBondSchedule1 = new Schedule(fixedBondStartDate1,
                                                        fixedBondMaturityDate1,
                                                        new Period(Frequency.Annual), bondCalendar,
                                                        BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -2199,22 +2199,22 @@ namespace QLNet.Tests
             List<CashFlow> fixedBondLeg1 = new FixedRateLeg(fixedBondSchedule1)
             .withCouponRates(0.04, new ActualActual(ActualActual.Convention.ISDA))
             .withNotionals(vars.faceAmount);
-            Date fixedbondRedemption1 = bondCalendar.adjust(fixedBondMaturityDate1,
+            var fixedbondRedemption1 = bondCalendar.adjust(fixedBondMaturityDate1,
                                                             BusinessDayConvention.Following);
             fixedBondLeg1.Add(new SimpleCashFlow(100.0, fixedbondRedemption1));
-            Bond fixedBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount, fixedBondMaturityDate1, fixedBondStartDate1,
+            var fixedBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount, fixedBondMaturityDate1, fixedBondStartDate1,
                                        fixedBondLeg1);
             IPricingEngine bondEngine = new DiscountingBondEngine(vars.termStructure);
             fixedBond1.setPricingEngine(bondEngine);
 
-            double fixedBondImpliedValue1 = fixedBond1.cleanPrice();
-            Date fixedBondSettlementDate1 = fixedBond1.settlementDate();
+            var fixedBondImpliedValue1 = fixedBond1.cleanPrice();
+            var fixedBondSettlementDate1 = fixedBond1.settlementDate();
             // standard market conventions:
             // bond's frequency + coumpounding and daycounter of the YieldCurve
-            double fixedBondCleanPrice1 = BondFunctions.cleanPrice(fixedBond1, vars.termStructure, vars.spread,
+            var fixedBondCleanPrice1 = BondFunctions.cleanPrice(fixedBond1, vars.termStructure, vars.spread,
                                                                    new Actual365Fixed(), vars.compounding, Frequency.Annual, fixedBondSettlementDate1);
-            double tolerance = 1.0e-13;
-            double error1 = System.Math.Abs(fixedBondImpliedValue1 - fixedBondCleanPrice1);
+            var tolerance = 1.0e-13;
+            var error1 = System.Math.Abs(fixedBondImpliedValue1 - fixedBondCleanPrice1);
             if (error1 > tolerance)
             {
                 QAssert.Fail("wrong clean price for fixed bond:"
@@ -2228,9 +2228,9 @@ namespace QLNet.Tests
             // Fixed Underlying bond (Isin: IT0006527060 IBRD 5 02/05/19)
             // maturity occurs on a business day
 
-            Date fixedBondStartDate2 = new Date(5, Month.February, 2005);
-            Date fixedBondMaturityDate2 = new Date(5, Month.February, 2019);
-            Schedule fixedBondSchedule2 = new Schedule(fixedBondStartDate2,
+            var fixedBondStartDate2 = new Date(5, Month.February, 2005);
+            var fixedBondMaturityDate2 = new Date(5, Month.February, 2019);
+            var fixedBondSchedule2 = new Schedule(fixedBondStartDate2,
                                                        fixedBondMaturityDate2,
                                                        new Period(Frequency.Annual), bondCalendar,
                                                        BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -2238,20 +2238,20 @@ namespace QLNet.Tests
             List<CashFlow> fixedBondLeg2 = new FixedRateLeg(fixedBondSchedule2)
             .withCouponRates(0.05, new Thirty360(Thirty360.Thirty360Convention.BondBasis))
             .withNotionals(vars.faceAmount);
-            Date fixedbondRedemption2 = bondCalendar.adjust(fixedBondMaturityDate2, BusinessDayConvention.Following);
+            var fixedbondRedemption2 = bondCalendar.adjust(fixedBondMaturityDate2, BusinessDayConvention.Following);
             fixedBondLeg2.Add(new SimpleCashFlow(100.0, fixedbondRedemption2));
-            Bond fixedBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var fixedBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                        fixedBondMaturityDate2, fixedBondStartDate2, fixedBondLeg2);
             fixedBond2.setPricingEngine(bondEngine);
 
-            double fixedBondImpliedValue2 = fixedBond2.cleanPrice();
-            Date fixedBondSettlementDate2 = fixedBond2.settlementDate();
+            var fixedBondImpliedValue2 = fixedBond2.cleanPrice();
+            var fixedBondSettlementDate2 = fixedBond2.settlementDate();
             // standard market conventions:
             // bond's frequency + coumpounding and daycounter of the YieldCurve
 
-            double fixedBondCleanPrice2 = BondFunctions.cleanPrice(fixedBond2, vars.termStructure, vars.spread,
+            var fixedBondCleanPrice2 = BondFunctions.cleanPrice(fixedBond2, vars.termStructure, vars.spread,
                                                                    new Actual365Fixed(), vars.compounding, Frequency.Annual, fixedBondSettlementDate2);
-            double error3 = System.Math.Abs(fixedBondImpliedValue2 - fixedBondCleanPrice2);
+            var error3 = System.Math.Abs(fixedBondImpliedValue2 - fixedBondCleanPrice2);
             if (error3 > tolerance)
             {
                 QAssert.Fail("wrong clean price for fixed bond:"
@@ -2265,9 +2265,9 @@ namespace QLNet.Tests
             // FRN Underlying bond (Isin: IT0003543847 ISPIM 0 09/29/13)
             // maturity doesn't occur on a business day
 
-            Date floatingBondStartDate1 = new Date(29, Month.September, 2003);
-            Date floatingBondMaturityDate1 = new Date(29, Month.September, 2013);
-            Schedule floatingBondSchedule1 = new Schedule(floatingBondStartDate1,
+            var floatingBondStartDate1 = new Date(29, Month.September, 2003);
+            var floatingBondMaturityDate1 = new Date(29, Month.September, 2013);
+            var floatingBondSchedule1 = new Schedule(floatingBondStartDate1,
                                                           floatingBondMaturityDate1,
                                                           new Period(Frequency.Semiannual), bondCalendar,
                                                           BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -2278,22 +2278,22 @@ namespace QLNet.Tests
             .withSpreads(0.0056)
             .inArrears(inArrears)
             .withNotionals(vars.faceAmount);
-            Date floatingbondRedemption1 =
+            var floatingbondRedemption1 =
                bondCalendar.adjust(floatingBondMaturityDate1, BusinessDayConvention.Following);
             floatingBondLeg1.Add(new SimpleCashFlow(100.0, floatingbondRedemption1));
-            Bond floatingBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var floatingBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                           floatingBondMaturityDate1, floatingBondStartDate1,
                                           floatingBondLeg1);
             floatingBond1.setPricingEngine(bondEngine);
 
             Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(27, Month.March, 2007), 0.0402);
-            double floatingBondImpliedValue1 = floatingBond1.cleanPrice();
+            var floatingBondImpliedValue1 = floatingBond1.cleanPrice();
             // standard market conventions:
             // bond's frequency + coumpounding and daycounter of the YieldCurve
-            double floatingBondCleanPrice1 = BondFunctions.cleanPrice(floatingBond1, vars.termStructure, vars.spread,
+            var floatingBondCleanPrice1 = BondFunctions.cleanPrice(floatingBond1, vars.termStructure, vars.spread,
                                                                       new Actual365Fixed(), vars.compounding, Frequency.Semiannual, fixedBondSettlementDate1);
-            double error5 = System.Math.Abs(floatingBondImpliedValue1 - floatingBondCleanPrice1);
+            var error5 = System.Math.Abs(floatingBondImpliedValue1 - floatingBondCleanPrice1);
             if (error5 > tolerance)
             {
                 QAssert.Fail("wrong clean price for fixed bond:"
@@ -2307,9 +2307,9 @@ namespace QLNet.Tests
             // FRN Underlying bond (Isin: XS0090566539 COE 0 09/24/18)
             // maturity occurs on a business day
 
-            Date floatingBondStartDate2 = new Date(24, Month.September, 2004);
-            Date floatingBondMaturityDate2 = new Date(24, Month.September, 2018);
-            Schedule floatingBondSchedule2 = new Schedule(floatingBondStartDate2,
+            var floatingBondStartDate2 = new Date(24, Month.September, 2004);
+            var floatingBondMaturityDate2 = new Date(24, Month.September, 2018);
+            var floatingBondSchedule2 = new Schedule(floatingBondStartDate2,
                                                           floatingBondMaturityDate2,
                                                           new Period(Frequency.Semiannual), bondCalendar,
                                                           BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
@@ -2321,20 +2321,20 @@ namespace QLNet.Tests
             .inArrears(inArrears)
             .withPaymentAdjustment(BusinessDayConvention.ModifiedFollowing)
             .withNotionals(vars.faceAmount);
-            Date floatingbondRedemption2 = bondCalendar.adjust(floatingBondMaturityDate2, BusinessDayConvention.ModifiedFollowing);
+            var floatingbondRedemption2 = bondCalendar.adjust(floatingBondMaturityDate2, BusinessDayConvention.ModifiedFollowing);
             floatingBondLeg2.Add(new SimpleCashFlow(100.0, floatingbondRedemption2));
-            Bond floatingBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount, floatingBondMaturityDate2,
+            var floatingBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount, floatingBondMaturityDate2,
                                           floatingBondStartDate2, floatingBondLeg2);
             floatingBond2.setPricingEngine(bondEngine);
 
             Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(22, Month.March, 2007), 0.04013);
-            double floatingBondImpliedValue2 = floatingBond2.cleanPrice();
+            var floatingBondImpliedValue2 = floatingBond2.cleanPrice();
             // standard market conventions:
             // bond's frequency + coumpounding and daycounter of the YieldCurve
-            double floatingBondCleanPrice2 = BondFunctions.cleanPrice(floatingBond2, vars.termStructure, vars.spread,
+            var floatingBondCleanPrice2 = BondFunctions.cleanPrice(floatingBond2, vars.termStructure, vars.spread,
                                                                       new Actual365Fixed(), vars.compounding, Frequency.Semiannual, fixedBondSettlementDate1);
-            double error7 = System.Math.Abs(floatingBondImpliedValue2 - floatingBondCleanPrice2);
+            var error7 = System.Math.Abs(floatingBondImpliedValue2 - floatingBondCleanPrice2);
             if (error7 > tolerance)
             {
                 QAssert.Fail("wrong clean price for fixed bond:"
@@ -2348,9 +2348,9 @@ namespace QLNet.Tests
             // CMS Underlying bond (Isin: XS0228052402 CRDIT 0 8/22/20)
             // maturity doesn't occur on a business day
 
-            Date cmsBondStartDate1 = new Date(22, Month.August, 2005);
-            Date cmsBondMaturityDate1 = new Date(22, Month.August, 2020);
-            Schedule cmsBondSchedule1 = new Schedule(cmsBondStartDate1,
+            var cmsBondStartDate1 = new Date(22, Month.August, 2005);
+            var cmsBondMaturityDate1 = new Date(22, Month.August, 2020);
+            var cmsBondSchedule1 = new Schedule(cmsBondStartDate1,
                                                      cmsBondMaturityDate1,
                                                      new Period(Frequency.Annual), bondCalendar,
                                                      BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -2362,22 +2362,22 @@ namespace QLNet.Tests
             .withFloors(0.025)
             .inArrears(inArrears)
             .withNotionals(vars.faceAmount);
-            Date cmsbondRedemption1 = bondCalendar.adjust(cmsBondMaturityDate1, BusinessDayConvention.Following);
+            var cmsbondRedemption1 = bondCalendar.adjust(cmsBondMaturityDate1, BusinessDayConvention.Following);
             cmsBondLeg1.Add(new SimpleCashFlow(100.0, cmsbondRedemption1));
-            Bond cmsBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount, cmsBondMaturityDate1, cmsBondStartDate1,
+            var cmsBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount, cmsBondMaturityDate1, cmsBondStartDate1,
                                      cmsBondLeg1);
             cmsBond1.setPricingEngine(bondEngine);
 
             Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(18, Month.August, 2006), 0.04158);
-            double cmsBondImpliedValue1 = cmsBond1.cleanPrice();
-            Date cmsBondSettlementDate1 = cmsBond1.settlementDate();
+            var cmsBondImpliedValue1 = cmsBond1.cleanPrice();
+            var cmsBondSettlementDate1 = cmsBond1.settlementDate();
             // standard market conventions:
             // bond's frequency + coumpounding and daycounter of the YieldCurve
-            double cmsBondCleanPrice1 = BondFunctions.cleanPrice(cmsBond1, vars.termStructure, vars.spread,
+            var cmsBondCleanPrice1 = BondFunctions.cleanPrice(cmsBond1, vars.termStructure, vars.spread,
                                                                  new Actual365Fixed(), vars.compounding, Frequency.Annual,
                                                                  cmsBondSettlementDate1);
-            double error9 = System.Math.Abs(cmsBondImpliedValue1 - cmsBondCleanPrice1);
+            var error9 = System.Math.Abs(cmsBondImpliedValue1 - cmsBondCleanPrice1);
             if (error9 > tolerance)
             {
                 QAssert.Fail("wrong clean price for fixed bond:"
@@ -2390,9 +2390,9 @@ namespace QLNet.Tests
             // CMS Underlying bond (Isin: XS0218766664 ISPIM 0 5/6/15)
             // maturity occurs on a business day
 
-            Date cmsBondStartDate2 = new Date(06, Month.May, 2005);
-            Date cmsBondMaturityDate2 = new Date(06, Month.May, 2015);
-            Schedule cmsBondSchedule2 = new Schedule(cmsBondStartDate2,
+            var cmsBondStartDate2 = new Date(06, Month.May, 2005);
+            var cmsBondMaturityDate2 = new Date(06, Month.May, 2015);
+            var cmsBondSchedule2 = new Schedule(cmsBondStartDate2,
                                                      cmsBondMaturityDate2,
                                                      new Period(Frequency.Annual), bondCalendar,
                                                      BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -2403,22 +2403,22 @@ namespace QLNet.Tests
             .withGearings(0.84)
             .inArrears(inArrears)
             .withNotionals(vars.faceAmount);
-            Date cmsbondRedemption2 = bondCalendar.adjust(cmsBondMaturityDate2, BusinessDayConvention.Following);
+            var cmsbondRedemption2 = bondCalendar.adjust(cmsBondMaturityDate2, BusinessDayConvention.Following);
             cmsBondLeg2.Add(new SimpleCashFlow(100.0, cmsbondRedemption2));
-            Bond cmsBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var cmsBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                      cmsBondMaturityDate2, cmsBondStartDate2, cmsBondLeg2);
             cmsBond2.setPricingEngine(bondEngine);
 
             Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(04, Month.May, 2006), 0.04217);
-            double cmsBondImpliedValue2 = cmsBond2.cleanPrice();
-            Date cmsBondSettlementDate2 = cmsBond2.settlementDate();
+            var cmsBondImpliedValue2 = cmsBond2.cleanPrice();
+            var cmsBondSettlementDate2 = cmsBond2.settlementDate();
             // standard market conventions:
             // bond's frequency + coumpounding and daycounter of the YieldCurve
-            double cmsBondCleanPrice2 = BondFunctions.cleanPrice(cmsBond2, vars.termStructure, vars.spread,
+            var cmsBondCleanPrice2 = BondFunctions.cleanPrice(cmsBond2, vars.termStructure, vars.spread,
                                                                  new Actual365Fixed(), vars.compounding, Frequency.Annual,
                                                                  cmsBondSettlementDate2);
-            double error11 = System.Math.Abs(cmsBondImpliedValue2 - cmsBondCleanPrice2);
+            var error11 = System.Math.Abs(cmsBondImpliedValue2 - cmsBondCleanPrice2);
             if (error11 > tolerance)
             {
                 QAssert.Fail("wrong clean price for fixed bond:"
@@ -2431,27 +2431,27 @@ namespace QLNet.Tests
             // Zero Coupon bond (Isin: DE0004771662 IBRD 0 12/20/15)
             // maturity doesn't occur on a business day
 
-            Date zeroCpnBondStartDate1 = new Date(19, Month.December, 1985);
-            Date zeroCpnBondMaturityDate1 = new Date(20, Month.December, 2015);
-            Date zeroCpnBondRedemption1 = bondCalendar.adjust(zeroCpnBondMaturityDate1,
+            var zeroCpnBondStartDate1 = new Date(19, Month.December, 1985);
+            var zeroCpnBondMaturityDate1 = new Date(20, Month.December, 2015);
+            var zeroCpnBondRedemption1 = bondCalendar.adjust(zeroCpnBondMaturityDate1,
                                                               BusinessDayConvention.Following);
-            List<CashFlow> zeroCpnBondLeg1 = new List<CashFlow> { new SimpleCashFlow(100.0, zeroCpnBondRedemption1) };
-            Bond zeroCpnBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var zeroCpnBondLeg1 = new List<CashFlow> { new SimpleCashFlow(100.0, zeroCpnBondRedemption1) };
+            var zeroCpnBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                          zeroCpnBondMaturityDate1, zeroCpnBondStartDate1, zeroCpnBondLeg1);
             zeroCpnBond1.setPricingEngine(bondEngine);
 
-            double zeroCpnBondImpliedValue1 = zeroCpnBond1.cleanPrice();
-            Date zeroCpnBondSettlementDate1 = zeroCpnBond1.settlementDate();
+            var zeroCpnBondImpliedValue1 = zeroCpnBond1.cleanPrice();
+            var zeroCpnBondSettlementDate1 = zeroCpnBond1.settlementDate();
             // standard market conventions:
             // bond's frequency + coumpounding and daycounter of the YieldCurve
-            double zeroCpnBondCleanPrice1 =
+            var zeroCpnBondCleanPrice1 =
                BondFunctions.cleanPrice(zeroCpnBond1,
                                         vars.termStructure,
                                         vars.spread,
                                         new Actual365Fixed(),
                                         vars.compounding, Frequency.Annual,
                                         zeroCpnBondSettlementDate1);
-            double error13 = System.Math.Abs(zeroCpnBondImpliedValue1 - zeroCpnBondCleanPrice1);
+            var error13 = System.Math.Abs(zeroCpnBondImpliedValue1 - zeroCpnBondCleanPrice1);
             if (error13 > tolerance)
             {
                 QAssert.Fail("wrong clean price for zero coupon bond:"
@@ -2465,27 +2465,27 @@ namespace QLNet.Tests
             // Zero Coupon bond (Isin: IT0001200390 ISPIM 0 02/17/28)
             // maturity occurs on a business day
 
-            Date zeroCpnBondStartDate2 = new Date(17, Month.February, 1998);
-            Date zeroCpnBondMaturityDate2 = new Date(17, Month.February, 2028);
-            Date zerocpbondRedemption2 = bondCalendar.adjust(zeroCpnBondMaturityDate2,
+            var zeroCpnBondStartDate2 = new Date(17, Month.February, 1998);
+            var zeroCpnBondMaturityDate2 = new Date(17, Month.February, 2028);
+            var zerocpbondRedemption2 = bondCalendar.adjust(zeroCpnBondMaturityDate2,
                                                              BusinessDayConvention.Following);
-            List<CashFlow> zeroCpnBondLeg2 = new List<CashFlow> { new SimpleCashFlow(100.0, zerocpbondRedemption2) };
-            Bond zeroCpnBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var zeroCpnBondLeg2 = new List<CashFlow> { new SimpleCashFlow(100.0, zerocpbondRedemption2) };
+            var zeroCpnBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                          zeroCpnBondMaturityDate2, zeroCpnBondStartDate2, zeroCpnBondLeg2);
             zeroCpnBond2.setPricingEngine(bondEngine);
 
-            double zeroCpnBondImpliedValue2 = zeroCpnBond2.cleanPrice();
-            Date zeroCpnBondSettlementDate2 = zeroCpnBond2.settlementDate();
+            var zeroCpnBondImpliedValue2 = zeroCpnBond2.cleanPrice();
+            var zeroCpnBondSettlementDate2 = zeroCpnBond2.settlementDate();
             // standard market conventions:
             // bond's frequency + coumpounding and daycounter of the YieldCurve
-            double zeroCpnBondCleanPrice2 =
+            var zeroCpnBondCleanPrice2 =
                BondFunctions.cleanPrice(zeroCpnBond2,
                                         vars.termStructure,
                                         vars.spread,
                                         new Actual365Fixed(),
                                         vars.compounding, Frequency.Annual,
                                         zeroCpnBondSettlementDate2);
-            double error15 = System.Math.Abs(zeroCpnBondImpliedValue2 - zeroCpnBondCleanPrice2);
+            var error15 = System.Math.Abs(zeroCpnBondImpliedValue2 - zeroCpnBondCleanPrice2);
             if (error15 > tolerance)
             {
                 QAssert.Fail("wrong clean price for zero coupon bond:"
@@ -2501,18 +2501,18 @@ namespace QLNet.Tests
         public void testSpecializedBondVsGenericBond()
         {
             // Testing clean and dirty prices for specialized bond against equivalent generic bond...
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             Calendar bondCalendar = new TARGET();
-            int settlementDays = 3;
-            int fixingDays = 2;
-            bool inArrears = false;
+            var settlementDays = 3;
+            var fixingDays = 2;
+            var inArrears = false;
 
             // Fixed Underlying bond (Isin: DE0001135275 DBR 4 01/04/37)
             // maturity doesn't occur on a business day
-            Date fixedBondStartDate1 = new Date(4, Month.January, 2005);
-            Date fixedBondMaturityDate1 = new Date(4, Month.January, 2037);
-            Schedule fixedBondSchedule1 = new Schedule(fixedBondStartDate1,
+            var fixedBondStartDate1 = new Date(4, Month.January, 2005);
+            var fixedBondMaturityDate1 = new Date(4, Month.January, 2037);
+            var fixedBondSchedule1 = new Schedule(fixedBondStartDate1,
                                                        fixedBondMaturityDate1,
                                                        new Period(Frequency.Annual), bondCalendar,
                                                        BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -2520,11 +2520,11 @@ namespace QLNet.Tests
             List<CashFlow> fixedBondLeg1 = new FixedRateLeg(fixedBondSchedule1)
             .withCouponRates(0.04, new ActualActual(ActualActual.Convention.ISDA))
             .withNotionals(vars.faceAmount);
-            Date fixedbondRedemption1 = bondCalendar.adjust(fixedBondMaturityDate1,
+            var fixedbondRedemption1 = bondCalendar.adjust(fixedBondMaturityDate1,
                                                             BusinessDayConvention.Following);
             fixedBondLeg1.Add(new SimpleCashFlow(100.0, fixedbondRedemption1));
             // generic bond
-            Bond fixedBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var fixedBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                         fixedBondMaturityDate1, fixedBondStartDate1, fixedBondLeg1);
             IPricingEngine bondEngine = new DiscountingBondEngine(vars.termStructure);
             fixedBond1.setPricingEngine(bondEngine);
@@ -2536,10 +2536,10 @@ namespace QLNet.Tests
                                                            100.0, new Date(4, Month.January, 2005));
             fixedSpecializedBond1.setPricingEngine(bondEngine);
 
-            double fixedBondTheoValue1 = fixedBond1.cleanPrice();
-            double fixedSpecializedBondTheoValue1 = fixedSpecializedBond1.cleanPrice();
-            double tolerance = 1.0e-13;
-            double error1 = System.Math.Abs(fixedBondTheoValue1 - fixedSpecializedBondTheoValue1);
+            var fixedBondTheoValue1 = fixedBond1.cleanPrice();
+            var fixedSpecializedBondTheoValue1 = fixedSpecializedBond1.cleanPrice();
+            var tolerance = 1.0e-13;
+            var error1 = System.Math.Abs(fixedBondTheoValue1 - fixedSpecializedBondTheoValue1);
             if (error1 > tolerance)
             {
                 QAssert.Fail("wrong clean price for fixed bond:"
@@ -2550,10 +2550,10 @@ namespace QLNet.Tests
                              + "\n  error:                 " + error1
                              + "\n  tolerance:             " + tolerance);
             }
-            double fixedBondTheoDirty1 = fixedBondTheoValue1 + fixedBond1.accruedAmount();
-            double fixedSpecializedTheoDirty1 = fixedSpecializedBondTheoValue1 +
-                                                fixedSpecializedBond1.accruedAmount();
-            double error2 = System.Math.Abs(fixedBondTheoDirty1 - fixedSpecializedTheoDirty1);
+            var fixedBondTheoDirty1 = fixedBondTheoValue1 + fixedBond1.accruedAmount();
+            var fixedSpecializedTheoDirty1 = fixedSpecializedBondTheoValue1 +
+                                             fixedSpecializedBond1.accruedAmount();
+            var error2 = System.Math.Abs(fixedBondTheoDirty1 - fixedSpecializedTheoDirty1);
             if (error2 > tolerance)
             {
                 QAssert.Fail("wrong dirty price for fixed bond:"
@@ -2567,9 +2567,9 @@ namespace QLNet.Tests
 
             // Fixed Underlying bond (Isin: IT0006527060 IBRD 5 02/05/19)
             // maturity occurs on a business day
-            Date fixedBondStartDate2 = new Date(5, Month.February, 2005);
-            Date fixedBondMaturityDate2 = new Date(5, Month.February, 2019);
-            Schedule fixedBondSchedule2 = new Schedule(fixedBondStartDate2,
+            var fixedBondStartDate2 = new Date(5, Month.February, 2005);
+            var fixedBondMaturityDate2 = new Date(5, Month.February, 2019);
+            var fixedBondSchedule2 = new Schedule(fixedBondStartDate2,
                                                        fixedBondMaturityDate2,
                                                        new Period(Frequency.Annual), bondCalendar,
                                                        BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -2577,11 +2577,11 @@ namespace QLNet.Tests
             List<CashFlow> fixedBondLeg2 = new FixedRateLeg(fixedBondSchedule2)
             .withCouponRates(0.05, new Thirty360(Thirty360.Thirty360Convention.BondBasis))
             .withNotionals(vars.faceAmount);
-            Date fixedbondRedemption2 = bondCalendar.adjust(fixedBondMaturityDate2, BusinessDayConvention.Following);
+            var fixedbondRedemption2 = bondCalendar.adjust(fixedBondMaturityDate2, BusinessDayConvention.Following);
             fixedBondLeg2.Add(new SimpleCashFlow(100.0, fixedbondRedemption2));
 
             // generic bond
-            Bond fixedBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var fixedBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                        fixedBondMaturityDate2, fixedBondStartDate2, fixedBondLeg2);
             fixedBond2.setPricingEngine(bondEngine);
 
@@ -2592,10 +2592,10 @@ namespace QLNet.Tests
                                                             100.0, new Date(5, Month.February, 2005));
             fixedSpecializedBond2.setPricingEngine(bondEngine);
 
-            double fixedBondTheoValue2 = fixedBond2.cleanPrice();
-            double fixedSpecializedBondTheoValue2 = fixedSpecializedBond2.cleanPrice();
+            var fixedBondTheoValue2 = fixedBond2.cleanPrice();
+            var fixedSpecializedBondTheoValue2 = fixedSpecializedBond2.cleanPrice();
 
-            double error3 = System.Math.Abs(fixedBondTheoValue2 - fixedSpecializedBondTheoValue2);
+            var error3 = System.Math.Abs(fixedBondTheoValue2 - fixedSpecializedBondTheoValue2);
             if (error3 > tolerance)
             {
                 QAssert.Fail("wrong clean price for fixed bond:"
@@ -2606,12 +2606,12 @@ namespace QLNet.Tests
                              + "\n  error:                 " + error3
                              + "\n  tolerance:             " + tolerance);
             }
-            double fixedBondTheoDirty2 = fixedBondTheoValue2 +
-                                         fixedBond2.accruedAmount();
-            double fixedSpecializedBondTheoDirty2 = fixedSpecializedBondTheoValue2 +
-                                                    fixedSpecializedBond2.accruedAmount();
+            var fixedBondTheoDirty2 = fixedBondTheoValue2 +
+                                      fixedBond2.accruedAmount();
+            var fixedSpecializedBondTheoDirty2 = fixedSpecializedBondTheoValue2 +
+                                                 fixedSpecializedBond2.accruedAmount();
 
-            double error4 = System.Math.Abs(fixedBondTheoDirty2 - fixedSpecializedBondTheoDirty2);
+            var error4 = System.Math.Abs(fixedBondTheoDirty2 - fixedSpecializedBondTheoDirty2);
             if (error4 > tolerance)
             {
                 QAssert.Fail("wrong dirty price for fixed bond:"
@@ -2625,9 +2625,9 @@ namespace QLNet.Tests
 
             // FRN Underlying bond (Isin: IT0003543847 ISPIM 0 09/29/13)
             // maturity doesn't occur on a business day
-            Date floatingBondStartDate1 = new Date(29, Month.September, 2003);
-            Date floatingBondMaturityDate1 = new Date(29, Month.September, 2013);
-            Schedule floatingBondSchedule1 = new Schedule(floatingBondStartDate1,
+            var floatingBondStartDate1 = new Date(29, Month.September, 2003);
+            var floatingBondMaturityDate1 = new Date(29, Month.September, 2013);
+            var floatingBondSchedule1 = new Schedule(floatingBondStartDate1,
                                                           floatingBondMaturityDate1,
                                                           new Period(Frequency.Semiannual), bondCalendar,
                                                           BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -2638,10 +2638,10 @@ namespace QLNet.Tests
             .withSpreads(0.0056)
             .inArrears(inArrears)
             .withNotionals(vars.faceAmount);
-            Date floatingbondRedemption1 = bondCalendar.adjust(floatingBondMaturityDate1, BusinessDayConvention.Following);
+            var floatingbondRedemption1 = bondCalendar.adjust(floatingBondMaturityDate1, BusinessDayConvention.Following);
             floatingBondLeg1.Add(new SimpleCashFlow(100.0, floatingbondRedemption1));
             // generic bond
-            Bond floatingBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var floatingBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                           floatingBondMaturityDate1, floatingBondStartDate1, floatingBondLeg1);
             floatingBond1.setPricingEngine(bondEngine);
 
@@ -2660,12 +2660,12 @@ namespace QLNet.Tests
             Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
             Utils.setCouponPricer(floatingSpecializedBond1.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(27, Month.March, 2007), 0.0402);
-            double floatingBondTheoValue1 = floatingBond1.cleanPrice();
-            double floatingSpecializedBondTheoValue1 =
+            var floatingBondTheoValue1 = floatingBond1.cleanPrice();
+            var floatingSpecializedBondTheoValue1 =
                floatingSpecializedBond1.cleanPrice();
 
-            double error5 = System.Math.Abs(floatingBondTheoValue1 -
-                                     floatingSpecializedBondTheoValue1);
+            var error5 = System.Math.Abs(floatingBondTheoValue1 -
+                                         floatingSpecializedBondTheoValue1);
             if (error5 > tolerance)
             {
                 QAssert.Fail("wrong clean price for fixed bond:"
@@ -2676,13 +2676,13 @@ namespace QLNet.Tests
                              + "\n  error:                 " + error5
                              + "\n  tolerance:             " + tolerance);
             }
-            double floatingBondTheoDirty1 = floatingBondTheoValue1 +
-                                            floatingBond1.accruedAmount();
-            double floatingSpecializedBondTheoDirty1 =
+            var floatingBondTheoDirty1 = floatingBondTheoValue1 +
+                                         floatingBond1.accruedAmount();
+            var floatingSpecializedBondTheoDirty1 =
                floatingSpecializedBondTheoValue1 +
                floatingSpecializedBond1.accruedAmount();
-            double error6 = System.Math.Abs(floatingBondTheoDirty1 -
-                                     floatingSpecializedBondTheoDirty1);
+            var error6 = System.Math.Abs(floatingBondTheoDirty1 -
+                                         floatingSpecializedBondTheoDirty1);
             if (error6 > tolerance)
             {
                 QAssert.Fail("wrong dirty price for frn bond:"
@@ -2696,9 +2696,9 @@ namespace QLNet.Tests
 
             // FRN Underlying bond (Isin: XS0090566539 COE 0 09/24/18)
             // maturity occurs on a business day
-            Date floatingBondStartDate2 = new Date(24, Month.September, 2004);
-            Date floatingBondMaturityDate2 = new Date(24, Month.September, 2018);
-            Schedule floatingBondSchedule2 = new Schedule(floatingBondStartDate2,
+            var floatingBondStartDate2 = new Date(24, Month.September, 2004);
+            var floatingBondMaturityDate2 = new Date(24, Month.September, 2018);
+            var floatingBondSchedule2 = new Schedule(floatingBondStartDate2,
                                                           floatingBondMaturityDate2,
                                                           new Period(Frequency.Semiannual), bondCalendar,
                                                           BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
@@ -2710,11 +2710,11 @@ namespace QLNet.Tests
             .inArrears(inArrears)
             .withPaymentAdjustment(BusinessDayConvention.ModifiedFollowing)
             .withNotionals(vars.faceAmount);
-            Date floatingbondRedemption2 =
+            var floatingbondRedemption2 =
                bondCalendar.adjust(floatingBondMaturityDate2, BusinessDayConvention.ModifiedFollowing);
             floatingBondLeg2.Add(new SimpleCashFlow(100.0, floatingbondRedemption2));
             // generic bond
-            Bond floatingBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var floatingBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                           floatingBondMaturityDate2, floatingBondStartDate2, floatingBondLeg2);
             floatingBond2.setPricingEngine(bondEngine);
 
@@ -2735,11 +2735,11 @@ namespace QLNet.Tests
 
             vars.iborIndex.addFixing(new Date(22, Month.March, 2007), 0.04013);
 
-            double floatingBondTheoValue2 = floatingBond2.cleanPrice();
-            double floatingSpecializedBondTheoValue2 =
+            var floatingBondTheoValue2 = floatingBond2.cleanPrice();
+            var floatingSpecializedBondTheoValue2 =
                floatingSpecializedBond2.cleanPrice();
 
-            double error7 =
+            var error7 =
                System.Math.Abs(floatingBondTheoValue2 - floatingSpecializedBondTheoValue2);
             if (error7 > tolerance)
             {
@@ -2751,12 +2751,12 @@ namespace QLNet.Tests
                              + "\n  error:                 " + error7
                              + "\n  tolerance:             " + tolerance);
             }
-            double floatingBondTheoDirty2 = floatingBondTheoValue2 +
-                                            floatingBond2.accruedAmount();
-            double floatingSpecializedTheoDirty2 = floatingSpecializedBondTheoValue2 +
-                                                   floatingSpecializedBond2.accruedAmount();
+            var floatingBondTheoDirty2 = floatingBondTheoValue2 +
+                                         floatingBond2.accruedAmount();
+            var floatingSpecializedTheoDirty2 = floatingSpecializedBondTheoValue2 +
+                                                floatingSpecializedBond2.accruedAmount();
 
-            double error8 =
+            var error8 =
                System.Math.Abs(floatingBondTheoDirty2 - floatingSpecializedTheoDirty2);
             if (error8 > tolerance)
             {
@@ -2772,9 +2772,9 @@ namespace QLNet.Tests
 
             // CMS Underlying bond (Isin: XS0228052402 CRDIT 0 8/22/20)
             // maturity doesn't occur on a business day
-            Date cmsBondStartDate1 = new Date(22, Month.August, 2005);
-            Date cmsBondMaturityDate1 = new Date(22, Month.August, 2020);
-            Schedule cmsBondSchedule1 = new Schedule(cmsBondStartDate1,
+            var cmsBondStartDate1 = new Date(22, Month.August, 2005);
+            var cmsBondMaturityDate1 = new Date(22, Month.August, 2020);
+            var cmsBondSchedule1 = new Schedule(cmsBondStartDate1,
                                                      cmsBondMaturityDate1,
                                                      new Period(Frequency.Annual), bondCalendar,
                                                      BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -2786,10 +2786,10 @@ namespace QLNet.Tests
             .withFloors(0.025)
             .inArrears(inArrears)
             .withNotionals(vars.faceAmount);
-            Date cmsbondRedemption1 = bondCalendar.adjust(cmsBondMaturityDate1, BusinessDayConvention.Following);
+            var cmsbondRedemption1 = bondCalendar.adjust(cmsBondMaturityDate1, BusinessDayConvention.Following);
             cmsBondLeg1.Add(new SimpleCashFlow(100.0, cmsbondRedemption1));
             // generic cms bond
-            Bond cmsBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var cmsBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                       cmsBondMaturityDate1, cmsBondStartDate1, cmsBondLeg1);
             cmsBond1.setPricingEngine(bondEngine);
 
@@ -2806,9 +2806,9 @@ namespace QLNet.Tests
             Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
             Utils.setCouponPricer(cmsSpecializedBond1.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(18, Month.August, 2006), 0.04158);
-            double cmsBondTheoValue1 = cmsBond1.cleanPrice();
-            double cmsSpecializedBondTheoValue1 = cmsSpecializedBond1.cleanPrice();
-            double error9 = System.Math.Abs(cmsBondTheoValue1 - cmsSpecializedBondTheoValue1);
+            var cmsBondTheoValue1 = cmsBond1.cleanPrice();
+            var cmsSpecializedBondTheoValue1 = cmsSpecializedBond1.cleanPrice();
+            var error9 = System.Math.Abs(cmsBondTheoValue1 - cmsSpecializedBondTheoValue1);
             if (error9 > tolerance)
             {
                 QAssert.Fail("wrong clean price for cms bond:"
@@ -2819,10 +2819,10 @@ namespace QLNet.Tests
                              + "\n  error:                 " + error9
                              + "\n  tolerance:             " + tolerance);
             }
-            double cmsBondTheoDirty1 = cmsBondTheoValue1 + cmsBond1.accruedAmount();
-            double cmsSpecializedBondTheoDirty1 = cmsSpecializedBondTheoValue1 +
-                                                  cmsSpecializedBond1.accruedAmount();
-            double error10 = System.Math.Abs(cmsBondTheoDirty1 - cmsSpecializedBondTheoDirty1);
+            var cmsBondTheoDirty1 = cmsBondTheoValue1 + cmsBond1.accruedAmount();
+            var cmsSpecializedBondTheoDirty1 = cmsSpecializedBondTheoValue1 +
+                                               cmsSpecializedBond1.accruedAmount();
+            var error10 = System.Math.Abs(cmsBondTheoDirty1 - cmsSpecializedBondTheoDirty1);
             if (error10 > tolerance)
             {
                 QAssert.Fail("wrong dirty price for cms bond:"
@@ -2836,9 +2836,9 @@ namespace QLNet.Tests
 
             // CMS Underlying bond (Isin: XS0218766664 ISPIM 0 5/6/15)
             // maturity occurs on a business day
-            Date cmsBondStartDate2 = new Date(06, Month.May, 2005);
-            Date cmsBondMaturityDate2 = new Date(06, Month.May, 2015);
-            Schedule cmsBondSchedule2 = new Schedule(cmsBondStartDate2,
+            var cmsBondStartDate2 = new Date(06, Month.May, 2005);
+            var cmsBondMaturityDate2 = new Date(06, Month.May, 2015);
+            var cmsBondSchedule2 = new Schedule(cmsBondStartDate2,
                                                      cmsBondMaturityDate2,
                                                      new Period(Frequency.Annual), bondCalendar,
                                                      BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -2849,10 +2849,10 @@ namespace QLNet.Tests
             .withGearings(0.84)
             .inArrears(inArrears)
             .withNotionals(vars.faceAmount);
-            Date cmsbondRedemption2 = bondCalendar.adjust(cmsBondMaturityDate2, BusinessDayConvention.Following);
+            var cmsbondRedemption2 = bondCalendar.adjust(cmsBondMaturityDate2, BusinessDayConvention.Following);
             cmsBondLeg2.Add(new SimpleCashFlow(100.0, cmsbondRedemption2));
             // generic bond
-            Bond cmsBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var cmsBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                       cmsBondMaturityDate2, cmsBondStartDate2, cmsBondLeg2);
             cmsBond2.setPricingEngine(bondEngine);
 
@@ -2868,10 +2868,10 @@ namespace QLNet.Tests
             Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
             Utils.setCouponPricer(cmsSpecializedBond2.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(04, Month.May, 2006), 0.04217);
-            double cmsBondTheoValue2 = cmsBond2.cleanPrice();
-            double cmsSpecializedBondTheoValue2 = cmsSpecializedBond2.cleanPrice();
+            var cmsBondTheoValue2 = cmsBond2.cleanPrice();
+            var cmsSpecializedBondTheoValue2 = cmsSpecializedBond2.cleanPrice();
 
-            double error11 = System.Math.Abs(cmsBondTheoValue2 - cmsSpecializedBondTheoValue2);
+            var error11 = System.Math.Abs(cmsBondTheoValue2 - cmsSpecializedBondTheoValue2);
             if (error11 > tolerance)
             {
                 QAssert.Fail("wrong clean price for cms bond:"
@@ -2882,10 +2882,10 @@ namespace QLNet.Tests
                              + "\n  error:                 " + error11
                              + "\n  tolerance:             " + tolerance);
             }
-            double cmsBondTheoDirty2 = cmsBondTheoValue2 + cmsBond2.accruedAmount();
-            double cmsSpecializedBondTheoDirty2 =
+            var cmsBondTheoDirty2 = cmsBondTheoValue2 + cmsBond2.accruedAmount();
+            var cmsSpecializedBondTheoDirty2 =
                cmsSpecializedBondTheoValue2 + cmsSpecializedBond2.accruedAmount();
-            double error12 = System.Math.Abs(cmsBondTheoDirty2 - cmsSpecializedBondTheoDirty2);
+            var error12 = System.Math.Abs(cmsBondTheoDirty2 - cmsSpecializedBondTheoDirty2);
             if (error12 > tolerance)
             {
                 QAssert.Fail("wrong dirty price for cms bond:"
@@ -2899,13 +2899,13 @@ namespace QLNet.Tests
 
             // Zero Coupon bond (Isin: DE0004771662 IBRD 0 12/20/15)
             // maturity doesn't occur on a business day
-            Date zeroCpnBondStartDate1 = new Date(19, Month.December, 1985);
-            Date zeroCpnBondMaturityDate1 = new Date(20, Month.December, 2015);
-            Date zeroCpnBondRedemption1 = bondCalendar.adjust(zeroCpnBondMaturityDate1,
+            var zeroCpnBondStartDate1 = new Date(19, Month.December, 1985);
+            var zeroCpnBondMaturityDate1 = new Date(20, Month.December, 2015);
+            var zeroCpnBondRedemption1 = bondCalendar.adjust(zeroCpnBondMaturityDate1,
                                                               BusinessDayConvention.Following);
-            List<CashFlow> zeroCpnBondLeg1 = new List<CashFlow> { new SimpleCashFlow(100.0, zeroCpnBondRedemption1) };
+            var zeroCpnBondLeg1 = new List<CashFlow> { new SimpleCashFlow(100.0, zeroCpnBondRedemption1) };
             // generic bond
-            Bond zeroCpnBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount, zeroCpnBondMaturityDate1,
+            var zeroCpnBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount, zeroCpnBondMaturityDate1,
                                          zeroCpnBondStartDate1, zeroCpnBondLeg1);
             zeroCpnBond1.setPricingEngine(bondEngine);
 
@@ -2916,11 +2916,11 @@ namespace QLNet.Tests
                                                               100.0, new Date(19, Month.December, 1985));
             zeroCpnSpecializedBond1.setPricingEngine(bondEngine);
 
-            double zeroCpnBondTheoValue1 = zeroCpnBond1.cleanPrice();
-            double zeroCpnSpecializedBondTheoValue1 =
+            var zeroCpnBondTheoValue1 = zeroCpnBond1.cleanPrice();
+            var zeroCpnSpecializedBondTheoValue1 =
                zeroCpnSpecializedBond1.cleanPrice();
 
-            double error13 =
+            var error13 =
                System.Math.Abs(zeroCpnBondTheoValue1 - zeroCpnSpecializedBondTheoValue1);
             if (error13 > tolerance)
             {
@@ -2932,12 +2932,12 @@ namespace QLNet.Tests
                              + "\n  error:                 " + error13
                              + "\n  tolerance:             " + tolerance);
             }
-            double zeroCpnBondTheoDirty1 = zeroCpnBondTheoValue1 +
-                                           zeroCpnBond1.accruedAmount();
-            double zeroCpnSpecializedBondTheoDirty1 =
+            var zeroCpnBondTheoDirty1 = zeroCpnBondTheoValue1 +
+                                        zeroCpnBond1.accruedAmount();
+            var zeroCpnSpecializedBondTheoDirty1 =
                zeroCpnSpecializedBondTheoValue1 +
                zeroCpnSpecializedBond1.accruedAmount();
-            double error14 =
+            var error14 =
                System.Math.Abs(zeroCpnBondTheoDirty1 - zeroCpnSpecializedBondTheoDirty1);
             if (error14 > tolerance)
             {
@@ -2952,13 +2952,13 @@ namespace QLNet.Tests
 
             // Zero Coupon bond (Isin: IT0001200390 ISPIM 0 02/17/28)
             // maturity occurs on a business day
-            Date zeroCpnBondStartDate2 = new Date(17, Month.February, 1998);
-            Date zeroCpnBondMaturityDate2 = new Date(17, Month.February, 2028);
-            Date zerocpbondRedemption2 = bondCalendar.adjust(zeroCpnBondMaturityDate2,
+            var zeroCpnBondStartDate2 = new Date(17, Month.February, 1998);
+            var zeroCpnBondMaturityDate2 = new Date(17, Month.February, 2028);
+            var zerocpbondRedemption2 = bondCalendar.adjust(zeroCpnBondMaturityDate2,
                                                              BusinessDayConvention.Following);
-            List<CashFlow> zeroCpnBondLeg2 = new List<CashFlow> { new SimpleCashFlow(100.0, zerocpbondRedemption2) };
+            var zeroCpnBondLeg2 = new List<CashFlow> { new SimpleCashFlow(100.0, zerocpbondRedemption2) };
             // generic bond
-            Bond zeroCpnBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var zeroCpnBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                           zeroCpnBondMaturityDate2, zeroCpnBondStartDate2, zeroCpnBondLeg2);
             zeroCpnBond2.setPricingEngine(bondEngine);
 
@@ -2969,11 +2969,11 @@ namespace QLNet.Tests
                                                               100.0, new Date(17, Month.February, 1998));
             zeroCpnSpecializedBond2.setPricingEngine(bondEngine);
 
-            double zeroCpnBondTheoValue2 = zeroCpnBond2.cleanPrice();
-            double zeroCpnSpecializedBondTheoValue2 =
+            var zeroCpnBondTheoValue2 = zeroCpnBond2.cleanPrice();
+            var zeroCpnSpecializedBondTheoValue2 =
                zeroCpnSpecializedBond2.cleanPrice();
 
-            double error15 =
+            var error15 =
                System.Math.Abs(zeroCpnBondTheoValue2 - zeroCpnSpecializedBondTheoValue2);
             if (error15 > tolerance)
             {
@@ -2985,14 +2985,14 @@ namespace QLNet.Tests
                              + "\n  error:                 " + error15
                              + "\n  tolerance:             " + tolerance);
             }
-            double zeroCpnBondTheoDirty2 = zeroCpnBondTheoValue2 +
-                                           zeroCpnBond2.accruedAmount();
+            var zeroCpnBondTheoDirty2 = zeroCpnBondTheoValue2 +
+                                        zeroCpnBond2.accruedAmount();
 
-            double zeroCpnSpecializedBondTheoDirty2 =
+            var zeroCpnSpecializedBondTheoDirty2 =
                zeroCpnSpecializedBondTheoValue2 +
                zeroCpnSpecializedBond2.accruedAmount();
 
-            double error16 =
+            var error16 =
                System.Math.Abs(zeroCpnBondTheoDirty2 - zeroCpnSpecializedBondTheoDirty2);
             if (error16 > tolerance)
             {
@@ -3010,20 +3010,20 @@ namespace QLNet.Tests
         public void testSpecializedBondVsGenericBondUsingAsw()
         {
             // Testing asset-swap prices and spreads for specialized bond against equivalent generic bond...
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             Calendar bondCalendar = new TARGET();
-            int settlementDays = 3;
-            int fixingDays = 2;
-            bool payFixedRate = true;
-            bool parAssetSwap = true;
-            bool inArrears = false;
+            var settlementDays = 3;
+            var fixingDays = 2;
+            var payFixedRate = true;
+            var parAssetSwap = true;
+            var inArrears = false;
 
             // Fixed bond (Isin: DE0001135275 DBR 4 01/04/37)
             // maturity doesn't occur on a business day
-            Date fixedBondStartDate1 = new Date(4, Month.January, 2005);
-            Date fixedBondMaturityDate1 = new Date(4, Month.January, 2037);
-            Schedule fixedBondSchedule1 = new Schedule(fixedBondStartDate1,
+            var fixedBondStartDate1 = new Date(4, Month.January, 2005);
+            var fixedBondMaturityDate1 = new Date(4, Month.January, 2037);
+            var fixedBondSchedule1 = new Schedule(fixedBondStartDate1,
                                                        fixedBondMaturityDate1,
                                                        new Period(Frequency.Annual), bondCalendar,
                                                        BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -3031,10 +3031,10 @@ namespace QLNet.Tests
             List<CashFlow> fixedBondLeg1 = new FixedRateLeg(fixedBondSchedule1)
             .withCouponRates(0.04, new ActualActual(ActualActual.Convention.ISDA))
             .withNotionals(vars.faceAmount);
-            Date fixedbondRedemption1 = bondCalendar.adjust(fixedBondMaturityDate1, BusinessDayConvention.Following);
+            var fixedbondRedemption1 = bondCalendar.adjust(fixedBondMaturityDate1, BusinessDayConvention.Following);
             fixedBondLeg1.Add(new SimpleCashFlow(100.0, fixedbondRedemption1));
             // generic bond
-            Bond fixedBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var fixedBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                        fixedBondMaturityDate1, fixedBondStartDate1, fixedBondLeg1);
             IPricingEngine bondEngine = new DiscountingBondEngine(vars.termStructure);
             IPricingEngine swapEngine = new DiscountingSwapEngine(vars.termStructure);
@@ -3047,16 +3047,16 @@ namespace QLNet.Tests
                                                            100.0, new Date(4, Month.January, 2005));
             fixedSpecializedBond1.setPricingEngine(bondEngine);
 
-            double fixedBondPrice1 = fixedBond1.cleanPrice();
-            double fixedSpecializedBondPrice1 = fixedSpecializedBond1.cleanPrice();
-            AssetSwap fixedBondAssetSwap1 = new AssetSwap(payFixedRate,
+            var fixedBondPrice1 = fixedBond1.cleanPrice();
+            var fixedSpecializedBondPrice1 = fixedSpecializedBond1.cleanPrice();
+            var fixedBondAssetSwap1 = new AssetSwap(payFixedRate,
                                                           fixedBond1, fixedBondPrice1,
                                                           vars.iborIndex, vars.nonnullspread,
                                                           null,
                                                           vars.iborIndex.dayCounter(),
                                                           parAssetSwap);
             fixedBondAssetSwap1.setPricingEngine(swapEngine);
-            AssetSwap fixedSpecializedBondAssetSwap1 = new AssetSwap(payFixedRate,
+            var fixedSpecializedBondAssetSwap1 = new AssetSwap(payFixedRate,
                                                                      fixedSpecializedBond1,
                                                                      fixedSpecializedBondPrice1,
                                                                      vars.iborIndex,
@@ -3065,11 +3065,11 @@ namespace QLNet.Tests
                                                                      vars.iborIndex.dayCounter(),
                                                                      parAssetSwap);
             fixedSpecializedBondAssetSwap1.setPricingEngine(swapEngine);
-            double fixedBondAssetSwapPrice1 = fixedBondAssetSwap1.fairCleanPrice();
-            double fixedSpecializedBondAssetSwapPrice1 =
+            var fixedBondAssetSwapPrice1 = fixedBondAssetSwap1.fairCleanPrice();
+            var fixedSpecializedBondAssetSwapPrice1 =
                fixedSpecializedBondAssetSwap1.fairCleanPrice();
-            double tolerance = 1.0e-13;
-            double error1 =
+            var tolerance = 1.0e-13;
+            var error1 =
                System.Math.Abs(fixedBondAssetSwapPrice1 - fixedSpecializedBondAssetSwapPrice1);
             if (error1 > tolerance)
             {
@@ -3082,15 +3082,15 @@ namespace QLNet.Tests
                              + "\n  tolerance:             " + tolerance);
             }
             // market executable price as of 4th sept 2007
-            double fixedBondMktPrice1 = 91.832;
-            AssetSwap fixedBondASW1 = new AssetSwap(payFixedRate,
+            var fixedBondMktPrice1 = 91.832;
+            var fixedBondASW1 = new AssetSwap(payFixedRate,
                                                     fixedBond1, fixedBondMktPrice1,
                                                     vars.iborIndex, vars.spread,
                                                     null,
                                                     vars.iborIndex.dayCounter(),
                                                     parAssetSwap);
             fixedBondASW1.setPricingEngine(swapEngine);
-            AssetSwap fixedSpecializedBondASW1 = new AssetSwap(payFixedRate,
+            var fixedSpecializedBondASW1 = new AssetSwap(payFixedRate,
                                                                fixedSpecializedBond1,
                                                                fixedBondMktPrice1,
                                                                vars.iborIndex, vars.spread,
@@ -3098,9 +3098,9 @@ namespace QLNet.Tests
                                                                vars.iborIndex.dayCounter(),
                                                                parAssetSwap);
             fixedSpecializedBondASW1.setPricingEngine(swapEngine);
-            double fixedBondASWSpread1 = fixedBondASW1.fairSpread();
-            double fixedSpecializedBondASWSpread1 = fixedSpecializedBondASW1.fairSpread();
-            double error2 = System.Math.Abs(fixedBondASWSpread1 - fixedSpecializedBondASWSpread1);
+            var fixedBondASWSpread1 = fixedBondASW1.fairSpread();
+            var fixedSpecializedBondASWSpread1 = fixedSpecializedBondASW1.fairSpread();
+            var error2 = System.Math.Abs(fixedBondASWSpread1 - fixedSpecializedBondASWSpread1);
             if (error2 > tolerance)
             {
                 QAssert.Fail("wrong asw spread  for fixed bond:"
@@ -3115,9 +3115,9 @@ namespace QLNet.Tests
             //Fixed bond (Isin: IT0006527060 IBRD 5 02/05/19)
             //maturity occurs on a business day
 
-            Date fixedBondStartDate2 = new Date(5, Month.February, 2005);
-            Date fixedBondMaturityDate2 = new Date(5, Month.February, 2019);
-            Schedule fixedBondSchedule2 = new Schedule(fixedBondStartDate2,
+            var fixedBondStartDate2 = new Date(5, Month.February, 2005);
+            var fixedBondMaturityDate2 = new Date(5, Month.February, 2019);
+            var fixedBondSchedule2 = new Schedule(fixedBondStartDate2,
                                                        fixedBondMaturityDate2,
                                                        new Period(Frequency.Annual), bondCalendar,
                                                        BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -3125,11 +3125,11 @@ namespace QLNet.Tests
             List<CashFlow> fixedBondLeg2 = new FixedRateLeg(fixedBondSchedule2)
             .withCouponRates(0.05, new Thirty360(Thirty360.Thirty360Convention.BondBasis))
             .withNotionals(vars.faceAmount);
-            Date fixedbondRedemption2 = bondCalendar.adjust(fixedBondMaturityDate2, BusinessDayConvention.Following);
+            var fixedbondRedemption2 = bondCalendar.adjust(fixedBondMaturityDate2, BusinessDayConvention.Following);
             fixedBondLeg2.Add(new SimpleCashFlow(100.0, fixedbondRedemption2));
 
             // generic bond
-            Bond fixedBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var fixedBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                        fixedBondMaturityDate2, fixedBondStartDate2, fixedBondLeg2);
             fixedBond2.setPricingEngine(bondEngine);
 
@@ -3140,16 +3140,16 @@ namespace QLNet.Tests
                                                            100.0, new Date(5, Month.February, 2005));
             fixedSpecializedBond2.setPricingEngine(bondEngine);
 
-            double fixedBondPrice2 = fixedBond2.cleanPrice();
-            double fixedSpecializedBondPrice2 = fixedSpecializedBond2.cleanPrice();
-            AssetSwap fixedBondAssetSwap2 = new AssetSwap(payFixedRate,
+            var fixedBondPrice2 = fixedBond2.cleanPrice();
+            var fixedSpecializedBondPrice2 = fixedSpecializedBond2.cleanPrice();
+            var fixedBondAssetSwap2 = new AssetSwap(payFixedRate,
                                                           fixedBond2, fixedBondPrice2,
                                                           vars.iborIndex, vars.nonnullspread,
                                                           null,
                                                           vars.iborIndex.dayCounter(),
                                                           parAssetSwap);
             fixedBondAssetSwap2.setPricingEngine(swapEngine);
-            AssetSwap fixedSpecializedBondAssetSwap2 = new AssetSwap(payFixedRate,
+            var fixedSpecializedBondAssetSwap2 = new AssetSwap(payFixedRate,
                                                                      fixedSpecializedBond2,
                                                                      fixedSpecializedBondPrice2,
                                                                      vars.iborIndex,
@@ -3158,10 +3158,10 @@ namespace QLNet.Tests
                                                                      vars.iborIndex.dayCounter(),
                                                                      parAssetSwap);
             fixedSpecializedBondAssetSwap2.setPricingEngine(swapEngine);
-            double fixedBondAssetSwapPrice2 = fixedBondAssetSwap2.fairCleanPrice();
-            double fixedSpecializedBondAssetSwapPrice2 = fixedSpecializedBondAssetSwap2.fairCleanPrice();
+            var fixedBondAssetSwapPrice2 = fixedBondAssetSwap2.fairCleanPrice();
+            var fixedSpecializedBondAssetSwapPrice2 = fixedSpecializedBondAssetSwap2.fairCleanPrice();
 
-            double error3 = System.Math.Abs(fixedBondAssetSwapPrice2 - fixedSpecializedBondAssetSwapPrice2);
+            var error3 = System.Math.Abs(fixedBondAssetSwapPrice2 - fixedSpecializedBondAssetSwapPrice2);
             if (error3 > tolerance)
             {
                 QAssert.Fail("wrong clean price for fixed bond:"
@@ -3173,15 +3173,15 @@ namespace QLNet.Tests
                              + "\n  tolerance:             " + tolerance);
             }
             // market executable price as of 4th sept 2007
-            double fixedBondMktPrice2 = 102.178;
-            AssetSwap fixedBondASW2 = new AssetSwap(payFixedRate,
+            var fixedBondMktPrice2 = 102.178;
+            var fixedBondASW2 = new AssetSwap(payFixedRate,
                                                     fixedBond2, fixedBondMktPrice2,
                                                     vars.iborIndex, vars.spread,
                                                     null,
                                                     vars.iborIndex.dayCounter(),
                                                     parAssetSwap);
             fixedBondASW2.setPricingEngine(swapEngine);
-            AssetSwap fixedSpecializedBondASW2 = new AssetSwap(payFixedRate,
+            var fixedSpecializedBondASW2 = new AssetSwap(payFixedRate,
                                                                fixedSpecializedBond2,
                                                                fixedBondMktPrice2,
                                                                vars.iborIndex, vars.spread,
@@ -3189,9 +3189,9 @@ namespace QLNet.Tests
                                                                vars.iborIndex.dayCounter(),
                                                                parAssetSwap);
             fixedSpecializedBondASW2.setPricingEngine(swapEngine);
-            double fixedBondASWSpread2 = fixedBondASW2.fairSpread();
-            double fixedSpecializedBondASWSpread2 = fixedSpecializedBondASW2.fairSpread();
-            double error4 = System.Math.Abs(fixedBondASWSpread2 - fixedSpecializedBondASWSpread2);
+            var fixedBondASWSpread2 = fixedBondASW2.fairSpread();
+            var fixedSpecializedBondASWSpread2 = fixedSpecializedBondASW2.fairSpread();
+            var error4 = System.Math.Abs(fixedBondASWSpread2 - fixedSpecializedBondASWSpread2);
             if (error4 > tolerance)
             {
                 QAssert.Fail("wrong asw spread for fixed bond:"
@@ -3206,9 +3206,9 @@ namespace QLNet.Tests
 
             //FRN bond (Isin: IT0003543847 ISPIM 0 09/29/13)
             //maturity doesn't occur on a business day
-            Date floatingBondStartDate1 = new Date(29, Month.September, 2003);
-            Date floatingBondMaturityDate1 = new Date(29, Month.September, 2013);
-            Schedule floatingBondSchedule1 = new Schedule(floatingBondStartDate1,
+            var floatingBondStartDate1 = new Date(29, Month.September, 2003);
+            var floatingBondMaturityDate1 = new Date(29, Month.September, 2013);
+            var floatingBondSchedule1 = new Schedule(floatingBondStartDate1,
                                                           floatingBondMaturityDate1,
                                                           new Period(Frequency.Semiannual), bondCalendar,
                                                           BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -3219,10 +3219,10 @@ namespace QLNet.Tests
             .withSpreads(0.0056)
             .inArrears(inArrears)
             .withNotionals(vars.faceAmount);
-            Date floatingbondRedemption1 = bondCalendar.adjust(floatingBondMaturityDate1, BusinessDayConvention.Following);
+            var floatingbondRedemption1 = bondCalendar.adjust(floatingBondMaturityDate1, BusinessDayConvention.Following);
             floatingBondLeg1.Add(new SimpleCashFlow(100.0, floatingbondRedemption1));
             // generic bond
-            Bond floatingBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var floatingBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                           floatingBondMaturityDate1, floatingBondStartDate1, floatingBondLeg1);
             floatingBond1.setPricingEngine(bondEngine);
 
@@ -3241,16 +3241,16 @@ namespace QLNet.Tests
             Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
             Utils.setCouponPricer(floatingSpecializedBond1.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(27, Month.March, 2007), 0.0402);
-            double floatingBondPrice1 = floatingBond1.cleanPrice();
-            double floatingSpecializedBondPrice1 = floatingSpecializedBond1.cleanPrice();
-            AssetSwap floatingBondAssetSwap1 = new AssetSwap(payFixedRate,
+            var floatingBondPrice1 = floatingBond1.cleanPrice();
+            var floatingSpecializedBondPrice1 = floatingSpecializedBond1.cleanPrice();
+            var floatingBondAssetSwap1 = new AssetSwap(payFixedRate,
                                                              floatingBond1, floatingBondPrice1,
                                                              vars.iborIndex, vars.nonnullspread,
                                                              null,
                                                              vars.iborIndex.dayCounter(),
                                                              parAssetSwap);
             floatingBondAssetSwap1.setPricingEngine(swapEngine);
-            AssetSwap floatingSpecializedBondAssetSwap1 = new AssetSwap(payFixedRate,
+            var floatingSpecializedBondAssetSwap1 = new AssetSwap(payFixedRate,
                                                                         floatingSpecializedBond1,
                                                                         floatingSpecializedBondPrice1,
                                                                         vars.iborIndex,
@@ -3259,11 +3259,11 @@ namespace QLNet.Tests
                                                                         vars.iborIndex.dayCounter(),
                                                                         parAssetSwap);
             floatingSpecializedBondAssetSwap1.setPricingEngine(swapEngine);
-            double floatingBondAssetSwapPrice1 = floatingBondAssetSwap1.fairCleanPrice();
-            double floatingSpecializedBondAssetSwapPrice1 =
+            var floatingBondAssetSwapPrice1 = floatingBondAssetSwap1.fairCleanPrice();
+            var floatingSpecializedBondAssetSwapPrice1 =
                floatingSpecializedBondAssetSwap1.fairCleanPrice();
 
-            double error5 =
+            var error5 =
                System.Math.Abs(floatingBondAssetSwapPrice1 - floatingSpecializedBondAssetSwapPrice1);
             if (error5 > tolerance)
             {
@@ -3276,15 +3276,15 @@ namespace QLNet.Tests
                              + "\n  tolerance:             " + tolerance);
             }
             // market executable price as of 4th sept 2007
-            double floatingBondMktPrice1 = 101.33;
-            AssetSwap floatingBondASW1 = new AssetSwap(payFixedRate,
+            var floatingBondMktPrice1 = 101.33;
+            var floatingBondASW1 = new AssetSwap(payFixedRate,
                                                        floatingBond1, floatingBondMktPrice1,
                                                        vars.iborIndex, vars.spread,
                                                        null,
                                                        vars.iborIndex.dayCounter(),
                                                        parAssetSwap);
             floatingBondASW1.setPricingEngine(swapEngine);
-            AssetSwap floatingSpecializedBondASW1 = new AssetSwap(payFixedRate,
+            var floatingSpecializedBondASW1 = new AssetSwap(payFixedRate,
                                                                   floatingSpecializedBond1,
                                                                   floatingBondMktPrice1,
                                                                   vars.iborIndex, vars.spread,
@@ -3292,10 +3292,10 @@ namespace QLNet.Tests
                                                                   vars.iborIndex.dayCounter(),
                                                                   parAssetSwap);
             floatingSpecializedBondASW1.setPricingEngine(swapEngine);
-            double floatingBondASWSpread1 = floatingBondASW1.fairSpread();
-            double floatingSpecializedBondASWSpread1 =
+            var floatingBondASWSpread1 = floatingBondASW1.fairSpread();
+            var floatingSpecializedBondASWSpread1 =
                floatingSpecializedBondASW1.fairSpread();
-            double error6 =
+            var error6 =
                System.Math.Abs(floatingBondASWSpread1 - floatingSpecializedBondASWSpread1);
             if (error6 > tolerance)
             {
@@ -3309,9 +3309,9 @@ namespace QLNet.Tests
             }
             //FRN bond (Isin: XS0090566539 COE 0 09/24/18)
             //maturity occurs on a business day
-            Date floatingBondStartDate2 = new Date(24, Month.September, 2004);
-            Date floatingBondMaturityDate2 = new Date(24, Month.September, 2018);
-            Schedule floatingBondSchedule2 = new Schedule(floatingBondStartDate2,
+            var floatingBondStartDate2 = new Date(24, Month.September, 2004);
+            var floatingBondMaturityDate2 = new Date(24, Month.September, 2018);
+            var floatingBondSchedule2 = new Schedule(floatingBondStartDate2,
                                                           floatingBondMaturityDate2,
                                                           new Period(Frequency.Semiannual), bondCalendar,
                                                           BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
@@ -3323,10 +3323,10 @@ namespace QLNet.Tests
             .inArrears(inArrears)
             .withPaymentAdjustment(BusinessDayConvention.ModifiedFollowing)
             .withNotionals(vars.faceAmount);
-            Date floatingbondRedemption2 = bondCalendar.adjust(floatingBondMaturityDate2, BusinessDayConvention.ModifiedFollowing);
+            var floatingbondRedemption2 = bondCalendar.adjust(floatingBondMaturityDate2, BusinessDayConvention.ModifiedFollowing);
             floatingBondLeg2.Add(new SimpleCashFlow(100.0, floatingbondRedemption2));
             // generic bond
-            Bond floatingBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var floatingBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                            floatingBondMaturityDate2, floatingBondStartDate2, floatingBondLeg2);
             floatingBond2.setPricingEngine(bondEngine);
 
@@ -3347,16 +3347,16 @@ namespace QLNet.Tests
 
             vars.iborIndex.addFixing(new Date(22, Month.March, 2007), 0.04013);
 
-            double floatingBondPrice2 = floatingBond2.cleanPrice();
-            double floatingSpecializedBondPrice2 = floatingSpecializedBond2.cleanPrice();
-            AssetSwap floatingBondAssetSwap2 = new AssetSwap(payFixedRate,
+            var floatingBondPrice2 = floatingBond2.cleanPrice();
+            var floatingSpecializedBondPrice2 = floatingSpecializedBond2.cleanPrice();
+            var floatingBondAssetSwap2 = new AssetSwap(payFixedRate,
                                                              floatingBond2, floatingBondPrice2,
                                                              vars.iborIndex, vars.nonnullspread,
                                                              null,
                                                              vars.iborIndex.dayCounter(),
                                                              parAssetSwap);
             floatingBondAssetSwap2.setPricingEngine(swapEngine);
-            AssetSwap floatingSpecializedBondAssetSwap2 = new AssetSwap(payFixedRate,
+            var floatingSpecializedBondAssetSwap2 = new AssetSwap(payFixedRate,
                                                                         floatingSpecializedBond2,
                                                                         floatingSpecializedBondPrice2,
                                                                         vars.iborIndex,
@@ -3365,10 +3365,10 @@ namespace QLNet.Tests
                                                                         vars.iborIndex.dayCounter(),
                                                                         parAssetSwap);
             floatingSpecializedBondAssetSwap2.setPricingEngine(swapEngine);
-            double floatingBondAssetSwapPrice2 = floatingBondAssetSwap2.fairCleanPrice();
-            double floatingSpecializedBondAssetSwapPrice2 =
+            var floatingBondAssetSwapPrice2 = floatingBondAssetSwap2.fairCleanPrice();
+            var floatingSpecializedBondAssetSwapPrice2 =
                floatingSpecializedBondAssetSwap2.fairCleanPrice();
-            double error7 =
+            var error7 =
                System.Math.Abs(floatingBondAssetSwapPrice2 - floatingSpecializedBondAssetSwapPrice2);
             if (error7 > tolerance)
             {
@@ -3381,15 +3381,15 @@ namespace QLNet.Tests
                              + "\n  tolerance:             " + tolerance);
             }
             // market executable price as of 4th sept 2007
-            double floatingBondMktPrice2 = 101.26;
-            AssetSwap floatingBondASW2 = new AssetSwap(payFixedRate,
+            var floatingBondMktPrice2 = 101.26;
+            var floatingBondASW2 = new AssetSwap(payFixedRate,
                                                        floatingBond2, floatingBondMktPrice2,
                                                        vars.iborIndex, vars.spread,
                                                        null,
                                                        vars.iborIndex.dayCounter(),
                                                        parAssetSwap);
             floatingBondASW2.setPricingEngine(swapEngine);
-            AssetSwap floatingSpecializedBondASW2 = new AssetSwap(payFixedRate,
+            var floatingSpecializedBondASW2 = new AssetSwap(payFixedRate,
                                                                   floatingSpecializedBond2,
                                                                   floatingBondMktPrice2,
                                                                   vars.iborIndex, vars.spread,
@@ -3397,10 +3397,10 @@ namespace QLNet.Tests
                                                                   vars.iborIndex.dayCounter(),
                                                                   parAssetSwap);
             floatingSpecializedBondASW2.setPricingEngine(swapEngine);
-            double floatingBondASWSpread2 = floatingBondASW2.fairSpread();
-            double floatingSpecializedBondASWSpread2 =
+            var floatingBondASWSpread2 = floatingBondASW2.fairSpread();
+            var floatingSpecializedBondASWSpread2 =
                floatingSpecializedBondASW2.fairSpread();
-            double error8 =
+            var error8 =
                System.Math.Abs(floatingBondASWSpread2 - floatingSpecializedBondASWSpread2);
             if (error8 > tolerance)
             {
@@ -3415,9 +3415,9 @@ namespace QLNet.Tests
 
             // CMS bond (Isin: XS0228052402 CRDIT 0 8/22/20)
             // maturity doesn't occur on a business day
-            Date cmsBondStartDate1 = new Date(22, Month.August, 2005);
-            Date cmsBondMaturityDate1 = new Date(22, Month.August, 2020);
-            Schedule cmsBondSchedule1 = new Schedule(cmsBondStartDate1,
+            var cmsBondStartDate1 = new Date(22, Month.August, 2005);
+            var cmsBondMaturityDate1 = new Date(22, Month.August, 2020);
+            var cmsBondSchedule1 = new Schedule(cmsBondStartDate1,
                                                      cmsBondMaturityDate1,
                                                      new Period(Frequency.Annual), bondCalendar,
                                                      BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -3429,10 +3429,10 @@ namespace QLNet.Tests
             .withFloors(0.025)
             .inArrears(inArrears)
             .withNotionals(vars.faceAmount);
-            Date cmsbondRedemption1 = bondCalendar.adjust(cmsBondMaturityDate1, BusinessDayConvention.Following);
+            var cmsbondRedemption1 = bondCalendar.adjust(cmsBondMaturityDate1, BusinessDayConvention.Following);
             cmsBondLeg1.Add(new SimpleCashFlow(100.0, cmsbondRedemption1));
             // generic cms bond
-            Bond cmsBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var cmsBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                       cmsBondMaturityDate1, cmsBondStartDate1, cmsBondLeg1);
             cmsBond1.setPricingEngine(bondEngine);
 
@@ -3450,14 +3450,14 @@ namespace QLNet.Tests
             Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
             Utils.setCouponPricer(cmsSpecializedBond1.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(18, Month.August, 2006), 0.04158);
-            double cmsBondPrice1 = cmsBond1.cleanPrice();
-            double cmsSpecializedBondPrice1 = cmsSpecializedBond1.cleanPrice();
-            AssetSwap cmsBondAssetSwap1 = new AssetSwap(payFixedRate, cmsBond1, cmsBondPrice1,
+            var cmsBondPrice1 = cmsBond1.cleanPrice();
+            var cmsSpecializedBondPrice1 = cmsSpecializedBond1.cleanPrice();
+            var cmsBondAssetSwap1 = new AssetSwap(payFixedRate, cmsBond1, cmsBondPrice1,
                                                         vars.iborIndex, vars.nonnullspread,
                                                         null, vars.iborIndex.dayCounter(),
                                                         parAssetSwap);
             cmsBondAssetSwap1.setPricingEngine(swapEngine);
-            AssetSwap cmsSpecializedBondAssetSwap1 = new AssetSwap(payFixedRate, cmsSpecializedBond1,
+            var cmsSpecializedBondAssetSwap1 = new AssetSwap(payFixedRate, cmsSpecializedBond1,
                                                                    cmsSpecializedBondPrice1,
                                                                    vars.iborIndex,
                                                                    vars.nonnullspread,
@@ -3465,10 +3465,10 @@ namespace QLNet.Tests
                                                                    vars.iborIndex.dayCounter(),
                                                                    parAssetSwap);
             cmsSpecializedBondAssetSwap1.setPricingEngine(swapEngine);
-            double cmsBondAssetSwapPrice1 = cmsBondAssetSwap1.fairCleanPrice();
-            double cmsSpecializedBondAssetSwapPrice1 =
+            var cmsBondAssetSwapPrice1 = cmsBondAssetSwap1.fairCleanPrice();
+            var cmsSpecializedBondAssetSwapPrice1 =
                cmsSpecializedBondAssetSwap1.fairCleanPrice();
-            double error9 =
+            var error9 =
                System.Math.Abs(cmsBondAssetSwapPrice1 - cmsSpecializedBondAssetSwapPrice1);
             if (error9 > tolerance)
             {
@@ -3480,15 +3480,15 @@ namespace QLNet.Tests
                              + "\n  error:                 " + error9
                              + "\n  tolerance:             " + tolerance);
             }
-            double cmsBondMktPrice1 = 87.02;// market executable price as of 4th sept 2007
-            AssetSwap cmsBondASW1 = new AssetSwap(payFixedRate,
+            var cmsBondMktPrice1 = 87.02;// market executable price as of 4th sept 2007
+            var cmsBondASW1 = new AssetSwap(payFixedRate,
                                                   cmsBond1, cmsBondMktPrice1,
                                                   vars.iborIndex, vars.spread,
                                                   null,
                                                   vars.iborIndex.dayCounter(),
                                                   parAssetSwap);
             cmsBondASW1.setPricingEngine(swapEngine);
-            AssetSwap cmsSpecializedBondASW1 = new AssetSwap(payFixedRate,
+            var cmsSpecializedBondASW1 = new AssetSwap(payFixedRate,
                                                              cmsSpecializedBond1,
                                                              cmsBondMktPrice1,
                                                              vars.iborIndex, vars.spread,
@@ -3496,9 +3496,9 @@ namespace QLNet.Tests
                                                              vars.iborIndex.dayCounter(),
                                                              parAssetSwap);
             cmsSpecializedBondASW1.setPricingEngine(swapEngine);
-            double cmsBondASWSpread1 = cmsBondASW1.fairSpread();
-            double cmsSpecializedBondASWSpread1 = cmsSpecializedBondASW1.fairSpread();
-            double error10 = System.Math.Abs(cmsBondASWSpread1 - cmsSpecializedBondASWSpread1);
+            var cmsBondASWSpread1 = cmsBondASW1.fairSpread();
+            var cmsSpecializedBondASWSpread1 = cmsSpecializedBondASW1.fairSpread();
+            var error10 = System.Math.Abs(cmsBondASWSpread1 - cmsSpecializedBondASWSpread1);
             if (error10 > tolerance)
             {
                 QAssert.Fail("wrong asw spread for cm bond:"
@@ -3512,9 +3512,9 @@ namespace QLNet.Tests
 
             //CMS bond (Isin: XS0218766664 ISPIM 0 5/6/15)
             //maturity occurs on a business day
-            Date cmsBondStartDate2 = new Date(06, Month.May, 2005);
-            Date cmsBondMaturityDate2 = new Date(06, Month.May, 2015);
-            Schedule cmsBondSchedule2 = new Schedule(cmsBondStartDate2,
+            var cmsBondStartDate2 = new Date(06, Month.May, 2005);
+            var cmsBondMaturityDate2 = new Date(06, Month.May, 2015);
+            var cmsBondSchedule2 = new Schedule(cmsBondStartDate2,
                                                      cmsBondMaturityDate2,
                                                      new Period(Frequency.Annual), bondCalendar,
                                                      BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
@@ -3525,11 +3525,11 @@ namespace QLNet.Tests
             .withGearings(0.84)
             .inArrears(inArrears)
             .withNotionals(vars.faceAmount);
-            Date cmsbondRedemption2 = bondCalendar.adjust(cmsBondMaturityDate2,
+            var cmsbondRedemption2 = bondCalendar.adjust(cmsBondMaturityDate2,
                                                           BusinessDayConvention.Following);
             cmsBondLeg2.Add(new SimpleCashFlow(100.0, cmsbondRedemption2));
             // generic bond
-            Bond cmsBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var cmsBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                       cmsBondMaturityDate2, cmsBondStartDate2, cmsBondLeg2);
             cmsBond2.setPricingEngine(bondEngine);
 
@@ -3546,15 +3546,15 @@ namespace QLNet.Tests
             Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
             Utils.setCouponPricer(cmsSpecializedBond2.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(04, Month.May, 2006), 0.04217);
-            double cmsBondPrice2 = cmsBond2.cleanPrice();
-            double cmsSpecializedBondPrice2 = cmsSpecializedBond2.cleanPrice();
-            AssetSwap cmsBondAssetSwap2 = new AssetSwap(payFixedRate, cmsBond2, cmsBondPrice2,
+            var cmsBondPrice2 = cmsBond2.cleanPrice();
+            var cmsSpecializedBondPrice2 = cmsSpecializedBond2.cleanPrice();
+            var cmsBondAssetSwap2 = new AssetSwap(payFixedRate, cmsBond2, cmsBondPrice2,
                                                         vars.iborIndex, vars.nonnullspread,
                                                         null,
                                                         vars.iborIndex.dayCounter(),
                                                         parAssetSwap);
             cmsBondAssetSwap2.setPricingEngine(swapEngine);
-            AssetSwap cmsSpecializedBondAssetSwap2 = new AssetSwap(payFixedRate, cmsSpecializedBond2,
+            var cmsSpecializedBondAssetSwap2 = new AssetSwap(payFixedRate, cmsSpecializedBond2,
                                                                    cmsSpecializedBondPrice2,
                                                                    vars.iborIndex,
                                                                    vars.nonnullspread,
@@ -3562,10 +3562,10 @@ namespace QLNet.Tests
                                                                    vars.iborIndex.dayCounter(),
                                                                    parAssetSwap);
             cmsSpecializedBondAssetSwap2.setPricingEngine(swapEngine);
-            double cmsBondAssetSwapPrice2 = cmsBondAssetSwap2.fairCleanPrice();
-            double cmsSpecializedBondAssetSwapPrice2 =
+            var cmsBondAssetSwapPrice2 = cmsBondAssetSwap2.fairCleanPrice();
+            var cmsSpecializedBondAssetSwapPrice2 =
                cmsSpecializedBondAssetSwap2.fairCleanPrice();
-            double error11 =
+            var error11 =
                System.Math.Abs(cmsBondAssetSwapPrice2 - cmsSpecializedBondAssetSwapPrice2);
             if (error11 > tolerance)
             {
@@ -3577,15 +3577,15 @@ namespace QLNet.Tests
                              + "\n  error:                 " + error11
                              + "\n  tolerance:             " + tolerance);
             }
-            double cmsBondMktPrice2 = 94.35;// market executable price as of 4th sept 2007
-            AssetSwap cmsBondASW2 = new AssetSwap(payFixedRate,
+            var cmsBondMktPrice2 = 94.35;// market executable price as of 4th sept 2007
+            var cmsBondASW2 = new AssetSwap(payFixedRate,
                                                   cmsBond2, cmsBondMktPrice2,
                                                   vars.iborIndex, vars.spread,
                                                   null,
                                                   vars.iborIndex.dayCounter(),
                                                   parAssetSwap);
             cmsBondASW2.setPricingEngine(swapEngine);
-            AssetSwap cmsSpecializedBondASW2 = new AssetSwap(payFixedRate,
+            var cmsSpecializedBondASW2 = new AssetSwap(payFixedRate,
                                                              cmsSpecializedBond2,
                                                              cmsBondMktPrice2,
                                                              vars.iborIndex, vars.spread,
@@ -3593,9 +3593,9 @@ namespace QLNet.Tests
                                                              vars.iborIndex.dayCounter(),
                                                              parAssetSwap);
             cmsSpecializedBondASW2.setPricingEngine(swapEngine);
-            double cmsBondASWSpread2 = cmsBondASW2.fairSpread();
-            double cmsSpecializedBondASWSpread2 = cmsSpecializedBondASW2.fairSpread();
-            double error12 = System.Math.Abs(cmsBondASWSpread2 - cmsSpecializedBondASWSpread2);
+            var cmsBondASWSpread2 = cmsBondASW2.fairSpread();
+            var cmsSpecializedBondASWSpread2 = cmsSpecializedBondASW2.fairSpread();
+            var error12 = System.Math.Abs(cmsBondASWSpread2 - cmsSpecializedBondASWSpread2);
             if (error12 > tolerance)
             {
                 QAssert.Fail("wrong asw spread for cm bond:"
@@ -3610,13 +3610,13 @@ namespace QLNet.Tests
 
             //  Zero-Coupon bond (Isin: DE0004771662 IBRD 0 12/20/15)
             //  maturity doesn't occur on a business day
-            Date zeroCpnBondStartDate1 = new Date(19, Month.December, 1985);
-            Date zeroCpnBondMaturityDate1 = new Date(20, Month.December, 2015);
-            Date zeroCpnBondRedemption1 = bondCalendar.adjust(zeroCpnBondMaturityDate1,
+            var zeroCpnBondStartDate1 = new Date(19, Month.December, 1985);
+            var zeroCpnBondMaturityDate1 = new Date(20, Month.December, 2015);
+            var zeroCpnBondRedemption1 = bondCalendar.adjust(zeroCpnBondMaturityDate1,
                                                               BusinessDayConvention.Following);
-            List<CashFlow> zeroCpnBondLeg1 = new List<CashFlow> { new SimpleCashFlow(100.0, zeroCpnBondRedemption1) };
+            var zeroCpnBondLeg1 = new List<CashFlow> { new SimpleCashFlow(100.0, zeroCpnBondRedemption1) };
             // generic bond
-            Bond zeroCpnBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var zeroCpnBond1 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                          zeroCpnBondMaturityDate1, zeroCpnBondStartDate1, zeroCpnBondLeg1);
             zeroCpnBond1.setPricingEngine(bondEngine);
 
@@ -3627,16 +3627,16 @@ namespace QLNet.Tests
                                                               100.0, new Date(19, Month.December, 1985));
             zeroCpnSpecializedBond1.setPricingEngine(bondEngine);
 
-            double zeroCpnBondPrice1 = zeroCpnBond1.cleanPrice();
-            double zeroCpnSpecializedBondPrice1 = zeroCpnSpecializedBond1.cleanPrice();
-            AssetSwap zeroCpnBondAssetSwap1 = new AssetSwap(payFixedRate, zeroCpnBond1,
+            var zeroCpnBondPrice1 = zeroCpnBond1.cleanPrice();
+            var zeroCpnSpecializedBondPrice1 = zeroCpnSpecializedBond1.cleanPrice();
+            var zeroCpnBondAssetSwap1 = new AssetSwap(payFixedRate, zeroCpnBond1,
                                                             zeroCpnBondPrice1,
                                                             vars.iborIndex, vars.nonnullspread,
                                                             null,
                                                             vars.iborIndex.dayCounter(),
                                                             parAssetSwap);
             zeroCpnBondAssetSwap1.setPricingEngine(swapEngine);
-            AssetSwap zeroCpnSpecializedBondAssetSwap1 = new AssetSwap(payFixedRate,
+            var zeroCpnSpecializedBondAssetSwap1 = new AssetSwap(payFixedRate,
                                                                        zeroCpnSpecializedBond1,
                                                                        zeroCpnSpecializedBondPrice1,
                                                                        vars.iborIndex,
@@ -3645,10 +3645,10 @@ namespace QLNet.Tests
                                                                        vars.iborIndex.dayCounter(),
                                                                        parAssetSwap);
             zeroCpnSpecializedBondAssetSwap1.setPricingEngine(swapEngine);
-            double zeroCpnBondAssetSwapPrice1 = zeroCpnBondAssetSwap1.fairCleanPrice();
-            double zeroCpnSpecializedBondAssetSwapPrice1 =
+            var zeroCpnBondAssetSwapPrice1 = zeroCpnBondAssetSwap1.fairCleanPrice();
+            var zeroCpnSpecializedBondAssetSwapPrice1 =
                zeroCpnSpecializedBondAssetSwap1.fairCleanPrice();
-            double error13 =
+            var error13 =
                System.Math.Abs(zeroCpnBondAssetSwapPrice1 - zeroCpnSpecializedBondAssetSwapPrice1);
             if (error13 > tolerance)
             {
@@ -3661,15 +3661,15 @@ namespace QLNet.Tests
                              + "\n  tolerance:             " + tolerance);
             }
             // market executable price as of 4th sept 2007
-            double zeroCpnBondMktPrice1 = 72.277;
-            AssetSwap zeroCpnBondASW1 = new AssetSwap(payFixedRate,
+            var zeroCpnBondMktPrice1 = 72.277;
+            var zeroCpnBondASW1 = new AssetSwap(payFixedRate,
                                                       zeroCpnBond1, zeroCpnBondMktPrice1,
                                                       vars.iborIndex, vars.spread,
                                                       null,
                                                       vars.iborIndex.dayCounter(),
                                                       parAssetSwap);
             zeroCpnBondASW1.setPricingEngine(swapEngine);
-            AssetSwap zeroCpnSpecializedBondASW1 = new AssetSwap(payFixedRate,
+            var zeroCpnSpecializedBondASW1 = new AssetSwap(payFixedRate,
                                                                  zeroCpnSpecializedBond1,
                                                                  zeroCpnBondMktPrice1,
                                                                  vars.iborIndex, vars.spread,
@@ -3677,10 +3677,10 @@ namespace QLNet.Tests
                                                                  vars.iborIndex.dayCounter(),
                                                                  parAssetSwap);
             zeroCpnSpecializedBondASW1.setPricingEngine(swapEngine);
-            double zeroCpnBondASWSpread1 = zeroCpnBondASW1.fairSpread();
-            double zeroCpnSpecializedBondASWSpread1 =
+            var zeroCpnBondASWSpread1 = zeroCpnBondASW1.fairSpread();
+            var zeroCpnSpecializedBondASWSpread1 =
                zeroCpnSpecializedBondASW1.fairSpread();
-            double error14 =
+            var error14 =
                System.Math.Abs(zeroCpnBondASWSpread1 - zeroCpnSpecializedBondASWSpread1);
             if (error14 > tolerance)
             {
@@ -3696,13 +3696,13 @@ namespace QLNet.Tests
 
             //  Zero Coupon bond (Isin: IT0001200390 ISPIM 0 02/17/28)
             //  maturity doesn't occur on a business day
-            Date zeroCpnBondStartDate2 = new Date(17, Month.February, 1998);
-            Date zeroCpnBondMaturityDate2 = new Date(17, Month.February, 2028);
-            Date zerocpbondRedemption2 = bondCalendar.adjust(zeroCpnBondMaturityDate2,
+            var zeroCpnBondStartDate2 = new Date(17, Month.February, 1998);
+            var zeroCpnBondMaturityDate2 = new Date(17, Month.February, 2028);
+            var zerocpbondRedemption2 = bondCalendar.adjust(zeroCpnBondMaturityDate2,
                                                              BusinessDayConvention.Following);
-            List<CashFlow> zeroCpnBondLeg2 = new List<CashFlow> { new SimpleCashFlow(100.0, zerocpbondRedemption2) };
+            var zeroCpnBondLeg2 = new List<CashFlow> { new SimpleCashFlow(100.0, zerocpbondRedemption2) };
             // generic bond
-            Bond zeroCpnBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
+            var zeroCpnBond2 = new Bond(settlementDays, bondCalendar, vars.faceAmount,
                                          zeroCpnBondMaturityDate2, zeroCpnBondStartDate2, zeroCpnBondLeg2);
             zeroCpnBond2.setPricingEngine(bondEngine);
 
@@ -3713,17 +3713,17 @@ namespace QLNet.Tests
                                                               100.0, new Date(17, Month.February, 1998));
             zeroCpnSpecializedBond2.setPricingEngine(bondEngine);
 
-            double zeroCpnBondPrice2 = zeroCpnBond2.cleanPrice();
-            double zeroCpnSpecializedBondPrice2 = zeroCpnSpecializedBond2.cleanPrice();
+            var zeroCpnBondPrice2 = zeroCpnBond2.cleanPrice();
+            var zeroCpnSpecializedBondPrice2 = zeroCpnSpecializedBond2.cleanPrice();
 
-            AssetSwap zeroCpnBondAssetSwap2 = new AssetSwap(payFixedRate, zeroCpnBond2,
+            var zeroCpnBondAssetSwap2 = new AssetSwap(payFixedRate, zeroCpnBond2,
                                                             zeroCpnBondPrice2,
                                                             vars.iborIndex, vars.nonnullspread,
                                                             null,
                                                             vars.iborIndex.dayCounter(),
                                                             parAssetSwap);
             zeroCpnBondAssetSwap2.setPricingEngine(swapEngine);
-            AssetSwap zeroCpnSpecializedBondAssetSwap2 = new AssetSwap(payFixedRate,
+            var zeroCpnSpecializedBondAssetSwap2 = new AssetSwap(payFixedRate,
                                                                        zeroCpnSpecializedBond2,
                                                                        zeroCpnSpecializedBondPrice2,
                                                                        vars.iborIndex,
@@ -3732,11 +3732,11 @@ namespace QLNet.Tests
                                                                        vars.iborIndex.dayCounter(),
                                                                        parAssetSwap);
             zeroCpnSpecializedBondAssetSwap2.setPricingEngine(swapEngine);
-            double zeroCpnBondAssetSwapPrice2 = zeroCpnBondAssetSwap2.fairCleanPrice();
-            double zeroCpnSpecializedBondAssetSwapPrice2 =
+            var zeroCpnBondAssetSwapPrice2 = zeroCpnBondAssetSwap2.fairCleanPrice();
+            var zeroCpnSpecializedBondAssetSwapPrice2 =
                zeroCpnSpecializedBondAssetSwap2.fairCleanPrice();
-            double error15 = System.Math.Abs(zeroCpnBondAssetSwapPrice2
-                                      - zeroCpnSpecializedBondAssetSwapPrice2);
+            var error15 = System.Math.Abs(zeroCpnBondAssetSwapPrice2
+                                          - zeroCpnSpecializedBondAssetSwapPrice2);
             if (error15 > tolerance)
             {
                 QAssert.Fail("wrong clean price for zerocpn bond:"
@@ -3748,15 +3748,15 @@ namespace QLNet.Tests
                              + "\n  tolerance:             " + tolerance);
             }
             // market executable price as of 4th sept 2007
-            double zeroCpnBondMktPrice2 = 72.277;
-            AssetSwap zeroCpnBondASW2 = new AssetSwap(payFixedRate,
+            var zeroCpnBondMktPrice2 = 72.277;
+            var zeroCpnBondASW2 = new AssetSwap(payFixedRate,
                                                       zeroCpnBond2, zeroCpnBondMktPrice2,
                                                       vars.iborIndex, vars.spread,
                                                       null,
                                                       vars.iborIndex.dayCounter(),
                                                       parAssetSwap);
             zeroCpnBondASW2.setPricingEngine(swapEngine);
-            AssetSwap zeroCpnSpecializedBondASW2 = new AssetSwap(payFixedRate,
+            var zeroCpnSpecializedBondASW2 = new AssetSwap(payFixedRate,
                                                                  zeroCpnSpecializedBond2,
                                                                  zeroCpnBondMktPrice2,
                                                                  vars.iborIndex, vars.spread,
@@ -3764,10 +3764,10 @@ namespace QLNet.Tests
                                                                  vars.iborIndex.dayCounter(),
                                                                  parAssetSwap);
             zeroCpnSpecializedBondASW2.setPricingEngine(swapEngine);
-            double zeroCpnBondASWSpread2 = zeroCpnBondASW2.fairSpread();
-            double zeroCpnSpecializedBondASWSpread2 =
+            var zeroCpnBondASWSpread2 = zeroCpnBondASW2.fairSpread();
+            var zeroCpnSpecializedBondASWSpread2 =
                zeroCpnSpecializedBondASW2.fairSpread();
-            double error16 =
+            var error16 =
                System.Math.Abs(zeroCpnBondASWSpread2 - zeroCpnSpecializedBondASWSpread2);
             if (error16 > tolerance)
             {

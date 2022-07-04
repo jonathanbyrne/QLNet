@@ -28,7 +28,7 @@ namespace QLNet.processes
 {
     //! Square-root stochastic-volatility Heston process
     // This class describes the square root stochastic volatility
-    public class HestonProcess : StochasticProcess
+    [JetBrains.Annotations.PublicAPI] public class HestonProcess : StochasticProcess
     {
         public enum Discretization
         {
@@ -66,17 +66,16 @@ namespace QLNet.processes
             s0_.registerWith(update);
         }
 
-        public override int size() { return 2; }
-        public override int factors()
-        {
-            return discretization_ == Discretization.BroadieKayaExactSchemeLobatto
-                    || discretization_ == Discretization.BroadieKayaExactSchemeTrapezoidal
-                    || discretization_ == Discretization.BroadieKayaExactSchemeLaguerre ? 3 : 2;
-        }
+        public override int size() => 2;
+
+        public override int factors() =>
+            discretization_ == Discretization.BroadieKayaExactSchemeLobatto
+            || discretization_ == Discretization.BroadieKayaExactSchemeTrapezoidal
+            || discretization_ == Discretization.BroadieKayaExactSchemeLaguerre ? 3 : 2;
 
         public override Vector initialValues()
         {
-            Vector tmp = new Vector(2);
+            var tmp = new Vector(2);
             tmp[0] = s0_.link.value();
             tmp[1] = v0_;
             return tmp;
@@ -84,8 +83,8 @@ namespace QLNet.processes
 
         public override Vector drift(double t, QLNet.Math.Vector x)
         {
-            Vector tmp = new Vector(2);
-            double vol = x[1] > 0.0 ? System.Math.Sqrt(x[1])
+            var tmp = new Vector(2);
+            var vol = x[1] > 0.0 ? System.Math.Sqrt(x[1])
                          : discretization_ == Discretization.Reflection ? -System.Math.Sqrt(-x[1])
                          : 0.0;
 
@@ -106,13 +105,13 @@ namespace QLNet.processes
               |  1          0       |
               | rho   sqrt(1-rho^2) |
             */
-            Matrix tmp = new Matrix(2, 2);
-            double vol = x[1] > 0.0 ? System.Math.Sqrt(x[1])
+            var tmp = new Matrix(2, 2);
+            var vol = x[1] > 0.0 ? System.Math.Sqrt(x[1])
                          : discretization_ == Discretization.Reflection ? -System.Math.Sqrt(-x[1])
                          : 1e-8; // set vol to (almost) zero but still
                                  // expose some correlation information
-            double sigma2 = sigma_ * vol;
-            double sqrhov = System.Math.Sqrt(1.0 - rho_ * rho_);
+            var sigma2 = sigma_ * vol;
+            var sqrhov = System.Math.Sqrt(1.0 - rho_ * rho_);
 
             tmp[0, 0] = vol; tmp[0, 1] = 0.0;
             tmp[1, 0] = rho_ * sigma2; tmp[1, 1] = sqrhov * sigma2;
@@ -122,7 +121,7 @@ namespace QLNet.processes
 
         public override Vector apply(Vector x0, Vector dx)
         {
-            Vector tmp = new Vector(2);
+            var tmp = new Vector(2);
             tmp[0] = x0[0] * System.Math.Exp(dx[0]);
             tmp[1] = x0[1] + dx[1];
             return tmp;
@@ -130,11 +129,11 @@ namespace QLNet.processes
 
         public override Vector evolve(double t0, Vector x0, double dt, Vector dw)
         {
-            Vector retVal = new Vector(2);
+            var retVal = new Vector(2);
             double vol, vol2, mu, nu, dy;
 
-            double sdt = System.Math.Sqrt(dt);
-            double sqrhov = System.Math.Sqrt(1.0 - rho_ * rho_);
+            var sdt = System.Math.Sqrt(dt);
+            var sqrhov = System.Math.Sqrt(1.0 - rho_ * rho_);
 
             switch (discretization_)
             {
@@ -200,27 +199,27 @@ namespace QLNet.processes
                         // for details of the quadratic exponential discretization scheme
                         // see Leif Andersen,
                         // Efficient Simulation of the Heston Stochastic Volatility Model
-                        double ex = System.Math.Exp(-kappa_ * dt);
+                        var ex = System.Math.Exp(-kappa_ * dt);
 
-                        double m = theta_ + (x0[1] - theta_) * ex;
-                        double s2 = x0[1] * sigma_ * sigma_ * ex / kappa_ * (1 - ex)
-                                     + theta_ * sigma_ * sigma_ / (2 * kappa_) * (1 - ex) * (1 - ex);
-                        double psi = s2 / (m * m);
+                        var m = theta_ + (x0[1] - theta_) * ex;
+                        var s2 = x0[1] * sigma_ * sigma_ * ex / kappa_ * (1 - ex)
+                                 + theta_ * sigma_ * sigma_ / (2 * kappa_) * (1 - ex) * (1 - ex);
+                        var psi = s2 / (m * m);
 
-                        double g1 = 0.5;
-                        double g2 = 0.5;
-                        double k0 = -rho_ * kappa_ * theta_ * dt / sigma_;
-                        double k1 = g1 * dt * (kappa_ * rho_ / sigma_ - 0.5) - rho_ / sigma_;
-                        double k2 = g2 * dt * (kappa_ * rho_ / sigma_ - 0.5) + rho_ / sigma_;
-                        double k3 = g1 * dt * (1 - rho_ * rho_);
-                        double k4 = g2 * dt * (1 - rho_ * rho_);
-                        double A = k2 + 0.5 * k4;
+                        var g1 = 0.5;
+                        var g2 = 0.5;
+                        var k0 = -rho_ * kappa_ * theta_ * dt / sigma_;
+                        var k1 = g1 * dt * (kappa_ * rho_ / sigma_ - 0.5) - rho_ / sigma_;
+                        var k2 = g2 * dt * (kappa_ * rho_ / sigma_ - 0.5) + rho_ / sigma_;
+                        var k3 = g1 * dt * (1 - rho_ * rho_);
+                        var k4 = g2 * dt * (1 - rho_ * rho_);
+                        var A = k2 + 0.5 * k4;
 
                         if (psi < 1.5)
                         {
-                            double b2 = 2 / psi - 1 + System.Math.Sqrt(2 / psi * (2 / psi - 1));
-                            double b = System.Math.Sqrt(b2);
-                            double a = m / (1 + b2);
+                            var b2 = 2 / psi - 1 + System.Math.Sqrt(2 / psi * (2 / psi - 1));
+                            var b = System.Math.Sqrt(b2);
+                            var a = m / (1 + b2);
 
                             if (discretization_ == Discretization.QuadraticExponentialMartingale)
                             {
@@ -233,10 +232,10 @@ namespace QLNet.processes
                         }
                         else
                         {
-                            double p = (psi - 1) / (psi + 1);
-                            double beta = (1 - p) / m;
+                            var p = (psi - 1) / (psi + 1);
+                            var beta = (1 - p) / m;
 
-                            double u = new CumulativeNormalDistribution().value(dw[1]);
+                            var u = new CumulativeNormalDistribution().value(dw[1]);
 
                             if (discretization_ == Discretization.QuadraticExponentialMartingale)
                             {
@@ -258,23 +257,23 @@ namespace QLNet.processes
                 case Discretization.BroadieKayaExactSchemeLaguerre:
                 case Discretization.BroadieKayaExactSchemeTrapezoidal:
                     {
-                        double nu_0 = x0[1];
-                        double nu_t = varianceDistribution(nu_0, dw[1], dt);
+                        var nu_0 = x0[1];
+                        var nu_t = varianceDistribution(nu_0, dw[1], dt);
 
-                        double x = System.Math.Min(1.0 - Const.QL_EPSILON,
+                        var x = System.Math.Min(1.0 - Const.QL_EPSILON,
                                             System.Math.Max(0.0, new CumulativeNormalDistribution().value(dw[2])));
 
-                        cdf_nu_ds_minus_x f = new cdf_nu_ds_minus_x(x, this, nu_0, nu_t, dt, discretization_);
-                        double vds = new Brent().solve(f, 1e-5, theta_ * dt, 0.1 * theta_ * dt);
+                        var f = new cdf_nu_ds_minus_x(x, this, nu_0, nu_t, dt, discretization_);
+                        var vds = new Brent().solve(f, 1e-5, theta_ * dt, 0.1 * theta_ * dt);
 
-                        double vdw = (nu_t - nu_0 - kappa_ * theta_ * dt + kappa_ * vds) / sigma_;
+                        var vdw = (nu_t - nu_0 - kappa_ * theta_ * dt + kappa_ * vds) / sigma_;
 
                         mu = (riskFreeRate_.link.forwardRate(t0, t0 + dt, Compounding.Continuous).value()
                               - dividendYield_.link.forwardRate(t0, t0 + dt, Compounding.Continuous).value()) * dt
                              - 0.5 * vds + rho_ * vdw;
 
-                        double sig = System.Math.Sqrt((1 - rho_ * rho_) * vds);
-                        double s = x0[0] * System.Math.Exp(mu + sig * dw[0]);
+                        var sig = System.Math.Sqrt((1 - rho_ * rho_) * vds);
+                        var s = x0[0] * System.Math.Exp(mu + sig * dw[0]);
 
                         retVal[0] = s;
                         retVal[1] = nu_t;
@@ -288,28 +287,31 @@ namespace QLNet.processes
             return retVal;
         }
 
-        public double v0() { return v0_; }
-        public double rho() { return rho_; }
-        public double kappa() { return kappa_; }
-        public double theta() { return theta_; }
-        public double sigma() { return sigma_; }
+        public double v0() => v0_;
 
-        public Handle<Quote> s0() { return s0_; }
-        public Handle<YieldTermStructure> dividendYield() { return dividendYield_; }
-        public Handle<YieldTermStructure> riskFreeRate() { return riskFreeRate_; }
+        public double rho() => rho_;
 
-        public override double time(Date d)
-        {
-            return riskFreeRate_.link.dayCounter().yearFraction(riskFreeRate_.link.referenceDate(), d);
-        }
+        public double kappa() => kappa_;
+
+        public double theta() => theta_;
+
+        public double sigma() => sigma_;
+
+        public Handle<Quote> s0() => s0_;
+
+        public Handle<YieldTermStructure> dividendYield() => dividendYield_;
+
+        public Handle<YieldTermStructure> riskFreeRate() => riskFreeRate_;
+
+        public override double time(Date d) => riskFreeRate_.link.dayCounter().yearFraction(riskFreeRate_.link.referenceDate(), d);
 
         private double varianceDistribution(double v, double dw, double dt)
         {
-            double df = 4 * theta_ * kappa_ / (sigma_ * sigma_);
-            double ncp = 4 * kappa_ * System.Math.Exp(-kappa_ * dt)
+            var df = 4 * theta_ * kappa_ / (sigma_ * sigma_);
+            var ncp = 4 * kappa_ * System.Math.Exp(-kappa_ * dt)
                          / (sigma_ * sigma_ * (1 - System.Math.Exp(-kappa_ * dt))) * v;
 
-            double p = System.Math.Min(1.0 - Const.QL_EPSILON,
+            var p = System.Math.Min(1.0 - Const.QL_EPSILON,
                                 System.Math.Max(0.0, new CumulativeNormalDistribution().value(dw)));
 
             return sigma_ * sigma_ * (1 - System.Math.Exp(-kappa_ * dt)) / (4 * kappa_)
@@ -333,10 +335,7 @@ namespace QLNet.processes
                 x0 = _x0;
             }
 
-            public override double value(double v)
-            {
-                return cdf_nu.value(v) - x0;
-            }
+            public override double value(double v) => cdf_nu.value(v) - x0;
         }
 
         private class cdf_nu_ds : ISolver1d
@@ -359,20 +358,20 @@ namespace QLNet.processes
             // http://repub.eur.nl/pub/13917/LordR-Thesis.pdf
             Complex Phi(HestonProcess process, Complex a, double nu_0, double nu_t, double dt)
             {
-                double theta = process.theta();
-                double kappa = process.kappa();
-                double sigma = process.sigma();
+                var theta = process.theta();
+                var kappa = process.kappa();
+                var sigma = process.sigma();
 
-                double sigma2 = sigma * sigma;
-                Complex ga = Complex.Sqrt(kappa * kappa - 2 * sigma2 * a * new Complex(0.0, 1.0));
-                double d = 4 * theta * kappa / sigma2;
+                var sigma2 = sigma * sigma;
+                var ga = Complex.Sqrt(kappa * kappa - 2 * sigma2 * a * new Complex(0.0, 1.0));
+                var d = 4 * theta * kappa / sigma2;
 
-                double nu = 0.5 * d - 1;
-                Complex z = ga * Complex.Exp(-0.5 * ga * dt) / (1.0 - Complex.Exp(-ga * dt));
-                Complex log_z = -0.5 * ga * dt + Complex.Log(ga / (1.0 - Complex.Exp(-ga * dt)));
+                var nu = 0.5 * d - 1;
+                var z = ga * Complex.Exp(-0.5 * ga * dt) / (1.0 - Complex.Exp(-ga * dt));
+                var log_z = -0.5 * ga * dt + Complex.Log(ga / (1.0 - Complex.Exp(-ga * dt)));
 
-                Complex alpha = 4.0 * ga * Complex.Exp(-0.5 * ga * dt) / (sigma2 * (1.0 - Complex.Exp(-ga * dt)));
-                Complex beta = 4.0 * kappa * Complex.Exp(-0.5 * kappa * dt) / (sigma2 * (1.0 - Complex.Exp(-kappa * dt)));
+                var alpha = 4.0 * ga * Complex.Exp(-0.5 * ga * dt) / (sigma2 * (1.0 - Complex.Exp(-ga * dt)));
+                var beta = 4.0 * kappa * Complex.Exp(-0.5 * kappa * dt) / (sigma2 * (1.0 - Complex.Exp(-kappa * dt)));
 
                 return ga * Complex.Exp(-0.5 * (ga - kappa) * dt) * (1 - Complex.Exp(-kappa * dt))
                        / (kappa * (1.0 - Complex.Exp(-ga * dt)))
@@ -391,29 +390,29 @@ namespace QLNet.processes
             {
                 // use moment generating function to get the
                 // first,second, third and fourth moment of the distribution
-                double d = 1e-2;
-                double p2 = Phi(process, new Complex(0, -2 * d), nu_0, nu_t, dt).Real;
-                double p1 = Phi(process, new Complex(0, -d), nu_0, nu_t, dt).Real;
-                double p0 = Phi(process, new Complex(0, 0), nu_0, nu_t, dt).Real;
-                double pm1 = Phi(process, new Complex(0, d), nu_0, nu_t, dt).Real;
-                double pm2 = Phi(process, new Complex(0, 2 * d), nu_0, nu_t, dt).Real;
+                var d = 1e-2;
+                var p2 = Phi(process, new Complex(0, -2 * d), nu_0, nu_t, dt).Real;
+                var p1 = Phi(process, new Complex(0, -d), nu_0, nu_t, dt).Real;
+                var p0 = Phi(process, new Complex(0, 0), nu_0, nu_t, dt).Real;
+                var pm1 = Phi(process, new Complex(0, d), nu_0, nu_t, dt).Real;
+                var pm2 = Phi(process, new Complex(0, 2 * d), nu_0, nu_t, dt).Real;
 
-                double avg = (pm2 - 8 * pm1 + 8 * p1 - p2) / (12 * d);
-                double m2 = (-pm2 + 16 * pm1 - 30 * p0 + 16 * p1 - p2) / (12 * d * d);
-                double var = m2 - avg * avg;
-                double stdDev = System.Math.Sqrt(var);
+                var avg = (pm2 - 8 * pm1 + 8 * p1 - p2) / (12 * d);
+                var m2 = (-pm2 + 16 * pm1 - 30 * p0 + 16 * p1 - p2) / (12 * d * d);
+                var var = m2 - avg * avg;
+                var stdDev = System.Math.Sqrt(var);
 
-                double m3 = (-0.5 * pm2 + pm1 - p1 + 0.5 * p2) / (d * d * d);
-                double skew = (m3 - 3 * var * avg - avg * avg * avg) / (var * stdDev);
+                var m3 = (-0.5 * pm2 + pm1 - p1 + 0.5 * p2) / (d * d * d);
+                var skew = (m3 - 3 * var * avg - avg * avg * avg) / (var * stdDev);
 
-                double m4 = (pm2 - 4 * pm1 + 6 * p0 - 4 * p1 + p2) / (d * d * d * d);
-                double kurt = (m4 - 4 * m3 * avg + 6 * m2 * avg * avg - 3 * avg * avg * avg * avg) / (var * var);
+                var m4 = (pm2 - 4 * pm1 + 6 * p0 - 4 * p1 + p2) / (d * d * d * d);
+                var kurt = (m4 - 4 * m3 * avg + 6 * m2 * avg * avg - 3 * avg * avg * avg * avg) / (var * var);
 
                 // Cornish-Fisher relation to come up with an improved
                 // estimate of 1-F(u_\eps) < \eps
-                double q = new InverseCumulativeNormal().value(1 - eps);
-                double w = q + (q * q - 1) / 6 * skew + (q * q * q - 3 * q) / 24 * (kurt - 3)
-                           - (2 * q * q * q - 5 * q) / 36 * skew * skew;
+                var q = new InverseCumulativeNormal().value(1 - eps);
+                var w = q + (q * q - 1) / 6 * skew + (q * q * q - 3 * q) / 24 * (kurt - 3)
+                        - (2 * q * q * q - 5 * q) / 36 * skew * skew;
 
                 return avg + w * stdDev;
 
@@ -444,7 +443,7 @@ namespace QLNet.processes
                 }
                 else
                 {
-                    double y = 1 / (x * x);
+                    var y = 1 / (x * x);
                     double[] fn =
                     {
                   7.44437068161936700618e2, 1.96396372895146869801e5,
@@ -461,7 +460,7 @@ namespace QLNet.processes
                   5.06084464593475076774e12, 1.43468549171581016479e13,
                   1.11535493509914254097e13, 0.0
                };
-                    double f = pade(y, fn, fd, 10) / x;
+                    var f = pade(y, fn, fd, 10) / x;
 
                     double[] gn =
                     {
@@ -479,7 +478,7 @@ namespace QLNet.processes
                   1.17164723371736605e13, 4.01839087307656620e13,
                   3.99653257887490811e13, 0.0
                };
-                    double g = y * pade(y, gn, gd, 10);
+                    var g = y * pade(y, gn, gd, 10);
 
                     return Const.M_PI_2 - f * System.Math.Cos(x) - g * System.Math.Sin(x);
 
@@ -500,7 +499,7 @@ namespace QLNet.processes
             private double pade(double x, double[] nominator, double[] denominator, int m)
             {
                 double n = 0.0, d = 0.0;
-                for (int i = m - 1; i >= 0; --i)
+                for (var i = m - 1; i >= 0; --i)
                 {
                     n = (n + nominator[i]) * x;
                     d = (d + denominator[i]) * x;
@@ -510,18 +509,18 @@ namespace QLNet.processes
 
             public override double value(double x)
             {
-                double eps = 1e-4;
-                double u_eps = System.Math.Min(100.0,
+                var eps = 1e-4;
+                var u_eps = System.Math.Min(100.0,
                                         System.Math.Max(0.1, cornishFisherEps(process, nu_0, nu_t, dt, eps)));
 
                 switch (discretization)
                 {
                     case Discretization.BroadieKayaExactSchemeLaguerre:
                         {
-                            GaussLaguerreIntegration gaussLaguerreIntegration = new GaussLaguerreIntegration(128);
+                            var gaussLaguerreIntegration = new GaussLaguerreIntegration(128);
 
                             // get the upper bound for the integration
-                            double upper = u_eps / 2.0;
+                            var upper = u_eps / 2.0;
                             while (Complex.Abs(Phi(process, upper, nu_0, nu_t, dt) / upper) > eps)
                                 upper *= 2.0;
 
@@ -533,7 +532,7 @@ namespace QLNet.processes
                     case Discretization.BroadieKayaExactSchemeLobatto:
                         {
                             // get the upper bound for the integration
-                            double upper = u_eps / 2.0;
+                            var upper = u_eps / 2.0;
                             while (Complex.Abs(Phi(process, upper, nu_0, nu_t, dt) / upper) > eps)
                                 upper *= 2.0;
 
@@ -544,17 +543,17 @@ namespace QLNet.processes
                         }
                     case Discretization.BroadieKayaExactSchemeTrapezoidal:
                         {
-                            double h = 0.05;
+                            var h = 0.05;
 
-                            double si = Si(0.5 * h * x);
-                            double s = Const.M_2_PI * si;
-                            Complex f = new Complex();
-                            int j = 0;
+                            var si = Si(0.5 * h * x);
+                            var s = Const.M_2_PI * si;
+                            var f = new Complex();
+                            var j = 0;
                             do
                             {
                                 ++j;
-                                double u = h * j;
-                                double si_n = Si(x * (u + 0.5 * h));
+                                var u = h * j;
+                                var si_n = Si(x * (u + 0.5 * h));
 
                                 f = Phi(process, u, nu_0, nu_t, dt);
                                 s += Const.M_2_PI * f.Real * (si_n - si);
@@ -591,27 +590,24 @@ namespace QLNet.processes
                 nu_t = _nu_t;
                 dt = _dt;
             }
-            public double value(double u)
-            {
-                return Const.M_2_PI * System.Math.Sin(u * x) / u * Phi(process, u, nu_0, nu_t, dt).Real;
-            }
+            public double value(double u) => Const.M_2_PI * System.Math.Sin(u * x) / u * Phi(process, u, nu_0, nu_t, dt).Real;
 
             private Complex Phi(HestonProcess process, Complex a, double nu_0, double nu_t, double dt)
             {
-                double theta = process.theta();
-                double kappa = process.kappa();
-                double sigma = process.sigma();
+                var theta = process.theta();
+                var kappa = process.kappa();
+                var sigma = process.sigma();
 
-                double sigma2 = sigma * sigma;
-                Complex ga = Complex.Sqrt(kappa * kappa - 2 * sigma2 * a * new Complex(0.0, 1.0));
-                double d = 4 * theta * kappa / sigma2;
+                var sigma2 = sigma * sigma;
+                var ga = Complex.Sqrt(kappa * kappa - 2 * sigma2 * a * new Complex(0.0, 1.0));
+                var d = 4 * theta * kappa / sigma2;
 
-                double nu = 0.5 * d - 1;
-                Complex z = ga * Complex.Exp(-0.5 * ga * dt) / (1.0 - Complex.Exp(-ga * dt));
-                Complex log_z = -0.5 * ga * dt + Complex.Log(ga / (1.0 - Complex.Exp(-ga * dt)));
+                var nu = 0.5 * d - 1;
+                var z = ga * Complex.Exp(-0.5 * ga * dt) / (1.0 - Complex.Exp(-ga * dt));
+                var log_z = -0.5 * ga * dt + Complex.Log(ga / (1.0 - Complex.Exp(-ga * dt)));
 
-                Complex alpha = 4.0 * ga * Complex.Exp(-0.5 * ga * dt) / (sigma2 * (1.0 - Complex.Exp(-ga * dt)));
-                Complex beta = 4.0 * kappa * Complex.Exp(-0.5 * kappa * dt) / (sigma2 * (1.0 - Complex.Exp(-kappa * dt)));
+                var alpha = 4.0 * ga * Complex.Exp(-0.5 * ga * dt) / (sigma2 * (1.0 - Complex.Exp(-ga * dt)));
+                var beta = 4.0 * kappa * Complex.Exp(-0.5 * kappa * dt) / (sigma2 * (1.0 - Complex.Exp(-kappa * dt)));
 
                 return ga * Complex.Exp(-0.5 * (ga - kappa) * dt) * (1 - Complex.Exp(-kappa * dt))
                        / (kappa * (1.0 - Complex.Exp(-ga * dt)))

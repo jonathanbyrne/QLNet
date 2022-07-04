@@ -28,7 +28,7 @@ namespace QLNet.Instruments
 {
     //! Single-asset vanilla option (no barriers) with discrete dividends
     /*! \ingroup instruments */
-    public class DividendVanillaOption : OneAssetOption
+    [JetBrains.Annotations.PublicAPI] public class DividendVanillaOption : OneAssetOption
     {
         private DividendSchedule cashFlow_;
 
@@ -48,13 +48,13 @@ namespace QLNet.Instruments
         {
             Utils.QL_REQUIRE(!isExpired(), () => "option expired");
 
-            SimpleQuote volQuote = new SimpleQuote();
+            var volQuote = new SimpleQuote();
 
-            GeneralizedBlackScholesProcess newProcess = ImpliedVolatilityHelper.clone(process, volQuote);
+            var newProcess = ImpliedVolatilityHelper.clone(process, volQuote);
 
             // engines are built-in for the time being
             IPricingEngine engine = null;
-            switch (exercise_.type())
+            switch (exercise_.ExerciseType())
             {
                 case Exercise.Type.European:
                     engine = new AnalyticDividendEuropeanEngine(newProcess);
@@ -66,7 +66,7 @@ namespace QLNet.Instruments
                     Utils.QL_FAIL("engine not available for Bermudan option with dividends");
                     break;
                 default:
-                    Utils.QL_FAIL("unknown exercise type");
+                    Utils.QL_FAIL("unknown exercise ExerciseType");
                     break;
             }
 
@@ -79,8 +79,8 @@ namespace QLNet.Instruments
         {
             base.setupArguments(args);
 
-            Arguments arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong engine type");
+            var arguments = args as Arguments;
+            Utils.QL_REQUIRE(arguments != null, () => "wrong engine ExerciseType");
 
             arguments.cashFlow = cashFlow_;
         }
@@ -94,9 +94,9 @@ namespace QLNet.Instruments
             {
                 base.validate();
 
-                Date exerciseDate = exercise.lastDate();
+                var exerciseDate = exercise.lastDate();
 
-                for (int i = 0; i < cashFlow.Count; i++)
+                for (var i = 0; i < cashFlow.Count; i++)
                 {
                     Utils.QL_REQUIRE(cashFlow[i].date() <= exerciseDate, () =>
                                      " dividend date (" + cashFlow[i].date() + ") is later than the exercise date (" + exerciseDate +

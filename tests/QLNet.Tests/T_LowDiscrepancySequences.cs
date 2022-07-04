@@ -28,29 +28,22 @@ namespace QLNet.Tests
 
     #region IRNGFactory
 
-    public interface IRNGFactory
+    [JetBrains.Annotations.PublicAPI] public interface IRNGFactory
     {
         string name();
         IRNG make(int dim, ulong seed);
     }
 
-    public class MersenneFactory : IRNGFactory
+    [JetBrains.Annotations.PublicAPI] public class MersenneFactory : IRNGFactory
     {
         //typedef RandomSequenceGenerator<MersenneTwisterUniformRng> MersenneTwisterUniformRsg;
         //typedef MersenneTwisterUniformRsg generator_type;
-        public IRNG make(int dim, ulong seed)
-        {
-            return new RandomSequenceGenerator<MersenneTwisterUniformRng>(dim, seed);
-        }
+        public IRNG make(int dim, ulong seed) => new RandomSequenceGenerator<MersenneTwisterUniformRng>(dim, seed);
 
-        public string name()
-        {
-            return "Mersenne Twister";
-        }
-
+        public string name() => "Mersenne Twister";
     }
 
-    public class SobolFactory : IRNGFactory
+    [JetBrains.Annotations.PublicAPI] public class SobolFactory : IRNGFactory
     {
         //typedef SobolRsg generator_type;
 
@@ -59,14 +52,11 @@ namespace QLNet.Tests
             unit_ = unit;
         }
 
-        public IRNG make(int dim, ulong seed)
-        {
-            return new SobolRsg(dim, seed, unit_);
-        }
+        public IRNG make(int dim, ulong seed) => new SobolRsg(dim, seed, unit_);
 
         public string name()
         {
-            string prefix = "";
+            var prefix = "";
             switch (unit_)
             {
                 case SobolRsg.DirectionIntegers.Unit:
@@ -101,7 +91,7 @@ namespace QLNet.Tests
         private SobolRsg.DirectionIntegers unit_;
     }
 
-    public class HaltonFactory : IRNGFactory
+    [JetBrains.Annotations.PublicAPI] public class HaltonFactory : IRNGFactory
     {
 
         //typedef HaltonRsg generator_type;
@@ -111,14 +101,11 @@ namespace QLNet.Tests
             shift_ = randomShift;
         }
 
-        public IRNG make(int dim, ulong seed)
-        {
-            return new HaltonRsg(dim, seed, start_, shift_);
-        }
+        public IRNG make(int dim, ulong seed) => new HaltonRsg(dim, seed, start_, shift_);
 
         public string name()
         {
-            string prefix = start_ ? "random-start " : "";
+            var prefix = start_ ? "random-start " : "";
             if (shift_)
                 prefix += "random-shift ";
             return prefix + "Halton";
@@ -130,7 +117,7 @@ namespace QLNet.Tests
     #endregion
 
     [Collection("QLNet CI Tests")]
-    public class T_LowDiscrepancySequences
+    [JetBrains.Annotations.PublicAPI] public class T_LowDiscrepancySequences
     {
         internal void testSeedGenerator()
         {
@@ -186,12 +173,12 @@ namespace QLNet.Tests
             //              + PPMT_MAX_DIM + "...");
 
             List<double> point;
-            double tolerance = 1.0e-15;
+            var tolerance = 1.0e-15;
 
             // testing max dimensionality
-            int dimensionality = (int)SobolRsg.PPMT_MAX_DIM;
+            var dimensionality = (int)SobolRsg.PPMT_MAX_DIM;
             ulong seed = 123456;
-            SobolRsg rsg = new SobolRsg(dimensionality, seed);
+            var rsg = new SobolRsg(dimensionality, seed);
             int points = 100, i;
             for (i = 0; i < points; i++)
             {
@@ -208,10 +195,10 @@ namespace QLNet.Tests
             dimensionality = 33;
             seed = 123456;
             rsg = new SobolRsg(dimensionality, seed);
-            SequenceStatistics stat = new SequenceStatistics(dimensionality);
+            var stat = new SequenceStatistics(dimensionality);
             List<double> mean;
-            int k = 0;
-            for (int j = 1; j < 5; j++)
+            var k = 0;
+            for (var j = 1; j < 5; j++)
             {
                 // five cycle
                 points = (int)(Utils.Pow(2.0, j) - 1);  // base 2
@@ -223,7 +210,7 @@ namespace QLNet.Tests
                 mean = stat.mean();
                 for (i = 0; i < dimensionality; i++)
                 {
-                    double error = System.Math.Abs(mean[i] - 0.5);
+                    var error = System.Math.Abs(mean[i] - 0.5);
                     if (error > tolerance)
                     {
                         QAssert.Fail(i + 1 + " dimension: "
@@ -259,7 +246,7 @@ namespace QLNet.Tests
             for (i = 0; i < points; i++)
             {
                 point = rsg.nextSequence().value;
-                double error = System.Math.Abs(point[0] - vanderCorputSequenceModuloTwo[i]);
+                var error = System.Math.Abs(point[0] - vanderCorputSequenceModuloTwo[i]);
                 if (error > tolerance)
                 {
                     QAssert.Fail(i + 1 + " draw ("
@@ -431,11 +418,11 @@ namespace QLNet.Tests
             //("Testing Halton sequences...");
 
             List<double> point;
-            double tolerance = 1.0e-15;
+            var tolerance = 1.0e-15;
 
             // testing "high" dimensionality
-            int dimensionality = (int)SobolRsg.PPMT_MAX_DIM;
-            HaltonRsg rsg = new HaltonRsg(dimensionality, 0, false, false);
+            var dimensionality = (int)SobolRsg.PPMT_MAX_DIM;
+            var rsg = new HaltonRsg(dimensionality, 0, false, false);
             int points = 100, i, k;
             for (i = 0; i < points; i++)
             {
@@ -474,7 +461,7 @@ namespace QLNet.Tests
             for (i = 0; i < points; i++)
             {
                 point = rsg.nextSequence().value;
-                double error = System.Math.Abs(point[0] - vanderCorputSequenceModuloTwo[i]);
+                var error = System.Math.Abs(point[0] - vanderCorputSequenceModuloTwo[i]);
                 if (error > tolerance)
                 {
                     QAssert.Fail(i + 1 + " draw ("
@@ -506,7 +493,7 @@ namespace QLNet.Tests
             for (i = 0; i < points; i++)
             {
                 point = rsg.nextSequence().value;
-                double error = System.Math.Abs(point[0] - vanderCorputSequenceModuloTwo[i]);
+                var error = System.Math.Abs(point[0] - vanderCorputSequenceModuloTwo[i]);
                 if (error > tolerance)
                 {
                     QAssert.Fail("First component of " + i + 1
@@ -535,7 +522,7 @@ namespace QLNet.Tests
             // testing homogeneity properties
             dimensionality = 33;
             rsg = new HaltonRsg(dimensionality, 0, false, false);
-            SequenceStatistics stat = new SequenceStatistics(dimensionality);
+            var stat = new SequenceStatistics(dimensionality);
             List<double> mean; //, stdev, variance, skewness, kurtosis;
             k = 0;
             int j;
@@ -549,7 +536,7 @@ namespace QLNet.Tests
                     stat.add(point);
                 }
                 mean = stat.mean();
-                double error = System.Math.Abs(mean[0] - 0.5);
+                var error = System.Math.Abs(mean[0] - 0.5);
                 if (error > tolerance)
                 {
                     QAssert.Fail("First dimension mean (" + /*QL_FIXED*/ +mean[0]
@@ -574,7 +561,7 @@ namespace QLNet.Tests
                     stat.add(point);
                 }
                 mean = stat.mean();
-                double error = System.Math.Abs(mean[1] - 0.5);
+                var error = System.Math.Abs(mean[1] - 0.5);
                 if (error > tolerance)
                 {
                     QAssert.Fail("Second dimension mean (" + /*QL_FIXED*/ +mean[1]
@@ -589,27 +576,27 @@ namespace QLNet.Tests
         internal void testGeneratorDiscrepancy(IRNGFactory generatorFactory, double[][] discrepancy)
         {
             //QL_TEST_START_TIMING
-            double tolerance = 1.0e-2;
+            var tolerance = 1.0e-2;
             List<double> point;
             int dim;
             ulong seed = 123456;
             double discr;
             // more than 1 discrepancy measures take long time
-            int sampleLoops = System.Math.Max(1, discrepancyMeasuresNumber);
+            var sampleLoops = System.Math.Max(1, discrepancyMeasuresNumber);
 
-            for (int i = 0; i < 8; i++)
+            for (var i = 0; i < 8; i++)
             {
                 dim = dimensionality[i];
-                DiscrepancyStatistics stat = new DiscrepancyStatistics(dim);
+                var stat = new DiscrepancyStatistics(dim);
 
-                IRNG rsg = generatorFactory.make(dim, seed);
+                var rsg = generatorFactory.make(dim, seed);
 
                 int j, k = 0, jMin = 10;
                 stat.reset(dim);
 
                 for (j = jMin; j < jMin + sampleLoops; j++)
                 {
-                    int points = (int)Utils.Pow(2.0, j) - 1;
+                    var points = (int)Utils.Pow(2.0, j) - 1;
                     for (; k < points; k++)
                     {
                         point = rsg.nextSequence().value;
@@ -843,28 +830,28 @@ namespace QLNet.Tests
             SobolRsg.DirectionIntegers.SobolLevitan,
             SobolRsg.DirectionIntegers.SobolLevitanLemieux
          };
-            for (int i = 0; i < integers.Length; i++)
+            for (var i = 0; i < integers.Length; i++)
             {
-                for (int j = 0; j < dimensionality.Length; j++)
+                for (var j = 0; j < dimensionality.Length; j++)
                 {
-                    for (int k = 0; k < skip.Length; k++)
+                    for (var k = 0; k < skip.Length; k++)
                     {
 
                         // extract n samples
-                        SobolRsg rsg1 = new SobolRsg(dimensionality[j], seed, integers[i]);
-                        for (int l = 0; l < (int)skip[k]; l++)
+                        var rsg1 = new SobolRsg(dimensionality[j], seed, integers[i]);
+                        for (var l = 0; l < (int)skip[k]; l++)
                             rsg1.nextInt32Sequence();
 
                         // skip n samples at once
-                        SobolRsg rsg2 = new SobolRsg(dimensionality[j], seed, integers[i]);
+                        var rsg2 = new SobolRsg(dimensionality[j], seed, integers[i]);
                         rsg2.skipTo(skip[k]);
 
                         // compare next 100 samples
-                        for (int m = 0; m < 100; m++)
+                        for (var m = 0; m < 100; m++)
                         {
-                            List<ulong> s1 = rsg1.nextInt32Sequence();
-                            List<ulong> s2 = rsg2.nextInt32Sequence();
-                            for (int n = 0; n < s1.Count; n++)
+                            var s1 = rsg1.nextInt32Sequence();
+                            var s2 = rsg2.nextInt32Sequence();
+                            for (var n = 0; n < s1.Count; n++)
                             {
                                 if (s1[n] != s2[n])
                                 {

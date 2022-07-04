@@ -25,7 +25,7 @@ using QLNet.Math.Distributions;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_RNGTraits
+    [JetBrains.Annotations.PublicAPI] public class T_RNGTraits
     {
         [Fact]
         public void testGaussian()
@@ -35,13 +35,13 @@ namespace QLNet.Tests
             var rsg = (InverseCumulativeRsg<RandomSequenceGenerator<MersenneTwisterUniformRng>, InverseCumulativeNormal>)
                       new PseudoRandom().make_sequence_generator(100, 1234);
 
-            List<double> values = rsg.nextSequence().value;
-            double sum = 0.0;
-            for (int i = 0; i < values.Count; i++)
+            var values = rsg.nextSequence().value;
+            var sum = 0.0;
+            for (var i = 0; i < values.Count; i++)
                 sum += values[i];
 
-            double stored = 4.09916;
-            double tolerance = 1.0e-5;
+            var stored = 4.09916;
+            var tolerance = 1.0e-5;
             if (System.Math.Abs(sum - stored) > tolerance)
                 QAssert.Fail("the sum of the samples does not match the stored value\n"
                              + "    calculated: " + sum + "\n"
@@ -55,14 +55,14 @@ namespace QLNet.Tests
             //("Testing Poisson pseudo-random number generation...");
 
             PoissonPseudoRandom.icInstance = new InverseCumulativePoisson();
-            IRNG rsg = new PoissonPseudoRandom().make_sequence_generator(100, 1234);
+            var rsg = new PoissonPseudoRandom().make_sequence_generator(100, 1234);
 
-            List<double> values = rsg.nextSequence().value;
-            double sum = 0.0;
-            for (int i = 0; i < values.Count; i++)
+            var values = rsg.nextSequence().value;
+            var sum = 0.0;
+            for (var i = 0; i < values.Count; i++)
                 sum += values[i];
 
-            double stored = 108.0;
+            var stored = 108.0;
             if (!Utils.close(sum, stored))
                 QAssert.Fail("the sum of the samples does not match the stored value\n"
                              + "    calculated: " + sum + "\n"
@@ -76,14 +76,14 @@ namespace QLNet.Tests
             //("Testing custom Poisson pseudo-random number generation...");
 
             PoissonPseudoRandom.icInstance = new InverseCumulativePoisson(4.0);
-            IRNG rsg = new PoissonPseudoRandom().make_sequence_generator(100, 1234);
+            var rsg = new PoissonPseudoRandom().make_sequence_generator(100, 1234);
 
-            List<double> values = rsg.nextSequence().value;
-            double sum = 0.0;
-            for (int i = 0; i < values.Count; i++)
+            var values = rsg.nextSequence().value;
+            var sum = 0.0;
+            for (var i = 0; i < values.Count; i++)
                 sum += values[i];
 
-            double stored = 409.0;
+            var stored = 409.0;
             if (!Utils.close(sum, stored))
                 QAssert.Fail("the sum of the samples does not match the stored value\n"
                              + "    calculated: " + sum + "\n"

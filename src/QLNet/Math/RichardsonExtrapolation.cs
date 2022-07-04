@@ -32,7 +32,7 @@ namespace QLNet.Math
         http://en.wikipedia.org/wiki/Richardson_extrapolation
     */
 
-    public class RichardsonEqn : ISolver1d
+    [JetBrains.Annotations.PublicAPI] public class RichardsonEqn : ISolver1d
     {
         public RichardsonEqn(double fh, double ft, double fs, double t, double s)
         {
@@ -43,16 +43,14 @@ namespace QLNet.Math
             s_ = s;
         }
 
-        public override double value(double k)
-        {
-            return ft_ + (ft_ - fdelta_h_) / (System.Math.Pow(t_, k) - 1.0)
-                    - (fs_ + (fs_ - fdelta_h_) / (System.Math.Pow(s_, k) - 1.0));
-        }
+        public override double value(double k) =>
+            ft_ + (ft_ - fdelta_h_) / (System.Math.Pow(t_, k) - 1.0)
+            - (fs_ + (fs_ - fdelta_h_) / (System.Math.Pow(s_, k) - 1.0));
 
         private double fdelta_h_, ft_, fs_, t_, s_;
     }
 
-    public class RichardsonExtrapolation
+    [JetBrains.Annotations.PublicAPI] public class RichardsonExtrapolation
     {
         /*! Richardon Extrapolation
            \param f function to be extrapolated to delta_h -> 0
@@ -77,7 +75,7 @@ namespace QLNet.Math
             Utils.QL_REQUIRE(t > 1, () => "scaling factor must be greater than 1");
             Utils.QL_REQUIRE(n_ != null, () => "order of convergence must be known");
 
-            double tk = System.Math.Pow(t, n_.Value);
+            var tk = System.Math.Pow(t, n_.Value);
 
             return (tk * f_(delta_h_ / t) - fdelta_h_) / (tk - 1.0);
         }
@@ -91,13 +89,13 @@ namespace QLNet.Math
             Utils.QL_REQUIRE(t > 1 && s > 1, () => "scaling factors must be greater than 1");
             Utils.QL_REQUIRE(t > s, () => "t must be greater than s");
 
-            double ft = f_(delta_h_ / t);
-            double fs = f_(delta_h_ / s);
+            var ft = f_(delta_h_ / t);
+            var fs = f_(delta_h_ / s);
 
-            double k = new Brent().solve(new RichardsonEqn(fdelta_h_, ft, fs, t, s),
+            var k = new Brent().solve(new RichardsonEqn(fdelta_h_, ft, fs, t, s),
                                          1e-8, 0.05, 10);
 
-            double ts = System.Math.Pow(s, k);
+            var ts = System.Math.Pow(s, k);
 
             return (ts * fs - fdelta_h_) / (ts - 1.0);
         }

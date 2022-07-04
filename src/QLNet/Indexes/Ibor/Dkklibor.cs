@@ -29,7 +29,7 @@ namespace QLNet.Indexes.Ibor
     //! %DKK %LIBOR rate
     /*! Danish Krona LIBOR discontinued as of 2013.
     */
-    public class DKKLibor : Libor
+    [JetBrains.Annotations.PublicAPI] public class DKKLibor : Libor
     {
         public DKKLibor(Period tenor)
            : base("DKKLibor", tenor, 2, new DKKCurrency(), new Denmark(), new Actual360(), new Handle<YieldTermStructure>())

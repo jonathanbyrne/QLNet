@@ -30,7 +30,7 @@ namespace QLNet.Math.Optimization
         //! method to overload to compute the cost function value in x
         public virtual double value(Vector x)
         {
-            Vector v = Vector.Sqrt(x);
+            var v = Vector.Sqrt(x);
             return System.Math.Sqrt(v.Sum(a => a) / Convert.ToDouble(v.size()));
         }
         //! method to overload to compute the cost function values in x
@@ -41,8 +41,8 @@ namespace QLNet.Math.Optimization
         public virtual void gradient(ref Vector grad, Vector x)
         {
             double eps = finiteDifferenceEpsilon(), fp, fm;
-            Vector xx = new Vector(x);
-            for (int i = 0; i < x.Count; i++)
+            var xx = new Vector(x);
+            for (var i = 0; i < x.Count; i++)
             {
                 xx[i] += eps;
                 fp = value(xx);
@@ -65,17 +65,17 @@ namespace QLNet.Math.Optimization
         // the cost function with respect to x
         public virtual void jacobian(Matrix jac, Vector x)
         {
-            double eps = finiteDifferenceEpsilon();
-            Vector xx = new Vector(x);
-            Vector fp = new Vector();
-            Vector fm = new Vector();
-            for (int i = 0; i < x.size(); ++i)
+            var eps = finiteDifferenceEpsilon();
+            var xx = new Vector(x);
+            var fp = new Vector();
+            var fm = new Vector();
+            for (var i = 0; i < x.size(); ++i)
             {
                 xx[i] += eps;
                 fp = values(xx);
                 xx[i] -= 2.0 * eps;
                 fm = values(xx);
-                for (int j = 0; j < fp.size(); ++j)
+                for (var j = 0; j < fp.size(); ++j)
                 {
                     jac[j, i] = 0.5 * (fp[j] - fm[j]) / eps;
                 }
@@ -92,10 +92,10 @@ namespace QLNet.Math.Optimization
         }
 
         //! Default epsilon for finite difference method :
-        public virtual double finiteDifferenceEpsilon() { return 1e-8; }
+        public virtual double finiteDifferenceEpsilon() => 1e-8;
     }
 
-    public interface IParametersTransformation
+    [JetBrains.Annotations.PublicAPI] public interface IParametersTransformation
     {
         Vector direct(Vector x);
         Vector inverse(Vector x);

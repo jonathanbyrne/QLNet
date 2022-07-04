@@ -28,19 +28,21 @@ namespace QLNet.Termstructures.Credit
     /// <summary>
     /// Survival-Probability-curve traits
     /// </summary>
-    public class SurvivalProbability : ITraits<DefaultProbabilityTermStructure>
+    [JetBrains.Annotations.PublicAPI] public class SurvivalProbability : ITraits<DefaultProbabilityTermStructure>
     {
         const double avgHazardRate = 0.01;
         const double maxHazardRate = 1.0;
 
-        public Date initialDate(DefaultProbabilityTermStructure c) { return c.referenceDate(); }   // start of curve data
-        public double initialValue(DefaultProbabilityTermStructure c) { return 1; }    // value at reference date
+        public Date initialDate(DefaultProbabilityTermStructure c) => c.referenceDate(); // start of curve data
+        public double initialValue(DefaultProbabilityTermStructure c) => 1; // value at reference date
         public void updateGuess(List<double> data, double discount, int i) { data[i] = discount; }
-        public int maxIterations() { return 50; }   // upper bound for convergence loop
+        public int maxIterations() => 50; // upper bound for convergence loop
 
-        public double discountImpl(Interpolation i, double t) { return i.value(t, true); }
-        public double zeroYieldImpl(Interpolation i, double t) { throw new NotSupportedException(); }
-        public double forwardImpl(Interpolation i, double t) { throw new NotSupportedException(); }
+        public double discountImpl(Interpolation i, double t) => i.value(t, true);
+
+        public double zeroYieldImpl(Interpolation i, double t) => throw new NotSupportedException();
+
+        public double forwardImpl(Interpolation i, double t) => throw new NotSupportedException();
 
         public double guess(int i, InterpolatedCurve c, bool validData, int f)
         {
@@ -51,7 +53,7 @@ namespace QLNet.Termstructures.Credit
                 return 1.0 / (1.0 + avgHazardRate * 0.25);
 
             // extrapolate
-            Date d = c.dates()[i];
+            var d = c.dates()[i];
             return ((DefaultProbabilityTermStructure)c).survivalProbability(d, true);
         }
 
@@ -61,33 +63,27 @@ namespace QLNet.Termstructures.Credit
             {
                 return c.data().Last() / 2.0;
             }
-            double dt = c.times()[i] - c.times()[i - 1];
+            var dt = c.times()[i] - c.times()[i - 1];
             return c.data()[i - 1] * System.Math.Exp(-maxHazardRate * dt);
         }
 
-        public double maxValueAfter(int i, InterpolatedCurve c, bool validData, int f)
-        {
+        public double maxValueAfter(int i, InterpolatedCurve c, bool validData, int f) =>
             // survival probability cannot increase
-            return c.data()[i - 1];
-        }
+            c.data()[i - 1];
     }
 
     /// <summary>
     ///  Hazard-rate-curve traits
     /// </summary>
-    public class HazardRate : ITraits<DefaultProbabilityTermStructure>
+    [JetBrains.Annotations.PublicAPI] public class HazardRate : ITraits<DefaultProbabilityTermStructure>
     {
         const double avgHazardRate = 0.01;
         const double maxHazardRate = 1.0;
 
-        public Date initialDate(DefaultProbabilityTermStructure c)
-        {
-            return c.referenceDate();
-        }
-        public double initialValue(DefaultProbabilityTermStructure c)
-        {
-            return avgHazardRate;
-        }
+        public Date initialDate(DefaultProbabilityTermStructure c) => c.referenceDate();
+
+        public double initialValue(DefaultProbabilityTermStructure c) => avgHazardRate;
+
         public double guess(int i, InterpolatedCurve c, bool validData, int f)
         {
             if (validData) // previous iteration value
@@ -97,14 +93,14 @@ namespace QLNet.Termstructures.Credit
                 return avgHazardRate;
 
             // extrapolate
-            Date d = c.dates()[i];
+            var d = c.dates()[i];
             return ((DefaultProbabilityTermStructure)c).hazardRate(d, true);
         }
         public double minValueAfter(int i, InterpolatedCurve c, bool validData, int f)
         {
             if (validData)
             {
-                double r = c.data().Min();
+                var r = c.data().Min();
                 return r / 2.0;
             }
             return Const.QL_EPSILON;
@@ -113,7 +109,7 @@ namespace QLNet.Termstructures.Credit
         {
             if (validData)
             {
-                double r = c.data().Max();
+                var r = c.data().Max();
                 return r * 2.0;
             }
             // no constraints.
@@ -126,29 +122,27 @@ namespace QLNet.Termstructures.Credit
             if (i == 1)
                 data[0] = rate; // first point is updated as well
         }
-        public int maxIterations() { return 30; }
+        public int maxIterations() => 30;
 
-        public double discountImpl(Interpolation i, double t) { return i.value(t, true); }
-        public double zeroYieldImpl(Interpolation i, double t) { throw new NotSupportedException(); }
-        public double forwardImpl(Interpolation i, double t) { throw new NotSupportedException(); }
+        public double discountImpl(Interpolation i, double t) => i.value(t, true);
+
+        public double zeroYieldImpl(Interpolation i, double t) => throw new NotSupportedException();
+
+        public double forwardImpl(Interpolation i, double t) => throw new NotSupportedException();
     }
 
     /// <summary>
     /// Default-density-curve traits
     /// </summary>
-    public class DefaultDensity : ITraits<DefaultProbabilityTermStructure>
+    [JetBrains.Annotations.PublicAPI] public class DefaultDensity : ITraits<DefaultProbabilityTermStructure>
     {
         const double avgHazardRate = 0.01;
         const double maxHazardRate = 1.0;
 
-        public Date initialDate(DefaultProbabilityTermStructure c)
-        {
-            return c.referenceDate();
-        }
-        public double initialValue(DefaultProbabilityTermStructure c)
-        {
-            return avgHazardRate;
-        }
+        public Date initialDate(DefaultProbabilityTermStructure c) => c.referenceDate();
+
+        public double initialValue(DefaultProbabilityTermStructure c) => avgHazardRate;
+
         public double guess(int i, InterpolatedCurve c, bool validData, int f)
         {
             if (validData) // previous iteration value
@@ -158,14 +152,14 @@ namespace QLNet.Termstructures.Credit
                 return avgHazardRate;
 
             // extrapolate
-            Date d = c.dates()[i];
+            var d = c.dates()[i];
             return ((DefaultProbabilityTermStructure)c).defaultDensity(d, true);
         }
         public double minValueAfter(int i, InterpolatedCurve c, bool validData, int f)
         {
             if (validData)
             {
-                double r = c.data().Min();
+                var r = c.data().Min();
                 return r / 2.0;
             }
             return Const.QL_EPSILON;
@@ -174,7 +168,7 @@ namespace QLNet.Termstructures.Credit
         {
             if (validData)
             {
-                double r = c.data().Max();
+                var r = c.data().Max();
                 return r * 2.0;
             }
             // no constraints.
@@ -187,10 +181,12 @@ namespace QLNet.Termstructures.Credit
             if (i == 1)
                 data[0] = density; // first point is updated as well
         }
-        public int maxIterations() { return 30; }
+        public int maxIterations() => 30;
 
-        public double discountImpl(Interpolation i, double t) { return i.value(t, true); }
-        public double zeroYieldImpl(Interpolation i, double t) { throw new NotSupportedException(); }
-        public double forwardImpl(Interpolation i, double t) { throw new NotSupportedException(); }
+        public double discountImpl(Interpolation i, double t) => i.value(t, true);
+
+        public double zeroYieldImpl(Interpolation i, double t) => throw new NotSupportedException();
+
+        public double forwardImpl(Interpolation i, double t) => throw new NotSupportedException();
     }
 }

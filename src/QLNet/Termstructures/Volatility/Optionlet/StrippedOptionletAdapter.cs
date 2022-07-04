@@ -24,7 +24,7 @@ using System.Linq;
 
 namespace QLNet.Termstructures.Volatility.Optionlet
 {
-    public class StrippedOptionletAdapter : OptionletVolatilityStructure
+    [JetBrains.Annotations.PublicAPI] public class StrippedOptionletAdapter : OptionletVolatilityStructure
     {
         /*! Adapter class for turning a StrippedOptionletBase object into an
          OptionletVolatilityStructure.
@@ -41,21 +41,17 @@ namespace QLNet.Termstructures.Volatility.Optionlet
 
         // TermStructure interface
 
-        public override Date maxDate() { return optionletStripper_.optionletFixingDates().Last(); }
+        public override Date maxDate() => optionletStripper_.optionletFixingDates().Last();
 
         // VolatilityTermStructure interface
 
-        public override double minStrike() { return optionletStripper_.optionletStrikes(0).First(); }
-        public override double maxStrike() { return optionletStripper_.optionletStrikes(0).Last(); }
-        public override VolatilityType volatilityType()
-        {
-            return optionletStripper_.volatilityType();
-        }
+        public override double minStrike() => optionletStripper_.optionletStrikes(0).First();
 
-        public override double displacement()
-        {
-            return optionletStripper_.displacement();
-        }
+        public override double maxStrike() => optionletStripper_.optionletStrikes(0).Last();
+
+        public override VolatilityType volatilityType() => optionletStripper_.volatilityType();
+
+        public override double displacement() => optionletStripper_.displacement();
 
         // LazyObject interface
 
@@ -63,10 +59,10 @@ namespace QLNet.Termstructures.Volatility.Optionlet
 
         protected override void performCalculations()
         {
-            for (int i = 0; i < nInterpolations_; ++i)
+            for (var i = 0; i < nInterpolations_; ++i)
             {
-                List<double> optionletStrikes = new List<double>(optionletStripper_.optionletStrikes(i));
-                List<double> optionletVolatilities = new List<double>(optionletStripper_.optionletVolatilities(i));
+                var optionletStrikes = new List<double>(optionletStripper_.optionletStrikes(i));
+                var optionletVolatilities = new List<double>(optionletStripper_.optionletVolatilities(i));
                 strikeInterpolations_.Add(new LinearInterpolation(optionletStrikes, optionletStrikes.Count, optionletVolatilities));
             }
         }
@@ -75,14 +71,14 @@ namespace QLNet.Termstructures.Volatility.Optionlet
 
         protected override SmileSection smileSectionImpl(double t)
         {
-            List<double> optionletStrikes = new List<double>(optionletStripper_.optionletStrikes(0)); // strikes are the same for all times ?!
-            List<double> stddevs = new List<double>();
-            for (int i = 0; i < optionletStrikes.Count; i++)
+            var optionletStrikes = new List<double>(optionletStripper_.optionletStrikes(0)); // strikes are the same for all times ?!
+            var stddevs = new List<double>();
+            for (var i = 0; i < optionletStrikes.Count; i++)
             {
                 stddevs.Add(volatilityImpl(t, optionletStrikes[i]) * System.Math.Sqrt(t));
             }
             // Extrapolation may be a problem with splines, but since minStrike() and maxStrike() are set, we assume that no one will use stddevs for strikes outside these strikes
-            CubicInterpolation.BoundaryCondition bc = optionletStrikes.Count >= 4 ? CubicInterpolation.BoundaryCondition.Lagrange : CubicInterpolation.BoundaryCondition.SecondDerivative;
+            var bc = optionletStrikes.Count >= 4 ? CubicInterpolation.BoundaryCondition.Lagrange : CubicInterpolation.BoundaryCondition.SecondDerivative;
             return new InterpolatedSmileSection<Cubic>(t, optionletStrikes, stddevs, 0,
                                                        new Cubic(CubicInterpolation.DerivativeApprox.Spline, false, bc, 0.0, bc, 0.0));
         }
@@ -91,11 +87,11 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             calculate();
 
             List<double> vol = new InitializedList<double>(nInterpolations_);
-            for (int i = 0; i < nInterpolations_; ++i)
+            for (var i = 0; i < nInterpolations_; ++i)
                 vol[i] = strikeInterpolations_[i].value(strike, true);
 
-            List<double> optionletTimes = new List<double>(optionletStripper_.optionletFixingTimes());
-            LinearInterpolation timeInterpolator = new LinearInterpolation(optionletTimes, optionletTimes.Count, vol);
+            var optionletTimes = new List<double>(optionletStripper_.optionletFixingTimes());
+            var timeInterpolator = new LinearInterpolation(optionletTimes, optionletTimes.Count, vol);
             return timeInterpolator.value(length, true);
         }
 

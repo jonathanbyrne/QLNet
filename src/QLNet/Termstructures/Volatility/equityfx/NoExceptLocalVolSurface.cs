@@ -25,7 +25,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
     /// wrapper around Dupire local volatility surface,
     /// which does not throw exception if local volatility becomes negative
     /// </summary>
-    public class NoExceptLocalVolSurface : LocalVolSurface
+    [JetBrains.Annotations.PublicAPI] public class NoExceptLocalVolSurface : LocalVolSurface
     {
         public NoExceptLocalVolSurface(Handle<BlackVolTermStructure> blackTS,
                                        Handle<YieldTermStructure> riskFreeTS,

@@ -24,7 +24,7 @@ namespace QLNet.Cashflows
     //! %principal payment over a fixed period
     //! This class implements part of the CashFlow interface but it is
     //  still abstract and provides derived classes with methods for accrual period calculations.
-    public class Principal : CashFlow
+    [JetBrains.Annotations.PublicAPI] public class Principal : CashFlow
     {
         protected double nominal_;
         protected double amount_;
@@ -32,15 +32,22 @@ namespace QLNet.Cashflows
         protected Date paymentDate_, accrualStartDate_, accrualEndDate_, refPeriodStart_, refPeriodEnd_;
 
         // access to properties
-        public double nominal() { return nominal_; }
-        public override Date date() { return paymentDate_; }
-        public Date accrualStartDate() { return accrualStartDate_; }
-        public Date accrualEndDate() { return accrualEndDate_; }
-        public Date refPeriodStart { get { return refPeriodStart_; } }
-        public Date refPeriodEnd { get { return refPeriodEnd_; } }
-        public override double amount() { return amount_; }
+        public double nominal() => nominal_;
+
+        public override Date date() => paymentDate_;
+
+        public Date accrualStartDate() => accrualStartDate_;
+
+        public Date accrualEndDate() => accrualEndDate_;
+
+        public Date refPeriodStart => refPeriodStart_;
+
+        public Date refPeriodEnd => refPeriodEnd_;
+
+        public override double amount() => amount_;
+
         public void setAmount(double amount) { amount_ = amount; }
-        public DayCounter dayCounter() { return dayCounter_; }
+        public DayCounter dayCounter() => dayCounter_;
 
         // Constructors
         public Principal() { }       // default constructor

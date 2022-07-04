@@ -29,10 +29,10 @@ namespace QLNet.Cashflows
 
         We expect this to be used inside an instrument that does all the date
         adjustment etc., so this takes just dates and does not change them.
-        growthOnly = false means i(T)/i(0), which is a bond-type setting.
-        growthOnly = true means i(T)/i(0) - 1, which is a swap-type setting.
+        growthOnly = false means i(T)/i(0), which is a bond-ExerciseType setting.
+        growthOnly = true means i(T)/i(0) - 1, which is a swap-ExerciseType setting.
     */
-    public class IndexedCashFlow : CashFlow
+    [JetBrains.Annotations.PublicAPI] public class IndexedCashFlow : CashFlow
     {
         public IndexedCashFlow(double notional,
                                Index index,
@@ -49,17 +49,22 @@ namespace QLNet.Cashflows
             growthOnly_ = growthOnly;
         }
 
-        public override Date date() { return paymentDate_; }
-        public virtual double notional() { return notional_; }
-        public virtual Date baseDate() { return baseDate_; }
-        public virtual Date fixingDate() { return fixingDate_; }
-        public virtual Index index() { return index_; }
-        public virtual bool growthOnly() { return growthOnly_; }
+        public override Date date() => paymentDate_;
+
+        public virtual double notional() => notional_;
+
+        public virtual Date baseDate() => baseDate_;
+
+        public virtual Date fixingDate() => fixingDate_;
+
+        public virtual Index index() => index_;
+
+        public virtual bool growthOnly() => growthOnly_;
 
         public override double amount()
         {
-            double I0 = index_.fixing(baseDate_);
-            double I1 = index_.fixing(fixingDate_);
+            var I0 = index_.fixing(baseDate_);
+            var I1 = index_.fixing(fixingDate_);
 
             if (growthOnly_)
                 return notional_ * (I1 / I0 - 1.0);

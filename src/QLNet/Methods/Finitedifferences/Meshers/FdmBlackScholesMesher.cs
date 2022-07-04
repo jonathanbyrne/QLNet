@@ -36,7 +36,7 @@ using QLNet.Time;
 
 namespace QLNet.Methods.Finitedifferences.Meshers
 {
-    public class Pair<TFirst, TSecond>
+    [JetBrains.Annotations.PublicAPI] public class Pair<TFirst, TSecond>
     {
         protected KeyValuePair<TFirst, TSecond> pair;
 
@@ -52,51 +52,30 @@ namespace QLNet.Methods.Finitedifferences.Meshers
             pair = new KeyValuePair<TFirst, TSecond>(first, second);
         }
 
-        public TFirst first
-        {
-            get
-            {
-                return pair.Key;
-            }
-        }
+        public TFirst first => pair.Key;
 
-        public TSecond second
-        {
-            get
-            {
-                return pair.Value;
-            }
-        }
+        public TSecond second => pair.Value;
     }
 
-    public class pair_double : Pair<double, double>, IComparable<Pair<double, double>>
+    [JetBrains.Annotations.PublicAPI] public class pair_double : Pair<double, double>, IComparable<Pair<double, double>>
     {
         public pair_double(double first, double second)
            : base(first, second)
         { }
 
-        public int CompareTo(Pair<double, double> other)
-        {
-            return first.CompareTo(other.first);
-        }
+        public int CompareTo(Pair<double, double> other) => first.CompareTo(other.first);
     }
 
-    public class equal_on_first : IEqualityComparer<Pair<double?, double?>>
+    [JetBrains.Annotations.PublicAPI] public class equal_on_first : IEqualityComparer<Pair<double?, double?>>
     {
         public bool Equals(Pair<double?, double?> p1,
-                           Pair<double?, double?> p2)
-        {
-            return Utils.close_enough(p1.first.Value, p2.first.Value, 1000);
-        }
+                           Pair<double?, double?> p2) =>
+            Utils.close_enough(p1.first.Value, p2.first.Value, 1000);
 
-        public int GetHashCode(Pair<double?, double?> p)
-        {
-            return Convert.ToInt32(p.first.Value * p.second.Value);
-        }
-
+        public int GetHashCode(Pair<double?, double?> p) => Convert.ToInt32(p.first.Value * p.second.Value);
     }
 
-    public class FdmBlackScholesMesher : Fdm1dMesher
+    [JetBrains.Annotations.PublicAPI] public class FdmBlackScholesMesher : Fdm1dMesher
     {
         public FdmBlackScholesMesher(int size,
                                      GeneralizedBlackScholesProcess process,
@@ -112,28 +91,28 @@ namespace QLNet.Methods.Finitedifferences.Meshers
                                      double spotAdjustment = 0.0)
         : base(size)
         {
-            double S = process.x0();
+            var S = process.x0();
             Utils.QL_REQUIRE(S > 0.0, () => "negative or null underlying given");
 
             dividendSchedule = dividendSchedule == null ? new DividendSchedule() : dividendSchedule;
-            List<pair_double> intermediateSteps = new List<pair_double>();
-            for (int i = 0; i < dividendSchedule.Count
-                 && process.time(dividendSchedule[i].date()) <= maturity; ++i)
+            var intermediateSteps = new List<pair_double>();
+            for (var i = 0; i < dividendSchedule.Count
+                            && process.time(dividendSchedule[i].date()) <= maturity; ++i)
                 intermediateSteps.Add(
                    new pair_double(
                       process.time(dividendSchedule[i].date()),
                       dividendSchedule[i].amount()
                    ));
 
-            int intermediateTimeSteps = (int)System.Math.Max(2, 24.0 * maturity);
-            for (int i = 0; i < intermediateTimeSteps; ++i)
+            var intermediateTimeSteps = (int)System.Math.Max(2, 24.0 * maturity);
+            for (var i = 0; i < intermediateTimeSteps; ++i)
                 intermediateSteps.Add(
                    new pair_double((i + 1) * (maturity / intermediateTimeSteps), 0.0));
 
             intermediateSteps.Sort();
 
-            Handle<YieldTermStructure> rTS = process.riskFreeRate();
-            Handle<YieldTermStructure> qTS = fdmQuantoHelper != null
+            var rTS = process.riskFreeRate();
+            var qTS = fdmQuantoHelper != null
                                              ? new Handle<YieldTermStructure>(
                                                 new QuantoTermStructure(process.dividendYield(),
                                                                         process.riskFreeRate(),
@@ -145,14 +124,14 @@ namespace QLNet.Methods.Finitedifferences.Meshers
                                                                         fdmQuantoHelper.equityFxCorrelation()))
                                              : process.dividendYield();
 
-            double lastDivTime = 0.0;
-            double fwd = S + spotAdjustment;
+            var lastDivTime = 0.0;
+            var fwd = S + spotAdjustment;
             double mi = fwd, ma = fwd;
 
-            for (int i = 0; i < intermediateSteps.Count; ++i)
+            for (var i = 0; i < intermediateSteps.Count; ++i)
             {
-                double divTime = intermediateSteps[i].first;
-                double divAmount = intermediateSteps[i].second;
+                var divTime = intermediateSteps[i].first;
+                var divAmount = intermediateSteps[i].second;
 
                 fwd = fwd / rTS.currentLink().discount(divTime) * rTS.currentLink().discount(lastDivTime)
                       * qTS.currentLink().discount(divTime) / qTS.currentLink().discount(lastDivTime);
@@ -167,8 +146,8 @@ namespace QLNet.Methods.Finitedifferences.Meshers
             }
 
             // Set the grid boundaries
-            double normInvEps = new InverseCumulativeNormal().value(1 - eps);
-            double sigmaSqrtT
+            var normInvEps = new InverseCumulativeNormal().value(1 - eps);
+            var sigmaSqrtT
                = process.blackVolatility().currentLink().blackVol(maturity, strike)
                  * System.Math.Sqrt(maturity);
 
@@ -199,7 +178,7 @@ namespace QLNet.Methods.Finitedifferences.Meshers
             }
 
             locations_ = helper.locations();
-            for (int i = 0; i < locations_.Count; ++i)
+            for (var i = 0; i < locations_.Count; ++i)
             {
                 dplus_[i] = helper.dplus(i);
                 dminus_[i] = helper.dminus(i);
@@ -209,15 +188,13 @@ namespace QLNet.Methods.Finitedifferences.Meshers
         public static GeneralizedBlackScholesProcess processHelper(Handle<Quote> s0,
                                                                    Handle<YieldTermStructure> rTS,
                                                                    Handle<YieldTermStructure> qTS,
-                                                                   double vol)
-        {
-            return new GeneralizedBlackScholesProcess(
-                      s0, qTS, rTS,
-                      new Handle<BlackVolTermStructure>(
-                         new BlackConstantVol(rTS.currentLink().referenceDate(),
-                                              new Calendar(),
-                                              vol,
-                                              rTS.currentLink().dayCounter())));
-        }
+                                                                   double vol) =>
+            new GeneralizedBlackScholesProcess(
+                s0, qTS, rTS,
+                new Handle<BlackVolTermStructure>(
+                    new BlackConstantVol(rTS.currentLink().referenceDate(),
+                        new Calendar(),
+                        vol,
+                        rTS.currentLink().dayCounter())));
     }
 }

@@ -33,7 +33,7 @@ namespace QLNet.Indexes.Ibor
 
         \todo check end-of-month adjustment.
     */
-    public class TRLibor : IborIndex
+    [JetBrains.Annotations.PublicAPI] public class TRLibor : IborIndex
     {
         public TRLibor(Period tenor)
            : base("TRLibor", tenor, 0, new TRYCurrency(), new Turkey(), BusinessDayConvention.ModifiedFollowing, false, new Actual360(), new Handle<YieldTermStructure>())

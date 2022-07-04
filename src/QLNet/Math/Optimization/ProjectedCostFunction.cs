@@ -27,7 +27,7 @@ namespace QLNet.Math.Optimization
     //    ! This class creates a proxy cost function which can depend
     //        on any arbitrary subset of parameters (the other being fixed)
     //
-    public class ProjectedCostFunction : CostFunction
+    [JetBrains.Annotations.PublicAPI] public class ProjectedCostFunction : CostFunction
     {
         private int numberOfFreeParameters_;
         private Vector fixedParameters_;
@@ -46,7 +46,7 @@ namespace QLNet.Math.Optimization
             Utils.QL_REQUIRE(fixedParameters_.Count == parametersFreedoms_.Count, () =>
                              "fixedParameters_.Count!=parametersFreedoms_.Count");
 
-            for (int i = 0; i < parametersFreedoms_.Count; i++)
+            for (var i = 0; i < parametersFreedoms_.Count; i++)
                 if (!parametersFreedoms_[i])
                     numberOfFreeParameters_++;
 
@@ -71,9 +71,9 @@ namespace QLNet.Math.Optimization
         {
             Utils.QL_REQUIRE(parameters.Count == parametersFreedoms_.Count, () => "parameters.Count!=parametersFreedoms_.Count");
 
-            Vector projectedParameters = new Vector(numberOfFreeParameters_);
-            int i = 0;
-            for (int j = 0; j < parametersFreedoms_.Count; j++)
+            var projectedParameters = new Vector(numberOfFreeParameters_);
+            var i = 0;
+            for (var j = 0; j < parametersFreedoms_.Count; j++)
                 if (!parametersFreedoms_[j])
                     projectedParameters[i++] = parameters[j];
             return projectedParameters;
@@ -86,9 +86,9 @@ namespace QLNet.Math.Optimization
             Utils.QL_REQUIRE(projectedParameters.Count == numberOfFreeParameters_, () =>
                              "projectedParameters.Count!=numberOfFreeParameters");
 
-            Vector y = new Vector(fixedParameters_);
-            int i = 0;
-            for (int j = 0; j < y.Count; j++)
+            var y = new Vector(fixedParameters_);
+            var i = 0;
+            for (var j = 0; j < y.Count; j++)
                 if (!parametersFreedoms_[j])
                     y[j] = projectedParameters[i++];
             return y;
@@ -99,8 +99,8 @@ namespace QLNet.Math.Optimization
             Utils.QL_REQUIRE(parametersValues.Count == numberOfFreeParameters_, () =>
                              "parametersValues.Count!=numberOfFreeParameters");
 
-            int i = 0;
-            for (int j = 0; j < actualParameters_.Count; j++)
+            var i = 0;
+            for (var j = 0; j < actualParameters_.Count; j++)
                 if (!parametersFreedoms_[j])
                     actualParameters_[j] = parametersValues[i++];
         }

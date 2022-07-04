@@ -39,10 +39,10 @@ namespace QLNet.Math.statistics
         \test the correctness of the returned values is tested by
               checking them against numerical calculations.
     */
-    public class GenericSequenceStatistics<S> where S : IGeneralStatistics, new()
+    [JetBrains.Annotations.PublicAPI] public class GenericSequenceStatistics<S> where S : IGeneralStatistics, new()
     {
         protected int dimension_;
-        public int size() { return dimension_; }
+        public int size() => dimension_;
 
         protected List<S> stats_;
         protected List<double> results_;
@@ -57,16 +57,16 @@ namespace QLNet.Math.statistics
         //! returns the covariance Matrix
         public Matrix covariance()
         {
-            double sampleWeight = weightSum();
+            var sampleWeight = weightSum();
             Utils.QL_REQUIRE(sampleWeight > 0.0, () => "sampleWeight=0, unsufficient");
 
             double sampleNumber = samples();
             Utils.QL_REQUIRE(sampleNumber > 1.0, () => "sample number <=1, unsufficient");
 
-            List<double> m = mean();
-            double inv = 1.0 / sampleWeight;
+            var m = mean();
+            var inv = 1.0 / sampleWeight;
 
-            Matrix result = inv * quadraticSum_;
+            var result = inv * quadraticSum_;
             result -= Matrix.outerProduct(m, m);
 
             result *= sampleNumber / (sampleNumber - 1.0);
@@ -75,11 +75,11 @@ namespace QLNet.Math.statistics
         //! returns the correlation Matrix
         public Matrix correlation()
         {
-            Matrix correlation = covariance();
-            Vector variances = correlation.diagonal();
-            for (int i = 0; i < dimension_; i++)
+            var correlation = covariance();
+            var variances = correlation.diagonal();
+            for (var i = 0; i < dimension_; i++)
             {
-                for (int j = 0; j < dimension_; j++)
+                for (var j = 0; j < dimension_; j++)
                 {
                     if (i == j)
                     {
@@ -113,17 +113,18 @@ namespace QLNet.Math.statistics
         }
 
         // 1-D inspectors lifted from underlying statistics class
-        public int samples() { return stats_.Count == 0 ? 0 : stats_[0].samples(); }
-        public double weightSum() { return stats_.Count == 0 ? 0.0 : stats_[0].weightSum(); }
+        public int samples() => stats_.Count == 0 ? 0 : stats_[0].samples();
+
+        public double weightSum() => stats_.Count == 0 ? 0.0 : stats_[0].weightSum();
 
         // N-D inspectors lifted from underlying statistics class
         // no argument list
         private List<double> noArg(string method)
         {
             // do not check for null - in this case we throw anyways
-            for (int i = 0; i < dimension_; i++)
+            for (var i = 0; i < dimension_; i++)
             {
-                MethodInfo methodInfo = Utils.GetMethodInfo(stats_[i], method);
+                var methodInfo = Utils.GetMethodInfo(stats_[i], method);
                 results_[i] = (double)methodInfo.Invoke(stats_[i], new object[] { });
             }
             return results_;
@@ -132,9 +133,9 @@ namespace QLNet.Math.statistics
         private List<double> singleArg(double x, string method)
         {
             // do not check for null - in this case we throw anyways
-            for (int i = 0; i < dimension_; i++)
+            for (var i = 0; i < dimension_; i++)
             {
-                MethodInfo methodInfo = Utils.GetMethodInfo(stats_[i], method);
+                var methodInfo = Utils.GetMethodInfo(stats_[i], method);
                 results_[i] = (double)methodInfo.Invoke(stats_[i], new object[] { x });
             }
             return results_;
@@ -143,72 +144,87 @@ namespace QLNet.Math.statistics
         // void argument list
         public List<double> mean()
         {
-            for (int i = 0; i < dimension_; i++)
+            for (var i = 0; i < dimension_; i++)
                 results_[i] = stats_[i].mean();
             return results_;
         }
         public List<double> variance()
         {
-            for (int i = 0; i < dimension_; i++)
+            for (var i = 0; i < dimension_; i++)
                 results_[i] = stats_[i].variance();
             return results_;
         }
         public List<double> standardDeviation()
         {
-            for (int i = 0; i < dimension_; i++)
+            for (var i = 0; i < dimension_; i++)
                 results_[i] = stats_[i].standardDeviation();
             return results_;
         }
-        public List<double> downsideVariance() { return noArg("downsideVariance"); }
-        public List<double> downsideDeviation() { return noArg("downsideDeviation"); }
-        public List<double> semiVariance() { return noArg("semiVariance"); }
-        public List<double> semiDeviation() { return noArg("semiDeviation"); }
-        public List<double> errorEstimate() { return noArg("errorEstimate"); }
+        public List<double> downsideVariance() => noArg("downsideVariance");
+
+        public List<double> downsideDeviation() => noArg("downsideDeviation");
+
+        public List<double> semiVariance() => noArg("semiVariance");
+
+        public List<double> semiDeviation() => noArg("semiDeviation");
+
+        public List<double> errorEstimate() => noArg("errorEstimate");
+
         public List<double> skewness()
         {
-            for (int i = 0; i < dimension_; i++)
+            for (var i = 0; i < dimension_; i++)
                 results_[i] = stats_[i].skewness();
             return results_;
         }
         public List<double> kurtosis()
         {
-            for (int i = 0; i < dimension_; i++)
+            for (var i = 0; i < dimension_; i++)
                 results_[i] = stats_[i].kurtosis();
             return results_;
         }
         public List<double> min()
         {
-            for (int i = 0; i < dimension_; i++)
+            for (var i = 0; i < dimension_; i++)
                 results_[i] = stats_[i].min();
             return results_;
         }
         public List<double> max()
         {
-            for (int i = 0; i < dimension_; i++)
+            for (var i = 0; i < dimension_; i++)
                 results_[i] = stats_[i].max();
             return results_;
         }
 
         // single argument list
-        public List<double> gaussianPercentile(double x) { return singleArg(x, "gaussianPercentile"); }
+        public List<double> gaussianPercentile(double x) => singleArg(x, "gaussianPercentile");
+
         public List<double> percentile(double x)
         {
-            for (int i = 0; i < dimension_; i++)
+            for (var i = 0; i < dimension_; i++)
                 results_[i] = stats_[i].percentile(x);
             return results_;
         }
-        public List<double> gaussianPotentialUpside(double x) { return singleArg(x, "gaussianPotentialUpside"); }
-        public List<double> potentialUpside(double x) { return singleArg(x, "potentialUpside"); }
-        public List<double> gaussianValueAtRisk(double x) { return singleArg(x, "gaussianValueAtRisk"); }
-        public List<double> valueAtRisk(double x) { return singleArg(x, "valueAtRisk"); }
-        public List<double> gaussianExpectedShortfall(double x) { return singleArg(x, "gaussianExpectedShortfall"); }
-        public List<double> expectedShortfall(double x) { return singleArg(x, "expectedShortfall"); }
-        public List<double> gaussianShortfall(double x) { return singleArg(x, "gaussianShortfall"); }
-        public List<double> shortfall(double x) { return singleArg(x, "shortfall"); }
-        public List<double> gaussianAverageShortfall(double x) { return singleArg(x, "gaussianAverageShortfall"); }
-        public List<double> averageShortfall(double x) { return singleArg(x, "averageShortfall"); }
-        public List<double> regret(double x) { return singleArg(x, "regret"); }
+        public List<double> gaussianPotentialUpside(double x) => singleArg(x, "gaussianPotentialUpside");
 
+        public List<double> potentialUpside(double x) => singleArg(x, "potentialUpside");
+
+        public List<double> gaussianValueAtRisk(double x) => singleArg(x, "gaussianValueAtRisk");
+
+        public List<double> valueAtRisk(double x) => singleArg(x, "valueAtRisk");
+
+        public List<double> gaussianExpectedShortfall(double x) => singleArg(x, "gaussianExpectedShortfall");
+
+        public List<double> expectedShortfall(double x) => singleArg(x, "expectedShortfall");
+
+        public List<double> gaussianShortfall(double x) => singleArg(x, "gaussianShortfall");
+
+        public List<double> shortfall(double x) => singleArg(x, "shortfall");
+
+        public List<double> gaussianAverageShortfall(double x) => singleArg(x, "gaussianAverageShortfall");
+
+        public List<double> averageShortfall(double x) => singleArg(x, "averageShortfall");
+
+        public List<double> regret(double x) => singleArg(x, "regret");
 
         // Modifiers
         public virtual void reset(int dimension)
@@ -218,7 +234,7 @@ namespace QLNet.Math.statistics
             {
                 if (dimension == dimension_)
                 {
-                    for (int i = 0; i < dimension_; ++i)
+                    for (var i = 0; i < dimension_; ++i)
                         stats_[i].reset();
                 }
                 else
@@ -245,7 +261,7 @@ namespace QLNet.Math.statistics
             if (dimension_ == 0)
             {
                 // stat wasn't initialized yet
-                int dimension = begin.Count;
+                var dimension = begin.Count;
                 Utils.QL_REQUIRE(dimension > 0, () => "sample error: end<=begin");
                 reset(dimension);
             }
@@ -255,7 +271,7 @@ namespace QLNet.Math.statistics
 
             quadraticSum_ += weight * Matrix.outerProduct(begin, begin);
 
-            for (int i = 0; i < dimension_; ++i)
+            for (var i = 0; i < dimension_; ++i)
                 stats_[i].add(begin[i], weight);
         }
     }
@@ -264,7 +280,7 @@ namespace QLNet.Math.statistics
     /*! \test the correctness of the returned values is tested by
               checking them against numerical calculations.
     */
-    public class SequenceStatistics : GenericSequenceStatistics<RiskStatistics>
+    [JetBrains.Annotations.PublicAPI] public class SequenceStatistics : GenericSequenceStatistics<RiskStatistics>
     {
         public SequenceStatistics(int dimension) : base(dimension) { }
     }

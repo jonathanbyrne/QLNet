@@ -127,36 +127,21 @@ namespace QLNet.Termstructures.Volatility.swaption
             optionInterpolator_.enableExtrapolation();
         }
 
-        public List<Period> optionTenors()
-        {
-            return optionTenors_;
-        }
+        public List<Period> optionTenors() => optionTenors_;
 
-        public List<Date> optionDates()
-        {
-            return optionDates_;
-        }
+        public List<Date> optionDates() => optionDates_;
 
-        public List<double> optionTimes()
-        {
-            return optionTimes_;
-        }
+        public List<double> optionTimes() => optionTimes_;
 
-        public List<Period> swapTenors()
-        {
-            return swapTenors_;
-        }
+        public List<Period> swapTenors() => swapTenors_;
 
-        public List<double> swapLengths()
-        {
-            return swapLengths_;
-        }
+        public List<double> swapLengths() => swapLengths_;
 
         public override void update()
         {
             if (moving_)
             {
-                Date d = Settings.evaluationDate();
+                var d = Settings.evaluationDate();
                 if (evaluationDate_ != d)
                 {
                     evaluationDate_ = d;
@@ -183,16 +168,13 @@ namespace QLNet.Termstructures.Volatility.swaption
         }
 
         //! additional inspectors
-        public Date optionDateFromTime(double optionTime)
-        {
-            return new Date((int)optionInterpolator_.value(optionTime));
-        }
+        public Date optionDateFromTime(double optionTime) => new Date((int)optionInterpolator_.value(optionTime));
 
         private void checkOptionDates()
         {
             Utils.QL_REQUIRE(optionDates_[0] > referenceDate(), () =>
                              "first option date (" + optionDates_[0] + ") must be greater than reference date (" + referenceDate() + ")");
-            for (int i = 1; i < nOptionTenors_; ++i)
+            for (var i = 1; i < nOptionTenors_; ++i)
             {
                 Utils.QL_REQUIRE(optionDates_[i] > optionDates_[i - 1], () =>
                                  "non increasing option dates: " + i + " is " + optionDates_[i - 1] + ", " + i + 1 + " is " + optionDates_[i]);
@@ -203,7 +185,7 @@ namespace QLNet.Termstructures.Volatility.swaption
         {
             Utils.QL_REQUIRE(optionTenors_[0] > new Period(0, TimeUnit.Days), () =>
                              "first option tenor is negative (" + optionTenors_[0] + ")");
-            for (int i = 1; i < nOptionTenors_; ++i)
+            for (var i = 1; i < nOptionTenors_; ++i)
                 Utils.QL_REQUIRE(optionTenors_[i] > optionTenors_[i - 1], () =>
                                  "non increasing option tenor: " + i + " is " + optionTenors_[i - 1] + ", " + i + 1 + " is " + optionTenors_[i]);
         }
@@ -212,14 +194,14 @@ namespace QLNet.Termstructures.Volatility.swaption
         {
             Utils.QL_REQUIRE(swapTenors_[0] > new Period(0, TimeUnit.Days), () =>
                              "first swap tenor is negative (" + swapTenors_[0] + ")");
-            for (int i = 1; i < nSwapTenors_; ++i)
+            for (var i = 1; i < nSwapTenors_; ++i)
                 Utils.QL_REQUIRE(swapTenors_[i] > swapTenors_[i - 1], () =>
                                  "non increasing swap tenor: " + i + " is " + swapTenors_[i - 1] + ", " + i + 1 + " is " + swapTenors_[i]);
         }
 
         private void initializeOptionDatesAndTimes()
         {
-            for (int i = 0; i < nOptionTenors_; ++i)
+            for (var i = 0; i < nOptionTenors_; ++i)
             {
                 optionDates_[i] = optionDateFromTenor(optionTenors_[i]);
                 optionDatesAsReal_[i] = optionDates_[i].serialNumber();
@@ -229,13 +211,13 @@ namespace QLNet.Termstructures.Volatility.swaption
 
         private void initializeOptionTimes()
         {
-            for (int i = 0; i < nOptionTenors_; ++i)
+            for (var i = 0; i < nOptionTenors_; ++i)
                 optionTimes_[i] = timeFromReference(optionDates_[i]);
         }
 
         private void initializeSwapLengths()
         {
-            for (int i = 0; i < nSwapTenors_; ++i)
+            for (var i = 0; i < nSwapTenors_; ++i)
                 swapLengths_[i] = swapLength(swapTenors_[i]);
         }
     }

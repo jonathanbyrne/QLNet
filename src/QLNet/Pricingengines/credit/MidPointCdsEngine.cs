@@ -25,7 +25,7 @@ using QLNet.Time;
 
 namespace QLNet.Pricingengines.credit
 {
-    public class MidPointCdsEngine : CreditDefaultSwap.Engine
+    [JetBrains.Annotations.PublicAPI] public class MidPointCdsEngine : CreditDefaultSwap.Engine
     {
         public MidPointCdsEngine(Handle<DefaultProbabilityTermStructure> probability,
                                  double recoveryRate,
@@ -46,17 +46,17 @@ namespace QLNet.Pricingengines.credit
             Utils.QL_REQUIRE(!discountCurve_.empty(), () => "no discount term structure set");
             Utils.QL_REQUIRE(!probability_.empty(), () => "no probability term structure set");
 
-            Date today = Settings.evaluationDate();
-            Date settlementDate = discountCurve_.link.referenceDate();
+            var today = Settings.evaluationDate();
+            var settlementDate = discountCurve_.link.referenceDate();
 
             // Upfront Flow NPV. Either we are on-the-run (no flow)
             // or we are forward start
-            double upfPVO1 = 0.0;
+            var upfPVO1 = 0.0;
             if (!arguments_.upfrontPayment.hasOccurred(settlementDate, includeSettlementDateFlows_))
             {
                 // date determining the probability survival so we have to pay
                 //   the upfront (did not knock out)
-                Date effectiveUpfrontDate = arguments_.protectionStart > probability_.link.referenceDate() ?
+                var effectiveUpfrontDate = arguments_.protectionStart > probability_.link.referenceDate() ?
                                              arguments_.protectionStart : probability_.link.referenceDate();
                 upfPVO1 = probability_.link.survivalProbability(effectiveUpfrontDate) *
                           discountCurve_.link.discount(arguments_.upfrontPayment.date());
@@ -65,12 +65,12 @@ namespace QLNet.Pricingengines.credit
 
             results_.couponLegNPV = 0.0;
             results_.defaultLegNPV = 0.0;
-            for (int i = 0; i < arguments_.leg.Count; ++i)
+            for (var i = 0; i < arguments_.leg.Count; ++i)
             {
                 if (arguments_.leg[i].hasOccurred(settlementDate, includeSettlementDateFlows_))
                     continue;
 
-                FixedRateCoupon coupon = arguments_.leg[i] as FixedRateCoupon;
+                var coupon = arguments_.leg[i] as FixedRateCoupon;
 
                 // In order to avoid a few switches, we calculate the NPV
                 // of both legs as a positive quantity. We'll give them
@@ -82,13 +82,13 @@ namespace QLNet.Pricingengines.credit
                 // this is the only point where it might not coincide
                 if (i == 0)
                     startDate = arguments_.protectionStart;
-                Date effectiveStartDate =
+                var effectiveStartDate =
                    startDate <= today && today <= endDate ? today : startDate;
-                Date defaultDate = // mid-point
+                var defaultDate = // mid-point
                    effectiveStartDate + (endDate - effectiveStartDate) / 2;
 
-                double S = probability_.link.survivalProbability(paymentDate);
-                double P = probability_.link.defaultProbability(effectiveStartDate, endDate);
+                var S = probability_.link.survivalProbability(paymentDate);
+                var P = probability_.link.defaultProbability(effectiveStartDate, endDate);
 
                 // on one side, we add the fixed rate payments in case of
                 // survival...
@@ -114,7 +114,7 @@ namespace QLNet.Pricingengines.credit
                 }
 
                 // on the other side, we add the payment in case of default.
-                double claim = arguments_.claim.amount(defaultDate,
+                var claim = arguments_.claim.amount(defaultDate,
                                                        arguments_.notional.Value,
                                                        recoveryRate_);
                 if (arguments_.paysAtDefaultTime)
@@ -129,7 +129,7 @@ namespace QLNet.Pricingengines.credit
                 }
             }
 
-            double upfrontSign = 1.0;
+            var upfrontSign = 1.0;
             switch (arguments_.side)
             {
                 case Protection.Side.Seller:
@@ -158,7 +158,7 @@ namespace QLNet.Pricingengines.credit
                 results_.fairSpread = null;
             }
 
-            double upfrontSensitivity = upfPVO1 * arguments_.notional.Value;
+            var upfrontSensitivity = upfPVO1 * arguments_.notional.Value;
             if (upfrontSensitivity.IsNotEqual(0.0))
             {
                 results_.fairUpfront =

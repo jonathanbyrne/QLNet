@@ -20,7 +20,7 @@ using System;
 
 namespace QLNet.Math.Distributions
 {
-    public class GammaDistribution
+    [JetBrains.Annotations.PublicAPI] public class GammaDistribution
     {
         private double a_;
 
@@ -35,14 +35,14 @@ namespace QLNet.Math.Distributions
             if (x <= 0.0)
                 return 0.0;
 
-            double gln = GammaFunction.logValue(a_);
+            var gln = GammaFunction.logValue(a_);
 
             if (x < a_ + 1.0)
             {
-                double ap = a_;
-                double del = 1.0 / a_;
-                double sum = del;
-                for (int n = 1; n <= 100; n++)
+                var ap = a_;
+                var del = 1.0 / a_;
+                var sum = del;
+                for (var n = 1; n <= 100; n++)
                 {
                     ap += 1.0;
                     del *= x / ap;
@@ -53,13 +53,13 @@ namespace QLNet.Math.Distributions
             }
             else
             {
-                double b = x + 1.0 - a_;
-                double c = double.MaxValue;
-                double d = 1.0 / b;
-                double h = d;
-                for (int n = 1; n <= 100; n++)
+                var b = x + 1.0 - a_;
+                var c = double.MaxValue;
+                var d = 1.0 / b;
+                var h = d;
+                for (var n = 1; n <= 100; n++)
                 {
-                    double an = -1.0 * n * (n - a_);
+                    var an = -1.0 * n * (n - a_);
                     b += 2.0;
                     d = an * d + b;
                     if (System.Math.Abs(d) < Const.QL_EPSILON)
@@ -68,7 +68,7 @@ namespace QLNet.Math.Distributions
                     if (System.Math.Abs(c) < Const.QL_EPSILON)
                         c = Const.QL_EPSILON;
                     d = 1.0 / d;
-                    double del = d * c;
+                    var del = d * c;
                     h *= del;
                     if (System.Math.Abs(del - 1.0) < Const.QL_EPSILON)
                         return h * System.Math.Exp(-x + a_ * System.Math.Log(x) - gln);
@@ -106,9 +106,9 @@ namespace QLNet.Math.Distributions
         {
             Utils.QL_REQUIRE(x > 0.0, () => "positive argument required");
 
-            double temp = x + 5.5;
+            var temp = x + 5.5;
             temp -= (x + 0.5) * System.Math.Log(temp);
-            double ser = 1.000000000190015;
+            var ser = 1.000000000190015;
             ser += c1_ / (x + 1.0);
             ser += c2_ / (x + 2.0);
             ser += c3_ / (x + 3.0);
@@ -133,7 +133,7 @@ namespace QLNet.Math.Distributions
         }
     }
 
-    public class CumulativeGammaDistribution
+    [JetBrains.Annotations.PublicAPI] public class CumulativeGammaDistribution
     {
         public CumulativeGammaDistribution(double a)
         {
@@ -146,14 +146,14 @@ namespace QLNet.Math.Distributions
             if (x <= 0.0)
                 return 0.0;
 
-            double gln = GammaFunction.logValue(a_);
+            var gln = GammaFunction.logValue(a_);
 
             if (x < a_ + 1.0)
             {
-                double ap = a_;
-                double del = 1.0 / a_;
-                double sum = del;
-                for (int n = 1; n <= 100; n++)
+                var ap = a_;
+                var del = 1.0 / a_;
+                var sum = del;
+                for (var n = 1; n <= 100; n++)
                 {
                     ap += 1.0;
                     del *= x / ap;
@@ -164,13 +164,13 @@ namespace QLNet.Math.Distributions
             }
             else
             {
-                double b = x + 1.0 - a_;
-                double c = double.MaxValue;
-                double d = 1.0 / b;
-                double h = d;
-                for (int n = 1; n <= 100; n++)
+                var b = x + 1.0 - a_;
+                var c = double.MaxValue;
+                var d = 1.0 / b;
+                var h = d;
+                for (var n = 1; n <= 100; n++)
                 {
-                    double an = -1.0 * n * (n - a_);
+                    var an = -1.0 * n * (n - a_);
                     b += 2.0;
                     d = an * d + b;
                     if (System.Math.Abs(d) < Const.QL_EPSILON)
@@ -179,7 +179,7 @@ namespace QLNet.Math.Distributions
                     if (System.Math.Abs(c) < Const.QL_EPSILON)
                         c = Const.QL_EPSILON;
                     d = 1.0 / d;
-                    double del = d * c;
+                    var del = d * c;
                     h *= del;
                     if (System.Math.Abs(del - 1.0) < Const.QL_EPSILON)
                         return 1.0 - h * System.Math.Exp(-x + a_ * System.Math.Log(x) - gln);

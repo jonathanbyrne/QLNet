@@ -22,7 +22,7 @@ using System.Collections.Generic;
 namespace QLNet.Math.Interpolations
 {
 
-    public class KernelInterpolationImpl<Kernel> : Interpolation.templateImpl where Kernel : IKernelFunction
+    [JetBrains.Annotations.PublicAPI] public class KernelInterpolationImpl<Kernel> : Interpolation.templateImpl where Kernel : IKernelFunction
     {
         public KernelInterpolationImpl(List<double> xBegin, int size, List<double> yBegin, Kernel kernel)
            : base(xBegin, size, yBegin)
@@ -42,8 +42,8 @@ namespace QLNet.Math.Interpolations
 
         public override double value(double x)
         {
-            double res = 0.0;
-            for (int i = 0; i < xSize_; ++i)
+            var res = 0.0;
+            for (var i = 0; i < xSize_; ++i)
             {
                 res += alphaVec_[i] * kernelAbs(x, xBegin_[i]);
             }
@@ -75,13 +75,13 @@ namespace QLNet.Math.Interpolations
 
         public void setInverseResultPrecision(double invPrec) { invPrec_ = invPrec; }
 
-        private double kernelAbs(double x1, double x2) { return kernel_.value(System.Math.Abs(x1 - x2)); }
+        private double kernelAbs(double x1, double x2) => kernel_.value(System.Math.Abs(x1 - x2));
 
         private double gammaFunc(double x)
         {
-            double res = 0.0;
+            var res = 0.0;
 
-            for (int i = 0; i < xSize_; ++i)
+            for (var i = 0; i < xSize_; ++i)
             {
                 res += kernelAbs(x, xBegin_[i]);
             }
@@ -94,15 +94,15 @@ namespace QLNet.Math.Interpolations
             // fixed pillars+values
 
             // Write Matrix M
-            double tmp = 0.0;
+            var tmp = 0.0;
 
-            for (int rowIt = 0; rowIt < xSize_; ++rowIt)
+            for (var rowIt = 0; rowIt < xSize_; ++rowIt)
             {
 
                 yVec_[rowIt] = yBegin_[rowIt];
                 tmp = 1.0 / gammaFunc(xBegin_[rowIt]);
 
-                for (int colIt = 0; colIt < xSize_; ++colIt)
+                for (var colIt = 0; colIt < xSize_; ++colIt)
                 {
                     M_[rowIt, colIt] = kernelAbs(xBegin_[rowIt],
                                                  xBegin_[colIt]) * tmp;
@@ -114,10 +114,10 @@ namespace QLNet.Math.Interpolations
 
             // check if inversion worked up to a reasonable precision.
             // I've chosen not to check determinant(M_)!=0 before solving
-            Vector test = M_ * alphaVec_;
-            Vector diffVec = Vector.Abs(M_ * alphaVec_ - yVec_);
+            var test = M_ * alphaVec_;
+            var diffVec = Vector.Abs(M_ * alphaVec_ - yVec_);
 
-            for (int i = 0; i < diffVec.size(); ++i)
+            for (var i = 0; i < diffVec.size(); ++i)
             {
                 Utils.QL_REQUIRE(diffVec[i] < invPrec_, () =>
                                  "Inversion failed in 1d kernel interpolation");
@@ -141,7 +141,7 @@ namespace QLNet.Math.Interpolations
        The kernel in the implementation is kept general, although a Gaussian
        is considered in the cited text.
     */
-    public class KernelInterpolation : Interpolation
+    [JetBrains.Annotations.PublicAPI] public class KernelInterpolation : Interpolation
     {
 
         /*! \pre the \f$ x \f$ values must be sorted.

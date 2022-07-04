@@ -44,18 +44,12 @@ namespace QLNet.Termstructures.Inflation
         If seasonality is additive then both swap rates will show
         affects.  Additive seasonality is not implemented.
     */
-    public class Seasonality
+    [JetBrains.Annotations.PublicAPI] public class Seasonality
     {
         // Seasonality interface
-        public virtual double correctZeroRate(Date d, double r, InflationTermStructure iTS)
-        {
-            return 0;
-        }
+        public virtual double correctZeroRate(Date d, double r, InflationTermStructure iTS) => 0;
 
-        public virtual double correctYoYRate(Date d, double r, InflationTermStructure iTS)
-        {
-            return 0;
-        }
+        public virtual double correctYoYRate(Date d, double r, InflationTermStructure iTS) => 0;
 
         /*! It is possible for multi-year seasonalities to be
             inconsistent with the inflation term structure they are
@@ -67,10 +61,7 @@ namespace QLNet.Termstructures.Inflation
             Alternatively, the seasonality can be set _before_ the
             inflation curve is bootstrapped.
         */
-        public virtual bool isConsistent(InflationTermStructure iTS)
-        {
-            return true;
-        }
+        public virtual bool isConsistent(InflationTermStructure iTS) => true;
     }
 
     //! Multiplicative seasonality in the price index (CPI/RPI/HICP/etc).
@@ -112,7 +103,7 @@ namespace QLNet.Termstructures.Inflation
       (or less).
     */
 
-    public class MultiplicativePriceSeasonality : Seasonality
+    [JetBrains.Annotations.PublicAPI] public class MultiplicativePriceSeasonality : Seasonality
     {
         private Date seasonalityBaseDate_;
         private Frequency frequency_;
@@ -136,7 +127,7 @@ namespace QLNet.Termstructures.Inflation
             frequency_ = frequency;
             seasonalityFactors_ = new List<double>(seasonalityFactors.Count);
 
-            for (int i = 0; i < seasonalityFactors.Count; i++)
+            for (var i = 0; i < seasonalityFactors.Count; i++)
             {
                 seasonalityFactors_.Add(seasonalityFactors[i]);
             }
@@ -146,17 +137,20 @@ namespace QLNet.Termstructures.Inflation
         }
 
         //! inspectors
-        public virtual Date seasonalityBaseDate() { return seasonalityBaseDate_; }
-        public virtual Frequency frequency() { return frequency_; }
-        public virtual List<double> seasonalityFactors() { return seasonalityFactors_; }
+        public virtual Date seasonalityBaseDate() => seasonalityBaseDate_;
+
+        public virtual Frequency frequency() => frequency_;
+
+        public virtual List<double> seasonalityFactors() => seasonalityFactors_;
+
         //! The factor returned is NOT normalized relative to ANYTHING.
         public virtual double seasonalityFactor(Date to)
         {
-            Date from = seasonalityBaseDate();
-            Frequency factorFrequency = frequency();
-            int nFactors = seasonalityFactors().Count;
-            Period factorPeriod = new Period(factorFrequency);
-            int which = 0;
+            var from = seasonalityBaseDate();
+            var factorFrequency = frequency();
+            var nFactors = seasonalityFactors().Count;
+            var factorPeriod = new Period(factorFrequency);
+            var which = 0;
             if (from == to)
             {
                 which = 0;
@@ -164,11 +158,11 @@ namespace QLNet.Termstructures.Inflation
             else
             {
                 // days, weeks, months, years are the only time unit possibilities
-                int diffDays = System.Math.Abs(to - from);  // in days
-                int dir = 1;
+                var diffDays = System.Math.Abs(to - from);  // in days
+                var dir = 1;
                 if (from > to)
                     dir = -1;
-                int diff = 0;
+                var diff = 0;
                 if (factorPeriod.units() == TimeUnit.Days)
                 {
                     diff = dir * diffDays;
@@ -179,9 +173,9 @@ namespace QLNet.Termstructures.Inflation
                 }
                 else if (factorPeriod.units() == TimeUnit.Months)
                 {
-                    KeyValuePair<Date, Date> lim = Utils.inflationPeriod(to, factorFrequency);
+                    var lim = Utils.inflationPeriod(to, factorFrequency);
                     diff = diffDays / (31 * factorPeriod.length());
-                    Date go = from + dir * diff * factorPeriod;
+                    var go = from + dir * diff * factorPeriod;
                     while (!(lim.Key <= go && go <= lim.Value))
                     {
                         go += dir * factorPeriod;
@@ -214,16 +208,16 @@ namespace QLNet.Termstructures.Inflation
         // Seasonality interface
         public override double correctZeroRate(Date d, double r, InflationTermStructure iTS)
         {
-            KeyValuePair<Date, Date> lim = Utils.inflationPeriod(iTS.baseDate(), iTS.frequency());
-            Date curveBaseDate = lim.Value;
+            var lim = Utils.inflationPeriod(iTS.baseDate(), iTS.frequency());
+            var curveBaseDate = lim.Value;
             return seasonalityCorrection(r, d, iTS.dayCounter(), curveBaseDate, true);
 
         }
 
         public override double correctYoYRate(Date d, double r, InflationTermStructure iTS)
         {
-            KeyValuePair<Date, Date> lim = Utils.inflationPeriod(iTS.baseDate(), iTS.frequency());
-            Date curveBaseDate = lim.Value;
+            var lim = Utils.inflationPeriod(iTS.baseDate(), iTS.frequency());
+            var curveBaseDate = lim.Value;
             return seasonalityCorrection(r, d, iTS.dayCounter(), curveBaseDate, false);
         }
 
@@ -239,16 +233,16 @@ namespace QLNet.Termstructures.Inflation
                 return true;
 
             // how many years do you need to test?
-            int nTest = seasonalityFactors().Count / (int)frequency();
+            var nTest = seasonalityFactors().Count / (int)frequency();
             // ... relative to the start of the inflation curve
-            KeyValuePair<Date, Date> lim = Utils.inflationPeriod(iTS.baseDate(), iTS.frequency());
-            Date curveBaseDate = lim.Value;
-            double factorBase = seasonalityFactor(curveBaseDate);
+            var lim = Utils.inflationPeriod(iTS.baseDate(), iTS.frequency());
+            var curveBaseDate = lim.Value;
+            var factorBase = seasonalityFactor(curveBaseDate);
 
-            double eps = 0.00001;
-            for (int i = 1; i < nTest; i++)
+            var eps = 0.00001;
+            for (var i = 1; i < nTest; i++)
             {
-                double factorAt = seasonalityFactor(curveBaseDate + new Period(i, TimeUnit.Years));
+                var factorAt = seasonalityFactor(curveBaseDate + new Period(i, TimeUnit.Years));
                 Utils.QL_REQUIRE(System.Math.Abs(factorAt - factorBase) < eps, () =>
                                  "seasonality is inconsistent with inflation " +
                                  "term structure, factors " + factorBase + " and later factor "
@@ -290,20 +284,20 @@ namespace QLNet.Termstructures.Inflation
             // i.e. for ZERO inflation rates you have the true fixing at the curve base so this factor must be normalized to one
             //      for YoY inflation rates your reference point is the year before
 
-            double factorAt = seasonalityFactor(atDate);
+            var factorAt = seasonalityFactor(atDate);
 
             //Getting seasonality correction for either ZC or YoY
             double f;
             if (isZeroRate)
             {
-                double factorBase = seasonalityFactor(curveBaseDate);
-                double seasonalityAt = factorAt / factorBase;
-                double timeFromCurveBase = dc.yearFraction(curveBaseDate, atDate);
+                var factorBase = seasonalityFactor(curveBaseDate);
+                var seasonalityAt = factorAt / factorBase;
+                var timeFromCurveBase = dc.yearFraction(curveBaseDate, atDate);
                 f = System.Math.Pow(seasonalityAt, 1 / timeFromCurveBase);
             }
             else
             {
-                double factor1Ybefore = seasonalityFactor(atDate - new Period(1, TimeUnit.Years));
+                var factor1Ybefore = seasonalityFactor(atDate - new Period(1, TimeUnit.Years));
                 f = factorAt / factor1Ybefore;
             }
 
@@ -311,7 +305,7 @@ namespace QLNet.Termstructures.Inflation
         }
     }
 
-    public class KerkhofSeasonality : MultiplicativePriceSeasonality
+    [JetBrains.Annotations.PublicAPI] public class KerkhofSeasonality : MultiplicativePriceSeasonality
     {
         public KerkhofSeasonality(Date seasonalityBaseDate, List<double> seasonalityFactors)
            : base(seasonalityBaseDate, Frequency.Monthly, seasonalityFactors)
@@ -319,16 +313,16 @@ namespace QLNet.Termstructures.Inflation
 
         public override double seasonalityFactor(Date to)
         {
-            int dir = 1;
-            Date from = seasonalityBaseDate();
-            int fromMonth = from.month();
-            int toMonth = to.month();
+            var dir = 1;
+            var from = seasonalityBaseDate();
+            var fromMonth = from.month();
+            var toMonth = to.month();
 
-            Period factorPeriod = new Period(frequency());
+            var factorPeriod = new Period(frequency());
 
             if (toMonth < fromMonth)
             {
-                int dummy = fromMonth;
+                var dummy = fromMonth;
                 fromMonth = toMonth;
                 toMonth = dummy;
                 dir = 0; // We calculate invers Factor in loop
@@ -339,8 +333,8 @@ namespace QLNet.Termstructures.Inflation
                              "12 monthly seasonal factors needed for Kerkhof Seasonality:" +
                              " got " + seasonalityFactors().Count);
 
-            double seasonalCorrection = 1.0;
-            for (int i = fromMonth; i < toMonth; i++)
+            var seasonalCorrection = 1.0;
+            for (var i = fromMonth; i < toMonth; i++)
             {
                 seasonalCorrection *= seasonalityFactors()[i];
             }
@@ -356,14 +350,14 @@ namespace QLNet.Termstructures.Inflation
 
         protected override double seasonalityCorrection(double rate, Date atDate, DayCounter dc, Date curveBaseDate, bool isZeroRate)
         {
-            double indexFactor = seasonalityFactor(atDate);
+            var indexFactor = seasonalityFactor(atDate);
 
             // Getting seasonality correction
             double f = 0;
             if (isZeroRate)
             {
-                KeyValuePair<Date, Date> lim = Utils.inflationPeriod(curveBaseDate, Frequency.Monthly);
-                double timeFromCurveBase = dc.yearFraction(lim.Key, atDate);
+                var lim = Utils.inflationPeriod(curveBaseDate, Frequency.Monthly);
+                var timeFromCurveBase = dc.yearFraction(lim.Key, atDate);
                 f = System.Math.Pow(indexFactor, 1 / timeFromCurveBase);
             }
             else

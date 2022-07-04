@@ -22,7 +22,7 @@ using System;
 
 namespace QLNet.legacy.libormarketmodels
 {
-    public class LfmCovarianceProxy : LfmCovarianceParameterization
+    [JetBrains.Annotations.PublicAPI] public class LfmCovarianceProxy : LfmCovarianceParameterization
     {
         public LmVolatilityModel volaModel { get; set; }
         public LmCorrelationModel corrModel { get; set; }
@@ -40,28 +40,19 @@ namespace QLNet.legacy.libormarketmodels
                              "different size for the volatility (" + volaModel_.size() + ") and correlation (" + corrModel_.size() + ") models");
         }
 
-        public LmVolatilityModel volatilityModel()
-        {
-            return volaModel_;
-        }
+        public LmVolatilityModel volatilityModel() => volaModel_;
 
-        public LmCorrelationModel correlationModel()
-        {
-            return corrModel_;
-        }
+        public LmCorrelationModel correlationModel() => corrModel_;
 
-        public override Matrix diffusion(double t)
-        {
-            return diffusion(t, null);
-        }
+        public override Matrix diffusion(double t) => diffusion(t, null);
 
         public override Matrix diffusion(double t, Vector x)
         {
-            Matrix pca = corrModel_.pseudoSqrt(t, x);
-            Vector vol = volaModel_.volatility(t, x);
-            for (int i = 0; i < size_; ++i)
+            var pca = corrModel_.pseudoSqrt(t, x);
+            var vol = volaModel_.volatility(t, x);
+            for (var i = 0; i < size_; ++i)
             {
-                for (int j = 0; j < size_; ++j)
+                for (var j = 0; j < size_; ++j)
                     pca[i, j] = pca[i, j] * vol[i];
             }
             return pca;
@@ -69,13 +60,13 @@ namespace QLNet.legacy.libormarketmodels
 
         public override Matrix covariance(double t, Vector x)
         {
-            Vector volatility = volaModel_.volatility(t, x);
-            Matrix correlation = corrModel_.correlation(t, x);
+            var volatility = volaModel_.volatility(t, x);
+            var correlation = corrModel_.correlation(t, x);
 
-            Matrix tmp = new Matrix(size_, size_);
-            for (int i = 0; i < size_; ++i)
+            var tmp = new Matrix(size_, size_);
+            for (var i = 0; i < size_; ++i)
             {
-                for (int j = 0; j < size_; ++j)
+                for (var j = 0; j < size_; ++j)
                 {
                     tmp[i, j] = volatility[i] * correlation[i, j] * volatility[j];
                 }
@@ -83,10 +74,7 @@ namespace QLNet.legacy.libormarketmodels
             return tmp;
         }
 
-        public double integratedCovariance(int i, int j, double t)
-        {
-            return integratedCovariance(i, j, t, new Vector());
-        }
+        public double integratedCovariance(int i, int j, double t) => integratedCovariance(i, j, t, new Vector());
 
         public double integratedCovariance(int i, int j, double t, Vector x)
         {
@@ -116,11 +104,11 @@ namespace QLNet.legacy.libormarketmodels
             {
             }
 
-            double tmp = 0.0;
-            VarProxy_Helper helper = new VarProxy_Helper(this, i, j);
+            var tmp = 0.0;
+            var helper = new VarProxy_Helper(this, i, j);
 
-            GaussKronrodAdaptive integrator = new GaussKronrodAdaptive(1e-10, 10000);
-            for (int k = 0; k < 64; ++k)
+            var integrator = new GaussKronrodAdaptive(1e-10, 10000);
+            for (var k = 0; k < 64; ++k)
             {
                 tmp += integrator.value(helper.value, k * t / 64.0, (k + 1) * t / 64.0);
             }
@@ -128,7 +116,7 @@ namespace QLNet.legacy.libormarketmodels
         }
     }
 
-    public class VarProxy_Helper
+    [JetBrains.Annotations.PublicAPI] public class VarProxy_Helper
     {
         private int i_, j_;
         public LmVolatilityModel volaModel_ { get; set; }

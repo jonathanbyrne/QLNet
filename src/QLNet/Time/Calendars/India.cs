@@ -61,7 +61,7 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    public class India : Calendar
+    [JetBrains.Annotations.PublicAPI] public class India : Calendar
     {
         public India() : base(Impl.Singleton) { }
 
@@ -70,14 +70,15 @@ namespace QLNet.Time.Calendars
             public static readonly Impl Singleton = new Impl();
             private Impl() { }
 
-            public override string name() { return "National Stock Exchange of India"; }
+            public override string name() => "National Stock Exchange of India";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
 
                 if (isWeekend(w)
                     // Republic Day

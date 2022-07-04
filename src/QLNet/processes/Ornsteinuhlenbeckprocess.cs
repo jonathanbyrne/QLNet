@@ -28,7 +28,7 @@ namespace QLNet.processes
 
         \ingroup processes
     */
-    public class OrnsteinUhlenbeckProcess : StochasticProcess1D
+    [JetBrains.Annotations.PublicAPI] public class OrnsteinUhlenbeckProcess : StochasticProcess1D
     {
         public OrnsteinUhlenbeckProcess(double speed, double vol, double x0 = 0.0, double level = 0.0)
         {
@@ -41,38 +41,22 @@ namespace QLNet.processes
             Utils.QL_REQUIRE(volatility_ >= 0.0, () => "negative volatility given");
         }
         // StochasticProcess interface
-        public override double x0()
-        {
-            return x0_;
-        }
-        public double speed()
-        {
-            return speed_;
-        }
-        public double volatility()
-        {
-            return volatility_;
-        }
-        public double level()
-        {
-            return level_;
-        }
-        public override double drift(double UnnamedParameter1, double x)
-        {
-            return speed_ * (level_ - x);
-        }
-        public override double diffusion(double UnnamedParameter1, double UnnamedParameter2)
-        {
-            return volatility_;
-        }
-        public override double expectation(double UnnamedParameter1, double x0, double dt)
-        {
-            return level_ + (x0 - level_) * System.Math.Exp(-speed_ * dt);
-        }
-        public override double stdDeviation(double t, double x0, double dt)
-        {
-            return System.Math.Sqrt(variance(t, x0, dt));
-        }
+        public override double x0() => x0_;
+
+        public double speed() => speed_;
+
+        public double volatility() => volatility_;
+
+        public double level() => level_;
+
+        public override double drift(double UnnamedParameter1, double x) => speed_ * (level_ - x);
+
+        public override double diffusion(double UnnamedParameter1, double UnnamedParameter2) => volatility_;
+
+        public override double expectation(double UnnamedParameter1, double x0, double dt) => level_ + (x0 - level_) * System.Math.Exp(-speed_ * dt);
+
+        public override double stdDeviation(double t, double x0, double dt) => System.Math.Sqrt(variance(t, x0, dt));
+
         public override double variance(double UnnamedParameter1, double UnnamedParameter2, double dt)
         {
             if (speed_ < System.Math.Sqrt(Const.QL_EPSILON))

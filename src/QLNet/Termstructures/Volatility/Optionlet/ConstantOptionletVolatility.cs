@@ -24,7 +24,7 @@ using QLNet.Time;
 namespace QLNet.Termstructures.Volatility.Optionlet
 {
     //! Constant caplet volatility, no time-strike dependence
-    public class ConstantOptionletVolatility : OptionletVolatilityStructure
+    [JetBrains.Annotations.PublicAPI] public class ConstantOptionletVolatility : OptionletVolatilityStructure
     {
         private Handle<Quote> volatility_;
 
@@ -65,26 +65,24 @@ namespace QLNet.Termstructures.Volatility.Optionlet
         }
 
 
-        public override Date maxDate() { return Date.maxDate(); }
-        public override double minStrike() { return double.MinValue; }
-        public override double maxStrike() { return double.MaxValue; }
+        public override Date maxDate() => Date.maxDate();
+
+        public override double minStrike() => double.MinValue;
+
+        public override double maxStrike() => double.MaxValue;
 
         protected override SmileSection smileSectionImpl(Date d)
         {
-            double atmVol = volatility_.link.value();
+            var atmVol = volatility_.link.value();
             return new FlatSmileSection(d, atmVol, dayCounter(), referenceDate());
         }
 
         protected override SmileSection smileSectionImpl(double optionTime)
         {
-            double atmVol = volatility_.link.value();
+            var atmVol = volatility_.link.value();
             return new FlatSmileSection(optionTime, atmVol, dayCounter());
         }
 
-        protected override double volatilityImpl(double d1, double d2)
-        {
-            return volatility_.link.value();
-        }
-
+        protected override double volatilityImpl(double d1, double d2) => volatility_.link.value();
     }
 }

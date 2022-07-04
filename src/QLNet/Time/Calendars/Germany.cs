@@ -107,7 +107,7 @@ namespace QLNet.Time.Calendars
         \test the correctness of the returned results is tested
               against a list of known holidays.
     */
-    public class Germany : Calendar
+    [JetBrains.Annotations.PublicAPI] public class Germany : Calendar
     {
         //! German calendars
         public enum Market
@@ -152,14 +152,15 @@ namespace QLNet.Time.Calendars
             public static readonly Settlement Singleton = new Settlement();
             private Settlement() { }
 
-            public override string name() { return "German settlement"; }
+            public override string name() => "German settlement";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
 
                 if (isWeekend(w)
                     // New Year's Day
@@ -193,14 +194,15 @@ namespace QLNet.Time.Calendars
             public static readonly FrankfurtStockExchange Singleton = new FrankfurtStockExchange();
             private FrankfurtStockExchange() { }
 
-            public override string name() { return "Frankfurt stock exchange"; }
+            public override string name() => "Frankfurt stock exchange";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
 
                 if (isWeekend(w)
                     // New Year's Day
@@ -226,14 +228,15 @@ namespace QLNet.Time.Calendars
             public static readonly Xetra Singleton = new Xetra();
             private Xetra() { }
 
-            public override string name() { return "Xetra"; }
+            public override string name() => "Xetra";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
 
                 if (isWeekend(w)
                     // New Year's Day
@@ -259,14 +262,15 @@ namespace QLNet.Time.Calendars
             public static readonly Eurex Singleton = new Eurex();
             private Eurex() { }
 
-            public override string name() { return "Eurex"; }
+            public override string name() => "Eurex";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
 
                 if (isWeekend(w)
                     // New Year's Day
@@ -294,14 +298,15 @@ namespace QLNet.Time.Calendars
             public static readonly Euwax Singleton = new Euwax();
             private Euwax() { }
 
-            public override string name() { return "Euwax"; }
+            public override string name() => "Euwax";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
 
                 if (w == DayOfWeek.Saturday || w == DayOfWeek.Sunday
                     // New Year's Day

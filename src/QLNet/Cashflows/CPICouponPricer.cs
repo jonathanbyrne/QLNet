@@ -27,7 +27,7 @@ namespace QLNet.Cashflows
     /*! \note this pricer can already do swaplets but to get
               volatility-dependent coupons you need to implement the descendents.
     */
-    public class CPICouponPricer : InflationCouponPricer
+    [JetBrains.Annotations.PublicAPI] public class CPICouponPricer : InflationCouponPricer
     {
         public CPICouponPricer(Handle<CPIVolatilitySurface> capletVol = null)
         {
@@ -40,10 +40,7 @@ namespace QLNet.Cashflows
                 capletVol_.registerWith(update);
         }
 
-        public virtual Handle<CPIVolatilitySurface> capletVolatility()
-        {
-            return capletVol_;
-        }
+        public virtual Handle<CPIVolatilitySurface> capletVolatility() => capletVol_;
 
         public virtual void setCapletVolatility(Handle<CPIVolatilitySurface> capletVol)
         {
@@ -56,35 +53,30 @@ namespace QLNet.Cashflows
         // InflationCouponPricer interface
         public override double swapletPrice()
         {
-            double swapletPrice = adjustedFixing() * coupon_.accrualPeriod() * discount_;
+            var swapletPrice = adjustedFixing() * coupon_.accrualPeriod() * discount_;
             return gearing_ * swapletPrice + spreadLegValue_;
         }
-        public override double swapletRate()
-        {
+        public override double swapletRate() =>
             // This way we do not require the index to have
             // a yield curve, i.e. we do not get the problem
             // that a discounting-instrument-pricer is used
             // with a different yield curve
-            return gearing_ * adjustedFixing() + spread_;
-        }
+            gearing_ * adjustedFixing() + spread_;
+
         public override double capletPrice(double effectiveCap)
         {
-            double capletPrice = optionletPrice(QLNet.Option.Type.Call, effectiveCap);
+            var capletPrice = optionletPrice(QLNet.Option.Type.Call, effectiveCap);
             return gearing_ * capletPrice;
         }
-        public override double capletRate(double effectiveCap)
-        {
-            return capletPrice(effectiveCap) / (coupon_.accrualPeriod() * discount_);
-        }
+        public override double capletRate(double effectiveCap) => capletPrice(effectiveCap) / (coupon_.accrualPeriod() * discount_);
+
         public override double floorletPrice(double effectiveFloor)
         {
-            double floorletPrice = optionletPrice(QLNet.Option.Type.Put, effectiveFloor);
+            var floorletPrice = optionletPrice(QLNet.Option.Type.Put, effectiveFloor);
             return gearing_ * floorletPrice;
         }
-        public override double floorletRate(double effectiveFloor)
-        {
-            return floorletPrice(effectiveFloor) / (coupon_.accrualPeriod() * discount_);
-        }
+        public override double floorletRate(double effectiveFloor) => floorletPrice(effectiveFloor) / (coupon_.accrualPeriod() * discount_);
+
         public override void initialize(InflationCoupon coupon)
         {
             coupon_ = coupon as CPICoupon;
@@ -108,7 +100,7 @@ namespace QLNet.Cashflows
         //! can replace this if really required
         protected virtual double optionletPrice(Option.Type optionType, double effStrike)
         {
-            Date fixingDate = coupon_.fixingDate();
+            var fixingDate = coupon_.fixingDate();
             if (fixingDate <= Settings.evaluationDate())
             {
                 // the amount is determined
@@ -129,8 +121,8 @@ namespace QLNet.Cashflows
             {
                 // not yet determined, use Black/DD1/Bachelier/whatever from Impl
                 Utils.QL_REQUIRE(!capletVolatility().empty(), () => "missing optionlet volatility");
-                double stdDev = System.Math.Sqrt(capletVolatility().link.totalVariance(fixingDate, effStrike));
-                double fixing = optionletPriceImp(optionType,
+                var stdDev = System.Math.Sqrt(capletVolatility().link.totalVariance(fixingDate, effStrike));
+                var fixing = optionletPriceImp(optionType,
                                                   effStrike,
                                                   adjustedFixing(),
                                                   stdDev);

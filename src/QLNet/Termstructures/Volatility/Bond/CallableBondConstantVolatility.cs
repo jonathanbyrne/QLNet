@@ -24,7 +24,7 @@ using QLNet.Time;
 namespace QLNet.Termstructures.Volatility.Bond
 {
     //! Constant callable-bond volatility, no time-strike dependence
-    public class CallableBondConstantVolatility : CallableBondVolatilityStructure
+    [JetBrains.Annotations.PublicAPI] public class CallableBondConstantVolatility : CallableBondVolatilityStructure
     {
         public CallableBondConstantVolatility(Date referenceDate, double volatility, DayCounter dayCounter)
            : base(referenceDate)
@@ -61,28 +61,27 @@ namespace QLNet.Termstructures.Volatility.Bond
         }
 
         // TermStructure interface
-        public override DayCounter dayCounter() { return dayCounter_; }
-        public override Date maxDate() { return Date.maxDate(); }
+        public override DayCounter dayCounter() => dayCounter_;
+
+        public override Date maxDate() => Date.maxDate();
 
         // CallableBondConstantVolatility interface
-        public override Period maxBondTenor() { return maxBondTenor_; }
-        public override double maxBondLength() { return double.MaxValue; }
-        public override double minStrike() { return double.MinValue; }
-        public override double maxStrike() { return double.MaxValue; }
+        public override Period maxBondTenor() => maxBondTenor_;
 
-        protected override double volatilityImpl(double d1, double d2, double d3)
-        {
-            return volatility_.link.value();
-        }
+        public override double maxBondLength() => double.MaxValue;
+
+        public override double minStrike() => double.MinValue;
+
+        public override double maxStrike() => double.MaxValue;
+
+        protected override double volatilityImpl(double d1, double d2, double d3) => volatility_.link.value();
+
         protected override SmileSection smileSectionImpl(double optionTime, double bondLength)
         {
-            double atmVol = volatility_.link.value();
+            var atmVol = volatility_.link.value();
             return new FlatSmileSection(optionTime, atmVol, dayCounter_);
         }
-        protected override double volatilityImpl(Date d, Period p, double d1)
-        {
-            return volatility_.link.value();
-        }
+        protected override double volatilityImpl(Date d, Period p, double d1) => volatility_.link.value();
 
         private Handle<Quote> volatility_;
         private DayCounter dayCounter_;

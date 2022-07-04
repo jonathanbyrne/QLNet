@@ -26,7 +26,7 @@ namespace QLNet.Pricingengines.Bond
     /// <summary>
     /// Monte Carlo pricing engine for cat bonds
     /// </summary>
-    public class MonteCarloCatBondEngine : CatBond.Engine
+    [JetBrains.Annotations.PublicAPI] public class MonteCarloCatBondEngine : CatBond.Engine
     {
         public MonteCarloCatBondEngine(CatRisk catRisk,
                                        Handle<YieldTermStructure> discountCurve,
@@ -43,7 +43,7 @@ namespace QLNet.Pricingengines.Bond
 
             results_.valuationDate = discountCurve_.link.referenceDate();
 
-            bool includeRefDateFlows = includeSettlementDateFlows_.HasValue ?
+            var includeRefDateFlows = includeSettlementDateFlows_.HasValue ?
                                        includeSettlementDateFlows_.Value :
                                        Settings.includeReferenceDateEvents;
 
@@ -74,15 +74,9 @@ namespace QLNet.Pricingengines.Bond
                        out lossProbability, out exhaustionProbability, out expectedLoss);
             }
         }
-        public Handle<YieldTermStructure> discountCurve()
-        {
-            return discountCurve_;
-        }
+        public Handle<YieldTermStructure> discountCurve() => discountCurve_;
 
-        protected double cashFlowRiskyValue(CashFlow cf, NotionalPath notionalPath)
-        {
-            return cf.amount() * notionalPath.notionalRate(cf.date()); //TODO: fix for more complicated cashflows
-        }
+        protected double cashFlowRiskyValue(CashFlow cf, NotionalPath notionalPath) => cf.amount() * notionalPath.notionalRate(cf.date()); //TODO: fix for more complicated cashflows
 
         protected double npv(bool includeSettlementDateFlows,
                              Date settlementDate,
@@ -104,14 +98,14 @@ namespace QLNet.Pricingengines.Bond
             if (npvDate == null)
                 npvDate = settlementDate;
 
-            double totalNPV = 0.0;
-            Date effectiveDate = Date.Max(arguments_.startDate, settlementDate);
-            Date maturityDate = arguments_.cashflows.Last().date();
-            CatSimulation catSimulation = catRisk_.newSimulation(effectiveDate, maturityDate);
-            List<KeyValuePair<Date, double>> eventsPath = new List<KeyValuePair<Date, double>>();
-            NotionalPath notionalPath = new NotionalPath();
-            double riskFreeNPV = pathNpv(includeSettlementDateFlows, settlementDate, notionalPath);
-            int pathCount = 0;
+            var totalNPV = 0.0;
+            var effectiveDate = Date.Max(arguments_.startDate, settlementDate);
+            var maturityDate = arguments_.cashflows.Last().date();
+            var catSimulation = catRisk_.newSimulation(effectiveDate, maturityDate);
+            var eventsPath = new List<KeyValuePair<Date, double>>();
+            var notionalPath = new NotionalPath();
+            var riskFreeNPV = pathNpv(includeSettlementDateFlows, settlementDate, notionalPath);
+            var pathCount = 0;
             while (catSimulation.nextPath(eventsPath) && pathCount < MAX_PATHS)
             {
                 arguments_.notionalRisk.updatePath(eventsPath, notionalPath);
@@ -142,12 +136,12 @@ namespace QLNet.Pricingengines.Bond
                                  Date settlementDate,
                                  NotionalPath notionalPath)
         {
-            double totalNPV = 0.0;
-            for (int i = 0; i < arguments_.cashflows.Count; ++i)
+            var totalNPV = 0.0;
+            for (var i = 0; i < arguments_.cashflows.Count; ++i)
             {
                 if (!arguments_.cashflows[i].hasOccurred(settlementDate, includeSettlementDateFlows))
                 {
-                    double amount = cashFlowRiskyValue(arguments_.cashflows[i], notionalPath);
+                    var amount = cashFlowRiskyValue(arguments_.cashflows[i], notionalPath);
                     totalNPV += amount * discountCurve_.link.discount(arguments_.cashflows[i].date());
                 }
             }

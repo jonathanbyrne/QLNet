@@ -22,7 +22,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Math.Interpolations
 {
-    public class ForwardFlatInterpolationImpl : Interpolation.templateImpl
+    [JetBrains.Annotations.PublicAPI] public class ForwardFlatInterpolationImpl : Interpolation.templateImpl
     {
         private List<double> primitive_;
 
@@ -34,9 +34,9 @@ namespace QLNet.Math.Interpolations
         public override void update()
         {
             primitive_[0] = 0.0;
-            for (int i = 1; i < size_; i++)
+            for (var i = 1; i < size_; i++)
             {
-                double dx = xBegin_[i] - xBegin_[i - 1];
+                var dx = xBegin_[i] - xBegin_[i - 1];
                 primitive_[i] = primitive_[i - 1] + dx * yBegin_[i - 1];
             }
         }
@@ -45,21 +45,22 @@ namespace QLNet.Math.Interpolations
             if (x >= xBegin_[size_ - 1])
                 return yBegin_[size_ - 1];
 
-            int i = locate(x);
+            var i = locate(x);
             return yBegin_[i];
         }
         public override double primitive(double x)
         {
-            int i = locate(x);
-            double dx = x - xBegin_[i];
+            var i = locate(x);
+            var dx = x - xBegin_[i];
             return primitive_[i] + dx * yBegin_[i];
         }
-        public override double derivative(double x) { return 0.0; }
-        public override double secondDerivative(double x) { return 0.0; }
+        public override double derivative(double x) => 0.0;
+
+        public override double secondDerivative(double x) => 0.0;
     }
 
     //! Forward-flat interpolation between discrete points
-    public class ForwardFlatInterpolation : Interpolation
+    [JetBrains.Annotations.PublicAPI] public class ForwardFlatInterpolation : Interpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public ForwardFlatInterpolation(List<double> xBegin, int size, List<double> yBegin)
@@ -70,13 +71,12 @@ namespace QLNet.Math.Interpolations
     }
 
     //! Forward-flat interpolation factory and traits
-    public class ForwardFlat : IInterpolationFactory
+    [JetBrains.Annotations.PublicAPI] public class ForwardFlat : IInterpolationFactory
     {
-        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin)
-        {
-            return new ForwardFlatInterpolation(xBegin, size, yBegin);
-        }
-        public bool global { get { return false; } }
-        public int requiredPoints { get { return 2; } }
+        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin) => new ForwardFlatInterpolation(xBegin, size, yBegin);
+
+        public bool global => false;
+
+        public int requiredPoints => 2;
     }
 }

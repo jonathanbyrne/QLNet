@@ -33,7 +33,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_OptionletStripper : IDisposable
+    [JetBrains.Annotations.PublicAPI] public class T_OptionletStripper : IDisposable
     {
         #region Initialize&Cleanup
         private SavedSettings backup;
@@ -84,7 +84,7 @@ namespace QLNet.Tests
                 calendar = new TARGET();
                 dayCounter = new Actual365Fixed();
 
-                double flatFwdRate = 0.04;
+                var flatFwdRate = 0.04;
                 yieldTermStructure.linkTo(new FlatForward(0, calendar, flatFwdRate, dayCounter));
             }
 
@@ -93,13 +93,13 @@ namespace QLNet.Tests
                 setTermStructure();
 
                 optionTenors = new InitializedList<Period>(10);
-                for (int i = 0; i < optionTenors.Count; ++i)
+                for (var i = 0; i < optionTenors.Count; ++i)
                     optionTenors[i] = new Period(i + 1, TimeUnit.Years);
 
-                double flatVol = .18;
+                var flatVol = .18;
 
                 List<Handle<Quote>> curveVHandle = new InitializedList<Handle<Quote>>(optionTenors.Count);
-                for (int i = 0; i < optionTenors.Count; ++i)
+                for (var i = 0; i < optionTenors.Count; ++i)
                     curveVHandle[i] = new Handle<Quote>(new SimpleQuote(flatVol));
 
                 flatTermVolCurve = new Handle<CapFloorTermVolCurve>(new CapFloorTermVolCurve(0, calendar, BusinessDayConvention.Following, optionTenors,
@@ -113,14 +113,14 @@ namespace QLNet.Tests
                 setTermStructure();
 
                 optionTenors = new InitializedList<Period>(10);
-                for (int i = 0; i < optionTenors.Count; ++i)
+                for (var i = 0; i < optionTenors.Count; ++i)
                     optionTenors[i] = new Period(i + 1, TimeUnit.Years);
 
                 strikes = new InitializedList<double>(10);
-                for (int j = 0; j < strikes.Count; ++j)
+                for (var j = 0; j < strikes.Count; ++j)
                     strikes[j] = (j + 1) / 100.0;
 
-                double flatVol = .18;
+                var flatVol = .18;
                 termV = new Matrix(optionTenors.Count, strikes.Count, flatVol);
                 flatTermVolSurface = new CapFloorTermVolSurface(0, calendar, BusinessDayConvention.Following,
                                                                 optionTenors, strikes, termV, dayCounter);
@@ -170,7 +170,7 @@ namespace QLNet.Tests
                 atmTermV.Add(0.14175);
                 atmTermV.Add(0.13889);
                 atmTermVolHandle = new InitializedList<Handle<Quote>>(optionTenors.Count);
-                for (int i = 0; i < optionTenors.Count; ++i)
+                for (var i = 0; i < optionTenors.Count; ++i)
                 {
                     atmTermVolHandle[i] = new Handle<Quote>(new SimpleQuote(atmTermV[i]));
                 }
@@ -247,7 +247,7 @@ namespace QLNet.Tests
             // Testing forward/forward vol stripping from flat term vol
             // surface using OptionletStripper1 class...
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
             Settings.setEvaluationDate(new Date(28, Month.October, 2013));
 
             vars.setFlatTermVolSurface();
@@ -257,32 +257,32 @@ namespace QLNet.Tests
             OptionletStripper optionletStripper1 = new OptionletStripper1(vars.flatTermVolSurface,
                                                                           iborIndex, null, vars.accuracy);
 
-            StrippedOptionletAdapter strippedOptionletAdapter = new StrippedOptionletAdapter(optionletStripper1);
+            var strippedOptionletAdapter = new StrippedOptionletAdapter(optionletStripper1);
 
-            Handle<OptionletVolatilityStructure> vol = new Handle<OptionletVolatilityStructure>(strippedOptionletAdapter);
+            var vol = new Handle<OptionletVolatilityStructure>(strippedOptionletAdapter);
 
             vol.link.enableExtrapolation();
 
-            BlackCapFloorEngine strippedVolEngine = new BlackCapFloorEngine(vars.yieldTermStructure, vol);
+            var strippedVolEngine = new BlackCapFloorEngine(vars.yieldTermStructure, vol);
 
             CapFloor cap;
-            for (int tenorIndex = 0; tenorIndex < vars.optionTenors.Count; ++tenorIndex)
+            for (var tenorIndex = 0; tenorIndex < vars.optionTenors.Count; ++tenorIndex)
             {
-                for (int strikeIndex = 0; strikeIndex < vars.strikes.Count; ++strikeIndex)
+                for (var strikeIndex = 0; strikeIndex < vars.strikes.Count; ++strikeIndex)
                 {
                     cap = new MakeCapFloor(CapFloorType.Cap, vars.optionTenors[tenorIndex], iborIndex,
                                            vars.strikes[strikeIndex], new Period(0, TimeUnit.Days))
                     .withPricingEngine(strippedVolEngine);
 
-                    double priceFromStrippedVolatility = cap.NPV();
+                    var priceFromStrippedVolatility = cap.NPV();
 
                     IPricingEngine blackCapFloorEngineConstantVolatility = new BlackCapFloorEngine(vars.yieldTermStructure,
                                                                                                    vars.termV[tenorIndex, strikeIndex]);
 
                     cap.setPricingEngine(blackCapFloorEngineConstantVolatility);
-                    double priceFromConstantVolatility = cap.NPV();
+                    var priceFromConstantVolatility = cap.NPV();
 
-                    double error = System.Math.Abs(priceFromStrippedVolatility - priceFromConstantVolatility);
+                    var error = System.Math.Abs(priceFromStrippedVolatility - priceFromConstantVolatility);
                     if (error > vars.tolerance)
                         QAssert.Fail("\noption tenor:       " + vars.optionTenors[tenorIndex] +
                                      "\nstrike:             " + vars.strikes[strikeIndex] +
@@ -300,7 +300,7 @@ namespace QLNet.Tests
             // Testing forward/forward vol stripping from non-flat term
             // vol surface using OptionletStripper1 class
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
             Settings.setEvaluationDate(new Date(28, Month.October, 2013));
 
             vars.setCapFloorTermVolSurface();
@@ -309,33 +309,33 @@ namespace QLNet.Tests
 
             OptionletStripper optionletStripper1 = new OptionletStripper1(vars.capFloorVolSurface, iborIndex, null, vars.accuracy);
 
-            StrippedOptionletAdapter strippedOptionletAdapter = new StrippedOptionletAdapter(optionletStripper1);
+            var strippedOptionletAdapter = new StrippedOptionletAdapter(optionletStripper1);
 
-            Handle<OptionletVolatilityStructure> vol = new Handle<OptionletVolatilityStructure>(strippedOptionletAdapter);
+            var vol = new Handle<OptionletVolatilityStructure>(strippedOptionletAdapter);
 
             vol.link.enableExtrapolation();
 
-            BlackCapFloorEngine strippedVolEngine = new BlackCapFloorEngine(vars.yieldTermStructure, vol);
+            var strippedVolEngine = new BlackCapFloorEngine(vars.yieldTermStructure, vol);
 
             CapFloor cap;
 
-            for (int tenorIndex = 0; tenorIndex < vars.optionTenors.Count; ++tenorIndex)
+            for (var tenorIndex = 0; tenorIndex < vars.optionTenors.Count; ++tenorIndex)
             {
-                for (int strikeIndex = 0; strikeIndex < vars.strikes.Count; ++strikeIndex)
+                for (var strikeIndex = 0; strikeIndex < vars.strikes.Count; ++strikeIndex)
                 {
                     cap = new MakeCapFloor(CapFloorType.Cap, vars.optionTenors[tenorIndex], iborIndex, vars.strikes[strikeIndex],
                                            new Period(0, TimeUnit.Days))
                     .withPricingEngine(strippedVolEngine);
 
-                    double priceFromStrippedVolatility = cap.NPV();
+                    var priceFromStrippedVolatility = cap.NPV();
 
                     IPricingEngine blackCapFloorEngineConstantVolatility = new BlackCapFloorEngine(vars.yieldTermStructure,
                                                                                                    vars.termV[tenorIndex, strikeIndex]);
 
                     cap.setPricingEngine(blackCapFloorEngineConstantVolatility);
-                    double priceFromConstantVolatility = cap.NPV();
+                    var priceFromConstantVolatility = cap.NPV();
 
-                    double error = System.Math.Abs(priceFromStrippedVolatility - priceFromConstantVolatility);
+                    var error = System.Math.Abs(priceFromStrippedVolatility - priceFromConstantVolatility);
                     if (error > vars.tolerance)
                         QAssert.Fail("\noption tenor:       " + vars.optionTenors[tenorIndex] +
                                      "\nstrike:             " + vars.strikes[strikeIndex] +
@@ -353,7 +353,7 @@ namespace QLNet.Tests
             // Testing forward/forward vol stripping from flat term vol
             // surface using OptionletStripper2 class...");
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
             Settings.setEvaluationDate(Date.Today);
 
             vars.setFlatTermVolCurve();
@@ -362,38 +362,38 @@ namespace QLNet.Tests
             IborIndex iborIndex = new Euribor6M(vars.yieldTermStructure);
 
             // optionletstripper1
-            OptionletStripper1 optionletStripper1 = new OptionletStripper1(vars.flatTermVolSurface,
+            var optionletStripper1 = new OptionletStripper1(vars.flatTermVolSurface,
                                                                            iborIndex, null, vars.accuracy);
 
-            StrippedOptionletAdapter strippedOptionletAdapter1 = new StrippedOptionletAdapter(optionletStripper1);
+            var strippedOptionletAdapter1 = new StrippedOptionletAdapter(optionletStripper1);
 
-            Handle<OptionletVolatilityStructure> vol1 = new Handle<OptionletVolatilityStructure>(strippedOptionletAdapter1);
+            var vol1 = new Handle<OptionletVolatilityStructure>(strippedOptionletAdapter1);
 
             vol1.link.enableExtrapolation();
 
             // optionletstripper2
             OptionletStripper optionletStripper2 = new OptionletStripper2(optionletStripper1, vars.flatTermVolCurve);
 
-            StrippedOptionletAdapter strippedOptionletAdapter2 = new StrippedOptionletAdapter(optionletStripper2);
+            var strippedOptionletAdapter2 = new StrippedOptionletAdapter(optionletStripper2);
 
-            Handle<OptionletVolatilityStructure> vol2 = new Handle<OptionletVolatilityStructure>(strippedOptionletAdapter2);
+            var vol2 = new Handle<OptionletVolatilityStructure>(strippedOptionletAdapter2);
 
             vol2.link.enableExtrapolation();
 
             // consistency check: diff(stripped vol1-stripped vol2)
-            for (int strikeIndex = 0; strikeIndex < vars.strikes.Count; ++strikeIndex)
+            for (var strikeIndex = 0; strikeIndex < vars.strikes.Count; ++strikeIndex)
             {
-                for (int tenorIndex = 0; tenorIndex < vars.optionTenors.Count; ++tenorIndex)
+                for (var tenorIndex = 0; tenorIndex < vars.optionTenors.Count; ++tenorIndex)
                 {
 
-                    double strippedVol1 = vol1.link.volatility(vars.optionTenors[tenorIndex], vars.strikes[strikeIndex], true);
+                    var strippedVol1 = vol1.link.volatility(vars.optionTenors[tenorIndex], vars.strikes[strikeIndex], true);
 
-                    double strippedVol2 = vol2.link.volatility(vars.optionTenors[tenorIndex], vars.strikes[strikeIndex], true);
+                    var strippedVol2 = vol2.link.volatility(vars.optionTenors[tenorIndex], vars.strikes[strikeIndex], true);
 
                     // vol from flat vol surface (for comparison only)
-                    double flatVol = vars.flatTermVolSurface.volatility(vars.optionTenors[tenorIndex], vars.strikes[strikeIndex], true);
+                    var flatVol = vars.flatTermVolSurface.volatility(vars.optionTenors[tenorIndex], vars.strikes[strikeIndex], true);
 
-                    double error = System.Math.Abs(strippedVol1 - strippedVol2);
+                    var error = System.Math.Abs(strippedVol1 - strippedVol2);
                     if (error > vars.tolerance)
                         QAssert.Fail("\noption tenor:  " + vars.optionTenors[tenorIndex] +
                                      "\nstrike:        " + vars.strikes[strikeIndex] +
@@ -413,7 +413,7 @@ namespace QLNet.Tests
             // Testing forward/forward vol stripping from non-flat term vol "
             // surface using OptionletStripper2 class...");
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
             Settings.setEvaluationDate(Date.Today);
 
             vars.setCapFloorTermVolCurve();
@@ -422,29 +422,29 @@ namespace QLNet.Tests
             IborIndex iborIndex = new Euribor6M(vars.yieldTermStructure);
 
             // optionletstripper1
-            OptionletStripper1 optionletStripper1 = new OptionletStripper1(vars.capFloorVolSurface, iborIndex, null, vars.accuracy);
-            StrippedOptionletAdapter strippedOptionletAdapter1 = new StrippedOptionletAdapter(optionletStripper1);
-            Handle<OptionletVolatilityStructure> vol1 = new Handle<OptionletVolatilityStructure>(strippedOptionletAdapter1);
+            var optionletStripper1 = new OptionletStripper1(vars.capFloorVolSurface, iborIndex, null, vars.accuracy);
+            var strippedOptionletAdapter1 = new StrippedOptionletAdapter(optionletStripper1);
+            var vol1 = new Handle<OptionletVolatilityStructure>(strippedOptionletAdapter1);
             vol1.link.enableExtrapolation();
 
             // optionletstripper2
             OptionletStripper optionletStripper2 = new OptionletStripper2(optionletStripper1, vars.capFloorVolCurve);
-            StrippedOptionletAdapter strippedOptionletAdapter2 = new StrippedOptionletAdapter(optionletStripper2);
-            Handle<OptionletVolatilityStructure> vol2 = new Handle<OptionletVolatilityStructure>(strippedOptionletAdapter2);
+            var strippedOptionletAdapter2 = new StrippedOptionletAdapter(optionletStripper2);
+            var vol2 = new Handle<OptionletVolatilityStructure>(strippedOptionletAdapter2);
             vol2.link.enableExtrapolation();
 
             // consistency check: diff(stripped vol1-stripped vol2)
-            for (int strikeIndex = 0; strikeIndex < vars.strikes.Count; ++strikeIndex)
+            for (var strikeIndex = 0; strikeIndex < vars.strikes.Count; ++strikeIndex)
             {
-                for (int tenorIndex = 0; tenorIndex < vars.optionTenors.Count; ++tenorIndex)
+                for (var tenorIndex = 0; tenorIndex < vars.optionTenors.Count; ++tenorIndex)
                 {
-                    double strippedVol1 = vol1.link.volatility(vars.optionTenors[tenorIndex], vars.strikes[strikeIndex], true);
-                    double strippedVol2 = vol2.link.volatility(vars.optionTenors[tenorIndex], vars.strikes[strikeIndex], true);
+                    var strippedVol1 = vol1.link.volatility(vars.optionTenors[tenorIndex], vars.strikes[strikeIndex], true);
+                    var strippedVol2 = vol2.link.volatility(vars.optionTenors[tenorIndex], vars.strikes[strikeIndex], true);
 
                     // vol from flat vol surface (for comparison only)
-                    double flatVol = vars.capFloorVolSurface.volatility(vars.optionTenors[tenorIndex], vars.strikes[strikeIndex], true);
+                    var flatVol = vars.capFloorVolSurface.volatility(vars.optionTenors[tenorIndex], vars.strikes[strikeIndex], true);
 
-                    double error = System.Math.Abs(strippedVol1 - strippedVol2);
+                    var error = System.Math.Abs(strippedVol1 - strippedVol2);
                     if (error > vars.tolerance)
                         QAssert.Fail("\noption tenor:  " + vars.optionTenors[tenorIndex] +
                                      "\nstrike:        " + vars.strikes[strikeIndex] +

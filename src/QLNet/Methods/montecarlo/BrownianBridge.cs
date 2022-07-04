@@ -38,13 +38,13 @@ namespace QLNet.Methods.montecarlo
 
         \ingroup mcarlo
     */
-    public class BrownianBridge
+    [JetBrains.Annotations.PublicAPI] public class BrownianBridge
     {
         private int size_;
-        public int size() { return size_; }
+        public int size() => size_;
 
         private List<double> t_;
-        public List<double> times() { return t_; }
+        public List<double> times() => t_;
 
         private List<double> sqrtdt_;
         private List<int> bridgeIndex_, leftIndex_, rightIndex_;
@@ -63,7 +63,7 @@ namespace QLNet.Methods.montecarlo
             leftWeight_ = new InitializedList<double>(size_);
             rightWeight_ = new InitializedList<double>(size_);
             stdDev_ = new InitializedList<double>(size_);
-            for (int i = 0; i < size_; ++i)
+            for (var i = 0; i < size_; ++i)
                 t_[i] = i + 1;
             initialize();
         }
@@ -97,7 +97,7 @@ namespace QLNet.Methods.montecarlo
             leftWeight_ = new InitializedList<double>(size_);
             rightWeight_ = new InitializedList<double>(size_);
             stdDev_ = new InitializedList<double>(size_);
-            for (int i = 0; i < size_; ++i)
+            for (var i = 0; i < size_; ++i)
                 t_[i] = timeGrid[i + 1];
             initialize();
         }
@@ -106,7 +106,7 @@ namespace QLNet.Methods.montecarlo
         private void initialize()
         {
             sqrtdt_[0] = System.Math.Sqrt(t_[0]);
-            for (int i = 1; i < size_; ++i)
+            for (var i = 1; i < size_; ++i)
                 sqrtdt_[i] = System.Math.Sqrt(t_[i] - t_[i - 1]);
 
             // map is used to indicate which points are already constructed.
@@ -128,12 +128,12 @@ namespace QLNet.Methods.montecarlo
                 // Find the next unpopulated entry in the map.
                 while (map[j] != 0)
                     ++j;
-                int k = j;
+                var k = j;
                 // Find the next populated entry in the map from there.
                 while (map[k] == 0)
                     ++k;
                 // l-1 is now the index of the point to be constructed next.
-                int l = j + (k - 1 - j >> 1);
+                var l = j + (k - 1 - j >> 1);
                 map[l] = i;
                 // The i-th Gaussian variate will be used to set point l-1.
                 bridgeIndex_[i] = l;
@@ -166,11 +166,11 @@ namespace QLNet.Methods.montecarlo
             Utils.QL_REQUIRE(begin.Count == size_, () => "incompatible sequence size");
             // We use output to store the path...
             output[size_ - 1] = stdDev_[0] * begin[0];
-            for (int i = 1; i < size_; ++i)
+            for (var i = 1; i < size_; ++i)
             {
-                int j = leftIndex_[i];
-                int k = rightIndex_[i];
-                int l = bridgeIndex_[i];
+                var j = leftIndex_[i];
+                var k = rightIndex_[i];
+                var l = bridgeIndex_[i];
                 if (j != 0)
                 {
                     output[l] =
@@ -187,7 +187,7 @@ namespace QLNet.Methods.montecarlo
             }
             // ...after which, we calculate the variations and
             // normalize to unit times
-            for (int i = size_ - 1; i >= 1; --i)
+            for (var i = size_ - 1; i >= 1; --i)
             {
                 output[i] -= output[i - 1];
                 output[i] /= sqrtdt_[i];

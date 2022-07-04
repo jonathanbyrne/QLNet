@@ -24,7 +24,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Math.Interpolations
 {
-    public class LogInterpolationImpl<Interpolator> : Interpolation.templateImpl
+    [JetBrains.Annotations.PublicAPI] public class LogInterpolationImpl<Interpolator> : Interpolation.templateImpl
       where Interpolator : IInterpolationFactory, new()
     {
         private List<double> logY_;
@@ -43,7 +43,7 @@ namespace QLNet.Math.Interpolations
 
         public override void update()
         {
-            for (int i = 0; i < size_; ++i)
+            for (var i = 0; i < size_; ++i)
             {
                 Utils.QL_REQUIRE(yBegin_[i] > 0.0, () => "invalid value (" + yBegin_[i] + ") at index " + i);
                 logY_[i] = System.Math.Log(yBegin_[i]);
@@ -51,55 +51,29 @@ namespace QLNet.Math.Interpolations
             interpolation_.update();
         }
 
-        public override double value(double x)
-        {
-            return System.Math.Exp(interpolation_.value(x, true));
-        }
+        public override double value(double x) => System.Math.Exp(interpolation_.value(x, true));
 
-        public override double primitive(double x)
-        {
-            throw new NotImplementedException("LogInterpolation primitive not implemented");
-        }
+        public override double primitive(double x) => throw new NotImplementedException("LogInterpolation primitive not implemented");
 
-        public override double derivative(double x)
-        {
-            return value(x) * interpolation_.derivative(x, true);
-        }
+        public override double derivative(double x) => value(x) * interpolation_.derivative(x, true);
 
-        public override double secondDerivative(double x)
-        {
-            return derivative(x) * interpolation_.derivative(x, true) +
-                   value(x) * interpolation_.secondDerivative(x, true);
-        }
+        public override double secondDerivative(double x) =>
+            derivative(x) * interpolation_.derivative(x, true) +
+            value(x) * interpolation_.secondDerivative(x, true);
     }
 
     //! log-linear interpolation factory and traits
-    public class LogLinear : IInterpolationFactory
+    [JetBrains.Annotations.PublicAPI] public class LogLinear : IInterpolationFactory
     {
-        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin)
-        {
-            return new LogLinearInterpolation(xBegin, size, yBegin);
-        }
+        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin) => new LogLinearInterpolation(xBegin, size, yBegin);
 
-        public bool global
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool global => false;
 
-        public int requiredPoints
-        {
-            get
-            {
-                return 2;
-            }
-        }
+        public int requiredPoints => 2;
     }
 
     //! %log-linear interpolation between discrete points
-    public class LogLinearInterpolation : Interpolation
+    [JetBrains.Annotations.PublicAPI] public class LogLinearInterpolation : Interpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
 
@@ -111,7 +85,7 @@ namespace QLNet.Math.Interpolations
     }
 
     //! log-cubic interpolation factory and traits
-    public class LogCubic : IInterpolationFactory
+    [JetBrains.Annotations.PublicAPI] public class LogCubic : IInterpolationFactory
     {
         private CubicInterpolation.DerivativeApprox da_;
         private bool monotonic_;
@@ -133,31 +107,17 @@ namespace QLNet.Math.Interpolations
             rightValue_ = rightConditionValue;
         }
 
-        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin)
-        {
-            return new LogCubicInterpolation(xBegin, size, yBegin, da_, monotonic_,
-                                             leftType_, leftValue_, rightType_, rightValue_);
-        }
+        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin) =>
+            new LogCubicInterpolation(xBegin, size, yBegin, da_, monotonic_,
+                leftType_, leftValue_, rightType_, rightValue_);
 
-        public bool global
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public bool global => true;
 
-        public int requiredPoints
-        {
-            get
-            {
-                return 2;
-            }
-        }
+        public int requiredPoints => 2;
     }
 
     //! %log-cubic interpolation between discrete points
-    public class LogCubicInterpolation : Interpolation
+    [JetBrains.Annotations.PublicAPI] public class LogCubicInterpolation : Interpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
 

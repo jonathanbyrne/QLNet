@@ -26,7 +26,7 @@ namespace QLNet.Methods.Finitedifferences.Meshers
     /// <summary>
     /// One-dimensional grid mesher
     /// </summary>
-    public class FdmSimpleProcess1DMesher : Fdm1dMesher
+    [JetBrains.Annotations.PublicAPI] public class FdmSimpleProcess1DMesher : Fdm1dMesher
     {
         public FdmSimpleProcess1DMesher(int size,
                                         StochasticProcess1D process,
@@ -36,25 +36,25 @@ namespace QLNet.Methods.Finitedifferences.Meshers
         : base(size)
         {
             locations_ = new InitializedList<double>(locations_.Count, 0.0);
-            for (int l = 1; l <= tAvgSteps; ++l)
+            for (var l = 1; l <= tAvgSteps; ++l)
             {
-                double t = maturity * l / tAvgSteps;
+                var t = maturity * l / tAvgSteps;
 
-                double mp = mandatoryPoint != null ? mandatoryPoint.Value
+                var mp = mandatoryPoint != null ? mandatoryPoint.Value
                             : process.x0();
 
-                double qMin = System.Math.Min(System.Math.Min(mp, process.x0()),
+                var qMin = System.Math.Min(System.Math.Min(mp, process.x0()),
                                        process.evolve(0, process.x0(), t,
                                                       new InverseCumulativeNormal().value(epsilon)));
-                double qMax = System.Math.Max(System.Math.Max(mp, process.x0()),
+                var qMax = System.Math.Max(System.Math.Max(mp, process.x0()),
                                        process.evolve(0, process.x0(), t,
                                                       new InverseCumulativeNormal().value(1 - epsilon)));
 
-                double dp = (1 - 2 * epsilon) / (size - 1);
-                double p = epsilon;
+                var dp = (1 - 2 * epsilon) / (size - 1);
+                var p = epsilon;
                 locations_[0] += qMin;
 
-                for (int i = 1; i < size - 1; ++i)
+                for (var i = 1; i < size - 1; ++i)
                 {
                     p += dp;
                     locations_[i] += process.evolve(0, process.x0(), t,
@@ -63,7 +63,7 @@ namespace QLNet.Methods.Finitedifferences.Meshers
                 locations_[locations_.Count - 1] += qMax;
             }
             locations_ = locations_.Select(x => x / tAvgSteps).ToList();
-            for (int i = 0; i < size - 1; ++i)
+            for (var i = 0; i < size - 1; ++i)
             {
                 dminus_[i + 1] = dplus_[i] = locations_[i + 1] - locations_[i];
             }

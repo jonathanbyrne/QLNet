@@ -36,7 +36,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Bermudanswaption : IDisposable
+    [JetBrains.Annotations.PublicAPI] public class T_Bermudanswaption : IDisposable
     {
         #region Initialize&Cleanup
         private SavedSettings backup;
@@ -52,7 +52,7 @@ namespace QLNet.Tests
         }
         #endregion
 
-        public class CommonVars
+        [JetBrains.Annotations.PublicAPI] public class CommonVars
         {
             // global data
             public Date today, settlement;
@@ -96,21 +96,21 @@ namespace QLNet.Tests
             // utilities
             public VanillaSwap makeSwap(double fixedRate)
             {
-                Date start = calendar.advance(settlement, startYears, TimeUnit.Years);
-                Date maturity = calendar.advance(start, length, TimeUnit.Years);
-                Schedule fixedSchedule = new Schedule(start, maturity,
+                var start = calendar.advance(settlement, startYears, TimeUnit.Years);
+                var maturity = calendar.advance(start, length, TimeUnit.Years);
+                var fixedSchedule = new Schedule(start, maturity,
                                                       new Period(fixedFrequency),
                                                       calendar,
                                                       fixedConvention,
                                                       fixedConvention,
                                                       DateGeneration.Rule.Forward, false);
-                Schedule floatSchedule = new Schedule(start, maturity,
+                var floatSchedule = new Schedule(start, maturity,
                                                       new Period(floatingFrequency),
                                                       calendar,
                                                       floatingConvention,
                                                       floatingConvention,
                                                       DateGeneration.Rule.Forward, false);
-                VanillaSwap swap =
+                var swap =
                    new VanillaSwap(type, nominal,
                                    fixedSchedule, fixedRate, fixedDayCount,
                                    floatSchedule, index, 0.0,
@@ -126,7 +126,7 @@ namespace QLNet.Tests
 
             //("Testing Bermudan swaption against cached values...");
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             vars.today = new Date(15, Month.February, 2002);
 
@@ -138,20 +138,20 @@ namespace QLNet.Tests
                                                          0.04875825,
                                                          new Actual365Fixed()));
 
-            double atmRate = vars.makeSwap(0.0).fairRate();
+            var atmRate = vars.makeSwap(0.0).fairRate();
 
-            VanillaSwap itmSwap = vars.makeSwap(0.8 * atmRate);
-            VanillaSwap atmSwap = vars.makeSwap(atmRate);
-            VanillaSwap otmSwap = vars.makeSwap(1.2 * atmRate);
+            var itmSwap = vars.makeSwap(0.8 * atmRate);
+            var atmSwap = vars.makeSwap(atmRate);
+            var otmSwap = vars.makeSwap(1.2 * atmRate);
 
             double a = 0.048696, sigma = 0.0058904;
             ShortRateModel model = new HullWhite(vars.termStructure, a, sigma);
-            List<Date> exerciseDates = new List<Date>();
-            List<CashFlow> leg = atmSwap.fixedLeg();
+            var exerciseDates = new List<Date>();
+            var leg = atmSwap.fixedLeg();
 
-            for (int i = 0; i < leg.Count; i++)
+            for (var i = 0; i < leg.Count; i++)
             {
-                Coupon coupon = (Coupon)leg[i];
+                var coupon = (Coupon)leg[i];
                 exerciseDates.Add(coupon.accrualStartDate());
             }
 
@@ -167,9 +167,9 @@ namespace QLNet.Tests
             double itmValueFdm = 42.2091, atmValueFdm = 12.8864, otmValueFdm = 2.4437;
 #endif
 
-            double tolerance = 1.0e-4;
+            var tolerance = 1.0e-4;
 
-            Swaption swaption = new Swaption(itmSwap, exercise);
+            var swaption = new Swaption(itmSwap, exercise);
             swaption.setPricingEngine(treeEngine);
             if (System.Math.Abs(swaption.NPV() - itmValue) > tolerance)
                 QAssert.Fail("failed to reproduce cached in-the-money swaption value:\n"
@@ -208,7 +208,7 @@ namespace QLNet.Tests
                              + "calculated: " + swaption.NPV() + "\n"
                              + "expected:   " + otmValueFdm);
 
-            for (int j = 0; j < exerciseDates.Count; j++)
+            for (var j = 0; j < exerciseDates.Count; j++)
                 exerciseDates[j] = vars.calendar.adjust(exerciseDates[j] - 10);
             exercise = new BermudanExercise(exerciseDates);
 

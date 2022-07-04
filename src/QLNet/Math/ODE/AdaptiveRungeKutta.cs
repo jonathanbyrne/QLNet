@@ -30,7 +30,7 @@ namespace QLNet.Math.ODE
     /// Numerical Recipes in C, Chapter 16.2
     /// </remarks>
     /// </summary>
-    public class AdaptiveRungeKutta
+    [JetBrains.Annotations.PublicAPI] public class AdaptiveRungeKutta
     {
         public delegate List<double> OdeFct(double x, List<double> l);
 
@@ -92,17 +92,17 @@ namespace QLNet.Math.ODE
                                   double x1,
                                   double x2)
         {
-            int n = y1.Count;
-            List<double> y = new List<double>(y1);
+            var n = y1.Count;
+            var y = new List<double>(y1);
             List<double> yScale = new InitializedList<double>(n);
-            double x = x1;
-            double h = h1_ * (x1 <= x2 ? 1 : -1);
+            var x = x1;
+            var h = h1_ * (x1 <= x2 ? 1 : -1);
             double hnext = 0, hdid = 0;
 
-            for (int nstp = 1; nstp <= ADAPTIVERK_MAXSTP; nstp++)
+            for (var nstp = 1; nstp <= ADAPTIVERK_MAXSTP; nstp++)
             {
-                List<double> dydx = ode(x, y);
-                for (int i = 0; i < n; i++)
+                var dydx = ode(x, y);
+                for (var i = 0; i < n; i++)
                     yScale[i] = System.Math.Abs(y[i]) + System.Math.Abs(dydx[i] * h) + ADAPTIVERK_TINY;
                 if ((x + h - x2) * (x + h - x1) > 0.0)
                     h = x2 - x;
@@ -124,11 +124,9 @@ namespace QLNet.Math.ODE
         public double value(OdeFct1d ode,
                             double y1,
                             double x1,
-                            double x2)
-        {
-            return value(new OdeFctWrapper(ode).value,
-                         new InitializedList<double>(1, y1), x1, x2)[0];
-        }
+                            double x2) =>
+            value(new OdeFctWrapper(ode).value,
+                new InitializedList<double>(1, y1), x1, x2)[0];
 
         protected void rkqs(List<double> y,
                             List<double> dydx,
@@ -140,30 +138,30 @@ namespace QLNet.Math.ODE
                             ref double hnext,
                             OdeFct derivs)
         {
-            int n = y.Count;
+            var n = y.Count;
             double errmax, xnew;
             List<double> yerr = new InitializedList<double>(n), ytemp = new InitializedList<double>(n);
 
-            double h = htry;
+            var h = htry;
 
             for (; ; )
             {
                 rkck(y, dydx, ref x, h, ref ytemp, ref yerr, derivs);
                 errmax = 0.0;
-                for (int i = 0; i < n; i++)
+                for (var i = 0; i < n; i++)
                     errmax = System.Math.Max(errmax, System.Math.Abs(yerr[i] / yScale[i]));
                 errmax /= eps;
                 if (errmax > 1.0)
                 {
-                    double htemp1 = ADAPTIVERK_SAFETY * h * System.Math.Pow(errmax, ADAPTIVERK_PSHRINK);
-                    double htemp2 = h / 10;
+                    var htemp1 = ADAPTIVERK_SAFETY * h * System.Math.Pow(errmax, ADAPTIVERK_PSHRINK);
+                    var htemp2 = h / 10;
                     // These would be std::min and std::max, of course,
                     // but VC++14 had problems inlining them and caused
                     // the wrong results to be calculated.  The problem
                     // seems to be fixed in update 3, but let's keep this
                     // implementation for compatibility.
-                    double max_positive = htemp1 > htemp2 ? htemp1 : htemp2;
-                    double max_negative = htemp1 < htemp2 ? htemp1 : htemp2;
+                    var max_positive = htemp1 > htemp2 ? htemp1 : htemp2;
+                    var max_negative = htemp1 < htemp2 ? htemp1 : htemp2;
                     h = h >= 0.0 ? max_positive : max_negative;
                     xnew = x + h;
                     if (xnew.IsEqual(x))
@@ -178,7 +176,7 @@ namespace QLNet.Math.ODE
                     else
                         hnext = 5.0 * h;
                     x += hdid = h;
-                    for (int i = 0; i < n; i++)
+                    for (var i = 0; i < n; i++)
                         y[i] = ytemp[i];
                     break;
                 }
@@ -193,7 +191,7 @@ namespace QLNet.Math.ODE
                             ref List<double> yerr,
                             OdeFct derivs)
         {
-            int n = y.Count;
+            var n = y.Count;
             List<double> ak2 = new InitializedList<double>(n),
             ak3 = new InitializedList<double>(n),
             ak4 = new InitializedList<double>(n),
@@ -202,32 +200,32 @@ namespace QLNet.Math.ODE
             ytemp = new InitializedList<double>(n);
 
             // first step
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
                 ytemp[i] = y[i] + b21 * h * dydx[i];
 
             // second step
             ak2 = derivs(x + a2 * h, ytemp);
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
                 ytemp[i] = y[i] + h * (b31 * dydx[i] + b32 * ak2[i]);
 
             // third step
             ak3 = derivs(x + a3 * h, ytemp);
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
                 ytemp[i] = y[i] + h * (b41 * dydx[i] + b42 * ak2[i] + b43 * ak3[i]);
 
             // fourth step
             ak4 = derivs(x + a4 * h, ytemp);
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
                 ytemp[i] = y[i] + h * (b51 * dydx[i] + b52 * ak2[i] + b53 * ak3[i] + b54 * ak4[i]);
 
             // fifth step
             ak5 = derivs(x + a5 * h, ytemp);
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
                 ytemp[i] = y[i] + h * (b61 * dydx[i] + b62 * ak2[i] + b63 * ak3[i] + b64 * ak4[i] + b65 * ak5[i]);
 
             // sixth step
             ak6 = derivs(x + a6 * h, ytemp);
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
             {
                 yout[i] = y[i] + h * (c1 * dydx[i] + c3 * ak3[i] + c4 * ak4[i] + c6 * ak6[i]);
                 yerr[i] = h * (dc1 * dydx[i] + dc3 * ak3[i] + dc4 * ak4[i] + dc5 * ak5[i] + dc6 * ak6[i]);
@@ -274,7 +272,7 @@ namespace QLNet.Math.ODE
                                ADAPTIVERK_PSHRINK = -0.25,
                                ADAPTIVERK_ERRCON = 1.89E-4;
 
-        public class OdeFctWrapper
+        [JetBrains.Annotations.PublicAPI] public class OdeFctWrapper
         {
             public OdeFctWrapper(OdeFct1d ode1d)
             {

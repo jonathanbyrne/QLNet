@@ -35,86 +35,44 @@ namespace QLNet.Methods.Finitedifferences.Solvers
 
         public FdmMesher mesher
         {
-            get
-            {
-                return _mesher;
-            }
-            set
-            {
-                _mesher = value;
-            }
+            get => _mesher;
+            set => _mesher = value;
         }
 
         public FdmBoundaryConditionSet bcSet
         {
-            get
-            {
-                return _bcSet;
-            }
-            set
-            {
-                _bcSet = value;
-            }
+            get => _bcSet;
+            set => _bcSet = value;
         }
 
         public FdmStepConditionComposite condition
         {
-            get
-            {
-                return _condition;
-            }
-            set
-            {
-                _condition = value;
-            }
+            get => _condition;
+            set => _condition = value;
         }
 
         public FdmInnerValueCalculator calculator
         {
-            get
-            {
-                return _calculator;
-            }
-            set
-            {
-                _calculator = value;
-            }
+            get => _calculator;
+            set => _calculator = value;
         }
 
         public double maturity
         {
-            get
-            {
-                return _maturity;
-            }
-            set
-            {
-                _maturity = value;
-            }
+            get => _maturity;
+            set => _maturity = value;
         }
 
         public int timeSteps
         {
-            get
-            {
-                return _timeSteps;
-            }
-            set
-            {
-                _timeSteps = value;
-            }
+            get => _timeSteps;
+            set => _timeSteps = value;
         }
 
         public int dampingSteps
         {
-            get
-            {
-                return _dampingSteps;
-            }
-            set
-            {
-                _dampingSteps = value;
-            }
+            get => _dampingSteps;
+            set => _dampingSteps = value;
         }
     }
 }

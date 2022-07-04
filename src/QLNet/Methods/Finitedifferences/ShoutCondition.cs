@@ -27,7 +27,7 @@ namespace QLNet.Methods.Finitedifferences
         during the option's life. The minimum value is the option's
         intrinsic value at the shout time.
     */
-    public class ShoutCondition : CurveDependentStepCondition<Vector>
+    [JetBrains.Annotations.PublicAPI] public class ShoutCondition : CurveDependentStepCondition<Vector>
     {
         double resTime_;
         double rate_;
@@ -53,9 +53,6 @@ namespace QLNet.Methods.Finitedifferences
             base.applyTo(a, t);
         }
 
-        protected override double applyToValue(double current, double intrinsic)
-        {
-            return System.Math.Max(current, disc_ * intrinsic);
-        }
+        protected override double applyToValue(double current, double intrinsic) => System.Math.Max(current, disc_ * intrinsic);
     }
 }

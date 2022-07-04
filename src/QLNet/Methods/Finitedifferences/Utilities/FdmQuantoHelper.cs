@@ -24,7 +24,7 @@ using QLNet.Termstructures.Volatility.equityfx;
 
 namespace QLNet.Methods.Finitedifferences.Utilities
 {
-    public class FdmQuantoHelper : IObservable
+    [JetBrains.Annotations.PublicAPI] public class FdmQuantoHelper : IObservable
     {
         public FdmQuantoHelper(
            YieldTermStructure rTS,
@@ -42,32 +42,36 @@ namespace QLNet.Methods.Finitedifferences.Utilities
 
         public double quantoAdjustment(double equityVol, double t1, double t2)
         {
-            double rDomestic = rTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
-            double rForeign = fTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
-            double fxVol = fxVolTS_.blackForwardVol(t1, t2, exchRateATMlevel_);
+            var rDomestic = rTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
+            var rForeign = fTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
+            var fxVol = fxVolTS_.blackForwardVol(t1, t2, exchRateATMlevel_);
 
             return rDomestic - rForeign + equityVol * fxVol * equityFxCorrelation_;
         }
 
         public Vector quantoAdjustment(Vector equityVol, double t1, double t2)
         {
-            double rDomestic = rTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
-            double rForeign = fTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
-            double fxVol = fxVolTS_.blackForwardVol(t1, t2, exchRateATMlevel_);
+            var rDomestic = rTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
+            var rForeign = fTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
+            var fxVol = fxVolTS_.blackForwardVol(t1, t2, exchRateATMlevel_);
 
-            Vector retVal = new Vector(equityVol.size());
-            for (int i = 0; i < retVal.size(); ++i)
+            var retVal = new Vector(equityVol.size());
+            for (var i = 0; i < retVal.size(); ++i)
             {
                 retVal[i] = rDomestic - rForeign + equityVol[i] * fxVol * equityFxCorrelation_;
             }
             return retVal;
         }
 
-        public YieldTermStructure foreignTermStructure() { return fTS_; }
-        public YieldTermStructure riskFreeTermStructure() { return rTS_; }
-        public BlackVolTermStructure fxVolatilityTermStructure() { return fxVolTS_; }
-        public double equityFxCorrelation() { return equityFxCorrelation_; }
-        public double exchRateATMlevel() { return exchRateATMlevel_; }
+        public YieldTermStructure foreignTermStructure() => fTS_;
+
+        public YieldTermStructure riskFreeTermStructure() => rTS_;
+
+        public BlackVolTermStructure fxVolatilityTermStructure() => fxVolTS_;
+
+        public double equityFxCorrelation() => equityFxCorrelation_;
+
+        public double exchRateATMlevel() => exchRateATMlevel_;
 
         protected YieldTermStructure rTS_, fTS_;
         protected BlackVolTermStructure fxVolTS_;
@@ -80,14 +84,8 @@ namespace QLNet.Methods.Finitedifferences.Utilities
 
         public event Callback notifyObserversEvent
         {
-            add
-            {
-                eventSource.Subscribe(value);
-            }
-            remove
-            {
-                eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
         }
 
         public void registerWith(Callback handler)

@@ -25,13 +25,13 @@ using QLNet.Math;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_FastFourierTransform
+    [JetBrains.Annotations.PublicAPI] public class T_FastFourierTransform
     {
 
         [Fact]
         public void testFFTSimple()
         {
-            List<Complex> a = new List<Complex>();
+            var a = new List<Complex>();
             a.Add(new Complex(0, 0));
             a.Add(new Complex(1, 1));
             a.Add(new Complex(3, 3));
@@ -43,9 +43,9 @@ namespace QLNet.Tests
 
             List<Complex> b = new InitializedList<Complex>(8);
 
-            FastFourierTransform fft = new FastFourierTransform(3);
+            var fft = new FastFourierTransform(3);
             fft.transform(a, 0, 8, b);
-            List<Complex> expected = new List<Complex>();
+            var expected = new List<Complex>();
             expected.Add(new Complex(16, 16));
             expected.Add(new Complex(-4.8284, -11.6569));
             expected.Add(new Complex(0, 0));
@@ -55,7 +55,7 @@ namespace QLNet.Tests
             expected.Add(new Complex(0, 0));
             expected.Add(new Complex(-11.6569, -4.8284));
 
-            for (int i = 0; i < 8; i++)
+            for (var i = 0; i < 8; i++)
             {
                 if (System.Math.Abs(b[i].Real - expected[i].Real) > 1.0e-2 ||
                     System.Math.Abs(b[i].Imaginary - expected[i].Imaginary) > 1.0e-2)
@@ -73,16 +73,16 @@ namespace QLNet.Tests
             x[1] = 2;
             x[2] = 3;
 
-            int order = FastFourierTransform.min_order(x.Count) + 1;
-            FastFourierTransform fft = new FastFourierTransform(order);
+            var order = FastFourierTransform.min_order(x.Count) + 1;
+            var fft = new FastFourierTransform(order);
 
-            int nFrq = fft.output_size();
+            var nFrq = fft.output_size();
             List<Complex> ft = new InitializedList<Complex>(nFrq);
             List<Complex> tmp = new InitializedList<Complex>(nFrq);
-            Complex z = new Complex();
+            var z = new Complex();
 
             fft.inverse_transform(x, 0, 3, ft);
-            for (int i = 0; i < nFrq; ++i)
+            for (var i = 0; i < nFrq; ++i)
             {
                 tmp[i] = System.Math.Pow(ft[i].Magnitude, 2.0);
                 ft[i] = z;
@@ -91,8 +91,8 @@ namespace QLNet.Tests
             fft.inverse_transform(tmp, 0, tmp.Count, ft);
 
             // 0
-            double calculated = ft[0].Real / nFrq;
-            double expected = (x[0] * x[0] + x[1] * x[1] + x[2] * x[2]).Real;
+            var calculated = ft[0].Real / nFrq;
+            var expected = (x[0] * x[0] + x[1] * x[1] + x[2] * x[2]).Real;
             if (System.Math.Abs(calculated - expected) > 1.0e-10)
                 QAssert.Fail("Convolution(0)\n"
                              + "    calculated: " + calculated + "\n"

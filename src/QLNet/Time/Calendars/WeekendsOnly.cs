@@ -19,7 +19,7 @@
 
 namespace QLNet.Time.Calendars
 {
-    public class WeekendsOnly : Calendar
+    [JetBrains.Annotations.PublicAPI] public class WeekendsOnly : Calendar
     {
         public WeekendsOnly() : base(Impl.Singleton) { }
 
@@ -28,9 +28,9 @@ namespace QLNet.Time.Calendars
             public static readonly Impl Singleton = new Impl();
             private Impl() { }
 
-            public override string name() { return "weekends only"; }
-            public override bool isBusinessDay(Date date) { return !isWeekend(date.DayOfWeek); }
+            public override string name() => "weekends only";
 
+            public override bool isBusinessDay(Date date) => !isWeekend(date.DayOfWeek);
         }
     }
 }

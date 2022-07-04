@@ -25,7 +25,7 @@ using System.Linq;
 
 namespace QLNet.Cashflows
 {
-    public class RangeAccrualFloatersCoupon : FloatingRateCoupon
+    [JetBrains.Annotations.PublicAPI] public class RangeAccrualFloatersCoupon : FloatingRateCoupon
     {
         public RangeAccrualFloatersCoupon(Date paymentDate,
                                           double nominal,
@@ -57,33 +57,37 @@ namespace QLNet.Cashflows
             observationDates_.RemoveAt(0);                         //remove start date
             observationsNo_ = observationDates_.Count;
 
-            Handle<YieldTermStructure> rateCurve = index.forwardingTermStructure();
-            Date referenceDate = rateCurve.link.referenceDate();
+            var rateCurve = index.forwardingTermStructure();
+            var referenceDate = rateCurve.link.referenceDate();
 
             startTime_ = dayCounter.yearFraction(referenceDate, startDate);
             endTime_ = dayCounter.yearFraction(referenceDate, endDate);
             observationTimes_ = new List<double>();
-            for (int i = 0; i < observationsNo_; i++)
+            for (var i = 0; i < observationsNo_; i++)
             {
                 observationTimes_.Add(dayCounter.yearFraction(referenceDate, observationDates_[i]));
             }
         }
 
-        public double startTime() { return startTime_; }
-        public double endTime() { return endTime_; }
-        public double lowerTrigger() { return lowerTrigger_; }
-        public double upperTrigger() { return upperTrigger_; }
-        public int observationsNo() { return observationsNo_; }
-        public List<Date> observationDates() { return observationDates_; }
-        public List<double> observationTimes() { return observationTimes_; }
-        public Schedule observationsSchedule() { return observationsSchedule_; }
+        public double startTime() => startTime_;
 
-        public double priceWithoutOptionality(Handle<YieldTermStructure> discountCurve)
-        {
-            return accrualPeriod() * (gearing_ * indexFixing() + spread_) *
-                   nominal() * discountCurve.link.discount(date());
-        }
+        public double endTime() => endTime_;
 
+        public double lowerTrigger() => lowerTrigger_;
+
+        public double upperTrigger() => upperTrigger_;
+
+        public int observationsNo() => observationsNo_;
+
+        public List<Date> observationDates() => observationDates_;
+
+        public List<double> observationTimes() => observationTimes_;
+
+        public Schedule observationsSchedule() => observationsSchedule_;
+
+        public double priceWithoutOptionality(Handle<YieldTermStructure> discountCurve) =>
+            accrualPeriod() * (gearing_ * indexFixing() + spread_) *
+            nominal() * discountCurve.link.discount(date());
 
         private double startTime_;
         private double endTime_;
@@ -98,11 +102,13 @@ namespace QLNet.Cashflows
 
     }
 
-    public class RangeAccrualPricer : FloatingRateCouponPricer
+    [JetBrains.Annotations.PublicAPI] public class RangeAccrualPricer : FloatingRateCouponPricer
     {
         // Observer interface
-        public override double swapletPrice() { throw new NotImplementedException(); }
-        public override double swapletRate() { return swapletPrice() / (accrualFactor_ * discount_); }
+        public override double swapletPrice() => throw new NotImplementedException();
+
+        public override double swapletRate() => swapletPrice() / (accrualFactor_ * discount_);
+
         public override double capletPrice(double effectiveCap)
         {
             Utils.QL_FAIL("RangeAccrualPricer::capletPrice not implemented");
@@ -130,11 +136,11 @@ namespace QLNet.Cashflows
             gearing_ = coupon_.gearing();
             spread_ = coupon_.spread();
 
-            Date paymentDate = coupon_.date();
+            var paymentDate = coupon_.date();
 
-            IborIndex index = coupon_.index() as IborIndex;
+            var index = coupon_.index() as IborIndex;
             Utils.QL_REQUIRE(index != null, () => "invalid index");
-            Handle<YieldTermStructure> rateCurve = index.forwardingTermStructure();
+            var rateCurve = index.forwardingTermStructure();
             discount_ = rateCurve.link.discount(paymentDate);
             accrualFactor_ = coupon_.accrualPeriod();
             spreadLegValue_ = spread_ * accrualFactor_ * discount_;
@@ -146,12 +152,12 @@ namespace QLNet.Cashflows
             upperTrigger_ = coupon_.upperTrigger();
             observationsNo_ = coupon_.observationsNo();
 
-            List<Date> observationDates = coupon_.observationsSchedule().dates();
+            var observationDates = coupon_.observationsSchedule().dates();
             Utils.QL_REQUIRE(observationDates.Count == observationsNo_ + 2, () => "incompatible size of initialValues vector");
             initialValues_ = new InitializedList<double>(observationDates.Count, 0.0);
 
-            Calendar calendar = index.fixingCalendar();
-            for (int i = 0; i < observationDates.Count; i++)
+            var calendar = index.fixingCalendar();
+            for (var i = 0; i < observationDates.Count; i++)
             {
                 initialValues_[i] = index.fixing(
                                        calendar.advance(observationDates[i], -coupon_.fixingDays, TimeUnit.Days));
@@ -175,7 +181,7 @@ namespace QLNet.Cashflows
         protected double spreadLegValue_;
     }
 
-    public class RangeAccrualPricerByBgm : RangeAccrualPricer
+    [JetBrains.Annotations.PublicAPI] public class RangeAccrualPricerByBgm : RangeAccrualPricer
     {
         public RangeAccrualPricerByBgm(double correlation,
                                        SmileSection smilesOnExpiry,
@@ -193,11 +199,11 @@ namespace QLNet.Cashflows
         // Observer interface
         public override double swapletPrice()
         {
-            double result = 0.0;
-            double deflator = discount_ * initialValues_[0];
-            for (int i = 0; i < observationsNo_; i++)
+            var result = 0.0;
+            var deflator = discount_ * initialValues_[0];
+            for (var i = 0; i < observationsNo_; i++)
             {
-                double digitalFloater = digitalRangePrice(lowerTrigger_, upperTrigger_, initialValues_[i + 1],
+                var digitalFloater = digitalRangePrice(lowerTrigger_, upperTrigger_, initialValues_[i + 1],
                                                           observationTimes_[i], deflator);
                 result += digitalFloater;
             }
@@ -206,74 +212,68 @@ namespace QLNet.Cashflows
 
         protected double drift(double U, double lambdaS, double lambdaT, double correlation)
         {
-            double p = (U - startTime_) / accrualFactor_;
-            double q = (endTime_ - U) / accrualFactor_;
-            double L0T = initialValues_.Last();
+            var p = (U - startTime_) / accrualFactor_;
+            var q = (endTime_ - U) / accrualFactor_;
+            var L0T = initialValues_.Last();
 
-            double driftBeforeFixing =
+            var driftBeforeFixing =
                p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_)
                * (p * lambdaT * lambdaT + q * lambdaS * lambdaT * correlation) +
                q * lambdaS * lambdaS + p * lambdaS * lambdaT * correlation;
-            double driftAfterFixing = (p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_) - 0.5) * lambdaT * lambdaT;
+            var driftAfterFixing = (p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_) - 0.5) * lambdaT * lambdaT;
 
             return startTime_ > 0 ? driftBeforeFixing : driftAfterFixing;
         }
         protected double derDriftDerLambdaS(double U, double lambdaS, double lambdaT, double correlation)
         {
-            double p = (U - startTime_) / accrualFactor_;
-            double q = (endTime_ - U) / accrualFactor_;
-            double L0T = initialValues_.Last();
+            var p = (U - startTime_) / accrualFactor_;
+            var q = (endTime_ - U) / accrualFactor_;
+            var L0T = initialValues_.Last();
 
-            double driftBeforeFixing = p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_)
+            var driftBeforeFixing = p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_)
                                        * (q * lambdaT * correlation) + 2 * q * lambdaS + p * lambdaT * correlation;
-            double driftAfterFixing = 0.0;
+            var driftAfterFixing = 0.0;
 
             return startTime_ > 0 ? driftBeforeFixing : driftAfterFixing;
         }
         protected double derDriftDerLambdaT(double U, double lambdaS, double lambdaT, double correlation)
         {
-            double p = (U - startTime_) / accrualFactor_;
-            double q = (endTime_ - U) / accrualFactor_;
-            double L0T = initialValues_.Last();
+            var p = (U - startTime_) / accrualFactor_;
+            var q = (endTime_ - U) / accrualFactor_;
+            var L0T = initialValues_.Last();
 
-            double driftBeforeFixing = p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_)
+            var driftBeforeFixing = p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_)
                                        * (2 * p * lambdaT + q * lambdaS * correlation) + +p * lambdaS * correlation;
-            double driftAfterFixing = (p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_) - 0.5)
-                                      * 2 * lambdaT;
+            var driftAfterFixing = (p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_) - 0.5)
+                                   * 2 * lambdaT;
 
             return startTime_ > 0 ? driftBeforeFixing : driftAfterFixing;
         }
 
         protected double lambda(double U, double lambdaS, double lambdaT)
         {
-            double p = (U - startTime_) / accrualFactor_;
-            double q = (endTime_ - U) / accrualFactor_;
+            var p = (U - startTime_) / accrualFactor_;
+            var q = (endTime_ - U) / accrualFactor_;
 
             return startTime_ > 0 ? q * lambdaS + p * lambdaT : lambdaT;
         }
-        protected double derLambdaDerLambdaS(double U)
-        {
-            return startTime_ > 0 ? (endTime_ - U) / accrualFactor_ : 0.0;
-        }
+        protected double derLambdaDerLambdaS(double U) => startTime_ > 0 ? (endTime_ - U) / accrualFactor_ : 0.0;
 
-        protected double derLambdaDerLambdaT(double U)
-        {
-            return startTime_ > 0 ? (U - startTime_) / accrualFactor_ : 0.0;
-        }
+        protected double derLambdaDerLambdaT(double U) => startTime_ > 0 ? (U - startTime_) / accrualFactor_ : 0.0;
 
         protected List<double> driftsOverPeriod(double U, double lambdaS, double lambdaT, double correlation)
         {
-            List<double> result = new List<double>();
+            var result = new List<double>();
 
-            double p = (U - startTime_) / accrualFactor_;
-            double q = (endTime_ - U) / accrualFactor_;
-            double L0T = initialValues_.Last();
+            var p = (U - startTime_) / accrualFactor_;
+            var q = (endTime_ - U) / accrualFactor_;
+            var L0T = initialValues_.Last();
 
-            double driftBeforeFixing =
+            var driftBeforeFixing =
                p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_) * (p * lambdaT * lambdaT + q * lambdaS * lambdaT * correlation) +
                q * lambdaS * lambdaS + p * lambdaS * lambdaT * correlation
                - 0.5 * lambda(U, lambdaS, lambdaT) * lambda(U, lambdaS, lambdaT);
-            double driftAfterFixing = (p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_) - 0.5) * lambdaT * lambdaT;
+            var driftAfterFixing = (p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_) - 0.5) * lambdaT * lambdaT;
 
             result.Add(driftBeforeFixing);
             result.Add(driftAfterFixing);
@@ -282,13 +282,13 @@ namespace QLNet.Cashflows
         }
         protected List<double> lambdasOverPeriod(double U, double lambdaS, double lambdaT)
         {
-            List<double> result = new List<double>();
+            var result = new List<double>();
 
-            double p = (U - startTime_) / accrualFactor_;
-            double q = (endTime_ - U) / accrualFactor_;
+            var p = (U - startTime_) / accrualFactor_;
+            var q = (endTime_ - U) / accrualFactor_;
 
-            double lambdaBeforeFixing = q * lambdaS + p * lambdaT;
-            double lambdaAfterFixing = lambdaT;
+            var lambdaBeforeFixing = q * lambdaS + p * lambdaT;
+            var lambdaAfterFixing = lambdaT;
 
             result.Add(lambdaBeforeFixing);
             result.Add(lambdaAfterFixing);
@@ -299,9 +299,9 @@ namespace QLNet.Cashflows
         protected double digitalRangePrice(double lowerTrigger, double upperTrigger, double initialValue, double expiry,
                                            double deflator)
         {
-            double lowerPrice = digitalPrice(lowerTrigger, initialValue, expiry, deflator);
-            double upperPrice = digitalPrice(upperTrigger, initialValue, expiry, deflator);
-            double result = lowerPrice - upperPrice;
+            var lowerPrice = digitalPrice(lowerTrigger, initialValue, expiry, deflator);
+            var upperPrice = digitalPrice(upperTrigger, initialValue, expiry, deflator);
+            var result = lowerPrice - upperPrice;
             Utils.QL_REQUIRE(result > 0.0, () =>
                              "RangeAccrualPricerByBgm::digitalRangePrice:\n digitalPrice(" + upperTrigger +
                              "): " + upperPrice + " >  digitalPrice(" + lowerTrigger + "): " + lowerPrice);
@@ -310,7 +310,7 @@ namespace QLNet.Cashflows
 
         protected double digitalPrice(double strike, double initialValue, double expiry, double deflator)
         {
-            double result = deflator;
+            var result = deflator;
             if (strike > eps_ / 2)
             {
                 result = withSmile_
@@ -322,23 +322,23 @@ namespace QLNet.Cashflows
 
         protected double digitalPriceWithoutSmile(double strike, double initialValue, double expiry, double deflator)
         {
-            double lambdaS = smilesOnExpiry_.volatility(strike);
-            double lambdaT = smilesOnPayment_.volatility(strike);
+            var lambdaS = smilesOnExpiry_.volatility(strike);
+            var lambdaT = smilesOnPayment_.volatility(strike);
 
-            List<double> lambdaU = lambdasOverPeriod(expiry, lambdaS, lambdaT);
-            double variance = startTime_ * lambdaU[0] * lambdaU[0] + (expiry - startTime_) * lambdaU[1] * lambdaU[1];
+            var lambdaU = lambdasOverPeriod(expiry, lambdaS, lambdaT);
+            var variance = startTime_ * lambdaU[0] * lambdaU[0] + (expiry - startTime_) * lambdaU[1] * lambdaU[1];
 
-            double lambdaSATM = smilesOnExpiry_.volatility(initialValue);
-            double lambdaTATM = smilesOnPayment_.volatility(initialValue);
+            var lambdaSATM = smilesOnExpiry_.volatility(initialValue);
+            var lambdaTATM = smilesOnPayment_.volatility(initialValue);
             //drift of Lognormal process (of Libor) "a_U()" nel paper
-            List<double> muU = driftsOverPeriod(expiry, lambdaSATM, lambdaTATM, correlation_);
-            double adjustment = startTime_ * muU[0] + (expiry - startTime_) * muU[1];
+            var muU = driftsOverPeriod(expiry, lambdaSATM, lambdaTATM, correlation_);
+            var adjustment = startTime_ * muU[0] + (expiry - startTime_) * muU[1];
 
 
-            double d2 = (System.Math.Log(initialValue / strike) + adjustment - 0.5 * variance) / System.Math.Sqrt(variance);
+            var d2 = (System.Math.Log(initialValue / strike) + adjustment - 0.5 * variance) / System.Math.Sqrt(variance);
 
-            CumulativeNormalDistribution phi = new CumulativeNormalDistribution();
-            double result = deflator * phi.value(d2);
+            var phi = new CumulativeNormalDistribution();
+            var result = deflator * phi.value(d2);
 
             Utils.QL_REQUIRE(result > 0.0, () =>
                              "RangeAccrualPricerByBgm::digitalPriceWithoutSmile: result< 0. Result:" + result);
@@ -355,35 +355,35 @@ namespace QLNet.Cashflows
             if (byCallSpread_)
             {
                 // Previous strike
-                double previousStrike = strike - eps_ / 2;
-                double lambdaS = smilesOnExpiry_.volatility(previousStrike);
-                double lambdaT = smilesOnPayment_.volatility(previousStrike);
+                var previousStrike = strike - eps_ / 2;
+                var lambdaS = smilesOnExpiry_.volatility(previousStrike);
+                var lambdaT = smilesOnPayment_.volatility(previousStrike);
 
                 //drift of Lognormal process (of Libor) "a_U()" nel paper
-                List<double> lambdaU = lambdasOverPeriod(expiry, lambdaS, lambdaT);
-                double previousVariance = System.Math.Max(startTime_, 0.0) * lambdaU[0] * lambdaU[0] +
-                                          System.Math.Min(expiry - startTime_, expiry) * lambdaU[1] * lambdaU[1];
+                var lambdaU = lambdasOverPeriod(expiry, lambdaS, lambdaT);
+                var previousVariance = System.Math.Max(startTime_, 0.0) * lambdaU[0] * lambdaU[0] +
+                                       System.Math.Min(expiry - startTime_, expiry) * lambdaU[1] * lambdaU[1];
 
-                double lambdaSATM = smilesOnExpiry_.volatility(initialValue);
-                double lambdaTATM = smilesOnPayment_.volatility(initialValue);
-                List<double> muU = driftsOverPeriod(expiry, lambdaSATM, lambdaTATM, correlation_);
-                double previousAdjustment = System.Math.Exp(System.Math.Max(startTime_, 0.0) * muU[0] +
-                                                     System.Math.Min(expiry - startTime_, expiry) * muU[1]);
-                double previousForward = initialValue * previousAdjustment;
+                var lambdaSATM = smilesOnExpiry_.volatility(initialValue);
+                var lambdaTATM = smilesOnPayment_.volatility(initialValue);
+                var muU = driftsOverPeriod(expiry, lambdaSATM, lambdaTATM, correlation_);
+                var previousAdjustment = System.Math.Exp(System.Math.Max(startTime_, 0.0) * muU[0] +
+                                                         System.Math.Min(expiry - startTime_, expiry) * muU[1]);
+                var previousForward = initialValue * previousAdjustment;
 
                 // Next strike
-                double nextStrike = strike + eps_ / 2;
+                var nextStrike = strike + eps_ / 2;
                 lambdaS = smilesOnExpiry_.volatility(nextStrike);
                 lambdaT = smilesOnPayment_.volatility(nextStrike);
 
                 lambdaU = lambdasOverPeriod(expiry, lambdaS, lambdaT);
-                double nextVariance = System.Math.Max(startTime_, 0.0) * lambdaU[0] * lambdaU[0] +
-                                      System.Math.Min(expiry - startTime_, expiry) * lambdaU[1] * lambdaU[1];
+                var nextVariance = System.Math.Max(startTime_, 0.0) * lambdaU[0] * lambdaU[0] +
+                                   System.Math.Min(expiry - startTime_, expiry) * lambdaU[1] * lambdaU[1];
                 //drift of Lognormal process (of Libor) "a_U()" nel paper
                 muU = driftsOverPeriod(expiry, lambdaSATM, lambdaTATM, correlation_);
-                double nextAdjustment = System.Math.Exp(System.Math.Max(startTime_, 0.0) * muU[0] +
-                                                 System.Math.Min(expiry - startTime_, expiry) * muU[1]);
-                double nextForward = initialValue * nextAdjustment;
+                var nextAdjustment = System.Math.Exp(System.Math.Max(startTime_, 0.0) * muU[0] +
+                                                     System.Math.Min(expiry - startTime_, expiry) * muU[1]);
+                var nextForward = initialValue * nextAdjustment;
 
                 result = callSpreadPrice(previousForward, nextForward, previousStrike, nextStrike,
                                          deflator, previousVariance, nextVariance);
@@ -411,9 +411,9 @@ namespace QLNet.Cashflows
                                          double previousVariance,
                                          double nextVariance)
         {
-            double nextCall = Utils.blackFormula(QLNet.Option.Type.Call, nextStrike, nextForward,
+            var nextCall = Utils.blackFormula(QLNet.Option.Type.Call, nextStrike, nextForward,
                                                  System.Math.Sqrt(nextVariance), deflator);
-            double previousCall = Utils.blackFormula(QLNet.Option.Type.Call, previousStrike, previousForward,
+            var previousCall = Utils.blackFormula(QLNet.Option.Type.Call, previousStrike, previousForward,
                                                      System.Math.Sqrt(previousVariance), deflator);
 
             Utils.QL_REQUIRE(nextCall < previousCall, () =>
@@ -431,42 +431,42 @@ namespace QLNet.Cashflows
                                          double expiry,
                                          double deflator)
         {
-            double previousStrike = strike - eps_ / 2;
-            double nextStrike = strike + eps_ / 2;
+            var previousStrike = strike - eps_ / 2;
+            var nextStrike = strike + eps_ / 2;
 
-            double derSmileS = (smilesOnExpiry_.volatility(nextStrike) -
-                                smilesOnExpiry_.volatility(previousStrike)) / eps_;
-            double derSmileT = (smilesOnPayment_.volatility(nextStrike) -
-                                smilesOnPayment_.volatility(previousStrike)) / eps_;
+            var derSmileS = (smilesOnExpiry_.volatility(nextStrike) -
+                             smilesOnExpiry_.volatility(previousStrike)) / eps_;
+            var derSmileT = (smilesOnPayment_.volatility(nextStrike) -
+                             smilesOnPayment_.volatility(previousStrike)) / eps_;
 
-            double lambdaS = smilesOnExpiry_.volatility(strike);
-            double lambdaT = smilesOnPayment_.volatility(strike);
+            var lambdaS = smilesOnExpiry_.volatility(strike);
+            var lambdaT = smilesOnPayment_.volatility(strike);
 
-            double derLambdaDerK = derLambdaDerLambdaS(expiry) * derSmileS +
-                                   derLambdaDerLambdaT(expiry) * derSmileT;
+            var derLambdaDerK = derLambdaDerLambdaS(expiry) * derSmileS +
+                                derLambdaDerLambdaT(expiry) * derSmileT;
 
 
-            double lambdaSATM = smilesOnExpiry_.volatility(forward);
-            double lambdaTATM = smilesOnPayment_.volatility(forward);
-            List<double> lambdasOverPeriodU = lambdasOverPeriod(expiry, lambdaS, lambdaT);
+            var lambdaSATM = smilesOnExpiry_.volatility(forward);
+            var lambdaTATM = smilesOnPayment_.volatility(forward);
+            var lambdasOverPeriodU = lambdasOverPeriod(expiry, lambdaS, lambdaT);
             //drift of Lognormal process (of Libor) "a_U()" nel paper
-            List<double> muU = driftsOverPeriod(expiry, lambdaSATM, lambdaTATM, correlation_);
+            var muU = driftsOverPeriod(expiry, lambdaSATM, lambdaTATM, correlation_);
 
-            double variance = System.Math.Max(startTime_, 0.0) * lambdasOverPeriodU[0] * lambdasOverPeriodU[0] +
-                              System.Math.Min(expiry - startTime_, expiry) * lambdasOverPeriodU[1] * lambdasOverPeriodU[1];
+            var variance = System.Math.Max(startTime_, 0.0) * lambdasOverPeriodU[0] * lambdasOverPeriodU[0] +
+                           System.Math.Min(expiry - startTime_, expiry) * lambdasOverPeriodU[1] * lambdasOverPeriodU[1];
 
-            double forwardAdjustment = System.Math.Exp(System.Math.Max(startTime_, 0.0) * muU[0] +
-                                                System.Math.Min(expiry - startTime_, expiry) * muU[1]);
-            double forwardAdjusted = forward * forwardAdjustment;
+            var forwardAdjustment = System.Math.Exp(System.Math.Max(startTime_, 0.0) * muU[0] +
+                                                    System.Math.Min(expiry - startTime_, expiry) * muU[1]);
+            var forwardAdjusted = forward * forwardAdjustment;
 
-            double d1 = (System.Math.Log(forwardAdjusted / strike) + 0.5 * variance) / System.Math.Sqrt(variance);
+            var d1 = (System.Math.Log(forwardAdjusted / strike) + 0.5 * variance) / System.Math.Sqrt(variance);
 
-            double sqrtOfTimeToExpiry = (System.Math.Max(startTime_, 0.0) * lambdasOverPeriodU[0] +
-                                         System.Math.Min(expiry - startTime_, expiry) * lambdasOverPeriodU[1]) * (1.0 / System.Math.Sqrt(variance));
+            var sqrtOfTimeToExpiry = (System.Math.Max(startTime_, 0.0) * lambdasOverPeriodU[0] +
+                                      System.Math.Min(expiry - startTime_, expiry) * lambdasOverPeriodU[1]) * (1.0 / System.Math.Sqrt(variance));
 
-            CumulativeNormalDistribution phi = new CumulativeNormalDistribution();
-            NormalDistribution psi = new NormalDistribution();
-            double result = -forwardAdjusted * psi.value(d1) * sqrtOfTimeToExpiry * derLambdaDerK;
+            var phi = new CumulativeNormalDistribution();
+            var psi = new NormalDistribution();
+            var result = -forwardAdjusted * psi.value(d1) * sqrtOfTimeToExpiry * derLambdaDerK;
 
             result *= deflator;
 
@@ -488,7 +488,7 @@ namespace QLNet.Cashflows
     }
 
     //! helper class building a sequence of range-accrual floating-rate coupons
-    public class RangeAccrualLeg
+    [JetBrains.Annotations.PublicAPI] public class RangeAccrualLeg
     {
         public RangeAccrualLeg(Schedule schedule, IborIndex index)
         {
@@ -581,7 +581,7 @@ namespace QLNet.Cashflows
         {
             Utils.QL_REQUIRE(!notionals_.empty(), () => "no notional given");
 
-            int n = schedule_.Count - 1;
+            var n = schedule_.Count - 1;
             Utils.QL_REQUIRE(notionals_.Count <= n, () =>
                              "too many nominals (" + notionals_.Count + "), only " + n + " required");
             Utils.QL_REQUIRE(fixingDays_.Count <= n, () =>
@@ -595,29 +595,29 @@ namespace QLNet.Cashflows
             Utils.QL_REQUIRE(upperTriggers_.Count <= n, () =>
                              "too many upperTriggers (" + upperTriggers_.Count + "), only " + n + " required");
 
-            List<CashFlow> leg = new List<CashFlow>();
+            var leg = new List<CashFlow>();
 
 
             // the following is not always correct
-            Calendar calendar = schedule_.calendar();
+            var calendar = schedule_.calendar();
 
             Date refStart, start, refEnd, end;
             Date paymentDate;
-            List<Schedule> observationsSchedules = new List<Schedule>();
+            var observationsSchedules = new List<Schedule>();
 
-            for (int i = 0; i < n; ++i)
+            for (var i = 0; i < n; ++i)
             {
                 refStart = start = schedule_.date(i);
                 refEnd = end = schedule_.date(i + 1);
                 paymentDate = calendar.adjust(end, paymentAdjustment_);
                 if (i == 0 && !schedule_.isRegular(i + 1))
                 {
-                    BusinessDayConvention bdc = schedule_.businessDayConvention();
+                    var bdc = schedule_.businessDayConvention();
                     refStart = calendar.adjust(end - schedule_.tenor(), bdc);
                 }
                 if (i == n - 1 && !schedule_.isRegular(i + 1))
                 {
-                    BusinessDayConvention bdc = schedule_.businessDayConvention();
+                    var bdc = schedule_.businessDayConvention();
                     refEnd = calendar.adjust(start + schedule_.tenor(), bdc);
                 }
                 if (gearings_.Get(i, 1.0).IsEqual(0.0))

@@ -26,13 +26,10 @@ namespace QLNet.Methods.montecarlo
 
     public static class EarlyExerciseTraits<PathType> where PathType : IPath
     {
-        public static int pathLength(PathType path)
-        {
-            return path.length();
-        }
+        public static int pathLength(PathType path) => path.length();
     }
 
-    public interface IEarlyExercisePathPricer<PathType, StateType> where PathType : IPath
+    [JetBrains.Annotations.PublicAPI] public interface IEarlyExercisePathPricer<PathType, StateType> where PathType : IPath
     {
         double value(PathType path, int t);
 

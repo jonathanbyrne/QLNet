@@ -52,7 +52,7 @@ namespace QLNet.Methods.Finitedifferences
 
         \ingroup findiff
     */
-    public class ExplicitEuler<Operator> : MixedScheme<Operator> where Operator : IOperator
+    [JetBrains.Annotations.PublicAPI] public class ExplicitEuler<Operator> : MixedScheme<Operator> where Operator : IOperator
     {
         // constructors
         public ExplicitEuler() { }  // required for generics

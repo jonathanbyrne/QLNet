@@ -28,7 +28,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Methods.Finitedifferences.Operators
 {
-    public class FdmBlackScholesOp : FdmLinearOpComposite
+    [JetBrains.Annotations.PublicAPI] public class FdmBlackScholesOp : FdmLinearOpComposite
     {
         public FdmBlackScholesOp(FdmMesher mesher,
                                  GeneralizedBlackScholesProcess bsProcess,
@@ -54,35 +54,35 @@ namespace QLNet.Methods.Finitedifferences.Operators
             quantoHelper_ = quantoHelper;
         }
 
-        public override int size() { return 1; }
+        public override int size() => 1;
 
         //! Time \f$t1 <= t2\f$ is required
         public override void setTime(double t1, double t2)
         {
-            double r = rTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
-            double q = qTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
+            var r = rTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
+            var q = qTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
 
             if (localVol_ != null)
             {
-                FdmLinearOpLayout layout = mesher_.layout();
-                FdmLinearOpIterator endIter = layout.end();
+                var layout = mesher_.layout();
+                var endIter = layout.end();
 
-                Vector v = new Vector(layout.size());
-                for (FdmLinearOpIterator iter = layout.begin();
+                var v = new Vector(layout.size());
+                for (var iter = layout.begin();
                      iter != endIter; ++iter)
                 {
-                    int i = iter.index();
+                    var i = iter.index();
 
                     if (illegalLocalVolOverwrite_ == null)
                     {
-                        double t = localVol_.localVol(0.5 * (t1 + t2), x_[i], true);
+                        var t = localVol_.localVol(0.5 * (t1 + t2), x_[i], true);
                         v[i] = t * t;
                     }
                     else
                     {
                         try
                         {
-                            double t = localVol_.localVol(0.5 * (t1 + t2), x_[i], true);
+                            var t = localVol_.localVol(0.5 * (t1 + t2), x_[i], true);
                             v[i] = t * t;
                         }
                         catch
@@ -107,7 +107,7 @@ namespace QLNet.Methods.Finitedifferences.Operators
             }
             else
             {
-                double vv = volTS_.blackForwardVariance(t1, t2, strike_) / (t2 - t1);
+                var vv = volTS_.blackForwardVariance(t1, t2, strike_) / (t2 - t1);
 
                 if (quantoHelper_ != null)
                 {
@@ -126,14 +126,11 @@ namespace QLNet.Methods.Finitedifferences.Operators
             }
         }
 
-        public override Vector apply(Vector r)
-        {
-            return mapT_.apply(r);
-        }
+        public override Vector apply(Vector r) => mapT_.apply(r);
 
         public override Vector apply_mixed(Vector r)
         {
-            Vector retVal = new Vector(r.size(), 0.0);
+            var retVal = new Vector(r.size(), 0.0);
             return retVal;
         }
 
@@ -143,7 +140,7 @@ namespace QLNet.Methods.Finitedifferences.Operators
                 return mapT_.apply(r);
             else
             {
-                Vector retVal = new Vector(r.size(), 0.0);
+                var retVal = new Vector(r.size(), 0.0);
                 return retVal;
             }
         }
@@ -153,11 +150,11 @@ namespace QLNet.Methods.Finitedifferences.Operators
                 return mapT_.solve_splitting(r, dt, 1.0);
             else
             {
-                Vector retVal = new Vector(r);
+                var retVal = new Vector(r);
                 return retVal;
             }
         }
-        public override Vector preconditioner(Vector r, double dt) { return solve_splitting(direction_, r, dt); }
+        public override Vector preconditioner(Vector r, double dt) => solve_splitting(direction_, r, dt);
 
         public override List<SparseMatrix> toMatrixDecomp()
         {
@@ -166,19 +163,25 @@ namespace QLNet.Methods.Finitedifferences.Operators
         }
 
         #region IOperator interface
-        public override IOperator identity(int size) { return null; }
-        public override Vector applyTo(Vector v) { return null; }
-        public override Vector solveFor(Vector rhs) { return null; }
+        public override IOperator identity(int size) => null;
 
-        public override IOperator multiply(double a, IOperator D) { return null; }
+        public override Vector applyTo(Vector v) => null;
+
+        public override Vector solveFor(Vector rhs) => null;
+
+        public override IOperator multiply(double a, IOperator D) => null;
+
         public override IOperator add
-           (IOperator A, IOperator B)
-        { return null; }
-        public override IOperator subtract(IOperator A, IOperator B) { return null; }
+           (IOperator A, IOperator B) =>
+            null;
 
-        public override bool isTimeDependent() { return false; }
+        public override IOperator subtract(IOperator A, IOperator B) => null;
+
+        public override bool isTimeDependent() => false;
+
         public override void setTime(double t) { }
-        public override object Clone() { return MemberwiseClone(); }
+        public override object Clone() => MemberwiseClone();
+
         #endregion
 
         protected FdmMesher mesher_;

@@ -27,7 +27,7 @@ using System.Linq;
 
 namespace QLNet.Termstructures.Yield
 {
-    public interface ITraits<T>
+    [JetBrains.Annotations.PublicAPI] public interface ITraits<T>
     {
         Date initialDate(T c);      // start of curve data
         double initialValue(T c);     // value at reference date
@@ -43,20 +43,21 @@ namespace QLNet.Termstructures.Yield
         double forwardImpl(Interpolation i, double t);
     }
 
-    public class Discount : ITraits<YieldTermStructure>
+    [JetBrains.Annotations.PublicAPI] public class Discount : ITraits<YieldTermStructure>
     {
         const double maxRate = 1;
         const double avgRate = 0.05;
-        public Date initialDate(YieldTermStructure c) { return c.referenceDate(); }     // start of curve data
-        public double initialValue(YieldTermStructure c) { return 1; }      // value at reference date
+        public Date initialDate(YieldTermStructure c) => c.referenceDate(); // start of curve data
+        public double initialValue(YieldTermStructure c) => 1; // value at reference date
                                                                             // update with new guess
         public void updateGuess(List<double> data, double discount, int i) { data[i] = discount; }
-        public int maxIterations() { return 100; }   // upper bound for convergence loop
+        public int maxIterations() => 100; // upper bound for convergence loop
 
-        public double discountImpl(Interpolation i, double t) { return i.value(t, true); }
-        public double zeroYieldImpl(Interpolation i, double t) { throw new NotSupportedException(); }
-        public double forwardImpl(Interpolation i, double t) { throw new NotSupportedException(); }
+        public double discountImpl(Interpolation i, double t) => i.value(t, true);
 
+        public double zeroYieldImpl(Interpolation i, double t) => throw new NotSupportedException();
+
+        public double forwardImpl(Interpolation i, double t) => throw new NotSupportedException();
 
         public double guess(int i, InterpolatedCurve c, bool validData, int f)
         {
@@ -67,7 +68,7 @@ namespace QLNet.Termstructures.Yield
                 return 1.0 / (1.0 + avgRate * c.times()[1]);
 
             // flat rate extrapolation
-            double r = -System.Math.Log(c.data()[i - 1]) / c.times()[i - 1];
+            var r = -System.Math.Log(c.data()[i - 1]) / c.times()[i - 1];
             return System.Math.Exp(-r * c.times()[i]);
         }
         public double minValueAfter(int i, InterpolatedCurve c, bool validData, int f)
@@ -80,14 +81,14 @@ namespace QLNet.Termstructures.Yield
             return c.data().Last() / 2.0;
 #endif
             }
-            double dt = c.times()[i] - c.times()[i - 1];
+            var dt = c.times()[i] - c.times()[i - 1];
             return c.data()[i - 1] * System.Math.Exp(-maxRate * dt);
         }
         public double maxValueAfter(int i, InterpolatedCurve c, bool validData, int f)
         {
 
 #if QL_NEGATIVE_RATES
-            double dt = c.times()[i] - c.times()[i - 1];
+            var dt = c.times()[i] - c.times()[i - 1];
             return c.data()[i - 1] * System.Math.Exp(maxRate * dt);
 #else
          // discounts cannot increase
@@ -98,13 +99,13 @@ namespace QLNet.Termstructures.Yield
     }
 
     //! Zero-curve traits
-    public class ZeroYield : ITraits<YieldTermStructure>
+    [JetBrains.Annotations.PublicAPI] public class ZeroYield : ITraits<YieldTermStructure>
     {
         const double maxRate = 3;
         const double avgRate = 0.05;
 
-        public Date initialDate(YieldTermStructure c) { return c.referenceDate(); }     // start of curve data
-        public double initialValue(YieldTermStructure c) { return avgRate; }      // value at reference date
+        public Date initialDate(YieldTermStructure c) => c.referenceDate(); // start of curve data
+        public double initialValue(YieldTermStructure c) => avgRate; // value at reference date
                                                                                   // update with new guess
         public void updateGuess(List<double> data, double rate, int i)
         {
@@ -112,15 +113,16 @@ namespace QLNet.Termstructures.Yield
             if (i == 1)
                 data[0] = rate; // first point is updated as well
         }
-        public int maxIterations() { return 30; }   // upper bound for convergence loop
+        public int maxIterations() => 30; // upper bound for convergence loop
 
         public double discountImpl(Interpolation i, double t)
         {
-            double r = zeroYieldImpl(i, t);
+            var r = zeroYieldImpl(i, t);
             return System.Math.Exp(-r * t);
         }
-        public double zeroYieldImpl(Interpolation i, double t) { return i.value(t, true); }
-        public double forwardImpl(Interpolation i, double t) { throw new NotSupportedException(); }
+        public double zeroYieldImpl(Interpolation i, double t) => i.value(t, true);
+
+        public double forwardImpl(Interpolation i, double t) => throw new NotSupportedException();
 
         public double guess(int i, InterpolatedCurve c, bool validData, int f)
         {
@@ -138,7 +140,7 @@ namespace QLNet.Termstructures.Yield
         {
             if (validData)
             {
-                double r = c.data().Min();
+                var r = c.data().Min();
 #if QL_NEGATIVE_RATES
 
                 return r < 0.0 ? r * 2.0 : r / 2.0;
@@ -163,7 +165,7 @@ namespace QLNet.Termstructures.Yield
 
             if (validData)
             {
-                double r = c.data().Max();
+                var r = c.data().Max();
 #if QL_NEGATIVE_RATES
                 return r < 0.0 ? r / 2.0 : r * 2.0;
 #else
@@ -177,13 +179,13 @@ namespace QLNet.Termstructures.Yield
     }
 
     //! Forward-curve traits
-    public class ForwardRate : ITraits<YieldTermStructure>
+    [JetBrains.Annotations.PublicAPI] public class ForwardRate : ITraits<YieldTermStructure>
     {
         const double maxRate = 3;
         const double avgRate = 0.05;
 
-        public Date initialDate(YieldTermStructure c) { return c.referenceDate(); }     // start of curve data
-        public double initialValue(YieldTermStructure c) { return avgRate; }   // dummy value at reference date
+        public Date initialDate(YieldTermStructure c) => c.referenceDate(); // start of curve data
+        public double initialValue(YieldTermStructure c) => avgRate; // dummy value at reference date
                                                                                // update with new guess
         public void updateGuess(List<double> data, double forward, int i)
         {
@@ -192,11 +194,11 @@ namespace QLNet.Termstructures.Yield
                 data[0] = forward; // first point is updated as well
         }
         // upper bound for convergence loop
-        public int maxIterations() { return 30; }
+        public int maxIterations() => 30;
 
         public double discountImpl(Interpolation i, double t)
         {
-            double r = zeroYieldImpl(i, t);
+            var r = zeroYieldImpl(i, t);
             return System.Math.Exp(-r * t);
         }
         public double zeroYieldImpl(Interpolation i, double t)
@@ -206,10 +208,7 @@ namespace QLNet.Termstructures.Yield
             else
                 return i.primitive(t, true) / t;
         }
-        public double forwardImpl(Interpolation i, double t)
-        {
-            return i.value(t, true);
-        }
+        public double forwardImpl(Interpolation i, double t) => i.value(t, true);
 
         public double guess(int i, InterpolatedCurve c, bool validData, int f)
         {
@@ -227,7 +226,7 @@ namespace QLNet.Termstructures.Yield
         {
             if (validData)
             {
-                double r = c.data().Min();
+                var r = c.data().Min();
 #if QL_NEGATIVE_RATES
                 return r < 0.0 ? r * 2.0 : r / 2.0;
 #else
@@ -247,7 +246,7 @@ namespace QLNet.Termstructures.Yield
         {
             if (validData)
             {
-                double r = c.data().Max();
+                var r = c.data().Max();
 #if QL_NEGATIVE_RATES
 
                 return r < 0.0 ? r / 2.0 : r * 2.0;

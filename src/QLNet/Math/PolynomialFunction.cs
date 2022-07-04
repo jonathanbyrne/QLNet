@@ -20,7 +20,7 @@ namespace QLNet.Math
 {
     //! %Cubic functional form
     /*! \f[ f(t) = \sum_{i=0}^n{c_i t^i} \f] */
-    public class PolynomialFunction
+    [JetBrains.Annotations.PublicAPI] public class PolynomialFunction
     {
         public PolynomialFunction(List<double> coeff)
         {
@@ -45,7 +45,7 @@ namespace QLNet.Math
         public double value(double t)
         {
             double result = 0.0, tPower = 1.0;
-            for (int i = 0; i < order_; ++i)
+            for (var i = 0; i < order_; ++i)
             {
                 result += c_[i] * tPower;
                 tPower *= t;
@@ -58,7 +58,7 @@ namespace QLNet.Math
         public double derivative(double t)
         {
             double result = 0.0, tPower = 1.0;
-            for (int i = 0; i < order_ - 1; ++i)
+            for (var i = 0; i < order_ - 1; ++i)
             {
                 result += derC_[i] * tPower;
                 tPower *= t;
@@ -71,7 +71,7 @@ namespace QLNet.Math
         public double primitive(double t)
         {
             double result = K_, tPower = t;
-            for (int i = 0; i < order_; ++i)
+            for (var i = 0; i < order_; ++i)
             {
                 result += prC_[i] * tPower;
                 tPower *= t;
@@ -81,25 +81,25 @@ namespace QLNet.Math
 
         /*! definite integral of the function between t1 and t2
            \f[ \int_{t1}^{t2} f(t)dt \f] */
-        public double definiteIntegral(double t1, double t2)
-        {
-            return primitive(t2) - primitive(t1);
-        }
+        public double definiteIntegral(double t1, double t2) => primitive(t2) - primitive(t1);
 
         /*! Inspectors */
-        public int order() { return order_; }
-        public List<double> coefficients() { return c_; }
-        public List<double> derivativeCoefficients() { return derC_; }
-        public List<double> primitiveCoefficients() { return prC_; }
+        public int order() => order_;
+
+        public List<double> coefficients() => c_;
+
+        public List<double> derivativeCoefficients() => derC_;
+
+        public List<double> primitiveCoefficients() => prC_;
 
         /*! coefficients of a PolynomialFunction defined as definite
            integral on a rolling window of length tau, with tau = t2-t */
         public List<double> definiteIntegralCoefficients(double t, double t2)
         {
-            Vector k = new Vector(c_);
+            var k = new Vector(c_);
             initializeEqs_(t, t2);
-            Vector coeff = eqs_ * k;
-            List<double> result = new List<double>(coeff);
+            var coeff = eqs_ * k;
+            var result = new List<double>(coeff);
             return result;
         }
 
@@ -107,9 +107,9 @@ namespace QLNet.Math
            derivative on a rolling window of length tau, with tau = t2-t */
         public List<double> definiteDerivativeCoefficients(double t, double t2)
         {
-            Vector k = new Vector(c_);
+            var k = new Vector(c_);
             initializeEqs_(t, t2);
-            Vector coeff = Matrix.transpose(eqs_) * k;
+            var coeff = Matrix.transpose(eqs_) * k;
             List<double> result = new Vector(coeff);
             return result;
         }
@@ -120,12 +120,12 @@ namespace QLNet.Math
         private Matrix eqs_;
         private void initializeEqs_(double t, double t2)
         {
-            double dt = t2 - t;
+            var dt = t2 - t;
             double tau;
-            for (int i = 0; i < order_; ++i)
+            for (var i = 0; i < order_; ++i)
             {
                 tau = 1.0;
-                for (int j = i; j < order_; ++j)
+                for (var j = i; j < order_; ++j)
                 {
                     tau *= dt;
                     eqs_[i, j] = tau * PascalTriangle.get(j + 1)[i] / (j + 1);

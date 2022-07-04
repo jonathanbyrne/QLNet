@@ -62,7 +62,7 @@ namespace QLNet.Pricingengines.vanilla
               reproducing results available in web/literature
               and comparison with Black pricing.
     */
-    public class AnalyticHestonEngine : GenericModelEngine<HestonModel, QLNet.Option.Arguments, OneAssetOption.Results>
+    [JetBrains.Annotations.PublicAPI] public class AnalyticHestonEngine : GenericModelEngine<HestonModel, QLNet.Option.Arguments, OneAssetOption.Results>
     {
         private class integrand1
         {
@@ -112,7 +112,7 @@ namespace QLNet.Pricingengines.vanilla
 
             }
         }
-        public class Integration
+        [JetBrains.Annotations.PublicAPI] public class Integration
         {
             // non adaptive integration algorithms based on Gaussian quadrature
             public static Integration gaussLaguerre(int intOrder = 128)
@@ -121,46 +121,26 @@ namespace QLNet.Pricingengines.vanilla
                 return new Integration(Algorithm.GaussLaguerre, new GaussLaguerreIntegration(intOrder));
             }
 
-            public static Integration gaussLegendre(int intOrder = 128)
-            {
-                return new Integration(Algorithm.GaussLegendre, new GaussLegendreIntegration(intOrder));
-            }
+            public static Integration gaussLegendre(int intOrder = 128) => new Integration(Algorithm.GaussLegendre, new GaussLegendreIntegration(intOrder));
 
-            public static Integration gaussChebyshev(int intOrder = 128)
-            {
-                return new Integration(Algorithm.GaussChebyshev, new GaussChebyshevIntegration(intOrder));
-            }
+            public static Integration gaussChebyshev(int intOrder = 128) => new Integration(Algorithm.GaussChebyshev, new GaussChebyshevIntegration(intOrder));
 
-            public static Integration gaussChebyshev2nd(int intOrder = 128)
-            {
-                return new Integration(Algorithm.GaussChebyshev2nd, new GaussChebyshev2ndIntegration(intOrder));
-            }
+            public static Integration gaussChebyshev2nd(int intOrder = 128) => new Integration(Algorithm.GaussChebyshev2nd, new GaussChebyshev2ndIntegration(intOrder));
 
             // for an adaptive integration algorithm Gatheral's version has to
             // be used.Be aware: using a too large number for maxEvaluations might
             // result in a stack overflow as the these integrations are based on
             // recursive algorithms.
-            public static Integration gaussLobatto(double relTolerance, double? absTolerance, int maxEvaluations = 1000)
-            {
-                return new Integration(Algorithm.GaussLobatto, new GaussLobattoIntegral(maxEvaluations,
-                                                                                        absTolerance, relTolerance, false));
-            }
+            public static Integration gaussLobatto(double relTolerance, double? absTolerance, int maxEvaluations = 1000) =>
+                new Integration(Algorithm.GaussLobatto, new GaussLobattoIntegral(maxEvaluations,
+                    absTolerance, relTolerance, false));
 
             // usually these routines have a poor convergence behavior.
-            public static Integration gaussKronrod(double absTolerance, int maxEvaluations = 1000)
-            {
-                return new Integration(Algorithm.GaussKronrod, new GaussKronrodAdaptive(absTolerance, maxEvaluations));
-            }
+            public static Integration gaussKronrod(double absTolerance, int maxEvaluations = 1000) => new Integration(Algorithm.GaussKronrod, new GaussKronrodAdaptive(absTolerance, maxEvaluations));
 
-            public static Integration simpson(double absTolerance, int maxEvaluations = 1000)
-            {
-                return new Integration(Algorithm.Simpson, new SimpsonIntegral(absTolerance, maxEvaluations));
-            }
+            public static Integration simpson(double absTolerance, int maxEvaluations = 1000) => new Integration(Algorithm.Simpson, new SimpsonIntegral(absTolerance, maxEvaluations));
 
-            public static Integration trapezoid(double absTolerance, int maxEvaluations = 1000)
-            {
-                return new Integration(Algorithm.Trapezoid, new TrapezoidIntegral<Default>(absTolerance, maxEvaluations));
-            }
+            public static Integration trapezoid(double absTolerance, int maxEvaluations = 1000) => new Integration(Algorithm.Trapezoid, new TrapezoidIntegral<Default>(absTolerance, maxEvaluations));
 
             public double calculate(double c_inf, Func<double, double> f)
             {
@@ -207,13 +187,11 @@ namespace QLNet.Pricingengines.vanilla
                 return 0; // jfc
             }
 
-            public bool isAdaptiveIntegration()
-            {
-                return intAlgo_ == Algorithm.GaussLobatto
-                       || intAlgo_ == Algorithm.GaussKronrod
-                       || intAlgo_ == Algorithm.Simpson
-                       || intAlgo_ == Algorithm.Trapezoid;
-            }
+            public bool isAdaptiveIntegration() =>
+                intAlgo_ == Algorithm.GaussLobatto
+                || intAlgo_ == Algorithm.GaussKronrod
+                || intAlgo_ == Algorithm.Simpson
+                || intAlgo_ == Algorithm.Trapezoid;
 
             private enum Algorithm
             {
@@ -288,22 +266,22 @@ namespace QLNet.Pricingengines.vanilla
         public override void calculate()
         {
             // this is a european option pricer
-            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European, () => "not an European option");
+            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
 
             // plain vanilla
-            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non plain vanilla payoff given");
 
-            HestonProcess process = model_.link.process();
+            var process = model_.link.process();
 
-            double riskFreeDiscount = process.riskFreeRate().link.discount(arguments_.exercise.lastDate());
-            double dividendDiscount = process.dividendYield().link.discount(arguments_.exercise.lastDate());
+            var riskFreeDiscount = process.riskFreeRate().link.discount(arguments_.exercise.lastDate());
+            var dividendDiscount = process.dividendYield().link.discount(arguments_.exercise.lastDate());
 
-            double spotPrice = process.s0().link.value();
+            var spotPrice = process.s0().link.value();
             Utils.QL_REQUIRE(spotPrice > 0.0, () => "negative or null underlying given");
 
-            double strikePrice = payoff.strike();
-            double term = process.time(arguments_.exercise.lastDate());
+            var strikePrice = payoff.strike();
+            var term = process.time(arguments_.exercise.lastDate());
 
             double? resultsValue = null;
             doCalculation(riskFreeDiscount,
@@ -325,7 +303,7 @@ namespace QLNet.Pricingengines.vanilla
             results_.value = resultsValue;
         }
 
-        public int numberOfEvaluations() { return evaluations_; }
+        public int numberOfEvaluations() => evaluations_;
 
         public static void doCalculation(double riskFreeDiscount,
                                          double dividendDiscount,
@@ -341,19 +319,19 @@ namespace QLNet.Pricingengines.vanilla
                                          ref int evaluations)
         {
 
-            double ratio = riskFreeDiscount / dividendDiscount;
+            var ratio = riskFreeDiscount / dividendDiscount;
 
-            double c_inf = System.Math.Min(10.0, System.Math.Max(0.0001,
-                                                   System.Math.Sqrt(1.0 - System.Math.Pow(rho, 2)) / sigma))
-                           * (v0 + kappa * theta * term);
+            var c_inf = System.Math.Min(10.0, System.Math.Max(0.0001,
+                            System.Math.Sqrt(1.0 - System.Math.Pow(rho, 2)) / sigma))
+                        * (v0 + kappa * theta * term);
 
             evaluations = 0;
-            double p1 = integration.calculate(c_inf,
+            var p1 = integration.calculate(c_inf,
                                               new Fj_Helper(kappa, theta, sigma, v0, spotPrice, rho, enginePtr,
                                                             cpxLog, term, strikePrice, ratio, 1).value) / Const.M_PI;
             evaluations += integration.numberOfEvaluations();
 
-            double p2 = integration.calculate(c_inf,
+            var p2 = integration.calculate(c_inf,
                                               new Fj_Helper(kappa, theta, sigma, v0, spotPrice, rho, enginePtr,
                                                             cpxLog, term, strikePrice, ratio, 2).value) / Const.M_PI;
 
@@ -368,7 +346,7 @@ namespace QLNet.Pricingengines.vanilla
                     value = spotPrice * dividendDiscount * (p1 - 0.5) - strikePrice * riskFreeDiscount * (p2 - 0.5);
                     break;
                 default:
-                    Utils.QL_FAIL("unknown option type");
+                    Utils.QL_FAIL("unknown option ExerciseType");
                     break;
             }
 
@@ -377,7 +355,7 @@ namespace QLNet.Pricingengines.vanilla
 
         // call back for extended stochastic volatility
         // plus jump diffusion engines like bates model
-        protected virtual Complex addOnTerm(double phi, double t, int j) { return new Complex(0, 0); }
+        protected virtual Complex addOnTerm(double phi, double t, int j) => new Complex(0, 0);
 
         private class Fj_Helper
         {
@@ -460,12 +438,12 @@ namespace QLNet.Pricingengines.vanilla
 
             public double value(double phi)
             {
-                double rpsig = rsigma_ * phi;
+                var rpsig = rsigma_ * phi;
 
-                Complex t1 = t0_ + new Complex(0, -rpsig);
-                Complex d = Complex.Sqrt(t1 * t1 - sigma2_ * phi * new Complex(-phi, j_ == 1 ? 1 : -1));
-                Complex ex = Complex.Exp(-d * term_);
-                Complex addOnTerm = engine_ != null ? engine_.addOnTerm(phi, term_, j_) : 0.0;
+                var t1 = t0_ + new Complex(0, -rpsig);
+                var d = Complex.Sqrt(t1 * t1 - sigma2_ * phi * new Complex(-phi, j_ == 1 ? 1 : -1));
+                var ex = Complex.Exp(-d * term_);
+                var addOnTerm = engine_ != null ? engine_.addOnTerm(phi, term_, j_) : 0.0;
 
                 if (cpxLog_ == ComplexLogFormula.Gatheral)
                 {
@@ -473,8 +451,8 @@ namespace QLNet.Pricingengines.vanilla
                     {
                         if (sigma_ > 1e-5)
                         {
-                            Complex p = (t1 - d) / (t1 + d);
-                            Complex g = Complex.Log((1.0 - p * ex) / (1.0 - p));
+                            var p = (t1 - d) / (t1 + d);
+                            var g = Complex.Log((1.0 - p * ex) / (1.0 - p));
 
                             return Complex.Exp(v0_ * (t1 - d) * (1.0 - ex) / (sigma2_ * (1.0 - ex * p))
                                                + kappa_ * theta_ / sigma2_ * ((t1 - d) * term_ - 2.0 * g)
@@ -484,9 +462,9 @@ namespace QLNet.Pricingengines.vanilla
                         }
                         else
                         {
-                            Complex td = phi / (2.0 * t1) * new Complex(-phi, j_ == 1 ? 1 : -1);
-                            Complex p = td * sigma2_ / (t1 + d);
-                            Complex g = p * (1.0 - ex);
+                            var td = phi / (2.0 * t1) * new Complex(-phi, j_ == 1 ? 1 : -1);
+                            var p = td * sigma2_ / (t1 + d);
+                            var g = p * (1.0 - ex);
 
                             return Complex.Exp(v0_ * td * (1.0 - ex) / (1.0 - p * ex)
                                                + kappa_ * theta_ * (td * term_ - 2.0 * g / sigma2_)
@@ -500,7 +478,7 @@ namespace QLNet.Pricingengines.vanilla
                         // use l'Hospital's rule
                         if (j_ == 1)
                         {
-                            double kmr = rsigma_ - kappa_;
+                            var kmr = rsigma_ - kappa_;
                             if (System.Math.Abs(kmr) > 1e-7)
                             {
                                 return dd_ - sx_
@@ -524,13 +502,13 @@ namespace QLNet.Pricingengines.vanilla
                 }
                 else if (cpxLog_ == ComplexLogFormula.BranchCorrection)
                 {
-                    Complex p = (t1 + d) / (t1 - d);
+                    var p = (t1 + d) / (t1 - d);
 
                     // next term: g = std::log((1.0 - p*std::exp(d*term_))/(1.0 - p))
-                    Complex g = new Complex();
+                    var g = new Complex();
 
                     // the exp of the following expression is needed.
-                    Complex e = Complex.Log(p) + d * term_;
+                    var e = Complex.Log(p) + d * term_;
 
                     // does it fit to the machine precision?
                     if (System.Math.Exp(-e.Real) > Const.QL_EPSILON)
@@ -545,7 +523,7 @@ namespace QLNet.Pricingengines.vanilla
                         if (g.Imaginary > Const.M_PI || g.Imaginary <= -Const.M_PI)
                         {
                             // get back to principal branch of the complex logarithm
-                            double im = g.Imaginary - 2 * Const.M_PI * System.Math.Floor(g.Imaginary / 2 * Const.M_PI);
+                            var im = g.Imaginary - 2 * Const.M_PI * System.Math.Floor(g.Imaginary / 2 * Const.M_PI);
                             if (im > Const.M_PI)
                                 im -= 2 * Const.M_PI;
                             else if (im <= -Const.M_PI)
@@ -561,7 +539,7 @@ namespace QLNet.Pricingengines.vanilla
                     // (s. A. Sepp, chapter 4)
                     // remark: there is still the change that we miss a branch
                     // if the order of the integration is not high enough.
-                    double tmp = g.Imaginary - g_km1_;
+                    var tmp = g.Imaginary - g_km1_;
                     if (tmp <= -Const.M_PI)
                         ++b_;
                     else if (tmp > Const.M_PI)

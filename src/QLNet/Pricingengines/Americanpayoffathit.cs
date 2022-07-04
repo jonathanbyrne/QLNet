@@ -26,7 +26,7 @@ namespace QLNet.Pricingengines
 
     //! Analytic formula for American exercise payoff at-hit options
     //! \todo calculate greeks
-    public class AmericanPayoffAtHit
+    [JetBrains.Annotations.PublicAPI] public class AmericanPayoffAtHit
     {
         private double spot_;
         private double discount_;
@@ -69,7 +69,7 @@ namespace QLNet.Pricingengines
 
             stdDev_ = System.Math.Sqrt(variance_);
 
-            QLNet.Option.Type type = payoff.optionType();
+            var type = payoff.optionType();
             strike_ = payoff.strike();
 
 
@@ -97,7 +97,7 @@ namespace QLNet.Pricingengines
                 }
                 D1_ = log_H_S_ / stdDev_ + lambda_ * stdDev_;
                 D2_ = D1_ - 2.0 * lambda_ * stdDev_;
-                CumulativeNormalDistribution f = new CumulativeNormalDistribution();
+                var f = new CumulativeNormalDistribution();
                 cum_d1_ = f.value(D1_);
                 cum_d2_ = f.value(D2_);
                 n_d1 = f.derivative(D1_);
@@ -162,7 +162,7 @@ namespace QLNet.Pricingengines
                     }
                     break;
                 default:
-                    Utils.QL_FAIL("invalid option type");
+                    Utils.QL_FAIL("invalid option ExerciseType");
                     break;
             }
 
@@ -184,14 +184,14 @@ namespace QLNet.Pricingengines
 
 
             // Binary Cash-Or-Nothing payoff?
-            CashOrNothingPayoff coo = payoff as CashOrNothingPayoff;
+            var coo = payoff as CashOrNothingPayoff;
             if (coo != null)
             {
                 K_ = coo.cashPayoff();
             }
 
             // Binary Asset-Or-Nothing payoff?
-            AssetOrNothingPayoff aoo = payoff as AssetOrNothingPayoff;
+            var aoo = payoff as AssetOrNothingPayoff;
 
             if (aoo != null)
             {
@@ -207,16 +207,13 @@ namespace QLNet.Pricingengines
         }
 
         // inline definitions
-        public double value()
-        {
-            return K_ * (forward_ * alpha_ + X_ * beta_);
-        }
+        public double value() => K_ * (forward_ * alpha_ + X_ * beta_);
 
         public double delta()
         {
-            double tempDelta = -spot_ * stdDev_;
-            double DalphaDs = DalphaDd1_ / tempDelta;
-            double DbetaDs = DbetaDd2_ / tempDelta;
+            var tempDelta = -spot_ * stdDev_;
+            var DalphaDs = DalphaDd1_ / tempDelta;
+            var DbetaDs = DbetaDd2_ / tempDelta;
 
             double DforwardDs;
             double DXDs;
@@ -236,11 +233,11 @@ namespace QLNet.Pricingengines
 
         public double gamma()
         {
-            double tempDelta = -spot_ * stdDev_;
-            double DalphaDs = DalphaDd1_ / tempDelta;
-            double DbetaDs = DbetaDd2_ / tempDelta;
-            double D2alphaDs2 = -DalphaDs / spot_ * (1 - D1_ / stdDev_);
-            double D2betaDs2 = -DbetaDs / spot_ * (1 - D2_ / stdDev_);
+            var tempDelta = -spot_ * stdDev_;
+            var DalphaDs = DalphaDd1_ / tempDelta;
+            var DbetaDs = DbetaDd2_ / tempDelta;
+            var D2alphaDs2 = -DalphaDs / spot_ * (1 - D1_ / stdDev_);
+            var D2betaDs2 = -DbetaDs / spot_ * (1 - D2_ / stdDev_);
 
             double DforwardDs;
             double DXDs;
@@ -270,8 +267,8 @@ namespace QLNet.Pricingengines
             Utils.QL_REQUIRE(maturity >= 0.0, () => "negative maturity not allowed");
 
             // actually D.Dr / T
-            double DalphaDr = -DalphaDd1_ / (lambda_ * stdDev_) * (1.0 + mu_);
-            double DbetaDr = DbetaDd2_ / (lambda_ * stdDev_) * (1.0 + mu_);
+            var DalphaDr = -DalphaDd1_ / (lambda_ * stdDev_) * (1.0 + mu_);
+            var DbetaDr = DbetaDd2_ / (lambda_ * stdDev_) * (1.0 + mu_);
             double DforwardDr;
             double DXDr;
             if (inTheMoney_)

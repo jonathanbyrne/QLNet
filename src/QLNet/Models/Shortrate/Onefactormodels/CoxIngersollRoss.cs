@@ -32,7 +32,7 @@ namespace QLNet.Models.Shortrate.Onefactormodels
     /// This class was not tested enough to guarantee its functionality.
     /// </remarks>
     /// </summary>
-    public class CoxIngersollRoss : OneFactorAffineModel
+    [JetBrains.Annotations.PublicAPI] public class CoxIngersollRoss : OneFactorAffineModel
     {
         private Parameter theta_;
         private Parameter k_;
@@ -57,8 +57,8 @@ namespace QLNet.Models.Shortrate.Onefactormodels
                                                   double bondMaturity)
         {
             Utils.QL_REQUIRE(strike > 0.0, () => "strike must be positive");
-            double discountT = discountBond(0.0, maturity, x0());
-            double discountS = discountBond(0.0, bondMaturity, x0());
+            var discountT = discountBond(0.0, maturity, x0());
+            var discountS = discountBond(0.0, bondMaturity, x0());
 
             if (maturity < Const.QL_EPSILON)
             {
@@ -69,27 +69,27 @@ namespace QLNet.Models.Shortrate.Onefactormodels
                     case QLNet.Option.Type.Put:
                         return System.Math.Max(strike - discountS, 0.0);
                     default:
-                        Utils.QL_FAIL("unsupported option type");
+                        Utils.QL_FAIL("unsupported option ExerciseType");
                         break;
                 }
             }
-            double sigma2 = sigma() * sigma();
-            double h = System.Math.Sqrt(k() * k() + 2.0 * sigma2);
-            double b = B(maturity, bondMaturity);
+            var sigma2 = sigma() * sigma();
+            var h = System.Math.Sqrt(k() * k() + 2.0 * sigma2);
+            var b = B(maturity, bondMaturity);
 
-            double rho = 2.0 * h / (sigma2 * (System.Math.Exp(h * maturity) - 1.0));
-            double psi = (k() + h) / sigma2;
+            var rho = 2.0 * h / (sigma2 * (System.Math.Exp(h * maturity) - 1.0));
+            var psi = (k() + h) / sigma2;
 
-            double df = 4.0 * k() * theta() / sigma2;
-            double ncps = 2.0 * rho * rho * x0() * System.Math.Exp(h * maturity) / (rho + psi + b);
-            double ncpt = 2.0 * rho * rho * x0() * System.Math.Exp(h * maturity) / (rho + psi);
+            var df = 4.0 * k() * theta() / sigma2;
+            var ncps = 2.0 * rho * rho * x0() * System.Math.Exp(h * maturity) / (rho + psi + b);
+            var ncpt = 2.0 * rho * rho * x0() * System.Math.Exp(h * maturity) / (rho + psi);
 
-            NonCentralChiSquareDistribution chis = new NonCentralChiSquareDistribution(df, ncps);
-            NonCentralChiSquareDistribution chit = new NonCentralChiSquareDistribution(df, ncpt);
+            var chis = new NonCentralChiSquareDistribution(df, ncps);
+            var chit = new NonCentralChiSquareDistribution(df, ncpt);
 
-            double z = System.Math.Log(A(maturity, bondMaturity) / strike) / b;
-            double call = discountS * chis.value(2.0 * z * (rho + psi + b)) -
-                          strike * discountT * chit.value(2.0 * z * (rho + psi));
+            var z = System.Math.Log(A(maturity, bondMaturity) / strike) / b;
+            var call = discountS * chis.value(2.0 * z * (rho + psi + b)) -
+                       strike * discountT * chit.value(2.0 * z * (rho + psi));
 
             if (type == QLNet.Option.Type.Call)
                 return call;
@@ -97,59 +97,44 @@ namespace QLNet.Models.Shortrate.Onefactormodels
                 return call - discountS + strike * discountT;
         }
 
-        public override ShortRateDynamics dynamics()
-        {
-            return new Dynamics(theta(), k(), sigma(), x0());
-        }
+        public override ShortRateDynamics dynamics() => new Dynamics(theta(), k(), sigma(), x0());
 
         public override Lattice tree(TimeGrid grid)
         {
-            TrinomialTree trinomial = new TrinomialTree(dynamics().process(), grid, true);
+            var trinomial = new TrinomialTree(dynamics().process(), grid, true);
             return new ShortRateTree(trinomial, dynamics(), grid);
         }
 
         protected override double A(double t, double T)
         {
-            double sigma2 = sigma() * sigma();
-            double h = System.Math.Sqrt(k() * k() + 2.0 * sigma2);
-            double numerator = 2.0 * h * System.Math.Exp(0.5 * (k() + h) * (T - t));
-            double denominator = 2.0 * h + (k() + h) * (System.Math.Exp((T - t) * h) - 1.0);
-            double value = System.Math.Log(numerator / denominator) *
+            var sigma2 = sigma() * sigma();
+            var h = System.Math.Sqrt(k() * k() + 2.0 * sigma2);
+            var numerator = 2.0 * h * System.Math.Exp(0.5 * (k() + h) * (T - t));
+            var denominator = 2.0 * h + (k() + h) * (System.Math.Exp((T - t) * h) - 1.0);
+            var value = System.Math.Log(numerator / denominator) *
                            2.0 * k() * theta() / sigma2;
             return System.Math.Exp(value);
         }
 
         protected override double B(double t, double T)
         {
-            double h = System.Math.Sqrt(k() * k() + 2.0 * sigma() * sigma());
-            double temp = System.Math.Exp((T - t) * h) - 1.0;
-            double numerator = 2.0 * temp;
-            double denominator = 2.0 * h + (k() + h) * temp;
-            double value = numerator / denominator;
+            var h = System.Math.Sqrt(k() * k() + 2.0 * sigma() * sigma());
+            var temp = System.Math.Exp((T - t) * h) - 1.0;
+            var numerator = 2.0 * temp;
+            var denominator = 2.0 * h + (k() + h) * temp;
+            var value = numerator / denominator;
             return value;
         }
 
-        protected double theta()
-        {
-            return theta_.value(0.0);
-        }
+        protected double theta() => theta_.value(0.0);
 
-        protected double k()
-        {
-            return k_.value(0.0);
-        }
+        protected double k() => k_.value(0.0);
 
-        protected double sigma()
-        {
-            return sigma_.value(0.0);
-        }
+        protected double sigma() => sigma_.value(0.0);
 
-        protected double x0()
-        {
-            return r0_.value(0.0);
-        }
+        protected double x0() => r0_.value(0.0);
 
-        public class HelperProcess : StochasticProcess1D
+        [JetBrains.Annotations.PublicAPI] public class HelperProcess : StochasticProcess1D
         {
             private double y0_, theta_, k_, sigma_;
 
@@ -161,28 +146,20 @@ namespace QLNet.Models.Shortrate.Onefactormodels
                 sigma_ = sigma;
             }
 
-            public override double x0()
-            {
-                return y0_;
-            }
+            public override double x0() => y0_;
 
-            public override double drift(double d, double y)
-            {
-                return (0.5 * theta_ * k_ - 0.125 * sigma_ * sigma_) / y
-                       - 0.5 * k_ * y;
-            }
+            public override double drift(double d, double y) =>
+                (0.5 * theta_ * k_ - 0.125 * sigma_ * sigma_) / y
+                - 0.5 * k_ * y;
 
-            public override double diffusion(double d1, double d2)
-            {
-                return 0.5 * sigma_;
-            }
+            public override double diffusion(double d1, double d2) => 0.5 * sigma_;
         }
 
         //! %Dynamics of the short-rate under the Cox-Ingersoll-Ross model
         /*! The state variable \f$ y_t \f$ will here be the square-root of the
             short-rate.
         */
-        public class Dynamics : ShortRateDynamics
+        [JetBrains.Annotations.PublicAPI] public class Dynamics : ShortRateDynamics
         {
             public Dynamics(double theta,
                             double k,
@@ -191,15 +168,9 @@ namespace QLNet.Models.Shortrate.Onefactormodels
                : base(new HelperProcess(theta, k, sigma, System.Math.Sqrt(x0)))
             { }
 
-            public override double variable(double d, double r)
-            {
-                return System.Math.Sqrt(r);
-            }
+            public override double variable(double d, double r) => System.Math.Sqrt(r);
 
-            public override double shortRate(double d, double y)
-            {
-                return y * y;
-            }
+            public override double shortRate(double d, double y) => y * y;
         }
     }
 }

@@ -37,7 +37,7 @@ namespace QLNet.Math.integrals
        \test the correctness of the result is tested by checking it
              against known good values.
     */
-    public class GaussianQuadrature
+    [JetBrains.Annotations.PublicAPI] public class GaussianQuadrature
     {
         public GaussianQuadrature(int n, GaussianOrthogonalPolynomial orthPoly)
         {
@@ -45,7 +45,7 @@ namespace QLNet.Math.integrals
             w_ = new Vector(n);
 
             // set-up matrix to compute the roots and the weights
-            Vector e = new Vector(n - 1);
+            var e = new Vector(n - 1);
 
             int i;
             for (i = 1; i < n; ++i)
@@ -55,14 +55,14 @@ namespace QLNet.Math.integrals
             }
             x_[0] = orthPoly.alpha(0);
 
-            TqrEigenDecomposition tqr = new TqrEigenDecomposition(x_, e,
+            var tqr = new TqrEigenDecomposition(x_, e,
                                                                   TqrEigenDecomposition.EigenVectorCalculation.OnlyFirstRowEigenVector,
                                                                   TqrEigenDecomposition.ShiftStrategy.Overrelaxation);
 
             x_ = tqr.eigenvalues();
-            Matrix ev = tqr.eigenvectors();
+            var ev = tqr.eigenvectors();
 
-            double mu_0 = orthPoly.mu_0();
+            var mu_0 = orthPoly.mu_0();
             for (i = 0; i < n; ++i)
             {
                 w_[i] = mu_0 * ev[0, i] * ev[0, i] / orthPoly.w(x_[i]);
@@ -72,25 +72,26 @@ namespace QLNet.Math.integrals
 
         public double value(Func<double, double> f)
         {
-            double sum = 0.0;
-            for (int i = order() - 1; i >= 0; --i)
+            var sum = 0.0;
+            for (var i = order() - 1; i >= 0; --i)
             {
                 sum += w_[i] * f(x_[i]);
             }
             return sum;
         }
 
-        public int order() { return x_.size(); }
-        public Vector weights() { return w_; }
-        public Vector x() { return x_; }
+        public int order() => x_.size();
 
+        public Vector weights() => w_;
+
+        public Vector x() => x_;
 
         private Vector x_, w_;
     }
 
     //! generalized Gauss-Laguerre integration
     // This class performs a 1-dimensional Gauss-Laguerre integration.
-    public class GaussLaguerreIntegration : GaussianQuadrature
+    [JetBrains.Annotations.PublicAPI] public class GaussLaguerreIntegration : GaussianQuadrature
     {
         public GaussLaguerreIntegration(int n, double s = 0.0)
            : base(n, new GaussLaguerrePolynomial(s)) { }
@@ -98,7 +99,7 @@ namespace QLNet.Math.integrals
 
     //! generalized Gauss-Hermite integration
     // This class performs a 1-dimensional Gauss-Hermite integration.
-    public class GaussHermiteIntegration : GaussianQuadrature
+    [JetBrains.Annotations.PublicAPI] public class GaussHermiteIntegration : GaussianQuadrature
     {
         public GaussHermiteIntegration(int n, double mu = 0.0)
            : base(n, new GaussHermitePolynomial(mu)) { }
@@ -106,7 +107,7 @@ namespace QLNet.Math.integrals
 
     //! Gauss-Jacobi integration
     // This class performs a 1-dimensional Gauss-Jacobi integration.
-    public class GaussJacobiIntegration : GaussianQuadrature
+    [JetBrains.Annotations.PublicAPI] public class GaussJacobiIntegration : GaussianQuadrature
     {
         public GaussJacobiIntegration(int n, double alpha, double beta)
            : base(n, new GaussJacobiPolynomial(alpha, beta)) { }
@@ -114,7 +115,7 @@ namespace QLNet.Math.integrals
 
     //! Gauss-Hyperbolic integration
     // This class performs a 1-dimensional Gauss-Hyperbolic integration.
-    public class GaussHyperbolicIntegration : GaussianQuadrature
+    [JetBrains.Annotations.PublicAPI] public class GaussHyperbolicIntegration : GaussianQuadrature
     {
         public GaussHyperbolicIntegration(int n)
            : base(n, new GaussHyperbolicPolynomial()) { }
@@ -122,7 +123,7 @@ namespace QLNet.Math.integrals
 
     //! Gauss-Legendre integration
     // This class performs a 1-dimensional Gauss-Legendre integration.
-    public class GaussLegendreIntegration : GaussianQuadrature
+    [JetBrains.Annotations.PublicAPI] public class GaussLegendreIntegration : GaussianQuadrature
     {
         public GaussLegendreIntegration(int n)
            : base(n, new GaussJacobiPolynomial(0.0, 0.0)) { }
@@ -130,7 +131,7 @@ namespace QLNet.Math.integrals
 
     //! Gauss-Chebyshev integration
     // This class performs a 1-dimensional Gauss-Chebyshev integration.
-    public class GaussChebyshevIntegration : GaussianQuadrature
+    [JetBrains.Annotations.PublicAPI] public class GaussChebyshevIntegration : GaussianQuadrature
     {
         public GaussChebyshevIntegration(int n)
            : base(n, new GaussJacobiPolynomial(-0.5, -0.5)) { }
@@ -138,7 +139,7 @@ namespace QLNet.Math.integrals
 
     //! Gauss-Chebyshev integration (second kind)
     // This class performs a 1-dimensional Gauss-Chebyshev integration.
-    public class GaussChebyshev2ndIntegration : GaussianQuadrature
+    [JetBrains.Annotations.PublicAPI] public class GaussChebyshev2ndIntegration : GaussianQuadrature
     {
         public GaussChebyshev2ndIntegration(int n)
            : base(n, new GaussJacobiPolynomial(0.5, 0.5)) { }
@@ -146,14 +147,14 @@ namespace QLNet.Math.integrals
 
     //! Gauss-Gegenbauer integration
     // This class performs a 1-dimensional Gauss-Gegenbauer integration.
-    public class GaussGegenbauerIntegration : GaussianQuadrature
+    [JetBrains.Annotations.PublicAPI] public class GaussGegenbauerIntegration : GaussianQuadrature
     {
         public GaussGegenbauerIntegration(int n, double lambda)
            : base(n, new GaussJacobiPolynomial(lambda - 0.5, lambda - 0.5)) { }
     }
 
     //! tabulated Gauss-Legendre quadratures
-    public class TabulatedGaussLegendre
+    [JetBrains.Annotations.PublicAPI] public class TabulatedGaussLegendre
     {
         public TabulatedGaussLegendre(int n = 20) { order(n); }
 
@@ -164,7 +165,7 @@ namespace QLNet.Math.integrals
             int startIdx;
             double val;
 
-            int isOrderOdd = order_ & 1;
+            var isOrderOdd = order_ & 1;
 
             if (isOrderOdd > 0)
             {
@@ -178,7 +179,7 @@ namespace QLNet.Math.integrals
                 startIdx = 0;
             }
 
-            for (int i = startIdx; i < n_; ++i)
+            for (var i = startIdx; i < n_; ++i)
             {
                 val += w_[i] * f(x_[i]);
                 val += w_[i] * f(-x_[i]);
@@ -208,8 +209,7 @@ namespace QLNet.Math.integrals
             }
         }
 
-        public int order() { return order_; }
-
+        public int order() => order_;
 
         private int order_;
 

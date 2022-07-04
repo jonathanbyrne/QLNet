@@ -32,7 +32,7 @@ namespace QLNet.Cashflows
 
         \note inflation indices do not contain day counters or calendars.
     */
-    public class InflationCoupon : Coupon, IObserver
+    [JetBrains.Annotations.PublicAPI] public class InflationCoupon : Coupon, IObserver
     {
 
         public InflationCoupon(Date paymentDate,
@@ -58,16 +58,13 @@ namespace QLNet.Cashflows
         }
 
         // CashFlow interface
-        public override double amount()
-        {
-            return rate() * accrualPeriod() * nominal();
-        }
+        public override double amount() => rate() * accrualPeriod() * nominal();
+
         // Coupon interface
-        public double price(Handle<YieldTermStructure> discountingCurve)
-        {
-            return amount() * discountingCurve.link.discount(date());
-        }
-        public override DayCounter dayCounter() { return dayCounter_; }
+        public double price(Handle<YieldTermStructure> discountingCurve) => amount() * discountingCurve.link.discount(date());
+
+        public override DayCounter dayCounter() => dayCounter_;
+
         public override double accruedAmount(Date d)
         {
             if (d <= accrualStartDate_ || d > paymentDate_)
@@ -87,7 +84,7 @@ namespace QLNet.Cashflows
         {
             Utils.QL_REQUIRE(pricer_ != null, () => "pricer not set");
 
-            // we know it is the correct type because checkPricerImpl checks on setting
+            // we know it is the correct ExerciseType because checkPricerImpl checks on setting
             // in general pricer_ will be a derived class, as will *this on calling
             pricer_.initialize(this);
             return pricer_.swapletRate();
@@ -95,30 +92,28 @@ namespace QLNet.Cashflows
 
         // Inspectors
         //! yoy inflation index
-        public InflationIndex index() { return index_; }
-        //! how the coupon observes the index
-        public Period observationLag() { return observationLag_; }
-        //! fixing days
-        public int fixingDays() { return fixingDays_; }
-        //! fixing date
-        public virtual Date fixingDate()
-        {
-            // fixing calendar is usually the null calendar for inflation indices
-            return index_.fixingCalendar().advance(refPeriodEnd_ - observationLag_,
-                                                   -fixingDays_, TimeUnit.Days, BusinessDayConvention.ModifiedPreceding);
-        }
-        //! fixing of the underlying index, as observed by the coupon
-        public virtual double indexFixing()
-        {
-            return index_.fixing(fixingDate());
-        }
+        public InflationIndex index() => index_;
 
+        //! how the coupon observes the index
+        public Period observationLag() => observationLag_;
+
+        //! fixing days
+        public int fixingDays() => fixingDays_;
+
+        //! fixing date
+        public virtual Date fixingDate() =>
+            // fixing calendar is usually the null calendar for inflation indices
+            index_.fixingCalendar().advance(refPeriodEnd_ - observationLag_,
+                -fixingDays_, TimeUnit.Days, BusinessDayConvention.ModifiedPreceding);
+
+        //! fixing of the underlying index, as observed by the coupon
+        public virtual double indexFixing() => index_.fixing(fixingDate());
 
         public void update() { notifyObservers(); }
 
         public void setPricer(InflationCouponPricer pricer)
         {
-            Utils.QL_REQUIRE(checkPricerImpl(pricer), () => "pricer given is wrong type");
+            Utils.QL_REQUIRE(checkPricerImpl(pricer), () => "pricer given is wrong ExerciseType");
 
             if (pricer_ != null)
                 pricer_.unregisterWith(update);
@@ -131,7 +126,7 @@ namespace QLNet.Cashflows
             update();
         }
 
-        public InflationCouponPricer pricer() { return pricer_; }
+        public InflationCouponPricer pricer() => pricer_;
 
         protected InflationCouponPricer pricer_;
         protected InflationIndex index_;
@@ -139,10 +134,9 @@ namespace QLNet.Cashflows
         protected DayCounter dayCounter_;
         protected int fixingDays_;
 
-        //! makes sure you were given the correct type of pricer
+        //! makes sure you were given the correct ExerciseType of pricer
         // this can also done in external pricer setter classes via
         // accept/visit mechanism
-        protected virtual bool checkPricerImpl(InflationCouponPricer i) { return false; }
-
+        protected virtual bool checkPricerImpl(InflationCouponPricer i) => false;
     }
 }

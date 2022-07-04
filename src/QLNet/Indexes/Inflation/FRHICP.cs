@@ -24,7 +24,7 @@ namespace QLNet.Indexes.Inflation
 {
 
     //! FR HICP index
-    public class FRHICP : ZeroInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class FRHICP : ZeroInflationIndex
     {
         public FRHICP(bool interpolated)
            : this(interpolated, new Handle<ZeroInflationTermStructure>()) { }
@@ -43,7 +43,7 @@ namespace QLNet.Indexes.Inflation
     }
 
     //! Genuine year-on-year FR HICP (i.e. not a ratio)
-    public class YYFRHICP : YoYInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class YYFRHICP : YoYInflationIndex
     {
         public YYFRHICP(bool interpolated)
            : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
@@ -63,7 +63,7 @@ namespace QLNet.Indexes.Inflation
     }
 
     //! Fake year-on-year FR HICP (i.e. a ratio)
-    public class YYFRHICPr : YoYInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class YYFRHICPr : YoYInflationIndex
     {
         public YYFRHICPr(bool interpolated)
            : this(interpolated, new Handle<YoYInflationTermStructure>()) { }

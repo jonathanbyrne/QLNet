@@ -24,7 +24,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Instruments.Bonds
 {
-    public class DiscretizedConvertible : DiscretizedAsset
+    [JetBrains.Annotations.PublicAPI] public class DiscretizedConvertible : DiscretizedAsset
     {
         public DiscretizedConvertible(ConvertibleBond.option.Arguments args,
                                       GeneralizedBlackScholesProcess process, TimeGrid grid)
@@ -34,8 +34,8 @@ namespace QLNet.Instruments.Bonds
 
             dividendValues_ = new Vector(arguments_.dividends.Count, 0.0);
 
-            Date settlementDate = process.riskFreeRate().link.referenceDate();
-            for (int i = 0; i < arguments_.dividends.Count; i++)
+            var settlementDate = process.riskFreeRate().link.referenceDate();
+            for (var i = 0; i < arguments_.dividends.Count; i++)
             {
                 if (arguments_.dividends[i].date() >= settlementDate)
                 {
@@ -44,8 +44,8 @@ namespace QLNet.Instruments.Bonds
                 }
             }
 
-            DayCounter dayCounter = process.riskFreeRate().currentLink().dayCounter();
-            Date bondSettlement = arguments_.settlementDate;
+            var dayCounter = process.riskFreeRate().currentLink().dayCounter();
+            var bondSettlement = arguments_.settlementDate;
 
             stoppingTimes_ = new InitializedList<double>(arguments_.exercise.dates().Count, 0.0);
             for (var i = 0; i < stoppingTimes_.Count; i++)
@@ -88,14 +88,14 @@ namespace QLNet.Instruments.Bonds
             conversionProbability_ = new Vector(size, 0.0);
             spreadAdjustedRate_ = new Vector(size, 0.0);
 
-            DayCounter rfdc = process_.riskFreeRate().link.dayCounter();
+            var rfdc = process_.riskFreeRate().link.dayCounter();
 
             // this takes care of the convertibility and conversion probabilities
             adjustValues();
 
-            Handle<Quote> creditSpread = arguments_.creditSpread;
-            Date exercise = arguments_.exercise.lastDate();
-            InterestRate riskFreeRate = process_.riskFreeRate().link
+            var creditSpread = arguments_.creditSpread;
+            var exercise = arguments_.exercise.lastDate();
+            var riskFreeRate = process_.riskFreeRate().link
                                         .zeroRate(exercise, rfdc, Compounding.Continuous, Frequency.NoFrequency);
 
 
@@ -109,8 +109,8 @@ namespace QLNet.Instruments.Bonds
         }
         protected override void postAdjustValuesImpl()
         {
-            bool convertible = false;
-            switch (arguments_.exercise.type())
+            var convertible = false;
+            switch (arguments_.exercise.ExerciseType())
             {
                 case Exercise.Type.American:
                     if (time() <= stoppingTimes_[1] && time() >= stoppingTimes_[0])
@@ -129,7 +129,7 @@ namespace QLNet.Instruments.Bonds
 
                     break;
                 default:
-                    Utils.QL_FAIL("invalid option type ");
+                    Utils.QL_FAIL("invalid option ExerciseType ");
                     break;
             }
 
@@ -146,10 +146,10 @@ namespace QLNet.Instruments.Bonds
         }
         public void applyConvertibility()
         {
-            Vector grid = adjustedGrid();
+            var grid = adjustedGrid();
             for (var j = 0; j < values_.size(); j++)
             {
-                double payoff = Convert.ToDouble(arguments_.conversionRatio) * grid[j];
+                var payoff = Convert.ToDouble(arguments_.conversionRatio) * grid[j];
                 if (values_[j] <= payoff)
                 {
                     values_[j] = payoff;
@@ -159,14 +159,14 @@ namespace QLNet.Instruments.Bonds
         }
         public void applyCallability(int i, bool convertible)
         {
-            Vector grid = adjustedGrid();
+            var grid = adjustedGrid();
             switch (arguments_.callabilityTypes[i])
             {
                 case Callability.Type.Call:
                     if (arguments_.callabilityTriggers[i] != null)
                     {
-                        double? conversionValue = arguments_.redemption / arguments_.conversionRatio;
-                        double? trigger = conversionValue * arguments_.callabilityTriggers[i];
+                        var conversionValue = arguments_.redemption / arguments_.conversionRatio;
+                        var trigger = conversionValue * arguments_.callabilityTriggers[i];
 
                         for (var j = 0; j < values_.size(); j++)
                         // the callability is conditioned by the trigger ...
@@ -205,7 +205,7 @@ namespace QLNet.Instruments.Bonds
 
                     break;
                 default:
-                    Utils.QL_FAIL("unknown callability type ");
+                    Utils.QL_FAIL("unknown callability ExerciseType ");
                     break;
             }
         }
@@ -215,17 +215,17 @@ namespace QLNet.Instruments.Bonds
         }
         public Vector adjustedGrid()
         {
-            double t = time();
-            Vector grid = method().grid(t);
+            var t = time();
+            var grid = method().grid(t);
             // add back all dividend amounts in the future
             for (var i = 0; i < arguments_.dividends.Count; i++)
             {
-                double dividendTime = dividendTimes_[i];
+                var dividendTime = dividendTimes_[i];
                 if (dividendTime >= t || Utils.close(dividendTime, t))
                 {
-                    Dividend d = arguments_.dividends[i];
-                    double dividendDiscount = process_.riskFreeRate().currentLink().discount(dividendTime) /
-                                              process_.riskFreeRate().currentLink().discount(t);
+                    var d = arguments_.dividends[i];
+                    var dividendDiscount = process_.riskFreeRate().currentLink().discount(dividendTime) /
+                                           process_.riskFreeRate().currentLink().discount(t);
                     for (var j = 0; j < grid.size(); j++)
                         grid[j] += d.amount(grid[j]) * dividendDiscount;
                 }
@@ -235,32 +235,22 @@ namespace QLNet.Instruments.Bonds
         }
         public override List<double> mandatoryTimes()
         {
-            List<double> result = new List<double>();
+            var result = new List<double>();
             result.AddRange(stoppingTimes_);
             result.AddRange(callabilityTimes_);
             result.AddRange(couponTimes_);
             return result;
         }
-        public ConvertibleBond.option.Arguments arguments()
-        {
-            return arguments_;
-        }
-        public GeneralizedBlackScholesProcess process()
-        {
-            return process_;
-        }
-        public Vector conversionProbability()
-        {
-            return conversionProbability_;
-        }
-        public Vector spreadAdjustedRate()
-        {
-            return spreadAdjustedRate_;
-        }
-        public Vector dividendValues()
-        {
-            return dividendValues_;
-        }
+        public ConvertibleBond.option.Arguments arguments() => arguments_;
+
+        public GeneralizedBlackScholesProcess process() => process_;
+
+        public Vector conversionProbability() => conversionProbability_;
+
+        public Vector spreadAdjustedRate() => spreadAdjustedRate_;
+
+        public Vector dividendValues() => dividendValues_;
+
         public Vector conversionProbability_;
         public Vector spreadAdjustedRate_;
         public Vector dividendValues_;

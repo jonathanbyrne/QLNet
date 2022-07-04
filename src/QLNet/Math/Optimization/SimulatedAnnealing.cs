@@ -30,7 +30,7 @@ namespace QLNet.Math.Optimization
     /// RNG.sample_type RNG.next();
     /// </summary>
     /// <typeparam name="RNG"></typeparam>
-    public class SimulatedAnnealing<RNG> : OptimizationMethod where RNG : class, IRNGTraits, new()
+    [JetBrains.Annotations.PublicAPI] public class SimulatedAnnealing<RNG> : OptimizationMethod where RNG : class, IRNGTraits, new()
     {
         public enum Scheme
         {
@@ -83,10 +83,10 @@ namespace QLNet.Math.Optimization
 
         public override EndCriteria.Type minimize(Problem P, EndCriteria endCriteria)
         {
-            int stationaryStateIterations_ = 0;
-            EndCriteria.Type ecType = EndCriteria.Type.None;
+            var stationaryStateIterations_ = 0;
+            var ecType = EndCriteria.Type.None;
             P.reset();
-            Vector x = P.currentValue();
+            var x = P.currentValue();
             iteration_ = 0;
             n_ = x.size();
             ptry_ = new Vector(n_, 0.0);
@@ -96,9 +96,9 @@ namespace QLNet.Math.Optimization
             vertices_ = new InitializedList<Vector>(n_ + 1, x);
             for (i_ = 0; i_ < n_; i_++)
             {
-                Vector direction = new Vector(n_, 0.0);
+                var direction = new Vector(n_, 0.0);
                 direction[i_] = 1.0;
-                Vector tmp = vertices_[i_ + 1];
+                var tmp = vertices_[i_ + 1];
                 P.constraint().update(ref tmp, direction, lambda_);
                 vertices_[i_ + 1] = tmp;
             }
@@ -250,15 +250,15 @@ namespace QLNet.Math.Optimization
 
         protected double simplexSize()
         {
-            Vector center = new Vector(vertices_.First().size(), 0);
-            for (int i = 0; i < vertices_.Count; ++i)
+            var center = new Vector(vertices_.First().size(), 0);
+            for (var i = 0; i < vertices_.Count; ++i)
                 center += vertices_[i];
 
             center *= 1 / Convert.ToDouble(vertices_.Count);
             double result = 0;
-            for (int i = 0; i < vertices_.Count; ++i)
+            for (var i = 0; i < vertices_.Count; ++i)
             {
-                Vector temp = vertices_[i] - center;
+                var temp = vertices_[i] - center;
                 result += Vector.Norm2(temp);
             }
 

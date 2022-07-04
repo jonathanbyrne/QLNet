@@ -22,7 +22,7 @@ using System;
 
 namespace QLNet.Math.Solvers1d
 {
-    public class FiniteDifferenceNewtonSafe : Solver1D
+    [JetBrains.Annotations.PublicAPI] public class FiniteDifferenceNewtonSafe : Solver1D
     {
         protected override double solveImpl(ISolver1d f, double xAccuracy)
         {
@@ -39,20 +39,20 @@ namespace QLNet.Math.Solvers1d
                 xl = xMax_;
             }
 
-            double froot = f.value(root_);
+            var froot = f.value(root_);
             ++evaluationNumber_;
             // first order finite difference derivative
-            double dfroot = xMax_ - root_ < root_ - xMin_ ?
+            var dfroot = xMax_ - root_ < root_ - xMin_ ?
                             (fxMax_ - froot) / (xMax_ - root_) :
                             (fxMin_ - froot) / (xMin_ - root_);
 
             // xMax_-xMin_>0 is verified in the constructor
-            double dx = xMax_ - xMin_;
+            var dx = xMax_ - xMin_;
             while (evaluationNumber_ <= maxEvaluations_)
             {
-                double frootold = froot;
-                double rootold = root_;
-                double dxold = dx;
+                var frootold = froot;
+                var rootold = root_;
+                var dxold = dx;
                 // Bisect if (out of range || not decreasing fast enough)
                 if (((root_ - xh) * dfroot - froot) *
                      ((root_ - xl) * dfroot - froot) > 0.0

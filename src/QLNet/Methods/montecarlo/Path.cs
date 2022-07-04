@@ -28,18 +28,18 @@ namespace QLNet.Methods.montecarlo
         \note the path includes the initial asset value as its first point.
     */
 
-    public interface IPath : ICloneable
+    [JetBrains.Annotations.PublicAPI] public interface IPath : ICloneable
     {
         int length();
     }
 
-    public interface IPathGenerator<GSG>
+    [JetBrains.Annotations.PublicAPI] public interface IPathGenerator<GSG>
     {
         Sample<IPath> next();
         Sample<IPath> antithetic();
     }
 
-    public class Path : IPath
+    [JetBrains.Annotations.PublicAPI] public class Path : IPath
     {
         private TimeGrid timeGrid_;
         private Vector values_;
@@ -59,30 +59,34 @@ namespace QLNet.Methods.montecarlo
         }
 
         // inspectors
-        public bool empty() { return timeGrid_.empty(); }
-        public int length() { return timeGrid_.size(); }
+        public bool empty() => timeGrid_.empty();
+
+        public int length() => timeGrid_.size();
 
         //! asset value at the \f$ i \f$-th point
-        public double this[int i] { get { return values_[i]; } set { values_[i] = value; } }
-        public double value(int i) { return values_[i]; }
+        public double this[int i] { get => values_[i];
+            set => values_[i] = value;
+        }
+        public double value(int i) => values_[i];
 
         //! time at the \f$ i \f$-th point
-        public double time(int i) { return timeGrid_[i]; }
+        public double time(int i) => timeGrid_[i];
 
         //! initial asset value
-        public double front() { return values_.First(); }
+        public double front() => values_.First();
+
         public void setFront(double value) { values_[0] = value; }
 
         //! final asset value
-        public double back() { return values_.Last(); }
+        public double back() => values_.Last();
 
         //! time grid
-        public TimeGrid timeGrid() { return timeGrid_; }
+        public TimeGrid timeGrid() => timeGrid_;
 
         // ICloneable interface
         public object Clone()
         {
-            Path temp = (Path)MemberwiseClone();
+            var temp = (Path)MemberwiseClone();
             temp.values_ = new Vector(values_);
             return temp;
         }

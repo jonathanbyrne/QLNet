@@ -29,7 +29,7 @@ namespace QLNet.Instruments.Bonds
     /*! \ingroup instruments
 
      */
-    public class CPIBond : Bond
+    [JetBrains.Annotations.PublicAPI] public class CPIBond : Bond
     {
         public CPIBond(int settlementDays,
                        double faceAmount,
@@ -80,17 +80,23 @@ namespace QLNet.Instruments.Bonds
 
             cpiIndex_.registerWith(update);
 
-            foreach (CashFlow i in cashflows_)
+            foreach (var i in cashflows_)
                 i.registerWith(update);
         }
 
-        public Frequency frequency() { return frequency_; }
-        public DayCounter dayCounter() { return dayCounter_; }
-        public bool growthOnly() { return growthOnly_; }
-        public double baseCPI() { return baseCPI_; }
-        public Period observationLag() { return observationLag_; }
-        public ZeroInflationIndex cpiIndex() { return cpiIndex_; }
-        public InterpolationType observationInterpolation() { return observationInterpolation_; }
+        public Frequency frequency() => frequency_;
+
+        public DayCounter dayCounter() => dayCounter_;
+
+        public bool growthOnly() => growthOnly_;
+
+        public double baseCPI() => baseCPI_;
+
+        public Period observationLag() => observationLag_;
+
+        public ZeroInflationIndex cpiIndex() => cpiIndex_;
+
+        public InterpolationType observationInterpolation() => observationInterpolation_;
 
         protected Frequency frequency_;
         protected DayCounter dayCounter_;

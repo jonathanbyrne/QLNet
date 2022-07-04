@@ -41,7 +41,7 @@ namespace QLNet.Time.Calendars
         (data from <http://www.bvb.ro/Marketplace/TradingCalendar/index.aspx>):
         all public holidays, plus a few one-off closing days (2014 only).      
     */
-    public class Romania : Calendar
+    [JetBrains.Annotations.PublicAPI] public class Romania : Calendar
     {
         public enum Market
         {
@@ -65,7 +65,7 @@ namespace QLNet.Time.Calendars
         {
             public static readonly PublicImpl Singleton = new PublicImpl();
             protected PublicImpl() { }
-            public override string name() { return "Romania"; }
+            public override string name() => "Romania";
 
             public override bool isBusinessDay(Date date)
             {
@@ -108,7 +108,8 @@ namespace QLNet.Time.Calendars
         {
             public static readonly BVBImpl Impl = new BVBImpl();
             private BVBImpl() { }
-            public override string name() { return "Romania"; }
+            public override string name() => "Romania";
+
             public override bool isBusinessDay(Date date)
             {
                 if (!base.isBusinessDay(date))

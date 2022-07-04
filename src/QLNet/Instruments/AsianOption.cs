@@ -28,7 +28,7 @@ namespace QLNet.Instruments
     //
     //        \ingroup instruments
     //
-    public class ContinuousAveragingAsianOption : OneAssetOption
+    [JetBrains.Annotations.PublicAPI] public class ContinuousAveragingAsianOption : OneAssetOption
     {
         public new class Arguments : Option.Arguments
         {
@@ -39,7 +39,7 @@ namespace QLNet.Instruments
             public override void validate()
             {
                 base.validate();
-                Utils.QL_REQUIRE(averageType != Average.Type.NULL, () => "unspecified average type");
+                Utils.QL_REQUIRE(averageType != Average.Type.NULL, () => "unspecified average ExerciseType");
             }
             public Average.Type averageType { get; set; }
         }
@@ -57,8 +57,8 @@ namespace QLNet.Instruments
 
             base.setupArguments(args);
 
-            Arguments moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument type");
+            var moreArgs = args as Arguments;
+            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
             moreArgs.averageType = averageType_;
         }
         protected Average.Type averageType_;
@@ -66,7 +66,7 @@ namespace QLNet.Instruments
 
     //! Discrete-averaging Asian option
     //! \ingroup instruments
-    public class DiscreteAveragingAsianOption : OneAssetOption
+    [JetBrains.Annotations.PublicAPI] public class DiscreteAveragingAsianOption : OneAssetOption
     {
         public new class Arguments : Option.Arguments
         {
@@ -80,7 +80,7 @@ namespace QLNet.Instruments
             {
                 base.validate();
 
-                Utils.QL_REQUIRE(averageType != Average.Type.NULL, () => "unspecified average type");
+                Utils.QL_REQUIRE(averageType != Average.Type.NULL, () => "unspecified average ExerciseType");
                 Utils.QL_REQUIRE(pastFixings != null, () => "null past-fixing number");
                 Utils.QL_REQUIRE(runningAccumulator != null, () => "null running product");
 
@@ -95,7 +95,7 @@ namespace QLNet.Instruments
                                          "positive running product required: " + runningAccumulator + " not allowed");
                         break;
                     default:
-                        Utils.QL_FAIL("invalid average type");
+                        Utils.QL_FAIL("invalid average ExerciseType");
                         break;
                 }
 
@@ -127,8 +127,8 @@ namespace QLNet.Instruments
 
             base.setupArguments(args);
 
-            Arguments moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument type");
+            var moreArgs = args as Arguments;
+            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
 
             moreArgs.averageType = averageType_;
             moreArgs.runningAccumulator = runningAccumulator_;

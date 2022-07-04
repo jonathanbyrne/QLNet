@@ -26,7 +26,7 @@ namespace QLNet.Pricingengines.Lookback
         E.G. Haug, 2006, p.146
 
     */
-    public class AnalyticContinuousPartialFloatingLookbackEngine : ContinuousPartialFloatingLookbackOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class AnalyticContinuousPartialFloatingLookbackEngine : ContinuousPartialFloatingLookbackOption.Engine
     {
         public AnalyticContinuousPartialFloatingLookbackEngine(GeneralizedBlackScholesProcess process)
         {
@@ -35,7 +35,7 @@ namespace QLNet.Pricingengines.Lookback
         }
         public override void calculate()
         {
-            FloatingTypePayoff payoff = arguments_.payoff as FloatingTypePayoff;
+            var payoff = arguments_.payoff as FloatingTypePayoff;
             Utils.QL_REQUIRE(payoff != null, () => "Non-floating payoff given");
 
             Utils.QL_REQUIRE(process_.x0() > 0.0, () => "negative or null underlying");
@@ -49,7 +49,7 @@ namespace QLNet.Pricingengines.Lookback
                     results_.value = A(-1);
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown type");
+                    Utils.QL_FAIL("Unknown ExerciseType");
                     break;
             }
         }
@@ -57,36 +57,43 @@ namespace QLNet.Pricingengines.Lookback
         private GeneralizedBlackScholesProcess process_;
         private CumulativeNormalDistribution f_ = new CumulativeNormalDistribution();
         // helper methods
-        private double underlying() { return process_.x0(); }
-        private double residualTime() { return process_.time(arguments_.exercise.lastDate()); }
-        private double volatility() { return process_.blackVolatility().link.blackVol(residualTime(), minmax()); }
-        private double minmax() { return arguments_.minmax.GetValueOrDefault(); }
-        private double lambda() { return arguments_.lambda; }
-        private double lookbackPeriodEndTime() { return process_.time(arguments_.lookbackPeriodEnd); }
-        private double stdDeviation() { return volatility() * System.Math.Sqrt(residualTime()); }
-        private double riskFreeRate()
-        {
-            return process_.riskFreeRate().link.zeroRate(residualTime(), Compounding.Continuous,
-                                                         Frequency.NoFrequency).value();
-        }
-        private double riskFreeDiscount() { return process_.riskFreeRate().link.discount(residualTime()); }
-        private double dividendYield()
-        {
-            return process_.dividendYield().link.zeroRate(residualTime(),
-                                                          Compounding.Continuous, Frequency.NoFrequency).value();
-        }
-        private double dividendDiscount() { return process_.dividendYield().link.discount(residualTime()); }
+        private double underlying() => process_.x0();
+
+        private double residualTime() => process_.time(arguments_.exercise.lastDate());
+
+        private double volatility() => process_.blackVolatility().link.blackVol(residualTime(), minmax());
+
+        private double minmax() => arguments_.minmax.GetValueOrDefault();
+
+        private double lambda() => arguments_.lambda;
+
+        private double lookbackPeriodEndTime() => process_.time(arguments_.lookbackPeriodEnd);
+
+        private double stdDeviation() => volatility() * System.Math.Sqrt(residualTime());
+
+        private double riskFreeRate() =>
+            process_.riskFreeRate().link.zeroRate(residualTime(), Compounding.Continuous,
+                Frequency.NoFrequency).value();
+
+        private double riskFreeDiscount() => process_.riskFreeRate().link.discount(residualTime());
+
+        private double dividendYield() =>
+            process_.dividendYield().link.zeroRate(residualTime(),
+                Compounding.Continuous, Frequency.NoFrequency).value();
+
+        private double dividendDiscount() => process_.dividendYield().link.discount(residualTime());
+
         private double A(double eta)
         {
-            bool fullLookbackPeriod = lookbackPeriodEndTime().IsEqual(residualTime());
-            double carry = riskFreeRate() - dividendYield();
-            double vol = volatility();
-            double x = 2.0 * carry / (vol * vol);
-            double s = underlying() / minmax();
+            var fullLookbackPeriod = lookbackPeriodEndTime().IsEqual(residualTime());
+            var carry = riskFreeRate() - dividendYield();
+            var vol = volatility();
+            var x = 2.0 * carry / (vol * vol);
+            var s = underlying() / minmax();
 
-            double ls = System.Math.Log(s);
-            double d1 = ls / stdDeviation() + 0.5 * (x + 1.0) * stdDeviation();
-            double d2 = d1 - stdDeviation();
+            var ls = System.Math.Log(s);
+            var d1 = ls / stdDeviation() + 0.5 * (x + 1.0) * stdDeviation();
+            var d2 = d1 - stdDeviation();
 
             double e1 = 0, e2 = 0;
             if (!fullLookbackPeriod)
@@ -95,17 +102,17 @@ namespace QLNet.Pricingengines.Lookback
                 e2 = e1 - vol * System.Math.Sqrt(residualTime() - lookbackPeriodEndTime());
             }
 
-            double f1 = (ls + (carry + vol * vol / 2) * lookbackPeriodEndTime()) / (vol * System.Math.Sqrt(lookbackPeriodEndTime()));
-            double f2 = f1 - vol * System.Math.Sqrt(lookbackPeriodEndTime());
+            var f1 = (ls + (carry + vol * vol / 2) * lookbackPeriodEndTime()) / (vol * System.Math.Sqrt(lookbackPeriodEndTime()));
+            var f2 = f1 - vol * System.Math.Sqrt(lookbackPeriodEndTime());
 
-            double l1 = System.Math.Log(lambda()) / vol;
-            double g1 = l1 / System.Math.Sqrt(residualTime());
+            var l1 = System.Math.Log(lambda()) / vol;
+            var g1 = l1 / System.Math.Sqrt(residualTime());
             double g2 = 0;
             if (!fullLookbackPeriod)
                 g2 = l1 / System.Math.Sqrt(residualTime() - lookbackPeriodEndTime());
 
-            double n1 = f_.value(eta * (d1 - g1));
-            double n2 = f_.value(eta * (d2 - g1));
+            var n1 = f_.value(eta * (d1 - g1));
+            var n2 = f_.value(eta * (d2 - g1));
 
             BivariateCumulativeNormalDistributionWe04DP cnbn1 = new BivariateCumulativeNormalDistributionWe04DP(1),
             cnbn2 = new BivariateCumulativeNormalDistributionWe04DP(0),
@@ -117,7 +124,7 @@ namespace QLNet.Pricingengines.Lookback
                 cnbn3 = new BivariateCumulativeNormalDistributionWe04DP(-System.Math.Sqrt(lookbackPeriodEndTime() / residualTime()));
             }
 
-            double n3 = cnbn1.value(eta * (-f1 + 2.0 * carry * System.Math.Sqrt(lookbackPeriodEndTime()) / vol), eta * (-d1 + x * stdDeviation() - g1));
+            var n3 = cnbn1.value(eta * (-f1 + 2.0 * carry * System.Math.Sqrt(lookbackPeriodEndTime()) / vol), eta * (-d1 + x * stdDeviation() - g1));
             double n4 = 0, n5 = 0, n6 = 0, n7 = 0;
             if (!fullLookbackPeriod)
             {
@@ -131,9 +138,9 @@ namespace QLNet.Pricingengines.Lookback
                 n4 = f_.value(-eta * (d1 + g1));
             }
 
-            double n8 = f_.value(-eta * f1);
-            double pow_s = System.Math.Pow(s, -x);
-            double pow_l = System.Math.Pow(lambda(), x);
+            var n8 = f_.value(-eta * f1);
+            var pow_s = System.Math.Pow(s, -x);
+            var pow_l = System.Math.Pow(lambda(), x);
 
             if (!fullLookbackPeriod)
             {

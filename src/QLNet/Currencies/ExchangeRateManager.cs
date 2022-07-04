@@ -29,17 +29,11 @@ namespace QLNet.Currencies
 
     // exchange-rate repository
     // test lookup of direct, triangulated, and derived exchange rates is tested
-    public class ExchangeRateManager
+    [JetBrains.Annotations.PublicAPI] public class ExchangeRateManager
     {
         [ThreadStatic] private static ExchangeRateManager instance_;
 
-        public static ExchangeRateManager Instance
-        {
-            get
-            {
-                return instance_ ?? (instance_ = new ExchangeRateManager());
-            }
-        }
+        public static ExchangeRateManager Instance => instance_ ?? (instance_ = new ExchangeRateManager());
 
         private ExchangeRateManager()
         {
@@ -48,7 +42,7 @@ namespace QLNet.Currencies
 
         private Dictionary<int, List<Entry>> data_ = new Dictionary<int, List<Entry>>();
 
-        public class Entry
+        [JetBrains.Annotations.PublicAPI] public class Entry
         {
             public Entry(ExchangeRate r, Date s, Date e)
             {
@@ -122,7 +116,7 @@ namespace QLNet.Currencies
         private void add
            (ExchangeRate rate, Date startDate, Date endDate)
         {
-            int k = hash(rate.source, rate.target);
+            var k = hash(rate.source, rate.target);
             if (data_.ContainsKey(k))
             {
                 data_[k].Insert(0, new Entry(rate, startDate, endDate));
@@ -134,11 +128,9 @@ namespace QLNet.Currencies
             }
         }
 
-        private int hash(Currency c1, Currency c2)
-        {
-            return System.Math.Min(c1.numericCode, c2.numericCode) * 1000
-                   + System.Math.Max(c1.numericCode, c2.numericCode);
-        }
+        private int hash(Currency c1, Currency c2) =>
+            System.Math.Min(c1.numericCode, c2.numericCode) * 1000
+            + System.Math.Max(c1.numericCode, c2.numericCode);
 
         private bool hashes(int k, Currency c)
         {
@@ -148,18 +140,12 @@ namespace QLNet.Currencies
             return false;
         }
 
-        public ExchangeRate lookup(Currency source, Currency target)
-        {
-            return lookup(source, target, new Date(), ExchangeRate.Type.Derived);
-        }
+        public ExchangeRate lookup(Currency source, Currency target) => lookup(source, target, new Date(), ExchangeRate.Type.Derived);
 
-        public ExchangeRate lookup(Currency source, Currency target, Date date)
-        {
-            return lookup(source, target, date, ExchangeRate.Type.Derived);
-        }
+        public ExchangeRate lookup(Currency source, Currency target, Date date) => lookup(source, target, date, ExchangeRate.Type.Derived);
 
         // Lookup the exchange rate between two currencies at a given
-        // date.  If the given type is Direct, only direct exchange
+        // date.  If the given ExerciseType is Direct, only direct exchange
         // rates will be returned if available; if Derived, direct
         // rates are still preferred but derived rates are allowed.
         // if two or more exchange-rate chains are possible
@@ -179,14 +165,14 @@ namespace QLNet.Currencies
             }
             if (!source.triangulationCurrency.empty())
             {
-                Currency link = source.triangulationCurrency;
+                var link = source.triangulationCurrency;
                 if (link == target)
                     return directLookup(source, link, date);
                 return ExchangeRate.chain(directLookup(source, link, date), lookup(link, target, date));
             }
             if (!target.triangulationCurrency.empty())
             {
-                Currency link = target.triangulationCurrency;
+                var link = target.triangulationCurrency;
                 if (source == link)
                     return directLookup(link, target, date);
                 return ExchangeRate.chain(lookup(source, link, date), directLookup(link, target, date));
@@ -196,7 +182,7 @@ namespace QLNet.Currencies
 
         private ExchangeRate directLookup(Currency source, Currency target, Date date)
         {
-            ExchangeRate rate = fetch(source, target, date);
+            var rate = fetch(source, target, date);
 
             if (rate.rate.IsNotEqual(0.0))
                 return rate;
@@ -204,15 +190,12 @@ namespace QLNet.Currencies
             return null;
         }
 
-        private ExchangeRate smartLookup(Currency source, Currency target, Date date)
-        {
-            return smartLookup(source, target, date, new List<int>());
-        }
+        private ExchangeRate smartLookup(Currency source, Currency target, Date date) => smartLookup(source, target, date, new List<int>());
 
         private ExchangeRate smartLookup(Currency source, Currency target, Date date, List<int> forbidden)
         {
             // direct exchange rates are preferred.
-            ExchangeRate direct = fetch(source, target, date);
+            var direct = fetch(source, target, date);
             if (direct.HasValue)
                 return direct;
 
@@ -220,25 +203,25 @@ namespace QLNet.Currencies
             // is forbidden to subsequent lookups in order to avoid cycles.
             forbidden.Add(source.numericCode);
 
-            foreach (KeyValuePair<int, List<Entry>> i in data_)
+            foreach (var i in data_)
             {
                 // we look for exchange-rate data which involve our source
                 // currency...
                 if (hashes(i.Key, source) && i.Value.Count != 0)
                 {
                     // ...whose other currency is not forbidden...
-                    Entry e = i.Value[0];
-                    Currency other = source == e.rate.source ? e.rate.target : e.rate.source;
+                    var e = i.Value[0];
+                    var other = source == e.rate.source ? e.rate.target : e.rate.source;
                     if (!forbidden.Contains(other.numericCode))
                     {
                         // ...and which carries information for the requested date.
-                        ExchangeRate head = fetch(source, other, date);
+                        var head = fetch(source, other, date);
                         if (((double?)head.rate).HasValue)
                         {
                             // if we can get to the target from here...
                             try
                             {
-                                ExchangeRate tail = smartLookup(other, target, date, forbidden);
+                                var tail = smartLookup(other, target, date, forbidden);
                                 // ..we're done.
                                 return ExchangeRate.chain(head, tail);
                             }
@@ -259,8 +242,8 @@ namespace QLNet.Currencies
         {
             if (data_.ContainsKey(hash(source, target)))
             {
-                List<Entry> rates = data_[hash(source, target)];
-                foreach (Entry e in rates)
+                var rates = data_[hash(source, target)];
+                foreach (var e in rates)
                 {
                     if (date >= e.startDate && date <= e.endDate)
                         return e.rate;

@@ -30,7 +30,7 @@ namespace QLNet.Time.DayCounters
 
         Italian convention: starting dates or ending dates that occur on February and are grater than 27 become equal to 30 for computational sake. */
 
-    public class Thirty360 : DayCounter
+    [JetBrains.Annotations.PublicAPI] public class Thirty360 : DayCounter
     {
 
         public enum Thirty360Convention { USA, BondBasis, European, EurobondBasis, Italian }
@@ -55,12 +55,13 @@ namespace QLNet.Time.DayCounters
             }
         }
 
-        public class US_Impl : DayCounter
+        [JetBrains.Annotations.PublicAPI] public class US_Impl : DayCounter
         {
             public static readonly US_Impl Singleton = new US_Impl();
             private US_Impl() { }
 
-            public override string name() { return "30/360 (Bond Basis)"; }
+            public override string name() => "30/360 (Bond Basis)";
+
             public override int dayCount(Date d1, Date d2)
             {
                 int dd1 = d1.Day, dd2 = d2.Day;
@@ -76,7 +77,7 @@ namespace QLNet.Time.DayCounters
                 return 360 * (yy2 - yy1) + 30 * (mm2 - mm1 - 1) + System.Math.Max(0, 30 - dd1) + System.Math.Min(30, dd2);
             }
 
-            public override double yearFraction(Date d1, Date d2, Date d3, Date d4) { return dayCount(d1, d2) / 360.0; }
+            public override double yearFraction(Date d1, Date d2, Date d3, Date d4) => dayCount(d1, d2) / 360.0;
         }
 
         private class EU_Impl : DayCounter
@@ -84,7 +85,8 @@ namespace QLNet.Time.DayCounters
             public static readonly EU_Impl Singleton = new EU_Impl();
             private EU_Impl() { }
 
-            public override string name() { return "30E/360 (Eurobond Basis)"; }
+            public override string name() => "30E/360 (Eurobond Basis)";
+
             public override int dayCount(Date d1, Date d2)
             {
                 int dd1 = d1.Day, dd2 = d2.Day;
@@ -94,7 +96,7 @@ namespace QLNet.Time.DayCounters
                 return 360 * (yy2 - yy1) + 30 * (mm2 - mm1 - 1) + System.Math.Max(0, 30 - dd1) + System.Math.Min(30, dd2);
             }
 
-            public override double yearFraction(Date d1, Date d2, Date d3, Date d4) { return dayCount(d1, d2) / 360.0; }
+            public override double yearFraction(Date d1, Date d2, Date d3, Date d4) => dayCount(d1, d2) / 360.0;
         }
 
         private class IT_Impl : DayCounter
@@ -102,7 +104,8 @@ namespace QLNet.Time.DayCounters
             public static readonly IT_Impl Singleton = new IT_Impl();
             private IT_Impl() { }
 
-            public override string name() { return "30/360 (Italian)"; }
+            public override string name() => "30/360 (Italian)";
+
             public override int dayCount(Date d1, Date d2)
             {
                 int dd1 = d1.Day, dd2 = d2.Day;
@@ -117,7 +120,7 @@ namespace QLNet.Time.DayCounters
                 return 360 * (yy2 - yy1) + 30 * (mm2 - mm1 - 1) + System.Math.Max(0, 30 - dd1) + System.Math.Min(30, dd2);
             }
 
-            public override double yearFraction(Date d1, Date d2, Date d3, Date d4) { return dayCount(d1, d2) / 360.0; }
+            public override double yearFraction(Date d1, Date d2, Date d3, Date d4) => dayCount(d1, d2) / 360.0;
         }
 
     }

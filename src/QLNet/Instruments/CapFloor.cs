@@ -49,7 +49,7 @@ namespace QLNet.Instruments
     /// - the correctness of the returned value is tested by checking
     ///   it against a known good value.
     /// </summary>
-    public class CapFloor : Instrument
+    [JetBrains.Annotations.PublicAPI] public class CapFloor : Instrument
     {
         #region Private Attributes
 
@@ -87,7 +87,7 @@ namespace QLNet.Instruments
                     floorRates_.Add(floorRates_.Last());
             }
 
-            for (int i = 0; i < floatingLeg_.Count; i++)
+            for (var i = 0; i < floatingLeg_.Count; i++)
                 floatingLeg_[i].registerWith(update);
 
             Settings.registerWith(update);
@@ -121,7 +121,7 @@ namespace QLNet.Instruments
                 throw new ArgumentException("only Cap/Floor types allowed in this constructor");
 
 
-            for (int i = 0; i < floatingLeg_.Count; i++)
+            for (var i = 0; i < floatingLeg_.Count; i++)
                 floatingLeg_[i].registerWith(update);
 
             Settings.registerWith(update);
@@ -133,7 +133,7 @@ namespace QLNet.Instruments
 
         public override bool isExpired()
         {
-            Date today = Settings.evaluationDate();
+            var today = Settings.evaluationDate();
             foreach (var cf in floatingLeg_)
                 if (!cf.hasOccurred(today))
                     return false;
@@ -142,13 +142,13 @@ namespace QLNet.Instruments
         }
         public override void setupArguments(IPricingEngineArguments args)
         {
-            Arguments arguments = args as Arguments;
+            var arguments = args as Arguments;
 
             if (arguments == null)
-                throw new ArgumentException("wrong argument type");
+                throw new ArgumentException("wrong argument ExerciseType");
 
 
-            int n = floatingLeg_.Count;
+            var n = floatingLeg_.Count;
 
             arguments.startDates = new InitializedList<Date>(n);
             arguments.fixingDates = new InitializedList<Date>(n);
@@ -163,11 +163,11 @@ namespace QLNet.Instruments
 
             arguments.type = type_;
 
-            Date today = Settings.evaluationDate();
+            var today = Settings.evaluationDate();
 
-            for (int i = 0; i < n; ++i)
+            for (var i = 0; i < n; ++i)
             {
-                FloatingRateCoupon coupon = floatingLeg_[i] as FloatingRateCoupon;
+                var coupon = floatingLeg_[i] as FloatingRateCoupon;
 
                 if (coupon == null)
                     throw new ArgumentException("non-FloatingRateCoupon given");
@@ -191,8 +191,8 @@ namespace QLNet.Instruments
                 }
 
                 arguments.nominals[i] = coupon.nominal();
-                double spread = coupon.spread();
-                double gearing = coupon.gearing();
+                var spread = coupon.spread();
+                var gearing = coupon.gearing();
                 arguments.gearings[i] = gearing;
                 arguments.spreads[i] = spread;
 
@@ -212,18 +212,22 @@ namespace QLNet.Instruments
 
         #region Inspectors
 
-        public CapFloorType getType() { return type_; }
-        public List<double> capRates() { return capRates_; }
-        public List<double> floorRates() { return floorRates_; }
-        public List<CashFlow> floatingLeg() { return floatingLeg_; }
+        public CapFloorType getCapFloorType() => type_;
 
-        public Date startDate() { return CashFlows.startDate(floatingLeg_); }
-        public Date maturityDate() { return CashFlows.maturityDate(floatingLeg_); }
+        public List<double> capRates() => capRates_;
+
+        public List<double> floorRates() => floorRates_;
+
+        public List<CashFlow> floatingLeg() => floatingLeg_;
+
+        public Date startDate() => CashFlows.startDate(floatingLeg_);
+
+        public Date maturityDate() => CashFlows.maturityDate(floatingLeg_);
 
         public FloatingRateCoupon lastFloatingRateCoupon()
         {
-            CashFlow lastCF = floatingLeg_.Last();
-            FloatingRateCoupon lastFloatingCoupon = lastCF as FloatingRateCoupon;
+            var lastCF = floatingLeg_.Last();
+            var lastFloatingCoupon = lastCF as FloatingRateCoupon;
             return lastFloatingCoupon;
         }
 
@@ -233,24 +237,24 @@ namespace QLNet.Instruments
                 throw new ArgumentException(i + " optionlet does not exist, only " +
                                             floatingLeg().Count);
 
-            List<CashFlow> cf = new List<CashFlow>();
+            var cf = new List<CashFlow>();
             cf.Add(floatingLeg()[i]);
 
-            List<double> cap = new List<double>();
-            List<double> floor = new List<double>();
+            var cap = new List<double>();
+            var floor = new List<double>();
 
-            if (getType() == CapFloorType.Cap || getType() == CapFloorType.Collar)
+            if (getCapFloorType() == CapFloorType.Cap || getCapFloorType() == CapFloorType.Collar)
                 cap.Add(capRates()[i]);
-            if (getType() == CapFloorType.Floor || getType() == CapFloorType.Collar)
+            if (getCapFloorType() == CapFloorType.Floor || getCapFloorType() == CapFloorType.Collar)
                 floor.Add(floorRates()[i]);
 
-            return new CapFloor(getType(), cf, cap, floor);
+            return new CapFloor(getCapFloorType(), cf, cap, floor);
         }
 
         public double atmRate(YieldTermStructure discountCurve)
         {
-            bool includeSettlementDateFlows = false;
-            Date settlementDate = discountCurve.referenceDate();
+            var includeSettlementDateFlows = false;
+            var settlementDate = discountCurve.referenceDate();
             return CashFlows.atmRate(floatingLeg_, discountCurve, includeSettlementDateFlows, settlementDate);
         }
 
@@ -259,12 +263,9 @@ namespace QLNet.Instruments
            Handle<YieldTermStructure> discountCurve,
            double guess,
            double accuracy,
-           int maxEvaluations)
-        {
-            return impliedVolatility(targetValue, discountCurve, guess, accuracy, maxEvaluations,
-                                     1.0e-7, 4.0, VolatilityType.ShiftedLognormal, 0.0);
-        }
-
+           int maxEvaluations) =>
+            impliedVolatility(targetValue, discountCurve, guess, accuracy, maxEvaluations,
+                1.0e-7, 4.0, VolatilityType.ShiftedLognormal, 0.0);
 
         public double impliedVolatility(
            double targetValue,
@@ -281,8 +282,8 @@ namespace QLNet.Instruments
             if (isExpired())
                 throw new ArgumentException("instrument expired");
 
-            ImpliedVolHelper f = new ImpliedVolHelper(this, discountCurve, targetValue, displacement, type);
-            NewtonSafe solver = new NewtonSafe();
+            var f = new ImpliedVolHelper(this, discountCurve, targetValue, displacement, type);
+            var solver = new NewtonSafe();
             solver.setMaxEvaluations(maxEvaluations);
             return solver.solve(f, accuracy, guess, minVol, maxVol);
         }
@@ -291,7 +292,7 @@ namespace QLNet.Instruments
 
         #region Pricing
 
-        public class Arguments : IPricingEngineArguments
+        [JetBrains.Annotations.PublicAPI] public class Arguments : IPricingEngineArguments
         {
             public CapFloorType type { get; set; }
             public List<Date> startDates { get; set; }
@@ -356,7 +357,7 @@ namespace QLNet.Instruments
     /// Concrete cap class
     /// \ingroup instruments
     /// </summary>
-    public class Cap : CapFloor
+    [JetBrains.Annotations.PublicAPI] public class Cap : CapFloor
     {
         public Cap(List<CashFlow> floatingLeg, List<double> exerciseRates)
            : base(CapFloorType.Cap, floatingLeg, exerciseRates, new List<double>()) { }
@@ -366,7 +367,7 @@ namespace QLNet.Instruments
     /// Concrete floor class
     /// \ingroup instruments
     /// </summary>
-    public class Floor : CapFloor
+    [JetBrains.Annotations.PublicAPI] public class Floor : CapFloor
     {
         public Floor(List<CashFlow> floatingLeg, List<double> exerciseRates)
            : base(CapFloorType.Floor, floatingLeg, new List<double>(), exerciseRates) { }
@@ -376,7 +377,7 @@ namespace QLNet.Instruments
     /// Concrete collar class
     /// \ingroup instruments
     /// </summary>
-    public class Collar : CapFloor
+    [JetBrains.Annotations.PublicAPI] public class Collar : CapFloor
     {
         public Collar(List<CashFlow> floatingLeg, List<double> capRates, List<double> floorRates)
            : base(CapFloorType.Collar, floatingLeg, capRates, floorRates) { }
@@ -387,7 +388,7 @@ namespace QLNet.Instruments
        : GenericEngine<CapFloor.Arguments, Instrument.Results>
     { }
 
-    public class ImpliedVolHelper : ISolver1d
+    [JetBrains.Annotations.PublicAPI] public class ImpliedVolHelper : ISolver1d
     {
         private IPricingEngine engine_;
         private Handle<YieldTermStructure> discountCurve_;
@@ -405,7 +406,7 @@ namespace QLNet.Instruments
             targetValue_ = targetValue;
 
             vol_ = new SimpleQuote(-1.0);
-            Handle<Quote> h = new Handle<Quote>(vol_);
+            var h = new Handle<Quote>(vol_);
 
             switch (type)
             {

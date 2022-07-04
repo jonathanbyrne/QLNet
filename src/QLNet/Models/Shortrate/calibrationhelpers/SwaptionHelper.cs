@@ -32,7 +32,7 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Models.Shortrate.calibrationhelpers
 {
-    public class SwaptionHelper : CalibrationHelper
+    [JetBrains.Annotations.PublicAPI] public class SwaptionHelper : CalibrationHelper
     {
         public SwaptionHelper(Period maturity,
                               Period length,
@@ -125,15 +125,15 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
         public override void addTimesTo(List<double> times)
         {
             calculate();
-            Swaption.Arguments args = new Swaption.Arguments();
+            var args = new Swaption.Arguments();
             swaption_.setupArguments(args);
 
-            List<double> swaptionTimes =
+            var swaptionTimes =
                new DiscretizedSwaption(args,
                                        termStructure_.link.referenceDate(),
                                        termStructure_.link.dayCounter()).mandatoryTimes();
 
-            for (int i = 0; i < swaptionTimes.Count; i++)
+            for (var i = 0; i < swaptionTimes.Count; i++)
                 times.Insert(times.Count, swaptionTimes[i]);
         }
 
@@ -147,8 +147,8 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
         public override double blackPrice(double sigma)
         {
             calculate();
-            SimpleQuote sq = new SimpleQuote(sigma);
-            Handle<Quote> vol = new Handle<Quote>(sq);
+            var sq = new SimpleQuote(sigma);
+            var vol = new Handle<Quote>(sq);
 
             IPricingEngine engine = null;
             switch (volatilityType_)
@@ -167,7 +167,7 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
             }
 
             swaption_.setPricingEngine(engine);
-            double value = swaption_.NPV();
+            var value = swaption_.NPV();
             swaption_.setPricingEngine(engine_);
             return value;
         }
@@ -177,42 +177,42 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
 
         protected override void performCalculations()
         {
-            Calendar calendar = index_.fixingCalendar();
-            int fixingDays = index_.fixingDays();
+            var calendar = index_.fixingCalendar();
+            var fixingDays = index_.fixingDays();
 
-            Date exerciseDate = exerciseDate_;
+            var exerciseDate = exerciseDate_;
             if (exerciseDate == null)
                 exerciseDate = calendar.advance(termStructure_.link.referenceDate(),
                                                 maturity_,
                                                 index_.businessDayConvention());
 
-            Date startDate = calendar.advance(exerciseDate,
+            var startDate = calendar.advance(exerciseDate,
                                               fixingDays, TimeUnit.Days,
                                               index_.businessDayConvention());
 
-            Date endDate = endDate_;
+            var endDate = endDate_;
             if (endDate == null)
                 endDate = calendar.advance(startDate, length_,
                                            index_.businessDayConvention());
 
-            Schedule fixedSchedule = new Schedule(startDate, endDate, fixedLegTenor_, calendar,
+            var fixedSchedule = new Schedule(startDate, endDate, fixedLegTenor_, calendar,
                                                   index_.businessDayConvention(),
                                                   index_.businessDayConvention(),
                                                   DateGeneration.Rule.Forward, false);
-            Schedule floatSchedule = new Schedule(startDate, endDate, index_.tenor(), calendar,
+            var floatSchedule = new Schedule(startDate, endDate, index_.tenor(), calendar,
                                                   index_.businessDayConvention(),
                                                   index_.businessDayConvention(),
                                                   DateGeneration.Rule.Forward, false);
 
             IPricingEngine swapEngine = new DiscountingSwapEngine(termStructure_, false);
 
-            VanillaSwap.Type type = VanillaSwap.Type.Receiver;
+            var type = VanillaSwap.Type.Receiver;
 
-            VanillaSwap temp = new VanillaSwap(VanillaSwap.Type.Receiver, nominal_,
+            var temp = new VanillaSwap(VanillaSwap.Type.Receiver, nominal_,
                                                fixedSchedule, 0.0, fixedLegDayCounter_,
                                                floatSchedule, index_, 0.0, floatingLegDayCounter_);
             temp.setPricingEngine(swapEngine);
-            double forward = temp.fairRate();
+            var forward = temp.fairRate();
             if (!strike_.HasValue)
             {
                 exerciseRate_ = forward;

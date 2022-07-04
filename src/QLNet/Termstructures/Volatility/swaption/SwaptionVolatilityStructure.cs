@@ -56,7 +56,7 @@ namespace QLNet.Termstructures.Volatility.swaption
         //! returns the volatility for a given option tenor and swap tenor
         public double volatility(Period optionTenor, Period swapTenor, double strike, bool extrapolate = false)
         {
-            Date optionDate = optionDateFromTenor(optionTenor);
+            var optionDate = optionDateFromTenor(optionTenor);
             return volatility(optionDate, swapTenor, strike, extrapolate);
         }
 
@@ -75,14 +75,14 @@ namespace QLNet.Termstructures.Volatility.swaption
             checkSwapTenor(swapTenor, extrapolate);
             checkRange(optionTime, extrapolate);
             checkStrike(strike, extrapolate);
-            double length = swapLength(swapTenor);
+            var length = swapLength(swapTenor);
             return volatilityImpl(optionTime, length, strike);
         }
 
         //! returns the volatility for a given option tenor and swap length
         public double volatility(Period optionTenor, double swapLength, double strike, bool extrapolate = false)
         {
-            Date optionDate = optionDateFromTenor(optionTenor);
+            var optionDate = optionDateFromTenor(optionTenor);
             return volatility(optionDate, swapLength, strike, extrapolate);
         }
 
@@ -92,7 +92,7 @@ namespace QLNet.Termstructures.Volatility.swaption
             checkSwapTenor(swapLength, extrapolate);
             checkRange(optionDate, extrapolate);
             checkStrike(strike, extrapolate);
-            double optionTime = timeFromReference(optionDate);
+            var optionTime = timeFromReference(optionDate);
             return volatilityImpl(optionTime, swapLength, strike);
         }
 
@@ -108,44 +108,44 @@ namespace QLNet.Termstructures.Volatility.swaption
         //! returns the Black variance for a given option tenor and swap tenor
         public double blackVariance(Period optionTenor, Period swapTenor, double strike, bool extrapolate = false)
         {
-            Date optionDate = optionDateFromTenor(optionTenor);
+            var optionDate = optionDateFromTenor(optionTenor);
             return blackVariance(optionDate, swapTenor, strike, extrapolate);
         }
 
         //! returns the Black variance for a given option date and swap tenor
         public double blackVariance(Date optionDate, Period swapTenor, double strike, bool extrapolate = false)
         {
-            double v = volatility(optionDate, swapTenor, strike, extrapolate);
-            double optionTime = timeFromReference(optionDate);
+            var v = volatility(optionDate, swapTenor, strike, extrapolate);
+            var optionTime = timeFromReference(optionDate);
             return v * v * optionTime;
         }
 
         //! returns the Black variance for a given option time and swap tenor
         public double blackVariance(double optionTime, Period swapTenor, double strike, bool extrapolate = false)
         {
-            double v = volatility(optionTime, swapTenor, strike, extrapolate);
+            var v = volatility(optionTime, swapTenor, strike, extrapolate);
             return v * v * optionTime;
         }
 
         //! returns the Black variance for a given option tenor and swap length
         public double blackVariance(Period optionTenor, double swapLength, double strike, bool extrapolate = false)
         {
-            Date optionDate = optionDateFromTenor(optionTenor);
+            var optionDate = optionDateFromTenor(optionTenor);
             return blackVariance(optionDate, swapLength, strike, extrapolate);
         }
 
         //! returns the Black variance for a given option date and swap length
         public double blackVariance(Date optionDate, double swapLength, double strike, bool extrapolate = false)
         {
-            double v = volatility(optionDate, swapLength, strike, extrapolate);
-            double optionTime = timeFromReference(optionDate);
+            var v = volatility(optionDate, swapLength, strike, extrapolate);
+            var optionTime = timeFromReference(optionDate);
             return v * v * optionTime;
         }
 
         //! returns the Black variance for a given option time and swap length
         public double blackVariance(double optionTime, double swapLength, double strike, bool extrapolate = false)
         {
-            double v = volatility(optionTime, swapLength, strike, extrapolate);
+            var v = volatility(optionTime, swapLength, strike, extrapolate);
             return v * v * optionTime;
         }
 
@@ -153,7 +153,7 @@ namespace QLNet.Termstructures.Volatility.swaption
         //! returns the shift for a given option tenor and swap tenor
         public double shift(Period optionTenor, Period swapTenor, bool extrapolate = false)
         {
-            Date optionDate = optionDateFromTenor(optionTenor);
+            var optionDate = optionDateFromTenor(optionTenor);
             return shift(optionDate, swapTenor, extrapolate);
         }
         //! returns the shift for a given option date and swap tenor
@@ -168,13 +168,13 @@ namespace QLNet.Termstructures.Volatility.swaption
         {
             checkSwapTenor(swapTenor, extrapolate);
             checkRange(optionTime, extrapolate);
-            double length = swapLength(swapTenor);
+            var length = swapLength(swapTenor);
             return shiftImpl(optionTime, length);
         }
         //! returns the shift for a given option tenor and swap length
         public double shift(Period optionTenor, double swapLength, bool extrapolate = false)
         {
-            Date optionDate = optionDateFromTenor(optionTenor);
+            var optionDate = optionDateFromTenor(optionTenor);
             return shift(optionDate, swapLength, extrapolate);
         }
         //! returns the shift for a given option date and swap length
@@ -182,7 +182,7 @@ namespace QLNet.Termstructures.Volatility.swaption
         {
             checkSwapTenor(swapLength, extrapolate);
             checkRange(optionDate, extrapolate);
-            double optionTime = timeFromReference(optionDate);
+            var optionTime = timeFromReference(optionDate);
             return shiftImpl(optionTime, swapLength);
         }
         //! returns the shift for a given option time and swap length
@@ -198,7 +198,7 @@ namespace QLNet.Termstructures.Volatility.swaption
         //! returns the smile for a given option tenor and swap tenor
         public SmileSection smileSection(Period optionTenor, Period swapTenor, bool extr = false)
         {
-            Date optionDate = optionDateFromTenor(optionTenor);
+            var optionDate = optionDateFromTenor(optionTenor);
             return smileSection(optionDate, swapTenor, extrapolate);
         }
 
@@ -226,12 +226,12 @@ namespace QLNet.Termstructures.Volatility.swaption
         public abstract Period maxSwapTenor();
 
         //! the largest swapLength for which the term structure can return vols
-        public double maxSwapLength() { return swapLength(maxSwapTenor()); }
+        public double maxSwapLength() => swapLength(maxSwapTenor());
 
         #endregion
 
-        //! volatility type
-        public virtual VolatilityType volatilityType() { return VolatilityType.ShiftedLognormal; }
+        //! volatility ExerciseType
+        public virtual VolatilityType volatilityType() => VolatilityType.ShiftedLognormal;
 
         //! implements the conversion between swap tenor and swap (time) length
         public double swapLength(Period swapTenor)
@@ -253,30 +253,22 @@ namespace QLNet.Termstructures.Volatility.swaption
         public double swapLength(Date start, Date end)
         {
             Utils.QL_REQUIRE(end > start, () => "swap end date (" + end + ") must be greater than start (" + start + ")");
-            double result = (end - start) / 365.25 * 12.0; // month unit
+            var result = (end - start) / 365.25 * 12.0; // month unit
             result = new ClosestRounding(0).Round(result);
             result /= 12.0; // year unit
             return result;
         }
 
-        protected virtual SmileSection smileSectionImpl(Date optionDate, Period swapTenor)
-        {
-            return smileSectionImpl(timeFromReference(optionDate), swapLength(swapTenor));
-        }
+        protected virtual SmileSection smileSectionImpl(Date optionDate, Period swapTenor) => smileSectionImpl(timeFromReference(optionDate), swapLength(swapTenor));
 
         protected abstract SmileSection smileSectionImpl(double optionTime, double swapLength);
 
-        protected virtual double volatilityImpl(Date optionDate, Period swapTenor, double strike)
-        {
-            return volatilityImpl(timeFromReference(optionDate), swapLength(swapTenor), strike);
-        }
+        protected virtual double volatilityImpl(Date optionDate, Period swapTenor, double strike) => volatilityImpl(timeFromReference(optionDate), swapLength(swapTenor), strike);
 
         protected abstract double volatilityImpl(double optionTime, double swapLength, double strike);
 
-        protected virtual double shiftImpl(Date optionDate, Period swapTenor)
-        {
-            return shiftImpl(timeFromReference(optionDate), swapLength(swapTenor));
-        }
+        protected virtual double shiftImpl(Date optionDate, Period swapTenor) => shiftImpl(timeFromReference(optionDate), swapLength(swapTenor));
+
         protected virtual double shiftImpl(double optionTime, double swapLength)
         {
             Utils.QL_REQUIRE(volatilityType() == VolatilityType.ShiftedLognormal, () =>

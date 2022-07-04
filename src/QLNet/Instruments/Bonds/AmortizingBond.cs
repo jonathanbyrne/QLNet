@@ -31,7 +31,7 @@ namespace QLNet.Instruments.Bonds
         EffectiveInterestRate
     }
 
-    public class AmortizingBond : Bond
+    [JetBrains.Annotations.PublicAPI] public class AmortizingBond : Bond
     {
 
         public AmortizingBond(double FaceValue,
@@ -81,28 +81,25 @@ namespace QLNet.Instruments.Bonds
 
         }
 
-        public bool isPremium()
-        {
-            return _isPremium;
-        }
+        public bool isPremium() => _isPremium;
 
         void addEffectiveInterestRateAmortizing()
         {
 
             // Amortizing Schedule
-            Schedule schedule = new Schedule(_tradeDate, _maturityDate, new Period(_payFrequency),
+            var schedule = new Schedule(_tradeDate, _maturityDate, new Period(_payFrequency),
                                              _calendar, BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
                                              DateGeneration.Rule.Backward, false);
-            double currentNominal = _marketValue;
-            Date prevDate = _tradeDate;
-            Date actualDate = _tradeDate;
+            var currentNominal = _marketValue;
+            var prevDate = _tradeDate;
+            var actualDate = _tradeDate;
 
-            for (int i = 1; i < schedule.Count; ++i)
+            for (var i = 1; i < schedule.Count; ++i)
             {
 
                 actualDate = schedule[i];
-                InterestRate rate = new InterestRate(_yield, _dCounter, Compounding.Simple, Frequency.Annual);
-                InterestRate rate2 = new InterestRate(_couponRate, _dCounter, Compounding.Simple, Frequency.Annual);
+                var rate = new InterestRate(_yield, _dCounter, Compounding.Simple, Frequency.Annual);
+                var rate2 = new InterestRate(_couponRate, _dCounter, Compounding.Simple, Frequency.Annual);
                 FixedRateCoupon r, r2;
                 if (i > 1)
                 {
@@ -113,16 +110,16 @@ namespace QLNet.Instruments.Bonds
                 else
                 {
                     Calendar nullCalendar = new NullCalendar();
-                    Period p1 = new Period(_payFrequency);
-                    Date testDate = nullCalendar.advance(actualDate, -1 * p1);
+                    var p1 = new Period(_payFrequency);
+                    var testDate = nullCalendar.advance(actualDate, -1 * p1);
 
                     r = new FixedRateCoupon(actualDate, currentNominal, rate, testDate, actualDate, prevDate, actualDate);
                     r2 = new FixedRateCoupon(actualDate, currentNominal, rate2, testDate, actualDate, prevDate, actualDate, null, _originalPayment);
                 }
 
-                double amort = System.Math.Round(System.Math.Abs(_originalPayment - r.amount()), 2);
+                var amort = System.Math.Round(System.Math.Abs(_originalPayment - r.amount()), 2);
 
-                AmortizingPayment p = new AmortizingPayment(amort, actualDate);
+                var p = new AmortizingPayment(amort, actualDate);
                 if (_isPremium)
                     currentNominal -= System.Math.Abs(amort);
                 else
@@ -146,8 +143,8 @@ namespace QLNet.Instruments.Bonds
                 return 0;
 
             double totAmortized = 0;
-            Date lastDate = _tradeDate;
-            foreach (CashFlow c in cashflows_)
+            var lastDate = _tradeDate;
+            foreach (var c in cashflows_)
             {
                 if (c.date() <= d)
                 {
@@ -165,14 +162,14 @@ namespace QLNet.Instruments.Bonds
                 // lastDate < d let calculate last interest
 
                 // Base Interest
-                InterestRate r1 = new InterestRate(_couponRate, _dCounter, Compounding.Simple, _payFrequency);
-                FixedRateCoupon c1 = new FixedRateCoupon(d, _faceValue, r1, lastDate, d);
-                double baseInterest = c1.amount();
+                var r1 = new InterestRate(_couponRate, _dCounter, Compounding.Simple, _payFrequency);
+                var c1 = new FixedRateCoupon(d, _faceValue, r1, lastDate, d);
+                var baseInterest = c1.amount();
 
                 //
-                InterestRate r2 = new InterestRate(_yield, _dCounter, Compounding.Simple, _payFrequency);
-                FixedRateCoupon c2 = new FixedRateCoupon(d, _marketValue, r2, lastDate, d);
-                double yieldInterest = c2.amount();
+                var r2 = new InterestRate(_yield, _dCounter, Compounding.Simple, _payFrequency);
+                var c2 = new FixedRateCoupon(d, _marketValue, r2, lastDate, d);
+                var yieldInterest = c2.amount();
 
                 totAmortized += System.Math.Abs(baseInterest - yieldInterest);
             }
@@ -185,13 +182,13 @@ namespace QLNet.Instruments.Bonds
 
         }
 
-        public double Yield() { return _yield; }
+        public double Yield() => _yield;
 
         private double calculateYield()
         {
             // We create a bond cashflow from issue to maturity just
             // to calculate effective rate ( the rate that discount _marketValue )
-            Schedule schedule = new Schedule(_issueDate, _maturityDate, new Period(_payFrequency),
+            var schedule = new Schedule(_issueDate, _maturityDate, new Period(_payFrequency),
                                              _calendar, BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
                                              DateGeneration.Rule.Backward, false);
 
@@ -203,11 +200,11 @@ namespace QLNet.Instruments.Bonds
             .withPaymentAdjustment(BusinessDayConvention.Unadjusted);
 
             // Add single redemption for yield calculation
-            Redemption r = new Redemption(_faceValue, _maturityDate);
+            var r = new Redemption(_faceValue, _maturityDate);
             cashflows.Add(r);
 
             // Calculate Amortizing Yield ( Effective Rate )
-            Date testDate = CashFlows.previousCashFlowDate(cashflows, false, _tradeDate);
+            var testDate = CashFlows.previousCashFlowDate(cashflows, false, _tradeDate);
             return CashFlows.yield(cashflows, _marketValue, _dCounter, Compounding.Simple, _payFrequency,
                                    false, testDate);
         }
@@ -215,13 +212,13 @@ namespace QLNet.Instruments.Bonds
         // temporary testing function
         private double calculateYield2()
         {
-            double CapitalGain = _faceValue - _marketValue;
+            var CapitalGain = _faceValue - _marketValue;
             double YearToMaturity = _maturityDate.year() - _tradeDate.year();
-            double AnnualizedCapitalGain = CapitalGain / YearToMaturity;
-            double AnnualInterest = _couponRate * _faceValue;
-            double TotalAnnualizedReturn = AnnualizedCapitalGain + AnnualInterest;
-            double yieldA = TotalAnnualizedReturn / _marketValue;
-            double yieldB = TotalAnnualizedReturn / (_faceValue - AnnualizedCapitalGain);
+            var AnnualizedCapitalGain = CapitalGain / YearToMaturity;
+            var AnnualInterest = _couponRate * _faceValue;
+            var TotalAnnualizedReturn = AnnualizedCapitalGain + AnnualInterest;
+            var yieldA = TotalAnnualizedReturn / _marketValue;
+            var yieldB = TotalAnnualizedReturn / (_faceValue - AnnualizedCapitalGain);
             return (yieldA + yieldB) / 2;
         }
 

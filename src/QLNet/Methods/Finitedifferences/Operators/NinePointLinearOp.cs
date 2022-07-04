@@ -25,7 +25,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Methods.Finitedifferences.Operators
 {
-    public class NinePointLinearOp : FdmLinearOp
+    [JetBrains.Annotations.PublicAPI] public class NinePointLinearOp : FdmLinearOp
     {
         public NinePointLinearOp(int d0, int d1, FdmMesher mesher)
         {
@@ -55,12 +55,12 @@ namespace QLNet.Methods.Finitedifferences.Operators
                              && d1_ < mesher.layout().dim().Count,
                              () => "inconsistent derivative directions");
 
-            FdmLinearOpLayout layout = mesher.layout();
-            FdmLinearOpIterator endIter = layout.end();
+            var layout = mesher.layout();
+            var endIter = layout.end();
 
-            for (FdmLinearOpIterator iter = layout.begin(); iter != endIter; ++iter)
+            for (var iter = layout.begin(); iter != endIter; ++iter)
             {
-                int i = iter.index();
+                var i = iter.index();
 
                 i10_[i] = layout.neighbourhood(iter, d1_, -1);
                 i01_[i] = layout.neighbourhood(iter, d0_, -1);
@@ -116,14 +116,14 @@ namespace QLNet.Methods.Finitedifferences.Operators
 
         public override Vector apply(Vector r)
         {
-            FdmLinearOpLayout index = mesher_.layout();
+            var index = mesher_.layout();
             Utils.QL_REQUIRE(r.size() == index.size(), () => "inconsistent length of r "
                              + r.size() + " vs " + index.size());
 
-            Vector retVal = new Vector(r.size());
+            var retVal = new Vector(r.size());
 
             //#pragma omp parallel for
-            for (int i = 0; i < retVal.size(); ++i)
+            for (var i = 0; i < retVal.size(); ++i)
             {
                 retVal[i] = a00_[i] * r[i00_[i]]
                               + a01_[i] * r[i01_[i]]
@@ -139,13 +139,13 @@ namespace QLNet.Methods.Finitedifferences.Operators
         }
         public NinePointLinearOp mult(Vector r)
         {
-            NinePointLinearOp retVal = new NinePointLinearOp(d0_, d1_, mesher_);
-            int size = mesher_.layout().size();
+            var retVal = new NinePointLinearOp(d0_, d1_, mesher_);
+            var size = mesher_.layout().size();
 
             //#pragma omp parallel for
-            for (int i = 0; i < size; ++i)
+            for (var i = 0; i < size; ++i)
             {
-                double s = r[i];
+                var s = r[i];
                 retVal.a11_[i] = a11_[i] * s; retVal.a00_[i] = a00_[i] * s;
                 retVal.a01_[i] = a01_[i] * s; retVal.a02_[i] = a02_[i] * s;
                 retVal.a10_[i] = a10_[i] * s; retVal.a20_[i] = a20_[i] * s;
@@ -158,11 +158,11 @@ namespace QLNet.Methods.Finitedifferences.Operators
 
         public override SparseMatrix toMatrix()
         {
-            FdmLinearOpLayout index = mesher_.layout();
-            int n = index.size();
+            var index = mesher_.layout();
+            var n = index.size();
 
-            SparseMatrix retVal = new SparseMatrix(n, n);
-            for (int i = 0; i < index.size(); ++i)
+            var retVal = new SparseMatrix(n, n);
+            for (var i = 0; i < index.size(); ++i)
             {
                 retVal[i, i00_[i]] += a00_[i];
                 retVal[i, i01_[i]] += a01_[i];
@@ -194,20 +194,27 @@ namespace QLNet.Methods.Finitedifferences.Operators
         }
 
         #region IOperator interface
-        public override int size() { return 0; }
-        public override IOperator identity(int size) { return null; }
-        public override Vector applyTo(Vector v) { return new Vector(); }
-        public override Vector solveFor(Vector rhs) { return new Vector(); }
+        public override int size() => 0;
 
-        public override IOperator multiply(double a, IOperator D) { return null; }
+        public override IOperator identity(int size) => null;
+
+        public override Vector applyTo(Vector v) => new Vector();
+
+        public override Vector solveFor(Vector rhs) => new Vector();
+
+        public override IOperator multiply(double a, IOperator D) => null;
+
         public override IOperator add
-           (IOperator A, IOperator B)
-        { return null; }
-        public override IOperator subtract(IOperator A, IOperator B) { return null; }
+           (IOperator A, IOperator B) =>
+            null;
 
-        public override bool isTimeDependent() { return false; }
+        public override IOperator subtract(IOperator A, IOperator B) => null;
+
+        public override bool isTimeDependent() => false;
+
         public override void setTime(double t) { }
-        public override object Clone() { return MemberwiseClone(); }
+        public override object Clone() => MemberwiseClone();
+
         #endregion
 
         protected int d0_, d1_;

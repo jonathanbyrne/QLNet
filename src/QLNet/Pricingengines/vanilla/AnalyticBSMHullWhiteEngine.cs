@@ -33,7 +33,7 @@ namespace QLNet.Pricingengines.vanilla
         \test the correctness of the returned value is tested by
               reproducing results available in web/literature
     */
-    public class AnalyticBSMHullWhiteEngine : GenericModelEngine<HullWhite, QLNet.Option.Arguments,
+    [JetBrains.Annotations.PublicAPI] public class AnalyticBSMHullWhiteEngine : GenericModelEngine<HullWhite, QLNet.Option.Arguments,
        OneAssetOption.Results>
     {
         public AnalyticBSMHullWhiteEngine(double equityShortRateCorrelation,
@@ -51,47 +51,47 @@ namespace QLNet.Pricingengines.vanilla
         {
             Utils.QL_REQUIRE(process_.x0() > 0.0, () => "negative or null underlying given");
 
-            StrikedTypePayoff payoff = arguments_.payoff as StrikedTypePayoff;
+            var payoff = arguments_.payoff as StrikedTypePayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
-            Exercise exercise = arguments_.exercise;
+            var exercise = arguments_.exercise;
 
-            double t = process_.riskFreeRate().link.dayCounter().yearFraction(process_.riskFreeRate().link.referenceDate(),
+            var t = process_.riskFreeRate().link.dayCounter().yearFraction(process_.riskFreeRate().link.referenceDate(),
                                                                               exercise.lastDate());
 
-            double a = model_.link.parameters()[0];
-            double sigma = model_.link.parameters()[1];
-            double eta = process_.blackVolatility().link.blackVol(exercise.lastDate(), payoff.strike());
+            var a = model_.link.parameters()[0];
+            var sigma = model_.link.parameters()[1];
+            var eta = process_.blackVolatility().link.blackVol(exercise.lastDate(), payoff.strike());
 
             double varianceOffset;
             if (a * t > System.Math.Pow(Const.QL_EPSILON, 0.25))
             {
-                double v = sigma * sigma / (a * a) * (t + 2 / a * System.Math.Exp(-a * t) - 1 / (2 * a) * System.Math.Exp(-2 * a * t) - 3 / (2 * a));
-                double mu = 2 * rho_ * sigma * eta / a * (t - 1 / a * (1 - System.Math.Exp(-a * t)));
+                var v = sigma * sigma / (a * a) * (t + 2 / a * System.Math.Exp(-a * t) - 1 / (2 * a) * System.Math.Exp(-2 * a * t) - 3 / (2 * a));
+                var mu = 2 * rho_ * sigma * eta / a * (t - 1 / a * (1 - System.Math.Exp(-a * t)));
 
                 varianceOffset = v + mu;
             }
             else
             {
                 // low-a algebraic limit
-                double v = sigma * sigma * t * t * t * (1 / 3.0 - 0.25 * a * t + 7 / 60.0 * a * a * t * t);
-                double mu = rho_ * sigma * eta * t * t * (1 - a * t / 3.0 + a * a * t * t / 12.0);
+                var v = sigma * sigma * t * t * t * (1 / 3.0 - 0.25 * a * t + 7 / 60.0 * a * a * t * t);
+                var mu = rho_ * sigma * eta * t * t * (1 - a * t / 3.0 + a * a * t * t / 12.0);
 
                 varianceOffset = v + mu;
             }
 
-            Handle<BlackVolTermStructure> volTS = new Handle<BlackVolTermStructure>(
+            var volTS = new Handle<BlackVolTermStructure>(
                new ShiftedBlackVolTermStructure(varianceOffset, process_.blackVolatility()));
 
-            GeneralizedBlackScholesProcess adjProcess =
+            var adjProcess =
                new GeneralizedBlackScholesProcess(process_.stateVariable(),
                                                   process_.dividendYield(),
                                                   process_.riskFreeRate(),
                                                   volTS);
 
-            AnalyticEuropeanEngine bsmEngine = new AnalyticEuropeanEngine(adjProcess);
+            var bsmEngine = new AnalyticEuropeanEngine(adjProcess);
 
-            VanillaOption option = new VanillaOption(payoff, exercise);
+            var option = new VanillaOption(payoff, exercise);
             option.setupArguments(bsmEngine.getArguments());
 
             bsmEngine.calculate();
@@ -105,7 +105,7 @@ namespace QLNet.Pricingengines.vanilla
     }
 
 
-    public class ShiftedBlackVolTermStructure : BlackVolTermStructure
+    [JetBrains.Annotations.PublicAPI] public class ShiftedBlackVolTermStructure : BlackVolTermStructure
     {
         public ShiftedBlackVolTermStructure(double varianceOffset, Handle<BlackVolTermStructure> volTS)
            : base(volTS.link.referenceDate(), volTS.link.calendar(), BusinessDayConvention.Following, volTS.link.dayCounter())
@@ -114,19 +114,18 @@ namespace QLNet.Pricingengines.vanilla
             volTS_ = volTS;
         }
 
-        public override double minStrike() { return volTS_.link.minStrike(); }
-        public override double maxStrike() { return volTS_.link.maxStrike(); }
-        public override Date maxDate() { return volTS_.link.maxDate(); }
+        public override double minStrike() => volTS_.link.minStrike();
 
-        protected override double blackVarianceImpl(double t, double strike)
-        {
-            return volTS_.link.blackVariance(t, strike, true) + varianceOffset_;
-        }
+        public override double maxStrike() => volTS_.link.maxStrike();
+
+        public override Date maxDate() => volTS_.link.maxDate();
+
+        protected override double blackVarianceImpl(double t, double strike) => volTS_.link.blackVariance(t, strike, true) + varianceOffset_;
 
         protected override double blackVolImpl(double t, double strike)
         {
-            double nonZeroMaturity = t.IsEqual(0.0) ? 0.00001 : t;
-            double var = blackVarianceImpl(nonZeroMaturity, strike);
+            var nonZeroMaturity = t.IsEqual(0.0) ? 0.00001 : t;
+            var var = blackVarianceImpl(nonZeroMaturity, strike);
             return System.Math.Sqrt(var / nonZeroMaturity);
         }
 

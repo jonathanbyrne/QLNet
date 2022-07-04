@@ -24,7 +24,7 @@ using QLNet.Time;
 namespace QLNet.Indexes.Inflation
 {
     //! UK Retail Price Inflation Index
-    public class UKRPI : ZeroInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class UKRPI : ZeroInflationIndex
     {
         public UKRPI(bool interpolated)
            : this(interpolated, new Handle<ZeroInflationTermStructure>()) { }
@@ -36,7 +36,7 @@ namespace QLNet.Indexes.Inflation
     }
 
     //! Genuine year-on-year UK RPI (i.e. not a ratio of UK RPI)
-    public class YYUKRPI : YoYInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class YYUKRPI : YoYInflationIndex
     {
         public YYUKRPI(bool interpolated)
            : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
@@ -48,7 +48,7 @@ namespace QLNet.Indexes.Inflation
     }
 
     //! Fake year-on-year UK RPI (i.e. a ratio of UK RPI)
-    public class YYUKRPIr : YoYInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class YYUKRPIr : YoYInflationIndex
     {
         public YYUKRPIr(bool interpolated)
            : this(interpolated, new Handle<YoYInflationTermStructure>()) { }

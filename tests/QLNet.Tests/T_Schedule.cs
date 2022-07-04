@@ -24,7 +24,7 @@ using QLNet.Time;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Schedule
+    [JetBrains.Annotations.PublicAPI] public class T_Schedule
     {
         void check_dates(Schedule s, List<Date> expected)
         {
@@ -33,7 +33,7 @@ namespace QLNet.Tests
                 QAssert.Fail("expected " + expected.Count + " dates, " + "found " + s.Count);
             }
 
-            for (int i = 0; i < expected.Count; ++i)
+            for (var i = 0; i < expected.Count; ++i)
             {
                 if (s[i] != expected[i])
                 {
@@ -48,14 +48,14 @@ namespace QLNet.Tests
         {
             // Testing schedule with daily frequency
 
-            Date startDate = new Date(17, Month.January, 2012);
+            var startDate = new Date(17, Month.January, 2012);
 
-            Schedule s = new MakeSchedule().from(startDate).to(startDate + 7)
+            var s = new MakeSchedule().from(startDate).to(startDate + 7)
             .withCalendar(new TARGET())
             .withConvention(BusinessDayConvention.Preceding)
             .withFrequency(Frequency.Daily).value();
 
-            List<Date> expected = new List<Date>(6);
+            var expected = new List<Date>(6);
             // The schedule should skip Saturday 21st and Sunday 22rd.
             // Previously, it would adjust them to Friday 20th, resulting
             // in three copies of the same date.
@@ -74,7 +74,7 @@ namespace QLNet.Tests
         {
             // Testing end date for schedule with end-of-month adjustment
 
-            Schedule s = new MakeSchedule().from(new Date(30, Month.September, 2009))
+            var s = new MakeSchedule().from(new Date(30, Month.September, 2009))
             .to(new Date(15, Month.June, 2012))
             .withCalendar(new Japan())
             .withTenor(new Period(6, TimeUnit.Months))
@@ -83,7 +83,7 @@ namespace QLNet.Tests
             .forwards()
             .endOfMonth().value();
 
-            List<Date> expected = new List<Date>();
+            var expected = new List<Date>();
             // The end date is adjusted, so it should also be moved to the end
             // of the month.
             expected.Add(new Date(30, Month.September, 2009));
@@ -115,7 +115,7 @@ namespace QLNet.Tests
         public void testDatesPastEndDateWithEomAdjustment()
         {
 
-            Schedule s = new MakeSchedule().from(new Date(28, Month.March, 2013))
+            var s = new MakeSchedule().from(new Date(28, Month.March, 2013))
             .to(new Date(30, Month.March, 2015))
             .withCalendar(new TARGET())
             .withTenor(new Period(1, TimeUnit.Years))
@@ -124,7 +124,7 @@ namespace QLNet.Tests
             .forwards()
             .endOfMonth().value();
 
-            List<Date> expected = new List<Date>();
+            var expected = new List<Date>();
             expected.Add(new Date(31, Month.March, 2013));
             expected.Add(new Date(31, Month.March, 2014));
             // March 31st 2015, coming from the EOM adjustment of March 28th,
@@ -139,7 +139,7 @@ namespace QLNet.Tests
         {
             // Testing that next-to-last date same as end date is removed...
 
-            Schedule s = new MakeSchedule().from(new Date(28, Month.March, 2013))
+            var s = new MakeSchedule().from(new Date(28, Month.March, 2013))
             .to(new Date(31, Month.March, 2015))
             .withCalendar(new TARGET())
             .withTenor(new Period(1, TimeUnit.Years))
@@ -149,7 +149,7 @@ namespace QLNet.Tests
             .endOfMonth()
             .value();
 
-            List<Date> expected = new List<Date>(3);
+            var expected = new List<Date>(3);
             expected.Add(new Date(31, Month.March, 2013));
             expected.Add(new Date(31, Month.March, 2014));
             // March 31st 2015, coming from the EOM adjustment of March 28th,
@@ -169,7 +169,7 @@ namespace QLNet.Tests
         {
             // Testing that the last date is not adjusted for EOM when termination date convention is unadjusted
 
-            Schedule s = new MakeSchedule().from(new Date(31, Month.August, 1996))
+            var s = new MakeSchedule().from(new Date(31, Month.August, 1996))
             .to(new Date(15, Month.September, 1997))
             .withCalendar(new UnitedStates(UnitedStates.Market.GovernmentBond))
             .withTenor(new Period(6, TimeUnit.Months))
@@ -178,7 +178,7 @@ namespace QLNet.Tests
             .forwards()
             .endOfMonth().value();
 
-            List<Date> expected = new List<Date>();
+            var expected = new List<Date>();
             expected.Add(new Date(31, Month.August, 1996));
             expected.Add(new Date(28, Month.February, 1997));
             expected.Add(new Date(31, Month.August, 1997));
@@ -192,7 +192,7 @@ namespace QLNet.Tests
         {
             // Testing that the first date is not adjusted for EOM going backward when termination date convention is unadjusted
 
-            Schedule s = new MakeSchedule().from(new Date(22, Month.August, 1996))
+            var s = new MakeSchedule().from(new Date(22, Month.August, 1996))
             .to(new Date(31, Month.August, 1997))
             .withCalendar(new UnitedStates(UnitedStates.Market.GovernmentBond))
             .withTenor(new Period(6, TimeUnit.Months))
@@ -201,7 +201,7 @@ namespace QLNet.Tests
             .backwards()
             .endOfMonth().value();
 
-            List<Date> expected = new List<Date>();
+            var expected = new List<Date>();
             expected.Add(new Date(22, Month.August, 1996));
             expected.Add(new Date(31, Month.August, 1996));
             expected.Add(new Date(28, Month.February, 1997));
@@ -215,7 +215,7 @@ namespace QLNet.Tests
         {
             // Testing that the first date is not duplicated due to EOM convention when going backwards
 
-            Schedule s = new MakeSchedule().from(new Date(22, Month.August, 1996))
+            var s = new MakeSchedule().from(new Date(22, Month.August, 1996))
             .to(new Date(31, Month.August, 1997))
             .withCalendar(new UnitedStates(UnitedStates.Market.GovernmentBond))
             .withTenor(new Period(6, TimeUnit.Months))
@@ -224,7 +224,7 @@ namespace QLNet.Tests
             .backwards()
             .endOfMonth().value();
 
-            List<Date> expected = new List<Date>();
+            var expected = new List<Date>();
             expected.Add(new Date(30, Month.August, 1996));
             expected.Add(new Date(28, Month.February, 1997));
             expected.Add(new Date(29, Month.August, 1997));
@@ -238,7 +238,7 @@ namespace QLNet.Tests
             // Testing CDS2015 semi-annual rolling convention
             //From September 20th 2016 to March 19th 2017 of the next Year,
             //end date is December 20th 2021 for a 5 year Swap
-            Schedule s1 = new MakeSchedule().from(new Date(12, Month.December, 2016))
+            var s1 = new MakeSchedule().from(new Date(12, Month.December, 2016))
             .to(new Date(12, Month.December, 2016) + new Period(5, TimeUnit.Years))
             .withCalendar(new WeekendsOnly())
             .withTenor(new Period(3, TimeUnit.Months))
@@ -247,7 +247,7 @@ namespace QLNet.Tests
             .withRule(DateGeneration.Rule.CDS2015).value();
             QAssert.IsTrue(s1.startDate() == new Date(20, Month.September, 2016));
             QAssert.IsTrue(s1.endDate() == new Date(20, Month.December, 2021));
-            Schedule s2 = new MakeSchedule().from(new Date(1, Month.March, 2017))
+            var s2 = new MakeSchedule().from(new Date(1, Month.March, 2017))
             .to(new Date(1, Month.March, 2017) + new Period(5, TimeUnit.Years))
             .withCalendar(new WeekendsOnly())
             .withTenor(new Period(3, TimeUnit.Months))
@@ -258,7 +258,7 @@ namespace QLNet.Tests
             QAssert.IsTrue(s2.endDate() == new Date(20, Month.December, 2021));
             //From March 20th 2017 to September 19th 2017
             //end date is June 20th 2022 for a 5 year Swap
-            Schedule s3 = new MakeSchedule().from(new Date(20, Month.March, 2017))
+            var s3 = new MakeSchedule().from(new Date(20, Month.March, 2017))
             .to(new Date(20, Month.March, 2017) + new Period(5, TimeUnit.Years))
             .withCalendar(new WeekendsOnly())
             .withTenor(new Period(3, TimeUnit.Months))
@@ -275,17 +275,17 @@ namespace QLNet.Tests
         {
             // Testing the constructor taking a vector of dates and possibly additional meta information
 
-            List<Date> dates = new List<Date>();
+            var dates = new List<Date>();
             dates.Add(new Date(16, Month.May, 2015));
             dates.Add(new Date(18, Month.May, 2015));
             dates.Add(new Date(18, Month.May, 2016));
             dates.Add(new Date(31, Month.December, 2017));
 
             // schedule without any additional information
-            Schedule schedule1 = new Schedule(dates);
+            var schedule1 = new Schedule(dates);
             if (schedule1.Count != dates.Count)
                 QAssert.Fail("schedule1 has size " + schedule1.Count + ", expected " + dates.Count);
-            for (int i = 0; i < dates.Count; ++i)
+            for (var i = 0; i < dates.Count; ++i)
                 if (schedule1[i] != dates[i])
                     QAssert.Fail("schedule1 has " + schedule1[i] + " at position " + i + ", expected " + dates[i]);
             if (schedule1.calendar() != new NullCalendar())
@@ -294,14 +294,14 @@ namespace QLNet.Tests
                 QAssert.Fail("schedule1 has convention " + schedule1.businessDayConvention() + ", expected unadjusted");
 
             // schedule with metadata
-            List<bool> regular = new List<bool>();
+            var regular = new List<bool>();
             regular.Add(false);
             regular.Add(true);
             regular.Add(false);
 
-            Schedule schedule2 = new Schedule(dates, new TARGET(), BusinessDayConvention.Following, BusinessDayConvention.ModifiedPreceding, new Period(1, TimeUnit.Years),
+            var schedule2 = new Schedule(dates, new TARGET(), BusinessDayConvention.Following, BusinessDayConvention.ModifiedPreceding, new Period(1, TimeUnit.Years),
                                               DateGeneration.Rule.Backward, true, regular);
-            for (int i = 1; i < dates.Count; ++i)
+            for (var i = 1; i < dates.Count; ++i)
                 if (schedule2.isRegular(i) != regular[i - 1])
                     QAssert.Fail("schedule2 has a " + (schedule2.isRegular(i) ? "regular" : "irregular") + " period at position " + i + ", expected " + (regular[i - 1] ? "regular" : "irregular"));
             if (schedule2.calendar() != new TARGET())

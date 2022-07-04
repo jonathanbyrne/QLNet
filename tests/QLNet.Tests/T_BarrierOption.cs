@@ -38,7 +38,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_BarrierOption
+    [JetBrains.Annotations.PublicAPI] public class T_BarrierOption
     {
         private void REPORT_FAILURE(string greekName,
                                     Barrier.Type barrierType,
@@ -217,14 +217,14 @@ namespace QLNet.Tests
         public void testHaugValues()
         {
             // Testing barrier options against Haug's values
-            Exercise.Type european = Exercise.Type.European;
-            Exercise.Type american = Exercise.Type.American;
+            var european = Exercise.Type.European;
+            var american = Exercise.Type.American;
             NewBarrierOptionData[] values =
             {
             /* The data below are from
                "Option pricing formulas", E.G. Haug, McGraw-Hill 1998 pag. 72
             */
-            //     barrierType, barrier, rebate,         type, exercise, strk,     s,    q,    r,    t,    v,  result, tol
+            //     barrierType, barrier, rebate,         ExerciseType, exercise, strk,     s,    q,    r,    t,    v,  result, tol
             new NewBarrierOptionData(Barrier.Type.DownOut,    95.0,    3.0, QLNet.Option.Type.Call, european,   90, 100.0, 0.04, 0.08, 0.50, 0.25,  9.0246, 1.0e-4),
             new NewBarrierOptionData(Barrier.Type.DownOut,    95.0,    3.0, QLNet.Option.Type.Call, european,  100, 100.0, 0.04, 0.08, 0.50, 0.25,  6.7924, 1.0e-4),
             new NewBarrierOptionData(Barrier.Type.DownOut,    95.0,    3.0, QLNet.Option.Type.Call, european,  110, 100.0, 0.04, 0.08, 0.50, 0.25,  4.8759, 1.0e-4),
@@ -266,7 +266,7 @@ namespace QLNet.Tests
             new NewBarrierOptionData(Barrier.Type.UpIn,      105.0,    3.0, QLNet.Option.Type.Call, european,  110, 100.0, 0.04, 0.08, 0.50, 0.30,  5.8350, 1.0e-4),
 
 
-            //     barrierType, barrier, rebate,         type, exercise, strk,     s,    q,    r,    t,    v,  result, tol
+            //     barrierType, barrier, rebate,         ExerciseType, exercise, strk,     s,    q,    r,    t,    v,  result, tol
             new NewBarrierOptionData(Barrier.Type.DownOut,    95.0,    3.0,  QLNet.Option.Type.Put, european,   90, 100.0, 0.04, 0.08, 0.50, 0.25,  2.2798, 1.0e-4),
             new NewBarrierOptionData(Barrier.Type.DownOut,    95.0,    3.0,  QLNet.Option.Type.Put, european,  100, 100.0, 0.04, 0.08, 0.50, 0.25,  2.2947, 1.0e-4),
             new NewBarrierOptionData(Barrier.Type.DownOut,    95.0,    3.0,  QLNet.Option.Type.Put, european,  110, 100.0, 0.04, 0.08, 0.50, 0.25,  2.6252, 1.0e-4),
@@ -308,7 +308,7 @@ namespace QLNet.Tests
             new NewBarrierOptionData(Barrier.Type.UpIn,      105.0,    3.0,  QLNet.Option.Type.Put, european,  110, 100.0, 0.04, 0.08, 0.50, 0.30,  8.3686, 1.0e-4),
 
             // Options with american exercise: values computed with 400 steps of Haug's VBA code (handles only out options)
-            //     barrierType, barrier, rebate,         type, exercise, strk,     s,    q,    r,    t,    v,  result, tol
+            //     barrierType, barrier, rebate,         ExerciseType, exercise, strk,     s,    q,    r,    t,    v,  result, tol
             new NewBarrierOptionData(Barrier.Type.DownOut,    95.0,    0.0, QLNet.Option.Type.Call, american,   90, 100.0, 0.04, 0.08, 0.50, 0.25, 10.4655, 1.0e-4),
             new NewBarrierOptionData(Barrier.Type.DownOut,    95.0,    0.0, QLNet.Option.Type.Call, american,  100, 100.0, 0.04, 0.08, 0.50, 0.25,  4.5159, 1.0e-4),
             new NewBarrierOptionData(Barrier.Type.DownOut,    95.0,    0.0, QLNet.Option.Type.Call, american,  110, 100.0, 0.04, 0.08, 0.50, 0.25,  2.5971, 1.0e-4),
@@ -330,7 +330,7 @@ namespace QLNet.Tests
             new NewBarrierOptionData(Barrier.Type.UpOut,     105.0,    0.0,  QLNet.Option.Type.Put, american,  110, 100.0, 0.04, 0.08, 0.50, 0.25, 10.0000, 1.0e-4),
 
             // some american in-options - results (roughly) verified with other numerical methods
-            //     barrierType, barrier, rebate,         type, exercise, strk,     s,    q,    r,    t,    v,  result, tol
+            //     barrierType, barrier, rebate,         ExerciseType, exercise, strk,     s,    q,    r,    t,    v,  result, tol
             new NewBarrierOptionData(Barrier.Type.DownIn,     95.0,    3.0, QLNet.Option.Type.Call, american,   90, 100.0, 0.04, 0.08, 0.50, 0.25,  7.7615, 1.0e-4),
             new NewBarrierOptionData(Barrier.Type.DownIn,     95.0,    3.0, QLNet.Option.Type.Call, american,  100, 100.0, 0.04, 0.08, 0.50, 0.25,  4.0118, 1.0e-4),
             new NewBarrierOptionData(Barrier.Type.DownIn,     95.0,    3.0, QLNet.Option.Type.Call, american,  110, 100.0, 0.04, 0.08, 0.50, 0.25,  2.0544, 1.0e-4),
@@ -344,7 +344,7 @@ namespace QLNet.Tests
                D.R. Beaglehole, P.H. Dybvig and G. Zhou
                Financial Analysts Journal; Jan / Feb 1997; 53, 1
             */
-            //    barrierType, barrier, rebate,         type, strike,     s,    q,    r,    t,    v,  result, tol
+            //    barrierType, barrier, rebate,         ExerciseType, strike,     s,    q,    r,    t,    v,  result, tol
             // { Barrier::DownOut,    45.0,    0.0,  Option::Put,     50,  50.0,-0.05, 0.10, 0.25, 0.50,   4.032, 1.0e-3 },
             // { Barrier::DownOut,    45.0,    0.0,  Option::Put,     50,  50.0,-0.05, 0.10, 1.00, 0.50,   5.477, 1.0e-3 }
 
@@ -352,19 +352,19 @@ namespace QLNet.Tests
 
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            SimpleQuote qRate = new SimpleQuote(0.0);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol = new SimpleQuote(0.0);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
+            var spot = new SimpleQuote(0.0);
+            var qRate = new SimpleQuote(0.0);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.0);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol = new SimpleQuote(0.0);
+            var volTS = Utilities.flatVol(today, vol, dc);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
-                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                var exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
 
                 spot.setValue(values[i].s);
                 qRate.setValue(values[i].q);
@@ -373,7 +373,7 @@ namespace QLNet.Tests
 
                 StrikedTypePayoff payoff = new PlainVanillaPayoff(values[i].type, values[i].strike);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
+                var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
                                                                                        new Handle<YieldTermStructure>(qTS), new Handle<YieldTermStructure>(rTS),
                                                                                        new Handle<BlackVolTermStructure>(volTS));
 
@@ -383,7 +383,7 @@ namespace QLNet.Tests
                 else
                     exercise = new AmericanExercise(exDate);
 
-                BarrierOption barrierOption = new BarrierOption(values[i].barrierType, values[i].barrier, values[i].rebate,
+                var barrierOption = new BarrierOption(values[i].barrierType, values[i].barrier, values[i].rebate,
                                                                 payoff, exercise);
 
                 IPricingEngine engine;
@@ -432,7 +432,7 @@ namespace QLNet.Tests
                 calculated = barrierOption.NPV();
                 expected = values[i].result;
                 error = System.Math.Abs(calculated - expected);
-                double tol = 1.1e-2;
+                var tol = 1.1e-2;
                 if (error > tol)
                 {
                     REPORT_FAILURE("Binomial (Boyle-lau) value", values[i].barrierType, values[i].barrier,
@@ -491,34 +491,34 @@ namespace QLNet.Tests
             new BarrierOptionData(Barrier.Type.UpIn,   0.30,   100,      110,  12.98351,  0.0)
          };
 
-            double underlyingPrice = 100.0;
-            double rebate = 0.0;
-            double r = 0.05;
-            double q = 0.02;
+            var underlyingPrice = 100.0;
+            var rebate = 0.0;
+            var r = 0.05;
+            var q = 0.02;
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
-            SimpleQuote underlying = new SimpleQuote(underlyingPrice);
+            var today = Date.Today;
+            var underlying = new SimpleQuote(underlyingPrice);
 
-            SimpleQuote qH_SME = new SimpleQuote(q);
-            YieldTermStructure qTS = Utilities.flatRate(today, qH_SME, dc);
+            var qH_SME = new SimpleQuote(q);
+            var qTS = Utilities.flatRate(today, qH_SME, dc);
 
-            SimpleQuote rH_SME = new SimpleQuote(r);
-            YieldTermStructure rTS = Utilities.flatRate(today, rH_SME, dc);
+            var rH_SME = new SimpleQuote(r);
+            var rTS = Utilities.flatRate(today, rH_SME, dc);
 
-            SimpleQuote volatility = new SimpleQuote(0.10);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, volatility, dc);
+            var volatility = new SimpleQuote(0.10);
+            var volTS = Utilities.flatVol(today, volatility, dc);
 
-            Date exDate = today + 360;
+            var exDate = today + 360;
             Exercise exercise = new EuropeanExercise(exDate);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 volatility.setValue(values[i].volatility);
 
                 StrikedTypePayoff callPayoff = new PlainVanillaPayoff(QLNet.Option.Type.Call, values[i].strike);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(
+                var stochProcess = new BlackScholesMertonProcess(
                    new Handle<Quote>(underlying),
                    new Handle<YieldTermStructure>(qTS),
                    new Handle<YieldTermStructure>(rTS),
@@ -528,12 +528,12 @@ namespace QLNet.Tests
                 IPricingEngine engine = new AnalyticBarrierEngine(stochProcess);
 
                 // analytic
-                BarrierOption barrierCallOption = new BarrierOption(values[i].type, values[i].barrier, rebate, callPayoff, exercise);
+                var barrierCallOption = new BarrierOption(values[i].type, values[i].barrier, rebate, callPayoff, exercise);
                 barrierCallOption.setPricingEngine(engine);
-                double calculated = barrierCallOption.NPV();
-                double expected = values[i].callValue;
-                double error = System.Math.Abs(calculated - expected);
-                double maxErrorAllowed = 1.0e-5;
+                var calculated = barrierCallOption.NPV();
+                var expected = values[i].callValue;
+                var error = System.Math.Abs(calculated - expected);
+                var maxErrorAllowed = 1.0e-5;
                 if (error > maxErrorAllowed)
                 {
                     REPORT_FAILURE("value", values[i].type, values[i].barrier,
@@ -542,9 +542,9 @@ namespace QLNet.Tests
                                    expected, calculated, error, maxErrorAllowed);
                 }
 
-                double maxMcRelativeErrorAllowed = 2.0e-2;
+                var maxMcRelativeErrorAllowed = 2.0e-2;
 
-                IPricingEngine mcEngine =
+                var mcEngine =
                    new MakeMCBarrierEngine<LowDiscrepancy, GeneralStatistics>(stochProcess)
                 .withStepsPerYear(1)
                 .withBrownianBridge()
@@ -587,36 +587,36 @@ namespace QLNet.Tests
             new BarrierOptionData(Barrier.Type.DownOut, 0.50,   50,      45,  5.477,  0.0)
          };
 
-            double underlyingPrice = 50.0;
-            double rebate = 0.0;
-            double r = System.Math.Log(1.1);
-            double q = 0.00;
+            var underlyingPrice = 50.0;
+            var rebate = 0.0;
+            var r = System.Math.Log(1.1);
+            var q = 0.00;
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote underlying = new SimpleQuote(underlyingPrice);
+            var underlying = new SimpleQuote(underlyingPrice);
 
-            SimpleQuote qH_SME = new SimpleQuote(q);
-            YieldTermStructure qTS = Utilities.flatRate(today, qH_SME, dc);
+            var qH_SME = new SimpleQuote(q);
+            var qTS = Utilities.flatRate(today, qH_SME, dc);
 
-            SimpleQuote rH_SME = new SimpleQuote(r);
-            YieldTermStructure rTS = Utilities.flatRate(today, rH_SME, dc);
+            var rH_SME = new SimpleQuote(r);
+            var rTS = Utilities.flatRate(today, rH_SME, dc);
 
-            SimpleQuote volatility = new SimpleQuote(0.10);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, volatility, dc);
+            var volatility = new SimpleQuote(0.10);
+            var volTS = Utilities.flatVol(today, volatility, dc);
 
 
-            Date exDate = today + 360;
+            var exDate = today + 360;
             Exercise exercise = new EuropeanExercise(exDate);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 volatility.setValue(values[i].volatility);
 
                 StrikedTypePayoff callPayoff = new PlainVanillaPayoff(QLNet.Option.Type.Call, values[i].strike);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(
+                var stochProcess = new BlackScholesMertonProcess(
                    new Handle<Quote>(underlying),
                    new Handle<YieldTermStructure>(qTS),
                    new Handle<YieldTermStructure>(rTS),
@@ -624,12 +624,12 @@ namespace QLNet.Tests
 
                 IPricingEngine engine = new AnalyticBarrierEngine(stochProcess);
 
-                BarrierOption barrierCallOption = new BarrierOption(values[i].type, values[i].barrier, rebate, callPayoff, exercise);
+                var barrierCallOption = new BarrierOption(values[i].type, values[i].barrier, rebate, callPayoff, exercise);
                 barrierCallOption.setPricingEngine(engine);
-                double calculated = barrierCallOption.NPV();
-                double expected = values[i].callValue;
-                double maxErrorAllowed = 1.0e-3;
-                double error = System.Math.Abs(calculated - expected);
+                var calculated = barrierCallOption.NPV();
+                var expected = values[i].callValue;
+                var maxErrorAllowed = 1.0e-3;
+                var error = System.Math.Abs(calculated - expected);
                 if (error > maxErrorAllowed)
                 {
                     REPORT_FAILURE("value", values[i].type, values[i].barrier,
@@ -638,8 +638,8 @@ namespace QLNet.Tests
                                    expected, calculated, error, maxErrorAllowed);
                 }
 
-                double maxMcRelativeErrorAllowed = 0.01;
-                IPricingEngine mcEngine =
+                var maxMcRelativeErrorAllowed = 0.01;
+                var mcEngine =
                    new MakeMCBarrierEngine<LowDiscrepancy, GeneralStatistics>(stochProcess)
                 .withStepsPerYear(1)
                 .withBrownianBridge()
@@ -666,9 +666,9 @@ namespace QLNet.Tests
         public void testLocalVolAndHestonComparison()
         {
             // Testing local volatility and Heston FD engines for barrier options
-            SavedSettings backup = new SavedSettings();
+            var backup = new SavedSettings();
 
-            Date settlementDate = new Date(5, Month.July, 2002);
+            var settlementDate = new Date(5, Month.July, 2002);
             Settings.setEvaluationDate(settlementDate);
 
             DayCounter dayCounter = new Actual365Fixed();
@@ -679,21 +679,21 @@ namespace QLNet.Tests
 
             List<double> rates = new InitializedList<double>(1, 0.0357);
             List<Date> dates = new InitializedList<Date>(1, settlementDate);
-            for (int i = 0; i < 8; ++i)
+            for (var i = 0; i < 8; ++i)
             {
                 dates.Add(settlementDate + t[i]);
                 rates.Add(r[i]);
             }
 
-            Handle<YieldTermStructure> rTS = new Handle<YieldTermStructure>(new InterpolatedZeroCurve<Linear>(dates, rates, dayCounter));
-            Handle<YieldTermStructure> qTS = new Handle<YieldTermStructure>(Utilities.flatRate(settlementDate, 0.0, dayCounter));
+            var rTS = new Handle<YieldTermStructure>(new InterpolatedZeroCurve<Linear>(dates, rates, dayCounter));
+            var qTS = new Handle<YieldTermStructure>(Utilities.flatRate(settlementDate, 0.0, dayCounter));
 
-            Handle<Quote> s0 = new Handle<Quote>(new SimpleQuote(4500.00));
+            var s0 = new Handle<Quote>(new SimpleQuote(4500.00));
 
             double[] tmp = { 100, 500, 2000, 3400, 3600, 3800, 4000, 4200, 4400, 4500,
                           4600, 4800, 5000, 5200, 5400, 5600, 7500, 10000, 20000, 30000
                         };
-            List<double> strikes = new List<double>(tmp);
+            var strikes = new List<double>(tmp);
 
             double[] v =
             {
@@ -719,44 +719,44 @@ namespace QLNet.Tests
             0.517748, 0.517748, 0.517748, 0.416577, 0.364770, 0.331595, 0.287423, 0.264285
          };
 
-            Matrix blackVolMatrix = new Matrix(strikes.Count, dates.Count - 1);
-            for (int i = 0; i < strikes.Count; ++i)
-                for (int j = 1; j < dates.Count; ++j)
+            var blackVolMatrix = new Matrix(strikes.Count, dates.Count - 1);
+            for (var i = 0; i < strikes.Count; ++i)
+                for (var j = 1; j < dates.Count; ++j)
                 {
                     blackVolMatrix[i, j - 1] = v[i * (dates.Count - 1) + j - 1];
                 }
 
-            BlackVarianceSurface volTS = new BlackVarianceSurface(settlementDate, calendar,
+            var volTS = new BlackVarianceSurface(settlementDate, calendar,
                                                                   dates.GetRange(1, dates.Count - 1), strikes, blackVolMatrix, dayCounter);
             volTS.setInterpolation<Bicubic>();
             GeneralizedBlackScholesProcess localVolProcess = new BlackScholesMertonProcess(s0, qTS, rTS,
                                                                                            new Handle<BlackVolTermStructure>(volTS));
 
-            double v0 = 0.195662;
-            double kappa = 5.6628;
-            double theta = 0.0745911;
-            double sigma = 1.1619;
-            double rho = -0.511493;
+            var v0 = 0.195662;
+            var kappa = 5.6628;
+            var theta = 0.0745911;
+            var sigma = 1.1619;
+            var rho = -0.511493;
 
-            HestonProcess hestonProcess = new HestonProcess(rTS, qTS, s0, v0, kappa, theta, sigma, rho);
+            var hestonProcess = new HestonProcess(rTS, qTS, s0, v0, kappa, theta, sigma, rho);
 
-            HestonModel hestonModel = new HestonModel(hestonProcess);
+            var hestonModel = new HestonModel(hestonProcess);
 
             // TODO FdHestonBarrierEngine
             //IPricingEngine fdHestonEngine = new FdHestonBarrierEngine(hestonModel, 100, 400, 50);
 
             IPricingEngine fdLocalVolEngine = new FdBlackScholesBarrierEngine(localVolProcess, 100, 400, 0, new FdmSchemeDesc().Douglas(), true, 0.35);
 
-            double strike = s0.link.value();
+            var strike = s0.link.value();
             double barrier = 3000;
             double rebate = 100;
-            Date exDate = settlementDate + new Period(20, TimeUnit.Months);
+            var exDate = settlementDate + new Period(20, TimeUnit.Months);
 
             StrikedTypePayoff payoff = new PlainVanillaPayoff(QLNet.Option.Type.Put, strike);
 
             Exercise exercise = new EuropeanExercise(exDate);
 
-            BarrierOption barrierOption = new BarrierOption(Barrier.Type.DownOut, barrier, rebate, payoff, exercise);
+            var barrierOption = new BarrierOption(Barrier.Type.DownOut, barrier, rebate, payoff, exercise);
 
             // TODO FdHestonBarrierEngine
             //barrierOption.setPricingEngine(fdHestonEngine);
@@ -764,10 +764,10 @@ namespace QLNet.Tests
             //double calculatedHestonNPV = barrierOption.NPV();
 
             barrierOption.setPricingEngine(fdLocalVolEngine);
-            double expectedLocalVolNPV = 132.8;
-            double calculatedLocalVolNPV = barrierOption.NPV();
+            var expectedLocalVolNPV = 132.8;
+            var calculatedLocalVolNPV = barrierOption.NPV();
 
-            double tol = 0.01;
+            var tol = 0.01;
 
             /* TODO FdHestonBarrierEngine
             if (System.Math.Abs(expectedHestonNPV - calculatedHestonNPV) > tol*expectedHestonNPV)
@@ -794,12 +794,12 @@ namespace QLNet.Tests
         public void testVannaVolgaSimpleBarrierValues()
         {
             // Testing barrier FX options against Vanna/Volga values
-            SavedSettings backup = new SavedSettings();
+            var backup = new SavedSettings();
 
             BarrierFxOptionData[] values =
             {
 
-            //barrierType,barrier,rebate,type,strike,s,q,r,t,vol25Put,volAtm,vol25Call,vol, result, tol
+            //barrierType,barrier,rebate,ExerciseType,strike,s,q,r,t,vol25Put,volAtm,vol25Call,vol, result, tol
             new BarrierFxOptionData(Barrier.Type.UpOut, 1.5, 0,     QLNet.Option.Type.Call, 1.13321, 1.30265, 0.0003541, 0.0033871, 1, 0.10087, 0.08925, 0.08463, 0.11638, 0.148127, 1.0e-4),
             new BarrierFxOptionData(Barrier.Type.UpOut, 1.5, 0,     QLNet.Option.Type.Call, 1.22687, 1.30265, 0.0003541, 0.0033871, 1, 0.10087, 0.08925, 0.08463, 0.10088, 0.075943, 1.0e-4),
             new BarrierFxOptionData(Barrier.Type.UpOut, 1.5, 0,     QLNet.Option.Type.Call, 1.31179, 1.30265, 0.0003541, 0.0033871, 1, 0.10087, 0.08925, 0.08463, 0.08925, 0.0274771, 1.0e-4),
@@ -947,19 +947,19 @@ namespace QLNet.Tests
          };
 
             DayCounter dc = new Actual365Fixed();
-            Date today = new Date(5, Month.March, 2013);
+            var today = new Date(5, Month.March, 2013);
             Settings.setEvaluationDate(today);
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            SimpleQuote qRate = new SimpleQuote(0.0);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol25Put = new SimpleQuote(0.0);
-            SimpleQuote volAtm = new SimpleQuote(0.0);
-            SimpleQuote vol25Call = new SimpleQuote(0.0);
+            var spot = new SimpleQuote(0.0);
+            var qRate = new SimpleQuote(0.0);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.0);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol25Put = new SimpleQuote(0.0);
+            var volAtm = new SimpleQuote(0.0);
+            var vol25Call = new SimpleQuote(0.0);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 spot.setValue(values[i].s);
                 qRate.setValue(values[i].q);
@@ -969,31 +969,31 @@ namespace QLNet.Tests
                 vol25Call.setValue(values[i].vol25Call);
 
                 StrikedTypePayoff payoff = new PlainVanillaPayoff(values[i].type, values[i].strike);
-                Date exDate = today + (int)(values[i].t * 365 + 0.5);
+                var exDate = today + (int)(values[i].t * 365 + 0.5);
                 Exercise exercise = new EuropeanExercise(exDate);
 
-                Handle<DeltaVolQuote> volAtmQuote = new Handle<DeltaVolQuote>(
+                var volAtmQuote = new Handle<DeltaVolQuote>(
                    new DeltaVolQuote(new Handle<Quote>(volAtm),
                                      DeltaVolQuote.DeltaType.Fwd,
                                      values[i].t,
                                      DeltaVolQuote.AtmType.AtmDeltaNeutral));
 
-                Handle<DeltaVolQuote> vol25PutQuote = new Handle<DeltaVolQuote>(
+                var vol25PutQuote = new Handle<DeltaVolQuote>(
                    new DeltaVolQuote(-0.25,
                                      new Handle<Quote>(vol25Put),
                                      values[i].t,
                                      DeltaVolQuote.DeltaType.Fwd));
 
-                Handle<DeltaVolQuote> vol25CallQuote = new Handle<DeltaVolQuote>(
+                var vol25CallQuote = new Handle<DeltaVolQuote>(
                    new DeltaVolQuote(0.25,
                                      new Handle<Quote>(vol25Call),
                                      values[i].t,
                                      DeltaVolQuote.DeltaType.Fwd));
 
-                BarrierOption barrierOption = new BarrierOption(values[i].barrierType, values[i].barrier, values[i].rebate,
+                var barrierOption = new BarrierOption(values[i].barrierType, values[i].barrier, values[i].rebate,
                                                                 payoff, exercise);
 
-                double bsVanillaPrice = Utils.blackFormula(values[i].type, values[i].strike,
+                var bsVanillaPrice = Utils.blackFormula(values[i].type, values[i].strike,
                                                            spot.value() * qTS.discount(values[i].t) / rTS.discount(values[i].t),
                                                            values[i].v * System.Math.Sqrt(values[i].t), rTS.discount(values[i].t));
                 IPricingEngine vannaVolgaEngine = new VannaVolgaBarrierEngine(volAtmQuote, vol25PutQuote, vol25CallQuote,
@@ -1004,9 +1004,9 @@ namespace QLNet.Tests
                                                                               bsVanillaPrice);
                 barrierOption.setPricingEngine(vannaVolgaEngine);
 
-                double calculated = barrierOption.NPV();
-                double expected = values[i].result;
-                double error = System.Math.Abs(calculated - expected);
+                var calculated = barrierOption.NPV();
+                var expected = values[i].result;
+                var error = System.Math.Abs(calculated - expected);
                 if (error > values[i].tol)
                 {
                     REPORT_FX_FAILURE("value", values[i].barrierType, values[i].barrier,

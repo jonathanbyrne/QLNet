@@ -2,7 +2,7 @@
 
 namespace QLNet.Exceptions
 {
-    public class MaxNumberFuncEvalExceeded : Exception
+    [JetBrains.Annotations.PublicAPI] public class MaxNumberFuncEvalExceeded : Exception
     {
         public MaxNumberFuncEvalExceeded()
         {

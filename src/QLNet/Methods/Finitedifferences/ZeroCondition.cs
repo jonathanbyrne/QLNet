@@ -25,12 +25,12 @@ namespace QLNet.Methods.Finitedifferences
 {
     //! Zero exercise condition.
     /*! Used in CEV models */
-    public class ZeroCondition<array_type> : IStepCondition<array_type> where array_type : Vector
+    [JetBrains.Annotations.PublicAPI] public class ZeroCondition<array_type> : IStepCondition<array_type> where array_type : Vector
     {
         public void applyTo(object a, double t)
         {
-            Vector o = (Vector)a;
-            for (int i = 0; i < o.Count; i++)
+            var o = (Vector)a;
+            for (var i = 0; i < o.Count; i++)
             {
                 o[i] = System.Math.Max(o[i], 0.0);
             }

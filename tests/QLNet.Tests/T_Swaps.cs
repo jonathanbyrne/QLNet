@@ -37,7 +37,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Swaps : IDisposable
+    [JetBrains.Annotations.PublicAPI] public class T_Swaps : IDisposable
     {
         #region Initialize&Cleanup
         private SavedSettings backup;
@@ -70,12 +70,12 @@ namespace QLNet.Tests
             // utilities
             public VanillaSwap makeSwap(int length, double fixedRate, double floatingSpread)
             {
-                Date maturity = calendar.advance(settlement, length, TimeUnit.Years, floatingConvention);
-                Schedule fixedSchedule = new Schedule(settlement, maturity, new Period(fixedFrequency),
+                var maturity = calendar.advance(settlement, length, TimeUnit.Years, floatingConvention);
+                var fixedSchedule = new Schedule(settlement, maturity, new Period(fixedFrequency),
                                                       calendar, fixedConvention, fixedConvention, DateGeneration.Rule.Forward, false);
-                Schedule floatSchedule = new Schedule(settlement, maturity, new Period(floatingFrequency),
+                var floatSchedule = new Schedule(settlement, maturity, new Period(floatingFrequency),
                                                       calendar, floatingConvention, floatingConvention, DateGeneration.Rule.Forward, false);
-                VanillaSwap swap = new VanillaSwap(type, nominal, fixedSchedule, fixedRate, fixedDayCount,
+                var swap = new VanillaSwap(type, nominal, fixedSchedule, fixedRate, fixedDayCount,
                                                    floatSchedule, index, floatingSpread, index.dayCounter());
                 swap.setPricingEngine(new DiscountingSwapEngine(termStructure));
                 return swap;
@@ -108,17 +108,17 @@ namespace QLNet.Tests
         {
             // Testing vanilla-swap calculation of fair fixed rate
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            int[] lengths = new int[] { 1, 2, 5, 10, 20 };
-            double[] spreads = new double[] { -0.001, -0.01, 0.0, 0.01, 0.001 };
+            var lengths = new int[] { 1, 2, 5, 10, 20 };
+            var spreads = new double[] { -0.001, -0.01, 0.0, 0.01, 0.001 };
 
-            for (int i = 0; i < lengths.Length; i++)
+            for (var i = 0; i < lengths.Length; i++)
             {
-                for (int j = 0; j < spreads.Length; j++)
+                for (var j = 0; j < spreads.Length; j++)
                 {
 
-                    VanillaSwap swap = vars.makeSwap(lengths[i], 0.0, spreads[j]);
+                    var swap = vars.makeSwap(lengths[i], 0.0, spreads[j]);
                     swap = vars.makeSwap(lengths[i], swap.fairRate(), spreads[j]);
                     if (System.Math.Abs(swap.NPV()) > 1.0e-10)
                     {
@@ -135,17 +135,17 @@ namespace QLNet.Tests
         public void testFairSpread()
         {
             // Testing vanilla-swap calculation of fair floating spread
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            int[] lengths = new int[] { 1, 2, 5, 10, 20 };
-            double[] rates = new double[] { 0.04, 0.05, 0.06, 0.07 };
+            var lengths = new int[] { 1, 2, 5, 10, 20 };
+            var rates = new double[] { 0.04, 0.05, 0.06, 0.07 };
 
-            for (int i = 0; i < lengths.Length; i++)
+            for (var i = 0; i < lengths.Length; i++)
             {
-                for (int j = 0; j < rates.Length; j++)
+                for (var j = 0; j < rates.Length; j++)
                 {
 
-                    VanillaSwap swap = vars.makeSwap(lengths[i], rates[j], 0.0);
+                    var swap = vars.makeSwap(lengths[i], rates[j], 0.0);
                     swap = vars.makeSwap(lengths[i], rates[j], swap.fairSpread());
                     if (System.Math.Abs(swap.NPV()) > 1.0e-10)
                     {
@@ -162,27 +162,27 @@ namespace QLNet.Tests
         public void testRateDependency()
         {
             // Testing vanilla-swap dependency on fixed rate
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            int[] lengths = new int[] { 1, 2, 5, 10, 20 };
-            double[] spreads = new double[] { -0.001, -0.01, 0.0, 0.01, 0.001 };
-            double[] rates = new double[] { 0.03, 0.04, 0.05, 0.06, 0.07 };
+            var lengths = new int[] { 1, 2, 5, 10, 20 };
+            var spreads = new double[] { -0.001, -0.01, 0.0, 0.01, 0.001 };
+            var rates = new double[] { 0.03, 0.04, 0.05, 0.06, 0.07 };
 
-            for (int i = 0; i < lengths.Length; i++)
+            for (var i = 0; i < lengths.Length; i++)
             {
-                for (int j = 0; j < spreads.Length; j++)
+                for (var j = 0; j < spreads.Length; j++)
                 {
 
                     // store the results for different rates...
-                    List<double> swap_values = new List<double>();
-                    for (int k = 0; k < rates.Length; k++)
+                    var swap_values = new List<double>();
+                    for (var k = 0; k < rates.Length; k++)
                     {
-                        VanillaSwap swap = vars.makeSwap(lengths[i], rates[k], spreads[j]);
+                        var swap = vars.makeSwap(lengths[i], rates[k], spreads[j]);
                         swap_values.Add(swap.NPV());
                     }
 
                     // and check that they go the right way
-                    for (int z = 0; z < swap_values.Count - 1; z++)
+                    for (var z = 0; z < swap_values.Count - 1; z++)
                     {
                         if (swap_values[z] < swap_values[z + 1])
                             QAssert.Fail(
@@ -200,27 +200,27 @@ namespace QLNet.Tests
         public void testSpreadDependency()
         {
             // Testing vanilla-swap dependency on floating spread
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            int[] lengths = new int[] { 1, 2, 5, 10, 20 };
-            double[] spreads = new double[] { -0.01, -0.002, -0.001, 0.0, 0.001, 0.002, 0.01 };
-            double[] rates = new double[] { 0.04, 0.05, 0.06, 0.07 };
+            var lengths = new int[] { 1, 2, 5, 10, 20 };
+            var spreads = new double[] { -0.01, -0.002, -0.001, 0.0, 0.001, 0.002, 0.01 };
+            var rates = new double[] { 0.04, 0.05, 0.06, 0.07 };
 
-            for (int i = 0; i < lengths.Length; i++)
+            for (var i = 0; i < lengths.Length; i++)
             {
-                for (int j = 0; j < rates.Length; j++)
+                for (var j = 0; j < rates.Length; j++)
                 {
 
                     // store the results for different rates...
-                    List<double> swap_values = new List<double>();
-                    for (int k = 0; k < spreads.Length; k++)
+                    var swap_values = new List<double>();
+                    for (var k = 0; k < spreads.Length; k++)
                     {
-                        VanillaSwap swap = vars.makeSwap(lengths[i], rates[j], spreads[k]);
+                        var swap = vars.makeSwap(lengths[i], rates[j], spreads[k]);
                         swap_values.Add(swap.NPV());
                     }
 
                     // and check that they go the right way
-                    for (int z = 0; z < swap_values.Count - 1; z++)
+                    for (var z = 0; z < swap_values.Count - 1; z++)
                     {
                         if (swap_values[z] > swap_values[z + 1])
                             QAssert.Fail(
@@ -238,35 +238,35 @@ namespace QLNet.Tests
         public void testInArrears()
         {
             // Testing in-arrears swap calculation
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             /* See Hull, 4th ed., page 550
                Note: the calculation in the book is wrong (work out the adjustment and you'll get 0.05 + 0.000115 T1) */
-            Date maturity = vars.today + new Period(5, TimeUnit.Years);
+            var maturity = vars.today + new Period(5, TimeUnit.Years);
             Calendar calendar = new NullCalendar();
-            Schedule schedule = new Schedule(vars.today, maturity, new Period(Frequency.Annual), calendar,
+            var schedule = new Schedule(vars.today, maturity, new Period(Frequency.Annual), calendar,
                                              BusinessDayConvention.Following, BusinessDayConvention.Following,
                                              DateGeneration.Rule.Forward, false);
             DayCounter dayCounter = new SimpleDayCounter();
 
-            List<double> nominals = new List<double>() { 100000000.0 };
+            var nominals = new List<double>() { 100000000.0 };
 
-            IborIndex index = new IborIndex("dummy", new Period(1, TimeUnit.Years), 0, new EURCurrency(), calendar,
+            var index = new IborIndex("dummy", new Period(1, TimeUnit.Years), 0, new EURCurrency(), calendar,
                                             BusinessDayConvention.Following, false, dayCounter, vars.termStructure);
-            double oneYear = 0.05;
-            double r = System.Math.Log(1.0 + oneYear);
+            var oneYear = 0.05;
+            var r = System.Math.Log(1.0 + oneYear);
             vars.termStructure.linkTo(Utilities.flatRate(vars.today, r, dayCounter));
 
-            List<double> coupons = new List<double>() { oneYear };
+            var coupons = new List<double>() { oneYear };
             List<CashFlow> fixedLeg = new FixedRateLeg(schedule)
             .withCouponRates(coupons, dayCounter)
             .withNotionals(nominals);
 
-            List<double> gearings = new List<double>();
-            List<double> spreads = new List<double>();
-            int fixingDays = 0;
+            var gearings = new List<double>();
+            var spreads = new List<double>();
+            var fixingDays = 0;
 
-            double capletVolatility = 0.22;
+            var capletVolatility = 0.22;
             var vol = new Handle<OptionletVolatilityStructure>(
                new ConstantOptionletVolatility(vars.today, new NullCalendar(),
                                                BusinessDayConvention.Following, capletVolatility, dayCounter));
@@ -281,11 +281,11 @@ namespace QLNet.Tests
             .withNotionals(nominals);
             Utils.setCouponPricer(floatingLeg, pricer);
 
-            Swap swap = new Swap(floatingLeg, fixedLeg);
+            var swap = new Swap(floatingLeg, fixedLeg);
             swap.setPricingEngine(new DiscountingSwapEngine(vars.termStructure));
 
-            double storedValue = -144813.0;
-            double tolerance = 1.0;
+            var storedValue = -144813.0;
+            var tolerance = 1.0;
 
             if (System.Math.Abs(swap.NPV() - storedValue) > tolerance)
                 QAssert.Fail("Wrong NPV calculation:\n"
@@ -296,18 +296,18 @@ namespace QLNet.Tests
         public void testCachedValue()
         {
             // Testing vanilla-swap calculation against cached value
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             vars.today = new Date(17, Month.June, 2002);
             Settings.setEvaluationDate(vars.today);
             vars.settlement = vars.calendar.advance(vars.today, vars.settlementDays, TimeUnit.Days);
             vars.termStructure.linkTo(Utilities.flatRate(vars.settlement, 0.05, new Actual365Fixed()));
 
-            VanillaSwap swap = vars.makeSwap(10, 0.06, 0.001);
+            var swap = vars.makeSwap(10, 0.06, 0.001);
 #if QL_USE_INDEXED_COUPON
          double cachedNPV   = -5.872342992212;
 #else
-            double cachedNPV = -5.872863313209;
+            var cachedNPV = -5.872863313209;
 #endif
 
             if (System.Math.Abs(swap.NPV() - cachedNPV) > 1.0e-11)
@@ -318,15 +318,15 @@ namespace QLNet.Tests
         [Fact]
         public void testFixing()
         {
-            Date tradeDate = new Date(17, Month.April, 2015);
+            var tradeDate = new Date(17, Month.April, 2015);
             Calendar calendar = new UnitedKingdom();
-            Date settlementDate = calendar.advance(tradeDate, 2, TimeUnit.Days, BusinessDayConvention.Following);
-            Date maturityDate = calendar.advance(settlementDate, 5, TimeUnit.Years, BusinessDayConvention.Following);
+            var settlementDate = calendar.advance(tradeDate, 2, TimeUnit.Days, BusinessDayConvention.Following);
+            var maturityDate = calendar.advance(settlementDate, 5, TimeUnit.Years, BusinessDayConvention.Following);
 
-            Date valueDate = new Date(20, Month.April, 2015);
+            var valueDate = new Date(20, Month.April, 2015);
             Settings.setEvaluationDate(valueDate);
 
-            List<Date> dates = new List<Date>();
+            var dates = new List<Date>();
             dates.Add(valueDate);
             dates.Add(valueDate + new Period(1, TimeUnit.Years));
             dates.Add(valueDate + new Period(2, TimeUnit.Years));
@@ -334,7 +334,7 @@ namespace QLNet.Tests
             dates.Add(valueDate + new Period(10, TimeUnit.Years));
             dates.Add(valueDate + new Period(20, TimeUnit.Years));
 
-            List<double> rates = new List<double>();
+            var rates = new List<double>();
             rates.Add(0.01);
             rates.Add(0.01);
             rates.Add(0.01);
@@ -344,11 +344,11 @@ namespace QLNet.Tests
 
             var discountCurveHandle = new RelinkableHandle<YieldTermStructure>();
             var forecastCurveHandle = new RelinkableHandle<YieldTermStructure>();
-            GBPLibor index = new GBPLibor(new Period(6, TimeUnit.Months), forecastCurveHandle);
-            InterpolatedZeroCurve<Linear> zeroCurve = new InterpolatedZeroCurve<Linear>(dates, rates, new Actual360(), new Linear());
+            var index = new GBPLibor(new Period(6, TimeUnit.Months), forecastCurveHandle);
+            var zeroCurve = new InterpolatedZeroCurve<Linear>(dates, rates, new Actual360(), new Linear());
             var fixedSchedule = new Schedule(settlementDate, maturityDate, new Period(1, TimeUnit.Years), calendar, BusinessDayConvention.Following, BusinessDayConvention.Following, DateGeneration.Rule.Forward, false);
             var floatSchedule = new Schedule(settlementDate, maturityDate, index.tenor(), calendar, BusinessDayConvention.Following, BusinessDayConvention.Following, DateGeneration.Rule.Forward, false);
-            VanillaSwap swap = new VanillaSwap(VanillaSwap.Type.Payer, 1000000, fixedSchedule, 0.01, new Actual360(), floatSchedule, index, 0, new Actual360());
+            var swap = new VanillaSwap(VanillaSwap.Type.Payer, 1000000, fixedSchedule, 0.01, new Actual360(), floatSchedule, index, 0, new Actual360());
             discountCurveHandle.linkTo(zeroCurve);
             forecastCurveHandle.linkTo(zeroCurve);
             var swapEngine = new DiscountingSwapEngine(discountCurveHandle, false, null);
@@ -356,7 +356,7 @@ namespace QLNet.Tests
 
             try
             {
-                double npv = swap.NPV();
+                var npv = swap.NPV();
             }
             catch (Exception ex)
             {

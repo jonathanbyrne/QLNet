@@ -28,7 +28,7 @@ namespace QLNet.Math.Optimization
     // volume 124 of Applied Mathematical Sciences, Springer-Verlag, NY,
     // 1997)
     //
-    public class ArmijoLineSearch : LineSearch
+    [JetBrains.Annotations.PublicAPI] public class ArmijoLineSearch : LineSearch
     {
         //! Default constructor
         public ArmijoLineSearch(double eps, double alpha) : this(eps, alpha, 0.65)
@@ -50,15 +50,15 @@ namespace QLNet.Math.Optimization
         //! Perform line search
         public override double value(Problem P, ref EndCriteria.Type ecType, EndCriteria endCriteria, double t_ini)
         {
-            Constraint constraint = P.constraint();
+            var constraint = P.constraint();
             succeed_ = true;
-            bool maxIter = false;
+            var maxIter = false;
             double qtold;
-            double t = t_ini;
-            int loopNumber = 0;
+            var t = t_ini;
+            var loopNumber = 0;
 
-            double q0 = P.functionValue();
-            double qp0 = P.gradientNormValue();
+            var q0 = P.functionValue();
+            var qp0 = P.gradientNormValue();
 
             qt_ = q0;
             qpt_ = gradient_.Count == 0 ? qp0 : -Vector.DotProduct(gradient_, searchDirection_);

@@ -33,7 +33,7 @@ namespace QLNet.Termstructures.Yield
         - the correctness of the returned values is tested by checking them against numerical calculations.
         - observability against changes in the underlying term structure is checked.
     */
-    public class ImpliedTermStructure : YieldTermStructure
+    [JetBrains.Annotations.PublicAPI] public class ImpliedTermStructure : YieldTermStructure
     {
         private Handle<YieldTermStructure> originalCurve_;
 
@@ -45,18 +45,21 @@ namespace QLNet.Termstructures.Yield
         }
 
         // YieldTermStructure interface
-        public override DayCounter dayCounter() { return originalCurve_.link.dayCounter(); }
-        public override Calendar calendar() { return originalCurve_.link.calendar(); }
-        public override int settlementDays() { return originalCurve_.link.settlementDays(); }
-        public override Date maxDate() { return originalCurve_.link.maxDate(); }
+        public override DayCounter dayCounter() => originalCurve_.link.dayCounter();
+
+        public override Calendar calendar() => originalCurve_.link.calendar();
+
+        public override int settlementDays() => originalCurve_.link.settlementDays();
+
+        public override Date maxDate() => originalCurve_.link.maxDate();
 
         //! returns the discount factor as seen from the evaluation date
         /* t is relative to the current reference date and needs to be converted to the time relative
            to the reference date of the original curve */
         protected override double discountImpl(double t)
         {
-            Date refDate = referenceDate();
-            double originalTime = t + dayCounter().yearFraction(originalCurve_.link.referenceDate(), refDate);
+            var refDate = referenceDate();
+            var originalTime = t + dayCounter().yearFraction(originalCurve_.link.referenceDate(), refDate);
             /* discount at evaluation date cannot be cached since the original curve could change between
                invocations of this method */
             return originalCurve_.link.discount(originalTime, true) / originalCurve_.link.discount(refDate, true);

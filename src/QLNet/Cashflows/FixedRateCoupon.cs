@@ -25,7 +25,7 @@ using System.Linq;
 namespace QLNet.Cashflows
 {
     //! %Coupon paying a fixed interest rate
-    public class FixedRateCoupon : Coupon
+    [JetBrains.Annotations.PublicAPI] public class FixedRateCoupon : Coupon
     {
         // constructors
         public FixedRateCoupon(Date paymentDate, double nominal, double rate, DayCounter dayCounter,
@@ -55,9 +55,12 @@ namespace QLNet.Cashflows
         }
 
         //! Coupon interface
-        public override double rate() { return rate_.rate(); }
-        public InterestRate interestRate() { return rate_; }
-        public override DayCounter dayCounter() { return rate_.dayCounter(); }
+        public override double rate() => rate_.rate();
+
+        public InterestRate interestRate() => rate_;
+
+        public override DayCounter dayCounter() => rate_.dayCounter();
+
         public override double accruedAmount(Date d)
         {
             if (d <= accrualStartDate_ || d > paymentDate_)
@@ -80,7 +83,7 @@ namespace QLNet.Cashflows
     }
 
     //! helper class building a sequence of fixed rate coupons
-    public class FixedRateLeg : RateLegBase
+    [JetBrains.Annotations.PublicAPI] public class FixedRateLeg : RateLegBase
     {
         // properties
         private List<InterestRate> couponRates_ = new List<InterestRate>();
@@ -100,14 +103,9 @@ namespace QLNet.Cashflows
         }
 
         // other initializers
-        public FixedRateLeg withCouponRates(double couponRate, DayCounter paymentDayCounter)
-        {
-            return withCouponRates(couponRate, paymentDayCounter, Compounding.Simple, Frequency.Annual);
-        }
-        public FixedRateLeg withCouponRates(double couponRate, DayCounter paymentDayCounter, Compounding comp)
-        {
-            return withCouponRates(couponRate, paymentDayCounter, comp, Frequency.Annual);
-        }
+        public FixedRateLeg withCouponRates(double couponRate, DayCounter paymentDayCounter) => withCouponRates(couponRate, paymentDayCounter, Compounding.Simple, Frequency.Annual);
+
+        public FixedRateLeg withCouponRates(double couponRate, DayCounter paymentDayCounter, Compounding comp) => withCouponRates(couponRate, paymentDayCounter, comp, Frequency.Annual);
 
         public FixedRateLeg withCouponRates(double couponRate, DayCounter paymentDayCounter,
                                             Compounding comp, Frequency freq)
@@ -118,20 +116,15 @@ namespace QLNet.Cashflows
         }
 
 
-        public FixedRateLeg withCouponRates(List<double> couponRates, DayCounter paymentDayCounter)
-        {
-            return withCouponRates(couponRates, paymentDayCounter, Compounding.Simple, Frequency.Annual);
-        }
-        public FixedRateLeg withCouponRates(List<double> couponRates, DayCounter paymentDayCounter, Compounding comp)
-        {
-            return withCouponRates(couponRates, paymentDayCounter, comp, Frequency.Annual);
-        }
+        public FixedRateLeg withCouponRates(List<double> couponRates, DayCounter paymentDayCounter) => withCouponRates(couponRates, paymentDayCounter, Compounding.Simple, Frequency.Annual);
+
+        public FixedRateLeg withCouponRates(List<double> couponRates, DayCounter paymentDayCounter, Compounding comp) => withCouponRates(couponRates, paymentDayCounter, comp, Frequency.Annual);
 
         public FixedRateLeg withCouponRates(List<double> couponRates, DayCounter paymentDayCounter,
                                             Compounding comp, Frequency freq)
         {
             couponRates_.Clear();
-            foreach (double r in couponRates)
+            foreach (var r in couponRates)
                 couponRates_.Add(new InterestRate(r, paymentDayCounter, comp, freq));
             return this;
         }
@@ -185,16 +178,16 @@ namespace QLNet.Cashflows
             if (notionals_.Count == 0)
                 throw new ArgumentException("no nominals given");
 
-            List<CashFlow> leg = new List<CashFlow>();
+            var leg = new List<CashFlow>();
 
-            Calendar schCalendar = schedule_.calendar();
+            var schCalendar = schedule_.calendar();
 
             // first period might be short or long
             Date start = schedule_[0], end = schedule_[1];
-            Date paymentDate = calendar_.adjust(end, paymentAdjustment_);
+            var paymentDate = calendar_.adjust(end, paymentAdjustment_);
             Date exCouponDate = null;
-            InterestRate rate = couponRates_[0];
-            double nominal = notionals_[0];
+            var rate = couponRates_[0];
+            var nominal = notionals_[0];
 
             if (exCouponPeriod_ != null)
             {
@@ -211,16 +204,16 @@ namespace QLNet.Cashflows
             }
             else
             {
-                Date refer = end - schedule_.tenor();
+                var refer = end - schedule_.tenor();
                 refer = schCalendar.adjust(refer, schedule_.businessDayConvention());
-                InterestRate r = new InterestRate(rate.rate(),
+                var r = new InterestRate(rate.rate(),
                                                   firstPeriodDC_ == null || firstPeriodDC_.empty() ? rate.dayCounter() : firstPeriodDC_,
                                                   rate.compounding(), rate.frequency());
                 leg.Add(new FixedRateCoupon(paymentDate, nominal, r, start, end, refer, end, exCouponDate));
             }
 
             // regular periods
-            for (int i = 2; i < schedule_.Count - 1; ++i)
+            for (var i = 2; i < schedule_.Count - 1; ++i)
             {
                 start = end; end = schedule_[i];
                 paymentDate = calendar_.adjust(end, paymentAdjustment_);
@@ -246,7 +239,7 @@ namespace QLNet.Cashflows
             if (schedule_.Count > 2)
             {
                 // last period might be short or long
-                int N = schedule_.Count;
+                var N = schedule_.Count;
                 start = end; end = schedule_[N - 1];
                 paymentDate = calendar_.adjust(end, paymentAdjustment_);
                 if (exCouponPeriod_ != null)
@@ -266,13 +259,13 @@ namespace QLNet.Cashflows
                 else
                     nominal = notionals_.Last();
 
-                InterestRate r = new InterestRate(rate.rate(),
+                var r = new InterestRate(rate.rate(),
                                                   lastPeriodDC_ == null ? rate.dayCounter() : lastPeriodDC_, rate.compounding(), rate.frequency());
                 if (schedule_.isRegular(N - 1))
                     leg.Add(new FixedRateCoupon(paymentDate, nominal, r, start, end, start, end, exCouponDate));
                 else
                 {
-                    Date refer = start + schedule_.tenor();
+                    var refer = start + schedule_.tenor();
                     refer = schCalendar.adjust(refer, schedule_.businessDayConvention());
                     leg.Add(new FixedRateCoupon(paymentDate, nominal, r, start, end, start, refer, exCouponDate));
                 }

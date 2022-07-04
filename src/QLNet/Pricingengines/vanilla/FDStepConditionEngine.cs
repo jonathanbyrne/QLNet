@@ -26,7 +26,7 @@ using System.Collections.Generic;
 namespace QLNet.Pricingengines.vanilla
 {
     //! Finite-differences pricing engine for American-style vanilla options
-    public class FDStepConditionEngine : FDConditionEngineTemplate
+    [JetBrains.Annotations.PublicAPI] public class FDStepConditionEngine : FDConditionEngineTemplate
     {
         protected TridiagonalOperator controlOperator_;
         protected List<BoundaryCondition<IOperator>> controlBCs_;
@@ -36,10 +36,8 @@ namespace QLNet.Pricingengines.vanilla
         public FDStepConditionEngine() { }
         // required for template inheritance
         public override FDVanillaEngine factory(GeneralizedBlackScholesProcess process,
-                                                int timeSteps, int gridPoints, bool timeDependent)
-        {
-            return new FDStepConditionEngine(process, timeSteps, gridPoints, timeDependent);
-        }
+                                                int timeSteps, int gridPoints, bool timeDependent) =>
+            new FDStepConditionEngine(process, timeSteps, gridPoints, timeDependent);
 
         //public FDStepConditionEngine(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints,
         //     bool timeDependent = false)
@@ -52,17 +50,17 @@ namespace QLNet.Pricingengines.vanilla
 
         public override void calculate(IPricingEngineResults r)
         {
-            OneAssetOption.Results results = r as OneAssetOption.Results;
+            var results = r as OneAssetOption.Results;
             setGridLimits();
             initializeInitialCondition();
             initializeOperator();
             initializeBoundaryConditions();
             initializeStepCondition();
 
-            List<IOperator> operatorSet = new List<IOperator>();
-            List<Vector> arraySet = new List<Vector>();
-            BoundaryConditionSet bcSet = new BoundaryConditionSet();
-            StepConditionSet<Vector> conditionSet = new StepConditionSet<Vector>();
+            var operatorSet = new List<IOperator>();
+            var arraySet = new List<Vector>();
+            var bcSet = new BoundaryConditionSet();
+            var conditionSet = new StepConditionSet<Vector>();
 
             prices_ = (SampledCurve)intrinsicValues_.Clone();
 
@@ -92,16 +90,16 @@ namespace QLNet.Pricingengines.vanilla
             prices_.setValues(arraySet[0]);
             controlPrices_.setValues(arraySet[1]);
 
-            StrikedTypePayoff striked_payoff = payoff_ as StrikedTypePayoff;
+            var striked_payoff = payoff_ as StrikedTypePayoff;
             Utils.QL_REQUIRE(striked_payoff != null, () => "non-striked payoff given");
 
-            double variance = process_.blackVolatility().link.blackVariance(exerciseDate_, striked_payoff.strike());
-            double dividendDiscount = process_.dividendYield().link.discount(exerciseDate_);
-            double riskFreeDiscount = process_.riskFreeRate().link.discount(exerciseDate_);
-            double spot = process_.stateVariable().link.value();
-            double forwardPrice = spot * dividendDiscount / riskFreeDiscount;
+            var variance = process_.blackVolatility().link.blackVariance(exerciseDate_, striked_payoff.strike());
+            var dividendDiscount = process_.dividendYield().link.discount(exerciseDate_);
+            var riskFreeDiscount = process_.riskFreeRate().link.discount(exerciseDate_);
+            var spot = process_.stateVariable().link.value();
+            var forwardPrice = spot * dividendDiscount / riskFreeDiscount;
 
-            BlackCalculator black = new BlackCalculator(striked_payoff, forwardPrice, System.Math.Sqrt(variance), riskFreeDiscount);
+            var black = new BlackCalculator(striked_payoff, forwardPrice, System.Math.Sqrt(variance), riskFreeDiscount);
 
             results.value = prices_.valueAtCenter()
                             - controlPrices_.valueAtCenter()

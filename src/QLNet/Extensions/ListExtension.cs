@@ -13,7 +13,7 @@ namespace QLNet.Extensions
 
         public static void Resize<T>(this List<T> list, int size, T element = default)
         {
-            int count = list.Count;
+            var count = list.Count;
 
             if (size < count)
             {
@@ -31,7 +31,7 @@ namespace QLNet.Extensions
         // erases the contents without changing the size
         public static void Erase<T>(this List<T> list)
         {
-            for (int i = 0; i < list.Count; i++)
+            for (var i = 0; i < list.Count; i++)
                 list[i] = default;
         }
     }

@@ -25,34 +25,34 @@ using System.Collections.Generic;
 
 namespace QLNet.Cashflows
 {
-    public class OvernightIndexedCouponPricer : FloatingRateCouponPricer
+    [JetBrains.Annotations.PublicAPI] public class OvernightIndexedCouponPricer : FloatingRateCouponPricer
     {
         private OvernightIndexedCoupon coupon_;
 
         public override void initialize(FloatingRateCoupon coupon)
         {
             coupon_ = coupon as OvernightIndexedCoupon;
-            Utils.QL_REQUIRE(coupon_ != null, () => "wrong coupon type");
+            Utils.QL_REQUIRE(coupon_ != null, () => "wrong coupon ExerciseType");
         }
 
         public override double swapletRate()
         {
-            OvernightIndex index = coupon_.index() as OvernightIndex;
+            var index = coupon_.index() as OvernightIndex;
 
-            List<Date> fixingDates = coupon_.fixingDates();
-            List<double> dt = coupon_.dt();
+            var fixingDates = coupon_.fixingDates();
+            var dt = coupon_.dt();
 
-            int n = dt.Count;
-            int i = 0;
+            var n = dt.Count;
+            var i = 0;
 
-            double compoundFactor = 1.0;
+            var compoundFactor = 1.0;
 
             // already fixed part
-            Date today = Settings.evaluationDate();
+            var today = Settings.evaluationDate();
             while (fixingDates[i] < today && i < n)
             {
                 // rate must have been fixed
-                double? pastFixing = IndexManager.instance().getHistory(index.name())[fixingDates[i]];
+                var pastFixing = IndexManager.instance().getHistory(index.name())[fixingDates[i]];
 
                 Utils.QL_REQUIRE(pastFixing != null, () => "Missing " + index.name() + " fixing for " + fixingDates[i].ToString());
 
@@ -66,7 +66,7 @@ namespace QLNet.Cashflows
                 // might have been fixed
                 try
                 {
-                    double? pastFixing = IndexManager.instance().getHistory(index.name())[fixingDates[i]];
+                    var pastFixing = IndexManager.instance().getHistory(index.name())[fixingDates[i]];
 
                     if (pastFixing != null)
                     {
@@ -88,17 +88,17 @@ namespace QLNet.Cashflows
             // to avoid the evaluation of multiple forward fixings
             if (i < n)
             {
-                Handle<YieldTermStructure> curve = index.forwardingTermStructure();
+                var curve = index.forwardingTermStructure();
                 Utils.QL_REQUIRE(!curve.empty(), () => "null term structure set to this instance of" + index.name());
 
-                List<Date> dates = coupon_.valueDates();
-                double startDiscount = curve.link.discount(dates[i]);
-                double endDiscount = curve.link.discount(dates[n]);
+                var dates = coupon_.valueDates();
+                var startDiscount = curve.link.discount(dates[i]);
+                var endDiscount = curve.link.discount(dates[n]);
 
                 compoundFactor *= startDiscount / endDiscount;
             }
 
-            double rate = (compoundFactor - 1.0) / coupon_.accrualPeriod();
+            var rate = (compoundFactor - 1.0) / coupon_.accrualPeriod();
             return coupon_.gearing() * rate + coupon_.spread();
         }
 
@@ -110,7 +110,7 @@ namespace QLNet.Cashflows
 
     }
 
-    public class OvernightIndexedCoupon : FloatingRateCoupon
+    [JetBrains.Annotations.PublicAPI] public class OvernightIndexedCoupon : FloatingRateCoupon
     {
         public OvernightIndexedCoupon(
            Date paymentDate,
@@ -130,7 +130,7 @@ namespace QLNet.Cashflows
                   dayCounter, false)
         {
             // value dates
-            Schedule sch = new MakeSchedule()
+            var sch = new MakeSchedule()
             .from(startDate)
             .to(endDate)
             .withTenor(new Period(1, TimeUnit.Days))
@@ -151,14 +151,14 @@ namespace QLNet.Cashflows
             else
             {
                 fixingDates_ = new InitializedList<Date>(n_);
-                for (int i = 0; i < n_; ++i)
+                for (var i = 0; i < n_; ++i)
                     fixingDates_[i] = overnightIndex.fixingDate(valueDates_[i]);
             }
 
             // accrual (compounding) periods
             dt_ = new List<double>(n_);
-            DayCounter dc = overnightIndex.dayCounter();
-            for (int i = 0; i < n_; ++i)
+            var dc = overnightIndex.dayCounter();
+            for (var i = 0; i < n_; ++i)
                 dt_.Add(dc.yearFraction(valueDates_[i], valueDates_[i + 1]));
 
             setPricer(new OvernightIndexedCouponPricer());
@@ -168,18 +168,20 @@ namespace QLNet.Cashflows
         public List<double> indexFixings()
         {
             fixings_ = new InitializedList<double>(n_);
-            for (int i = 0; i < n_; ++i)
+            for (var i = 0; i < n_; ++i)
                 fixings_[i] = index_.fixing(fixingDates_[i]);
             return fixings_;
         }
 
 
         //! fixing dates for the rates to be compounded
-        public List<Date> fixingDates() { return fixingDates_; }
+        public List<Date> fixingDates() => fixingDates_;
+
         //! accrual (compounding) periods
-        public List<double> dt() { return dt_; }
+        public List<double> dt() => dt_;
+
         //! value dates for the rates to be compounded
-        public List<Date> valueDates() { return valueDates_; }
+        public List<Date> valueDates() => valueDates_;
 
         private List<Date> valueDates_, fixingDates_;
         private List<double> fixings_;
@@ -188,7 +190,7 @@ namespace QLNet.Cashflows
     }
 
     //! helper class building a sequence of overnight coupons
-    public class OvernightLeg : RateLegBase
+    [JetBrains.Annotations.PublicAPI] public class OvernightLeg : RateLegBase
     {
         public OvernightLeg(Schedule schedule, OvernightIndex overnightIndex)
         {
@@ -237,10 +239,7 @@ namespace QLNet.Cashflows
             return this;
         }
 
-        public override List<CashFlow> value()
-        {
-            return CashFlowVectors.OvernightLeg(notionals_, schedule_, paymentAdjustment_, overnightIndex_, gearings_, spreads_, paymentDayCounter_);
-        }
+        public override List<CashFlow> value() => CashFlowVectors.OvernightLeg(notionals_, schedule_, paymentAdjustment_, overnightIndex_, gearings_, spreads_, paymentDayCounter_);
 
         private OvernightIndex overnightIndex_;
         private List<double> gearings_;

@@ -24,14 +24,14 @@ namespace QLNet.processes
 
         \ingroup processes
     */
-    public class ForwardMeasureProcess : StochasticProcess
+    [JetBrains.Annotations.PublicAPI] public class ForwardMeasureProcess : StochasticProcess
     {
         public virtual void setForwardMeasureTime(double T)
         {
             T_ = T;
             notifyObservers();
         }
-        public double getForwardMeasureTime() { return T_; }
+        public double getForwardMeasureTime() => T_;
 
         protected ForwardMeasureProcess() { }
         protected ForwardMeasureProcess(double T)
@@ -43,25 +43,13 @@ namespace QLNet.processes
         { }
 
         protected double T_;
-        public override int size()
-        {
-            throw new NotImplementedException();
-        }
+        public override int size() => throw new NotImplementedException();
 
-        public override Vector initialValues()
-        {
-            throw new NotImplementedException();
-        }
+        public override Vector initialValues() => throw new NotImplementedException();
 
-        public override Vector drift(double t, Vector x)
-        {
-            throw new NotImplementedException();
-        }
+        public override Vector drift(double t, Vector x) => throw new NotImplementedException();
 
-        public override Matrix diffusion(double t, Vector x)
-        {
-            throw new NotImplementedException();
-        }
+        public override Matrix diffusion(double t, Vector x) => throw new NotImplementedException();
     }
 
     //! forward-measure 1-D stochastic process
@@ -70,17 +58,14 @@ namespace QLNet.processes
 
          \ingroup processes
     */
-    public class ForwardMeasureProcess1D : StochasticProcess1D
+    [JetBrains.Annotations.PublicAPI] public class ForwardMeasureProcess1D : StochasticProcess1D
     {
         public virtual void setForwardMeasureTime(double T)
         {
             T_ = T;
             notifyObservers();
         }
-        public double getForwardMeasureTime()
-        {
-            return T_;
-        }
+        public double getForwardMeasureTime() => T_;
 
         protected ForwardMeasureProcess1D() { }
         protected ForwardMeasureProcess1D(double T)
@@ -91,20 +76,11 @@ namespace QLNet.processes
            : base(disc) { }
 
         protected double T_;
-        public override double x0()
-        {
-            throw new NotImplementedException();
-        }
+        public override double x0() => throw new NotImplementedException();
 
-        public override double drift(double t, double x)
-        {
-            throw new NotImplementedException();
-        }
+        public override double drift(double t, double x) => throw new NotImplementedException();
 
-        public override double diffusion(double t, double x)
-        {
-            throw new NotImplementedException();
-        }
+        public override double diffusion(double t, double x) => throw new NotImplementedException();
     }
 
 }

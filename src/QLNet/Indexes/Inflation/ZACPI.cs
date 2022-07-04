@@ -23,7 +23,7 @@ using QLNet.Time;
 namespace QLNet.Indexes.Inflation
 {
     //! South African CPI index
-    public class ZACPI : ZeroInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class ZACPI : ZeroInflationIndex
     {
         public ZACPI(bool interpolated)
            : this(interpolated, new Handle<ZeroInflationTermStructure>()) { }
@@ -42,7 +42,7 @@ namespace QLNet.Indexes.Inflation
     }
 
     //! Genuine year-on-year South African CPI (i.e. not a ratio of South African CPI)
-    public class YYZACPI : YoYInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class YYZACPI : YoYInflationIndex
     {
         public YYZACPI(bool interpolated)
            : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
@@ -62,7 +62,7 @@ namespace QLNet.Indexes.Inflation
     }
 
     //! Fake year-on-year South African CPI (i.e. a ratio of South African CPI)
-    public class YYZACPIr : YoYInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class YYZACPIr : YoYInflationIndex
     {
         public YYZACPIr(bool interpolated)
            : this(interpolated, new Handle<YoYInflationTermStructure>()) { }

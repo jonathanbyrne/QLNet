@@ -28,7 +28,7 @@ namespace QLNet.Termstructures.Volatility.Optionlet
          classes to implement LazyObject::performCalculations
      */
     public enum VolatilityType { ShiftedLognormal, Normal }
-    public class OptionletStripper : StrippedOptionletBase
+    [JetBrains.Annotations.PublicAPI] public class OptionletStripper : StrippedOptionletBase
     {
         // StrippedOptionletBase interface
         public override List<double> optionletStrikes(int i)
@@ -58,7 +58,7 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             calculate();
             return optionletTimes_;
         }
-        public override int optionletMaturities() { return optionletTenors_.Count; }
+        public override int optionletMaturities() => optionletTenors_.Count;
 
         public override List<double> atmOptionletRates()
         {
@@ -66,12 +66,16 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             return atmOptionletRate_;
         }
 
-        public override DayCounter dayCounter() { return termVolSurface_.dayCounter(); }
-        public override Calendar calendar() { return termVolSurface_.calendar(); }
-        public override int settlementDays() { return termVolSurface_.settlementDays(); }
-        public override BusinessDayConvention businessDayConvention() { return termVolSurface_.businessDayConvention(); }
+        public override DayCounter dayCounter() => termVolSurface_.dayCounter();
 
-        public List<Period> optionletFixingTenors() { return optionletTenors_; }
+        public override Calendar calendar() => termVolSurface_.calendar();
+
+        public override int settlementDays() => termVolSurface_.settlementDays();
+
+        public override BusinessDayConvention businessDayConvention() => termVolSurface_.businessDayConvention();
+
+        public List<Period> optionletFixingTenors() => optionletTenors_;
+
         public List<Date> optionletPaymentDates()
         {
             calculate();
@@ -82,10 +86,13 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             calculate();
             return optionletAccrualPeriods_;
         }
-        public CapFloorTermVolSurface termVolSurface() { return termVolSurface_; }
-        public IborIndex iborIndex() { return iborIndex_; }
-        public override double displacement() { return displacement_; }
-        public override VolatilityType volatilityType() { return volatilityType_; }
+        public CapFloorTermVolSurface termVolSurface() => termVolSurface_;
+
+        public IborIndex iborIndex() => iborIndex_;
+
+        public override double displacement() => displacement_;
+
+        public override VolatilityType volatilityType() => volatilityType_;
 
         protected OptionletStripper(CapFloorTermVolSurface termVolSurface, IborIndex iborIndex,
                                     Handle<YieldTermStructure> discount = null,
@@ -111,15 +118,15 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             discount_.registerWith(update);
             Settings.registerWith(update);
 
-            Period indexTenor = iborIndex_.tenor();
-            Period maxCapFloorTenor = termVolSurface.optionTenors().Last();
+            var indexTenor = iborIndex_.tenor();
+            var maxCapFloorTenor = termVolSurface.optionTenors().Last();
 
             // optionlet tenors and capFloor lengths
             optionletTenors_.Add(indexTenor);
             capFloorLengths_.Add(optionletTenors_.Last() + indexTenor);
             Utils.QL_REQUIRE(maxCapFloorTenor >= capFloorLengths_.Last(), () =>
                              "too short (" + maxCapFloorTenor + ") capfloor term vol termVolSurface");
-            Period nextCapFloorLength = capFloorLengths_.Last() + indexTenor;
+            var nextCapFloorLength = capFloorLengths_.Last() + indexTenor;
             while (nextCapFloorLength <= maxCapFloorTenor)
             {
                 optionletTenors_.Add(capFloorLengths_.Last());
@@ -129,12 +136,12 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             nOptionletTenors_ = optionletTenors_.Count;
 
             optionletVolatilities_ = new InitializedList<List<double>>(nOptionletTenors_);
-            for (int x = 0; x < nOptionletTenors_; x++)
+            for (var x = 0; x < nOptionletTenors_; x++)
             {
                 optionletVolatilities_[x] = new InitializedList<double>(nStrikes_);
             }
             optionletStrikes_ = new InitializedList<List<double>>(nOptionletTenors_);
-            for (int x = 0; x < nOptionletTenors_; x++)
+            for (var x = 0; x < nOptionletTenors_; x++)
             {
                 optionletStrikes_[x] = new List<double>(termVolSurface.strikes());
             }

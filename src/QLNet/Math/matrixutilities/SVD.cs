@@ -28,7 +28,7 @@ namespace QLNet.Math.matrixutilities
         \test the correctness of the returned values is tested by
               checking their properties.
     */
-    public class SVD
+    [JetBrains.Annotations.PublicAPI] public class SVD
     {
         private Matrix U_, V_;
         private Vector s_;
@@ -72,14 +72,14 @@ namespace QLNet.Math.matrixutilities
             s_ = new Vector(n_);
             U_ = new Matrix(m_, n_);
             V_ = new Matrix(n_, n_);
-            Vector e = new Vector(n_);
-            Vector work = new Vector(m_);
+            var e = new Vector(n_);
+            var work = new Vector(m_);
             int i, j, k;
 
             // Reduce A to bidiagonal form, storing the diagonal elements
             // in s and the super-diagonal elements in e.
-            int nct = System.Math.Min(m_ - 1, n_);
-            int nrt = System.Math.Max(0, n_ - 2);
+            var nct = System.Math.Min(m_ - 1, n_);
+            var nrt = System.Math.Max(0, n_ - 2);
             for (k = 0; k < System.Math.Max(nct, nrt); k++)
             {
                 if (k < nct)
@@ -175,7 +175,7 @@ namespace QLNet.Math.matrixutilities
                         }
                         for (j = k + 1; j < n_; j++)
                         {
-                            double t = -e[j] / e[k + 1];
+                            var t = -e[j] / e[k + 1];
                             for (i = k + 1; i < m_; i++)
                             {
                                 A[i, j] += t * work[i];
@@ -276,8 +276,8 @@ namespace QLNet.Math.matrixutilities
 
             // Main iteration loop for the singular values.
             int p = n_, pp = p - 1;
-            int iter = 0;
-            double eps = System.Math.Pow(2.0, -52.0);
+            var iter = 0;
+            var eps = System.Math.Pow(2.0, -52.0);
             while (p > 0)
             {
                 int kase;
@@ -319,8 +319,8 @@ namespace QLNet.Math.matrixutilities
                         {
                             break;
                         }
-                        double t = (ks != p ? System.Math.Abs(e[ks]) : 0) +
-                                   (ks != k + 1 ? System.Math.Abs(e[ks - 1]) : 0);
+                        var t = (ks != p ? System.Math.Abs(e[ks]) : 0) +
+                                (ks != k + 1 ? System.Math.Abs(e[ks - 1]) : 0);
                         if (System.Math.Abs(s_[ks]) <= eps * t)
                         {
                             s_[ks] = 0.0;
@@ -350,13 +350,13 @@ namespace QLNet.Math.matrixutilities
                     // Deflate negligible s(p).
                     case 1:
                         {
-                            double f = e[p - 2];
+                            var f = e[p - 2];
                             e[p - 2] = 0.0;
                             for (j = p - 2; j >= k; --j)
                             {
-                                double t = hypot(s_[j], f);
-                                double cs = s_[j] / t;
-                                double sn = f / t;
+                                var t = hypot(s_[j], f);
+                                var cs = s_[j] / t;
+                                var sn = f / t;
                                 s_[j] = t;
                                 if (j != k)
                                 {
@@ -376,13 +376,13 @@ namespace QLNet.Math.matrixutilities
                     // Split at negligible s(k).
                     case 2:
                         {
-                            double f = e[k - 1];
+                            var f = e[k - 1];
                             e[k - 1] = 0.0;
                             for (j = k; j < p; j++)
                             {
-                                double t = hypot(s_[j], f);
-                                double cs = s_[j] / t;
-                                double sn = f / t;
+                                var t = hypot(s_[j], f);
+                                var cs = s_[j] / t;
+                                var sn = f / t;
                                 s_[j] = t;
                                 f = -sn * e[j];
                                 e[j] = cs * e[j];
@@ -400,7 +400,7 @@ namespace QLNet.Math.matrixutilities
                     case 3:
                         {
                             // Calculate the shift.
-                            double scale = System.Math.Max(
+                            var scale = System.Math.Max(
                                               System.Math.Max(
                                                  System.Math.Max(
                                                     System.Math.Max(System.Math.Abs(s_[p - 1]),
@@ -408,14 +408,14 @@ namespace QLNet.Math.matrixutilities
                                                     System.Math.Abs(e[p - 2])),
                                                  System.Math.Abs(s_[k])),
                                               System.Math.Abs(e[k]));
-                            double sp = s_[p - 1] / scale;
-                            double spm1 = s_[p - 2] / scale;
-                            double epm1 = e[p - 2] / scale;
-                            double sk = s_[k] / scale;
-                            double ek = e[k] / scale;
-                            double b = ((spm1 + sp) * (spm1 - sp) + epm1 * epm1) / 2.0;
-                            double c = sp * epm1 * (sp * epm1);
-                            double shift = 0.0;
+                            var sp = s_[p - 1] / scale;
+                            var spm1 = s_[p - 2] / scale;
+                            var epm1 = e[p - 2] / scale;
+                            var sk = s_[k] / scale;
+                            var ek = e[k] / scale;
+                            var b = ((spm1 + sp) * (spm1 - sp) + epm1 * epm1) / 2.0;
+                            var c = sp * epm1 * (sp * epm1);
+                            var shift = 0.0;
                             if (b.IsNotEqual(0.0) || c.IsNotEqual(0.0))
                             {
                                 shift = System.Math.Sqrt(b * b + c);
@@ -425,15 +425,15 @@ namespace QLNet.Math.matrixutilities
                                 }
                                 shift = c / (b + shift);
                             }
-                            double f = (sk + sp) * (sk - sp) + shift;
-                            double g = sk * ek;
+                            var f = (sk + sp) * (sk - sp) + shift;
+                            var g = sk * ek;
 
                             // Chase zeros.
                             for (j = k; j < p - 1; j++)
                             {
-                                double t = hypot(f, g);
-                                double cs = f / t;
-                                double sn = g / t;
+                                var t = hypot(f, g);
+                                var cs = f / t;
+                                var sn = g / t;
                                 if (j != k)
                                 {
                                     e[j - 1] = t;
@@ -517,14 +517,16 @@ namespace QLNet.Math.matrixutilities
         }
 
 
-        public Matrix U() { return transpose_ ? V_ : U_; }
-        public Matrix V() { return transpose_ ? U_ : V_; }
+        public Matrix U() => transpose_ ? V_ : U_;
+
+        public Matrix V() => transpose_ ? U_ : V_;
+
         public Matrix S()
         {
-            Matrix S = new Matrix(n_, n_);
-            for (int i = 0; i < n_; i++)
+            var S = new Matrix(n_, n_);
+            for (var i = 0; i < n_; i++)
             {
-                for (int j = 0; j < n_; j++)
+                for (var j = 0; j < n_; j++)
                 {
                     S[i, j] = 0.0;
                 }
@@ -533,15 +535,18 @@ namespace QLNet.Math.matrixutilities
             return S;
         }
 
-        public Vector singularValues() { return s_; }
-        public double norm2() { return s_[0]; }
-        public double cond() { return s_[0] / s_[n_ - 1]; }
+        public Vector singularValues() => s_;
+
+        public double norm2() => s_[0];
+
+        public double cond() => s_[0] / s_[n_ - 1];
+
         public int rank()
         {
-            double eps = System.Math.Pow(2.0, -52.0);
-            double tol = m_ * s_[0] * eps;
-            int r = 0;
-            for (int i = 0; i < s_.size(); i++)
+            var eps = System.Math.Pow(2.0, -52.0);
+            var tol = m_ * s_[0] * eps;
+            var r = 0;
+            for (var i = 0; i < s_.size(); i++)
             {
                 if (s_[i] > tol)
                 {
@@ -553,12 +558,12 @@ namespace QLNet.Math.matrixutilities
 
         public Vector solveFor(Vector b)
         {
-            Matrix W = new Matrix(n_, n_, 0.0);
-            for (int i = 0; i < n_; i++)
+            var W = new Matrix(n_, n_, 0.0);
+            for (var i = 0; i < n_; i++)
                 W[i, i] = 1.0 / s_[i];
 
-            Matrix inverse = V() * W * Matrix.transpose(U());
-            Vector result = inverse * b;
+            var inverse = V() * W * Matrix.transpose(U());
+            var result = inverse * b;
             return result;
         }
 
@@ -573,7 +578,7 @@ namespace QLNet.Math.matrixutilities
             }
             else
             {
-                double c = b / a;
+                var c = b / a;
                 return System.Math.Abs(a) * System.Math.Sqrt(1 + c * c);
             }
         }

@@ -26,18 +26,18 @@ using QLNet.Time;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Dates
+    [JetBrains.Annotations.PublicAPI] public class T_Dates
     {
         [Fact]
         public void testECBDates()
         {
             // Testing ECB dates
 
-            List<Date> knownDates = ECB.knownDates();
+            var knownDates = ECB.knownDates();
             if (knownDates.empty())
                 QAssert.Fail("Empty EBC date vector");
 
-            int n = ECB.nextDates(Date.minDate()).Count;
+            var n = ECB.nextDates(Date.minDate()).Count;
 
             if (n != knownDates.Count)
                 QAssert.Fail("NextDates(minDate) returns " + n +
@@ -46,7 +46,7 @@ namespace QLNet.Tests
             Date previousEcbDate = Date.minDate(),
                  currentEcbDate, ecbDateMinusOne;
 
-            for (int i = 0; i < knownDates.Count; ++i)
+            for (var i = 0; i < knownDates.Count; ++i)
             {
 
                 currentEcbDate = knownDates[i];
@@ -69,7 +69,7 @@ namespace QLNet.Tests
                 previousEcbDate = currentEcbDate;
             }
 
-            Date knownDate = knownDates.First();
+            var knownDate = knownDates.First();
             ECB.removeDate(knownDate);
             if (ECB.isECBdate(knownDate))
                 QAssert.Fail("Unable to remove an EBC date");
@@ -85,7 +85,7 @@ namespace QLNet.Tests
         {
             // ("Testing IMM dates...");
 
-            string[] IMMcodes = new string[]
+            var IMMcodes = new string[]
             {
             "F0", "G0", "H0", "J0", "K0", "M0", "N0", "Q0", "U0", "V0", "X0", "Z0",
             "F1", "G1", "H1", "J1", "K1", "M1", "N1", "Q1", "U1", "V1", "X1", "Z1",
@@ -99,9 +99,9 @@ namespace QLNet.Tests
             "F9", "G9", "H9", "J9", "K9", "M9", "N9", "Q9", "U9", "V9", "X9", "Z9"
             };
 
-            Date counter = Date.minDate();
+            var counter = Date.minDate();
             // 10 years of futures must not exceed Date::maxDate
-            Date last = Date.maxDate() - new Period(121, TimeUnit.Months);
+            var last = Date.maxDate() - new Period(121, TimeUnit.Months);
             Date imm;
 
             while (counter <= last)
@@ -140,7 +140,7 @@ namespace QLNet.Tests
                                  + " is not the IMM code matching " + imm);
 
                 // check that for every date the 120 IMM codes refer to future dates
-                for (int i = 0; i < 40; ++i)
+                for (var i = 0; i < 40; ++i)
                 {
                     if (IMM.date(IMMcodes[i], counter) < counter)
                         QAssert.Fail(IMM.date(IMMcodes[i], counter)
@@ -166,10 +166,10 @@ namespace QLNet.Tests
             yold = new Date(minDate - 1).Year,
             wdold = new Date(minDate - 1).weekday();
 
-            for (int i = minDate; i <= maxDate; i++)
+            for (var i = minDate; i <= maxDate; i++)
             {
-                Date t = new Date(i);
-                int serial = t.serialNumber();
+                var t = new Date(i);
+                var serial = t.serialNumber();
 
                 // check serial number consistency
                 if (serial != i)
@@ -243,7 +243,7 @@ namespace QLNet.Tests
                 wdold = wd;
 
                 // create the same date with a different constructor
-                Date s = new Date(d, m, y);
+                var s = new Date(d, m, y);
                 // check serial number consistency
                 serial = s.serialNumber();
                 if (serial != i)
@@ -275,9 +275,9 @@ namespace QLNet.Tests
             "F9", "G9", "H9", "J9", "K9", "M9", "N9", "Q9", "U9", "V9", "X9", "Z9"
          };
 
-            Date counter = Date.minDate();
+            var counter = Date.minDate();
             // 10 years of futures must not exceed Date::maxDate
-            Date last = Date.maxDate() - new Period(121, TimeUnit.Months);
+            var last = Date.maxDate() - new Period(121, TimeUnit.Months);
             Date asx;
 
             while (counter <= last)
@@ -310,7 +310,7 @@ namespace QLNet.Tests
                                  + " is not the ASX code matching " + asx);
 
                 // check that for every date the 120 ASX codes refer to future dates
-                for (int i = 0; i < 120; ++i)
+                for (var i = 0; i < 120; ++i)
                 {
                     if (ASX.date(ASXcodes[i], counter) < counter)
                         QAssert.Fail(ASX.date(ASXcodes[i], counter)
@@ -328,7 +328,7 @@ namespace QLNet.Tests
         {
             // Testing intraday information of dates
 
-            Date d1 = new Date(12, Month.February, 2015, 10, 45, 12, 234);
+            var d1 = new Date(12, Month.February, 2015, 10, 45, 12, 234);
 
             QAssert.IsTrue(d1.year() == 2015, "failed to reproduce year");
             QAssert.IsTrue(d1.month() == (int)Month.February, "failed to reproduce month");
@@ -341,7 +341,7 @@ namespace QLNet.Tests
             QAssert.IsTrue(d1.fractionOfSecond == 0.234, "failed to reproduce fraction of second");
 
 
-            Date d2 = new Date(28, Month.February, 2015, 4, 52, 57, 999);
+            var d2 = new Date(28, Month.February, 2015, 4, 52, 57, 999);
             QAssert.IsTrue(d2.year() == 2015, "failed to reproduce year");
             QAssert.IsTrue(d2.month() == (int)Month.February, "failed to reproduce month");
             QAssert.IsTrue(d2.Day == 28, "failed to reproduce day");

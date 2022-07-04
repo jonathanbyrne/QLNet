@@ -50,7 +50,7 @@ namespace QLNet.Instruments
         and swap settlement date are outside the scope of the
         instrument.
     */
-    public class CPISwap : Swap
+    [JetBrains.Annotations.PublicAPI] public class CPISwap : Swap
     {
         public enum Type { Receiver = -1, Payer = 1 }
         public new class Arguments : Swap.Arguments
@@ -78,7 +78,7 @@ namespace QLNet.Instruments
             }
         }
 
-        public class Engine : GenericEngine<Arguments, Results>
+        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results>
         { }
 
         public CPISwap(Type type,
@@ -158,7 +158,7 @@ namespace QLNet.Instruments
                     payNotional = floatingLeg.Last().date();
                 }
 
-                double floatAmount = subtractInflationNominal_ ? nominal_ - inflationNominal_ : nominal_;
+                var floatAmount = subtractInflationNominal_ ? nominal_ - inflationNominal_ : nominal_;
                 CashFlow nf = new SimpleCashFlow(floatAmount, payNotional);
                 floatingLeg.Add(nf);
             }
@@ -172,14 +172,14 @@ namespace QLNet.Instruments
             .withNotionals(inflationNominal_)
             .withPaymentAdjustment(fixedPaymentRoll_);
 
-            foreach (CashFlow cashFlow in cpiLeg)
+            foreach (var cashFlow in cpiLeg)
             {
                 cashFlow.registerWith(update);
             }
 
             if (floatingLeg.Count > 0)
             {
-                foreach (CashFlow cashFlow in floatingLeg)
+                foreach (var cashFlow in floatingLeg)
                 {
                     cashFlow.registerWith(update);
                 }
@@ -232,32 +232,48 @@ namespace QLNet.Instruments
         }
 
         // inspectors
-        public virtual Type type() { return type_; }
-        public virtual double nominal() { return nominal_; }
-        public virtual bool subtractInflationNominal() { return subtractInflationNominal_; }
+        public virtual Type type() => type_;
+
+        public virtual double nominal() => nominal_;
+
+        public virtual bool subtractInflationNominal() => subtractInflationNominal_;
 
         // float+spread
-        public virtual double spread() { return spread_; }
-        public virtual DayCounter floatDayCount() { return floatDayCount_; }
-        public virtual Schedule floatSchedule() { return floatSchedule_; }
-        public virtual BusinessDayConvention floatPaymentRoll() { return floatPaymentRoll_; }
-        public virtual int fixingDays() { return fixingDays_; }
-        public virtual IborIndex floatIndex() { return floatIndex_; }
+        public virtual double spread() => spread_;
+
+        public virtual DayCounter floatDayCount() => floatDayCount_;
+
+        public virtual Schedule floatSchedule() => floatSchedule_;
+
+        public virtual BusinessDayConvention floatPaymentRoll() => floatPaymentRoll_;
+
+        public virtual int fixingDays() => fixingDays_;
+
+        public virtual IborIndex floatIndex() => floatIndex_;
 
         // fixed rate x inflation
-        public virtual double fixedRate() { return fixedRate_; }
-        public virtual double baseCPI() { return baseCPI_; }
-        public virtual DayCounter fixedDayCount() { return fixedDayCount_; }
-        public virtual Schedule fixedSchedule() { return fixedSchedule_; }
-        public virtual BusinessDayConvention fixedPaymentRoll() { return fixedPaymentRoll_; }
-        public virtual Period observationLag() { return observationLag_; }
-        public virtual ZeroInflationIndex fixedIndex() { return fixedIndex_; }
-        public virtual InterpolationType observationInterpolation() { return observationInterpolation_; }
-        public virtual double inflationNominal() { return inflationNominal_; }
+        public virtual double fixedRate() => fixedRate_;
+
+        public virtual double baseCPI() => baseCPI_;
+
+        public virtual DayCounter fixedDayCount() => fixedDayCount_;
+
+        public virtual Schedule fixedSchedule() => fixedSchedule_;
+
+        public virtual BusinessDayConvention fixedPaymentRoll() => fixedPaymentRoll_;
+
+        public virtual Period observationLag() => observationLag_;
+
+        public virtual ZeroInflationIndex fixedIndex() => fixedIndex_;
+
+        public virtual InterpolationType observationInterpolation() => observationInterpolation_;
+
+        public virtual double inflationNominal() => inflationNominal_;
 
         // legs
-        public virtual List<CashFlow> cpiLeg() { return legs_[0]; }
-        public virtual List<CashFlow> floatLeg() { return legs_[1]; }
+        public virtual List<CashFlow> cpiLeg() => legs_[0];
+
+        public virtual List<CashFlow> floatLeg() => legs_[1];
 
         // other
         public override void fetchResults(IPricingEngineResults r)
@@ -268,7 +284,7 @@ namespace QLNet.Instruments
 
             base.fetchResults(r);
 
-            Results results = r as Results;
+            var results = r as Results;
 
             if (results != null)
             {

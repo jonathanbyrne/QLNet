@@ -31,13 +31,10 @@ namespace QLNet
 {
     public static partial class Utils
    {
-      public static double Asinh(double x)
-      {
-         return System.Math.Log(x + System.Math.Sqrt(x * x + 1.0));
-      }
+      public static double Asinh(double x) => System.Math.Log(x + System.Math.Sqrt(x * x + 1.0));
    }
 
-   public class Concentrating1dMesher : Fdm1dMesher
+   [JetBrains.Annotations.PublicAPI] public class Concentrating1dMesher : Fdm1dMesher
    {
       public Concentrating1dMesher(double start, double end, int size,
                                    Pair < double?, double? > cPoints = null,
@@ -48,8 +45,8 @@ namespace QLNet
          if (cPoints == null)
             cPoints = new Pair < double?, double? >();
 
-         double? cPoint = cPoints.first;
-         double ? density = cPoints.second == null ? null : cPoints.second * (end - start);
+         var cPoint = cPoints.first;
+         var density = cPoints.second == null ? null : cPoints.second * (end - start);
 
          Utils.QL_REQUIRE(cPoint == null || (cPoint >= start && cPoint <= end),
                           () => "cPoint must be between start and end");
@@ -60,23 +57,23 @@ namespace QLNet
          Utils.QL_REQUIRE(!requireCPoint || cPoint != null,
                           () => "cPoint is required in grid but not given");
 
-         double dx = 1.0 / (size - 1);
+         var dx = 1.0 / (size - 1);
 
          if (cPoint != null)
          {
-            List<double> u = new List<double>();
-            List<double> z = new List<double>();
+            var u = new List<double>();
+            var z = new List<double>();
             Interpolation transform = null;
-            double c1 = Utils.Asinh((start - cPoint.Value) / density.GetValueOrDefault());
-            double c2 = Utils.Asinh((end - cPoint.Value) / density.GetValueOrDefault());
+            var c1 = Utils.Asinh((start - cPoint.Value) / density.GetValueOrDefault());
+            var c2 = Utils.Asinh((end - cPoint.Value) / density.GetValueOrDefault());
             if (requireCPoint)
             {
                u.Add(0.0);
                z.Add(0.0);
                if (!Utils.close(cPoint.Value, start) && !Utils.close(cPoint.Value, end))
                {
-                  double z0 = -c1 / (c2 - c1);
-                  double u0 =
+                  var z0 = -c1 / (c2 - c1);
+                  var u0 =
                      System.Math.Max(
                         System.Math.Min(Convert.ToInt32(z0 * (size - 1) + 0.5),
                                  Convert.ToInt32(size) - 2),
@@ -89,16 +86,16 @@ namespace QLNet
                transform = new LinearInterpolation(u, u.Count, z);
             }
 
-            for (int i = 1; i < size - 1; ++i)
+            for (var i = 1; i < size - 1; ++i)
             {
-               double li = requireCPoint ? transform.value(i * dx) : i * dx;
+               var li = requireCPoint ? transform.value(i * dx) : i * dx;
                locations_[i] = cPoint.Value
                                + density.GetValueOrDefault() * System.Math.Sinh(c1 * (1.0 - li) + c2 * li);
             }
          }
          else
          {
-            for (int i = 1; i < size - 1; ++i)
+            for (var i = 1; i < size - 1; ++i)
             {
                locations_[i] = start + i * dx * (end - start);
             }
@@ -107,7 +104,7 @@ namespace QLNet
          locations_[0] = start;
          locations_[locations_.Count - 1] = end;
 
-         for (int i = 0; i < size - 1; ++i)
+         for (var i = 0; i < size - 1; ++i)
          {
             dplus_[i] = dminus_[i + 1] = locations_[i + 1] - locations_[i];
          }
@@ -115,7 +112,7 @@ namespace QLNet
          dminus_[0] = null;
       }
 
-      public class OdeIntegrationFct
+      [JetBrains.Annotations.PublicAPI] public class OdeIntegrationFct
       {
          public OdeIntegrationFct(List < double? > points,
                                   List < double? > betas,
@@ -134,8 +131,8 @@ namespace QLNet
 
          protected double jac(double a, double x, double y)
          {
-            double s = 0.0;
-            for (int i = 0; i < points_.Count; ++i)
+            var s = 0.0;
+            for (var i = 0; i < points_.Count; ++i)
             {
                s += 1.0 / (betas_[i].GetValueOrDefault() + (y - points_[i].GetValueOrDefault()) *
                            (y - points_[i].GetValueOrDefault()));
@@ -147,7 +144,7 @@ namespace QLNet
          protected List < double? > points_, betas_;
       }
 
-      public class OdeSolver : ISolver1d
+      [JetBrains.Annotations.PublicAPI] public class OdeSolver : ISolver1d
       {
          public OdeSolver(OdeIntegrationFct func, double y0, double x0, double x1, double end)
          {
@@ -158,16 +155,13 @@ namespace QLNet
             end_ = end;
          }
 
-         public override double value(double v)
-         {
-            return func_.solve(v, y0_, x0_, x1_) - end_;
-         }
+         public override double value(double v) => func_.solve(v, y0_, x0_, x1_) - end_;
 
          protected OdeIntegrationFct func_;
          protected double y0_, x0_, x1_, end_;
       }
 
-      public class OdeSolver2 : ISolver1d
+      [JetBrains.Annotations.PublicAPI] public class OdeSolver2 : ISolver1d
       {
          public OdeSolver2(Func<double, double> func, double z)
          {
@@ -175,10 +169,7 @@ namespace QLNet
             z_ = z;
          }
 
-         public override double value(double v)
-         {
-            return func_(v) - z_;
-         }
+         public override double value(double v) => func_(v) - z_;
 
          protected Func<double, double> func_;
          protected double z_;
@@ -192,23 +183,23 @@ namespace QLNet
          Utils.QL_REQUIRE(end > start, () => "end must be larger than start");
 
          List < double? > points = new List < double? >(), betas = new List < double? >();
-         foreach (Tuple < double?, double?, bool > iter in cPoints)
+         foreach (var iter in cPoints)
          {
             points.Add(iter.Item1);
             betas.Add((iter.Item2 * (end - start)) * (iter.Item2 * (end - start)));
          }
 
          // get scaling factor a so that y(1) = end
-         double aInit = 0.0;
-         for (int i = 0; i < points.Count; ++i)
+         var aInit = 0.0;
+         for (var i = 0; i < points.Count; ++i)
          {
-            double c1 = Utils.Asinh((start - points[i].GetValueOrDefault()) / betas[i].GetValueOrDefault());
-            double c2 = Utils.Asinh((end - points[i].GetValueOrDefault()) / betas[i].GetValueOrDefault());
+            var c1 = Utils.Asinh((start - points[i].GetValueOrDefault()) / betas[i].GetValueOrDefault());
+            var c2 = Utils.Asinh((end - points[i].GetValueOrDefault()) / betas[i].GetValueOrDefault());
             aInit += (c2 - c1) / points.Count;
          }
 
-         OdeIntegrationFct fct = new OdeIntegrationFct(points, betas, tol);
-         double a = new Brent().solve(
+         var fct = new OdeIntegrationFct(points, betas, tol);
+         var a = new Brent().solve(
             new OdeSolver(fct, start, 0.0, 1.0, end),
             tol, aInit, 0.1 * aInit);
 
@@ -216,33 +207,33 @@ namespace QLNet
          Vector x = new Vector(size), y = new Vector(size);
          x[0] = 0.0;
          y[0] = start;
-         double dx = 1.0 / (size - 1);
-         for (int i = 1; i < size; ++i)
+         var dx = 1.0 / (size - 1);
+         for (var i = 1; i < size; ++i)
          {
             x[i] = i * dx;
             y[i] = fct.solve(a, y[i - 1], x[i - 1], x[i]);
          }
 
          // eliminate numerical noise and ensure y(1) = end
-         double dy = y[y.Count - 1] - end;
-         for (int i = 1; i < size; ++i)
+         var dy = y[y.Count - 1] - end;
+         for (var i = 1; i < size; ++i)
          {
             y[i] -= i * dx * dy;
          }
 
-         LinearInterpolation odeSolution = new LinearInterpolation(x, x.Count, y);
+         var odeSolution = new LinearInterpolation(x, x.Count, y);
 
          // ensure required points are part of the grid
          List < Pair < double?, double? >> w =
             new InitializedList < Pair < double?, double? >> (1, new Pair < double?, double? >(0.0, 0.0));
 
-         for (int i = 0; i < points.Count; ++i)
+         for (var i = 0; i < points.Count; ++i)
          {
             if (cPoints[i].Item3 && points[i] > start && points[i] < end)
             {
-               int j = y.distance(y[0], y.BinarySearch(points[i].Value));
+               var j = y.distance(y[0], y.BinarySearch(points[i].Value));
 
-               double e = new Brent().solve(
+               var e = new Brent().solve(
                   new OdeSolver2(odeSolution.value, points[i].Value),
                   Const.QL_EPSILON, x[j], 0.5 / size);
 
@@ -253,19 +244,19 @@ namespace QLNet
          w = w.OrderBy(xx => xx.first).Distinct(new equal_on_first()).ToList();
 
          List<double> u = new List<double>(w.Count), z = new List<double>(w.Count);
-         for (int i = 0; i < w.Count; ++i)
+         for (var i = 0; i < w.Count; ++i)
          {
             u[i] = w[i].first.GetValueOrDefault();
             z[i] = w[i].second.GetValueOrDefault();
          }
-         LinearInterpolation transform = new LinearInterpolation(u, u.Count, z);
+         var transform = new LinearInterpolation(u, u.Count, z);
 
-         for (int i = 0; i < size; ++i)
+         for (var i = 0; i < size; ++i)
          {
             locations_[i] = odeSolution.value(transform.value(i * dx));
          }
 
-         for (int i = 0; i < size - 1; ++i)
+         for (var i = 0; i < size - 1; ++i)
          {
             dplus_[i] = dminus_[i + 1] = locations_[i + 1] - locations_[i];
          }

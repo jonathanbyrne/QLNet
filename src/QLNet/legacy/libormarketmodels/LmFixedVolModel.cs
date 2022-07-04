@@ -24,7 +24,7 @@ using System.Linq;
 
 namespace QLNet.legacy.libormarketmodels
 {
-    public class LmFixedVolatilityModel : LmVolatilityModel
+    [JetBrains.Annotations.PublicAPI] public class LmFixedVolatilityModel : LmVolatilityModel
     {
         public LmFixedVolatilityModel(Vector volatilities, List<double> startTimes)
            : base(startTimes.Count, 0)
@@ -37,7 +37,7 @@ namespace QLNet.legacy.libormarketmodels
             Utils.QL_REQUIRE(volatilities_.size() == startTimes_.Count, () =>
                              "volatility array and fixing time array have to have the same size");
 
-            for (int i = 1; i < startTimes_.Count; i++)
+            for (var i = 1; i < startTimes_.Count; i++)
             {
                 Utils.QL_REQUIRE(startTimes_[i] > startTimes_[i - 1], () =>
                                  "invalid time (" + startTimes_[i] + ", vs " + startTimes_[i - 1] + ")");
@@ -49,7 +49,7 @@ namespace QLNet.legacy.libormarketmodels
             Utils.QL_REQUIRE(t >= startTimes_.First() && t <= startTimes_.Last(), () =>
                              "invalid time given for volatility model");
 
-            int ti = startTimes_.GetRange(0, startTimes_.Count - 1).BinarySearch(t);
+            var ti = startTimes_.GetRange(0, startTimes_.Count - 1).BinarySearch(t);
             if (ti < 0)
                 // The upper_bound() algorithm finds the last position in a sequence that value can occupy
                 // without violating the sequence's ordering
@@ -59,9 +59,9 @@ namespace QLNet.legacy.libormarketmodels
             // impose limits. we need the one before last at max or the first at min
             ti = System.Math.Max(System.Math.Min(ti, startTimes_.Count - 2), 0);
 
-            Vector tmp = new Vector(size_, 0.0);
+            var tmp = new Vector(size_, 0.0);
 
-            for (int i = ti; i < size_; ++i)
+            for (var i = ti; i < size_; ++i)
             {
                 tmp[i] = volatilities_[i - ti];
             }
@@ -74,7 +74,7 @@ namespace QLNet.legacy.libormarketmodels
             Utils.QL_REQUIRE(t >= startTimes_.First() && t <= startTimes_.Last(), () =>
                              "invalid time given for volatility model");
 
-            int ti = startTimes_.GetRange(0, startTimes_.Count - 1).BinarySearch(t);
+            var ti = startTimes_.GetRange(0, startTimes_.Count - 1).BinarySearch(t);
             if (ti < 0)
                 // The upper_bound() algorithm finds the last position in a sequence that value can occupy
                 // without violating the sequence's ordering

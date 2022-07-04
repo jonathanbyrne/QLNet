@@ -22,7 +22,7 @@ using System;
 namespace QLNet.Instruments
 {
     //! Simple stock class
-    public class Stock : Instrument
+    [JetBrains.Annotations.PublicAPI] public class Stock : Instrument
     {
         private Handle<Quote> quote_;
 
@@ -32,7 +32,7 @@ namespace QLNet.Instruments
             quote_.registerWith(update);
         }
 
-        public override bool isExpired() { return false; }
+        public override bool isExpired() => false;
 
         protected override void performCalculations()
         {

@@ -23,7 +23,7 @@ using System.Text;
 
 namespace QLNet.Termstructures.Volatility
 {
-    public class SpreadedSmileSection : SmileSection
+    [JetBrains.Annotations.PublicAPI] public class SpreadedSmileSection : SmileSection
     {
         public SpreadedSmileSection(SmileSection underlyingSection, Handle<Quote> spread)
         {
@@ -34,23 +34,29 @@ namespace QLNet.Termstructures.Volatility
             spread_.registerWith(update);
         }
         // SmileSection interface
-        public override double minStrike() { return underlyingSection_.minStrike(); }
-        public override double maxStrike() { return underlyingSection_.maxStrike(); }
-        public override double? atmLevel() { return underlyingSection_.atmLevel(); }
-        public override Date exerciseDate() { return underlyingSection_.exerciseDate(); }
-        public override double exerciseTime() { return underlyingSection_.exerciseTime(); }
-        public override DayCounter dayCounter() { return underlyingSection_.dayCounter(); }
-        public override Date referenceDate() { return underlyingSection_.referenceDate(); }
-        public override VolatilityType volatilityType() { return underlyingSection_.volatilityType(); }
-        public override double shift() { return underlyingSection_.shift(); }
+        public override double minStrike() => underlyingSection_.minStrike();
+
+        public override double maxStrike() => underlyingSection_.maxStrike();
+
+        public override double? atmLevel() => underlyingSection_.atmLevel();
+
+        public override Date exerciseDate() => underlyingSection_.exerciseDate();
+
+        public override double exerciseTime() => underlyingSection_.exerciseTime();
+
+        public override DayCounter dayCounter() => underlyingSection_.dayCounter();
+
+        public override Date referenceDate() => underlyingSection_.referenceDate();
+
+        public override VolatilityType volatilityType() => underlyingSection_.volatilityType();
+
+        public override double shift() => underlyingSection_.shift();
 
         // LazyObject interface
         public override void update() { notifyObservers(); }
 
-        protected override double volatilityImpl(double k)
-        {
-            return underlyingSection_.volatility(k) + spread_.link.value();
-        }
+        protected override double volatilityImpl(double k) => underlyingSection_.volatility(k) + spread_.link.value();
+
         private SmileSection underlyingSection_;
         private Handle<Quote> spread_;
     }

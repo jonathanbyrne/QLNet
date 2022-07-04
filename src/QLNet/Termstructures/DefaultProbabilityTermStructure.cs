@@ -50,7 +50,7 @@ namespace QLNet.Termstructures
             jumpTimes_ = new List<double>(jumpDates_.Count);
             nJumps_ = jumps_.Count;
             setJumps();
-            for (int i = 0; i < nJumps_; ++i)
+            for (var i = 0; i < nJumps_; ++i)
                 jumps_[i].registerWith(update);
         }
 
@@ -71,7 +71,7 @@ namespace QLNet.Termstructures
             jumpTimes_ = new List<double>(jumpDates_.Count);
             nJumps_ = jumps_.Count;
             setJumps();
-            for (int i = 0; i < nJumps_; ++i)
+            for (var i = 0; i < nJumps_; ++i)
                 jumps_[i].registerWith(update);
         }
 
@@ -92,7 +92,7 @@ namespace QLNet.Termstructures
             jumpTimes_ = new List<double>(jumpDates_.Count);
             nJumps_ = jumps_.Count;
             setJumps();
-            for (int i = 0; i < nJumps_; ++i)
+            for (var i = 0; i < nJumps_; ++i)
                 jumps_[i].registerWith(update);
         }
 
@@ -103,10 +103,7 @@ namespace QLNet.Termstructures
         //      These methods return the survival probability from the reference
         //      date until a given date or time.  In the latter case, the time
         //      is calculated as a fraction of year from the reference date.
-        public double survivalProbability(Date d, bool extrapolate = false)
-        {
-            return survivalProbability(timeFromReference(d), extrapolate);
-        }
+        public double survivalProbability(Date d, bool extrapolate = false) => survivalProbability(timeFromReference(d), extrapolate);
 
         /*! The same day-counting rule used by the term structure
             should be used for calculating the passed time t.
@@ -117,11 +114,11 @@ namespace QLNet.Termstructures
 
             if (!jumps_.empty())
             {
-                double jumpEffect = 1.0;
-                for (int i = 0; i < nJumps_ && jumpTimes_[i] < t; ++i)
+                var jumpEffect = 1.0;
+                for (var i = 0; i < nJumps_ && jumpTimes_[i] < t; ++i)
                 {
                     Utils.QL_REQUIRE(jumps_[i].link.isValid(), () => "invalid " + (i + 1) + " jump quote");
-                    double thisJump = jumps_[i].link.value();
+                    var thisJump = jumps_[i].link.value();
                     Utils.QL_REQUIRE(thisJump > 0.0 && thisJump <= 1.0, () => "invalid " + (i + 1) + " jump value: " + thisJump);
                     jumpEffect *= thisJump;
                 }
@@ -138,18 +135,12 @@ namespace QLNet.Termstructures
         //    These methods return the default probability from the reference
         //    date until a given date or time.  In the latter case, the time
         //    is calculated as a fraction of year from the reference date.
-        public double defaultProbability(Date d, bool extrapolate = false)
-        {
-            return 1.0 - survivalProbability(d, extrapolate);
-        }
+        public double defaultProbability(Date d, bool extrapolate = false) => 1.0 - survivalProbability(d, extrapolate);
 
         /*! The same day-counting rule used by the term structure
             should be used for calculating the passed time t.
         */
-        public double defaultProbability(double t, bool extrapolate = false)
-        {
-            return 1.0 - survivalProbability(t, extrapolate);
-        }
+        public double defaultProbability(double t, bool extrapolate = false) => 1.0 - survivalProbability(t, extrapolate);
 
         //! probability of default between two given dates
         public double defaultProbability(Date d1, Date d2, bool extrapolate = false)
@@ -174,10 +165,7 @@ namespace QLNet.Termstructures
         //    In the latter case, the time is calculated as a fraction of year
         //    from the reference date.
 
-        public double defaultDensity(Date d, bool extrapolate = false)
-        {
-            return defaultDensity(timeFromReference(d), extrapolate);
-        }
+        public double defaultDensity(Date d, bool extrapolate = false) => defaultDensity(timeFromReference(d), extrapolate);
 
         public double defaultDensity(double t, bool extrapolate = false)
         {
@@ -196,14 +184,11 @@ namespace QLNet.Termstructures
         //    Hazard rates are defined with annual frequency and continuous
         //    compounding.
 
-        public double hazardRate(Date d, bool extrapolate = false)
-        {
-            return hazardRate(timeFromReference(d), extrapolate);
-        }
+        public double hazardRate(Date d, bool extrapolate = false) => hazardRate(timeFromReference(d), extrapolate);
 
         public double hazardRate(double t, bool extrapolate = false)
         {
-            double S = survivalProbability(t, extrapolate);
+            var S = survivalProbability(t, extrapolate);
             return S.IsEqual(0.0) ? 0.0 : defaultDensity(t, extrapolate) / S;
         }
 
@@ -211,8 +196,9 @@ namespace QLNet.Termstructures
 
         #region Jump inspectors
 
-        public List<Date> jumpDates() { return jumpDates_; }
-        public List<double> jumpTimes() { return jumpTimes_; }
+        public List<Date> jumpDates() => jumpDates_;
+
+        public List<double> jumpTimes() => jumpTimes_;
 
         #endregion
 
@@ -252,8 +238,8 @@ namespace QLNet.Termstructures
                 // turn of year dates
                 jumpDates_.Clear();
                 jumpTimes_.Clear();
-                int y = referenceDate().year();
-                for (int i = 0; i < nJumps_; ++i)
+                var y = referenceDate().year();
+                for (var i = 0; i < nJumps_; ++i)
                     jumpDates_.Add(new Date(31, Month.December, y + i));
 
             }
@@ -264,7 +250,7 @@ namespace QLNet.Termstructures
                                  "mismatch between number of jumps (" + nJumps_ +
                                  ") and jump dates (" + jumpDates_.Count + ")");
             }
-            for (int i = 0; i < nJumps_; ++i)
+            for (var i = 0; i < nJumps_; ++i)
                 jumpTimes_.Add(timeFromReference(jumpDates_[i]));
 
             latestReference_ = base.referenceDate();

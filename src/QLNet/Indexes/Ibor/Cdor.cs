@@ -40,7 +40,7 @@ namespace QLNet.Indexes.Ibor
     /// if you're interested in the London fixing by BBA.
     /// </remarks>
     /// </summary>
-    public class Cdor : IborIndex
+    [JetBrains.Annotations.PublicAPI] public class Cdor : IborIndex
     {
         public Cdor(Period tenor)
            : base("CDOR", tenor, 0, new CADCurrency(), new Canada(), BusinessDayConvention.ModifiedFollowing, false, new Actual365Fixed(), new Handle<YieldTermStructure>())

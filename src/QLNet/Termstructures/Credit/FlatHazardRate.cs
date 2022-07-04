@@ -24,7 +24,7 @@ namespace QLNet.Termstructures.Credit
 {
     //! Flat hazard-rate curve
     /*! \ingroup defaultprobabilitytermstructures */
-    public class FlatHazardRate : HazardRateStructure
+    [JetBrains.Annotations.PublicAPI] public class FlatHazardRate : HazardRateStructure
     {
         #region Constructors
 
@@ -59,23 +59,20 @@ namespace QLNet.Termstructures.Credit
 
         #region TermStructure interface
 
-        public override Date maxDate() { return Date.maxDate(); }
+        public override Date maxDate() => Date.maxDate();
 
         #endregion
 
 
         #region HazardRateStructure interface
 
-        protected override double hazardRateImpl(double t) { return hazardRate_.link.value(); }
+        protected override double hazardRateImpl(double t) => hazardRate_.link.value();
 
         #endregion
 
         #region DefaultProbabilityTermStructure interface
 
-        protected override double survivalProbabilityImpl(double t)
-        {
-            return System.Math.Exp(-hazardRate_.link.value() * t);
-        }
+        protected override double survivalProbabilityImpl(double t) => System.Math.Exp(-hazardRate_.link.value() * t);
 
         #endregion
 

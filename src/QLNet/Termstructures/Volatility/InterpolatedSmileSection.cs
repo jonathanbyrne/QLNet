@@ -27,7 +27,7 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Termstructures.Volatility
 {
-    public class InterpolatedSmileSection<Interpolator> : SmileSection, InterpolatedCurve
+    [JetBrains.Annotations.PublicAPI] public class InterpolatedSmileSection<Interpolator> : SmileSection, InterpolatedCurve
       where Interpolator : IInterpolationFactory, new()
     {
         public InterpolatedSmileSection(double timeToExpiry,
@@ -46,7 +46,7 @@ namespace QLNet.Termstructures.Volatility
             atmLevel_ = atmLevel;
             vols_ = new InitializedList<double>(stdDevHandles.Count);
 
-            for (int i = 0; i < stdDevHandles_.Count; ++i)
+            for (var i = 0; i < stdDevHandles_.Count; ++i)
                 stdDevHandles_[i].registerWith(update);
 
             atmLevel_.registerWith(update);
@@ -73,7 +73,7 @@ namespace QLNet.Termstructures.Volatility
 
             // fill dummy handles to allow generic handle-based
             // computations later on
-            for (int i = 0; i < stdDevs.Count; ++i)
+            for (var i = 0; i < stdDevs.Count; ++i)
                 stdDevHandles_[i] = new Handle<Quote>(new SimpleQuote(stdDevs[i]));
 
             atmLevel_ = new Handle<Quote>(new SimpleQuote(atmLevel));
@@ -100,7 +100,7 @@ namespace QLNet.Termstructures.Volatility
             atmLevel_ = atmLevel;
             vols_ = new InitializedList<double>(stdDevHandles.Count);
 
-            for (int i = 0; i < stdDevHandles_.Count; ++i)
+            for (var i = 0; i < stdDevHandles_.Count; ++i)
                 stdDevHandles_[i].registerWith(update);
             atmLevel_.registerWith(update);
             // check strikes!!!!!!!!!!!!!!!!!!!!
@@ -126,7 +126,7 @@ namespace QLNet.Termstructures.Volatility
 
             //fill dummy handles to allow generic handle-based
             // computations later on
-            for (int i = 0; i < stdDevs.Count; ++i)
+            for (var i = 0; i < stdDevs.Count; ++i)
                 stdDevHandles_[i] = new Handle<Quote>(new SimpleQuote(stdDevs[i]));
             atmLevel_ = new Handle<Quote>(new SimpleQuote(atmLevel));
             // check strikes!!!!!!!!!!!!!!!!!!!!
@@ -138,7 +138,7 @@ namespace QLNet.Termstructures.Volatility
 
         protected override void performCalculations()
         {
-            for (int i = 0; i < stdDevHandles_.Count; ++i)
+            for (var i = 0; i < stdDevHandles_.Count; ++i)
                 vols_[i] = stdDevHandles_[i].link.value() / exerciseTimeSquareRoot_;
             interpolation_.update();
         }
@@ -147,7 +147,7 @@ namespace QLNet.Termstructures.Volatility
         protected override double varianceImpl(double strike)
         {
             calculate();
-            double v = interpolation_.value(strike, true);
+            var v = interpolation_.value(strike, true);
             return v * v * exerciseTime();
         }
 
@@ -156,9 +156,12 @@ namespace QLNet.Termstructures.Volatility
             calculate();
             return interpolation_.value(strike, true);
         }
-        public override double minStrike() { return strikes_.First(); }
-        public override double maxStrike() { return strikes_.Last(); }
-        public override double? atmLevel() { return atmLevel_.link.value(); }
+        public override double minStrike() => strikes_.First();
+
+        public override double maxStrike() => strikes_.Last();
+
+        public override double? atmLevel() => atmLevel_.link.value();
+
         public override void update() { base.update(); }
 
         private double exerciseTimeSquareRoot_;
@@ -170,10 +173,11 @@ namespace QLNet.Termstructures.Volatility
         #region InterpolatedCurve
 
         public List<double> times_ { get; set; }
-        public List<double> times() { return times_; }
+        public List<double> times() => times_;
 
         public List<Date> dates_ { get; set; }
-        public List<Date> dates() { return dates_; }
+        public List<Date> dates() => dates_;
+
         public Date maxDate_ { get; set; }
         public Date maxDate()
         {
@@ -184,15 +188,16 @@ namespace QLNet.Termstructures.Volatility
         }
 
         public List<double> data_ { get; set; }
-        public List<double> discounts() { return data_; }
-        public List<double> data() { return discounts(); }
+        public List<double> discounts() => data_;
+
+        public List<double> data() => discounts();
 
         public Interpolation interpolation_ { get; set; }
         public IInterpolationFactory interpolator_ { get; set; }
 
         public Dictionary<Date, double> nodes()
         {
-            Dictionary<Date, double> results = new Dictionary<Date, double>();
+            var results = new Dictionary<Date, double>();
             dates_.ForEach((i, x) => results.Add(x, data_[i]));
             return results;
         }
@@ -204,7 +209,7 @@ namespace QLNet.Termstructures.Volatility
 
         public object Clone()
         {
-            InterpolatedCurve copy = MemberwiseClone() as InterpolatedCurve;
+            var copy = MemberwiseClone() as InterpolatedCurve;
             copy.times_ = new List<double>(times_);
             copy.data_ = new List<double>(data_);
             copy.interpolator_ = interpolator_;

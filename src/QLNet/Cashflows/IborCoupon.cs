@@ -25,8 +25,8 @@ using System.Collections.Generic;
 
 namespace QLNet.Cashflows
 {
-    // Coupon paying a Libor-type index
-    public class IborCoupon : FloatingRateCoupon
+    // Coupon paying a Libor-ExerciseType index
+    [JetBrains.Annotations.PublicAPI] public class IborCoupon : FloatingRateCoupon
     {
         public IborCoupon() { }
 
@@ -49,8 +49,8 @@ namespace QLNet.Cashflows
 
             fixingDate_ = fixingDate();
 
-            Calendar fixingCalendar = index_.fixingCalendar();
-            int indexFixingDays = index_.fixingDays();
+            var fixingCalendar = index_.fixingCalendar();
+            var indexFixingDays = index_.fixingDays();
 
             fixingValueDate_ = fixingCalendar.advance(fixingDate_, indexFixingDays, TimeUnit.Days);
 
@@ -62,12 +62,12 @@ namespace QLNet.Cashflows
             else
             {
                 // par coupon approximation
-                Date nextFixingDate = fixingCalendar.advance(accrualEndDate_, -fixingDays_, TimeUnit.Days);
+                var nextFixingDate = fixingCalendar.advance(accrualEndDate_, -fixingDays_, TimeUnit.Days);
                 fixingEndDate_ = fixingCalendar.advance(nextFixingDate, indexFixingDays, TimeUnit.Days);
             }
 #endif
 
-            DayCounter dc = index_.dayCounter();
+            var dc = index_.dayCounter();
             spanningTime_ = dc.yearFraction(fixingValueDate_, fixingEndDate_);
             Utils.QL_REQUIRE(spanningTime_ > 0.0, () =>
                              "\n cannot calculate forward rate between " +
@@ -77,7 +77,7 @@ namespace QLNet.Cashflows
         }
 
         // Inspectors
-        public IborIndex iborIndex() { return iborIndex_; }
+        public IborIndex iborIndex() => iborIndex_;
 
         //! FloatingRateCoupon interface
         //! Implemented in order to manage the case of par coupon
@@ -89,7 +89,7 @@ namespace QLNet.Cashflows
               1) allows to save date/time recalculations, and
               2) takes into account par coupon needs
             */
-            Date today = Settings.evaluationDate();
+            var today = Settings.evaluationDate();
 
             if (fixingDate_ > today)
                 return iborIndex_.forecastFixing(fixingValueDate_, fixingEndDate_, spanningTime_);
@@ -97,14 +97,14 @@ namespace QLNet.Cashflows
             if (fixingDate_ < today || Settings.enforcesTodaysHistoricFixings)
             {
                 // do not catch exceptions
-                double? result = index_.pastFixing(fixingDate_);
+                var result = index_.pastFixing(fixingDate_);
                 Utils.QL_REQUIRE(result != null, () => "Missing " + index_.name() + " fixing for " + fixingDate_);
                 return result.Value;
             }
 
             try
             {
-                double? result = index_.pastFixing(fixingDate_);
+                var result = index_.pastFixing(fixingDate_);
                 if (result != null)
                     return result.Value;
 
@@ -120,11 +120,9 @@ namespace QLNet.Cashflows
         // Factory - for Leg generators
         public override CashFlow factory(double nominal, Date paymentDate, Date startDate, Date endDate, int fixingDays,
                                          InterestRateIndex index, double gearing, double spread,
-                                         Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears)
-        {
-            return new IborCoupon(paymentDate, nominal, startDate, endDate, fixingDays,
-                                  (IborIndex)index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears);
-        }
+                                         Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears) =>
+            new IborCoupon(paymentDate, nominal, startDate, endDate, fixingDays,
+                (IborIndex)index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears);
 
         private IborIndex iborIndex_;
         private Date fixingDate_, fixingValueDate_, fixingEndDate_;
@@ -132,7 +130,7 @@ namespace QLNet.Cashflows
     }
 
     //! helper class building a sequence of capped/floored ibor-rate coupons
-    public class IborLeg : FloatingLegBase
+    [JetBrains.Annotations.PublicAPI] public class IborLeg : FloatingLegBase
     {
         // constructor
         public IborLeg(Schedule schedule, IborIndex index)
@@ -146,7 +144,7 @@ namespace QLNet.Cashflows
 
         public override List<CashFlow> value()
         {
-            List<CashFlow> cashflows = CashFlowVectors.FloatingLeg<IborIndex, IborCoupon, CappedFlooredIborCoupon>(
+            var cashflows = CashFlowVectors.FloatingLeg<IborIndex, IborCoupon, CappedFlooredIborCoupon>(
                                           notionals_, schedule_, index_ as IborIndex, paymentDayCounter_,
                                           paymentAdjustment_, fixingDays_, gearings_, spreads_,
                                           caps_, floors_, inArrears_, zeroPayments_);

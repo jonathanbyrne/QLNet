@@ -46,7 +46,7 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    public class Israel : Calendar
+    [JetBrains.Annotations.PublicAPI] public class Israel : Calendar
     {
         public enum Market
         {
@@ -77,17 +77,16 @@ namespace QLNet.Time.Calendars
             public static readonly TelAvivImpl Singleton = new TelAvivImpl();
             private TelAvivImpl() { }
 
-            public override string name() { return "Tel Aviv stock exchange"; }
-            public override bool isWeekend(DayOfWeek w)
-            {
-                return w == DayOfWeek.Friday || w == DayOfWeek.Saturday;
-            }
+            public override string name() => "Tel Aviv stock exchange";
+
+            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Friday || w == DayOfWeek.Saturday;
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
-                int d = date.Day;
-                Month m = (Month)date.Month;
-                int y = date.Year;
+                var w = date.DayOfWeek;
+                var d = date.Day;
+                var m = (Month)date.Month;
+                var y = date.Year;
 
                 if (isWeekend(w)
                     //Purim

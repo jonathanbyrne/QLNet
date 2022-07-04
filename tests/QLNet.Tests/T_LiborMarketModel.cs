@@ -46,7 +46,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_LiborMarketModel : IDisposable
+    [JetBrains.Annotations.PublicAPI] public class T_LiborMarketModel : IDisposable
     {
         #region Initialize&Cleanup
         private SavedSettings backup;
@@ -67,16 +67,16 @@ namespace QLNet.Tests
         {
             DayCounter dayCounter = new Actual360();
 
-            RelinkableHandle<YieldTermStructure> termStructure = new RelinkableHandle<YieldTermStructure>();
+            var termStructure = new RelinkableHandle<YieldTermStructure>();
             IborIndex index = new Euribor6M(termStructure);
 
-            Date todaysDate =
+            var todaysDate =
                index.fixingCalendar().adjust(new Date(4, 9, 2005));
             Settings.setEvaluationDate(todaysDate);
 
             dates[0] = index.fixingCalendar().advance(todaysDate,
                                                       index.fixingDays(), TimeUnit.Days);
-            Linear Interpolator = new Linear();
+            var Interpolator = new Linear();
             termStructure.linkTo(new InterpolatedZeroCurve<Linear>(dates, rates, dayCounter, Interpolator));
 
             return index;
@@ -84,8 +84,8 @@ namespace QLNet.Tests
 
         IborIndex makeIndex()
         {
-            List<Date> dates = new List<Date>();
-            List<double> rates = new List<double>();
+            var dates = new List<Date>();
+            var rates = new List<double>();
             dates.Add(new Date(4, 9, 2005));
             dates.Add(new Date(4, 9, 2018));
             rates.Add(0.039);
@@ -100,12 +100,12 @@ namespace QLNet.Tests
                           15.78, 15.40, 15.21, 14.86
                          };
 
-            List<Date> dates = new List<Date>();
-            List<double> capletVols = new List<double>();
-            LiborForwardModelProcess process =
+            var dates = new List<Date>();
+            var capletVols = new List<double>();
+            var process =
                new LiborForwardModelProcess(10, makeIndex());
 
-            for (int i = 0; i < 9; ++i)
+            for (var i = 0; i < 9; ++i)
             {
                 capletVols.Add(vols[i] / 100);
                 dates.Add(process.fixingDates()[i + 1]);
@@ -125,12 +125,12 @@ namespace QLNet.Tests
 
             LmCorrelationModel corrModel = new LmExponentialCorrelationModel(size, 0.1);
 
-            Matrix recon = corrModel.correlation(0.0, null)
-                           - corrModel.pseudoSqrt(0.0, null) * Matrix.transpose(corrModel.pseudoSqrt(0.0, null));
+            var recon = corrModel.correlation(0.0, null)
+                        - corrModel.pseudoSqrt(0.0, null) * Matrix.transpose(corrModel.pseudoSqrt(0.0, null));
 
             for (i = 0; i < size; ++i)
             {
-                for (int j = 0; j < size; ++j)
+                for (var j = 0; j < size; ++j)
                 {
                     if (System.Math.Abs(recon[i, j]) > tolerance)
                         QAssert.Fail("Failed to reproduce correlation matrix"
@@ -152,20 +152,20 @@ namespace QLNet.Tests
 
             LmVolatilityModel volaModel = new LmLinearExponentialVolatilityModel(fixingTimes, a, b, c, d);
 
-            LfmCovarianceProxy covarProxy = new LfmCovarianceProxy(volaModel, corrModel);
+            var covarProxy = new LfmCovarianceProxy(volaModel, corrModel);
 
-            LiborForwardModelProcess process = new LiborForwardModelProcess(size, makeIndex());
+            var process = new LiborForwardModelProcess(size, makeIndex());
 
-            LiborForwardModel liborModel = new LiborForwardModel(process, volaModel, corrModel);
+            var liborModel = new LiborForwardModel(process, volaModel, corrModel);
 
             for (double t = 0; t < 4.6; t += 0.31)
             {
                 recon = covarProxy.covariance(t, null)
                         - covarProxy.diffusion(t, null) * Matrix.transpose(covarProxy.diffusion(t, null));
 
-                for (int k = 0; k < size; ++k)
+                for (var k = 0; k < size; ++k)
                 {
-                    for (int j = 0; j < size; ++j)
+                    for (var j = 0; j < size; ++j)
                     {
                         if (System.Math.Abs(recon[k, j]) > tolerance)
                             QAssert.Fail("Failed to reproduce correlation matrix"
@@ -174,14 +174,14 @@ namespace QLNet.Tests
                     }
                 }
 
-                Vector volatility = volaModel.volatility(t, null);
+                var volatility = volaModel.volatility(t, null);
 
-                for (int k = 0; k < size; ++k)
+                for (var k = 0; k < size; ++k)
                 {
                     double expected = 0;
                     if (k > 2 * t)
                     {
-                        double T = fixingTimes[k];
+                        var T = fixingTimes[k];
                         expected = (a * (T - t) + d) * System.Math.Exp(-b * (T - t)) + c;
                     }
 
@@ -204,13 +204,13 @@ namespace QLNet.Tests
             const double tolerance = 1e-12;
 #endif
 
-            IborIndex index = makeIndex();
-            LiborForwardModelProcess process = new LiborForwardModelProcess(size, index);
+            var index = makeIndex();
+            var process = new LiborForwardModelProcess(size, index);
 
             // set-up pricing engine
-            OptionletVolatilityStructure capVolCurve = makeCapVolCurve(Settings.evaluationDate());
+            var capVolCurve = makeCapVolCurve(Settings.evaluationDate());
 
-            Vector variances = new LfmHullWhiteParameterization(process, capVolCurve).covariance(0.0, null).diagonal();
+            var variances = new LfmHullWhiteParameterization(process, capVolCurve).covariance(0.0, null).diagonal();
 
             LmVolatilityModel volaModel = new LmFixedVolatilityModel(Vector.Sqrt(variances), process.fixingTimes());
 
@@ -218,16 +218,16 @@ namespace QLNet.Tests
 
             IAffineModel model = new LiborForwardModel(process, volaModel, corrModel);
 
-            Handle<YieldTermStructure> termStructure = process.index().forwardingTermStructure();
+            var termStructure = process.index().forwardingTermStructure();
 
-            AnalyticCapFloorEngine engine1 = new AnalyticCapFloorEngine(model, termStructure);
+            var engine1 = new AnalyticCapFloorEngine(model, termStructure);
 
-            Cap cap1 = new Cap(process.cashFlows(),
+            var cap1 = new Cap(process.cashFlows(),
                                new InitializedList<double>(size, 0.04));
             cap1.setPricingEngine(engine1);
 
             const double expected = 0.015853935178;
-            double calculated = cap1.NPV();
+            var calculated = cap1.NPV();
 
             if (System.Math.Abs(expected - calculated) > tolerance)
                 QAssert.Fail("Failed to reproduce npv"
@@ -262,9 +262,9 @@ namespace QLNet.Tests
                                   0.106996, 0.100064
                                  };
 
-            IborIndex index = makeIndex();
-            LiborForwardModelProcess process = new LiborForwardModelProcess(size, index);
-            Handle<YieldTermStructure> termStructure = index.forwardingTermStructure();
+            var index = makeIndex();
+            var process = new LiborForwardModelProcess(size, index);
+            var termStructure = index.forwardingTermStructure();
 
             // set-up the model
             LmVolatilityModel volaModel = new LmExtLinearExponentialVolModel(process.fixingTimes(),
@@ -272,19 +272,19 @@ namespace QLNet.Tests
 
             LmCorrelationModel corrModel = new LmLinearExponentialCorrelationModel(size, 0.5, 0.8);
 
-            LiborForwardModel model = new LiborForwardModel(process, volaModel, corrModel);
+            var model = new LiborForwardModel(process, volaModel, corrModel);
 
-            int swapVolIndex = 0;
-            DayCounter dayCounter = index.forwardingTermStructure().link.dayCounter();
+            var swapVolIndex = 0;
+            var dayCounter = index.forwardingTermStructure().link.dayCounter();
 
             // set-up calibration helper
-            List<CalibrationHelper> calibrationHelper = new List<CalibrationHelper>();
+            var calibrationHelper = new List<CalibrationHelper>();
 
             int i;
             for (i = 2; i < size; ++i)
             {
-                Period maturity = i * index.tenor();
-                Handle<Quote> capVol = new Handle<Quote>(new SimpleQuote(capVols[i - 2]));
+                var maturity = i * index.tenor();
+                var capVol = new Handle<Quote>(new SimpleQuote(capVols[i - 2]));
 
                 CalibrationHelper caphelper = new CapHelper(maturity, capVol, index, Frequency.Annual,
                                                             index.dayCounter(), true, termStructure, CalibrationHelper.CalibrationErrorType.ImpliedVolError);
@@ -296,10 +296,10 @@ namespace QLNet.Tests
                 if (i <= size / 2)
                 {
                     // add a few swaptions to test swaption calibration as well
-                    for (int j = 1; j <= size / 2; ++j)
+                    for (var j = 1; j <= size / 2; ++j)
                     {
-                        Period len = j * index.tenor();
-                        Handle<Quote> swaptionVol = new Handle<Quote>(
+                        var len = j * index.tenor();
+                        var swaptionVol = new Handle<Quote>(
                            new SimpleQuote(swaptionVols[swapVolIndex++]));
 
                         CalibrationHelper swaptionHelper =
@@ -315,7 +315,7 @@ namespace QLNet.Tests
                 }
             }
 
-            LevenbergMarquardt om = new LevenbergMarquardt(1e-6, 1e-6, 1e-6);
+            var om = new LevenbergMarquardt(1e-6, 1e-6, 1e-6);
             //ConjugateGradient gc = new ConjugateGradient();
 
             model.calibrate(calibrationHelper,
@@ -325,10 +325,10 @@ namespace QLNet.Tests
                             new List<double>());
 
             // measure the calibration error
-            double calculated = 0.0;
+            var calculated = 0.0;
             for (i = 0; i < calibrationHelper.Count; ++i)
             {
-                double diff = calibrationHelper[i].calibrationError();
+                var diff = calibrationHelper[i].calibrationError();
                 calculated += diff * diff;
             }
 
@@ -350,16 +350,16 @@ namespace QLNet.Tests
             const double tolerance = 1e-12;
 #endif
 
-            List<Date> dates = new List<Date>();
-            List<double> rates = new List<double>();
+            var dates = new List<Date>();
+            var rates = new List<double>();
             dates.Add(new Date(4, 9, 2005));
             dates.Add(new Date(4, 9, 2011));
             rates.Add(0.04);
             rates.Add(0.08);
 
-            IborIndex index = makeIndex(dates, rates);
+            var index = makeIndex(dates, rates);
 
-            LiborForwardModelProcess process = new LiborForwardModelProcess(size, index);
+            var process = new LiborForwardModelProcess(size, index);
 
             LmCorrelationModel corrModel = new LmExponentialCorrelationModel(size, 0.5);
 
@@ -371,12 +371,12 @@ namespace QLNet.Tests
                                   new LfmCovarianceProxy(volaModel, corrModel));
 
             // set-up a small Monte-Carlo simulation to price swations
-            List<double> tmp = process.fixingTimes();
+            var tmp = process.fixingTimes();
 
-            TimeGrid grid = new TimeGrid(tmp, tmp.Count, steps);
+            var grid = new TimeGrid(tmp, tmp.Count, steps);
 
-            List<int> location = new List<int>();
-            for (int i = 0; i < tmp.Count; ++i)
+            var location = new List<int>();
+            for (var i = 0; i < tmp.Count; ++i)
             {
                 location.Add(grid.index(tmp[i]));
             }
@@ -391,39 +391,39 @@ namespace QLNet.Tests
 
 
 
-            MultiPathGenerator<IRNG> generator = new MultiPathGenerator<IRNG>(process,
+            var generator = new MultiPathGenerator<IRNG>(process,
                                                                               grid,
                                                                               rsg, false);
 
-            LiborForwardModel liborModel = new LiborForwardModel(process, volaModel, corrModel);
+            var liborModel = new LiborForwardModel(process, volaModel, corrModel);
 
-            Calendar calendar = index.fixingCalendar();
-            DayCounter dayCounter = index.forwardingTermStructure().link.dayCounter();
-            BusinessDayConvention convention = index.businessDayConvention();
+            var calendar = index.fixingCalendar();
+            var dayCounter = index.forwardingTermStructure().link.dayCounter();
+            var convention = index.businessDayConvention();
 
-            Date settlement = index.forwardingTermStructure().link.referenceDate();
+            var settlement = index.forwardingTermStructure().link.referenceDate();
 
-            SwaptionVolatilityMatrix m = liborModel.getSwaptionVolatilityMatrix();
+            var m = liborModel.getSwaptionVolatilityMatrix();
 
-            for (int i = 1; i < size; ++i)
+            for (var i = 1; i < size; ++i)
             {
-                for (int j = 1; j <= size - i; ++j)
+                for (var j = 1; j <= size - i; ++j)
                 {
-                    Date fwdStart = settlement + new Period(6 * i, TimeUnit.Months);
-                    Date fwdMaturity = fwdStart + new Period(6 * j, TimeUnit.Months);
+                    var fwdStart = settlement + new Period(6 * i, TimeUnit.Months);
+                    var fwdMaturity = fwdStart + new Period(6 * j, TimeUnit.Months);
 
-                    Schedule schedule = new Schedule(fwdStart, fwdMaturity, index.tenor(), calendar,
+                    var schedule = new Schedule(fwdStart, fwdMaturity, index.tenor(), calendar,
                                                      convention, convention, DateGeneration.Rule.Forward, false);
 
-                    double swapRate = 0.0404;
-                    VanillaSwap forwardSwap = new VanillaSwap(VanillaSwap.Type.Receiver, 1.0,
+                    var swapRate = 0.0404;
+                    var forwardSwap = new VanillaSwap(VanillaSwap.Type.Receiver, 1.0,
                                                               schedule, swapRate, dayCounter,
                                                               schedule, index, 0.0, index.dayCounter());
                     forwardSwap.setPricingEngine(new DiscountingSwapEngine(index.forwardingTermStructure()));
 
                     // check forward pricing first
-                    double expected = forwardSwap.fairRate();
-                    double calculated = liborModel.S_0(i - 1, i + j - 1);
+                    var expected = forwardSwap.fairRate();
+                    var calculated = liborModel.S_0(i - 1, i + j - 1);
 
                     if (System.Math.Abs(expected - calculated) > tolerance)
                         QAssert.Fail("Failed to reproduce fair forward swap rate"
@@ -444,28 +444,28 @@ namespace QLNet.Tests
                         Exercise exercise =
                            new EuropeanExercise(process.fixingDates()[i]);
 
-                        Swaption swaption =
+                        var swaption =
                            new Swaption(forwardSwap, exercise);
                         swaption.setPricingEngine(engine);
 
-                        GeneralStatistics stat = new GeneralStatistics();
+                        var stat = new GeneralStatistics();
 
-                        for (int n = 0; n < nrTrails; ++n)
+                        for (var n = 0; n < nrTrails; ++n)
                         {
-                            Sample<IPath> path = n % 2 != 0 ? generator.antithetic()
+                            var path = n % 2 != 0 ? generator.antithetic()
                                                  : generator.next();
-                            MultiPath value = path.value as MultiPath;
+                            var value = path.value as MultiPath;
                             Utils.QL_REQUIRE(value != null, () => "Invalid Path");
                             //Sample<MultiPath> path = generator.next();
                             List<double> rates_ = new InitializedList<double>(size);
-                            for (int k = 0; k < process.size(); ++k)
+                            for (var k = 0; k < process.size(); ++k)
                             {
                                 rates_[k] = value[k][location[i]];
                             }
-                            List<double> dis = process.discountBond(rates_);
+                            var dis = process.discountBond(rates_);
 
-                            double npv = 0.0;
-                            for (int k = i; k < i + j; ++k)
+                            var npv = 0.0;
+                            for (var k = i; k < i + j; ++k)
                             {
                                 npv += (swapRate - rates_[k])
                                        * (process.accrualEndTimes()[k]

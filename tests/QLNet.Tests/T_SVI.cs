@@ -28,7 +28,7 @@ using QLNet.Math.Interpolations;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_SVI
+    [JetBrains.Annotations.PublicAPI] public class T_SVI
     {
         private readonly ITestOutputHelper testOutputHelper;
 
@@ -37,34 +37,38 @@ namespace QLNet.Tests
             this.testOutputHelper = testOutputHelper;
         }
 
-        double add10(double x) { return x + 10; }
-        double mul10(double x) { return x * 10; }
-        double sub10(double x) { return x - 10; }
+        double add10(double x) => x + 10;
+
+        double mul10(double x) => x * 10;
+
+        double sub10(double x) => x - 10;
 
         double add
-           (double x, double y)
-        { return x + y; }
-        double mul(double x, double y) { return x * y; }
-        double sub(double x, double y) { return x - y; }
+           (double x, double y) =>
+            x + y;
+
+        double mul(double x, double y) => x * y;
+
+        double sub(double x, double y) => x - y;
 
         [Fact(Skip = "Failing")]
         public void testCalibration()
         {
-            double forward = 0.03;
-            double tau = 1.0;
+            var forward = 0.03;
+            var tau = 1.0;
 
             //Real a = 0.04;
             //Real b = 0.1;
             //Real rho = -0.5;
             //Real sigma = 0.1;
             //Real m  = 0.0;
-            double a = 0.1;
-            double b = 0.06;
-            double rho = -0.9;
-            double m = 0.24;
-            double sigma = 0.06;
+            var a = 0.1;
+            var b = 0.06;
+            var rho = -0.9;
+            var m = 0.24;
+            var sigma = 0.06;
 
-            List<double> strikes = new List<double>();
+            var strikes = new List<double>();
             strikes.Add(0.01);
             strikes.Add(0.015);
             strikes.Add(0.02);
@@ -77,17 +81,17 @@ namespace QLNet.Tests
 
             List<double> vols = new InitializedList<double>(strikes.Count, 0.20); //dummy vols (we do not calibrate here)
 
-            SviInterpolation svi = new SviInterpolation(strikes, strikes.Count, vols, tau,
+            var svi = new SviInterpolation(strikes, strikes.Count, vols, tau,
                                                         forward, a, b, sigma, rho, m, true, true, true,
                                                         true, true);
 
             svi.enableExtrapolation();
 
             List<double> sviVols = new InitializedList<double>(strikes.Count, 0.0);
-            for (int i = 0; i < strikes.Count; ++i)
+            for (var i = 0; i < strikes.Count; ++i)
                 sviVols[i] = svi.value(strikes[i]);
 
-            SviInterpolation svi2 = new SviInterpolation(strikes, strikes.Count, sviVols, tau,
+            var svi2 = new SviInterpolation(strikes, strikes.Count, sviVols, tau,
                                                          forward, null, null, null,
                                                          null, null, false, false, false,
                                                          false, false, false, null,

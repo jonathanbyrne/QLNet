@@ -27,7 +27,7 @@ namespace QLNet
     /// <summary>
     /// Time grid class
     /// </summary>
-    public class TimeGrid
+    [JetBrains.Annotations.PublicAPI] public class TimeGrid
    {
       /// <summary>
       /// Regularly spaced time-grid
@@ -40,9 +40,9 @@ namespace QLNet
          // Let's enforce the assumption for the time being
          // (even though I'm not sure that I agree.)
          Utils.QL_REQUIRE(end > 0.0, () => "negative times not allowed");
-         double dt = end / steps;
+         var dt = end / steps;
          times_ = new List<double>(steps + 1);
-         for (int i = 0; i <= steps; i++)
+         for (var i = 0; i <= steps; i++)
             times_.Add(dt * i);
 
          mandatoryTimes_ = new InitializedList<double>(1);
@@ -68,7 +68,7 @@ namespace QLNet
 
          Utils.QL_REQUIRE(mandatoryTimes_[0] >= 0.0, () => "negative times not allowed");
 
-         for (int i = 0; i < mandatoryTimes_.Count - 1; ++i)
+         for (var i = 0; i < mandatoryTimes_.Count - 1; ++i)
          {
             if (Utils.close_enough(mandatoryTimes_[i], mandatoryTimes_[i + 1]))
             {
@@ -107,7 +107,7 @@ namespace QLNet
 
          Utils.QL_REQUIRE(mandatoryTimes_[0] >= 0.0, () => "negative times not allowed");
 
-         for (int i = 0; i < mandatoryTimes_.Count - 1; ++i)
+         for (var i = 0; i < mandatoryTimes_.Count - 1; ++i)
          {
             if (Utils.close_enough(mandatoryTimes_[i], mandatoryTimes_[i + 1]))
             {
@@ -116,14 +116,14 @@ namespace QLNet
             }
          }
 
-         double last = mandatoryTimes_.Last();
+         var last = mandatoryTimes_.Last();
          double dtMax;
          // The resulting timegrid have points at times listed in the input
          // list. Between these points, there are inner-points which are
          // regularly spaced.
          if (steps == 0)
          {
-            List<double> diff = mandatoryTimes_.Zip(mandatoryTimes_.Skip(1), (x, y) => y - x).ToList();
+            var diff = mandatoryTimes_.Zip(mandatoryTimes_.Skip(1), (x, y) => y - x).ToList();
 
             if (diff.First().IsEqual(0.0))
                diff.RemoveAt(0);
@@ -135,21 +135,21 @@ namespace QLNet
             dtMax = last / steps;
          }
 
-         double periodBegin = 0.0;
+         var periodBegin = 0.0;
          times_ = new List<double>();
          times_.Add(periodBegin);
          foreach (var t in mandatoryTimes_)
          {
-            double periodEnd = t;
+            var periodEnd = t;
             if (periodEnd.IsNotEqual(0.0))
             {
                // the nearest integer
-               int nSteps = (int)((periodEnd - periodBegin) / dtMax + 0.5);
+               var nSteps = (int)((periodEnd - periodBegin) / dtMax + 0.5);
                // at least one time step!
                nSteps = (nSteps != 0 ? nSteps : 1);
-               double dt = (periodEnd - periodBegin) / nSteps;
+               var dt = (periodEnd - periodBegin) / nSteps;
                //times_.reserve(nSteps);
-               for (int n = 1; n <= nSteps; ++n)
+               for (var n = 1; n <= nSteps; ++n)
                   times_.Add(periodBegin + n * dt);
             }
             periodBegin = periodEnd;
@@ -169,7 +169,7 @@ namespace QLNet
 
          Utils.QL_REQUIRE(mandatoryTimes_[0] >= 0.0, () => "negative times not allowed");
 
-         for (int i = 0; i < mandatoryTimes_.Count - 1; ++i)
+         for (var i = 0; i < mandatoryTimes_.Count - 1; ++i)
          {
             if (Utils.close_enough(mandatoryTimes_[i], mandatoryTimes_[i + 1]))
             {
@@ -183,33 +183,33 @@ namespace QLNet
          // regularly spaced.
          times_ = new List<double>(steps);
          dt_ = new List<double>(steps);
-         double last = mandatoryTimes_.Last();
+         var last = mandatoryTimes_.Last();
          double dtMax = 0;
 
          if (steps == 0)
          {
-            List<double> diff = new List<double>();
+            var diff = new List<double>();
          }
          else
          {
             dtMax = last / steps;
          }
 
-         double periodBegin = 0.0;
+         var periodBegin = 0.0;
          times_.Add(periodBegin);
 
-         for (int k = 0; k < mandatoryTimes_.Count; k++)
+         for (var k = 0; k < mandatoryTimes_.Count; k++)
          {
             double dt = 0;
-            double periodEnd = mandatoryTimes_[k];
+            var periodEnd = mandatoryTimes_[k];
             if (periodEnd.IsNotEqual(0.0))
             {
                // the nearest integer
-               int nSteps = (int)((periodEnd - periodBegin) / dtMax + 0.5);
+               var nSteps = (int)((periodEnd - periodBegin) / dtMax + 0.5);
                // at least one time step!
                nSteps = (nSteps != 0 ? nSteps : 1);
                dt = (periodEnd - periodBegin) / nSteps;
-               for (int n = 1; n <= nSteps; ++n)
+               for (var n = 1; n <= nSteps; ++n)
                {
                   times_.Add(periodBegin + n * dt);
                   dt_.Add(dt);
@@ -219,28 +219,13 @@ namespace QLNet
          }
       }
 
-      public double this[int i]
-      {
-         get
-         {
-            return times_[i];
-         }
-      }
+      public double this[int i] => times_[i];
 
-      public List<double> Times()
-      {
-         return times_;
-      }
+      public List<double> Times() => times_;
 
-      public double dt(int i)
-      {
-         return dt_[i];
-      }
+      public double dt(int i) => dt_[i];
 
-      public List<double> mandatoryTimes()
-      {
-         return mandatoryTimes_;
-      }
+      public List<double> mandatoryTimes() => mandatoryTimes_;
 
       /// <summary>
       /// Time grid interface
@@ -252,7 +237,7 @@ namespace QLNet
       /// <returns></returns>
       public int index(double t)
       {
-         int i = closestIndex(t);
+         var i = closestIndex(t);
          if (Utils.close(t, times_[i]))
          {
             return i;
@@ -289,7 +274,7 @@ namespace QLNet
       /// <returns></returns>
       public int closestIndex(double t)
       {
-         int result = times_.BinarySearch(t);
+         var result = times_.BinarySearch(t);
          if (result < 0)
             //Lower_bound is a version of binary search: it attempts to find the element value in an ordered range [first, last)
             // [1]. Specifically, it returns the first position where value could be inserted without violating the ordering.
@@ -305,8 +290,8 @@ namespace QLNet
          {
             return times_.Count - 1;
          }
-         double dt1 = times_[result] - t;
-         double dt2 = t - times_[result - 1];
+         var dt1 = times_[result] - t;
+         var dt2 = t - times_[result - 1];
          if (dt1 < dt2)
             return result;
          return result - 1;
@@ -320,30 +305,15 @@ namespace QLNet
       /// </summary>
       /// <param name="t"></param>
       /// <returns></returns>
-      public double closestTime(double t)
-      {
-         return times_[closestIndex(t)];
-      }
+      public double closestTime(double t) => times_[closestIndex(t)];
 
-      public bool empty()
-      {
-         return times_.Count == 0;
-      }
+      public bool empty() => times_.Count == 0;
 
-      public int size()
-      {
-         return times_.Count;
-      }
+      public int size() => times_.Count;
 
-      public double First()
-      {
-         return times_.First();
-      }
+      public double First() => times_.First();
 
-      public double Last()
-      {
-         return times_.Last();
-      }
+      public double Last() => times_.Last();
 
       private List<double> times_;
       private List<double> dt_;

@@ -58,7 +58,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
         {
             checkRange(d, extrapolate);
             checkStrike(underlyingLevel, extrapolate);
-            double t = timeFromReference(d);
+            var t = timeFromReference(d);
             return localVolImpl(t, underlyingLevel);
         }
 

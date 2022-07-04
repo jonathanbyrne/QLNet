@@ -27,7 +27,7 @@ namespace QLNet.Pricingengines
 {
     //! Analytic formula for American exercise payoff at-expiry options
     //! \todo calculate greeks
-    public class AmericanPayoffAtExpiry
+    [JetBrains.Annotations.PublicAPI] public class AmericanPayoffAtExpiry
     {
         public AmericanPayoffAtExpiry(double spot, double discount, double dividendDiscount, double variance,
                                       StrikedTypePayoff payoff, bool knock_in = true)
@@ -44,21 +44,21 @@ namespace QLNet.Pricingengines
             Utils.QL_REQUIRE(variance_ >= 0.0, () => "negative variance not allowed");
 
             stdDev_ = System.Math.Sqrt(variance_);
-            QLNet.Option.Type type = payoff.optionType();
+            var type = payoff.optionType();
             strike_ = payoff.strike();
             forward_ = spot_ * dividendDiscount_ / discount_;
 
             mu_ = System.Math.Log(dividendDiscount_ / discount_) / variance_ - 0.5;
 
             // binary cash-or-nothing payoff?
-            CashOrNothingPayoff coo = payoff as CashOrNothingPayoff;
+            var coo = payoff as CashOrNothingPayoff;
             if (coo != null)
             {
                 K_ = coo.cashPayoff();
             }
 
             // binary asset-or-nothing payoff?
-            AssetOrNothingPayoff aoo = payoff as AssetOrNothingPayoff;
+            var aoo = payoff as AssetOrNothingPayoff;
             if (aoo != null)
             {
                 K_ = forward_;
@@ -67,10 +67,10 @@ namespace QLNet.Pricingengines
 
 
             log_H_S_ = System.Math.Log(strike_ / spot_);
-            double log_S_H_ = System.Math.Log(spot_ / strike_);
+            var log_S_H_ = System.Math.Log(spot_ / strike_);
 
-            double eta = 0.0;
-            double phi = 0.0;
+            var eta = 0.0;
+            var phi = 0.0;
 
             switch (type)
             {
@@ -105,7 +105,7 @@ namespace QLNet.Pricingengines
                     }
                     break;
                 default:
-                    Utils.QL_FAIL("invalid option type");
+                    Utils.QL_FAIL("invalid option ExerciseType");
                     break;
             }
 
@@ -114,7 +114,7 @@ namespace QLNet.Pricingengines
             {
                 D1_ = phi * (log_S_H_ / stdDev_ + mu_ * stdDev_);
                 D2_ = eta * (log_H_S_ / stdDev_ + mu_ * stdDev_);
-                CumulativeNormalDistribution f = new CumulativeNormalDistribution();
+                var f = new CumulativeNormalDistribution();
                 cum_d1_ = f.value(D1_);
                 cum_d2_ = f.value(D2_);
                 n_d1_ = f.derivative(D1_);
@@ -181,7 +181,7 @@ namespace QLNet.Pricingengines
                     }
                     break;
                 default:
-                    Utils.QL_FAIL("invalid option type");
+                    Utils.QL_FAIL("invalid option ExerciseType");
                     break;
             }
 
@@ -205,11 +205,7 @@ namespace QLNet.Pricingengines
                 Y_ *= -1.0;
         }
 
-        public double value()
-        {
-            return discount_ * K_ * (X_ * cum_d1_ + Y_ * cum_d2_);
-        }
-
+        public double value() => discount_ * K_ * (X_ * cum_d1_ + Y_ * cum_d2_);
 
         private double spot_;
         private double discount_;

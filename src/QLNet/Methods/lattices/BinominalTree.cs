@@ -22,13 +22,13 @@ using System;
 namespace QLNet.Methods.lattices
 {
     // factory to create exact versions of trees
-    public interface ITreeFactory<T>
+    [JetBrains.Annotations.PublicAPI] public interface ITreeFactory<T>
     {
         T factory(StochasticProcess1D process, double end, int steps, double strike);
     }
 
     // interface for all trees
-    public interface ITree
+    [JetBrains.Annotations.PublicAPI] public interface ITree
     {
         int size(int i);
         int descendant(int x, int index, int branch);
@@ -61,15 +61,9 @@ namespace QLNet.Methods.lattices
             driftPerStep_ = process.drift(0.0, x0_) * dt_;
         }
 
-        public int size(int i)
-        {
-            return i + 1;
-        }
+        public int size(int i) => i + 1;
 
-        public int descendant(int x, int index, int branch)
-        {
-            return index + branch;
-        }
+        public int descendant(int x, int index, int branch) => index + branch;
 
         public abstract double underlying(int i, int index);
         public abstract double probability(int x, int y, int z);
@@ -78,7 +72,7 @@ namespace QLNet.Methods.lattices
     //! Base class for equal probabilities binomial tree
     /*! \ingroup lattices */
 
-    public class EqualProbabilitiesBinomialTree<T> : BinomialTree<T>
+    [JetBrains.Annotations.PublicAPI] public class EqualProbabilitiesBinomialTree<T> : BinomialTree<T>
     {
         protected double up_;
 
@@ -97,16 +91,13 @@ namespace QLNet.Methods.lattices
             return x0_ * System.Math.Exp(i * driftPerStep_ + j * up_);
         }
 
-        public override double probability(int x, int y, int z)
-        {
-            return 0.5;
-        }
+        public override double probability(int x, int y, int z) => 0.5;
     }
 
     //! Base class for equal jumps binomial tree
     /*! \ingroup lattices */
 
-    public class EqualJumpsBinomialTree<T> : BinomialTree<T>
+    [JetBrains.Annotations.PublicAPI] public class EqualJumpsBinomialTree<T> : BinomialTree<T>
     {
         protected double dx_, pu_, pd_;
 
@@ -125,16 +116,13 @@ namespace QLNet.Methods.lattices
             return x0_ * System.Math.Exp(j * dx_);
         }
 
-        public override double probability(int x, int y, int branch)
-        {
-            return branch == 1 ? pu_ : pd_;
-        }
+        public override double probability(int x, int y, int branch) => branch == 1 ? pu_ : pd_;
     }
 
     //! Jarrow-Rudd (multiplicative) equal probabilities binomial tree
     /*! \ingroup lattices */
 
-    public class JarrowRudd : EqualProbabilitiesBinomialTree<JarrowRudd>, ITreeFactory<JarrowRudd>
+    [JetBrains.Annotations.PublicAPI] public class JarrowRudd : EqualProbabilitiesBinomialTree<JarrowRudd>, ITreeFactory<JarrowRudd>
     {
         // parameterless constructor is requried for generics
         public JarrowRudd()
@@ -147,16 +135,13 @@ namespace QLNet.Methods.lattices
             up_ = process.stdDeviation(0.0, x0_, dt_);
         }
 
-        public JarrowRudd factory(StochasticProcess1D process, double end, int steps, double strike)
-        {
-            return new JarrowRudd(process, end, steps, strike);
-        }
+        public JarrowRudd factory(StochasticProcess1D process, double end, int steps, double strike) => new JarrowRudd(process, end, steps, strike);
     }
 
     //! Cox-Ross-Rubinstein (multiplicative) equal jumps binomial tree
     /*! \ingroup lattices */
 
-    public class CoxRossRubinstein : EqualJumpsBinomialTree<CoxRossRubinstein>, ITreeFactory<CoxRossRubinstein>
+    [JetBrains.Annotations.PublicAPI] public class CoxRossRubinstein : EqualJumpsBinomialTree<CoxRossRubinstein>, ITreeFactory<CoxRossRubinstein>
     {
         // parameterless constructor is requried for generics
         public CoxRossRubinstein()
@@ -173,16 +158,13 @@ namespace QLNet.Methods.lattices
             Utils.QL_REQUIRE(pu_ >= 0.0, () => "negative probability");
         }
 
-        public CoxRossRubinstein factory(StochasticProcess1D process, double end, int steps, double strike)
-        {
-            return new CoxRossRubinstein(process, end, steps, strike);
-        }
+        public CoxRossRubinstein factory(StochasticProcess1D process, double end, int steps, double strike) => new CoxRossRubinstein(process, end, steps, strike);
     }
 
     //! Additive equal probabilities binomial tree
     /*! \ingroup lattices */
 
-    public class AdditiveEQPBinomialTree : EqualProbabilitiesBinomialTree<AdditiveEQPBinomialTree>,
+    [JetBrains.Annotations.PublicAPI] public class AdditiveEQPBinomialTree : EqualProbabilitiesBinomialTree<AdditiveEQPBinomialTree>,
        ITreeFactory<AdditiveEQPBinomialTree>
     {
         // parameterless constructor is requried for generics
@@ -196,16 +178,13 @@ namespace QLNet.Methods.lattices
                   0.5 * System.Math.Sqrt(4.0 * process.variance(0.0, x0_, dt_) - 3.0 * driftPerStep_ * driftPerStep_);
         }
 
-        public AdditiveEQPBinomialTree factory(StochasticProcess1D process, double end, int steps, double strike)
-        {
-            return new AdditiveEQPBinomialTree(process, end, steps, strike);
-        }
+        public AdditiveEQPBinomialTree factory(StochasticProcess1D process, double end, int steps, double strike) => new AdditiveEQPBinomialTree(process, end, steps, strike);
     }
 
     //! %Trigeorgis (additive equal jumps) binomial tree
     /*! \ingroup lattices */
 
-    public class Trigeorgis : EqualJumpsBinomialTree<Trigeorgis>, ITreeFactory<Trigeorgis>
+    [JetBrains.Annotations.PublicAPI] public class Trigeorgis : EqualJumpsBinomialTree<Trigeorgis>, ITreeFactory<Trigeorgis>
     {
         // parameterless constructor is requried for generics
         public Trigeorgis()
@@ -222,16 +201,13 @@ namespace QLNet.Methods.lattices
             Utils.QL_REQUIRE(pu_ >= 0.0, () => "negative probability");
         }
 
-        public Trigeorgis factory(StochasticProcess1D process, double end, int steps, double strike)
-        {
-            return new Trigeorgis(process, end, steps, strike);
-        }
+        public Trigeorgis factory(StochasticProcess1D process, double end, int steps, double strike) => new Trigeorgis(process, end, steps, strike);
     }
 
     //! %Tian tree: third moment matching, multiplicative approach
     /*! \ingroup lattices */
 
-    public class Tian : BinomialTree<Tian>, ITreeFactory<Tian>
+    [JetBrains.Annotations.PublicAPI] public class Tian : BinomialTree<Tian>, ITreeFactory<Tian>
     {
         protected double up_, down_, pu_, pd_;
 
@@ -242,8 +218,8 @@ namespace QLNet.Methods.lattices
         public Tian(StochasticProcess1D process, double end, int steps, double strike)
            : base(process, end, steps)
         {
-            double q = System.Math.Exp(process.variance(0.0, x0_, dt_));
-            double r = System.Math.Exp(driftPerStep_) * System.Math.Sqrt(q);
+            var q = System.Math.Exp(process.variance(0.0, x0_, dt_));
+            var r = System.Math.Exp(driftPerStep_) * System.Math.Sqrt(q);
 
             up_ = 0.5 * r * q * (q + 1 + System.Math.Sqrt(q * q + 2 * q - 3));
             down_ = 0.5 * r * q * (q + 1 - System.Math.Sqrt(q * q + 2 * q - 3));
@@ -255,26 +231,17 @@ namespace QLNet.Methods.lattices
             Utils.QL_REQUIRE(pu_ >= 0.0, () => "negative probability");
         }
 
-        public override double underlying(int i, int index)
-        {
-            return x0_ * System.Math.Pow(down_, i - index) * System.Math.Pow(up_, index);
-        }
+        public override double underlying(int i, int index) => x0_ * System.Math.Pow(down_, i - index) * System.Math.Pow(up_, index);
 
-        public override double probability(int i, int j, int branch)
-        {
-            return branch == 1 ? pu_ : pd_;
-        }
+        public override double probability(int i, int j, int branch) => branch == 1 ? pu_ : pd_;
 
-        public Tian factory(StochasticProcess1D process, double end, int steps, double strike)
-        {
-            return new Tian(process, end, steps, strike);
-        }
+        public Tian factory(StochasticProcess1D process, double end, int steps, double strike) => new Tian(process, end, steps, strike);
     }
 
     //! Leisen & Reimer tree: multiplicative approach
     /*! \ingroup lattices */
 
-    public class LeisenReimer : BinomialTree<LeisenReimer>, ITreeFactory<LeisenReimer>
+    [JetBrains.Annotations.PublicAPI] public class LeisenReimer : BinomialTree<LeisenReimer>, ITreeFactory<LeisenReimer>
     {
         protected double up_, down_, pu_, pd_;
 
@@ -286,34 +253,25 @@ namespace QLNet.Methods.lattices
            : base(process, end, steps % 2 != 0 ? steps : steps + 1)
         {
             Utils.QL_REQUIRE(strike > 0.0, () => "strike must be positive");
-            int oddSteps = steps % 2 != 0 ? steps : steps + 1;
-            double variance = process.variance(0.0, x0_, end);
-            double ermqdt = System.Math.Exp(driftPerStep_ + 0.5 * variance / oddSteps);
-            double d2 = (System.Math.Log(x0_ / strike) + driftPerStep_ * oddSteps) / System.Math.Sqrt(variance);
+            var oddSteps = steps % 2 != 0 ? steps : steps + 1;
+            var variance = process.variance(0.0, x0_, end);
+            var ermqdt = System.Math.Exp(driftPerStep_ + 0.5 * variance / oddSteps);
+            var d2 = (System.Math.Log(x0_ / strike) + driftPerStep_ * oddSteps) / System.Math.Sqrt(variance);
             pu_ = Utils.PeizerPrattMethod2Inversion(d2, oddSteps);
             pd_ = 1.0 - pu_;
-            double pdash = Utils.PeizerPrattMethod2Inversion(d2 + System.Math.Sqrt(variance), oddSteps);
+            var pdash = Utils.PeizerPrattMethod2Inversion(d2 + System.Math.Sqrt(variance), oddSteps);
             up_ = ermqdt * pdash / pu_;
             down_ = (ermqdt - pu_ * up_) / (1.0 - pu_);
         }
 
-        public override double underlying(int i, int index)
-        {
-            return x0_ * System.Math.Pow(down_, i - index) * System.Math.Pow(up_, index);
-        }
+        public override double underlying(int i, int index) => x0_ * System.Math.Pow(down_, i - index) * System.Math.Pow(up_, index);
 
-        public override double probability(int i, int j, int branch)
-        {
-            return branch == 1 ? pu_ : pd_;
-        }
+        public override double probability(int i, int j, int branch) => branch == 1 ? pu_ : pd_;
 
-        public LeisenReimer factory(StochasticProcess1D process, double end, int steps, double strike)
-        {
-            return new LeisenReimer(process, end, steps, strike);
-        }
+        public LeisenReimer factory(StochasticProcess1D process, double end, int steps, double strike) => new LeisenReimer(process, end, steps, strike);
     }
 
-    public class Joshi4 : BinomialTree<Joshi4>, ITreeFactory<Joshi4>
+    [JetBrains.Annotations.PublicAPI] public class Joshi4 : BinomialTree<Joshi4>, ITreeFactory<Joshi4>
     {
         protected double up_, down_, pu_, pd_;
 
@@ -326,41 +284,35 @@ namespace QLNet.Methods.lattices
         {
             Utils.QL_REQUIRE(strike > 0.0, () => "strike must be positive");
 
-            int oddSteps = steps % 2 != 0 ? steps : steps + 1;
-            double variance = process.variance(0.0, x0_, end);
-            double ermqdt = System.Math.Exp(driftPerStep_ + 0.5 * variance / oddSteps);
-            double d2 = (System.Math.Log(x0_ / strike) + driftPerStep_ * oddSteps) / System.Math.Sqrt(variance);
+            var oddSteps = steps % 2 != 0 ? steps : steps + 1;
+            var variance = process.variance(0.0, x0_, end);
+            var ermqdt = System.Math.Exp(driftPerStep_ + 0.5 * variance / oddSteps);
+            var d2 = (System.Math.Log(x0_ / strike) + driftPerStep_ * oddSteps) / System.Math.Sqrt(variance);
             pu_ = computeUpProb((oddSteps - 1.0) / 2.0, d2);
             pd_ = 1.0 - pu_;
-            double pdash = computeUpProb((oddSteps - 1.0) / 2.0, d2 + System.Math.Sqrt(variance));
+            var pdash = computeUpProb((oddSteps - 1.0) / 2.0, d2 + System.Math.Sqrt(variance));
             up_ = ermqdt * pdash / pu_;
             down_ = (ermqdt - pu_ * up_) / (1.0 - pu_);
         }
 
-        public override double underlying(int i, int index)
-        {
-            return x0_ * System.Math.Pow(down_, i - index) * System.Math.Pow(up_, index);
-        }
+        public override double underlying(int i, int index) => x0_ * System.Math.Pow(down_, i - index) * System.Math.Pow(up_, index);
 
-        public override double probability(int x, int y, int branch)
-        {
-            return branch == 1 ? pu_ : pd_;
-        }
+        public override double probability(int x, int y, int branch) => branch == 1 ? pu_ : pd_;
 
         protected double computeUpProb(double k, double dj)
         {
-            double alpha = dj / System.Math.Sqrt(8.0);
-            double alpha2 = alpha * alpha;
-            double alpha3 = alpha * alpha2;
-            double alpha5 = alpha3 * alpha2;
-            double alpha7 = alpha5 * alpha2;
-            double beta = -0.375 * alpha - alpha3;
-            double gamma = 5.0 / 6.0 * alpha5 + 13.0 / 12.0 * alpha3
-                           + 25.0 / 128.0 * alpha;
-            double delta = -0.1025 * alpha - 0.9285 * alpha3
-                           - 1.43 * alpha5 - 0.5 * alpha7;
-            double p = 0.5;
-            double rootk = System.Math.Sqrt(k);
+            var alpha = dj / System.Math.Sqrt(8.0);
+            var alpha2 = alpha * alpha;
+            var alpha3 = alpha * alpha2;
+            var alpha5 = alpha3 * alpha2;
+            var alpha7 = alpha5 * alpha2;
+            var beta = -0.375 * alpha - alpha3;
+            var gamma = 5.0 / 6.0 * alpha5 + 13.0 / 12.0 * alpha3
+                                           + 25.0 / 128.0 * alpha;
+            var delta = -0.1025 * alpha - 0.9285 * alpha3
+                                        - 1.43 * alpha5 - 0.5 * alpha7;
+            var p = 0.5;
+            var rootk = System.Math.Sqrt(k);
             p += alpha / rootk;
             p += beta / (k * rootk);
             p += gamma / (k * k * rootk);
@@ -369,9 +321,6 @@ namespace QLNet.Methods.lattices
             return p;
         }
 
-        public Joshi4 factory(StochasticProcess1D process, double end, int steps, double strike)
-        {
-            return new Joshi4(process, end, steps, strike);
-        }
+        public Joshi4 factory(StochasticProcess1D process, double end, int steps, double strike) => new Joshi4(process, end, steps, strike);
     }
 }

@@ -24,25 +24,29 @@ using QLNet.Quotes;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Quotes
+    [JetBrains.Annotations.PublicAPI] public class T_Quotes
     {
-        double add10(double x) { return x + 10; }
-        double mul10(double x) { return x * 10; }
-        double sub10(double x) { return x - 10; }
+        double add10(double x) => x + 10;
+
+        double mul10(double x) => x * 10;
+
+        double sub10(double x) => x - 10;
 
         double add
-           (double x, double y)
-        { return x + y; }
-        double mul(double x, double y) { return x * y; }
-        double sub(double x, double y) { return x - y; }
+           (double x, double y) =>
+            x + y;
+
+        double mul(double x, double y) => x * y;
+
+        double sub(double x, double y) => x - y;
 
         [Fact]
         public void testObservable()
         {
             // Testing observability of quotes
 
-            SimpleQuote me = new SimpleQuote(0.0);
-            Flag f = new Flag();
+            var me = new SimpleQuote(0.0);
+            var f = new Flag();
 
             me.registerWith(f.update);
             me.setValue(3.14);
@@ -57,10 +61,10 @@ namespace QLNet.Tests
 
             // Testing observability of quote handles
 
-            SimpleQuote me1 = new SimpleQuote(0.0);
-            RelinkableHandle<Quote> h = new RelinkableHandle<Quote>(me1);
+            var me1 = new SimpleQuote(0.0);
+            var h = new RelinkableHandle<Quote>(me1);
 
-            Flag f = new Flag();
+            var f = new Flag();
 
             h.registerWith(f.update);
 
@@ -70,7 +74,7 @@ namespace QLNet.Tests
                 QAssert.Fail("Observer was not notified of quote change");
 
             f.lower();
-            SimpleQuote me2 = new SimpleQuote(0.0);
+            var me2 = new SimpleQuote(0.0);
             h.linkTo(me2);
 
             if (!f.isUp())
@@ -87,11 +91,11 @@ namespace QLNet.Tests
             Func<double, double>[] f = { add10, mul10, sub10 };
 
             Quote me = new SimpleQuote(17.0);
-            Handle<Quote> h = new Handle<Quote>(me);
+            var h = new Handle<Quote>(me);
 
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
-                DerivedQuote derived = new DerivedQuote(h, f[i]);
+                var derived = new DerivedQuote(h, f[i]);
                 double x = derived.value(),
                        y = f[i](me.value());
                 if (System.Math.Abs(x - y) > 1.0e-10)
@@ -112,9 +116,9 @@ namespace QLNet.Tests
             Handle<Quote> h1 = new Handle<Quote>(me1),
             h2 = new Handle<Quote>(me2);
 
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
-                CompositeQuote composite = new CompositeQuote(h1, h2, f[i]);
+                var composite = new CompositeQuote(h1, h2, f[i]);
                 double x = composite.value(),
                        y = f[i](me1.value(), me2.value());
                 if (System.Math.Abs(x - y) > 1.0e-10)

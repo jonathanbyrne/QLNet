@@ -24,7 +24,7 @@ namespace QLNet
 {
     // Pricing Engine interfaces
     // these interfaces replace the abstract PricingEngine class below
-    public interface IPricingEngine : IObservable
+    [JetBrains.Annotations.PublicAPI] public interface IPricingEngine : IObservable
    {
       IPricingEngineArguments getArguments();
       IPricingEngineResults getResults();
@@ -32,17 +32,17 @@ namespace QLNet
       void calculate();
    }
 
-   public interface IPricingEngineArguments
+   [JetBrains.Annotations.PublicAPI] public interface IPricingEngineArguments
    {
       void validate();
    }
 
-   public interface IPricingEngineResults
+   [JetBrains.Annotations.PublicAPI] public interface IPricingEngineResults
    {
       void reset();
    }
 
-   public interface IGenericEngine : IPricingEngine, IObserver
+   [JetBrains.Annotations.PublicAPI] public interface IGenericEngine : IPricingEngine, IObserver
    {}
 
    // template base class for option pricing engines
@@ -54,15 +54,9 @@ namespace QLNet
       protected ArgumentsType arguments_ = FastActivator<ArgumentsType>.Create();
       protected ResultsType results_ = FastActivator<ResultsType>.Create();
 
-      public IPricingEngineArguments getArguments()
-      {
-         return arguments_;
-      }
+      public IPricingEngineArguments getArguments() => arguments_;
 
-      public IPricingEngineResults getResults()
-      {
-         return results_;
-      }
+      public IPricingEngineResults getResults() => results_;
 
       public void reset()
       {
@@ -81,14 +75,8 @@ namespace QLNet
 
       public event Callback notifyObserversEvent
       {
-         add
-         {
-            eventSource.Subscribe(value);
-         }
-         remove
-         {
-            eventSource.Unsubscribe(value);
-         }
+         add => eventSource.Subscribe(value);
+         remove => eventSource.Unsubscribe(value);
       }
 
       public void registerWith(Callback handler)

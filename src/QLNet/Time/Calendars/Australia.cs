@@ -44,7 +44,7 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    public class Australia : Calendar
+    [JetBrains.Annotations.PublicAPI] public class Australia : Calendar
     {
         public Australia() : base(Impl.Singleton) { }
 
@@ -53,14 +53,15 @@ namespace QLNet.Time.Calendars
             public static readonly Impl Singleton = new Impl();
             private Impl() { }
 
-            public override string name() { return "Australia"; }
+            public override string name() => "Australia";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
 
                 if (isWeekend(w)
                     // New Year's Day (possibly moved to Monday)

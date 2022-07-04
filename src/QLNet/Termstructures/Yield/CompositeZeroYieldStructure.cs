@@ -22,7 +22,7 @@ using System;
 
 namespace QLNet.Termstructures.Yield
 {
-    public class CompositeZeroYieldStructure : ZeroYieldStructure
+    [JetBrains.Annotations.PublicAPI] public class CompositeZeroYieldStructure : ZeroYieldStructure
     {
         private readonly Handle<YieldTermStructure> curve1_;
         private readonly Handle<YieldTermStructure> curve2_;
@@ -50,35 +50,17 @@ namespace QLNet.Termstructures.Yield
             curve2_.registerWith(update);
         }
 
-        public override DayCounter dayCounter()
-        {
-            return curve1_.link.dayCounter();
-        }
+        public override DayCounter dayCounter() => curve1_.link.dayCounter();
 
-        public override Calendar calendar()
-        {
-            return curve1_.link.calendar();
-        }
+        public override Calendar calendar() => curve1_.link.calendar();
 
-        public override int settlementDays()
-        {
-            return curve1_.link.settlementDays();
-        }
+        public override int settlementDays() => curve1_.link.settlementDays();
 
-        public override Date referenceDate()
-        {
-            return curve1_.link.referenceDate();
-        }
+        public override Date referenceDate() => curve1_.link.referenceDate();
 
-        public override Date maxDate()
-        {
-            return curve1_.link.maxDate();
-        }
+        public override Date maxDate() => curve1_.link.maxDate();
 
-        public override double maxTime()
-        {
-            return curve1_.link.maxTime();
-        }
+        public override double maxTime() => curve1_.link.maxTime();
 
         public override void update()
         {
@@ -99,10 +81,10 @@ namespace QLNet.Termstructures.Yield
 
         protected override double zeroYieldImpl(double t)
         {
-            double zeroRate1 = curve1_.link.zeroRate(t, comp_, freq_, true).rate();
-            double zeroRate2 = curve2_.link.zeroRate(t, comp_, freq_, true).rate();
+            var zeroRate1 = curve1_.link.zeroRate(t, comp_, freq_, true).rate();
+            var zeroRate2 = curve2_.link.zeroRate(t, comp_, freq_, true).rate();
 
-            InterestRate compositeRate = new InterestRate(f_(zeroRate1, zeroRate2), dayCounter(), comp_, freq_);
+            var compositeRate = new InterestRate(f_(zeroRate1, zeroRate2), dayCounter(), comp_, freq_);
             return compositeRate.equivalentRate(Compounding.Continuous, Frequency.NoFrequency, t).value();
         }
     }

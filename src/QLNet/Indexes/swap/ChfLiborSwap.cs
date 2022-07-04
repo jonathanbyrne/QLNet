@@ -37,7 +37,7 @@ namespace QLNet.Indexes.swap
         Reuters page ISDAFIX.
 
     */
-    public class ChfLiborSwapIsdaFix : SwapIndex
+    [JetBrains.Annotations.PublicAPI] public class ChfLiborSwapIsdaFix : SwapIndex
     {
         public ChfLiborSwapIsdaFix(Period tenor)
            : this(tenor, new Handle<YieldTermStructure>()) { }

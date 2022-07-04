@@ -40,7 +40,7 @@ namespace QLNet.Math.statistics
         //!  1-dimensional inspectors
         public double discrepancy()
         {
-            int N = samples();
+            var N = samples();
             if (N == 0)
                 return 0;
             return System.Math.Sqrt(adiscr_ / (N * N) - bdiscr_ / N * cdiscr_ + ddiscr_);

@@ -30,23 +30,33 @@ namespace QLNet.Math.statistics
 
         \todo add historical annualized volatility
     */
-    public class GenericRiskStatistics<Stat> : IGeneralStatistics where Stat : IGeneralStatistics, new()
+    [JetBrains.Annotations.PublicAPI] public class GenericRiskStatistics<Stat> : IGeneralStatistics where Stat : IGeneralStatistics, new()
     {
 
         #region wrap-up Stat
         protected Stat impl_ = FastActivator<Stat>.Create();
 
-        public int samples() { return impl_.samples(); }
-        public double mean() { return impl_.mean(); }
-        public double min() { return impl_.min(); }
-        public double max() { return impl_.max(); }
-        public double standardDeviation() { return impl_.standardDeviation(); }
-        public double variance() { return impl_.variance(); }
-        public double skewness() { return impl_.skewness(); }
-        public double kurtosis() { return impl_.kurtosis(); }
-        public double percentile(double percent) { return impl_.percentile(percent); }
-        public double weightSum() { return impl_.weightSum(); }
-        public double errorEstimate() { return impl_.errorEstimate(); }
+        public int samples() => impl_.samples();
+
+        public double mean() => impl_.mean();
+
+        public double min() => impl_.min();
+
+        public double max() => impl_.max();
+
+        public double standardDeviation() => impl_.standardDeviation();
+
+        public double variance() => impl_.variance();
+
+        public double skewness() => impl_.skewness();
+
+        public double kurtosis() => impl_.kurtosis();
+
+        public double percentile(double percent) => impl_.percentile(percent);
+
+        public double weightSum() => impl_.weightSum();
+
+        public double errorEstimate() => impl_.errorEstimate();
 
         public void reset() { impl_.reset(); }
         public void add
@@ -55,26 +65,25 @@ namespace QLNet.Math.statistics
         public void addSequence(List<double> data, List<double> weight) { impl_.addSequence(data, weight); }
 
         public KeyValuePair<double, int> expectationValue(Func<KeyValuePair<double, double>, double> f,
-                                                          Func<KeyValuePair<double, double>, bool> inRange)
-        {
-            return impl_.expectationValue(f, inRange);
-        }
+                                                          Func<KeyValuePair<double, double>, bool> inRange) =>
+            impl_.expectationValue(f, inRange);
+
         #endregion
 
 
         /*! returns the variance of observations below the mean,
             See Markowitz (1959).
         */
-        public double semiVariance() { return regret(mean()); }
+        public double semiVariance() => regret(mean());
 
         /*! returns the semi deviation, defined as the square root of the semi variance. */
-        public double semiDeviation() { return System.Math.Sqrt(semiVariance()); }
+        public double semiDeviation() => System.Math.Sqrt(semiVariance());
 
         // returns the variance of observations below 0.0,
-        public double downsideVariance() { return regret(0.0); }
+        public double downsideVariance() => regret(0.0);
 
         /*! returns the downside deviation, defined as the square root of the downside variance. */
-        public double downsideDeviation() { return System.Math.Sqrt(downsideVariance()); }
+        public double downsideDeviation() => System.Math.Sqrt(downsideVariance());
 
         /*! returns the variance of observations below target,
             See Dembo and Freeman, "The Rules Of Risk", Wiley (2001).
@@ -82,10 +91,10 @@ namespace QLNet.Math.statistics
         public double regret(double target)
         {
             // average over the range below the target
-            KeyValuePair<double, int> result = expectationValue(z => System.Math.Pow(z.Key - target, 2),
+            var result = expectationValue(z => System.Math.Pow(z.Key - target, 2),
                                                                 z => z.Key < target);
-            double x = result.Key;
-            int N = result.Value;
+            var x = result.Key;
+            var N = result.Value;
             Utils.QL_REQUIRE(N > 1, () => "samples under target <= 1, unsufficient");
             return N / (N - 1.0) * x;
         }
@@ -125,10 +134,10 @@ namespace QLNet.Math.statistics
 
             Utils.QL_REQUIRE(samples() != 0, () => "empty sample set");
 
-            double target = -valueAtRisk(centile);
-            KeyValuePair<double, int> result = expectationValue(z => z.Key, z => z.Key < target);
-            double x = result.Key;
-            int N = result.Value;
+            var target = -valueAtRisk(centile);
+            var result = expectationValue(z => z.Key, z => z.Key < target);
+            var x = result.Key;
+            var N = result.Value;
             Utils.QL_REQUIRE(N != 0, () => "no data below the target");
             // must be a loss, i.e., capped at 0.0 and negated
             return -System.Math.Min(x, 0.0);
@@ -144,9 +153,9 @@ namespace QLNet.Math.statistics
         // averaged shortfallness
         public double averageShortfall(double target)
         {
-            KeyValuePair<double, int> result = expectationValue(z => target - z.Key, z => z.Key < target);
-            double x = result.Key;
-            int N = result.Value;
+            var result = expectationValue(z => target - z.Key, z => z.Key < target);
+            var x = result.Key;
+            var N = result.Value;
             Utils.QL_REQUIRE(N != 0, () => "no data below the target");
             return x;
         }
@@ -154,43 +163,26 @@ namespace QLNet.Math.statistics
 
     //! default risk measures tool
     /*! \test the correctness of the returned values is tested by checking them against numerical calculations. */
-    public class RiskStatistics : GenericRiskStatistics<GaussianStatistics>
+    [JetBrains.Annotations.PublicAPI] public class RiskStatistics : GenericRiskStatistics<GaussianStatistics>
     {
-        public double gaussianPercentile(double value)
-        {
-            return impl_.gaussianPercentile(value);
-        }
-        public double gaussianPotentialUpside(double value)
-        {
-            return impl_.gaussianPotentialUpside(value);
-        }
-        public double gaussianValueAtRisk(double value)
-        {
-            return impl_.gaussianValueAtRisk(value);
-        }
-        public double gaussianExpectedShortfall(double value)
-        {
-            return impl_.gaussianExpectedShortfall(value);
-        }
-        public double gaussianShortfall(double value)
-        {
-            return impl_.gaussianShortfall(value);
-        }
-        public double gaussianAverageShortfall(double value)
-        {
-            return impl_.gaussianAverageShortfall(value);
-        }
-        public double gaussianRegret(double value)
-        {
-            return impl_.gaussianRegret(value);
-        }
-        public double gaussianDownsideVariance()
-        {
-            return impl_.gaussianDownsideVariance();
-        }
+        public double gaussianPercentile(double value) => impl_.gaussianPercentile(value);
+
+        public double gaussianPotentialUpside(double value) => impl_.gaussianPotentialUpside(value);
+
+        public double gaussianValueAtRisk(double value) => impl_.gaussianValueAtRisk(value);
+
+        public double gaussianExpectedShortfall(double value) => impl_.gaussianExpectedShortfall(value);
+
+        public double gaussianShortfall(double value) => impl_.gaussianShortfall(value);
+
+        public double gaussianAverageShortfall(double value) => impl_.gaussianAverageShortfall(value);
+
+        public double gaussianRegret(double value) => impl_.gaussianRegret(value);
+
+        public double gaussianDownsideVariance() => impl_.gaussianDownsideVariance();
     }
 
     //! default statistics tool
     /*! \test the correctness of the returned values is tested by checking them against numerical calculations. */
-    public class Statistics : RiskStatistics { }
+    [JetBrains.Annotations.PublicAPI] public class Statistics : RiskStatistics { }
 }

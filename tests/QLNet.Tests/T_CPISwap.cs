@@ -36,7 +36,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_CPISwap
+    [JetBrains.Annotations.PublicAPI] public class T_CPISwap
     {
         internal struct Datum
         {
@@ -58,11 +58,11 @@ namespace QLNet.Tests
                                                                                   BusinessDayConvention bdc,
                                                                                   DayCounter dc)
             {
-                List<BootstrapHelper<ZeroInflationTermStructure>> instruments = new List<BootstrapHelper<ZeroInflationTermStructure>>();
-                for (int i = 0; i < N; i++)
+                var instruments = new List<BootstrapHelper<ZeroInflationTermStructure>>();
+                for (var i = 0; i < N; i++)
                 {
-                    Date maturity = iiData[i].date;
-                    Handle<Quote> quote = new Handle<Quote>(new SimpleQuote(iiData[i].rate / 100.0));
+                    var maturity = iiData[i].date;
+                    var quote = new Handle<Quote>(new SimpleQuote(iiData[i].rate / 100.0));
                     BootstrapHelper<ZeroInflationTermStructure> anInstrument = new ZeroCouponInflationSwapHelper(quote, observationLag, maturity,
                           calendar, bdc, dc, ii);
                     instruments.Add(anInstrument);
@@ -122,7 +122,7 @@ namespace QLNet.Tests
                 length = 7;
                 calendar = new UnitedKingdom();
                 convention = BusinessDayConvention.ModifiedFollowing;
-                Date today = new Date(25, Month.November, 2009);
+                var today = new Date(25, Month.November, 2009);
                 evaluationDate = calendar.adjust(today);
                 Settings.setEvaluationDate(evaluationDate);
                 settlementDays = 0;
@@ -134,9 +134,9 @@ namespace QLNet.Tests
 
                 // uk rpi index
                 //      fixing data
-                Date from = new Date(20, Month.July, 2007);
-                Date to = new Date(20, Month.November, 2009);
-                Schedule rpiSchedule = new MakeSchedule().from(from).to(to)
+                var from = new Date(20, Month.July, 2007);
+                var to = new Date(20, Month.November, 2009);
+                var rpiSchedule = new MakeSchedule().from(from).to(to)
                 .withTenor(new Period(1, TimeUnit.Months))
                 .withCalendar(new UnitedKingdom())
                 .withConvention(BusinessDayConvention.ModifiedFollowing).value();
@@ -151,10 +151,10 @@ namespace QLNet.Tests
             };
 
                 // link from cpi index to cpi TS
-                bool interp = false;// this MUST be false because the observation lag is only 2 months
+                var interp = false;// this MUST be false because the observation lag is only 2 months
                                     // for ZCIIS; but not for contract if the contract uses a bigger lag.
                 ii = new UKRPI(interp, hcpi);
-                for (int i = 0; i < rpiSchedule.Count; i++)
+                for (var i = 0; i < rpiSchedule.Count; i++)
                 {
                     ii.addFixing(rpiSchedule[i], fixData[i], true);  // force overwrite in case multiple use
                 }
@@ -192,11 +192,11 @@ namespace QLNet.Tests
                new Datum(new Date(27, Month.November, 2079), 3.63082)
 
             };
-                int nominalDataLength = 30 - 1;
+                var nominalDataLength = 30 - 1;
 
-                List<Date> nomD = new List<Date>();
-                List<double> nomR = new List<double>();
-                for (int i = 0; i < nominalDataLength; i++)
+                var nomD = new List<Date>();
+                var nomR = new List<double>();
+                for (var i = 0; i < nominalDataLength; i++)
                 {
                     nomD.Add(nominalData[i].date);
                     nomR.Add(nominalData[i].rate / 100.0);
@@ -230,20 +230,20 @@ namespace QLNet.Tests
                new Datum(new Date(25, Month.November, 2059), 3.714)
             };
                 zciisDataLength = 17;
-                for (int i = 0; i < zciisDataLength; i++)
+                for (var i = 0; i < zciisDataLength; i++)
                 {
                     zciisD.Add(zciisData[i].date);
                     zciisR.Add(zciisData[i].rate);
                 }
 
                 // now build the helpers ...
-                List<BootstrapHelper<ZeroInflationTermStructure>> helpers = makeHelpers(zciisData, zciisDataLength, ii,
+                var helpers = makeHelpers(zciisData, zciisDataLength, ii,
                                                                                         observationLag, calendar, convention, dcZCIIS);
 
                 // we can use historical or first ZCIIS for this
                 // we know historical is WAY off market-implied, so use market implied flat.
-                double baseZeroRate = zciisData[0].rate / 100.0;
-                PiecewiseZeroInflationCurve<Linear> pCPIts = new PiecewiseZeroInflationCurve<Linear>(
+                var baseZeroRate = zciisData[0].rate / 100.0;
+                var pCPIts = new PiecewiseZeroInflationCurve<Linear>(
                    evaluationDate, calendar, dcZCIIS, observationLag, ii.frequency(), ii.interpolated(), baseZeroRate,
                    new Handle<YieldTermStructure>(nominalUK), helpers);
                 pCPIts.recalculate();
@@ -259,62 +259,62 @@ namespace QLNet.Tests
         public void consistency()
         {
             // check inflation leg vs calculation directly from inflation TS
-            CommonVars common = new CommonVars();
+            var common = new CommonVars();
 
             // ZeroInflationSwap aka CPISwap
-            CPISwap.Type type = CPISwap.Type.Payer;
-            double nominal = 1000000.0;
-            bool subtractInflationNominal = true;
+            var type = CPISwap.Type.Payer;
+            var nominal = 1000000.0;
+            var subtractInflationNominal = true;
             // float+spread leg
-            double spread = 0.0;
+            var spread = 0.0;
             DayCounter floatDayCount = new Actual365Fixed();
-            BusinessDayConvention floatPaymentConvention = BusinessDayConvention.ModifiedFollowing;
-            int fixingDays = 0;
+            var floatPaymentConvention = BusinessDayConvention.ModifiedFollowing;
+            var fixingDays = 0;
             IborIndex floatIndex = new GBPLibor(new Period(6, TimeUnit.Months), common.nominalUK);
 
             // fixed x inflation leg
-            double fixedRate = 0.1;//1% would be 0.01
-            double baseCPI = 206.1; // would be 206.13871 if we were interpolating
+            var fixedRate = 0.1;//1% would be 0.01
+            var baseCPI = 206.1; // would be 206.13871 if we were interpolating
             DayCounter fixedDayCount = new Actual365Fixed();
-            BusinessDayConvention fixedPaymentConvention = BusinessDayConvention.ModifiedFollowing;
+            var fixedPaymentConvention = BusinessDayConvention.ModifiedFollowing;
             Calendar fixedPaymentCalendar = new UnitedKingdom();
             ZeroInflationIndex fixedIndex = common.ii;
-            Period contractObservationLag = common.contractObservationLag;
-            InterpolationType observationInterpolation = common.contractObservationInterpolation;
+            var contractObservationLag = common.contractObservationLag;
+            var observationInterpolation = common.contractObservationInterpolation;
 
             // set the schedules
-            Date startDate = new Date(2, Month.October, 2007);
-            Date endDate = new Date(2, Month.October, 2052);
-            Schedule floatSchedule = new MakeSchedule().from(startDate).to(endDate)
+            var startDate = new Date(2, Month.October, 2007);
+            var endDate = new Date(2, Month.October, 2052);
+            var floatSchedule = new MakeSchedule().from(startDate).to(endDate)
             .withTenor(new Period(6, TimeUnit.Months))
             .withCalendar(new UnitedKingdom())
             .withConvention(floatPaymentConvention)
             .backwards().value();
-            Schedule fixedSchedule = new MakeSchedule().from(startDate).to(endDate)
+            var fixedSchedule = new MakeSchedule().from(startDate).to(endDate)
             .withTenor(new Period(6, TimeUnit.Months))
             .withCalendar(new UnitedKingdom())
             .withConvention(BusinessDayConvention.Unadjusted)
             .backwards().value();
 
 
-            CPISwap zisV = new CPISwap(type, nominal, subtractInflationNominal,
+            var zisV = new CPISwap(type, nominal, subtractInflationNominal,
                                        spread, floatDayCount, floatSchedule,
                                        floatPaymentConvention, fixingDays, floatIndex,
                                        fixedRate, baseCPI, fixedDayCount, fixedSchedule,
                                        fixedPaymentConvention, contractObservationLag,
                                        fixedIndex, observationInterpolation);
-            Date asofDate = Settings.evaluationDate();
+            var asofDate = Settings.evaluationDate();
 
             double[] floatFix = { 0.06255, 0.05975, 0.0637, 0.018425, 0.0073438, -1, -1 };
             double[] cpiFix = { 211.4, 217.2, 211.4, 213.4, -2, -2 };
-            for (int i = 0; i < floatSchedule.Count; i++)
+            for (var i = 0; i < floatSchedule.Count; i++)
             {
                 if (floatSchedule[i] < common.evaluationDate)
                 {
                     floatIndex.addFixing(floatSchedule[i], floatFix[i], true); //true=overwrite
                 }
 
-                CPICoupon zic = zisV.cpiLeg()[i] as CPICoupon;
+                var zic = zisV.cpiLeg()[i] as CPICoupon;
                 if (zic != null)
                 {
                     if (zic.fixingDate() < common.evaluationDate - new Period(1, TimeUnit.Months))
@@ -325,22 +325,22 @@ namespace QLNet.Tests
             }
 
             // simple structure so simple pricing engine - most work done by index
-            DiscountingSwapEngine dse = new DiscountingSwapEngine(common.nominalUK);
+            var dse = new DiscountingSwapEngine(common.nominalUK);
 
             zisV.setPricingEngine(dse);
 
             // get float+spread & fixed*inflation leg prices separately
-            double testInfLegNPV = 0.0;
+            var testInfLegNPV = 0.0;
             double diff;
-            for (int i = 0; i < zisV.leg(0).Count; i++)
+            for (var i = 0; i < zisV.leg(0).Count; i++)
             {
-                Date zicPayDate = zisV.leg(0)[i].date();
+                var zicPayDate = zisV.leg(0)[i].date();
                 if (zicPayDate > asofDate)
                 {
                     testInfLegNPV += zisV.leg(0)[i].amount() * common.nominalUK.link.discount(zicPayDate);
                 }
 
-                CPICoupon zicV = zisV.cpiLeg()[i] as CPICoupon;
+                var zicV = zisV.cpiLeg()[i] as CPICoupon;
                 if (zicV != null)
                 {
                     diff = System.Math.Abs(zicV.rate() - fixedRate * (zicV.indexFixing() / baseCPI));
@@ -350,7 +350,7 @@ namespace QLNet.Tests
                 }
             }
 
-            double error = System.Math.Abs(testInfLegNPV - zisV.legNPV(0).Value);
+            var error = System.Math.Abs(testInfLegNPV - zisV.legNPV(0).Value);
             QAssert.IsTrue(error < 1e-5, "failed manual inf leg NPV calc vs pricing engine: " + testInfLegNPV + " vs " +
                            zisV.legNPV(0));
 
@@ -358,7 +358,7 @@ namespace QLNet.Tests
 #if QL_USE_INDEXED_COUPON
          double max_diff = 1e-5;
 #else
-            double max_diff = 3e-5;
+            var max_diff = 3e-5;
 #endif
             QAssert.IsTrue(diff < max_diff, "failed stored consistency value test, ratio = " + diff);
 
@@ -369,43 +369,43 @@ namespace QLNet.Tests
         [Fact]
         public void zciisconsistency()
         {
-            CommonVars common = new CommonVars();
+            var common = new CommonVars();
 
-            ZeroCouponInflationSwap.Type ztype = ZeroCouponInflationSwap.Type.Payer;
-            double nominal = 1000000.0;
-            Date startDate = new Date(common.evaluationDate);
-            Date endDate = new Date(25, Month.November, 2059);
+            var ztype = ZeroCouponInflationSwap.Type.Payer;
+            var nominal = 1000000.0;
+            var startDate = new Date(common.evaluationDate);
+            var endDate = new Date(25, Month.November, 2059);
             Calendar cal = new UnitedKingdom();
-            BusinessDayConvention paymentConvention = BusinessDayConvention.ModifiedFollowing;
+            var paymentConvention = BusinessDayConvention.ModifiedFollowing;
             DayCounter dummyDC = null, dc = new ActualActual();
-            Period observationLag = new Period(2, TimeUnit.Months);
+            var observationLag = new Period(2, TimeUnit.Months);
 
-            double quote = 0.03714;
-            ZeroCouponInflationSwap zciis = new ZeroCouponInflationSwap(ztype, nominal, startDate, endDate, cal,
+            var quote = 0.03714;
+            var zciis = new ZeroCouponInflationSwap(ztype, nominal, startDate, endDate, cal,
                                                                         paymentConvention, dc, quote, common.ii, observationLag);
 
             // simple structure so simple pricing engine - most work done by index
-            DiscountingSwapEngine dse = new DiscountingSwapEngine(common.nominalUK);
+            var dse = new DiscountingSwapEngine(common.nominalUK);
 
             zciis.setPricingEngine(dse);
             QAssert.IsTrue(System.Math.Abs(zciis.NPV()) < 1e-3, "zciis does not reprice to zero");
 
-            List<Date> oneDate = new List<Date>();
+            var oneDate = new List<Date>();
             oneDate.Add(endDate);
-            Schedule schOneDate = new Schedule(oneDate, cal, paymentConvention);
+            var schOneDate = new Schedule(oneDate, cal, paymentConvention);
 
-            CPISwap.Type stype = CPISwap.Type.Payer;
-            double inflationNominal = nominal;
-            double floatNominal = inflationNominal * System.Math.Pow(1.0 + quote, 50);
-            bool subtractInflationNominal = true;
+            var stype = CPISwap.Type.Payer;
+            var inflationNominal = nominal;
+            var floatNominal = inflationNominal * System.Math.Pow(1.0 + quote, 50);
+            var subtractInflationNominal = true;
             double dummySpread = 0.0, dummyFixedRate = 0.0;
-            int fixingDays = 0;
-            Date baseDate = startDate - observationLag;
-            double baseCPI = common.ii.fixing(baseDate);
+            var fixingDays = 0;
+            var baseDate = startDate - observationLag;
+            var baseCPI = common.ii.fixing(baseDate);
 
-            IborIndex dummyFloatIndex = new IborIndex();
+            var dummyFloatIndex = new IborIndex();
 
-            CPISwap cS = new CPISwap(stype, floatNominal, subtractInflationNominal, dummySpread, dummyDC, schOneDate,
+            var cS = new CPISwap(stype, floatNominal, subtractInflationNominal, dummySpread, dummyDC, schOneDate,
                                      paymentConvention, fixingDays, dummyFloatIndex,
                                      dummyFixedRate, baseCPI, dummyDC, schOneDate, paymentConvention, observationLag,
                                      common.ii, InterpolationType.AsIndex, inflationNominal);
@@ -413,10 +413,10 @@ namespace QLNet.Tests
             cS.setPricingEngine(dse);
             QAssert.IsTrue(System.Math.Abs(cS.NPV()) < 1e-3, "CPISwap as ZCIIS does not reprice to zero");
 
-            for (int i = 0; i < 2; i++)
+            for (var i = 0; i < 2; i++)
             {
-                double cs = cS.legNPV(i).GetValueOrDefault();
-                double z = zciis.legNPV(i).GetValueOrDefault();
+                var cs = cS.legNPV(i).GetValueOrDefault();
+                var z = zciis.legNPV(i).GetValueOrDefault();
                 QAssert.IsTrue(System.Math.Abs(cs - z) < 1e-3, "zciis leg does not equal CPISwap leg");
             }
             // remove circular refernce
@@ -426,45 +426,45 @@ namespace QLNet.Tests
         [Fact]
         public void cpibondconsistency()
         {
-            CommonVars common = new CommonVars();
+            var common = new CommonVars();
 
             // ZeroInflationSwap aka CPISwap
 
-            CPISwap.Type type = CPISwap.Type.Payer;
-            double nominal = 1000000.0;
-            bool subtractInflationNominal = true;
+            var type = CPISwap.Type.Payer;
+            var nominal = 1000000.0;
+            var subtractInflationNominal = true;
             // float+spread leg
-            double spread = 0.0;
+            var spread = 0.0;
             DayCounter floatDayCount = new Actual365Fixed();
-            BusinessDayConvention floatPaymentConvention = BusinessDayConvention.ModifiedFollowing;
-            int fixingDays = 0;
+            var floatPaymentConvention = BusinessDayConvention.ModifiedFollowing;
+            var fixingDays = 0;
             IborIndex floatIndex = new GBPLibor(new Period(6, TimeUnit.Months), common.nominalUK);
 
             // fixed x inflation leg
-            double fixedRate = 0.1;//1% would be 0.01
-            double baseCPI = 206.1; // would be 206.13871 if we were interpolating
+            var fixedRate = 0.1;//1% would be 0.01
+            var baseCPI = 206.1; // would be 206.13871 if we were interpolating
             DayCounter fixedDayCount = new Actual365Fixed();
-            BusinessDayConvention fixedPaymentConvention = BusinessDayConvention.ModifiedFollowing;
+            var fixedPaymentConvention = BusinessDayConvention.ModifiedFollowing;
             Calendar fixedPaymentCalendar = new UnitedKingdom();
             ZeroInflationIndex fixedIndex = common.ii;
-            Period contractObservationLag = common.contractObservationLag;
-            InterpolationType observationInterpolation = common.contractObservationInterpolation;
+            var contractObservationLag = common.contractObservationLag;
+            var observationInterpolation = common.contractObservationInterpolation;
 
             // set the schedules
-            Date startDate = new Date(2, Month.October, 2007);
-            Date endDate = new Date(2, Month.October, 2052);
-            Schedule floatSchedule = new MakeSchedule().from(startDate).to(endDate)
+            var startDate = new Date(2, Month.October, 2007);
+            var endDate = new Date(2, Month.October, 2052);
+            var floatSchedule = new MakeSchedule().from(startDate).to(endDate)
             .withTenor(new Period(6, TimeUnit.Months))
             .withCalendar(new UnitedKingdom())
             .withConvention(floatPaymentConvention)
             .backwards().value();
-            Schedule fixedSchedule = new MakeSchedule().from(startDate).to(endDate)
+            var fixedSchedule = new MakeSchedule().from(startDate).to(endDate)
             .withTenor(new Period(6, TimeUnit.Months))
             .withCalendar(new UnitedKingdom())
             .withConvention(BusinessDayConvention.Unadjusted)
             .backwards().value();
 
-            CPISwap zisV = new CPISwap(type, nominal, subtractInflationNominal,
+            var zisV = new CPISwap(type, nominal, subtractInflationNominal,
                                        spread, floatDayCount, floatSchedule,
                                        floatPaymentConvention, fixingDays, floatIndex,
                                        fixedRate, baseCPI, fixedDayCount, fixedSchedule,
@@ -473,14 +473,14 @@ namespace QLNet.Tests
 
             double[] floatFix = { 0.06255, 0.05975, 0.0637, 0.018425, 0.0073438, -1, -1 };
             double[] cpiFix = { 211.4, 217.2, 211.4, 213.4, -2, -2 };
-            for (int i = 0; i < floatSchedule.Count; i++)
+            for (var i = 0; i < floatSchedule.Count; i++)
             {
                 if (floatSchedule[i] < common.evaluationDate)
                 {
                     floatIndex.addFixing(floatSchedule[i], floatFix[i], true); //true=overwrite
                 }
 
-                CPICoupon zic = zisV.cpiLeg()[i] as CPICoupon;
+                var zic = zisV.cpiLeg()[i] as CPICoupon;
                 if (zic != null)
                 {
                     if (zic.fixingDate() < common.evaluationDate - new Period(1, TimeUnit.Months))
@@ -491,20 +491,20 @@ namespace QLNet.Tests
             }
 
             // simple structure so simple pricing engine - most work done by index
-            DiscountingSwapEngine dse = new DiscountingSwapEngine(common.nominalUK);
+            var dse = new DiscountingSwapEngine(common.nominalUK);
 
             zisV.setPricingEngine(dse);
 
             // now do the bond equivalent
             List<double> fixedRates = new InitializedList<double>(1, fixedRate);
-            int settlementDays = 1;// cannot be zero!
-            bool growthOnly = true;
-            CPIBond cpiB = new CPIBond(settlementDays, nominal, growthOnly,
+            var settlementDays = 1;// cannot be zero!
+            var growthOnly = true;
+            var cpiB = new CPIBond(settlementDays, nominal, growthOnly,
                                        baseCPI, contractObservationLag, fixedIndex,
                                        observationInterpolation, fixedSchedule,
                                        fixedRates, fixedDayCount, fixedPaymentConvention);
 
-            DiscountingBondEngine dbe = new DiscountingBondEngine(common.nominalUK);
+            var dbe = new DiscountingBondEngine(common.nominalUK);
             cpiB.setPricingEngine(dbe);
 
             QAssert.IsTrue(System.Math.Abs(cpiB.NPV() - zisV.legNPV(0).GetValueOrDefault()) < 1e-5,

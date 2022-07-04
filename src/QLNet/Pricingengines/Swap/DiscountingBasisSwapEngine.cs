@@ -25,7 +25,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Pricingengines.Swap
 {
-    public class DiscountingBasisSwapEngine : Instruments.Swap.SwapEngine
+    [JetBrains.Annotations.PublicAPI] public class DiscountingBasisSwapEngine : Instruments.Swap.SwapEngine
     {
         private List<Handle<YieldTermStructure>> discountCurve_;
 
@@ -50,13 +50,13 @@ namespace QLNet.Pricingengines.Swap
             results_.legNPV = new InitializedList<double?>(arguments_.legs.Count);
             results_.legBPS = new InitializedList<double?>(arguments_.legs.Count);
             List<double?> startDiscounts = new InitializedList<double?>(arguments_.legs.Count);
-            for (int i = 0; i < arguments_.legs.Count; ++i)
+            for (var i = 0; i < arguments_.legs.Count; ++i)
             {
                 results_.value += results_.legNPV[i];
                 results_.cash += arguments_.payer[i] * CashFlows.cash(arguments_.legs[i]);
                 try
                 {
-                    Date d = CashFlows.startDate(arguments_.legs[i]);
+                    var d = CashFlows.startDate(arguments_.legs[i]);
                     startDiscounts[i] = discountCurve_[i].link.discount(d);
                 }
                 catch

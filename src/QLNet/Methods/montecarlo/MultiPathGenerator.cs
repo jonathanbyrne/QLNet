@@ -29,7 +29,7 @@ namespace QLNet.Methods.montecarlo
         \test the generated paths are checked against cached results
     */
 
-    public class MultiPathGenerator<GSG> : IPathGenerator<GSG> where GSG : IRNG
+    [JetBrains.Annotations.PublicAPI] public class MultiPathGenerator<GSG> : IPathGenerator<GSG> where GSG : IRNG
     {
         private bool brownianBridge_;
         private StochasticProcess process_;
@@ -52,15 +52,9 @@ namespace QLNet.Methods.montecarlo
             Utils.QL_REQUIRE(times.size() > 1, () => "no times given");
         }
 
-        public Sample<IPath> next()
-        {
-            return next(false);
-        }
+        public Sample<IPath> next() => next(false);
 
-        public Sample<IPath> antithetic()
-        {
-            return next(true);
-        }
+        public Sample<IPath> antithetic() => next(true);
 
         private Sample<IPath> next(bool antithetic)
         {
@@ -70,28 +64,28 @@ namespace QLNet.Methods.montecarlo
                 return null;
             }
 
-            Sample<List<double>> sequence_ =
+            var sequence_ =
                antithetic
                ? generator_.lastSequence()
                : generator_.nextSequence();
 
-            int m = process_.size();
-            int n = process_.factors();
+            var m = process_.size();
+            var n = process_.factors();
 
-            MultiPath path = (MultiPath)next_.value;
+            var path = (MultiPath)next_.value;
 
-            Vector asset = process_.initialValues();
-            for (int j = 0; j < m; j++)
+            var asset = process_.initialValues();
+            for (var j = 0; j < m; j++)
                 path[j].setFront(asset[j]);
 
             Vector temp;
             next_.weight = sequence_.weight;
 
-            TimeGrid timeGrid = path[0].timeGrid();
+            var timeGrid = path[0].timeGrid();
             double t, dt;
-            for (int i = 1; i < path.pathSize(); i++)
+            for (var i = 1; i < path.pathSize(); i++)
             {
-                int offset = (i - 1) * n;
+                var offset = (i - 1) * n;
                 t = timeGrid[i - 1];
                 dt = timeGrid.dt(i - 1);
                 if (antithetic)
@@ -100,7 +94,7 @@ namespace QLNet.Methods.montecarlo
                     temp = new Vector(sequence_.value.GetRange(offset, n));
 
                 asset = process_.evolve(t, asset, dt, temp);
-                for (int j = 0; j < m; j++)
+                for (var j = 0; j < m; j++)
                     path[j][i] = asset[j];
             }
             return next_;

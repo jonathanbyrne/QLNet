@@ -23,30 +23,31 @@ using QLNet.Math;
 namespace QLNet.Math.Optimization
 {
     //! Constrained optimization problem
-    public class Problem
+    [JetBrains.Annotations.PublicAPI] public class Problem
     {
         //! Unconstrained cost function
         protected CostFunction costFunction_;
-        public CostFunction costFunction() { return costFunction_; }
+        public CostFunction costFunction() => costFunction_;
 
         //! Constraint
         protected Constraint constraint_;
-        public Constraint constraint() { return constraint_; }
+        public Constraint constraint() => constraint_;
 
         //! current value of the local minimum
         protected Vector currentValue_;
-        public Vector currentValue() { return currentValue_; }
+        public Vector currentValue() => currentValue_;
 
         //! function and gradient norm values at the curentValue_ (i.e. the last step)
         protected double? functionValue_, squaredNorm_;
-        public double functionValue() { return functionValue_.GetValueOrDefault(); }
-        public double gradientNormValue() { return squaredNorm_.GetValueOrDefault(); }
+        public double functionValue() => functionValue_.GetValueOrDefault();
+
+        public double gradientNormValue() => squaredNorm_.GetValueOrDefault();
 
         //! number of evaluation of cost function and its gradient
         protected int functionEvaluation_, gradientEvaluation_;
-        public int functionEvaluation() { return functionEvaluation_; }
-        public int gradientEvaluation() { return gradientEvaluation_; }
+        public int functionEvaluation() => functionEvaluation_;
 
+        public int gradientEvaluation() => gradientEvaluation_;
 
         //! default constructor
         //public Problem(CostFunction costFunction, Constraint constraint, Vector initialValue = Array())

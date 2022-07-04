@@ -54,7 +54,7 @@ namespace QLNet.Time.Calendars
     ///
     /// </remarks>
     /// </summary>
-    public class Thailand : Calendar
+    [JetBrains.Annotations.PublicAPI] public class Thailand : Calendar
     {
         public Thailand() : base(Impl.Singleton) { }
 
@@ -63,13 +63,14 @@ namespace QLNet.Time.Calendars
             public static readonly Impl Singleton = new Impl();
             private Impl() { }
 
-            public override string name() { return "Thailand stock exchange"; }
+            public override string name() => "Thailand stock exchange";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
-                int d = date.Day;
-                Month m = (Month)date.Month;
-                int y = date.Year;
+                var w = date.DayOfWeek;
+                var d = date.Day;
+                var m = (Month)date.Month;
+                var y = date.Year;
 
                 if (isWeekend(w)
                     // New Year's Day

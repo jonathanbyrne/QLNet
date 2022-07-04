@@ -35,7 +35,7 @@ namespace QLNet.Termstructures.Yield
     - observability against changes in the underlying term
        structure and in the added spread is checked.
     */
-    public class ZeroSpreadedTermStructure : ZeroYieldStructure
+    [JetBrains.Annotations.PublicAPI] public class ZeroSpreadedTermStructure : ZeroYieldStructure
     {
         public ZeroSpreadedTermStructure(Handle<YieldTermStructure> h,
                                          Handle<Quote> spread,
@@ -56,12 +56,17 @@ namespace QLNet.Termstructures.Yield
 
         #region YieldTermStructure interface
 
-        public override DayCounter dayCounter() { return originalCurve_.link.dayCounter(); }
-        public override Calendar calendar() { return originalCurve_.link.calendar(); }
-        public override int settlementDays() { return originalCurve_.link.settlementDays(); }
-        public override Date referenceDate() { return originalCurve_.link.referenceDate(); }
-        public override Date maxDate() { return originalCurve_.link.maxDate(); }
-        public override double maxTime() { return originalCurve_.link.maxTime(); }
+        public override DayCounter dayCounter() => originalCurve_.link.dayCounter();
+
+        public override Calendar calendar() => originalCurve_.link.calendar();
+
+        public override int settlementDays() => originalCurve_.link.settlementDays();
+
+        public override Date referenceDate() => originalCurve_.link.referenceDate();
+
+        public override Date maxDate() => originalCurve_.link.maxDate();
+
+        public override double maxTime() => originalCurve_.link.maxTime();
 
         #endregion
 
@@ -70,9 +75,9 @@ namespace QLNet.Termstructures.Yield
         protected override double zeroYieldImpl(double t)
         {
             // to be fixed: user-defined daycounter should be used
-            InterestRate zeroRate =
+            var zeroRate =
                originalCurve_.link.zeroRate(t, comp_, freq_, true);
-            InterestRate spreadedRate = new InterestRate(zeroRate.value() + spread_.link.value(),
+            var spreadedRate = new InterestRate(zeroRate.value() + spread_.link.value(),
                                                          zeroRate.dayCounter(),
                                                          zeroRate.compounding(),
                                                          zeroRate.frequency());
@@ -80,11 +85,9 @@ namespace QLNet.Termstructures.Yield
         }
         //! returns the spreaded forward rate
         /* This method must disappear should the spread become a curve */
-        protected double forwardImpl(double t)
-        {
-            return originalCurve_.link.forwardRate(t, t, comp_, freq_, true).value()
-                   + spread_.link.value();
-        }
+        protected double forwardImpl(double t) =>
+            originalCurve_.link.forwardRate(t, t, comp_, freq_, true).value()
+            + spread_.link.value();
 
         protected Handle<YieldTermStructure> originalCurve_;
         protected Handle<Quote> spread_;

@@ -25,7 +25,7 @@ using System;
 namespace QLNet.Pricingengines.vanilla
 {
     // this is template version to serve as base for FDStepConditionEngine and FDMultiPeriodEngine
-    public class FDConditionEngineTemplate : FDVanillaEngine
+    [JetBrains.Annotations.PublicAPI] public class FDConditionEngineTemplate : FDVanillaEngine
     {
         #region Common definitions for deriving classes
         protected IStepCondition<Vector> stepCondition_;
@@ -53,7 +53,7 @@ namespace QLNet.Pricingengines.vanilla
     }
 
     // this is template version to serve as base for FDAmericanCondition and FDShoutCondition
-    public class FDConditionTemplate<baseEngine> : FDConditionEngineTemplate
+    [JetBrains.Annotations.PublicAPI] public class FDConditionTemplate<baseEngine> : FDConditionEngineTemplate
        where baseEngine : FDConditionEngineTemplate, new()
     {
         #region Common definitions for deriving classes
@@ -76,7 +76,7 @@ namespace QLNet.Pricingengines.vanilla
     }
 
 
-    public class FDAmericanCondition<baseEngine> : FDConditionTemplate<baseEngine>
+    [JetBrains.Annotations.PublicAPI] public class FDAmericanCondition<baseEngine> : FDConditionTemplate<baseEngine>
        where baseEngine : FDConditionEngineTemplate, new()
     {
 
@@ -84,10 +84,8 @@ namespace QLNet.Pricingengines.vanilla
         public FDAmericanCondition() { }
         // required for template inheritance
         public override FDVanillaEngine factory(GeneralizedBlackScholesProcess process,
-                                                int timeSteps, int gridPoints, bool timeDependent)
-        {
-            return new FDAmericanCondition<baseEngine>(process, timeSteps, gridPoints, timeDependent);
-        }
+                                                int timeSteps, int gridPoints, bool timeDependent) =>
+            new FDAmericanCondition<baseEngine>(process, timeSteps, gridPoints, timeDependent);
 
         public FDAmericanCondition(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
            : base(process, timeSteps, gridPoints, timeDependent)
@@ -95,14 +93,11 @@ namespace QLNet.Pricingengines.vanilla
             engine_.setStepCondition(initializeStepConditionImpl);
         }
 
-        protected IStepCondition<Vector> initializeStepConditionImpl()
-        {
-            return new AmericanCondition(engine_.intrinsicValues_.values());
-        }
+        protected IStepCondition<Vector> initializeStepConditionImpl() => new AmericanCondition(engine_.intrinsicValues_.values());
     }
 
 
-    public class FDShoutCondition<baseEngine> : FDConditionTemplate<baseEngine>
+    [JetBrains.Annotations.PublicAPI] public class FDShoutCondition<baseEngine> : FDConditionTemplate<baseEngine>
        where baseEngine : FDConditionEngineTemplate, new()
     {
 
@@ -110,10 +105,8 @@ namespace QLNet.Pricingengines.vanilla
         public FDShoutCondition() { }
         // required for template inheritance
         public override FDVanillaEngine factory(GeneralizedBlackScholesProcess process,
-                                                int timeSteps, int gridPoints, bool timeDependent)
-        {
-            return new FDShoutCondition<baseEngine>(process, timeSteps, gridPoints, timeDependent);
-        }
+                                                int timeSteps, int gridPoints, bool timeDependent) =>
+            new FDShoutCondition<baseEngine>(process, timeSteps, gridPoints, timeDependent);
 
         public FDShoutCondition(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
            : base(process, timeSteps, gridPoints, timeDependent)
@@ -125,8 +118,8 @@ namespace QLNet.Pricingengines.vanilla
         {
             // the following to rely on process_ which is the same for engine and here
             // therefore wrapping is not requried
-            double residualTime = engine_.getResidualTime();
-            double riskFreeRate = process_.riskFreeRate().link.zeroRate(residualTime, Compounding.Continuous).rate();
+            var residualTime = engine_.getResidualTime();
+            var riskFreeRate = process_.riskFreeRate().link.zeroRate(residualTime, Compounding.Continuous).rate();
 
             return new ShoutCondition(engine_.intrinsicValues_.values(), residualTime, riskFreeRate);
         }

@@ -25,15 +25,12 @@ namespace QLNet.Math.Optimization
 
         search direction \f$ = - f'(x) \f$
     */
-    public class SteepestDescent : LineSearchBasedMethod
+    [JetBrains.Annotations.PublicAPI] public class SteepestDescent : LineSearchBasedMethod
     {
         public SteepestDescent(LineSearch lineSearch = null)
            : base(lineSearch)
         { }
 
-        protected override Vector getUpdatedDirection(Problem P, double gold2, Vector gradient)
-        {
-            return lineSearch_.lastGradient() * -1;
-        }
+        protected override Vector getUpdatedDirection(Problem P, double gold2, Vector gradient) => lineSearch_.lastGradient() * -1;
     }
 }

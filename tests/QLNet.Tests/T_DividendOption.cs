@@ -33,7 +33,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_DividendOption
+    [JetBrains.Annotations.PublicAPI] public class T_DividendOption
     {
         internal void REPORT_FAILURE(string greekName, StrikedTypePayoff payoff, Exercise exercise, double s, double q,
                                    double r, Date today, double v, double expected, double calculated, double error,
@@ -73,21 +73,21 @@ namespace QLNet.Tests
 
             DayCounter dc = new Actual360();
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            SimpleQuote qRate = new SimpleQuote(0.0);
-            Handle<YieldTermStructure> qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            Handle<YieldTermStructure> rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
-            SimpleQuote vol = new SimpleQuote(0.0);
-            Handle<BlackVolTermStructure> volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
+            var spot = new SimpleQuote(0.0);
+            var qRate = new SimpleQuote(0.0);
+            var qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
+            var rRate = new SimpleQuote(0.0);
+            var rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
+            var vol = new SimpleQuote(0.0);
+            var volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
 
-            for (int i = 0; i < types.Length; i++)
+            for (var i = 0; i < types.Length; i++)
             {
-                for (int j = 0; j < strikes.Length; j++)
+                for (var j = 0; j < strikes.Length; j++)
                 {
-                    List<Date> dividendDates = new List<Date>();
-                    List<double> dividends = new List<double>();
-                    for (Date d = today + new Period(3, TimeUnit.Months);
+                    var dividendDates = new List<Date>();
+                    var dividends = new List<double>();
+                    for (var d = today + new Period(3, TimeUnit.Months);
                          d < exercise.lastDate();
                          d += new Period(6, TimeUnit.Months))
                     {
@@ -97,32 +97,32 @@ namespace QLNet.Tests
 
                     StrikedTypePayoff payoff = new PlainVanillaPayoff(types[i], strikes[j]);
 
-                    BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
+                    var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
                                                                                            qTS, rTS, volTS);
 
                     IPricingEngine engine = FastActivator<Engine>.Create().factory(stochProcess);
-                    DividendVanillaOption option = new DividendVanillaOption(payoff, exercise, dividendDates, dividends);
+                    var option = new DividendVanillaOption(payoff, exercise, dividendDates, dividends);
                     option.setPricingEngine(engine);
 
-                    for (int l = 0; l < underlyings.Length; l++)
+                    for (var l = 0; l < underlyings.Length; l++)
                     {
-                        for (int m = 0; m < qRates.Length; m++)
+                        for (var m = 0; m < qRates.Length; m++)
                         {
-                            for (int n = 0; n < rRates.Length; n++)
+                            for (var n = 0; n < rRates.Length; n++)
                             {
-                                for (int p = 0; p < vols.Length; p++)
+                                for (var p = 0; p < vols.Length; p++)
                                 {
-                                    double u = underlyings[l];
+                                    var u = underlyings[l];
                                     double q = qRates[m],
                                            r = rRates[n];
-                                    double v = vols[p];
+                                    var v = vols[p];
                                     spot.setValue(u);
                                     qRate.setValue(q);
                                     rRate.setValue(r);
                                     vol.setValue(v);
 
                                     // FLOATING_POINT_EXCEPTION
-                                    double value = option.NPV();
+                                    var value = option.NPV();
                                     calculated["delta"] = option.delta();
                                     calculated["gamma"] = option.gamma();
                                     // calculated["theta"]  = option.theta();
@@ -130,7 +130,7 @@ namespace QLNet.Tests
                                     if (value > spot.value() * 1.0e-5)
                                     {
                                         // perturb spot and get delta and gamma
-                                        double du = u * 1.0e-4;
+                                        var du = u * 1.0e-4;
                                         spot.setValue(u + du);
                                         double value_p = option.NPV(),
                                                delta_p = option.delta();
@@ -153,12 +153,12 @@ namespace QLNet.Tests
                                         */
 
                                         // compare
-                                        foreach (string greek in calculated.Keys)
+                                        foreach (var greek in calculated.Keys)
                                         {
                                             double expct = expected[greek],
                                                    calcl = calculated[greek],
                                                    tol = tolerance[greek];
-                                            double error = Utilities.relativeError(expct, calcl, u);
+                                            var error = Utilities.relativeError(expct, calcl, u);
                                             if (error > tol)
                                             {
                                                 REPORT_FAILURE(greek, payoff, exercise,
@@ -178,40 +178,40 @@ namespace QLNet.Tests
         private void testFdDegenerate<Engine>(Date today, Exercise exercise) where Engine : IFDEngine, new()
         {
             DayCounter dc = new Actual360();
-            SimpleQuote spot = new SimpleQuote(54.625);
-            Handle<YieldTermStructure> rTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.052706, dc));
-            Handle<YieldTermStructure> qTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.0, dc));
-            Handle<BlackVolTermStructure> volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(0.282922, dc));
+            var spot = new SimpleQuote(54.625);
+            var rTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.052706, dc));
+            var qTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.0, dc));
+            var volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(0.282922, dc));
 
-            BlackScholesMertonProcess process = new BlackScholesMertonProcess(new Handle<Quote>(spot),
+            var process = new BlackScholesMertonProcess(new Handle<Quote>(spot),
                                                                               qTS, rTS, volTS);
 
-            int timeSteps = 300;
-            int gridPoints = 300;
+            var timeSteps = 300;
+            var gridPoints = 300;
 
             IPricingEngine engine = FastActivator<Engine>.Create().factory(process, timeSteps, gridPoints);
 
             StrikedTypePayoff payoff = new PlainVanillaPayoff(QLNet.Option.Type.Call, 55.0);
 
-            double tolerance = 3.0e-3;
+            var tolerance = 3.0e-3;
 
-            List<double> dividends = new List<double>();
-            List<Date> dividendDates = new List<Date>();
+            var dividends = new List<double>();
+            var dividendDates = new List<Date>();
 
-            DividendVanillaOption option1 = new DividendVanillaOption(payoff, exercise, dividendDates, dividends);
+            var option1 = new DividendVanillaOption(payoff, exercise, dividendDates, dividends);
             option1.setPricingEngine(engine);
 
             // FLOATING_POINT_EXCEPTION
-            double refValue = option1.NPV();
+            var refValue = option1.NPV();
 
-            for (int i = 0; i <= 6; i++)
+            for (var i = 0; i <= 6; i++)
             {
                 dividends.Add(0.0);
                 dividendDates.Add(today + i);
 
-                DividendVanillaOption option = new DividendVanillaOption(payoff, exercise, dividendDates, dividends);
+                var option = new DividendVanillaOption(payoff, exercise, dividendDates, dividends);
                 option.setPricingEngine(engine);
-                double value = option.NPV();
+                var value = option.NPV();
 
                 if (System.Math.Abs(refValue - value) > tolerance)
                     QAssert.Fail("NPV changed by null dividend :\n"
@@ -225,9 +225,9 @@ namespace QLNet.Tests
         public void testEuropeanValues()
         {
             // Testing dividend European option values with no dividends...
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                double tolerance = 1.0e-5;
+                var tolerance = 1.0e-5;
 
                 Option.Type[] types = { QLNet.Option.Type.Call, QLNet.Option.Type.Put };
                 double[] strikes = { 50.0, 99.5, 100.0, 100.5, 150.0 };
@@ -238,29 +238,29 @@ namespace QLNet.Tests
                 double[] vols = { 0.05, 0.20, 0.70 };
 
                 DayCounter dc = new Actual360();
-                Date today = Date.Today;
+                var today = Date.Today;
                 Settings.setEvaluationDate(today);
 
-                SimpleQuote spot = new SimpleQuote(0.0);
-                SimpleQuote qRate = new SimpleQuote(0.0);
-                Handle<YieldTermStructure> qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
-                SimpleQuote rRate = new SimpleQuote(0.0);
-                Handle<YieldTermStructure> rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
-                SimpleQuote vol = new SimpleQuote(0.0);
-                Handle<BlackVolTermStructure> volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
+                var spot = new SimpleQuote(0.0);
+                var qRate = new SimpleQuote(0.0);
+                var qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
+                var rRate = new SimpleQuote(0.0);
+                var rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
+                var vol = new SimpleQuote(0.0);
+                var volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
 
-                for (int i = 0; i < types.Length; i++)
+                for (var i = 0; i < types.Length; i++)
                 {
-                    for (int j = 0; j < strikes.Length; j++)
+                    for (var j = 0; j < strikes.Length; j++)
                     {
-                        for (int k = 0; k < lengths.Length; k++)
+                        for (var k = 0; k < lengths.Length; k++)
                         {
-                            Date exDate = today + new Period(lengths[k], TimeUnit.Years);
+                            var exDate = today + new Period(lengths[k], TimeUnit.Years);
                             Exercise exercise = new EuropeanExercise(exDate);
 
-                            List<Date> dividendDates = new List<Date>();
-                            List<double> dividends = new List<double>();
-                            for (Date d = today + new Period(3, TimeUnit.Months);
+                            var dividendDates = new List<Date>();
+                            var dividends = new List<double>();
+                            for (var d = today + new Period(3, TimeUnit.Months);
                                  d < exercise.lastDate();
                                  d += new Period(6, TimeUnit.Months))
 
@@ -271,39 +271,39 @@ namespace QLNet.Tests
 
                             StrikedTypePayoff payoff = new PlainVanillaPayoff(types[i], strikes[j]);
 
-                            BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
+                            var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
                                                                                                    qTS, rTS, volTS);
 
                             IPricingEngine ref_engine = new AnalyticEuropeanEngine(stochProcess);
 
                             IPricingEngine engine = new AnalyticDividendEuropeanEngine(stochProcess);
 
-                            DividendVanillaOption option = new DividendVanillaOption(payoff, exercise, dividendDates, dividends);
+                            var option = new DividendVanillaOption(payoff, exercise, dividendDates, dividends);
                             option.setPricingEngine(engine);
 
-                            VanillaOption ref_option = new VanillaOption(payoff, exercise);
+                            var ref_option = new VanillaOption(payoff, exercise);
                             ref_option.setPricingEngine(ref_engine);
 
-                            for (int l = 0; l < underlyings.Length; l++)
+                            for (var l = 0; l < underlyings.Length; l++)
                             {
-                                for (int m = 0; m < qRates.Length; m++)
+                                for (var m = 0; m < qRates.Length; m++)
                                 {
-                                    for (int n = 0; n < rRates.Length; n++)
+                                    for (var n = 0; n < rRates.Length; n++)
                                     {
-                                        for (int p = 0; p < vols.Length; p++)
+                                        for (var p = 0; p < vols.Length; p++)
                                         {
-                                            double u = underlyings[l];
+                                            var u = underlyings[l];
                                             double q = qRates[m],
                                                    r = rRates[n];
-                                            double v = vols[p];
+                                            var v = vols[p];
                                             spot.setValue(u);
                                             qRate.setValue(q);
                                             rRate.setValue(r);
                                             vol.setValue(v);
 
-                                            double calculated = option.NPV();
-                                            double expected = ref_option.NPV();
-                                            double error = System.Math.Abs(calculated - expected);
+                                            var calculated = option.NPV();
+                                            var expected = ref_option.NPV();
+                                            var error = System.Math.Abs(calculated - expected);
                                             if (error > tolerance)
                                             {
                                                 REPORT_FAILURE("value start limit",
@@ -328,28 +328,28 @@ namespace QLNet.Tests
         private void testEuropeanKnownValue()
         {
             // Testing dividend European option values with known value...
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                double tolerance = 1.0e-2;
-                double expected = 3.67;
+                var tolerance = 1.0e-2;
+                var expected = 3.67;
 
                 DayCounter dc = new Actual360();
-                Date today = Date.Today;
+                var today = Date.Today;
                 Settings.setEvaluationDate(today);
 
-                SimpleQuote spot = new SimpleQuote(0.0);
-                SimpleQuote qRate = new SimpleQuote(0.0);
-                Handle<YieldTermStructure> qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
-                SimpleQuote rRate = new SimpleQuote(0.0);
-                Handle<YieldTermStructure> rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
-                SimpleQuote vol = new SimpleQuote(0.0);
-                Handle<BlackVolTermStructure> volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
+                var spot = new SimpleQuote(0.0);
+                var qRate = new SimpleQuote(0.0);
+                var qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
+                var rRate = new SimpleQuote(0.0);
+                var rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
+                var vol = new SimpleQuote(0.0);
+                var volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
 
-                Date exDate = today + new Period(6, TimeUnit.Months);
+                var exDate = today + new Period(6, TimeUnit.Months);
                 Exercise exercise = new EuropeanExercise(exDate);
 
-                List<Date> dividendDates = new List<Date>();
-                List<double> dividends = new List<double>();
+                var dividendDates = new List<Date>();
+                var dividends = new List<double>();
                 dividendDates.Add(today + new Period(2, TimeUnit.Months));
                 dividends.Add(0.50);
                 dividendDates.Add(today + new Period(5, TimeUnit.Months));
@@ -357,24 +357,24 @@ namespace QLNet.Tests
 
                 StrikedTypePayoff payoff = new PlainVanillaPayoff(QLNet.Option.Type.Call, 40.0);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
+                var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
                                                                                        qTS, rTS, volTS);
 
                 IPricingEngine engine = new AnalyticDividendEuropeanEngine(stochProcess);
 
-                DividendVanillaOption option = new DividendVanillaOption(payoff, exercise, dividendDates, dividends);
+                var option = new DividendVanillaOption(payoff, exercise, dividendDates, dividends);
                 option.setPricingEngine(engine);
 
-                double u = 40.0;
+                var u = 40.0;
                 double q = 0.0, r = 0.09;
-                double v = 0.30;
+                var v = 0.30;
                 spot.setValue(u);
                 qRate.setValue(q);
                 rRate.setValue(r);
                 vol.setValue(v);
 
-                double calculated = option.NPV();
-                double error = System.Math.Abs(calculated - expected);
+                var calculated = option.NPV();
+                var error = System.Math.Abs(calculated - expected);
                 if (error > tolerance)
                 {
                     REPORT_FAILURE("value start limit",
@@ -390,10 +390,10 @@ namespace QLNet.Tests
         public void testEuropeanStartLimit()
         {
             // Testing dividend European option with a dividend on today's date...
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                double tolerance = 1.0e-5;
-                double dividendValue = 10.0;
+                var tolerance = 1.0e-5;
+                var dividendValue = 10.0;
 
                 Option.Type[] types = { QLNet.Option.Type.Call, QLNet.Option.Type.Put };
                 double[] strikes = { 50.0, 99.5, 100.0, 100.5, 150.0 };
@@ -404,67 +404,67 @@ namespace QLNet.Tests
                 double[] vols = { 0.05, 0.20, 0.70 };
 
                 DayCounter dc = new Actual360();
-                Date today = Date.Today;
+                var today = Date.Today;
                 Settings.setEvaluationDate(today);
 
-                SimpleQuote spot = new SimpleQuote(0.0);
-                SimpleQuote qRate = new SimpleQuote(0.0);
-                Handle<YieldTermStructure> qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
-                SimpleQuote rRate = new SimpleQuote(0.0);
-                Handle<YieldTermStructure> rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
-                SimpleQuote vol = new SimpleQuote(0.0);
-                Handle<BlackVolTermStructure> volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
+                var spot = new SimpleQuote(0.0);
+                var qRate = new SimpleQuote(0.0);
+                var qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
+                var rRate = new SimpleQuote(0.0);
+                var rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
+                var vol = new SimpleQuote(0.0);
+                var volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
 
-                for (int i = 0; i < types.Length; i++)
+                for (var i = 0; i < types.Length; i++)
                 {
-                    for (int j = 0; j < strikes.Length; j++)
+                    for (var j = 0; j < strikes.Length; j++)
                     {
-                        for (int k = 0; k < lengths.Length; k++)
+                        for (var k = 0; k < lengths.Length; k++)
                         {
-                            Date exDate = today + new Period(lengths[k], TimeUnit.Years);
+                            var exDate = today + new Period(lengths[k], TimeUnit.Years);
                             Exercise exercise = new EuropeanExercise(exDate);
 
-                            List<Date> dividendDates = new List<Date>();
-                            List<double> dividends = new List<double>();
+                            var dividendDates = new List<Date>();
+                            var dividends = new List<double>();
                             dividendDates.Add(today);
                             dividends.Add(dividendValue);
 
                             StrikedTypePayoff payoff = new PlainVanillaPayoff(types[i], strikes[j]);
 
-                            BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
+                            var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
                                                                                                    qTS, rTS, volTS);
 
                             IPricingEngine engine = new AnalyticDividendEuropeanEngine(stochProcess);
 
                             IPricingEngine ref_engine = new AnalyticEuropeanEngine(stochProcess);
 
-                            DividendVanillaOption option = new DividendVanillaOption(payoff, exercise, dividendDates, dividends);
+                            var option = new DividendVanillaOption(payoff, exercise, dividendDates, dividends);
                             option.setPricingEngine(engine);
 
-                            VanillaOption ref_option = new VanillaOption(payoff, exercise);
+                            var ref_option = new VanillaOption(payoff, exercise);
                             ref_option.setPricingEngine(ref_engine);
 
-                            for (int l = 0; l < underlyings.Length; l++)
+                            for (var l = 0; l < underlyings.Length; l++)
                             {
-                                for (int m = 0; m < qRates.Length; m++)
+                                for (var m = 0; m < qRates.Length; m++)
                                 {
-                                    for (int n = 0; n < rRates.Length; n++)
+                                    for (var n = 0; n < rRates.Length; n++)
                                     {
-                                        for (int p = 0; p < vols.Length; p++)
+                                        for (var p = 0; p < vols.Length; p++)
                                         {
-                                            double u = underlyings[l];
+                                            var u = underlyings[l];
                                             double q = qRates[m],
                                                    r = rRates[n];
-                                            double v = vols[p];
+                                            var v = vols[p];
                                             spot.setValue(u);
                                             qRate.setValue(q);
                                             rRate.setValue(r);
                                             vol.setValue(v);
 
-                                            double calculated = option.NPV();
+                                            var calculated = option.NPV();
                                             spot.setValue(u - dividendValue);
-                                            double expected = ref_option.NPV();
-                                            double error = System.Math.Abs(calculated - expected);
+                                            var expected = ref_option.NPV();
+                                            var error = System.Math.Abs(calculated - expected);
                                             if (error > tolerance)
                                             {
                                                 REPORT_FAILURE("value", payoff, exercise,
@@ -486,7 +486,7 @@ namespace QLNet.Tests
         public void testEuropeanGreeks()
         {
             // Testing dividend European option greeks...
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
                 Dictionary<string, double> calculated = new Dictionary<string, double>(),
                 expected = new Dictionary<string, double>(),
@@ -506,29 +506,29 @@ namespace QLNet.Tests
                 double[] vols = { 0.05, 0.20, 0.40 };
 
                 DayCounter dc = new Actual360();
-                Date today = Date.Today;
+                var today = Date.Today;
                 Settings.setEvaluationDate(today);
 
-                SimpleQuote spot = new SimpleQuote(0.0);
-                SimpleQuote qRate = new SimpleQuote(0.0);
-                Handle<YieldTermStructure> qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
-                SimpleQuote rRate = new SimpleQuote(0.0);
-                Handle<YieldTermStructure> rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
-                SimpleQuote vol = new SimpleQuote(0.0);
-                Handle<BlackVolTermStructure> volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
+                var spot = new SimpleQuote(0.0);
+                var qRate = new SimpleQuote(0.0);
+                var qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
+                var rRate = new SimpleQuote(0.0);
+                var rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
+                var vol = new SimpleQuote(0.0);
+                var volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
 
-                for (int i = 0; i < types.Length; i++)
+                for (var i = 0; i < types.Length; i++)
                 {
-                    for (int j = 0; j < strikes.Length; j++)
+                    for (var j = 0; j < strikes.Length; j++)
                     {
-                        for (int k = 0; k < lengths.Length; k++)
+                        for (var k = 0; k < lengths.Length; k++)
                         {
-                            Date exDate = today + new Period(lengths[k], TimeUnit.Years);
+                            var exDate = today + new Period(lengths[k], TimeUnit.Years);
                             Exercise exercise = new EuropeanExercise(exDate);
 
-                            List<Date> dividendDates = new List<Date>();
-                            List<double> dividends = new List<double>();
-                            for (Date d = today + new Period(3, TimeUnit.Months);
+                            var dividendDates = new List<Date>();
+                            var dividends = new List<double>();
+                            for (var d = today + new Period(3, TimeUnit.Months);
                                  d < exercise.lastDate();
                                  d += new Period(6, TimeUnit.Months))
                             {
@@ -538,33 +538,33 @@ namespace QLNet.Tests
 
                             StrikedTypePayoff payoff = new PlainVanillaPayoff(types[i], strikes[j]);
 
-                            BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
+                            var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
                                                                                                    qTS, rTS, volTS);
 
                             IPricingEngine engine = new AnalyticDividendEuropeanEngine(stochProcess);
 
-                            DividendVanillaOption option = new DividendVanillaOption(payoff, exercise, dividendDates,
+                            var option = new DividendVanillaOption(payoff, exercise, dividendDates,
                                                                                      dividends);
                             option.setPricingEngine(engine);
 
-                            for (int l = 0; l < underlyings.Length; l++)
+                            for (var l = 0; l < underlyings.Length; l++)
                             {
-                                for (int m = 0; m < qRates.Length; m++)
+                                for (var m = 0; m < qRates.Length; m++)
                                 {
-                                    for (int n = 0; n < rRates.Length; n++)
+                                    for (var n = 0; n < rRates.Length; n++)
                                     {
-                                        for (int p = 0; p < vols.Length; p++)
+                                        for (var p = 0; p < vols.Length; p++)
                                         {
-                                            double u = underlyings[l];
+                                            var u = underlyings[l];
                                             double q = qRates[m],
                                                    r = rRates[n];
-                                            double v = vols[p];
+                                            var v = vols[p];
                                             spot.setValue(u);
                                             qRate.setValue(q);
                                             rRate.setValue(r);
                                             vol.setValue(v);
 
-                                            double value = option.NPV();
+                                            var value = option.NPV();
                                             calculated["delta"] = option.delta();
                                             calculated["gamma"] = option.gamma();
                                             calculated["theta"] = option.theta();
@@ -574,7 +574,7 @@ namespace QLNet.Tests
                                             if (value > spot.value() * 1.0e-5)
                                             {
                                                 // perturb spot and get delta and gamma
-                                                double du = u * 1.0e-4;
+                                                var du = u * 1.0e-4;
                                                 spot.setValue(u + du);
                                                 double value_p = option.NPV(),
                                                        delta_p = option.delta();
@@ -586,7 +586,7 @@ namespace QLNet.Tests
                                                 expected["gamma"] = (delta_p - delta_m) / (2 * du);
 
                                                 // perturb risk-free rate and get rho
-                                                double dr = r * 1.0e-4;
+                                                var dr = r * 1.0e-4;
                                                 rRate.setValue(r + dr);
                                                 value_p = option.NPV();
                                                 rRate.setValue(r - dr);
@@ -595,7 +595,7 @@ namespace QLNet.Tests
                                                 expected["rho"] = (value_p - value_m) / (2 * dr);
 
                                                 // perturb volatility and get vega
-                                                double dv = v * 1.0e-4;
+                                                var dv = v * 1.0e-4;
                                                 vol.setValue(v + dv);
                                                 value_p = option.NPV();
                                                 vol.setValue(v - dv);
@@ -604,7 +604,7 @@ namespace QLNet.Tests
                                                 expected["vega"] = (value_p - value_m) / (2 * dv);
 
                                                 // perturb date and get theta
-                                                double dT = dc.yearFraction(today - 1, today + 1);
+                                                var dT = dc.yearFraction(today - 1, today + 1);
                                                 Settings.setEvaluationDate(today - 1);
                                                 value_m = option.NPV();
                                                 Settings.setEvaluationDate(today + 1);
@@ -613,13 +613,13 @@ namespace QLNet.Tests
                                                 expected["theta"] = (value_p - value_m) / dT;
 
                                                 // compare
-                                                foreach (KeyValuePair<string, double> it in calculated)
+                                                foreach (var it in calculated)
                                                 {
-                                                    string greek = it.Key;
+                                                    var greek = it.Key;
                                                     double expct = expected[greek],
                                                            calcl = calculated[greek],
                                                            tol = tolerance[greek];
-                                                    double error = Utilities.relativeError(expct, calcl, u);
+                                                    var error = Utilities.relativeError(expct, calcl, u);
                                                     if (error > tol)
                                                     {
                                                         REPORT_FAILURE(greek, payoff, exercise,
@@ -642,11 +642,11 @@ namespace QLNet.Tests
         public void testFdEuropeanValues()
         {
             // Testing finite-difference dividend European option values...
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                double tolerance = 1.0e-2;
-                int gridPoints = 300;
-                int timeSteps = 40;
+                var tolerance = 1.0e-2;
+                var gridPoints = 300;
+                var timeSteps = 40;
 
                 Option.Type[] types = { QLNet.Option.Type.Call, QLNet.Option.Type.Put };
                 double[] strikes = { 50.0, 99.5, 100.0, 100.5, 150.0 };
@@ -659,29 +659,29 @@ namespace QLNet.Tests
                 double[] vols = { 0.05, 0.20, 0.40 };
 
                 DayCounter dc = new Actual360();
-                Date today = Date.Today;
+                var today = Date.Today;
                 Settings.setEvaluationDate(today);
 
-                SimpleQuote spot = new SimpleQuote(0.0);
-                SimpleQuote qRate = new SimpleQuote(0.0);
-                Handle<YieldTermStructure> qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
-                SimpleQuote rRate = new SimpleQuote(0.0);
-                Handle<YieldTermStructure> rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
-                SimpleQuote vol = new SimpleQuote(0.0);
-                Handle<BlackVolTermStructure> volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
+                var spot = new SimpleQuote(0.0);
+                var qRate = new SimpleQuote(0.0);
+                var qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
+                var rRate = new SimpleQuote(0.0);
+                var rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
+                var vol = new SimpleQuote(0.0);
+                var volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
 
-                for (int i = 0; i < types.Length; i++)
+                for (var i = 0; i < types.Length; i++)
                 {
-                    for (int j = 0; j < strikes.Length; j++)
+                    for (var j = 0; j < strikes.Length; j++)
                     {
-                        for (int k = 0; k < lengths.Length; k++)
+                        for (var k = 0; k < lengths.Length; k++)
                         {
-                            Date exDate = today + new Period(lengths[k], TimeUnit.Years);
+                            var exDate = today + new Period(lengths[k], TimeUnit.Years);
                             Exercise exercise = new EuropeanExercise(exDate);
 
-                            List<Date> dividendDates = new List<Date>();
-                            List<double> dividends = new List<double>();
-                            for (Date d = today + new Period(3, TimeUnit.Months);
+                            var dividendDates = new List<Date>();
+                            var dividends = new List<double>();
+                            for (var d = today + new Period(3, TimeUnit.Months);
                                  d < exercise.lastDate();
                                  d += new Period(6, TimeUnit.Months))
                             {
@@ -691,41 +691,41 @@ namespace QLNet.Tests
 
                             StrikedTypePayoff payoff = new PlainVanillaPayoff(types[i], strikes[j]);
 
-                            BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
+                            var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
                                                                                                    qTS, rTS, volTS);
 
                             IPricingEngine engine = new FDDividendEuropeanEngine(stochProcess, timeSteps, gridPoints);
 
                             IPricingEngine ref_engine = new AnalyticDividendEuropeanEngine(stochProcess);
 
-                            DividendVanillaOption option = new DividendVanillaOption(payoff, exercise, dividendDates, dividends);
+                            var option = new DividendVanillaOption(payoff, exercise, dividendDates, dividends);
                             option.setPricingEngine(engine);
 
-                            DividendVanillaOption ref_option = new DividendVanillaOption(payoff, exercise, dividendDates, dividends);
+                            var ref_option = new DividendVanillaOption(payoff, exercise, dividendDates, dividends);
                             ref_option.setPricingEngine(ref_engine);
 
-                            for (int l = 0; l < underlyings.Length; l++)
+                            for (var l = 0; l < underlyings.Length; l++)
                             {
-                                for (int m = 0; m < qRates.Length; m++)
+                                for (var m = 0; m < qRates.Length; m++)
                                 {
-                                    for (int n = 0; n < rRates.Length; n++)
+                                    for (var n = 0; n < rRates.Length; n++)
                                     {
-                                        for (int p = 0; p < vols.Length; p++)
+                                        for (var p = 0; p < vols.Length; p++)
                                         {
-                                            double u = underlyings[l];
+                                            var u = underlyings[l];
                                             double q = qRates[m],
                                                    r = rRates[n];
-                                            double v = vols[p];
+                                            var v = vols[p];
                                             spot.setValue(u);
                                             qRate.setValue(q);
                                             rRate.setValue(r);
                                             vol.setValue(v);
                                             // FLOATING_POINT_EXCEPTION
-                                            double calculated = option.NPV();
+                                            var calculated = option.NPV();
                                             if (calculated > spot.value() * 1.0e-5)
                                             {
-                                                double expected = ref_option.NPV();
-                                                double error = System.Math.Abs(calculated - expected);
+                                                var expected = ref_option.NPV();
+                                                var error = System.Math.Abs(calculated - expected);
                                                 if (error > tolerance)
                                                 {
                                                     REPORT_FAILURE("value", payoff, exercise,
@@ -748,15 +748,15 @@ namespace QLNet.Tests
         public void testFdEuropeanGreeks()
         {
             // Testing finite-differences dividend European option greeks...
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                Date today = Date.Today;
+                var today = Date.Today;
                 Settings.setEvaluationDate(today);
                 int[] lengths = { 1, 2 };
 
-                for (int i = 0; i < lengths.Length; i++)
+                for (var i = 0; i < lengths.Length; i++)
                 {
-                    Date exDate = today + new Period(lengths[i], TimeUnit.Years);
+                    var exDate = today + new Period(lengths[i], TimeUnit.Years);
                     Exercise exercise = new EuropeanExercise(exDate);
                     testFdGreeks<FDDividendEuropeanEngine>(today, exercise);
                 }
@@ -767,15 +767,15 @@ namespace QLNet.Tests
         public void testFdAmericanGreeks()
         {
             // Testing finite-differences dividend American option greeks...
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                Date today = Date.Today;
+                var today = Date.Today;
                 Settings.setEvaluationDate(today);
                 int[] lengths = { 1, 2 };
 
-                for (int i = 0; i < lengths.Length; i++)
+                for (var i = 0; i < lengths.Length; i++)
                 {
-                    Date exDate = today + new Period(lengths[i], TimeUnit.Years);
+                    var exDate = today + new Period(lengths[i], TimeUnit.Years);
                     Exercise exercise = new AmericanExercise(exDate);
                     testFdGreeks<FDDividendAmericanEngine>(today, exercise);
                 }
@@ -786,11 +786,11 @@ namespace QLNet.Tests
         public void testFdEuropeanDegenerate()
         {
             // Testing degenerate finite-differences dividend European option...
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                Date today = new Date(27, Month.February, 2005);
+                var today = new Date(27, Month.February, 2005);
                 Settings.setEvaluationDate(today);
-                Date exDate = new Date(13, Month.April, 2005);
+                var exDate = new Date(13, Month.April, 2005);
 
                 Exercise exercise = new EuropeanExercise(exDate);
 
@@ -802,11 +802,11 @@ namespace QLNet.Tests
         public void testFdAmericanDegenerate()
         {
             // Testing degenerate finite-differences dividend American option...
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                Date today = new Date(27, Month.February, 2005);
+                var today = new Date(27, Month.February, 2005);
                 Settings.setEvaluationDate(today);
-                Date exDate = new Date(13, Month.April, 2005);
+                var exDate = new Date(13, Month.April, 2005);
 
                 Exercise exercise = new AmericanExercise(exDate);
 

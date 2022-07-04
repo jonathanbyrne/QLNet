@@ -27,7 +27,7 @@ namespace QLNet.processes
 
         \ingroup processes
     */
-    public class GeometricBrownianMotionProcess : StochasticProcess1D
+    [JetBrains.Annotations.PublicAPI] public class GeometricBrownianMotionProcess : StochasticProcess1D
     {
         protected double initialValue_;
         protected double mue_;
@@ -41,19 +41,10 @@ namespace QLNet.processes
             sigma_ = sigma;
         }
 
-        public override double x0()
-        {
-            return initialValue_;
-        }
+        public override double x0() => initialValue_;
 
-        public override double drift(double t, double x)
-        {
-            return mue_ * x;
-        }
+        public override double drift(double t, double x) => mue_ * x;
 
-        public override double diffusion(double t, double x)
-        {
-            return sigma_ * x;
-        }
+        public override double diffusion(double t, double x) => sigma_ * x;
     }
 }

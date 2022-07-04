@@ -38,21 +38,21 @@ namespace QLNet.Instruments
             instrument.setupArguments(engine.getArguments());
             engine.getArguments().validate();
 
-            PriceError f = new PriceError(engine, volQuote, targetValue);
-            Brent solver = new Brent();
+            var f = new PriceError(engine, volQuote, targetValue);
+            var solver = new Brent();
             solver.setMaxEvaluations(maxEvaluations);
-            double guess = (minVol + maxVol) / 2.0;
-            double result = solver.solve(f, accuracy, guess, minVol, maxVol);
+            var guess = (minVol + maxVol) / 2.0;
+            var result = solver.solve(f, accuracy, guess, minVol, maxVol);
             return result;
         }
 
         public static GeneralizedBlackScholesProcess clone(GeneralizedBlackScholesProcess process, SimpleQuote volQuote)
         {
-            Handle<Quote> stateVariable = process.stateVariable();
-            Handle<YieldTermStructure> dividendYield = process.dividendYield();
-            Handle<YieldTermStructure> riskFreeRate = process.riskFreeRate();
+            var stateVariable = process.stateVariable();
+            var dividendYield = process.dividendYield();
+            var riskFreeRate = process.riskFreeRate();
 
-            Handle<BlackVolTermStructure> blackVol = process.blackVolatility();
+            var blackVol = process.blackVolatility();
             var volatility = new Handle<BlackVolTermStructure>(new BlackConstantVol(blackVol.link.referenceDate(),
                                                                                     blackVol.link.calendar(), new Handle<Quote>(volQuote),
                                                                                     blackVol.link.dayCounter()));
@@ -61,7 +61,7 @@ namespace QLNet.Instruments
         }
     }
 
-    public class PriceError : ISolver1d
+    [JetBrains.Annotations.PublicAPI] public class PriceError : ISolver1d
     {
         private IPricingEngine engine_;
         private SimpleQuote vol_;

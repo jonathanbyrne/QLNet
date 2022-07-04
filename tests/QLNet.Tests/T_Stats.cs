@@ -28,7 +28,7 @@ using QLNet.Math.randomnumbers;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Stats
+    [JetBrains.Annotations.PublicAPI] public class T_Stats
     {
 
         double[] data = { 3.0, 4.0, 5.0, 2.0, 3.0, 4.0, 5.0, 6.0, 4.0, 7.0 };
@@ -65,14 +65,14 @@ namespace QLNet.Tests
         {
             // Testing incremental statistics
 
-            MersenneTwisterUniformRng mt = new MersenneTwisterUniformRng(42);
+            var mt = new MersenneTwisterUniformRng(42);
 
-            IncrementalStatistics stat = new IncrementalStatistics();
+            var stat = new IncrementalStatistics();
 
-            for (int i = 0; i < 500000; ++i)
+            for (var i = 0; i < 500000; ++i)
             {
-                double x = 2.0 * (mt.nextReal() - 0.5) * 1234.0;
-                double w = mt.nextReal();
+                var x = 2.0 * (mt.nextReal() - 0.5) * 1234.0;
+                var w = mt.nextReal();
                 stat.add(x, w);
             }
 
@@ -121,9 +121,9 @@ namespace QLNet.Tests
         }
         void check<S>(string name) where S : IGeneralStatistics, new()
         {
-            S s = FastActivator<S>.Create();
+            var s = FastActivator<S>.Create();
 
-            for (int i = 0; i < data.Length; i++)
+            for (var i = 0; i < data.Length; i++)
                 s.add(data[i], weights[i]);
 
             double calculated, expected;
@@ -195,7 +195,7 @@ namespace QLNet.Tests
         void checkSequence<S>(string name, int dimension) where S : IGeneralStatistics, new()
         {
 
-            GenericSequenceStatistics<S> ss = new GenericSequenceStatistics<S>(dimension);
+            var ss = new GenericSequenceStatistics<S>(dimension);
             int i;
             for (i = 0; i < data.Length; i++)
             {
@@ -308,7 +308,7 @@ namespace QLNet.Tests
         void checkConvergence<S>(string name) where S : IGeneralStatistics, new()
         {
 
-            ConvergenceStatistics<S> stats = new ConvergenceStatistics<S>();
+            var stats = new ConvergenceStatistics<S>();
 
             stats.add(1.0);
             stats.add(2.0);
@@ -320,7 +320,7 @@ namespace QLNet.Tests
             stats.add(8.0);
 
             const int expectedSize1 = 3;
-            int calculatedSize = stats.convergenceTable().Count;
+            var calculatedSize = stats.convergenceTable().Count;
             if (calculatedSize != expectedSize1)
                 QAssert.Fail("ConvergenceStatistics<" + name + ">: "
                              + "\nwrong convergence-table size"
@@ -329,14 +329,14 @@ namespace QLNet.Tests
 
             const double expectedValue1 = 4.0;
             const double tolerance = 1.0e-9;
-            double calculatedValue = stats.convergenceTable().Last().Value;
+            var calculatedValue = stats.convergenceTable().Last().Value;
             if (System.Math.Abs(calculatedValue - expectedValue1) > tolerance)
                 QAssert.Fail("wrong last value in convergence table"
                              + "\n    calculated: " + calculatedValue
                              + "\n    expected:   " + expectedValue1);
 
             const int expectedSampleSize1 = 7;
-            int calculatedSamples = stats.convergenceTable().Last().Key;
+            var calculatedSamples = stats.convergenceTable().Last().Key;
             if (calculatedSamples != expectedSampleSize1)
                 QAssert.Fail("wrong number of samples in convergence table"
                              + "\n    calculated: " + calculatedSamples

@@ -28,7 +28,7 @@ using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.StepConditions
 {
-    public class FdmAmericanStepCondition : IStepCondition<Vector>
+    [JetBrains.Annotations.PublicAPI] public class FdmAmericanStepCondition : IStepCondition<Vector>
     {
         public FdmAmericanStepCondition(FdmMesher mesher, FdmInnerValueCalculator calculator)
         {
@@ -38,14 +38,14 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
 
         public void applyTo(object o, double t)
         {
-            Vector a = (Vector)o;
-            FdmLinearOpLayout layout = mesher_.layout();
-            FdmLinearOpIterator endIter = layout.end();
+            var a = (Vector)o;
+            var layout = mesher_.layout();
+            var endIter = layout.end();
 
-            for (FdmLinearOpIterator iter = layout.begin(); iter != endIter;
+            for (var iter = layout.begin(); iter != endIter;
                  ++iter)
             {
-                double innerValue = calculator_.innerValue(iter, t);
+                var innerValue = calculator_.innerValue(iter, t);
                 if (innerValue > a[iter.index()])
                 {
                     a[iter.index()] = innerValue;

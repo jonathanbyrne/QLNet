@@ -19,7 +19,7 @@ namespace QLNet.Instruments
     /// <summary>
     /// Spread option on two assets
     /// </summary>
-    public class SpreadOption : MultiAssetOption
+    [JetBrains.Annotations.PublicAPI] public class SpreadOption : MultiAssetOption
     {
         public SpreadOption(PlainVanillaPayoff payoff, Exercise exercise)
            : base(payoff, exercise)

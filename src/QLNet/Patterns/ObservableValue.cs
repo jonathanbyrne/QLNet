@@ -29,7 +29,7 @@ namespace QLNet.Patterns
               would necessarily bypass the notification code; client
               code should modify the value via re-assignment instead.
     */
-    public class ObservableValue<T> : IObservable where T : new()
+    [JetBrains.Annotations.PublicAPI] public class ObservableValue<T> : IObservable where T : new()
     {
         private T value_;
 
@@ -65,21 +65,14 @@ namespace QLNet.Patterns
         }
 
         //! explicit inspector
-        public T value() { return value_; }
-
+        public T value() => value_;
 
         // Subjects, i.e. observables, should define interface internally like follows.
         private readonly WeakEventSource eventSource = new WeakEventSource();
         public event Callback notifyObserversEvent
         {
-            add
-            {
-                eventSource.Subscribe(value);
-            }
-            remove
-            {
-                eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
         }
 
         public void registerWith(Callback handler) { notifyObserversEvent += handler; }

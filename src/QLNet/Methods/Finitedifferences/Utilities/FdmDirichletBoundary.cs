@@ -27,7 +27,7 @@ namespace QLNet.Methods.Finitedifferences.Utilities
     /// <summary>
     /// Dirichlet boundary conditions for differential operators
     /// </summary>
-    public class FdmDirichletBoundary : BoundaryCondition<FdmLinearOp>
+    [JetBrains.Annotations.PublicAPI] public class FdmDirichletBoundary : BoundaryCondition<FdmLinearOp>
     {
         public FdmDirichletBoundary(FdmMesher mesher,
                                     double valueOnBoundary, int direction, Side side)
@@ -63,7 +63,7 @@ namespace QLNet.Methods.Finitedifferences.Utilities
 
         public override void applyAfterApplying(Vector v)
         {
-            foreach (int iter in indices_)
+            foreach (var iter in indices_)
                 v[iter] = valueOnBoundary_;
         }
 
@@ -77,13 +77,11 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             return;
         }
 
-        public double applyAfterApplying(double x, double value)
-        {
-            return side_ == Side.Lower && x < xExtreme_
-                    || side_ == Side.Upper && x > xExtreme_
-                   ? valueOnBoundary_
-                   : value;
-        }
+        public double applyAfterApplying(double x, double value) =>
+            side_ == Side.Lower && x < xExtreme_
+            || side_ == Side.Upper && x > xExtreme_
+                ? valueOnBoundary_
+                : value;
 
         protected Side side_;
         protected double valueOnBoundary_;

@@ -23,7 +23,7 @@ using System;
 
 namespace QLNet.Methods.Finitedifferences
 {
-    public interface IOperator : ICloneable
+    [JetBrains.Annotations.PublicAPI] public interface IOperator : ICloneable
     {
         int size();
         IOperator identity(int size);
@@ -46,16 +46,18 @@ namespace QLNet.Methods.Finitedifferences
 
         \ingroup findiff
     */
-    public class TridiagonalOperator : IOperator
+    [JetBrains.Annotations.PublicAPI] public class TridiagonalOperator : IOperator
     {
         protected TimeSetter timeSetter_;
 
         protected Vector diagonal_, lowerDiagonal_, upperDiagonal_;
-        public Vector lowerDiagonal() { return lowerDiagonal_; }
-        public Vector diagonal() { return diagonal_; }
-        public Vector upperDiagonal() { return upperDiagonal_; }
+        public Vector lowerDiagonal() => lowerDiagonal_;
 
-        public int size() { return diagonal_.Count; }
+        public Vector diagonal() => diagonal_;
+
+        public Vector upperDiagonal() => upperDiagonal_;
+
+        public int size() => diagonal_.Count;
 
         public TridiagonalOperator() : this(0) { }
         public TridiagonalOperator(int size)
@@ -89,40 +91,40 @@ namespace QLNet.Methods.Finitedifferences
             Utils.QL_REQUIRE(high.Count == mid.Count - 1, () => "wrong size for upper diagonal vector");
         }
 
-        public object Clone() { return MemberwiseClone(); }
+        public object Clone() => MemberwiseClone();
 
         public IOperator multiply(double a, IOperator o)
         {
-            TridiagonalOperator D = o as TridiagonalOperator;
+            var D = o as TridiagonalOperator;
             Vector low = D.lowerDiagonal_ * a,
                    mid = D.diagonal_ * a,
                    high = D.upperDiagonal_ * a;
-            TridiagonalOperator result = new TridiagonalOperator(low, mid, high);
+            var result = new TridiagonalOperator(low, mid, high);
             return result;
         }
 
         public IOperator add
            (IOperator A, IOperator B)
         {
-            TridiagonalOperator D1 = A as TridiagonalOperator;
-            TridiagonalOperator D2 = B as TridiagonalOperator;
+            var D1 = A as TridiagonalOperator;
+            var D2 = B as TridiagonalOperator;
 
             Vector low = D1.lowerDiagonal_ + D2.lowerDiagonal_,
                    mid = D1.diagonal_ + D2.diagonal_,
                    high = D1.upperDiagonal_ + D2.upperDiagonal_;
-            TridiagonalOperator result = new TridiagonalOperator(low, mid, high);
+            var result = new TridiagonalOperator(low, mid, high);
             return result;
         }
 
         public IOperator subtract(IOperator A, IOperator B)
         {
-            TridiagonalOperator D1 = A as TridiagonalOperator;
-            TridiagonalOperator D2 = B as TridiagonalOperator;
+            var D1 = A as TridiagonalOperator;
+            var D2 = B as TridiagonalOperator;
 
             Vector low = D1.lowerDiagonal_ - D2.lowerDiagonal_,
                    mid = D1.diagonal_ - D2.diagonal_,
                    high = D1.upperDiagonal_ - D2.upperDiagonal_;
-            TridiagonalOperator result = new TridiagonalOperator(low, mid, high);
+            var result = new TridiagonalOperator(low, mid, high);
             return result;
         }
 
@@ -132,7 +134,7 @@ namespace QLNet.Methods.Finitedifferences
         {
             Utils.QL_REQUIRE(v.Count == size(), () => "vector of the wrong size (" + v.Count + "instead of " + size() + ")");
 
-            Vector result = new Vector(size());
+            var result = new Vector(size());
 
             // transform(InputIterator1 start1, InputIterator1 finish1, InputIterator2 start2, OutputIterator result,
             // BinaryOperation binary_op)
@@ -140,7 +142,7 @@ namespace QLNet.Methods.Finitedifferences
 
             // matricial product
             result[0] += upperDiagonal_[0] * v[1];
-            for (int j = 1; j <= size() - 2; j++)
+            for (var j = 1; j <= size() - 2; j++)
                 result[j] += lowerDiagonal_[j - 1] * v[j - 1] + upperDiagonal_[j] * v[j + 1];
             result[size() - 1] += lowerDiagonal_[size() - 2] * v[size() - 2];
 
@@ -154,11 +156,11 @@ namespace QLNet.Methods.Finitedifferences
 
             Vector result = new Vector(size()), tmp = new Vector(size());
 
-            double bet = diagonal_[0];
+            var bet = diagonal_[0];
             Utils.QL_REQUIRE(bet.IsNotEqual(0.0), () => "division by zero");
             result[0] = rhs[0] / bet;
 
-            for (int j = 1; j < size(); j++)
+            for (var j = 1; j < size(); j++)
             {
                 tmp[j] = upperDiagonal_[j - 1] / bet;
                 bet = diagonal_[j] - lowerDiagonal_[j - 1] * tmp[j];
@@ -166,7 +168,7 @@ namespace QLNet.Methods.Finitedifferences
                 result[j] = (rhs[j] - lowerDiagonal_[j - 1] * result[j - 1]) / bet;
             }
             // cannot be j>=0 with Size j
-            for (int j = size() - 2; j > 0; --j)
+            for (var j = size() - 2; j > 0; --j)
                 result[j] -= tmp[j + 1] * result[j + 1];
             result[0] -= tmp[1] * result[1];
             return result;
@@ -178,14 +180,14 @@ namespace QLNet.Methods.Finitedifferences
             Utils.QL_REQUIRE(rhs.Count == size(), () => "rhs has the wrong size");
 
             // initial guess
-            Vector result = rhs.Clone();
+            var result = rhs.Clone();
 
             // solve tridiagonal system with SOR technique
-            double omega = 1.5;
-            double err = 2.0 * tol;
+            var omega = 1.5;
+            var err = 2.0 * tol;
             double temp;
             int i;
-            for (int sorIteration = 0; err > tol; sorIteration++)
+            for (var sorIteration = 0; err > tol; sorIteration++)
             {
                 Utils.QL_REQUIRE(sorIteration < 100000, () =>
                                  "tolerance (" + tol + ") not reached in " + sorIteration + " iterations. " + "The error still is " + err);
@@ -218,7 +220,7 @@ namespace QLNet.Methods.Finitedifferences
         //! identity instance
         public IOperator identity(int size)
         {
-            TridiagonalOperator I = new TridiagonalOperator(new Vector(size - 1, 0.0),     // lower diagonal
+            var I = new TridiagonalOperator(new Vector(size - 1, 0.0),     // lower diagonal
                                                             new Vector(size, 1.0),     // diagonal
                                                             new Vector(size - 1, 0.0));    // upper diagonal
             return I;
@@ -239,7 +241,7 @@ namespace QLNet.Methods.Finitedifferences
 
         public void setMidRows(double valA, double valB, double valC)
         {
-            for (int i = 1; i <= size() - 2; i++)
+            for (var i = 1; i <= size() - 2; i++)
             {
                 lowerDiagonal_[i - 1] = valA;
                 diagonal_[i] = valB;
@@ -253,7 +255,8 @@ namespace QLNet.Methods.Finitedifferences
             diagonal_[size() - 1] = valB;
         }
 
-        public bool isTimeDependent() { return timeSetter_ != null; }
+        public bool isTimeDependent() => timeSetter_ != null;
+
         public void setTime(double t)
         {
             if (timeSetter_ != null)

@@ -23,7 +23,7 @@ using System;
 
 namespace QLNet.Math.Solvers1d
 {
-    public class Brent : Solver1D
+    [JetBrains.Annotations.PublicAPI] public class Brent : Solver1D
     {
         protected override double solveImpl(ISolver1d f, double xAccuracy)
         {

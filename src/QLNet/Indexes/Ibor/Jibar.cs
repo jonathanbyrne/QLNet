@@ -31,7 +31,7 @@ namespace QLNet.Indexes.Ibor
     //
     //        \todo check settlement days and day-count convention.
     //
-    public class Jibar : IborIndex
+    [JetBrains.Annotations.PublicAPI] public class Jibar : IborIndex
     {
         public Jibar(Period tenor)
            : base("Jibar", tenor, 0, new ZARCurrency(), new SouthAfrica(), BusinessDayConvention.ModifiedFollowing, false, new Actual365Fixed(), new Handle<YieldTermStructure>())

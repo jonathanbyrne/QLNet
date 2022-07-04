@@ -52,7 +52,7 @@ namespace QLNet.Time
 
             if (knownDateSet.empty())
             {
-                for (int i = 0; i < knownDatesArray.Length; ++i)
+                for (var i = 0; i < knownDatesArray.Length; ++i)
                 {
                     knownDateSet.Add(new Date(knownDatesArray[i]));
                 }
@@ -76,7 +76,7 @@ namespace QLNet.Time
         }
 
         //! maintenance period start date in the given month/year
-        public static Date date(Month m, int y) { return nextDate(new Date(1, m, y) - 1); }
+        public static Date date(Month m, int y) => nextDate(new Date(1, m, y) - 1);
 
         /*! returns the ECB date for the given ECB code
            (e.g. March xxth, 2013 for MAR10).
@@ -88,9 +88,9 @@ namespace QLNet.Time
         {
             Utils.QL_REQUIRE(isECBcode(ecbCode), () => ecbCode + " is not a valid ECB code");
 
-            string code = ecbCode.ToUpper();
-            string monthString = code.Substring(0, 3);
-            Month m = Month.Jan;
+            var code = ecbCode.ToUpper();
+            var monthString = code.Substring(0, 3);
+            var m = Month.Jan;
             if (monthString == "JAN")
                 m = Month.January;
             else if (monthString == "FEB")
@@ -119,9 +119,9 @@ namespace QLNet.Time
                 Utils.QL_FAIL("not an ECB month (and it should have been)");
 
             // lexical_cast causes compilation errors with x64
-            int y = int.Parse(code.Substring(3, 2));
-            Date referenceDate = refDate ?? new Date(Settings.evaluationDate());
-            int referenceYear = referenceDate.year() % 100;
+            var y = int.Parse(code.Substring(3, 2));
+            var referenceDate = refDate ?? new Date(Settings.evaluationDate());
+            var referenceYear = referenceDate.year() % 100;
             y += referenceDate.year() - referenceYear;
             if (y < Date.minDate().year())
                 return nextDate(Date.minDate());
@@ -139,9 +139,9 @@ namespace QLNet.Time
         {
             Utils.QL_REQUIRE(isECBdate(ecbDate), () => ecbDate + " is not a valid ECB date");
 
-            string ECBcode = string.Empty;
-            int y = ecbDate.year() % 100;
-            string padding = string.Empty;
+            var ECBcode = string.Empty;
+            var y = ecbDate.year() % 100;
+            var padding = string.Empty;
             if (y < 10)
                 padding = "0";
             switch (ecbDate.month())
@@ -198,9 +198,9 @@ namespace QLNet.Time
         //! next maintenance period start date following the given date
         public static Date nextDate(Date date = null)
         {
-            Date d = date ?? Settings.evaluationDate();
+            var d = date ?? Settings.evaluationDate();
 
-            int i = knownDates().FindIndex(x => x > d);
+            var i = knownDates().FindIndex(x => x > d);
 
             Utils.QL_REQUIRE(i != -1, () =>
                              "ECB dates after " + knownDates().Last() + " are unknown");
@@ -208,17 +208,14 @@ namespace QLNet.Time
         }
 
         //! next maintenance period start date following the given ECB code
-        public static Date nextDate(string ecbCode, Date referenceDate = null)
-        {
-            return nextDate(date(ecbCode, referenceDate));
-        }
+        public static Date nextDate(string ecbCode, Date referenceDate = null) => nextDate(date(ecbCode, referenceDate));
 
         //! next maintenance period start dates following the given date
         public static List<Date> nextDates(Date date = null)
         {
-            Date d = date ?? Settings.evaluationDate();
+            var d = date ?? Settings.evaluationDate();
 
-            int i = knownDates().FindIndex(x => x > d);
+            var i = knownDates().FindIndex(x => x > d);
 
             Utils.QL_REQUIRE(i != -1, () =>
                              "ECB dates after " + knownDates().Last() + " are unknown");
@@ -227,16 +224,13 @@ namespace QLNet.Time
         }
 
         //! next maintenance period start dates following the given code
-        public static List<Date> nextDates(string ecbCode, Date referenceDate = null)
-        {
-            return nextDates(date(ecbCode, referenceDate));
-        }
+        public static List<Date> nextDates(string ecbCode, Date referenceDate = null) => nextDates(date(ecbCode, referenceDate));
 
         /*! returns whether or not the given date is
            a maintenance period start date */
         public static bool isECBdate(Date d)
         {
-            Date date = nextDate(d - 1);
+            var date = nextDate(d - 1);
             return d == date;
         }
 
@@ -246,15 +240,15 @@ namespace QLNet.Time
             if (ecbCode.Length != 5)
                 return false;
 
-            string code = ecbCode.ToUpper();
+            var code = ecbCode.ToUpper();
 
-            string str1 = "0123456789";
+            var str1 = "0123456789";
             if (!str1.Contains(code.Substring(3, 1)))
                 return false;
             if (!str1.Contains(code.Substring(4, 1)))
                 return false;
 
-            string monthString = code.Substring(0, 3);
+            var monthString = code.Substring(0, 3);
             if (monthString == "JAN")
                 return true;
             else if (monthString == "FEB")
@@ -284,10 +278,7 @@ namespace QLNet.Time
         }
 
         //! next ECB code following the given date
-        public static string nextCode(Date d = null)
-        {
-            return code(nextDate(d));
-        }
+        public static string nextCode(Date d = null) => code(nextDate(d));
 
         //! next ECB code following the given code
         public static string nextCode(string ecbCode)
@@ -295,10 +286,10 @@ namespace QLNet.Time
             Utils.QL_REQUIRE(isECBcode(ecbCode), () =>
                              ecbCode + " is not a valid ECB code");
 
-            string code = ecbCode.ToUpper();
-            string result = string.Empty;
+            var code = ecbCode.ToUpper();
+            var result = string.Empty;
 
-            string monthString = code.Substring(0, 3);
+            var monthString = code.Substring(0, 3);
             if (monthString == "JAN")
                 result += "FEB" + code.Substring(3, 2);
             else if (monthString == "FEB")
@@ -323,8 +314,8 @@ namespace QLNet.Time
                 result += "DEC" + code.Substring(3, 2);
             else if (monthString == "DEC")
             {
-                int y = (int.Parse(code.Substring(3, 2)) + 1) % 100;
-                string padding = string.Empty;
+                var y = (int.Parse(code.Substring(3, 2)) + 1) % 100;
+                var padding = string.Empty;
                 if (y < 10)
                     padding = "0";
 

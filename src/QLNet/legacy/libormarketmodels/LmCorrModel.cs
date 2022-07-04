@@ -33,20 +33,11 @@ namespace QLNet.legacy.libormarketmodels
             arguments_ = new InitializedList<Parameter>(nArguments);
         }
 
-        public virtual int size()
-        {
-            return size_;
-        }
+        public virtual int size() => size_;
 
-        public virtual int factors()
-        {
-            return size_;
-        }
+        public virtual int factors() => size_;
 
-        public List<Parameter> parameters()
-        {
-            return arguments_;
-        }
+        public List<Parameter> parameters() => arguments_;
 
         public void setParams(List<Parameter> arguments)
         {
@@ -56,22 +47,15 @@ namespace QLNet.legacy.libormarketmodels
 
         public abstract Matrix correlation(double t, Vector x = null);
 
-        public virtual double correlation(int i, int j, double t, Vector x = null)
-        {
+        public virtual double correlation(int i, int j, double t, Vector x = null) =>
             // inefficient implementation, please overload in derived classes
-            return correlation(t, x)[i, j];
-        }
+            correlation(t, x)[i, j];
 
-        public virtual Matrix pseudoSqrt(double t, Vector x = null)
-        {
-            return MatrixUtilitites.pseudoSqrt(correlation(t, x),
-                                               MatrixUtilitites.SalvagingAlgorithm.Spectral);
-        }
+        public virtual Matrix pseudoSqrt(double t, Vector x = null) =>
+            MatrixUtilitites.pseudoSqrt(correlation(t, x),
+                MatrixUtilitites.SalvagingAlgorithm.Spectral);
 
-        public virtual bool isTimeIndependent()
-        {
-            return false;
-        }
+        public virtual bool isTimeIndependent() => false;
 
         protected abstract void generateArguments();
 

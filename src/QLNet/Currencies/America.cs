@@ -29,7 +29,7 @@ namespace QLNet.Currencies
     //
     //        \ingroup currencies
     //
-    public class ARSCurrency : Currency
+    [JetBrains.Annotations.PublicAPI] public class ARSCurrency : Currency
     {
         public ARSCurrency() : base("Argentinian peso", "ARS", 32, "", "", 100, new Rounding(), "%2% %1$.2f") { }
     }
@@ -40,7 +40,7 @@ namespace QLNet.Currencies
     //
     //        \ingroup currencies
     //
-    public class BRLCurrency : Currency
+    [JetBrains.Annotations.PublicAPI] public class BRLCurrency : Currency
     {
         public BRLCurrency() : base("Brazilian real", "BRL", 986, "R$", "", 100, new Rounding(), "%3% %1$.2f") { }
     }
@@ -51,7 +51,7 @@ namespace QLNet.Currencies
     //
     //        \ingroup currencies
     //
-    public class CADCurrency : Currency
+    [JetBrains.Annotations.PublicAPI] public class CADCurrency : Currency
     {
         public CADCurrency() : base("Canadian dollar", "CAD", 124, "Can$", "", 100, new Rounding(), "%3% %1$.2f") { }
     }
@@ -62,7 +62,7 @@ namespace QLNet.Currencies
     //
     //        \ingroup currencies
     //
-    public class CLPCurrency : Currency
+    [JetBrains.Annotations.PublicAPI] public class CLPCurrency : Currency
     {
         public CLPCurrency() : base("Chilean peso", "CLP", 152, "Ch$", "", 100, new Rounding(), "%3% %1$.0f") { }
     }
@@ -73,7 +73,7 @@ namespace QLNet.Currencies
     //
     //        \ingroup currencies
     //
-    public class COPCurrency : Currency
+    [JetBrains.Annotations.PublicAPI] public class COPCurrency : Currency
     {
         public COPCurrency() : base("Colombian peso", "COP", 170, "Col$", "", 100, new Rounding(), "%3% %1$.2f") { }
     }
@@ -84,7 +84,7 @@ namespace QLNet.Currencies
     //
     //        \ingroup currencies
     //
-    public class MXNCurrency : Currency
+    [JetBrains.Annotations.PublicAPI] public class MXNCurrency : Currency
     {
         public MXNCurrency() : base("Mexican peso", "MXN", 484, "Mex$", "", 100, new Rounding(), "%3% %1$.2f") { }
     }
@@ -95,7 +95,7 @@ namespace QLNet.Currencies
     //
     //        \ingroup currencies
     //
-    public class PENCurrency : Currency
+    [JetBrains.Annotations.PublicAPI] public class PENCurrency : Currency
     {
         public PENCurrency() : base("Peruvian nuevo sol", "PEN", 604, "S/.", "", 100, new Rounding(), "%3% %1$.2f") { }
     }
@@ -109,7 +109,7 @@ namespace QLNet.Currencies
     //
     //        \ingroup currencies
     //
-    public class PEICurrency : Currency
+    [JetBrains.Annotations.PublicAPI] public class PEICurrency : Currency
     {
         public PEICurrency() : base("Peruvian inti", "PEI", 998, "I/.", "", 100, new Rounding(), "%3% %1$.2f") { }
     }
@@ -123,7 +123,7 @@ namespace QLNet.Currencies
     //
     //        \ingroup currencies
     //
-    public class PEHCurrency : Currency
+    [JetBrains.Annotations.PublicAPI] public class PEHCurrency : Currency
     {
         public PEHCurrency() : base("Peruvian sol", "PEH", 999, "S./", "", 100, new Rounding(), "%3% %1$.2f") { }
     }
@@ -134,7 +134,7 @@ namespace QLNet.Currencies
     //
     //        \ingroup currencies
     //
-    public class TTDCurrency : Currency
+    [JetBrains.Annotations.PublicAPI] public class TTDCurrency : Currency
     {
         public TTDCurrency() : base("Trinidad & Tobago dollar", "TTD", 780, "TT$", "", 100, new Rounding(), "%3% %1$.2f") { }
     }
@@ -145,7 +145,7 @@ namespace QLNet.Currencies
     //
     //        \ingroup currencies
     //
-    public class USDCurrency : Currency
+    [JetBrains.Annotations.PublicAPI] public class USDCurrency : Currency
     {
         public USDCurrency() : base("U.S. dollar", "USD", 840, "$", "\xA2", 100, new Rounding(), "%3% %1$.2f") { }
     }
@@ -156,7 +156,7 @@ namespace QLNet.Currencies
     //
     //        \ingroup currencies
     //
-    public class VEBCurrency : Currency
+    [JetBrains.Annotations.PublicAPI] public class VEBCurrency : Currency
     {
         public VEBCurrency() : base("Venezuelan bolivar", "VEB", 862, "Bs", "", 100, new Rounding(), "%3% %1$.2f") { }
     }

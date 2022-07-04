@@ -27,16 +27,17 @@ using System.Linq;
 
 namespace QLNet.Termstructures.Yield
 {
-    public class InterpolatedZeroCurve<Interpolator> : ZeroYieldStructure, InterpolatedCurve
+    [JetBrains.Annotations.PublicAPI] public class InterpolatedZeroCurve<Interpolator> : ZeroYieldStructure, InterpolatedCurve
       where Interpolator : class, IInterpolationFactory, new()
     {
 
         #region InterpolatedCurve
         public List<double> times_ { get; set; }
-        public List<double> times() { return times_; }
+        public List<double> times() => times_;
 
         public List<Date> dates_ { get; set; }
-        public List<Date> dates() { return dates_; }
+        public List<Date> dates() => dates_;
+
         public Date maxDate_ { get; set; }
         public override Date maxDate()
         {
@@ -47,15 +48,16 @@ namespace QLNet.Termstructures.Yield
         }
 
         public List<double> data_ { get; set; }
-        public List<double> zeroRates() { return data_; }
-        public List<double> data() { return zeroRates(); }
+        public List<double> zeroRates() => data_;
+
+        public List<double> data() => zeroRates();
 
         public Interpolation interpolation_ { get; set; }
         public IInterpolationFactory interpolator_ { get; set; }
 
         public Dictionary<Date, double> nodes()
         {
-            Dictionary<Date, double> results = new Dictionary<Date, double>();
+            var results = new Dictionary<Date, double>();
             dates_.ForEach((i, x) => results.Add(x, data_[i]));
             return results;
         }
@@ -67,7 +69,7 @@ namespace QLNet.Termstructures.Yield
 
         public object Clone()
         {
-            InterpolatedCurve copy = MemberwiseClone() as InterpolatedCurve;
+            var copy = MemberwiseClone() as InterpolatedCurve;
             copy.times_ = new List<double>(times_);
             copy.data_ = new List<double>(data_);
             copy.interpolator_ = interpolator_;
@@ -162,7 +164,7 @@ namespace QLNet.Termstructures.Yield
             Utils.QL_REQUIRE(data_.Count == dates_.Count, () => "dates/yields count mismatch");
 
             times_ = new List<double>(dates_.Count);
-            double offset = 0.0;
+            var offset = 0.0;
             if (refDate != null)
             {
                 offset = dayCounter().yearFraction(refDate, dates_[0]);
@@ -174,15 +176,15 @@ namespace QLNet.Termstructures.Yield
                 // We also have to convert the first rate.
                 // The first time is 0.0, so we can't use it.
                 // We fall back to about one day.
-                double dt = 1.0 / 365;
-                InterestRate r = new InterestRate(data_[0], dayCounter(), compounding, frequency);
+                var dt = 1.0 / 365;
+                var r = new InterestRate(data_[0], dayCounter(), compounding, frequency);
                 data_[0] = r.equivalentRate(Compounding.Continuous, Frequency.NoFrequency, dt).value();
 #if !QL_NEGATIVE_RATES
             Utils.QL_REQUIRE(data_[0] > 0.0, () => "non-positive yield");
 #endif
             }
 
-            for (int i = 1; i < dates_.Count; i++)
+            for (var i = 1; i < dates_.Count; i++)
             {
                 Utils.QL_REQUIRE(dates_[i] > dates_[i - 1], () => "invalid date (" + dates_[i] + ", vs " + dates_[i - 1] + ")");
                 times_.Add(dayCounter().yearFraction(refDate ?? dates_[0], dates_[i]));
@@ -194,7 +196,7 @@ namespace QLNet.Termstructures.Yield
                 // adjusting zero rates to match continuous compounding
                 if (compounding != Compounding.Continuous)
                 {
-                    InterestRate r = new InterestRate(data_[i], dayCounter(), compounding, frequency);
+                    var r = new InterestRate(data_[i], dayCounter(), compounding, frequency);
                     data_[i] = r.equivalentRate(Compounding.Continuous, Frequency.NoFrequency, times_[i]).value();
                 }
 
@@ -221,9 +223,9 @@ namespace QLNet.Termstructures.Yield
                 return interpolation_.value(t, true);
 
             // flat fwd extrapolation
-            double tMax = times_.Last();
-            double zMax = data_.Last();
-            double instFwdMax = zMax + tMax * interpolation_.derivative(tMax);
+            var tMax = times_.Last();
+            var zMax = data_.Last();
+            var instFwdMax = zMax + tMax * interpolation_.derivative(tMax);
             return (zMax * tMax + instFwdMax * (t - tMax)) / t;
         }
     }

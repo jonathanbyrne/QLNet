@@ -25,7 +25,7 @@ using QLNet.Math;
 namespace QLNet.Instruments.Bonds
 {
 
-    public class DiscretizedCallableFixedRateBond : DiscretizedAsset
+    [JetBrains.Annotations.PublicAPI] public class DiscretizedCallableFixedRateBond : DiscretizedAsset
     {
         public DiscretizedCallableFixedRateBond(CallableBond.Arguments args,
                                                 Date referenceDate,
@@ -34,19 +34,19 @@ namespace QLNet.Instruments.Bonds
             arguments_ = args;
             redemptionTime_ = dayCounter.yearFraction(referenceDate, args.redemptionDate);
 
-            for (int i = 0; i < args.couponDates.Count; ++i)
+            for (var i = 0; i < args.couponDates.Count; ++i)
                 couponTimes_.Add(dayCounter.yearFraction(referenceDate, args.couponDates[i]));
 
-            for (int i = 0; i < args.callabilityDates.Count; ++i)
+            for (var i = 0; i < args.callabilityDates.Count; ++i)
                 callabilityTimes_.Add(dayCounter.yearFraction(referenceDate, args.callabilityDates[i]));
 
             // similar to the tree swaption engine, we collapse similar coupon
             // and exercise dates to avoid mispricing. Delete if unnecessary.
 
-            for (int i = 0; i < callabilityTimes_.Count; i++)
+            for (var i = 0; i < callabilityTimes_.Count; i++)
             {
-                double exerciseTime = callabilityTimes_[i];
-                for (int j = 0; j < couponTimes_.Count; j++)
+                var exerciseTime = callabilityTimes_[i];
+                for (var j = 0; j < couponTimes_.Count; j++)
                 {
                     if (withinNextWeek(exerciseTime, couponTimes_[j]))
                         couponTimes_[j] = exerciseTime;
@@ -62,7 +62,7 @@ namespace QLNet.Instruments.Bonds
 
         public override List<double> mandatoryTimes()
         {
-            List<double> times = new List<double>();
+            var times = new List<double>();
             double t;
             int i;
 
@@ -99,17 +99,17 @@ namespace QLNet.Instruments.Bonds
         }
         protected override void postAdjustValuesImpl()
         {
-            for (int i = 0; i < callabilityTimes_.Count; i++)
+            for (var i = 0; i < callabilityTimes_.Count; i++)
             {
-                double t = callabilityTimes_[i];
+                var t = callabilityTimes_[i];
                 if (t >= 0.0 && isOnTime(t))
                 {
                     applyCallability(i);
                 }
             }
-            for (int i = 0; i < couponTimes_.Count; i++)
+            for (var i = 0; i < couponTimes_.Count; i++)
             {
-                double t = couponTimes_[i];
+                var t = couponTimes_[i];
                 if (t >= 0.0 && isOnTime(t))
                 {
                     addCoupon(i);
@@ -141,7 +141,7 @@ namespace QLNet.Instruments.Bonds
                     break;
 
                 default:
-                    Utils.QL_FAIL("unknown callability type");
+                    Utils.QL_FAIL("unknown callability ExerciseType");
                     break;
             }
         }
@@ -153,7 +153,7 @@ namespace QLNet.Instruments.Bonds
 
         private bool withinNextWeek(double t1, double t2)
         {
-            double dt = 1.0 / 52;
+            var dt = 1.0 / 52;
             return t1 <= t2 && t2 <= t1 + dt;
         }
 

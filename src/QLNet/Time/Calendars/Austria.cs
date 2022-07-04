@@ -57,7 +57,7 @@ namespace QLNet.Time.Calendars
         Exchange Holiday
 
     */
-    public class Austria : Calendar
+    [JetBrains.Annotations.PublicAPI] public class Austria : Calendar
     {
         // Austrian calendars
         public enum Market
@@ -82,7 +82,7 @@ namespace QLNet.Time.Calendars
         {
             public static readonly Settlement Singleton = new Settlement();
             private Settlement() { }
-            public override string name() { return "Austrian settlement"; }
+            public override string name() => "Austrian settlement";
 
             public override bool isBusinessDay(Date date)
             {
@@ -129,7 +129,8 @@ namespace QLNet.Time.Calendars
         {
             public static readonly Exchange Singleton = new Exchange();
             private Exchange() { }
-            public override string name() { return "Vienna stock exchange"; }
+            public override string name() => "Vienna stock exchange";
+
             public override bool isBusinessDay(Date date)
             {
                 var w = date.DayOfWeek;

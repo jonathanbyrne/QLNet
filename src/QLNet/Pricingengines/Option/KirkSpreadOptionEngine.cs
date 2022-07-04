@@ -25,7 +25,7 @@ namespace QLNet.Pricingengines.Option
     /// <summary>
     /// Kirk approximation for European spread option on futures
     /// </summary>
-    public class KirkSpreadOptionEngine : SpreadOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class KirkSpreadOptionEngine : SpreadOption.Engine
     {
         public KirkSpreadOptionEngine(BlackProcess process1,
                                       BlackProcess process2,
@@ -39,55 +39,55 @@ namespace QLNet.Pricingengines.Option
         public override void calculate()
         {
             // First: tests on types
-            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European, () =>
+            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () =>
                              "not an European Option");
 
-            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "not a plain-vanilla payoff");
 
             // forward values - futures, so b=0
-            double forward1 = process1_.stateVariable().link.value();
-            double forward2 = process2_.stateVariable().link.value();
+            var forward1 = process1_.stateVariable().link.value();
+            var forward2 = process2_.stateVariable().link.value();
 
-            Date exerciseDate = arguments_.exercise.lastDate();
+            var exerciseDate = arguments_.exercise.lastDate();
 
             // Volatilities
-            double sigma1 = process1_.blackVolatility().link.blackVol(exerciseDate,
+            var sigma1 = process1_.blackVolatility().link.blackVol(exerciseDate,
                                                                       forward1);
-            double sigma2 = process2_.blackVolatility().link.blackVol(exerciseDate,
+            var sigma2 = process2_.blackVolatility().link.blackVol(exerciseDate,
                                                                       forward2);
 
-            double riskFreeDiscount = process1_.riskFreeRate().link.discount(exerciseDate);
+            var riskFreeDiscount = process1_.riskFreeRate().link.discount(exerciseDate);
 
-            double strike = payoff.strike();
+            var strike = payoff.strike();
 
             // Unique F (forward) value for pricing
-            double F = forward1 / (forward2 + strike);
+            var F = forward1 / (forward2 + strike);
 
             // Its volatility
-            double sigma =
+            var sigma =
                System.Math.Sqrt(System.Math.Pow(sigma1, 2)
                          + System.Math.Pow(sigma2 * (forward2 / (forward2 + strike)), 2)
                          - 2 * rho_.link.value() * sigma1 * sigma2 * (forward2 / (forward2 + strike)));
 
             // Day counter and Dates handling variables
-            DayCounter rfdc = process1_.riskFreeRate().link.dayCounter();
-            double t = rfdc.yearFraction(process1_.riskFreeRate().link.referenceDate(),
+            var rfdc = process1_.riskFreeRate().link.dayCounter();
+            var t = rfdc.yearFraction(process1_.riskFreeRate().link.referenceDate(),
                                          arguments_.exercise.lastDate());
 
             // Black-Scholes solution values
-            double d1 = (System.Math.Log(F) + 0.5 * System.Math.Pow(sigma,
+            var d1 = (System.Math.Log(F) + 0.5 * System.Math.Pow(sigma,
                                                       2) * t) / (sigma * System.Math.Sqrt(t));
-            double d2 = d1 - sigma * System.Math.Sqrt(t);
+            var d2 = d1 - sigma * System.Math.Sqrt(t);
 
-            NormalDistribution pdf = new NormalDistribution();
-            CumulativeNormalDistribution cum = new CumulativeNormalDistribution();
-            double Nd1 = cum.value(d1);
-            double Nd2 = cum.value(d2);
-            double NMd1 = cum.value(-d1);
-            double NMd2 = cum.value(-d2);
+            var pdf = new NormalDistribution();
+            var cum = new CumulativeNormalDistribution();
+            var Nd1 = cum.value(d1);
+            var Nd2 = cum.value(d2);
+            var NMd1 = cum.value(-d1);
+            var NMd2 = cum.value(-d2);
 
-            QLNet.Option.Type optionType = payoff.optionType();
+            var optionType = payoff.optionType();
 
             if (optionType == QLNet.Option.Type.Call)
             {
@@ -98,7 +98,7 @@ namespace QLNet.Pricingengines.Option
                 results_.value = riskFreeDiscount * (NMd2 - F * NMd1) * (forward2 + strike);
             }
 
-            double? callValue = optionType == QLNet.Option.Type.Call ? results_.value :
+            var callValue = optionType == QLNet.Option.Type.Call ? results_.value :
                                  riskFreeDiscount * (F * Nd1 - Nd2) * (forward2 + strike);
             results_.theta = System.Math.Log(riskFreeDiscount) / t * callValue +
                              riskFreeDiscount * (forward1 * sigma) / (2 * System.Math.Sqrt(t)) * pdf.value(d1);

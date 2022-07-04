@@ -60,7 +60,7 @@ namespace QLNet.Methods.Finitedifferences
 
     // NOTE: There is room for performance improvement especially in
     // the array manipulation
-    public class Trbdf2<Operator> : IMixedScheme where Operator : IOperator
+    [JetBrains.Annotations.PublicAPI] public class Trbdf2<Operator> : IMixedScheme where Operator : IOperator
     {
         protected Operator L_, I_, implicitPart_, explicitBDF2PartFull_, explicitTrapezoidalPart_, explicitBDF2PartMid_;
         protected double dt_, alpha_;
@@ -81,7 +81,7 @@ namespace QLNet.Methods.Finitedifferences
         public void step(ref object a, double t, double theta = 1.0)
         {
             int i;
-            Vector aInit = new Vector((a as Vector).size());
+            var aInit = new Vector((a as Vector).size());
             for (i = 0; i < (a as Vector).size(); i++)
             {
                 aInit[i] = (a as Vector)[i];
@@ -123,7 +123,7 @@ namespace QLNet.Methods.Finitedifferences
             {
                 bcs_[i].applyBeforeApplying(explicitBDF2PartFull_);
             }
-            Vector b0 = explicitBDF2PartFull_.applyTo(aInit_);
+            var b0 = explicitBDF2PartFull_.applyTo(aInit_);
             for (i = 0; i < bcs_.Count; i++)
                 bcs_[i].applyAfterApplying(b0);
 
@@ -131,7 +131,7 @@ namespace QLNet.Methods.Finitedifferences
             {
                 bcs_[i].applyBeforeApplying(explicitBDF2PartMid_);
             }
-            Vector b1 = explicitBDF2PartMid_.applyTo(a as Vector);
+            var b1 = explicitBDF2PartMid_.applyTo(a as Vector);
             for (i = 0; i < bcs_.Count; i++)
                 bcs_[i].applyAfterApplying(b1);
             a = b0 + b1;

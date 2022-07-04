@@ -36,7 +36,7 @@ using QLNet.Time.Calendars;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_ConvertibleBond
+    [JetBrains.Annotations.PublicAPI] public class T_ConvertibleBond
     {
         private class CommonVars
         {
@@ -104,27 +104,27 @@ namespace QLNet.Tests
 
             // Testing out-of-the-money convertible bonds against vanilla bonds
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             vars.conversionRatio = 1.0e-16;
 
             Exercise euExercise = new EuropeanExercise(vars.maturityDate);
             Exercise amExercise = new AmericanExercise(vars.issueDate, vars.maturityDate);
 
-            int timeSteps = 1001;
+            var timeSteps = 1001;
             IPricingEngine engine = new BinomialConvertibleEngine<CoxRossRubinstein>(vars.process, timeSteps);
 
-            Handle<YieldTermStructure> discountCurve = new Handle<YieldTermStructure>(new ForwardSpreadedTermStructure(vars.riskFreeRate, vars.creditSpread));
+            var discountCurve = new Handle<YieldTermStructure>(new ForwardSpreadedTermStructure(vars.riskFreeRate, vars.creditSpread));
 
             // zero-coupon
 
-            Schedule schedule = new MakeSchedule().from(vars.issueDate)
+            var schedule = new MakeSchedule().from(vars.issueDate)
             .to(vars.maturityDate)
             .withFrequency(Frequency.Once)
             .withCalendar(vars.calendar)
             .backwards().value();
 
-            ConvertibleZeroCouponBond euZero = new ConvertibleZeroCouponBond(euExercise, vars.conversionRatio,
+            var euZero = new ConvertibleZeroCouponBond(euExercise, vars.conversionRatio,
                                                                              vars.no_dividends, vars.no_callability,
                                                                              vars.creditSpread,
                                                                              vars.issueDate, vars.settlementDays,
@@ -132,7 +132,7 @@ namespace QLNet.Tests
                                                                              vars.redemption);
             euZero.setPricingEngine(engine);
 
-            ConvertibleZeroCouponBond amZero = new ConvertibleZeroCouponBond(amExercise, vars.conversionRatio,
+            var amZero = new ConvertibleZeroCouponBond(amExercise, vars.conversionRatio,
                                                                              vars.no_dividends, vars.no_callability,
                                                                              vars.creditSpread,
                                                                              vars.issueDate, vars.settlementDays,
@@ -140,16 +140,16 @@ namespace QLNet.Tests
                                                                              vars.redemption);
             amZero.setPricingEngine(engine);
 
-            ZeroCouponBond zero = new ZeroCouponBond(vars.settlementDays, vars.calendar,
+            var zero = new ZeroCouponBond(vars.settlementDays, vars.calendar,
                                                      100.0, vars.maturityDate,
                                                      BusinessDayConvention.Following, vars.redemption, vars.issueDate);
 
             IPricingEngine bondEngine = new DiscountingBondEngine(discountCurve);
             zero.setPricingEngine(bondEngine);
 
-            double tolerance = 1.0e-2 * (vars.faceAmount / 100.0);
+            var tolerance = 1.0e-2 * (vars.faceAmount / 100.0);
 
-            double error = System.Math.Abs(euZero.NPV() - zero.settlementValue());
+            var error = System.Math.Abs(euZero.NPV() - zero.settlementValue());
             if (error > tolerance)
             {
                 QAssert.Fail("failed to reproduce zero-coupon bond price:"
@@ -177,7 +177,7 @@ namespace QLNet.Tests
             .withCalendar(vars.calendar)
             .backwards().value();
 
-            ConvertibleFixedCouponBond euFixed = new ConvertibleFixedCouponBond(euExercise, vars.conversionRatio,
+            var euFixed = new ConvertibleFixedCouponBond(euExercise, vars.conversionRatio,
                                                                                 vars.no_dividends, vars.no_callability,
                                                                                 vars.creditSpread,
                                                                                 vars.issueDate, vars.settlementDays,
@@ -185,7 +185,7 @@ namespace QLNet.Tests
                                                                                 schedule, vars.redemption);
             euFixed.setPricingEngine(engine);
 
-            ConvertibleFixedCouponBond amFixed = new ConvertibleFixedCouponBond(amExercise, vars.conversionRatio,
+            var amFixed = new ConvertibleFixedCouponBond(amExercise, vars.conversionRatio,
                                                                                 vars.no_dividends, vars.no_callability,
                                                                                 vars.creditSpread,
                                                                                 vars.issueDate, vars.settlementDays,
@@ -193,7 +193,7 @@ namespace QLNet.Tests
                                                                                 schedule, vars.redemption);
             amFixed.setPricingEngine(engine);
 
-            FixedRateBond fixedBond = new FixedRateBond(vars.settlementDays, vars.faceAmount, schedule,
+            var fixedBond = new FixedRateBond(vars.settlementDays, vars.faceAmount, schedule,
                                                         coupons, vars.dayCounter, BusinessDayConvention.Following,
                                                         vars.redemption, vars.issueDate);
 
@@ -222,11 +222,11 @@ namespace QLNet.Tests
             // floating-rate
 
             IborIndex index = new Euribor1Y(discountCurve);
-            int fixingDays = 2;
+            var fixingDays = 2;
             List<double> gearings = new InitializedList<double>(1, 1.0);
-            List<double> spreads = new List<double>();
+            var spreads = new List<double>();
 
-            ConvertibleFloatingRateBond euFloating = new ConvertibleFloatingRateBond(euExercise, vars.conversionRatio,
+            var euFloating = new ConvertibleFloatingRateBond(euExercise, vars.conversionRatio,
                                                                                      vars.no_dividends, vars.no_callability,
                                                                                      vars.creditSpread,
                                                                                      vars.issueDate, vars.settlementDays,
@@ -235,7 +235,7 @@ namespace QLNet.Tests
                                                                                      vars.redemption);
             euFloating.setPricingEngine(engine);
 
-            ConvertibleFloatingRateBond amFloating = new ConvertibleFloatingRateBond(amExercise, vars.conversionRatio,
+            var amFloating = new ConvertibleFloatingRateBond(amExercise, vars.conversionRatio,
                                                                                      vars.no_dividends, vars.no_callability,
                                                                                      vars.creditSpread,
                                                                                      vars.issueDate, vars.settlementDays,
@@ -246,12 +246,12 @@ namespace QLNet.Tests
 
             IborCouponPricer pricer = new BlackIborCouponPricer(new Handle<OptionletVolatilityStructure>());
 
-            Schedule floatSchedule = new Schedule(vars.issueDate, vars.maturityDate,
+            var floatSchedule = new Schedule(vars.issueDate, vars.maturityDate,
                                                   new Period(vars.frequency),
                                                   vars.calendar, BusinessDayConvention.Following, BusinessDayConvention.Following,
                                                   DateGeneration.Rule.Backward, false);
 
-            FloatingRateBond floating = new FloatingRateBond(vars.settlementDays, vars.faceAmount, floatSchedule,
+            var floating = new FloatingRateBond(vars.settlementDays, vars.faceAmount, floatSchedule,
                                                              index, vars.dayCounter, BusinessDayConvention.Following, fixingDays,
                                                              gearings, spreads,
                                                              new List<double?>(), new List<double?>(),
@@ -291,28 +291,28 @@ namespace QLNet.Tests
 
             // Testing zero-coupon convertible bonds against vanilla option
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             Exercise euExercise = new EuropeanExercise(vars.maturityDate);
 
             vars.settlementDays = 0;
 
-            int timeSteps = 2001;
+            var timeSteps = 2001;
             IPricingEngine engine = new BinomialConvertibleEngine<CoxRossRubinstein>(vars.process, timeSteps);
             IPricingEngine vanillaEngine = new BinomialVanillaEngine<CoxRossRubinstein>(vars.process, timeSteps);
 
             vars.creditSpread.linkTo(new SimpleQuote(0.0));
 
-            double conversionStrike = vars.redemption / vars.conversionRatio;
+            var conversionStrike = vars.redemption / vars.conversionRatio;
             StrikedTypePayoff payoff = new PlainVanillaPayoff(QLNet.Option.Type.Call, conversionStrike);
 
-            Schedule schedule = new MakeSchedule().from(vars.issueDate)
+            var schedule = new MakeSchedule().from(vars.issueDate)
             .to(vars.maturityDate)
             .withFrequency(Frequency.Once)
             .withCalendar(vars.calendar)
             .backwards().value();
 
-            ConvertibleZeroCouponBond euZero = new ConvertibleZeroCouponBond(euExercise, vars.conversionRatio,
+            var euZero = new ConvertibleZeroCouponBond(euExercise, vars.conversionRatio,
                                                                              vars.no_dividends, vars.no_callability,
                                                                              vars.creditSpread,
                                                                              vars.issueDate, vars.settlementDays,
@@ -320,15 +320,15 @@ namespace QLNet.Tests
                                                                              vars.redemption);
             euZero.setPricingEngine(engine);
 
-            VanillaOption euOption = new VanillaOption(payoff, euExercise);
+            var euOption = new VanillaOption(payoff, euExercise);
             euOption.setPricingEngine(vanillaEngine);
 
-            double tolerance = 5.0e-2 * (vars.faceAmount / 100.0);
+            var tolerance = 5.0e-2 * (vars.faceAmount / 100.0);
 
-            double expected = vars.faceAmount / 100.0 *
-                              (vars.redemption * vars.riskFreeRate.link.discount(vars.maturityDate)
-                               + vars.conversionRatio * euOption.NPV());
-            double error = System.Math.Abs(euZero.NPV() - expected);
+            var expected = vars.faceAmount / 100.0 *
+                           (vars.redemption * vars.riskFreeRate.link.discount(vars.maturityDate)
+                            + vars.conversionRatio * euOption.NPV());
+            var error = System.Math.Abs(euZero.NPV() - expected);
             if (error > tolerance)
             {
                 QAssert.Fail("failed to reproduce plain-option price:"
@@ -345,12 +345,12 @@ namespace QLNet.Tests
 
             // Testing fixed-coupon convertible bond in known regression case
 
-            Date today = new Date(23, Month.December, 2008);
-            Date tomorrow = today + 1;
+            var today = new Date(23, Month.December, 2008);
+            var tomorrow = today + 1;
 
             Settings.setEvaluationDate(tomorrow);
 
-            Handle<Quote> u = new Handle<Quote>(new SimpleQuote(2.9084382818797443));
+            var u = new Handle<Quote>(new SimpleQuote(2.9084382818797443));
 
             List<Date> dates = new InitializedList<Date>(25);
             List<double> forwards = new InitializedList<double>(25);
@@ -380,33 +380,33 @@ namespace QLNet.Tests
             dates[23] = new Date(29, Month.December, 2038); forwards[23] = 0.0228343838422;
             dates[24] = new Date(31, Month.December, 2199); forwards[24] = 0.0228343838422;
 
-            Handle<YieldTermStructure> r = new Handle<YieldTermStructure>(new InterpolatedForwardCurve<BackwardFlat>(dates, forwards, new Actual360()));
+            var r = new Handle<YieldTermStructure>(new InterpolatedForwardCurve<BackwardFlat>(dates, forwards, new Actual360()));
 
-            Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(tomorrow, new NullCalendar(), 21.685235548092248,
+            var sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(tomorrow, new NullCalendar(), 21.685235548092248,
                                                                                     new Thirty360(Thirty360.Thirty360Convention.BondBasis)));
 
-            BlackProcess process = new BlackProcess(u, r, sigma);
+            var process = new BlackProcess(u, r, sigma);
 
-            Handle<Quote> spread = new Handle<Quote>(new SimpleQuote(0.11498700678012874));
+            var spread = new Handle<Quote>(new SimpleQuote(0.11498700678012874));
 
-            Date issueDate = new Date(23, Month.July, 2008);
-            Date maturityDate = new Date(1, Month.August, 2013);
+            var issueDate = new Date(23, Month.July, 2008);
+            var maturityDate = new Date(1, Month.August, 2013);
             Calendar calendar = new UnitedStates();
-            Schedule schedule = new MakeSchedule().from(issueDate)
+            var schedule = new MakeSchedule().from(issueDate)
             .to(maturityDate)
             .withTenor(new Period(6, TimeUnit.Months))
             .withCalendar(calendar)
             .withConvention(BusinessDayConvention.Unadjusted).value();
-            int settlementDays = 3;
+            var settlementDays = 3;
             Exercise exercise = new EuropeanExercise(maturityDate);
-            double conversionRatio = 100.0 / 20.3175;
+            var conversionRatio = 100.0 / 20.3175;
             List<double> coupons = new InitializedList<double>(schedule.size() - 1, 0.05);
             DayCounter dayCounter = new Thirty360(Thirty360.Thirty360Convention.BondBasis);
-            CallabilitySchedule no_callability = new CallabilitySchedule();
-            DividendSchedule no_dividends = new DividendSchedule();
-            double redemption = 100.0;
+            var no_callability = new CallabilitySchedule();
+            var no_dividends = new DividendSchedule();
+            var redemption = 100.0;
 
-            ConvertibleFixedCouponBond bond = new ConvertibleFixedCouponBond(exercise, conversionRatio,
+            var bond = new ConvertibleFixedCouponBond(exercise, conversionRatio,
                                                                              no_dividends, no_callability,
                                                                              spread, issueDate, settlementDays,
                                                                              coupons, dayCounter,
@@ -415,7 +415,7 @@ namespace QLNet.Tests
 
             try
             {
-                double x = bond.NPV();  // should throw; if not, an INF was not detected.
+                var x = bond.NPV();  // should throw; if not, an INF was not detected.
                 QAssert.Fail("INF result was not detected: " + x + " returned");
             }
             catch (Exception)

@@ -29,7 +29,7 @@ namespace QLNet.Methods.Finitedifferences
 
         \ingroup findiff
     */
-    public class DPlus : TridiagonalOperator
+    [JetBrains.Annotations.PublicAPI] public class DPlus : TridiagonalOperator
     {
         public DPlus(int gridPoints, double h)
            : base(gridPoints)

@@ -34,7 +34,7 @@ namespace QLNet.Methods.Finitedifferences.Utilities
         public abstract double avgInnerValue(FdmLinearOpIterator iter, double t);
     }
 
-    public class FdmLogInnerValue : FdmInnerValueCalculator
+    [JetBrains.Annotations.PublicAPI] public class FdmLogInnerValue : FdmInnerValueCalculator
     {
         public FdmLogInnerValue(Payoff payoff,
                                 FdmMesher mesher,
@@ -48,7 +48,7 @@ namespace QLNet.Methods.Finitedifferences.Utilities
 
         public override double innerValue(FdmLinearOpIterator iter, double t)
         {
-            double s = System.Math.Exp(mesher_.location(iter, direction_));
+            var s = System.Math.Exp(mesher_.location(iter, direction_));
             return payoff_.value(s);
         }
         public override double avgInnerValue(FdmLinearOpIterator iter, double t)
@@ -59,12 +59,12 @@ namespace QLNet.Methods.Finitedifferences.Utilities
                 avgInnerValues_ = new InitializedList<double>(mesher_.layout().dim()[direction_]);
                 List<bool> initialized = new InitializedList<bool>(avgInnerValues_.Count, false);
 
-                FdmLinearOpLayout layout = mesher_.layout();
-                FdmLinearOpIterator endIter = layout.end();
-                for (FdmLinearOpIterator new_iter = layout.begin(); new_iter != endIter;
+                var layout = mesher_.layout();
+                var endIter = layout.end();
+                for (var new_iter = layout.begin(); new_iter != endIter;
                      ++new_iter)
                 {
-                    int xn = new_iter.coordinates()[direction_];
+                    var xn = new_iter.coordinates()[direction_];
                     if (!initialized[xn])
                     {
                         initialized[xn] = true;
@@ -77,11 +77,11 @@ namespace QLNet.Methods.Finitedifferences.Utilities
 
         protected double avgInnerValueCalc(FdmLinearOpIterator iter, double t)
         {
-            int dim = mesher_.layout().dim()[direction_];
-            int coord = iter.coordinates()[direction_];
-            double loc = mesher_.location(iter, direction_);
-            double a = loc;
-            double b = loc;
+            var dim = mesher_.layout().dim()[direction_];
+            var coord = iter.coordinates()[direction_];
+            var loc = mesher_.location(iter, direction_);
+            var a = loc;
+            var b = loc;
             if (coord > 0)
             {
                 a -= mesher_.dminus(iter, direction_).Value / 2.0;
@@ -94,7 +94,7 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             double retVal;
             try
             {
-                double acc
+                var acc
                    = f(a) != 0.0 || f(b) != 0.0 ? (f(a) + f(b)) * 5e-5 : 1e-4;
                 retVal = new SimpsonIntegral(acc, 8).value(f, a, b) / (b - a);
             }
@@ -113,7 +113,7 @@ namespace QLNet.Methods.Finitedifferences.Utilities
         protected List<double> avgInnerValues_;
     }
 
-    public class FdmLogBasketInnerValue : FdmInnerValueCalculator
+    [JetBrains.Annotations.PublicAPI] public class FdmLogBasketInnerValue : FdmInnerValueCalculator
     {
         public FdmLogBasketInnerValue(BasketPayoff payoff,
                                       FdmMesher mesher)
@@ -124,32 +124,24 @@ namespace QLNet.Methods.Finitedifferences.Utilities
 
         public override double innerValue(FdmLinearOpIterator iter, double t)
         {
-            Vector x = new Vector(mesher_.layout().dim().Count);
-            for (int i = 0; i < x.size(); ++i)
+            var x = new Vector(mesher_.layout().dim().Count);
+            for (var i = 0; i < x.size(); ++i)
             {
                 x[i] = System.Math.Exp(mesher_.location(iter, i));
             }
 
             return payoff_.value(x);
         }
-        public override double avgInnerValue(FdmLinearOpIterator iter, double t)
-        {
-            return innerValue(iter, t);
-        }
+        public override double avgInnerValue(FdmLinearOpIterator iter, double t) => innerValue(iter, t);
 
         protected BasketPayoff payoff_;
         protected FdmMesher mesher_;
     }
 
-    public class FdmZeroInnerValue : FdmInnerValueCalculator
+    [JetBrains.Annotations.PublicAPI] public class FdmZeroInnerValue : FdmInnerValueCalculator
     {
-        public override double innerValue(FdmLinearOpIterator iter, double t)
-        {
-            return 0.0;
-        }
-        public override double avgInnerValue(FdmLinearOpIterator iter, double t)
-        {
-            return 0.0;
-        }
+        public override double innerValue(FdmLinearOpIterator iter, double t) => 0.0;
+
+        public override double avgInnerValue(FdmLinearOpIterator iter, double t) => 0.0;
     }
 }

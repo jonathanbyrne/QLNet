@@ -33,7 +33,8 @@ namespace QLNet.Time
         }
 
         //! returns whether or not the given date is an IMM date
-        public static bool isIMMdate(Date date) { return isIMMdate(date, true); }
+        public static bool isIMMdate(Date date) => isIMMdate(date, true);
+
         public static bool isIMMdate(Date date, bool mainCycle)
         {
             if (date.DayOfWeek != DayOfWeek.Wednesday)
@@ -58,13 +59,14 @@ namespace QLNet.Time
         }
 
         //! returns whether or not the given string is an IMM code
-        public static bool isIMMcode(string s) { return isIMMcode(s, true); }
+        public static bool isIMMcode(string s) => isIMMcode(s, true);
+
         public static bool isIMMcode(string s, bool mainCycle)
         {
             if (s.Length != 2)
                 return false;
 
-            string str1 = "0123456789";
+            var str1 = "0123456789";
             if (!str1.Contains(s[1].ToString()))
                 return false;
 
@@ -87,21 +89,22 @@ namespace QLNet.Time
         }
 
         // returns the IMM date for the given IMM code (e.g. March 20th, 2013 for H3).
-        public static Date date(string immCode) { return date(immCode, null); }
+        public static Date date(string immCode) => date(immCode, null);
+
         public static Date date(string immCode, Date refDate)
         {
             if (!isIMMcode(immCode, false))
                 throw new ArgumentException(immCode + " is not a valid IMM code");
 
-            Date referenceDate = refDate ?? Settings.evaluationDate();
+            var referenceDate = refDate ?? Settings.evaluationDate();
 
-            int m = "FGHJKMNQUVXZ".IndexOf(immCode.ToUpper()[0]) + 1;
+            var m = "FGHJKMNQUVXZ".IndexOf(immCode.ToUpper()[0]) + 1;
             if (m == 0)
                 throw new ArgumentException("invalid IMM month letter");
 
             if (!char.IsDigit(immCode[1]))
                 throw new ArgumentException(immCode + " is not a valid IMM code");
-            int y = immCode[1] - '0';
+            var y = immCode[1] - '0';
 
             y += referenceDate.Year - referenceDate.Year % 10;
 
@@ -110,7 +113,7 @@ namespace QLNet.Time
             if (y == 0 && referenceDate.Year <= 1909)
                 y += 10;
 
-            Date result = nextDate(new Date(1, m, y), false);
+            var result = nextDate(new Date(1, m, y), false);
             if (result < referenceDate)
                 result = nextDate(new Date(1, m, y + 10), false);
 
@@ -120,17 +123,19 @@ namespace QLNet.Time
         //! next IMM date following the given date
         /*! returns the 1st delivery date for next contract listed in the
             International Money Market section of the Chicago Mercantile Exchange. */
-        public static Date nextDate() { return nextDate((Date)null, true); }
-        public static Date nextDate(Date d) { return nextDate(d, true); }
+        public static Date nextDate() => nextDate((Date)null, true);
+
+        public static Date nextDate(Date d) => nextDate(d, true);
+
         public static Date nextDate(Date date, bool mainCycle)
         {
-            Date refDate = date ?? Settings.evaluationDate();
+            var refDate = date ?? Settings.evaluationDate();
 
-            int y = refDate.Year;
-            int m = refDate.Month;
+            var y = refDate.Year;
+            var m = refDate.Month;
 
-            int offset = mainCycle ? 3 : 1;
-            int skipMonths = offset - m % offset;
+            var offset = mainCycle ? 3 : 1;
+            var skipMonths = offset - m % offset;
             if (skipMonths != offset || refDate.Day > 21)
             {
                 skipMonths += m;
@@ -145,7 +150,7 @@ namespace QLNet.Time
                 }
             }
 
-            Date result = Date.nthWeekday(3, DayOfWeek.Wednesday, m, y);
+            var result = Date.nthWeekday(3, DayOfWeek.Wednesday, m, y);
             if (result <= refDate)
                 result = nextDate(new Date(22, m, y), mainCycle);
             return result;
@@ -154,31 +159,37 @@ namespace QLNet.Time
         //! next IMM date following the given IMM code
         /*! returns the 1st delivery date for next contract listed in the
             International Money Market section of the Chicago Mercantile Exchange. */
-        public static Date nextDate(string immCode) { return nextDate(immCode, true, null); }
-        public static Date nextDate(string immCode, bool mainCycle) { return nextDate(immCode, mainCycle, null); }
+        public static Date nextDate(string immCode) => nextDate(immCode, true, null);
+
+        public static Date nextDate(string immCode, bool mainCycle) => nextDate(immCode, mainCycle, null);
+
         public static Date nextDate(string immCode, bool mainCycle, Date referenceDate)
         {
-            Date immDate = date(immCode, referenceDate);
+            var immDate = date(immCode, referenceDate);
             return nextDate(immDate + 1, mainCycle);
         }
 
         /*! returns the IMM code for next contract listed in the
             International Money Market section of the Chicago Mercantile Exchange.*/
-        public static string nextCode() { return nextCode((Date)null, true); }
-        public static string nextCode(Date d) { return nextCode(d, true); }
+        public static string nextCode() => nextCode((Date)null, true);
+
+        public static string nextCode(Date d) => nextCode(d, true);
+
         public static string nextCode(Date d, bool mainCycle)
         {
-            Date date = nextDate(d, mainCycle);
+            var date = nextDate(d, mainCycle);
             return code(date);
         }
 
         /*! returns the IMM code for next contract listed in the
             International Money Market section of the Chicago Mercantile Exchange. */
-        public static string nextCode(string immCode) { return nextCode(immCode, true, null); }
-        public static string nextCode(string immCode, bool mainCycle) { return nextCode(immCode, mainCycle, null); }
+        public static string nextCode(string immCode) => nextCode(immCode, true, null);
+
+        public static string nextCode(string immCode, bool mainCycle) => nextCode(immCode, mainCycle, null);
+
         public static string nextCode(string immCode, bool mainCycle, Date referenceDate)
         {
-            Date date = nextDate(immCode, mainCycle, referenceDate);
+            var date = nextDate(immCode, mainCycle, referenceDate);
             return code(date);
         }
     }

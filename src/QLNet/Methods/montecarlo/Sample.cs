@@ -22,7 +22,7 @@ namespace QLNet.Methods.montecarlo
     //! weighted sample
     /*! \ingroup mcarlo */
     // todo check for Sample for value types and Sample for object types to take care of proper object copying
-    public class Sample<T>
+    [JetBrains.Annotations.PublicAPI] public class Sample<T>
     {
         public T value { get; set; }
         public double weight { get; set; }

@@ -26,7 +26,7 @@ namespace QLNet.Currencies
     /// The ISO three-letter code is ZAR; the numeric code is 710.
     /// It is divided into 100 cents.
     /// </summary>
-    public class ZARCurrency : Currency
+    [JetBrains.Annotations.PublicAPI] public class ZARCurrency : Currency
     {
         public ZARCurrency() : base("South-African rand", "ZAR", 710, "R", "", 100, new Rounding(), "%3% %1$.2f") { }
     }

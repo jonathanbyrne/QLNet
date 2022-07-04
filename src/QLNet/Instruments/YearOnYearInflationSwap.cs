@@ -37,10 +37,10 @@ namespace QLNet.Instruments
         time \f$ t \f$.
 
         \note These instruments have now been changed to follow
-              typical VanillaSwap type design conventions
+              typical VanillaSwap ExerciseType design conventions
               w.r.t. Schedules etc.
     */
-    public class YearOnYearInflationSwap : Swap
+    [JetBrains.Annotations.PublicAPI] public class YearOnYearInflationSwap : Swap
     {
         public enum Type { Receiver = -1, Payer = 1 }
         public YearOnYearInflationSwap(
@@ -127,31 +127,40 @@ namespace QLNet.Instruments
             return fairSpread_.Value;
         }
         // inspectors
-        public virtual Type type() { return type_; }
-        public virtual double nominal() { return nominal_; }
+        public virtual Type type() => type_;
 
-        public virtual Schedule fixedSchedule() { return fixedSchedule_; }
-        public virtual double fixedRate() { return fixedRate_; }
-        public virtual DayCounter fixedDayCount() { return fixedDayCount_; }
+        public virtual double nominal() => nominal_;
 
-        public virtual Schedule yoySchedule() { return yoySchedule_; }
-        public virtual YoYInflationIndex yoyInflationIndex() { return yoyIndex_; }
-        public virtual Period observationLag() { return observationLag_; }
-        public virtual double spread() { return spread_; }
-        public virtual DayCounter yoyDayCount() { return yoyDayCount_; }
+        public virtual Schedule fixedSchedule() => fixedSchedule_;
 
-        public virtual Calendar paymentCalendar() { return paymentCalendar_; }
-        public virtual BusinessDayConvention paymentConvention() { return paymentConvention_; }
+        public virtual double fixedRate() => fixedRate_;
 
-        public virtual List<CashFlow> fixedLeg() { return legs_[0]; }
-        public virtual List<CashFlow> yoyLeg() { return legs_[1]; }
+        public virtual DayCounter fixedDayCount() => fixedDayCount_;
+
+        public virtual Schedule yoySchedule() => yoySchedule_;
+
+        public virtual YoYInflationIndex yoyInflationIndex() => yoyIndex_;
+
+        public virtual Period observationLag() => observationLag_;
+
+        public virtual double spread() => spread_;
+
+        public virtual DayCounter yoyDayCount() => yoyDayCount_;
+
+        public virtual Calendar paymentCalendar() => paymentCalendar_;
+
+        public virtual BusinessDayConvention paymentConvention() => paymentConvention_;
+
+        public virtual List<CashFlow> fixedLeg() => legs_[0];
+
+        public virtual List<CashFlow> yoyLeg() => legs_[1];
 
         // other
         public override void setupArguments(IPricingEngineArguments args)
         {
             base.setupArguments(args);
 
-            Arguments arguments = args as Arguments;
+            var arguments = args as Arguments;
 
             if (arguments == null)  // it's a swap engine...
                 return;
@@ -159,29 +168,29 @@ namespace QLNet.Instruments
             arguments.type = type_;
             arguments.nominal = nominal_;
 
-            List<CashFlow> fixedCoupons = fixedLeg();
+            var fixedCoupons = fixedLeg();
 
             arguments.fixedResetDates = arguments.fixedPayDates = new List<Date>(fixedCoupons.Count);
             arguments.fixedCoupons = new List<double>(fixedCoupons.Count);
 
-            for (int i = 0; i < fixedCoupons.Count; ++i)
+            for (var i = 0; i < fixedCoupons.Count; ++i)
             {
-                FixedRateCoupon coupon = fixedCoupons[i] as FixedRateCoupon;
+                var coupon = fixedCoupons[i] as FixedRateCoupon;
 
                 arguments.fixedPayDates.Add(coupon.date());
                 arguments.fixedResetDates.Add(coupon.accrualStartDate());
                 arguments.fixedCoupons.Add(coupon.amount());
             }
 
-            List<CashFlow> yoyCoupons = yoyLeg();
+            var yoyCoupons = yoyLeg();
 
             arguments.yoyResetDates = arguments.yoyPayDates = arguments.yoyFixingDates = new List<Date>(yoyCoupons.Count);
             arguments.yoyAccrualTimes = new List<double>(yoyCoupons.Count);
             arguments.yoySpreads = new List<double>(yoyCoupons.Count);
             arguments.yoyCoupons = new List<double?>(yoyCoupons.Count);
-            for (int i = 0; i < yoyCoupons.Count; ++i)
+            for (var i = 0; i < yoyCoupons.Count; ++i)
             {
-                YoYInflationCoupon coupon = yoyCoupons[i] as YoYInflationCoupon;
+                var coupon = yoyCoupons[i] as YoYInflationCoupon;
 
                 arguments.yoyResetDates.Add(coupon.accrualStartDate());
                 arguments.yoyPayDates.Add(coupon.date());
@@ -208,7 +217,7 @@ namespace QLNet.Instruments
 
             base.fetchResults(r);
 
-            Results results = r as Results;
+            var results = r as Results;
             if (results != null)
             {
                 // might be a swap engine, so no error is thrown
@@ -316,7 +325,7 @@ namespace QLNet.Instruments
             }
         }
 
-        public class Engine : GenericEngine<Arguments, Results> { }
+        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results> { }
 
     }
 }

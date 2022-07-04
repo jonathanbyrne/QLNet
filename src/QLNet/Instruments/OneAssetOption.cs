@@ -20,7 +20,7 @@
 namespace QLNet.Instruments
 {
     //! Base class for options on a single asset
-    public class OneAssetOption : Option
+    [JetBrains.Annotations.PublicAPI] public class OneAssetOption : Option
     {
         // results
         protected double? delta_,
@@ -38,10 +38,7 @@ namespace QLNet.Instruments
         public OneAssetOption(Payoff payoff, Exercise exercise) : base(payoff, exercise)
         { }
 
-        public override bool isExpired()
-        {
-            return new simple_event(exercise_.lastDate()).hasOccurred();
-        }
+        public override bool isExpired() => new simple_event(exercise_.lastDate()).hasOccurred();
 
         public double delta()
         {
@@ -131,7 +128,7 @@ namespace QLNet.Instruments
         {
             base.fetchResults(r);
 
-            Results results = r as Results;
+            var results = r as Results;
             Utils.QL_REQUIRE(results != null, () => "no greeks returned from pricing engine");
             /* no check on null values - just copy.
                this allows:
@@ -186,7 +183,7 @@ namespace QLNet.Instruments
             }
         }
 
-        public class Engine : GenericEngine<Arguments, Results>
+        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results>
         { }
     }
 }

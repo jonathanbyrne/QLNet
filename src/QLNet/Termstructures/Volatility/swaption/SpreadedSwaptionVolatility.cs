@@ -21,7 +21,7 @@ using QLNet.Time;
 
 namespace QLNet.Termstructures.Volatility.swaption
 {
-    public class SpreadedSwaptionVolatility : SwaptionVolatilityStructure
+    [JetBrains.Annotations.PublicAPI] public class SpreadedSwaptionVolatility : SwaptionVolatilityStructure
     {
         public SpreadedSwaptionVolatility(Handle<SwaptionVolatilityStructure> baseVol, Handle<Quote> spread)
            : base(baseVol.link.businessDayConvention(), baseVol.link.dayCounter())
@@ -35,43 +35,44 @@ namespace QLNet.Termstructures.Volatility.swaption
         }
         // All virtual methods of base classes must be forwarded
         // TermStructure interface
-        public override DayCounter dayCounter() { return baseVol_.link.dayCounter(); }
-        public override Date maxDate() { return baseVol_.link.maxDate(); }
-        public override double maxTime() { return baseVol_.link.maxTime(); }
-        public override Date referenceDate() { return baseVol_.link.referenceDate(); }
-        public override Calendar calendar() { return baseVol_.link.calendar(); }
-        public override int settlementDays() { return baseVol_.link.settlementDays(); }
+        public override DayCounter dayCounter() => baseVol_.link.dayCounter();
+
+        public override Date maxDate() => baseVol_.link.maxDate();
+
+        public override double maxTime() => baseVol_.link.maxTime();
+
+        public override Date referenceDate() => baseVol_.link.referenceDate();
+
+        public override Calendar calendar() => baseVol_.link.calendar();
+
+        public override int settlementDays() => baseVol_.link.settlementDays();
 
         // VolatilityTermStructure interface
-        public override double minStrike() { return baseVol_.link.minStrike(); }
-        public override double maxStrike() { return baseVol_.link.maxStrike(); }
+        public override double minStrike() => baseVol_.link.minStrike();
+
+        public override double maxStrike() => baseVol_.link.maxStrike();
+
         // SwaptionVolatilityStructure interface
-        public override Period maxSwapTenor() { return baseVol_.link.maxSwapTenor(); }
-        public override VolatilityType volatilityType() { return baseVol_.link.volatilityType(); }
+        public override Period maxSwapTenor() => baseVol_.link.maxSwapTenor();
+
+        public override VolatilityType volatilityType() => baseVol_.link.volatilityType();
 
         // SwaptionVolatilityStructure interface
         protected override SmileSection smileSectionImpl(Date optionDate, Period swapTenor)
         {
-            SmileSection baseSmile = baseVol_.link.smileSection(optionDate, swapTenor, true);
+            var baseSmile = baseVol_.link.smileSection(optionDate, swapTenor, true);
             return new SpreadedSmileSection(baseSmile, spread_);
         }
         protected override SmileSection smileSectionImpl(double optionTime, double swapLength)
         {
-            SmileSection baseSmile = baseVol_.link.smileSection(optionTime, swapLength, true);
+            var baseSmile = baseVol_.link.smileSection(optionTime, swapLength, true);
             return new SpreadedSmileSection(baseSmile, spread_);
         }
-        protected override double volatilityImpl(Date optionDate, Period swapTenor, double strike)
-        {
-            return baseVol_.link.volatility(optionDate, swapTenor, strike, true) + spread_.link.value();
-        }
-        protected override double volatilityImpl(double optionTime, double swapLength, double strike)
-        {
-            return baseVol_.link.volatility(optionTime, swapLength, strike, true) + spread_.link.value();
-        }
-        protected override double shiftImpl(double optionTime, double swapLength)
-        {
-            return baseVol_.link.shift(optionTime, swapLength, true);
-        }
+        protected override double volatilityImpl(Date optionDate, Period swapTenor, double strike) => baseVol_.link.volatility(optionDate, swapTenor, strike, true) + spread_.link.value();
+
+        protected override double volatilityImpl(double optionTime, double swapLength, double strike) => baseVol_.link.volatility(optionTime, swapLength, strike, true) + spread_.link.value();
+
+        protected override double shiftImpl(double optionTime, double swapLength) => baseVol_.link.shift(optionTime, swapLength, true);
 
         private Handle<SwaptionVolatilityStructure> baseVol_;
         private Handle<Quote> spread_;

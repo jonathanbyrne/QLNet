@@ -28,7 +28,7 @@ using QLNet.Cashflows;
 namespace QLNet.Instruments.Bonds
 {
     //! %callability leaving to the holder the possibility to convert
-    public class SoftCallability : Callability
+    [JetBrains.Annotations.PublicAPI] public class SoftCallability : Callability
     {
         public SoftCallability(Price price, Date date, double trigger)
            : base(price, Type.Call, date)
@@ -36,18 +36,15 @@ namespace QLNet.Instruments.Bonds
             trigger_ = trigger;
         }
 
-        public double trigger()
-        {
-            return trigger_;
-        }
+        public double trigger() => trigger_;
 
         private double trigger_;
     }
 
     //! base class for convertible bonds
-    public class ConvertibleBond : Bond
+    [JetBrains.Annotations.PublicAPI] public class ConvertibleBond : Bond
     {
-        public class option : OneAssetOption
+        [JetBrains.Annotations.PublicAPI] public class option : OneAssetOption
         {
             public new class Arguments : Option.Arguments
             {
@@ -136,14 +133,14 @@ namespace QLNet.Instruments.Bonds
             {
                 base.setupArguments(args);
 
-                Arguments moreArgs = args as Arguments;
-                Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument type");
+                var moreArgs = args as Arguments;
+                Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
 
                 moreArgs.conversionRatio = conversionRatio_;
 
-                Date settlement = bond_.settlementDate();
+                var settlement = bond_.settlementDate();
 
-                int n = callability_.Count;
+                var n = callability_.Count;
                 if (moreArgs.callabilityDates == null)
                     moreArgs.callabilityDates = new List<Date>();
                 else
@@ -164,7 +161,7 @@ namespace QLNet.Instruments.Bonds
                 else
                     moreArgs.callabilityTriggers.Clear();
 
-                for (int i = 0; i < n; i++)
+                for (var i = 0; i < n; i++)
                 {
                     if (!callability_[i].hasOccurred(settlement, false))
                     {
@@ -177,7 +174,7 @@ namespace QLNet.Instruments.Bonds
                         else
                             moreArgs.callabilityPrices.Add(callability_[i].price().amount());
 
-                        SoftCallability softCall = callability_[i] as SoftCallability;
+                        var softCall = callability_[i] as SoftCallability;
                         if (softCall != null)
                             moreArgs.callabilityTriggers.Add(softCall.trigger());
                         else
@@ -185,7 +182,7 @@ namespace QLNet.Instruments.Bonds
                     }
                 }
 
-                List<CashFlow> cashflows = bond_.cashflows();
+                var cashflows = bond_.cashflows();
 
                 if (moreArgs.couponDates == null)
                     moreArgs.couponDates = new List<Date>();
@@ -197,7 +194,7 @@ namespace QLNet.Instruments.Bonds
                 else
                     moreArgs.couponAmounts.Clear();
 
-                for (int i = 0; i < cashflows.Count - 1; i++)
+                for (var i = 0; i < cashflows.Count - 1; i++)
                 {
                     if (!cashflows[i].hasOccurred(settlement, false))
                     {
@@ -216,7 +213,7 @@ namespace QLNet.Instruments.Bonds
                 else
                     moreArgs.dividendDates.Clear();
 
-                for (int i = 0; i < dividends_.Count; i++)
+                for (var i = 0; i < dividends_.Count; i++)
                 {
                     if (!dividends_[i].hasOccurred(settlement, false))
                     {
@@ -245,25 +242,13 @@ namespace QLNet.Instruments.Bonds
             private double redemption_;
         }
 
-        public double conversionRatio()
-        {
-            return conversionRatio_;
-        }
+        public double conversionRatio() => conversionRatio_;
 
-        public DividendSchedule dividends()
-        {
-            return dividends_;
-        }
+        public DividendSchedule dividends() => dividends_;
 
-        public CallabilitySchedule callability()
-        {
-            return callability_;
-        }
+        public CallabilitySchedule callability() => callability_;
 
-        public Handle<Quote> creditSpread()
-        {
-            return creditSpread_;
-        }
+        public Handle<Quote> creditSpread() => creditSpread_;
 
         protected ConvertibleBond(Exercise exercise,
                                   double conversionRatio,
@@ -316,7 +301,7 @@ namespace QLNet.Instruments.Bonds
                 convertibility and callability into account.
     */
 
-    public class ConvertibleZeroCouponBond : ConvertibleBond
+    [JetBrains.Annotations.PublicAPI] public class ConvertibleZeroCouponBond : ConvertibleBond
     {
         public ConvertibleZeroCouponBond(Exercise exercise,
                                          double conversionRatio,
@@ -350,7 +335,7 @@ namespace QLNet.Instruments.Bonds
                  convertibility and callability into account.
     */
 
-    public class ConvertibleFixedCouponBond : ConvertibleBond
+    [JetBrains.Annotations.PublicAPI] public class ConvertibleFixedCouponBond : ConvertibleBond
     {
         public ConvertibleFixedCouponBond(Exercise exercise,
                                           double conversionRatio,
@@ -390,7 +375,7 @@ namespace QLNet.Instruments.Bonds
                  convertibility and callability into account.
     */
 
-    public class ConvertibleFloatingRateBond : ConvertibleBond
+    [JetBrains.Annotations.PublicAPI] public class ConvertibleFloatingRateBond : ConvertibleBond
     {
         public ConvertibleFloatingRateBond(Exercise exercise,
                                            double conversionRatio,

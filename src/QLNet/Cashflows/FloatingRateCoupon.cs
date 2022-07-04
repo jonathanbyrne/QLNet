@@ -27,7 +27,7 @@ using System;
 
 namespace QLNet.Cashflows
 {
-    public class FloatingRateCoupon : Coupon, IObserver
+    [JetBrains.Annotations.PublicAPI] public class FloatingRateCoupon : Coupon, IObserver
     {
         protected InterestRateIndex index_;
         protected DayCounter dayCounter_;
@@ -86,14 +86,13 @@ namespace QLNet.Cashflows
             update();                                   // fire the change event to notify observers of this
         }
 
-        public FloatingRateCouponPricer pricer() { return pricer_; }
-
+        public FloatingRateCouponPricer pricer() => pricer_;
 
         //////////////////////////////////////////////////////////////////////////////////////
         // CashFlow interface
         public override double amount()
         {
-            double result = rate() * accrualPeriod() * nominal();
+            var result = rate() * accrualPeriod() * nominal();
             return result;
         }
 
@@ -105,10 +104,11 @@ namespace QLNet.Cashflows
             if (pricer_ == null)
                 throw new ArgumentException("pricer not set");
             pricer_.initialize(this);
-            double result = pricer_.swapletRate();
+            var result = pricer_.swapletRate();
             return result;
         }
-        public override DayCounter dayCounter() { return dayCounter_; }
+        public override DayCounter dayCounter() => dayCounter_;
+
         public override double accruedAmount(Date d)
         {
             if (d <= accrualStartDate_ || d > paymentDate_)
@@ -125,24 +125,25 @@ namespace QLNet.Cashflows
 
         //////////////////////////////////////////////////////////////////////////////////////
         // properties
-        public InterestRateIndex index() { return index_; }              //! floating index
-        public int fixingDays { get { return fixingDays_; } }                   //! fixing days
+        public InterestRateIndex index() => index_; //! floating index
+        public int fixingDays => fixingDays_; //! fixing days
         public virtual Date fixingDate()
         {
             //! fixing date
             // if isInArrears_ fix at the end of period
-            Date refDate = isInArrears_ ? accrualEndDate_ : accrualStartDate_;
+            var refDate = isInArrears_ ? accrualEndDate_ : accrualStartDate_;
             return index_.fixingCalendar().advance(refDate, -fixingDays_, TimeUnit.Days, BusinessDayConvention.Preceding);
         }
-        public double gearing() { return gearing_; }                     //! index gearing, i.e. multiplicative coefficient for the index
-        public double spread() { return spread_; }                       //! spread paid over the fixing of the underlying index
+        public double gearing() => gearing_; //! index gearing, i.e. multiplicative coefficient for the index
+        public double spread() => spread_; //! spread paid over the fixing of the underlying index
                                                                          //! fixing of the underlying index
-        public virtual double indexFixing() { return index_.fixing(fixingDate()); }
-        //! convexity-adjusted fixing
-        public double adjustedFixing { get { return (rate() - spread()) / gearing(); } }
-        //! whether or not the coupon fixes in arrears
-        public bool isInArrears() { return isInArrears_; }
+        public virtual double indexFixing() => index_.fixing(fixingDate());
 
+        //! convexity-adjusted fixing
+        public double adjustedFixing => (rate() - spread()) / gearing();
+
+        //! whether or not the coupon fixes in arrears
+        public bool isInArrears() => isInArrears_;
 
         // Observer interface
         public void update() { notifyObservers(); }
@@ -150,31 +151,19 @@ namespace QLNet.Cashflows
 
         //////////////////////////////////////////////////////////////////////////////////////
         // methods
-        public double price(YieldTermStructure yts)
-        {
-            return amount() * yts.discount(date());
-        }
+        public double price(YieldTermStructure yts) => amount() * yts.discount(date());
 
         //! convexity adjustment for the given index fixing
-        protected double convexityAdjustmentImpl(double f)
-        {
-            return gearing().IsEqual(0.0) ? 0.0 : adjustedFixing - f;
-        }
+        protected double convexityAdjustmentImpl(double f) => gearing().IsEqual(0.0) ? 0.0 : adjustedFixing - f;
 
         //! convexity adjustment
-        public virtual double convexityAdjustment()
-        {
-            return convexityAdjustmentImpl(indexFixing());
-        }
-
+        public virtual double convexityAdjustment() => convexityAdjustmentImpl(indexFixing());
 
         // Factory - for Leg generators
         public virtual CashFlow factory(double nominal, Date paymentDate, Date startDate, Date endDate, int fixingDays,
                                         InterestRateIndex index, double gearing, double spread,
-                                        Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears)
-        {
-            return new FloatingRateCoupon(paymentDate, nominal, startDate, endDate, fixingDays,
-                                          index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears);
-        }
+                                        Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears) =>
+            new FloatingRateCoupon(paymentDate, nominal, startDate, endDate, fixingDays,
+                index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears);
     }
 }

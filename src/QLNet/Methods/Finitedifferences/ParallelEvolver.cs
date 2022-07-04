@@ -34,22 +34,22 @@ namespace QLNet.Methods.Finitedifferences
     */
     /*! \ingroup findiff */
 
-    public class StepConditionSet<array_type> : List<IStepCondition<array_type>>, IStepCondition<array_type>
+    [JetBrains.Annotations.PublicAPI] public class StepConditionSet<array_type> : List<IStepCondition<array_type>>, IStepCondition<array_type>
       where array_type : Vector
     {
         public void applyTo(object o, double t)
         {
-            List<array_type> a = (List<array_type>)o;
-            for (int i = 0; i < Count; i++)
+            var a = (List<array_type>)o;
+            for (var i = 0; i < Count; i++)
             {
                 this[i].applyTo(a[i], t);
             }
         }
     }
 
-    public class BoundaryConditionSet : List<List<BoundaryCondition<IOperator>>> { }
+    [JetBrains.Annotations.PublicAPI] public class BoundaryConditionSet : List<List<BoundaryCondition<IOperator>>> { }
 
-    public class ParallelEvolver<Evolver> : IMixedScheme, ISchemeFactory where Evolver : IMixedScheme, ISchemeFactory, new()
+    [JetBrains.Annotations.PublicAPI] public class ParallelEvolver<Evolver> : IMixedScheme, ISchemeFactory where Evolver : IMixedScheme, ISchemeFactory, new()
     {
         private List<IMixedScheme> evolvers_;
 
@@ -58,7 +58,7 @@ namespace QLNet.Methods.Finitedifferences
         public ParallelEvolver(List<IOperator> L, BoundaryConditionSet bcs)
         {
             evolvers_ = new List<IMixedScheme>(L.Count);
-            for (int i = 0; i < L.Count; i++)
+            for (var i = 0; i < L.Count; i++)
             {
                 evolvers_.Add(FastActivator<Evolver>.Create().factory(L[i], bcs[i]));
             }
@@ -66,8 +66,8 @@ namespace QLNet.Methods.Finitedifferences
 
         public void step(ref object o, double t, double theta = 1.0)
         {
-            List<Vector> a = (List<Vector>)o;
-            for (int i = 0; i < evolvers_.Count; i++)
+            var a = (List<Vector>)o;
+            for (var i = 0; i < evolvers_.Count; i++)
             {
                 object temp = a[i];
                 evolvers_[i].step(ref temp, t);
@@ -77,15 +77,12 @@ namespace QLNet.Methods.Finitedifferences
 
         public void setStep(double dt)
         {
-            for (int i = 0; i < evolvers_.Count; i++)
+            for (var i = 0; i < evolvers_.Count; i++)
             {
                 evolvers_[i].setStep(dt);
             }
         }
 
-        public IMixedScheme factory(object L, object bcs, object[] additionalFields = null)
-        {
-            return new ParallelEvolver<Evolver>((List<IOperator>)L, (BoundaryConditionSet)bcs);
-        }
+        public IMixedScheme factory(object L, object bcs, object[] additionalFields = null) => new ParallelEvolver<Evolver>((List<IOperator>)L, (BoundaryConditionSet)bcs);
     }
 }

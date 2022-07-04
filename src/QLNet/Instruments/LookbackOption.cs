@@ -19,7 +19,7 @@ using QLNet.Time;
 namespace QLNet.Instruments
 {
     //! Continuous-floating lookback option
-    public class ContinuousFloatingLookbackOption : OneAssetOption
+    [JetBrains.Annotations.PublicAPI] public class ContinuousFloatingLookbackOption : OneAssetOption
     {
         //! %Arguments for continuous fixed lookback option calculation
         public new class Arguments : Option.Arguments
@@ -48,8 +48,8 @@ namespace QLNet.Instruments
         {
             base.setupArguments(args);
 
-            Arguments moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument type");
+            var moreArgs = args as Arguments;
+            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
             moreArgs.minmax = minmax_;
         }
 
@@ -58,7 +58,7 @@ namespace QLNet.Instruments
     }
 
     //! Continuous-fixed lookback option
-    public class ContinuousFixedLookbackOption : OneAssetOption
+    [JetBrains.Annotations.PublicAPI] public class ContinuousFixedLookbackOption : OneAssetOption
     {
         //! %Arguments for continuous fixed lookback option calculation
         public new class Arguments : Option.Arguments
@@ -87,8 +87,8 @@ namespace QLNet.Instruments
         {
             base.setupArguments(args);
 
-            Arguments moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument type");
+            var moreArgs = args as Arguments;
+            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
             moreArgs.minmax = minmax_;
         }
 
@@ -109,7 +109,7 @@ namespace QLNet.Instruments
        (1994).
 
     */
-    public class ContinuousPartialFloatingLookbackOption : ContinuousFloatingLookbackOption
+    [JetBrains.Annotations.PublicAPI] public class ContinuousPartialFloatingLookbackOption : ContinuousFloatingLookbackOption
     {
         //! %Arguments for continuous partial floating lookback option calculation
         public new class Arguments : ContinuousFloatingLookbackOption.Arguments
@@ -120,11 +120,11 @@ namespace QLNet.Instruments
             {
                 base.validate();
 
-                EuropeanExercise europeanExercise = exercise as EuropeanExercise;
+                var europeanExercise = exercise as EuropeanExercise;
                 Utils.QL_REQUIRE(lookbackPeriodEnd <= europeanExercise.lastDate(), () =>
                                  "lookback start date must be earlier than exercise date");
 
-                FloatingTypePayoff floatingTypePayoff = payoff as FloatingTypePayoff;
+                var floatingTypePayoff = payoff as FloatingTypePayoff;
 
                 if (floatingTypePayoff.optionType() == Type.Call)
                 {
@@ -156,8 +156,8 @@ namespace QLNet.Instruments
         {
             base.setupArguments(args);
 
-            Arguments moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument type");
+            var moreArgs = args as Arguments;
+            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
             moreArgs.lambda = lambda_;
             moreArgs.lookbackPeriodEnd = lookbackPeriodEnd_;
         }
@@ -186,7 +186,7 @@ namespace QLNet.Instruments
        (1994).
 
     */
-    public class ContinuousPartialFixedLookbackOption : ContinuousFixedLookbackOption
+    [JetBrains.Annotations.PublicAPI] public class ContinuousPartialFixedLookbackOption : ContinuousFixedLookbackOption
     {
         //! %Arguments for continuous partial fixed lookback option calculation
         public new class Arguments : ContinuousFixedLookbackOption.Arguments
@@ -196,7 +196,7 @@ namespace QLNet.Instruments
             {
                 base.validate();
 
-                EuropeanExercise europeanExercise = exercise as EuropeanExercise;
+                var europeanExercise = exercise as EuropeanExercise;
                 Utils.QL_REQUIRE(lookbackPeriodStart <= europeanExercise.lastDate(), () =>
                                  "lookback start date must be earlier than exercise date");
             }
@@ -214,8 +214,8 @@ namespace QLNet.Instruments
         {
             base.setupArguments(args);
 
-            Arguments moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument type");
+            var moreArgs = args as Arguments;
+            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
             moreArgs.lookbackPeriodStart = lookbackPeriodStart_;
         }
 

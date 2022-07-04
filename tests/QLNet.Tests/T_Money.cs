@@ -25,22 +25,22 @@ using QLNet.Math;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Money
+    [JetBrains.Annotations.PublicAPI] public class T_Money
     {
         [Fact]
         public void testNone()
         {
             Currency EUR = new EURCurrency();
 
-            Money m1 = 50000.0 * EUR;
-            Money m2 = 100000.0 * EUR;
-            Money m3 = 500000.0 * EUR;
+            var m1 = 50000.0 * EUR;
+            var m2 = 100000.0 * EUR;
+            var m3 = 500000.0 * EUR;
 
             Money.conversionType = Money.ConversionType.NoConversion;
 
-            Money calculated = m1 * 3.0 + 2.5 * m2 - m3 / 5.0;
-            double x = m1.value * 3.0 + 2.5 * m2.value - m3.value / 5.0;
-            Money expected = new Money(x, EUR);
+            var calculated = m1 * 3.0 + 2.5 * m2 - m3 / 5.0;
+            var x = m1.value * 3.0 + 2.5 * m2.value - m3.value / 5.0;
+            var expected = new Money(x, EUR);
 
             if (calculated != expected)
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
@@ -51,25 +51,25 @@ namespace QLNet.Tests
         {
             Currency EUR = new EURCurrency(), GBP = new GBPCurrency(), USD = new USDCurrency();
 
-            Money m1 = 50000.0 * GBP;
-            Money m2 = 100000.0 * EUR;
-            Money m3 = 500000.0 * USD;
+            var m1 = 50000.0 * GBP;
+            var m2 = 100000.0 * EUR;
+            var m3 = 500000.0 * USD;
 
             ExchangeRateManager.Instance.clear();
-            ExchangeRate eur_usd = new ExchangeRate(EUR, USD, 1.2042);
-            ExchangeRate eur_gbp = new ExchangeRate(EUR, GBP, 0.6612);
+            var eur_usd = new ExchangeRate(EUR, USD, 1.2042);
+            var eur_gbp = new ExchangeRate(EUR, GBP, 0.6612);
             ExchangeRateManager.Instance.add(eur_usd);
             ExchangeRateManager.Instance.add(eur_gbp);
 
             Money.conversionType = Money.ConversionType.BaseCurrencyConversion;
             Money.baseCurrency = EUR;
 
-            Money calculated = m1 * 3.0 + 2.5 * m2 - m3 / 5.0;
+            var calculated = m1 * 3.0 + 2.5 * m2 - m3 / 5.0;
 
-            Rounding round = Money.baseCurrency.rounding;
-            double x = round.Round(m1.value * 3.0 / eur_gbp.rate) + 2.5 * m2.value
-                       - round.Round(m3.value / (5.0 * eur_usd.rate));
-            Money expected = new Money(x, EUR);
+            var round = Money.baseCurrency.rounding;
+            var x = round.Round(m1.value * 3.0 / eur_gbp.rate) + 2.5 * m2.value
+                    - round.Round(m3.value / (5.0 * eur_usd.rate));
+            var expected = new Money(x, EUR);
 
             Money.conversionType = Money.ConversionType.NoConversion;
 
@@ -84,24 +84,24 @@ namespace QLNet.Tests
         {
             Currency EUR = new EURCurrency(), GBP = new GBPCurrency(), USD = new USDCurrency();
 
-            Money m1 = 50000.0 * GBP;
-            Money m2 = 100000.0 * EUR;
-            Money m3 = 500000.0 * USD;
+            var m1 = 50000.0 * GBP;
+            var m2 = 100000.0 * EUR;
+            var m3 = 500000.0 * USD;
 
             ExchangeRateManager.Instance.clear();
-            ExchangeRate eur_usd = new ExchangeRate(EUR, USD, 1.2042);
-            ExchangeRate eur_gbp = new ExchangeRate(EUR, GBP, 0.6612);
+            var eur_usd = new ExchangeRate(EUR, USD, 1.2042);
+            var eur_gbp = new ExchangeRate(EUR, GBP, 0.6612);
             ExchangeRateManager.Instance.add(eur_usd);
             ExchangeRateManager.Instance.add(eur_gbp);
 
             Money.conversionType = Money.ConversionType.AutomatedConversion;
 
-            Money calculated = m1 * 3.0 + 2.5 * m2 - m3 / 5.0;
+            var calculated = m1 * 3.0 + 2.5 * m2 - m3 / 5.0;
 
-            Rounding round = m1.currency.rounding;
-            double x = m1.value * 3.0 + round.Round(2.5 * m2.value * eur_gbp.rate)
-                       - round.Round(m3.value / 5.0 * eur_gbp.rate / eur_usd.rate);
-            Money expected = new Money(x, GBP);
+            var round = m1.currency.rounding;
+            var x = m1.value * 3.0 + round.Round(2.5 * m2.value * eur_gbp.rate)
+                    - round.Round(m3.value / 5.0 * eur_gbp.rate / eur_usd.rate);
+            var expected = new Money(x, GBP);
 
             Money.conversionType = Money.ConversionType.NoConversion;
 

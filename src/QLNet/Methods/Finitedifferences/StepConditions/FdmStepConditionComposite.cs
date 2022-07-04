@@ -28,7 +28,7 @@ using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.StepConditions
 {
-    public class FdmStepConditionComposite : IStepCondition<Vector>
+    [JetBrains.Annotations.PublicAPI] public class FdmStepConditionComposite : IStepCondition<Vector>
     {
         public FdmStepConditionComposite()
         {
@@ -39,10 +39,10 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
         {
             conditions_ = conditions;
 
-            List<double> allStoppingTimes = new List<double>();
-            foreach (List<double> iter in stoppingTimes)
+            var allStoppingTimes = new List<double>();
+            foreach (var iter in stoppingTimes)
             {
-                foreach (double t in iter)
+                foreach (var t in iter)
                     allStoppingTimes.Add(t);
             }
             stoppingTimes_ = allStoppingTimes.Distinct().OrderBy(x => x).ToList();
@@ -50,18 +50,18 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
 
         public void applyTo(object o, double t)
         {
-            foreach (IStepCondition<Vector> iter in conditions_)
+            foreach (var iter in conditions_)
                 iter.applyTo(o, t);
         }
 
         public static FdmStepConditionComposite joinConditions(FdmSnapshotCondition c1,
                                                                FdmStepConditionComposite c2)
         {
-            List<List<double>> stoppingTimes = new List<List<double>>();
+            var stoppingTimes = new List<List<double>>();
             stoppingTimes.Add(c2.stoppingTimes());
             stoppingTimes.Add(new InitializedList<double>(1, c1.getTime()));
 
-            List<IStepCondition<Vector>> conditions = new List<IStepCondition<Vector>>();
+            var conditions = new List<IStepCondition<Vector>>();
             conditions.Add(c2);
             conditions.Add(c1);
 
@@ -75,12 +75,12 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
                                                                  Date refDate,
                                                                  DayCounter dayCounter)
         {
-            List<List<double>> stoppingTimes = new List<List<double>>();
-            List<IStepCondition<Vector>> stepConditions = new List<IStepCondition<Vector>>();
+            var stoppingTimes = new List<List<double>>();
+            var stepConditions = new List<IStepCondition<Vector>>();
 
             if (!cashFlow.empty())
             {
-                FdmDividendHandler dividendCondition =
+                var dividendCondition =
                    new FdmDividendHandler(cashFlow, mesher,
                                           refDate, dayCounter, 0);
 
@@ -88,17 +88,17 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
                 stoppingTimes.Add(dividendCondition.dividendTimes());
             }
 
-            Utils.QL_REQUIRE(exercise.type() == Exercise.Type.American
-                             || exercise.type() == Exercise.Type.European
-                             || exercise.type() == Exercise.Type.Bermudan,
-                             () => "exercise type is not supported");
-            if (exercise.type() == Exercise.Type.American)
+            Utils.QL_REQUIRE(exercise.ExerciseType() == Exercise.Type.American
+                             || exercise.ExerciseType() == Exercise.Type.European
+                             || exercise.ExerciseType() == Exercise.Type.Bermudan,
+                             () => "exercise ExerciseType is not supported");
+            if (exercise.ExerciseType() == Exercise.Type.American)
             {
                 stepConditions.Add(new FdmAmericanStepCondition(mesher, calculator));
             }
-            else if (exercise.type() == Exercise.Type.Bermudan)
+            else if (exercise.ExerciseType() == Exercise.Type.Bermudan)
             {
-                FdmBermudanStepCondition bermudanCondition =
+                var bermudanCondition =
                    new FdmBermudanStepCondition(exercise.dates(),
                                                 refDate, dayCounter,
                                                 mesher, calculator);
@@ -109,8 +109,9 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
             return new FdmStepConditionComposite(stoppingTimes, stepConditions);
         }
 
-        public List<double> stoppingTimes() { return stoppingTimes_; }
-        public List<IStepCondition<Vector>> conditions() { return conditions_; }
+        public List<double> stoppingTimes() => stoppingTimes_;
+
+        public List<IStepCondition<Vector>> conditions() => conditions_;
 
         protected List<double> stoppingTimes_;
         protected List<IStepCondition<Vector>> conditions_;

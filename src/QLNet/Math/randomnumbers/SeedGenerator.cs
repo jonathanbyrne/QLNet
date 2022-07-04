@@ -23,7 +23,7 @@ namespace QLNet.Math.randomnumbers
 {
     //! Random seed generator
     /*! Random number generator used for automatic generation of initialization seeds. */
-    public class SeedGenerator
+    [JetBrains.Annotations.PublicAPI] public class SeedGenerator
     {
         private MersenneTwisterUniformRng rng_;
 
@@ -34,27 +34,24 @@ namespace QLNet.Math.randomnumbers
             initialize();
         }
 
-        public ulong get()
-        {
-            return rng_.nextInt32();
-        }
+        public ulong get() => rng_.nextInt32();
 
-        public static SeedGenerator instance() { return instance_; }
+        public static SeedGenerator instance() => instance_;
 
         private void initialize()
         {
             // firstSeed is chosen based on clock() and used for the first rng
-            ulong firstSeed = (ulong)DateTime.Now.Ticks;
-            MersenneTwisterUniformRng first = new MersenneTwisterUniformRng(firstSeed);
+            var firstSeed = (ulong)DateTime.Now.Ticks;
+            var first = new MersenneTwisterUniformRng(firstSeed);
 
             // secondSeed is as random as it could be
             // feel free to suggest improvements
-            ulong secondSeed = first.nextInt32();
+            var secondSeed = first.nextInt32();
 
-            MersenneTwisterUniformRng second = new MersenneTwisterUniformRng(secondSeed);
+            var second = new MersenneTwisterUniformRng(secondSeed);
 
             // use the second rng to initialize the final one
-            ulong skip = second.nextInt32() % 1000;
+            var skip = second.nextInt32() % 1000;
             List<ulong> init = new InitializedList<ulong>(4);
             init[0] = second.nextInt32();
             init[1] = second.nextInt32();

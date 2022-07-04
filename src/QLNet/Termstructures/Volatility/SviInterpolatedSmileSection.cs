@@ -26,7 +26,7 @@ using System.Linq;
 
 namespace QLNet.Termstructures.Volatility
 {
-    public class SviInterpolatedSmileSection : SmileSection
+    [JetBrains.Annotations.PublicAPI] public class SviInterpolatedSmileSection : SmileSection
     {
         //! \name Constructors
         //@{
@@ -69,7 +69,7 @@ namespace QLNet.Termstructures.Volatility
             forward_.registerWith(update);
             atmVolatility_.registerWith(update);
 
-            for (int i = 0; i < volHandles_.Count; ++i)
+            for (var i = 0; i < volHandles_.Count; ++i)
                 volHandles_[i].registerWith(update);
         }
 
@@ -108,7 +108,7 @@ namespace QLNet.Termstructures.Volatility
             endCriteria_ = endCriteria;
             method_ = method;
 
-            for (int i = 0; i < volHandles_.Count; ++i)
+            for (var i = 0; i < volHandles_.Count; ++i)
                 volHandles_[i] = new Handle<Quote>(new SimpleQuote(volHandles[i]));
         }
 
@@ -119,7 +119,7 @@ namespace QLNet.Termstructures.Volatility
             vols_.Clear();
             actualStrikes_.Clear();
             // we populate the volatilities, skipping the invalid ones
-            for (int i = 0; i < volHandles_.Count; ++i)
+            for (var i = 0; i < volHandles_.Count; ++i)
             {
                 if (volHandles_[i].link.isValid())
                 {
@@ -145,7 +145,7 @@ namespace QLNet.Termstructures.Volatility
 
         protected void createInterpolation()
         {
-            SviInterpolation tmp = new SviInterpolation(actualStrikes_.Where(x => actualStrikes_.First().IsEqual(x)).ToList(),
+            var tmp = new SviInterpolation(actualStrikes_.Where(x => actualStrikes_.First().IsEqual(x)).ToList(),
                                                         actualStrikes_.Count,
                                                         vols_.Where(x => vols_.First().IsEqual(x)).ToList(),
                                                         exerciseTime(), forwardValue_, a_, b_, sigma_, rho_, m_, isAFixed_,
@@ -157,7 +157,7 @@ namespace QLNet.Termstructures.Volatility
         protected override double varianceImpl(double strike)
         {
             calculate();
-            double v = sviInterpolation_.value(strike, true);
+            var v = sviInterpolation_.value(strike, true);
             return v * v * exerciseTime();
         }
 
@@ -168,7 +168,8 @@ namespace QLNet.Termstructures.Volatility
         }
         public override double minStrike() { calculate(); return strikes_.First(); }
         public override double maxStrike() { calculate(); return strikes_.Last(); }
-        public override double? atmLevel() { throw new NotImplementedException(); }
+        public override double? atmLevel() => throw new NotImplementedException();
+
         public override void update() { base.update(); }
 
         private List<double> strikes_;

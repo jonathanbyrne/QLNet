@@ -35,15 +35,21 @@ namespace QLNet.Math.matrixutilities
         private double error;
         private Vector x;
 
-        public int Iterations { get { return iterations; } set { iterations = value; } }
-        public double Error { get { return error; } set { error = value; } }
-        public Vector X { get { return x; } set { x = value; } }
+        public int Iterations { get => iterations;
+            set => iterations = value;
+        }
+        public double Error { get => error;
+            set => error = value;
+        }
+        public Vector X { get => x;
+            set => x = value;
+        }
     }
 
     ///
     /// bi-conjugated gradient stableized algorithm
     ///
-    public class BiCGStab
+    [JetBrains.Annotations.PublicAPI] public class BiCGStab
     {
         public delegate Vector MatrixMult(Vector x);
 
@@ -58,7 +64,7 @@ namespace QLNet.Math.matrixutilities
 
         public BiCGStabResult solve(Vector b, Vector x0 = null)
         {
-            double bnorm2 = Vector.Norm2(b);
+            var bnorm2 = Vector.Norm2(b);
             BiCGStabResult result;
             if (bnorm2.IsEqual(0.0))
             {
@@ -66,15 +72,15 @@ namespace QLNet.Math.matrixutilities
                 return result;
             }
 
-            Vector x = x0 != null ? x0 : new Vector(b.size(), 0.0);
-            Vector r = b - A_(x);
+            var x = x0 != null ? x0 : new Vector(b.size(), 0.0);
+            var r = b - A_(x);
 
-            Vector rTld = r;
+            var rTld = r;
             Vector p = null, pTld, v = null, s, sTld, t;
-            double omega = 1.0;
+            var omega = 1.0;
             double rho, rhoTld = 1.0;
             double alpha = 0.0, beta;
-            double error = Vector.Norm2(r) / bnorm2;
+            var error = Vector.Norm2(r) / bnorm2;
 
             int i;
             for (i = 0; i < maxIter_ && error >= relTol_; ++i)

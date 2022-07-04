@@ -24,7 +24,7 @@ namespace QLNet.Methods.montecarlo
 
         \ingroup mcarlo
     */
-    public interface PathPricer<PathType>
+    [JetBrains.Annotations.PublicAPI] public interface PathPricer<PathType>
     {
         double value(PathType pt);
     }

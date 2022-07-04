@@ -25,7 +25,7 @@ using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Utilities
 {
-    public class FdmMesherIntegral
+    [JetBrains.Annotations.PublicAPI] public class FdmMesherIntegral
     {
         public FdmMesherIntegral(
            FdmMesherComposite mesher,
@@ -37,23 +37,23 @@ namespace QLNet.Methods.Finitedifferences.Utilities
 
         public double integrate(Vector f)
         {
-            Vector x = new Vector(meshers_.Last().locations());
+            var x = new Vector(meshers_.Last().locations());
 
             if (meshers_.Count == 1)
             {
                 return integrator1d_(x, f);
             }
 
-            FdmMesherComposite subMesher =
+            var subMesher =
                new FdmMesherComposite(
                new List<Fdm1dMesher>(meshers_.GetRange(0, meshers_.Count - 1)));
 
-            FdmMesherIntegral subMesherIntegral = new FdmMesherIntegral(subMesher, integrator1d_);
-            int subSize = subMesher.layout().size();
+            var subMesherIntegral = new FdmMesherIntegral(subMesher, integrator1d_);
+            var subSize = subMesher.layout().size();
 
             Vector g = new Vector(x.size()), fSub = new Vector(subSize);
 
-            for (int i = 0; i < x.size(); ++i)
+            for (var i = 0; i < x.size(); ++i)
             {
                 f.copy(i * subSize,
                        (i + 1) * subSize, 0, fSub);

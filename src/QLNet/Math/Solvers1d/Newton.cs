@@ -27,7 +27,7 @@ namespace QLNet.Math.Solvers1d
     /*! \note This solver requires that the passed function object
               implement a method <tt>Real derivative(Real)</tt>.
     */
-    public class Newton : Solver1D
+    [JetBrains.Annotations.PublicAPI] public class Newton : Solver1D
     {
         protected override double solveImpl(ISolver1d f, double xAccuracy)
         {
@@ -50,7 +50,7 @@ namespace QLNet.Math.Solvers1d
                 // jumped out of brackets, switch to NewtonSafe
                 if ((xMin_ - root_) * (root_ - xMax_) < 0.0)
                 {
-                    NewtonSafe s = new NewtonSafe();
+                    var s = new NewtonSafe();
                     s.setMaxEvaluations(maxEvaluations_ - evaluationNumber_);
                     return s.solve(f, xAccuracy, root_ + dx, xMin_, xMax_);
                 }

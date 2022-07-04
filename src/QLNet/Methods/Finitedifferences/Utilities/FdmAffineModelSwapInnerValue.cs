@@ -34,7 +34,7 @@ using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Utilities
 {
-    public class FdmAffineModelSwapInnerValue<ModelType> : FdmInnerValueCalculator where ModelType : ITermStructureConsistentModel, IAffineModel
+    [JetBrains.Annotations.PublicAPI] public class FdmAffineModelSwapInnerValue<ModelType> : FdmInnerValueCalculator where ModelType : ITermStructureConsistentModel, IAffineModel
     {
         public FdmAffineModelSwapInnerValue(
            ModelType disModel,
@@ -63,14 +63,14 @@ namespace QLNet.Methods.Finitedifferences.Utilities
 
         public override double innerValue(FdmLinearOpIterator iter, double t)
         {
-            Date iterExerciseDate = exerciseDates_.ContainsKey(t) ? exerciseDates_[t] : exerciseDates_.Last().Value;
+            var iterExerciseDate = exerciseDates_.ContainsKey(t) ? exerciseDates_[t] : exerciseDates_.Last().Value;
 
-            Vector disRate = getState(disModel_, t, iter);
-            Vector fwdRate = getState(fwdModel_, t, iter);
+            var disRate = getState(disModel_, t, iter);
+            var fwdRate = getState(fwdModel_, t, iter);
 
             if (disTs_.empty() || iterExerciseDate != disTs_.currentLink().referenceDate())
             {
-                Handle<YieldTermStructure> discount
+                var discount
                    = disModel_.termStructure();
 
                 disTs_.linkTo(new FdmAffineModelTermStructure(disRate,
@@ -78,7 +78,7 @@ namespace QLNet.Methods.Finitedifferences.Utilities
                                                               iterExerciseDate, discount.currentLink().referenceDate(),
                                                               disModel_));
 
-                Handle<YieldTermStructure> fwd = fwdModel_.termStructure();
+                var fwd = fwdModel_.termStructure();
 
                 fwdTs_.linkTo(new FdmAffineModelTermStructure(fwdRate,
                                                               fwd.currentLink().calendar(), fwd.currentLink().dayCounter(),
@@ -92,10 +92,10 @@ namespace QLNet.Methods.Finitedifferences.Utilities
                 (fwdTs_.currentLink() as FdmAffineModelTermStructure).setVariable(fwdRate);
             }
 
-            double npv = 0.0;
-            for (int j = 0; j < 2; j++)
+            var npv = 0.0;
+            for (var j = 0; j < 2; j++)
             {
-                for (int i = 0; i < swap_.leg(j).Count; ++i)
+                for (var i = 0; i < swap_.leg(j).Count; ++i)
                 {
                     npv += (swap_.leg(j)[i] as Coupon).accrualStartDate() >= iterExerciseDate
                            ? swap_.leg(j)[i].amount() * disTs_.currentLink().discount(swap_.leg(j)[i].date())
@@ -109,22 +109,19 @@ namespace QLNet.Methods.Finitedifferences.Utilities
 
             return System.Math.Max(0.0, npv);
         }
-        public override double avgInnerValue(FdmLinearOpIterator iter, double t)
-        {
-            return innerValue(iter, t);
-        }
+        public override double avgInnerValue(FdmLinearOpIterator iter, double t) => innerValue(iter, t);
 
         public Vector getState(ModelType model, double t, FdmLinearOpIterator iter)
         {
             if (model.GetType().Equals(typeof(HullWhite)))
             {
-                Vector retVal = new Vector(1, (model as HullWhite).dynamics().shortRate(t,
+                var retVal = new Vector(1, (model as HullWhite).dynamics().shortRate(t,
                                                                                         mesher_.location(iter, direction_)));
                 return retVal;
             }
             else if (model.GetType().Equals(typeof(G2)))
             {
-                Vector retVal = new Vector(2);
+                var retVal = new Vector(2);
                 retVal[0] = mesher_.location(iter, direction_);
                 retVal[1] = mesher_.location(iter, direction_ + 1);
 

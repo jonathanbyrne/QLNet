@@ -30,7 +30,7 @@ namespace QLNet.Models.Equity
 
         \test calibration is tested against known good values.
     */
-    public class HestonModel : CalibratedModel
+    [JetBrains.Annotations.PublicAPI] public class HestonModel : CalibratedModel
     {
         public HestonModel(HestonProcess process)
            : base(5)
@@ -51,41 +51,39 @@ namespace QLNet.Models.Equity
         }
 
         // variance mean version level
-        public double theta() { return arguments_[0].value(0.0); }
+        public double theta() => arguments_[0].value(0.0);
+
         // variance mean reversion speed
-        public double kappa() { return arguments_[1].value(0.0); }
+        public double kappa() => arguments_[1].value(0.0);
+
         // volatility of the volatility
-        public double sigma() { return arguments_[2].value(0.0); }
+        public double sigma() => arguments_[2].value(0.0);
+
         // correlation
-        public double rho() { return arguments_[3].value(0.0); }
+        public double rho() => arguments_[3].value(0.0);
+
         // spot variance
-        public double v0() { return arguments_[4].value(0.0); }
+        public double v0() => arguments_[4].value(0.0);
 
         // underlying process
-        public HestonProcess process() { return process_; }
+        public HestonProcess process() => process_;
 
-        public class FellerConstraint : Constraint
+        [JetBrains.Annotations.PublicAPI] public class FellerConstraint : Constraint
         {
             private class Impl : IConstraint
             {
                 public bool test(Vector param)
                 {
-                    double theta = param[0];
-                    double kappa = param[1];
-                    double sigma = param[2];
+                    var theta = param[0];
+                    var kappa = param[1];
+                    var sigma = param[2];
 
                     return sigma >= 0.0 && sigma * sigma < 2.0 * kappa * theta;
                 }
 
-                public Vector upperBound(Vector parameters)
-                {
-                    return new Vector(parameters.size(), double.MaxValue);
-                }
+                public Vector upperBound(Vector parameters) => new Vector(parameters.size(), double.MaxValue);
 
-                public Vector lowerBound(Vector parameters)
-                {
-                    return new Vector(parameters.size(), double.MinValue);
-                }
+                public Vector lowerBound(Vector parameters) => new Vector(parameters.size(), double.MinValue);
             }
 
             public FellerConstraint()

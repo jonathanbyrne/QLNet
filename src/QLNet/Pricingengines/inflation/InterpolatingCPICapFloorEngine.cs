@@ -24,7 +24,7 @@ namespace QLNet.Pricingengines.inflation
 {
     //! This engine only adds timing functionality (e.g. different lag)
     //! w.r.t. an existing interpolated price surface.
-    public class InterpolatingCPICapFloorEngine : CPICapFloor.Engine
+    [JetBrains.Annotations.PublicAPI] public class InterpolatingCPICapFloorEngine : CPICapFloor.Engine
     {
         public InterpolatingCPICapFloorEngine(Handle<CPICapFloorTermPriceSurface> priceSurf)
         {
@@ -35,12 +35,12 @@ namespace QLNet.Pricingengines.inflation
 
         public override void calculate()
         {
-            double npv = 0.0;
+            var npv = 0.0;
 
             // what is the difference between the observationLag of the surface
             // and the observationLag of the cap/floor?
             // TODO next line will fail if units are different
-            Period lagDiff = arguments_.observationLag - priceSurf_.link.observationLag();
+            var lagDiff = arguments_.observationLag - priceSurf_.link.observationLag();
             // next line will fail if units are different if Period() is not well written
             Utils.QL_REQUIRE(lagDiff >= new Period(0, TimeUnit.Months), () => "InterpolatingCPICapFloorEngine: " +
                              "lag difference must be non-negative: " + lagDiff);
@@ -48,7 +48,7 @@ namespace QLNet.Pricingengines.inflation
             // we now need an effective maturity to use in the price surface because this uses
             // maturity of calibration instruments as its time axis, N.B. this must also
             // use the roll because the surface does
-            Date effectiveMaturity = arguments_.payDate - lagDiff;
+            var effectiveMaturity = arguments_.payDate - lagDiff;
 
 
             // what interpolation do we use? Index / flat / linear
@@ -69,8 +69,8 @@ namespace QLNet.Pricingengines.inflation
             }
             else
             {
-                KeyValuePair<Date, Date> dd = Utils.inflationPeriod(effectiveMaturity, arguments_.infIndex.link.frequency());
-                double priceStart = 0.0;
+                var dd = Utils.inflationPeriod(effectiveMaturity, arguments_.infIndex.link.frequency());
+                var priceStart = 0.0;
 
                 if (arguments_.type == QLNet.Option.Type.Call)
                 {
@@ -90,7 +90,7 @@ namespace QLNet.Pricingengines.inflation
                 else
                 {
                     // linear interpolation will be very close
-                    double priceEnd = 0.0;
+                    var priceEnd = 0.0;
                     if (arguments_.type == QLNet.Option.Type.Call)
                     {
                         priceEnd = priceSurf_.link.capPrice(dd.Value + new Period(1, TimeUnit.Days), arguments_.strike);
@@ -108,7 +108,7 @@ namespace QLNet.Pricingengines.inflation
             results_.value = npv;
         }
 
-        public virtual string name() { return "InterpolatingCPICapFloorEngine"; }
+        public virtual string name() => "InterpolatingCPICapFloorEngine";
 
         protected Handle<CPICapFloorTermPriceSurface> priceSurf_;
     }

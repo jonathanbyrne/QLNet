@@ -32,7 +32,7 @@ namespace QLNet.Indexes
     /// Index names are case insensitive
     /// </remarks>
     /// </summary>
-    public class IndexManager
+    [JetBrains.Annotations.PublicAPI] public class IndexManager
     {
 
         // Index manager can store a callback for missing fixings
@@ -40,10 +40,7 @@ namespace QLNet.Indexes
 
         private static readonly IndexManager instance_ = new IndexManager();
 
-        public static IndexManager instance()
-        {
-            return instance_;
-        }
+        public static IndexManager instance() => instance_;
 
         private IndexManager()
         { }
@@ -53,10 +50,7 @@ namespace QLNet.Indexes
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public bool hasHistory(string name)
-        {
-            return data_.ContainsKey(name.ToUpper()) && data_[name.ToUpper()].value().Count > 0;
-        }
+        public bool hasHistory(string name) => data_.ContainsKey(name.ToUpper()) && data_[name.ToUpper()].value().Count > 0;
 
         /// <summary>
         /// returns the (possibly empty) history of the index fixings
@@ -118,8 +112,8 @@ namespace QLNet.Indexes
         /// <returns></returns>
         public List<string> histories()
         {
-            List<string> t = new List<string>();
-            foreach (string s in data_.Keys)
+            var t = new List<string>();
+            foreach (var s in data_.Keys)
                 t.Add(s);
             return t;
         }

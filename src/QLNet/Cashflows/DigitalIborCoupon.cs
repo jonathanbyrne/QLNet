@@ -26,7 +26,7 @@ namespace QLNet.Cashflows
 {
 
     //! Ibor rate coupon with digital digital call/put option
-    public class DigitalIborCoupon : DigitalCoupon
+    [JetBrains.Annotations.PublicAPI] public class DigitalIborCoupon : DigitalCoupon
     {
         // need by CashFlowVectors
         public DigitalIborCoupon() { }
@@ -46,15 +46,12 @@ namespace QLNet.Cashflows
         }
 
         // Factory - for Leg generators
-        public virtual CashFlow factory(IborCoupon underlying, double? callStrike, Position.Type callPosition, bool isCallATMIncluded, double? callDigitalPayoff, double? putStrike, Position.Type putPosition, bool isPutATMIncluded, double? putDigitalPayoff, DigitalReplication replication)
-        {
-            return new DigitalIborCoupon(underlying, callStrike, callPosition, isCallATMIncluded, callDigitalPayoff, putStrike, putPosition, isPutATMIncluded, putDigitalPayoff, replication);
-        }
+        public virtual CashFlow factory(IborCoupon underlying, double? callStrike, Position.Type callPosition, bool isCallATMIncluded, double? callDigitalPayoff, double? putStrike, Position.Type putPosition, bool isPutATMIncluded, double? putDigitalPayoff, DigitalReplication replication) => new DigitalIborCoupon(underlying, callStrike, callPosition, isCallATMIncluded, callDigitalPayoff, putStrike, putPosition, isPutATMIncluded, putDigitalPayoff, replication);
     }
 
 
     //! helper class building a sequence of digital ibor-rate coupons
-    public class DigitalIborLeg
+    [JetBrains.Annotations.PublicAPI] public class DigitalIborLeg
     {
         public DigitalIborLeg(Schedule schedule, IborIndex index)
         {
@@ -117,10 +114,8 @@ namespace QLNet.Cashflows
             spreads_ = spreads;
             return this;
         }
-        public DigitalIborLeg inArrears()
-        {
-            return inArrears(true);
-        }
+        public DigitalIborLeg inArrears() => inArrears(true);
+
         public DigitalIborLeg inArrears(bool flag)
         {
             inArrears_ = flag;
@@ -141,10 +136,8 @@ namespace QLNet.Cashflows
             longCallOption_ = type;
             return this;
         }
-        public DigitalIborLeg withCallATM()
-        {
-            return withCallATM(true);
-        }
+        public DigitalIborLeg withCallATM() => withCallATM(true);
+
         public DigitalIborLeg withCallATM(bool flag)
         {
             callATM_ = flag;
@@ -175,10 +168,8 @@ namespace QLNet.Cashflows
             longPutOption_ = type;
             return this;
         }
-        public DigitalIborLeg withPutATM()
-        {
-            return withPutATM(true);
-        }
+        public DigitalIborLeg withPutATM() => withPutATM(true);
+
         public DigitalIborLeg withPutATM(bool flag)
         {
             putATM_ = flag;
@@ -194,19 +185,14 @@ namespace QLNet.Cashflows
             putPayoffs_ = payoffs;
             return this;
         }
-        public DigitalIborLeg withReplication()
-        {
-            return withReplication(new DigitalReplication());
-        }
+        public DigitalIborLeg withReplication() => withReplication(new DigitalReplication());
+
         public DigitalIborLeg withReplication(DigitalReplication replication)
         {
             replication_ = replication;
             return this;
         }
-        public List<CashFlow> value()
-        {
-            return CashFlowVectors.FloatingDigitalLeg<IborIndex, IborCoupon, DigitalIborCoupon>(notionals_, schedule_, index_, paymentDayCounter_, paymentAdjustment_, fixingDays_, gearings_, spreads_, inArrears_, callStrikes_, longCallOption_, callATM_, callPayoffs_, putStrikes_, longPutOption_, putATM_, putPayoffs_, replication_);
-        }
+        public List<CashFlow> value() => CashFlowVectors.FloatingDigitalLeg<IborIndex, IborCoupon, DigitalIborCoupon>(notionals_, schedule_, index_, paymentDayCounter_, paymentAdjustment_, fixingDays_, gearings_, spreads_, inArrears_, callStrikes_, longCallOption_, callATM_, callPayoffs_, putStrikes_, longPutOption_, putATM_, putPayoffs_, replication_);
 
         private Schedule schedule_;
         private IborIndex index_;

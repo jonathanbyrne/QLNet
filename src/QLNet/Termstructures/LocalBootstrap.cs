@@ -29,11 +29,11 @@ using System.Linq;
 
 namespace QLNet.Termstructures
 {
-    public class LocalBootstrapForYield : LocalBootstrap<PiecewiseYieldCurve, YieldTermStructure>
+    [JetBrains.Annotations.PublicAPI] public class LocalBootstrapForYield : LocalBootstrap<PiecewiseYieldCurve, YieldTermStructure>
     { }
 
     // penalty function class for solving using a multi-dimensional solver
-    public class PenaltyFunction<T, U> : CostFunction
+    [JetBrains.Annotations.PublicAPI] public class PenaltyFunction<T, U> : CostFunction
        where T : Curve<U>, new()
        where U : TermStructure
     {
@@ -58,7 +58,7 @@ namespace QLNet.Termstructures
 
             curve_.interpolation_.update();
 
-            double penalty = rateHelpers_.GetRange(start_, localisation_)
+            var penalty = rateHelpers_.GetRange(start_, localisation_)
                              .Aggregate(0.0, (acc, v) => System.Math.Abs(v.quoteError()));
             return penalty;
         }
@@ -92,7 +92,7 @@ namespace QLNet.Termstructures
         whilst using a smoother interpolation method. Particularly
         good for the convex-monotone spline method.
     */
-    public class LocalBootstrap<T, U> : IBootStrap<T>
+    [JetBrains.Annotations.PublicAPI] public class LocalBootstrap<T, U> : IBootStrap<T>
        where T : Curve<U>, new()
        where U : TermStructure
     {
@@ -112,7 +112,7 @@ namespace QLNet.Termstructures
         {
             ts_ = ts;
 
-            int n = ts_.instruments_.Count;
+            var n = ts_.instruments_.Count;
             Utils.QL_REQUIRE(n >= ts_.interpolator_.requiredPoints, () =>
                              "not enough instruments: " + n + " provided, " + ts_.interpolator_.requiredPoints + " required");
 
@@ -171,22 +171,22 @@ namespace QLNet.Termstructures
                     ts_.data_[i + 1] = ts_.data_[i];
             }
 
-            LevenbergMarquardt solver = new LevenbergMarquardt(ts_.accuracy_, ts_.accuracy_, ts_.accuracy_);
-            EndCriteria endCriteria = new EndCriteria(100, 10, 0.00, ts_.accuracy_, 0.00);
-            PositiveConstraint posConstraint = new PositiveConstraint();
-            NoConstraint noConstraint = new NoConstraint();
-            Constraint solverConstraint = forcePositive_ ? posConstraint : (Constraint)noConstraint;
+            var solver = new LevenbergMarquardt(ts_.accuracy_, ts_.accuracy_, ts_.accuracy_);
+            var endCriteria = new EndCriteria(100, 10, 0.00, ts_.accuracy_, 0.00);
+            var posConstraint = new PositiveConstraint();
+            var noConstraint = new NoConstraint();
+            var solverConstraint = forcePositive_ ? posConstraint : (Constraint)noConstraint;
 
             // now start the bootstrapping.
-            int iInst = localisation_ - 1;
+            var iInst = localisation_ - 1;
 
-            int dataAdjust = (ts_.interpolator_ as ConvexMonotone).dataSizeAdjustment;
+            var dataAdjust = (ts_.interpolator_ as ConvexMonotone).dataSizeAdjustment;
 
             do
             {
-                int initialDataPt = iInst + 1 - localisation_ + dataAdjust;
-                Vector startArray = new Vector(localisation_ + 1 - dataAdjust);
-                for (int j = 0; j < startArray.size() - 1; ++j)
+                var initialDataPt = iInst + 1 - localisation_ + dataAdjust;
+                var startArray = new Vector(localisation_ + 1 - dataAdjust);
+                for (var j = 0; j < startArray.size() - 1; ++j)
                     startArray[j] = ts_.data_[initialDataPt + j];
 
                 // here we are extending the interpolation a point at a
@@ -210,8 +210,8 @@ namespace QLNet.Termstructures
 
                 var currentCost = new PenaltyFunction<T, U>(ts_, initialDataPt, ts_.instruments_,
                                                             iInst - localisation_ + 1, iInst + 1);
-                Problem toSolve = new Problem(currentCost, solverConstraint, startArray);
-                EndCriteria.Type endType = solver.minimize(toSolve, endCriteria);
+                var toSolve = new Problem(currentCost, solverConstraint, startArray);
+                var endType = solver.minimize(toSolve, endCriteria);
 
                 // check the end criteria
                 Utils.QL_REQUIRE(endType == EndCriteria.Type.StationaryFunctionAccuracy ||

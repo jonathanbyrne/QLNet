@@ -36,14 +36,14 @@ namespace QLNet.Cashflows
     /// where ?=sgn(a). Then: R=(aL+b)+|a|min(C?b|a|??L,0)
     /// </remarks>
     /// </summary>
-    public class CappedFlooredCoupon : FloatingRateCoupon
+    [JetBrains.Annotations.PublicAPI] public class CappedFlooredCoupon : FloatingRateCoupon
     {
         // data
-        protected FloatingRateCoupon underlying_;
-        protected bool isCapped_;
-        protected bool isFloored_;
-        protected double? cap_;
-        protected double? floor_;
+        protected FloatingRateCoupon _underlying;
+        protected bool _isCapped;
+        protected bool _isFloored;
+        protected double? _cap;
+        protected double? _floor;
 
         // need by CashFlowVectors
         public CappedFlooredCoupon() { }
@@ -51,37 +51,37 @@ namespace QLNet.Cashflows
         public CappedFlooredCoupon(FloatingRateCoupon underlying, double? cap = null, double? floor = null)
         : base(underlying.date(), underlying.nominal(), underlying.accrualStartDate(), underlying.accrualEndDate(), underlying.fixingDays, underlying.index(), underlying.gearing(), underlying.spread(), underlying.referencePeriodStart, underlying.referencePeriodEnd, underlying.dayCounter(), underlying.isInArrears())
         {
-            underlying_ = underlying;
-            isCapped_ = false;
-            isFloored_ = false;
+            _underlying = underlying;
+            _isCapped = false;
+            _isFloored = false;
 
             if (gearing_ > 0)
             {
                 if (cap != null)
                 {
-                    isCapped_ = true;
-                    cap_ = cap;
+                    _isCapped = true;
+                    _cap = cap;
                 }
                 if (floor != null)
                 {
-                    floor_ = floor;
-                    isFloored_ = true;
+                    _floor = floor;
+                    _isFloored = true;
                 }
             }
             else
             {
                 if (cap != null)
                 {
-                    floor_ = cap;
-                    isFloored_ = true;
+                    _floor = cap;
+                    _isFloored = true;
                 }
                 if (floor != null)
                 {
-                    isCapped_ = true;
-                    cap_ = floor;
+                    _isCapped = true;
+                    _cap = floor;
                 }
             }
-            if (isCapped_ && isFloored_)
+            if (_isCapped && _isFloored)
             {
                 Utils.QL_REQUIRE(cap >= floor, () =>
                                  "cap level (" + cap + ") less than floor level (" + floor + ")");
@@ -91,74 +91,58 @@ namespace QLNet.Cashflows
         // Coupon interface
         public override double rate()
         {
-            Utils.QL_REQUIRE(underlying_.pricer() != null, () => "pricer not set");
+            Utils.QL_REQUIRE(_underlying.pricer() != null, () => "pricer not set");
 
-            double swapletRate = underlying_.rate();
-            double floorletRate = 0.0;
-            if (isFloored_)
-                floorletRate = underlying_.pricer().floorletRate(effectiveFloor().Value);
-            double capletRate = 0.0;
-            if (isCapped_)
-                capletRate = underlying_.pricer().capletRate(effectiveCap().Value);
+            var swapletRate = _underlying.rate();
+            var floorletRate = 0.0;
+            if (_isFloored)
+                floorletRate = _underlying.pricer().floorletRate(EffectiveFloor().Value);
+            var capletRate = 0.0;
+            if (_isCapped)
+                capletRate = _underlying.pricer().capletRate(EffectiveCap().Value);
             return swapletRate + floorletRate - capletRate;
         }
-        public override double convexityAdjustment()
-        {
-            return underlying_.convexityAdjustment();
-        }
+        public override double convexityAdjustment() => _underlying.convexityAdjustment();
+
         // cap
-        public double cap()
+        public double Cap()
         {
-            if (gearing_ > 0 && isCapped_)
-                return cap_.GetValueOrDefault();
-            if (gearing_ < 0 && isFloored_)
-                return floor_.GetValueOrDefault();
+            if (gearing_ > 0 && _isCapped)
+                return _cap.GetValueOrDefault();
+            if (gearing_ < 0 && _isFloored)
+                return _floor.GetValueOrDefault();
             return 0.0;
         }
         //! floor
-        public double floor()
+        public double Floor()
         {
-            if (gearing_ > 0 && isFloored_)
-                return floor_.GetValueOrDefault();
-            if (gearing_ < 0 && isCapped_)
-                return cap_.GetValueOrDefault();
+            if (gearing_ > 0 && _isFloored)
+                return _floor.GetValueOrDefault();
+            if (gearing_ < 0 && _isCapped)
+                return _cap.GetValueOrDefault();
             return 0.0;
         }
         //! effective cap of fixing
-        public double? effectiveCap()
-        {
-            return isCapped_ ? (cap_.Value - spread()) / gearing() : (double?)null;
-        }
+        public double? EffectiveCap() => _isCapped ? (_cap.Value - spread()) / gearing() : (double?)null;
 
         //! effective floor of fixing
-        public double? effectiveFloor()
-        {
-            return isFloored_ ? (floor_.Value - spread()) / gearing() : (double?)null;
-        }
+        public double? EffectiveFloor() => _isFloored ? (_floor.Value - spread()) / gearing() : (double?)null;
 
-        public bool isCapped()
-        {
-            return isCapped_;
-        }
-        public bool isFloored()
-        {
-            return isFloored_;
-        }
+        public bool IsCapped() => _isCapped;
+
+        public bool IsFloored() => _isFloored;
 
         public override void setPricer(FloatingRateCouponPricer pricer)
         {
             base.setPricer(pricer);
-            underlying_.setPricer(pricer);
+            _underlying.setPricer(pricer);
         }
 
         // Factory - for Leg generators
-        public virtual CashFlow factory(double nominal, Date paymentDate, Date startDate, Date endDate, int fixingDays, InterestRateIndex index, double gearing, double spread, double? cap, double? floor, Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears)
-        {
-            return new CappedFlooredCoupon(new IborCoupon(paymentDate, nominal, startDate, endDate, fixingDays, (IborIndex)index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears), cap, floor);
-        }
+        public virtual CashFlow Factory(double nominal, Date paymentDate, Date startDate, Date endDate, int fixingDays, InterestRateIndex index, double gearing, double spread, double? cap, double? floor, Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears) => new CappedFlooredCoupon(new IborCoupon(paymentDate, nominal, startDate, endDate, fixingDays, (IborIndex)index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears), cap, floor);
     }
 
-    public class CappedFlooredIborCoupon : CappedFlooredCoupon
+    [JetBrains.Annotations.PublicAPI] public class CappedFlooredIborCoupon : CappedFlooredCoupon
     {
         // need by CashFlowVectors
         public CappedFlooredIborCoupon() { }
@@ -182,13 +166,10 @@ namespace QLNet.Cashflows
         }
 
         // Factory - for Leg generators
-        public virtual CashFlow factory(double nominal, Date paymentDate, Date startDate, Date endDate, int fixingDays, IborIndex index, double gearing, double spread, double? cap, double? floor, Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears)
-        {
-            return new CappedFlooredIborCoupon(paymentDate, nominal, startDate, endDate, fixingDays, index, gearing, spread, cap, floor, refPeriodStart, refPeriodEnd, dayCounter, isInArrears);
-        }
+        public virtual CashFlow Factory(double nominal, Date paymentDate, Date startDate, Date endDate, int fixingDays, IborIndex index, double gearing, double spread, double? cap, double? floor, Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears) => new CappedFlooredIborCoupon(paymentDate, nominal, startDate, endDate, fixingDays, index, gearing, spread, cap, floor, refPeriodStart, refPeriodEnd, dayCounter, isInArrears);
     }
 
-    public class CappedFlooredCmsCoupon : CappedFlooredCoupon
+    [JetBrains.Annotations.PublicAPI] public class CappedFlooredCmsCoupon : CappedFlooredCoupon
     {
         // need by CashFlowVectors
         public CappedFlooredCmsCoupon() { }
@@ -212,10 +193,7 @@ namespace QLNet.Cashflows
         }
 
         // Factory - for Leg generators
-        public override CashFlow factory(double nominal, Date paymentDate, Date startDate, Date endDate, int fixingDays, InterestRateIndex index, double gearing, double spread, double? cap, double? floor, Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears)
-        {
-            return new CappedFlooredCmsCoupon(nominal, paymentDate, startDate, endDate, fixingDays, (SwapIndex)index, gearing, spread, cap, floor, refPeriodStart, refPeriodEnd, dayCounter, isInArrears);
-        }
+        public override CashFlow Factory(double nominal, Date paymentDate, Date startDate, Date endDate, int fixingDays, InterestRateIndex index, double gearing, double spread, double? cap, double? floor, Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears) => new CappedFlooredCmsCoupon(nominal, paymentDate, startDate, endDate, fixingDays, (SwapIndex)index, gearing, spread, cap, floor, refPeriodStart, refPeriodEnd, dayCounter, isInArrears);
     }
 
 }

@@ -30,7 +30,7 @@ namespace QLNet.Pricingengines.barrier
         \test the correctness of the returned value is tested by
               reproducing results available in literature.
     */
-    public class WulinYongDoubleBarrierEngine : DoubleBarrierOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class WulinYongDoubleBarrierEngine : DoubleBarrierOption.Engine
     {
         public WulinYongDoubleBarrierEngine(GeneralizedBlackScholesProcess process, int series = 5)
         {
@@ -42,62 +42,62 @@ namespace QLNet.Pricingengines.barrier
         }
         public override void calculate()
         {
-            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
             Utils.QL_REQUIRE(payoff.strike() > 0.0, () => "strike must be positive");
 
-            double K = payoff.strike();
-            double S = process_.x0();
+            var K = payoff.strike();
+            var S = process_.x0();
             Utils.QL_REQUIRE(S >= 0.0, () => "negative or null underlying given");
             Utils.QL_REQUIRE(!triggered(S), () => "barrier touched");
 
-            DoubleBarrier.Type barrierType = arguments_.barrierType;
+            var barrierType = arguments_.barrierType;
             Utils.QL_REQUIRE(barrierType == DoubleBarrier.Type.KnockOut ||
                              barrierType == DoubleBarrier.Type.KnockIn, () =>
                              "only KnockIn and KnockOut options supported");
 
-            double L = arguments_.barrier_lo.GetValueOrDefault();
-            double H = arguments_.barrier_hi.GetValueOrDefault();
-            double K_up = System.Math.Min(H, K);
-            double K_down = System.Math.Max(L, K);
-            double T = residualTime();
-            double rd = riskFreeRate();
-            double dd = riskFreeDiscount();
-            double rf = dividendYield();
-            double df = dividendDiscount();
-            double vol = volatility();
-            double mu = rd - rf - vol * vol / 2.0;
-            double sgn = mu > 0 ? 1.0 : mu < 0 ? -1.0 : 0.0;
+            var L = arguments_.barrier_lo.GetValueOrDefault();
+            var H = arguments_.barrier_hi.GetValueOrDefault();
+            var K_up = System.Math.Min(H, K);
+            var K_down = System.Math.Max(L, K);
+            var T = residualTime();
+            var rd = riskFreeRate();
+            var dd = riskFreeDiscount();
+            var rf = dividendYield();
+            var df = dividendDiscount();
+            var vol = volatility();
+            var mu = rd - rf - vol * vol / 2.0;
+            var sgn = mu > 0 ? 1.0 : mu < 0 ? -1.0 : 0.0;
             //rebate
-            double R_L = arguments_.rebate.GetValueOrDefault();
-            double R_H = arguments_.rebate.GetValueOrDefault();
+            var R_L = arguments_.rebate.GetValueOrDefault();
+            var R_H = arguments_.rebate.GetValueOrDefault();
 
             //european option
-            EuropeanOption europeanOption = new EuropeanOption(payoff, arguments_.exercise);
+            var europeanOption = new EuropeanOption(payoff, arguments_.exercise);
             IPricingEngine analyticEuropeanEngine = new AnalyticEuropeanEngine(process_);
             europeanOption.setPricingEngine(analyticEuropeanEngine);
-            double european = europeanOption.NPV();
+            var european = europeanOption.NPV();
 
             double barrierOut = 0;
             double rebateIn = 0;
-            for (int n = -series_; n < series_; n++)
+            for (var n = -series_; n < series_; n++)
             {
-                double d1 = D(S / H * System.Math.Pow(L / H, 2.0 * n), vol * vol + mu, vol, T);
-                double d2 = d1 - vol * System.Math.Sqrt(T);
-                double g1 = D(H / S * System.Math.Pow(L / H, 2.0 * n - 1.0), vol * vol + mu, vol, T);
-                double g2 = g1 - vol * System.Math.Sqrt(T);
-                double h1 = D(S / H * System.Math.Pow(L / H, 2.0 * n - 1.0), vol * vol + mu, vol, T);
-                double h2 = h1 - vol * System.Math.Sqrt(T);
-                double k1 = D(L / S * System.Math.Pow(L / H, 2.0 * n - 1.0), vol * vol + mu, vol, T);
-                double k2 = k1 - vol * System.Math.Sqrt(T);
-                double d1_down = D(S / K_down * System.Math.Pow(L / H, 2.0 * n), vol * vol + mu, vol, T);
-                double d2_down = d1_down - vol * System.Math.Sqrt(T);
-                double d1_up = D(S / K_up * System.Math.Pow(L / H, 2.0 * n), vol * vol + mu, vol, T);
-                double d2_up = d1_up - vol * System.Math.Sqrt(T);
-                double k1_down = D(H * H / (K_down * S) * System.Math.Pow(L / H, 2.0 * n), vol * vol + mu, vol, T);
-                double k2_down = k1_down - vol * System.Math.Sqrt(T);
-                double k1_up = D(H * H / (K_up * S) * System.Math.Pow(L / H, 2.0 * n), vol * vol + mu, vol, T);
-                double k2_up = k1_up - vol * System.Math.Sqrt(T);
+                var d1 = D(S / H * System.Math.Pow(L / H, 2.0 * n), vol * vol + mu, vol, T);
+                var d2 = d1 - vol * System.Math.Sqrt(T);
+                var g1 = D(H / S * System.Math.Pow(L / H, 2.0 * n - 1.0), vol * vol + mu, vol, T);
+                var g2 = g1 - vol * System.Math.Sqrt(T);
+                var h1 = D(S / H * System.Math.Pow(L / H, 2.0 * n - 1.0), vol * vol + mu, vol, T);
+                var h2 = h1 - vol * System.Math.Sqrt(T);
+                var k1 = D(L / S * System.Math.Pow(L / H, 2.0 * n - 1.0), vol * vol + mu, vol, T);
+                var k2 = k1 - vol * System.Math.Sqrt(T);
+                var d1_down = D(S / K_down * System.Math.Pow(L / H, 2.0 * n), vol * vol + mu, vol, T);
+                var d2_down = d1_down - vol * System.Math.Sqrt(T);
+                var d1_up = D(S / K_up * System.Math.Pow(L / H, 2.0 * n), vol * vol + mu, vol, T);
+                var d2_up = d1_up - vol * System.Math.Sqrt(T);
+                var k1_down = D(H * H / (K_down * S) * System.Math.Pow(L / H, 2.0 * n), vol * vol + mu, vol, T);
+                var k2_down = k1_down - vol * System.Math.Sqrt(T);
+                var k1_up = D(H * H / (K_up * S) * System.Math.Pow(L / H, 2.0 * n), vol * vol + mu, vol, T);
+                var k2_up = k1_up - vol * System.Math.Sqrt(T);
 
                 if (payoff.optionType() == QLNet.Option.Type.Call)
                 {
@@ -117,13 +117,13 @@ namespace QLNet.Pricingengines.barrier
                 }
                 else
                 {
-                    Utils.QL_FAIL("option type not recognized");
+                    Utils.QL_FAIL("option ExerciseType not recognized");
                 }
 
-                double v1 = D(H / S * System.Math.Pow(H / L, 2.0 * n), -mu, vol, T);
-                double v2 = D(H / S * System.Math.Pow(H / L, 2.0 * n), mu, vol, T);
-                double v3 = D(S / L * System.Math.Pow(H / L, 2.0 * n), -mu, vol, T);
-                double v4 = D(S / L * System.Math.Pow(H / L, 2.0 * n), mu, vol, T);
+                var v1 = D(H / S * System.Math.Pow(H / L, 2.0 * n), -mu, vol, T);
+                var v2 = D(H / S * System.Math.Pow(H / L, 2.0 * n), mu, vol, T);
+                var v3 = D(S / L * System.Math.Pow(H / L, 2.0 * n), -mu, vol, T);
+                var v4 = D(S / L * System.Math.Pow(H / L, 2.0 * n), mu, vol, T);
                 rebateIn += dd * R_H * sgn * (System.Math.Pow(L / H, 2.0 * n * mu / (vol * vol)) * f_.value(sgn * v1) - System.Math.Pow(H / S, 2.0 * mu / (vol * vol)) * f_.value(-sgn * v2))
                              + dd * R_L * sgn * (System.Math.Pow(L / S, 2.0 * mu / (vol * vol)) * f_.value(-sgn * v3) - System.Math.Pow(H / L, 2.0 * n * mu / (vol * vol)) * f_.value(sgn * v4));
             }
@@ -144,31 +144,31 @@ namespace QLNet.Pricingengines.barrier
         private int series_;
         private CumulativeNormalDistribution f_;
         // helper methods
-        private double underlying() { return process_.x0(); }
+        private double underlying() => process_.x0();
+
         private double strike()
         {
-            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
             return payoff.strike();
         }
 
-        private double residualTime() { return process_.time(arguments_.exercise.lastDate()); }
-        private double volatility() { return process_.blackVolatility().link.blackVol(residualTime(), strike()); }
-        private double riskFreeRate()
-        {
-            return process_.riskFreeRate().link.zeroRate(
-                      residualTime(), Compounding.Continuous, Frequency.NoFrequency).value();
-        }
-        private double riskFreeDiscount() { return process_.riskFreeRate().link.discount(residualTime()); }
-        private double dividendYield()
-        {
-            return process_.dividendYield().link.zeroRate(
-                      residualTime(), Compounding.Continuous, Frequency.NoFrequency).value();
-        }
-        private double dividendDiscount() { return process_.dividendYield().link.discount(residualTime()); }
-        private double D(double X, double lambda, double sigma, double T)
-        {
-            return (System.Math.Log(X) + lambda * T) / (sigma * System.Math.Sqrt(T));
-        }
+        private double residualTime() => process_.time(arguments_.exercise.lastDate());
+
+        private double volatility() => process_.blackVolatility().link.blackVol(residualTime(), strike());
+
+        private double riskFreeRate() =>
+            process_.riskFreeRate().link.zeroRate(
+                residualTime(), Compounding.Continuous, Frequency.NoFrequency).value();
+
+        private double riskFreeDiscount() => process_.riskFreeRate().link.discount(residualTime());
+
+        private double dividendYield() =>
+            process_.dividendYield().link.zeroRate(
+                residualTime(), Compounding.Continuous, Frequency.NoFrequency).value();
+
+        private double dividendDiscount() => process_.dividendYield().link.discount(residualTime());
+
+        private double D(double X, double lambda, double sigma, double T) => (System.Math.Log(X) + lambda * T) / (sigma * System.Math.Sqrt(T));
     }
 }

@@ -53,9 +53,9 @@ namespace QLNet.Cashflows
        should probably be adjusted to an appropriate negative value,
        there is no automatic adjustment in this case.
     */
-    public class LinearTsrPricer : CmsCouponPricer, IMeanRevertingPricer
+    [JetBrains.Annotations.PublicAPI] public class LinearTsrPricer : CmsCouponPricer, IMeanRevertingPricer
     {
-        public class Settings
+        [JetBrains.Annotations.PublicAPI] public class Settings
         {
             public Settings()
             {
@@ -148,8 +148,8 @@ namespace QLNet.Cashflows
             if (fixingDate_ <= today_)
             {
                 // the fixing is determined
-                double Rs = coupon_.swapIndex().fixing(fixingDate_);
-                double price =
+                var Rs = coupon_.swapIndex().fixing(fixingDate_);
+                var price =
                    (gearing_ * Rs + spread_) *
                    (coupon_.accrualPeriod() *
                     discountCurve_.link.discount(paymentDate_) * couponDiscountRatio_);
@@ -157,8 +157,8 @@ namespace QLNet.Cashflows
             }
             else
             {
-                double atmCapletPrice = optionletPrice(QLNet.Option.Type.Call, swapRateValue_);
-                double atmFloorletPrice = optionletPrice(QLNet.Option.Type.Put, swapRateValue_);
+                var atmCapletPrice = optionletPrice(QLNet.Option.Type.Call, swapRateValue_);
+                var atmFloorletPrice = optionletPrice(QLNet.Option.Type.Put, swapRateValue_);
                 return gearing_ * (coupon_.accrualPeriod() *
                                    discountCurve_.link.discount(paymentDate_) *
                                    swapRateValue_ * couponDiscountRatio_ +
@@ -166,19 +166,18 @@ namespace QLNet.Cashflows
                        spreadLegValue_;
             }
         }
-        public override double swapletRate()
-        {
-            return swapletPrice() /
-                   (coupon_.accrualPeriod() * discountCurve_.link.discount(paymentDate_) * couponDiscountRatio_);
-        }
+        public override double swapletRate() =>
+            swapletPrice() /
+            (coupon_.accrualPeriod() * discountCurve_.link.discount(paymentDate_) * couponDiscountRatio_);
+
         public override double capletPrice(double effectiveCap)
         {
             // caplet is equivalent to call option on fixing
             if (fixingDate_ <= today_)
             {
                 // the fixing is determined
-                double Rs = System.Math.Max(coupon_.swapIndex().fixing(fixingDate_) - effectiveCap, 0.0);
-                double price =
+                var Rs = System.Math.Max(coupon_.swapIndex().fixing(fixingDate_) - effectiveCap, 0.0);
+                var price =
                    gearing_ * Rs *
                    (coupon_.accrualPeriod() *
                     discountCurve_.link.discount(paymentDate_) * couponDiscountRatio_);
@@ -186,24 +185,23 @@ namespace QLNet.Cashflows
             }
             else
             {
-                double capletPrice = optionletPrice(QLNet.Option.Type.Call, effectiveCap);
+                var capletPrice = optionletPrice(QLNet.Option.Type.Call, effectiveCap);
                 return gearing_ * capletPrice;
             }
         }
-        public override double capletRate(double effectiveCap)
-        {
-            return capletPrice(effectiveCap) /
-                   (coupon_.accrualPeriod() *
-                    discountCurve_.link.discount(paymentDate_) * couponDiscountRatio_);
-        }
+        public override double capletRate(double effectiveCap) =>
+            capletPrice(effectiveCap) /
+            (coupon_.accrualPeriod() *
+             discountCurve_.link.discount(paymentDate_) * couponDiscountRatio_);
+
         public override double floorletPrice(double effectiveFloor)
         {
             // floorlet is equivalent to put option on fixing
             if (fixingDate_ <= today_)
             {
                 // the fixing is determined
-                double Rs = System.Math.Max(effectiveFloor - coupon_.swapIndex().fixing(fixingDate_), 0.0);
-                double price =
+                var Rs = System.Math.Max(effectiveFloor - coupon_.swapIndex().fixing(fixingDate_), 0.0);
+                var price =
                    gearing_ * Rs *
                    (coupon_.accrualPeriod() *
                     discountCurve_.link.discount(paymentDate_) * couponDiscountRatio_);
@@ -211,18 +209,18 @@ namespace QLNet.Cashflows
             }
             else
             {
-                double floorletPrice = optionletPrice(QLNet.Option.Type.Put, effectiveFloor);
+                var floorletPrice = optionletPrice(QLNet.Option.Type.Put, effectiveFloor);
                 return gearing_ * floorletPrice;
             }
         }
-        public override double floorletRate(double effectiveFloor)
-        {
-            return floorletPrice(effectiveFloor) /
-                   (coupon_.accrualPeriod() *
-                    discountCurve_.link.discount(paymentDate_) * couponDiscountRatio_);
-        }
+        public override double floorletRate(double effectiveFloor) =>
+            floorletPrice(effectiveFloor) /
+            (coupon_.accrualPeriod() *
+             discountCurve_.link.discount(paymentDate_) * couponDiscountRatio_);
+
         /* */
-        public double meanReversion() { return meanReversion_.link.value(); }
+        public double meanReversion() => meanReversion_.link.value();
+
         public void setMeanReversion(Handle<Quote> meanReversion)
         {
             meanReversion_.unregisterWith(update);
@@ -234,7 +232,7 @@ namespace QLNet.Cashflows
 
         private double GsrG(Date d)
         {
-            double yf = volDayCounter_.yearFraction(fixingDate_, d);
+            var yf = volDayCounter_.yearFraction(fixingDate_, d);
             if (System.Math.Abs(meanReversion_.link.value()) < 1.0E-4)
                 return yf;
             else
@@ -243,17 +241,15 @@ namespace QLNet.Cashflows
         }
         private double singularTerms(Option.Type type, double strike)
         {
-            double omega = type == QLNet.Option.Type.Call ? 1.0 : -1.0;
-            double s1 = System.Math.Max(omega * (swapRateValue_ - strike), 0.0) *
-                        (a_ * swapRateValue_ + b_);
-            double s2 = (a_ * strike + b_) *
-                        smileSection_.optionPrice(strike, strike < swapRateValue_ ? QLNet.Option.Type.Put : QLNet.Option.Type.Call);
+            var omega = type == QLNet.Option.Type.Call ? 1.0 : -1.0;
+            var s1 = System.Math.Max(omega * (swapRateValue_ - strike), 0.0) *
+                     (a_ * swapRateValue_ + b_);
+            var s2 = (a_ * strike + b_) *
+                     smileSection_.optionPrice(strike, strike < swapRateValue_ ? QLNet.Option.Type.Put : QLNet.Option.Type.Call);
             return s1 + s2;
         }
-        private double integrand(double strike)
-        {
-            return 2.0 * a_ * smileSection_.optionPrice(strike, strike < swapRateValue_ ? QLNet.Option.Type.Put : QLNet.Option.Type.Call);
-        }
+        private double integrand(double strike) => 2.0 * a_ * smileSection_.optionPrice(strike, strike < swapRateValue_ ? QLNet.Option.Type.Put : QLNet.Option.Type.Call);
+
         private double a_, b_;
 
         private class VegaRatioHelper : ISolver1d
@@ -264,10 +260,7 @@ namespace QLNet.Cashflows
                 targetVega_ = targetVega;
             }
 
-            public override double value(double strike)
-            {
-                return section_.vega(strike) - targetVega_;
-            }
+            public override double value(double strike) => section_.vega(strike) - targetVega_;
 
             SmileSection section_;
             double targetVega_;
@@ -282,10 +275,7 @@ namespace QLNet.Cashflows
                 type_ = type;
             }
 
-            public override double value(double strike)
-            {
-                return section_.optionPrice(strike, type_) - targetPrice_;
-            }
+            public override double value(double strike) => section_.optionPrice(strike, type_) - targetPrice_;
 
             private SmileSection section_;
             private double targetPrice_;
@@ -336,7 +326,7 @@ namespace QLNet.Cashflows
                 swapRateValue_ = swap_.fairRate();
                 annuity_ = 1.0E4 * System.Math.Abs(swap_.fixedLegBPS());
 
-                SmileSection sectionTmp = swaptionVolatility().link.smileSection(fixingDate_, swapTenor_);
+                var sectionTmp = swaptionVolatility().link.smileSection(fixingDate_, swapTenor_);
 
                 // adjust bounds by section's shift
                 shiftedLowerBound_ = settings_.lowerRateBound_ - sectionTmp.shift();
@@ -353,18 +343,18 @@ namespace QLNet.Cashflows
                 // compute linear model's parameters
 
                 double gx = 0.0, gy = 0.0;
-                for (int i = 0; i < swap_.fixedLeg().Count; i++)
+                for (var i = 0; i < swap_.fixedLeg().Count; i++)
                 {
-                    Coupon c = swap_.fixedLeg()[i] as Coupon;
-                    double yf = c.accrualPeriod();
-                    Date d = c.date();
-                    double pv = yf * discountCurve_.link.discount(d);
+                    var c = swap_.fixedLeg()[i] as Coupon;
+                    var yf = c.accrualPeriod();
+                    var d = c.date();
+                    var pv = yf * discountCurve_.link.discount(d);
                     gx += pv * GsrG(d);
                     gy += pv;
                 }
 
-                double gamma = gx / gy;
-                Date lastd = swap_.fixedLeg().Last().date();
+                var gamma = gx / gy;
+                var lastd = swap_.fixedLeg().Last().date();
 
                 a_ = discountCurve_.link.discount(paymentDate_) *
                      (gamma - GsrG(paymentDate_)) /
@@ -384,7 +374,7 @@ namespace QLNet.Cashflows
             if (optionType == QLNet.Option.Type.Put && strike <= shiftedLowerBound_)
                 return 0.0;
 
-            // determine lower or upper integration bound (depending on option type)
+            // determine lower or upper integration bound (depending on option ExerciseType)
 
             double lower = strike, upper = strike;
 
@@ -404,7 +394,7 @@ namespace QLNet.Cashflows
                     {
                         // strikeFromVegaRatio ensures that returned strike is on the
                         // expected side of strike
-                        double bound = strikeFromVegaRatio(settings_.vegaRatio_, optionType, strike);
+                        var bound = strikeFromVegaRatio(settings_.vegaRatio_, optionType, strike);
                         if (optionType == QLNet.Option.Type.Call)
                             upper = System.Math.Min(bound, shiftedUpperBound_);
                         else
@@ -416,7 +406,7 @@ namespace QLNet.Cashflows
                     {
                         // strikeFromPrice ensures that returned strike is on the expected
                         // side of strike
-                        double bound = strikeFromPrice(settings_.vegaRatio_, optionType, strike);
+                        var bound = strikeFromPrice(settings_.vegaRatio_, optionType, strike);
                         if (optionType == QLNet.Option.Type.Call)
                             upper = System.Math.Min(bound, shiftedUpperBound_);
                         else
@@ -426,9 +416,9 @@ namespace QLNet.Cashflows
 
                 case Settings.Strategy.BSStdDevs:
                     {
-                        double? atm = smileSection_.atmLevel();
-                        double atmVol = smileSection_.volatility(atm.GetValueOrDefault());
-                        double shift = smileSection_.shift();
+                        var atm = smileSection_.atmLevel();
+                        var atmVol = smileSection_.volatility(atm.GetValueOrDefault());
+                        var shift = smileSection_.shift();
                         double lowerTmp, upperTmp;
                         if (smileSection_.volatilityType() == VolatilityType.ShiftedLognormal)
                         {
@@ -443,7 +433,7 @@ namespace QLNet.Cashflows
                         }
                         else
                         {
-                            double tmp = settings_.stdDevs_ * atmVol * System.Math.Sqrt(smileSection_.exerciseTime());
+                            var tmp = settings_.stdDevs_ * atmVol * System.Math.Sqrt(smileSection_.exerciseTime());
                             upperTmp = atm.GetValueOrDefault() + tmp;
                             lowerTmp = atm.GetValueOrDefault() - tmp;
                         }
@@ -459,7 +449,7 @@ namespace QLNet.Cashflows
 
             // compute the relevant integral
 
-            double result = 0.0;
+            var result = 0.0;
             double tmpBound;
             if (upper > lower)
             {
@@ -497,8 +487,8 @@ namespace QLNet.Cashflows
                 max = referenceStrike;
             }
 
-            VegaRatioHelper h = new VegaRatioHelper(smileSection_, smileSection_.vega(swapRateValue_) * ratio);
-            Brent solver = new Brent();
+            var h = new VegaRatioHelper(smileSection_, smileSection_.vega(swapRateValue_) * ratio);
+            var solver = new Brent();
 
             try
             {
@@ -528,8 +518,8 @@ namespace QLNet.Cashflows
                 max = referenceStrike;
             }
 
-            PriceHelper h = new PriceHelper(smileSection_, optionType, price);
-            Brent solver = new Brent();
+            var h = new PriceHelper(smileSection_, optionType, price);
+            var solver = new Brent();
 
             try
             {

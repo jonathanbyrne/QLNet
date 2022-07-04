@@ -35,7 +35,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_HestonModel
+    [JetBrains.Annotations.PublicAPI] public class T_HestonModel
     {
         struct CalibrationMarketData
         {
@@ -60,7 +60,7 @@ namespace QLNet.Tests
                http://math.ut.ee/~spartak/papers/stochjumpvols.pdf
             */
 
-            Date settlementDate = Settings.evaluationDate();
+            var settlementDate = Settings.evaluationDate();
 
             DayCounter dayCounter = new Actual365Fixed();
             Calendar calendar = new TARGET();
@@ -68,8 +68,8 @@ namespace QLNet.Tests
             int[] t = { 13, 41, 75, 165, 256, 345, 524, 703 };
             double[] r = { 0.0357, 0.0349, 0.0341, 0.0355, 0.0359, 0.0368, 0.0386, 0.0401 };
 
-            List<Date> dates = new List<Date>();
-            List<double> rates = new List<double>();
+            var dates = new List<Date>();
+            var rates = new List<double>();
             dates.Add(settlementDate);
             rates.Add(0.0357);
             int i;
@@ -79,11 +79,11 @@ namespace QLNet.Tests
                 rates.Add(r[i]);
             }
             // FLOATING_POINT_EXCEPTION
-            Handle<YieldTermStructure> riskFreeTS = new Handle<YieldTermStructure>(
+            var riskFreeTS = new Handle<YieldTermStructure>(
                new InterpolatedZeroCurve<Linear>(dates, rates, dayCounter));
 
 
-            Handle<YieldTermStructure> dividendYield = new Handle<YieldTermStructure>(Utilities.flatRate(settlementDate, 0.0, dayCounter));
+            var dividendYield = new Handle<YieldTermStructure>(Utilities.flatRate(settlementDate, 0.0, dayCounter));
 
             double[] v =
             {
@@ -102,26 +102,26 @@ namespace QLNet.Tests
             0.3976, 0.2860, 0.2607, 0.2356, 0.2297, 0.2268, 0.2241, 0.2320
          };
 
-            Handle<Quote> s0 = new Handle<Quote>(new SimpleQuote(4468.17));
+            var s0 = new Handle<Quote>(new SimpleQuote(4468.17));
             double[] strike = { 3400, 3600, 3800, 4000, 4200, 4400,
                              4500, 4600, 4800, 5000, 5200, 5400, 5600
                            };
 
-            List<CalibrationHelper> options = new List<CalibrationHelper>();
+            var options = new List<CalibrationHelper>();
 
-            for (int s = 0; s < 13; ++s)
+            for (var s = 0; s < 13; ++s)
             {
-                for (int m = 0; m < 8; ++m)
+                for (var m = 0; m < 8; ++m)
                 {
-                    Handle<Quote> vol = new Handle<Quote>(new SimpleQuote(v[s * 8 + m]));
+                    var vol = new Handle<Quote>(new SimpleQuote(v[s * 8 + m]));
 
-                    Period maturity = new Period((int)((t[m] + 3) / 7.0), TimeUnit.Weeks); // round to weeks
+                    var maturity = new Period((int)((t[m] + 3) / 7.0), TimeUnit.Weeks); // round to weeks
                     options.Add(new HestonModelHelper(maturity, calendar, s0, strike[s], vol, riskFreeTS, dividendYield,
                                                       CalibrationHelper.CalibrationErrorType.ImpliedVolError));
                 }
             }
 
-            CalibrationMarketData marketData = new CalibrationMarketData(s0, riskFreeTS, dividendYield, options);
+            var marketData = new CalibrationMarketData(s0, riskFreeTS, dividendYield, options);
 
             return marketData;
         }
@@ -131,22 +131,22 @@ namespace QLNet.Tests
         {
             // Testing Heston model calibration using a flat volatility surface
 
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
                 /* calibrate a Heston model to a constant volatility surface without
                    smile. expected result is a vanishing volatility of the volatility.
                    In addition theta and v0 should be equal to the constant variance */
 
-                Date today = Date.Today;
+                var today = Date.Today;
                 Settings.setEvaluationDate(today);
 
                 DayCounter dayCounter = new Actual360();
                 Calendar calendar = new NullCalendar();
 
-                Handle<YieldTermStructure> riskFreeTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.04, dayCounter));
-                Handle<YieldTermStructure> dividendTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.50, dayCounter));
+                var riskFreeTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.04, dayCounter));
+                var dividendTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.50, dayCounter));
 
-                List<Period> optionMaturities = new List<Period>();
+                var optionMaturities = new List<Period>();
                 optionMaturities.Add(new Period(1, TimeUnit.Months));
                 optionMaturities.Add(new Period(2, TimeUnit.Months));
                 optionMaturities.Add(new Period(3, TimeUnit.Months));
@@ -155,47 +155,47 @@ namespace QLNet.Tests
                 optionMaturities.Add(new Period(1, TimeUnit.Years));
                 optionMaturities.Add(new Period(2, TimeUnit.Years));
 
-                List<CalibrationHelper> options = new List<CalibrationHelper>();
-                Handle<Quote> s0 = new Handle<Quote>(new SimpleQuote(1.0));
-                Handle<Quote> vol = new Handle<Quote>(new SimpleQuote(0.1));
-                double volatility = vol.link.value();
+                var options = new List<CalibrationHelper>();
+                var s0 = new Handle<Quote>(new SimpleQuote(1.0));
+                var vol = new Handle<Quote>(new SimpleQuote(0.1));
+                var volatility = vol.link.value();
 
-                for (int i = 0; i < optionMaturities.Count; ++i)
+                for (var i = 0; i < optionMaturities.Count; ++i)
                 {
-                    for (double moneyness = -1.0; moneyness < 2.0; moneyness += 1.0)
+                    for (var moneyness = -1.0; moneyness < 2.0; moneyness += 1.0)
                     {
                         // FLOATING_POINT_EXCEPTION
-                        double tau = dayCounter.yearFraction(riskFreeTS.link.referenceDate(),
+                        var tau = dayCounter.yearFraction(riskFreeTS.link.referenceDate(),
                                                              calendar.advance(riskFreeTS.link.referenceDate(),
                                                                               optionMaturities[i]));
-                        double fwdPrice = s0.link.value() * dividendTS.link.discount(tau)
-                                          / riskFreeTS.link.discount(tau);
-                        double strikePrice = fwdPrice * System.Math.Exp(-moneyness * volatility * System.Math.Sqrt(tau));
+                        var fwdPrice = s0.link.value() * dividendTS.link.discount(tau)
+                                       / riskFreeTS.link.discount(tau);
+                        var strikePrice = fwdPrice * System.Math.Exp(-moneyness * volatility * System.Math.Sqrt(tau));
 
                         options.Add(new HestonModelHelper(optionMaturities[i], calendar, s0, strikePrice, vol,
                                                           riskFreeTS, dividendTS));
                     }
                 }
 
-                for (double sigma = 0.1; sigma < 0.7; sigma += 0.2)
+                for (var sigma = 0.1; sigma < 0.7; sigma += 0.2)
                 {
-                    double v0 = 0.01;
-                    double kappa = 0.2;
-                    double theta = 0.02;
-                    double rho = -0.75;
+                    var v0 = 0.01;
+                    var kappa = 0.2;
+                    var theta = 0.02;
+                    var rho = -0.75;
 
-                    HestonProcess process = new HestonProcess(riskFreeTS, dividendTS, s0, v0, kappa, theta, sigma, rho);
+                    var process = new HestonProcess(riskFreeTS, dividendTS, s0, v0, kappa, theta, sigma, rho);
 
-                    HestonModel model = new HestonModel(process);
+                    var model = new HestonModel(process);
                     IPricingEngine engine = new AnalyticHestonEngine(model, 96);
 
-                    for (int i = 0; i < options.Count; ++i)
+                    for (var i = 0; i < options.Count; ++i)
                         options[i].setPricingEngine(engine);
 
-                    LevenbergMarquardt om = new LevenbergMarquardt(1e-8, 1e-8, 1e-8);
+                    var om = new LevenbergMarquardt(1e-8, 1e-8, 1e-8);
                     model.calibrate(options, om, new EndCriteria(400, 40, 1.0e-8, 1.0e-8, 1.0e-8));
 
-                    double tolerance = 3.0e-3;
+                    var tolerance = 3.0e-3;
 
                     if (model.sigma() > tolerance)
                     {
@@ -226,45 +226,45 @@ namespace QLNet.Tests
         public void testDAXCalibration()
         {
             // Testing Heston model calibration using DAX volatility data
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                Date settlementDate = new Date(5, Month.July, 2002);
+                var settlementDate = new Date(5, Month.July, 2002);
 
                 Settings.setEvaluationDate(settlementDate);
 
-                CalibrationMarketData marketData = getDAXCalibrationMarketData();
+                var marketData = getDAXCalibrationMarketData();
 
-                Handle<YieldTermStructure> riskFreeTS = marketData.riskFreeTS;
-                Handle<YieldTermStructure> dividendTS = marketData.dividendYield;
-                Handle<Quote> s0 = marketData.s0;
+                var riskFreeTS = marketData.riskFreeTS;
+                var dividendTS = marketData.dividendYield;
+                var s0 = marketData.s0;
 
-                List<CalibrationHelper> options = marketData.options;
+                var options = marketData.options;
 
-                double v0 = 0.1;
-                double kappa = 1.0;
-                double theta = 0.1;
-                double sigma = 0.5;
-                double rho = -0.5;
+                var v0 = 0.1;
+                var kappa = 1.0;
+                var theta = 0.1;
+                var sigma = 0.5;
+                var rho = -0.5;
 
-                HestonProcess process = new HestonProcess(riskFreeTS, dividendTS, s0, v0, kappa, theta, sigma, rho);
+                var process = new HestonProcess(riskFreeTS, dividendTS, s0, v0, kappa, theta, sigma, rho);
 
-                HestonModel model = new HestonModel(process);
+                var model = new HestonModel(process);
 
                 IPricingEngine engine = new AnalyticHestonEngine(model, 64);
 
-                for (int i = 0; i < options.Count; ++i)
+                for (var i = 0; i < options.Count; ++i)
                     options[i].setPricingEngine(engine);
 
-                LevenbergMarquardt om = new LevenbergMarquardt(1e-8, 1e-8, 1e-8);
+                var om = new LevenbergMarquardt(1e-8, 1e-8, 1e-8);
                 model.calibrate(options, om, new EndCriteria(400, 40, 1.0e-8, 1.0e-8, 1.0e-8));
 
                 double sse = 0;
-                for (int i = 0; i < 13 * 8; ++i)
+                for (var i = 0; i < 13 * 8; ++i)
                 {
-                    double diff = options[i].calibrationError() * 100.0;
+                    var diff = options[i].calibrationError() * 100.0;
                     sse += diff * diff;
                 }
-                double expected = 177.2; //see article by A. Sepp.
+                var expected = 177.2; //see article by A. Sepp.
                 if (System.Math.Abs(sse - expected) > 1.0)
                 {
                     QAssert.Fail("Failed to reproduce calibration error"
@@ -346,37 +346,37 @@ namespace QLNet.Tests
         {
             // Testing analytic Heston engine against cached values
 
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                Date settlementDate = new Date(27, Month.December, 2004);
+                var settlementDate = new Date(27, Month.December, 2004);
                 Settings.setEvaluationDate(settlementDate);
                 DayCounter dayCounter = new ActualActual();
-                Date exerciseDate = new Date(28, Month.March, 2005);
+                var exerciseDate = new Date(28, Month.March, 2005);
 
                 StrikedTypePayoff payoff = new PlainVanillaPayoff(QLNet.Option.Type.Call, 1.05);
                 Exercise exercise = new EuropeanExercise(exerciseDate);
 
-                Handle<YieldTermStructure> riskFreeTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.0225, dayCounter));
-                Handle<YieldTermStructure> dividendTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.02, dayCounter));
+                var riskFreeTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.0225, dayCounter));
+                var dividendTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.02, dayCounter));
 
-                Handle<Quote> s0 = new Handle<Quote>(new SimpleQuote(1.0));
-                double v0 = 0.1;
-                double kappa = 3.16;
-                double theta = 0.09;
-                double sigma = 0.4;
-                double rho = -0.2;
+                var s0 = new Handle<Quote>(new SimpleQuote(1.0));
+                var v0 = 0.1;
+                var kappa = 3.16;
+                var theta = 0.09;
+                var sigma = 0.4;
+                var rho = -0.2;
 
-                HestonProcess process = new HestonProcess(riskFreeTS, dividendTS, s0, v0, kappa, theta, sigma, rho);
+                var process = new HestonProcess(riskFreeTS, dividendTS, s0, v0, kappa, theta, sigma, rho);
 
-                VanillaOption option = new VanillaOption(payoff, exercise);
+                var option = new VanillaOption(payoff, exercise);
 
-                AnalyticHestonEngine engine = new AnalyticHestonEngine(new HestonModel(process), 64);
+                var engine = new AnalyticHestonEngine(new HestonModel(process), 64);
 
                 option.setPricingEngine(engine);
 
-                double expected1 = 0.0404774515;
-                double calculated1 = option.NPV();
-                double tolerance = 1.0e-8;
+                var expected1 = 0.0404774515;
+                var calculated1 = option.NPV();
+                var tolerance = 1.0e-8;
 
                 if (System.Math.Abs(calculated1 - expected1) > tolerance)
                 {
@@ -390,25 +390,25 @@ namespace QLNet.Tests
 
                 double[] K = { 0.9, 1.0, 1.1 };
                 double[] expected2 = { 0.1330371, 0.0641016, 0.0270645 };
-                double[] calculated2 = new double[6];
+                var calculated2 = new double[6];
 
                 int i;
                 for (i = 0; i < 6; ++i)
                 {
-                    Date exerciseDate2 = new Date(8 + i / 3, Month.September, 2005);
+                    var exerciseDate2 = new Date(8 + i / 3, Month.September, 2005);
 
                     StrikedTypePayoff payoff2 = new PlainVanillaPayoff(QLNet.Option.Type.Call, K[i % 3]);
                     Exercise exercise2 = new EuropeanExercise(exerciseDate2);
 
-                    Handle<YieldTermStructure> riskFreeTS2 = new Handle<YieldTermStructure>(Utilities.flatRate(0.05, dayCounter));
-                    Handle<YieldTermStructure> dividendTS2 = new Handle<YieldTermStructure>(Utilities.flatRate(0.02, dayCounter));
+                    var riskFreeTS2 = new Handle<YieldTermStructure>(Utilities.flatRate(0.05, dayCounter));
+                    var dividendTS2 = new Handle<YieldTermStructure>(Utilities.flatRate(0.02, dayCounter));
 
-                    double s = riskFreeTS2.link.discount(0.7) / dividendTS2.link.discount(0.7);
-                    Handle<Quote> s02 = new Handle<Quote>(new SimpleQuote(s));
+                    var s = riskFreeTS2.link.discount(0.7) / dividendTS2.link.discount(0.7);
+                    var s02 = new Handle<Quote>(new SimpleQuote(s));
 
-                    HestonProcess process2 = new HestonProcess(riskFreeTS2, dividendTS2, s02, 0.09, 1.2, 0.08, 1.8, -0.45);
+                    var process2 = new HestonProcess(riskFreeTS2, dividendTS2, s02, 0.09, 1.2, 0.08, 1.8, -0.45);
 
-                    VanillaOption option2 = new VanillaOption(payoff2, exercise2);
+                    var option2 = new VanillaOption(payoff2, exercise2);
 
                     IPricingEngine engine2 = new AnalyticHestonEngine(new HestonModel(process2));
 
@@ -417,12 +417,12 @@ namespace QLNet.Tests
                 }
 
                 // we are after the value for T=0.7
-                double t1 = dayCounter.yearFraction(settlementDate, new Date(8, Month.September, 2005));
-                double t2 = dayCounter.yearFraction(settlementDate, new Date(9, Month.September, 2005));
+                var t1 = dayCounter.yearFraction(settlementDate, new Date(8, Month.September, 2005));
+                var t2 = dayCounter.yearFraction(settlementDate, new Date(9, Month.September, 2005));
 
                 for (i = 0; i < 3; ++i)
                 {
-                    double interpolated = calculated2[i] + (calculated2[i + 3] - calculated2[i]) / (t2 - t1) * (0.7 - t1);
+                    var interpolated = calculated2[i] + (calculated2[i + 3] - calculated2[i]) / (t2 - t1) * (0.7 - t1);
 
                     if (System.Math.Abs(interpolated - expected2[i]) > 100 * tolerance)
                     {
@@ -438,27 +438,27 @@ namespace QLNet.Tests
         public void testMcVsCached()
         {
             // Testing Monte Carlo Heston engine against cached values
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                Date settlementDate = new Date(27, Month.December, 2004);
+                var settlementDate = new Date(27, Month.December, 2004);
                 Settings.setEvaluationDate(settlementDate);
 
                 DayCounter dayCounter = new ActualActual();
-                Date exerciseDate = new Date(28, Month.March, 2005);
+                var exerciseDate = new Date(28, Month.March, 2005);
 
                 StrikedTypePayoff payoff = new PlainVanillaPayoff(QLNet.Option.Type.Put, 1.05);
                 Exercise exercise = new EuropeanExercise(exerciseDate);
 
-                Handle<YieldTermStructure> riskFreeTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.7, dayCounter));
-                Handle<YieldTermStructure> dividendTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.4, dayCounter));
+                var riskFreeTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.7, dayCounter));
+                var dividendTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.4, dayCounter));
 
-                Handle<Quote> s0 = new Handle<Quote>(new SimpleQuote(1.05));
+                var s0 = new Handle<Quote>(new SimpleQuote(1.05));
 
-                HestonProcess process = new HestonProcess(riskFreeTS, dividendTS, s0, 0.3, 1.16, 0.2, 0.8, 0.8);
+                var process = new HestonProcess(riskFreeTS, dividendTS, s0, 0.3, 1.16, 0.2, 0.8, 0.8);
 
-                VanillaOption option = new VanillaOption(payoff, exercise);
+                var option = new VanillaOption(payoff, exercise);
 
-                IPricingEngine engine = new MakeMCEuropeanHestonEngine<PseudoRandom, Statistics>(process)
+                var engine = new MakeMCEuropeanHestonEngine<PseudoRandom, Statistics>(process)
                 .withStepsPerYear(11)
                 .withAntitheticVariate()
                 .withSamples(50000)
@@ -466,10 +466,10 @@ namespace QLNet.Tests
 
                 option.setPricingEngine(engine);
 
-                double expected = 0.0632851308977151;
-                double calculated = option.NPV();
-                double errorEstimate = option.errorEstimate();
-                double tolerance = 7.5e-4;
+                var expected = 0.0632851308977151;
+                var calculated = option.NPV();
+                var errorEstimate = option.errorEstimate();
+                var tolerance = 7.5e-4;
 
                 if (System.Math.Abs(calculated - expected) > 2.34 * errorEstimate)
                 {
@@ -783,27 +783,27 @@ namespace QLNet.Tests
         {
             // Testing different numerical Heston integration algorithms
 
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                Date settlementDate = new Date(27, Month.December, 2004);
+                var settlementDate = new Date(27, Month.December, 2004);
                 Settings.setEvaluationDate(settlementDate);
 
                 DayCounter dayCounter = new ActualActual();
 
-                Handle<YieldTermStructure> riskFreeTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.05, dayCounter));
-                Handle<YieldTermStructure> dividendTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.03, dayCounter));
+                var riskFreeTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.05, dayCounter));
+                var dividendTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.03, dayCounter));
 
                 double[] strikes = { 0.5, 0.7, 1.0, 1.25, 1.5, 2.0 };
                 int[] maturities = { 1, 2, 3, 12, 60, 120, 360 };
                 Option.Type[] types = { QLNet.Option.Type.Put, QLNet.Option.Type.Call };
 
-                HestonParameter equityfx = new HestonParameter(0.07, 2.0, 0.04, 0.55, -0.8);
-                HestonParameter highCorr = new HestonParameter(0.07, 1.0, 0.04, 0.55, 0.995);
-                HestonParameter lowVolOfVol = new HestonParameter(0.07, 1.0, 0.04, 0.025, -0.75);
-                HestonParameter highVolOfVol = new HestonParameter(0.07, 1.0, 0.04, 5.0, -0.75);
-                HestonParameter kappaEqSigRho = new HestonParameter(0.07, 0.4, 0.04, 0.5, 0.8);
+                var equityfx = new HestonParameter(0.07, 2.0, 0.04, 0.55, -0.8);
+                var highCorr = new HestonParameter(0.07, 1.0, 0.04, 0.55, 0.995);
+                var lowVolOfVol = new HestonParameter(0.07, 1.0, 0.04, 0.025, -0.75);
+                var highVolOfVol = new HestonParameter(0.07, 1.0, 0.04, 5.0, -0.75);
+                var kappaEqSigRho = new HestonParameter(0.07, 0.4, 0.04, 0.5, 0.8);
 
-                List<HestonParameter> parameters = new List<HestonParameter>();
+                var parameters = new List<HestonParameter>();
                 parameters.Add(equityfx);
                 parameters.Add(highCorr);
                 parameters.Add(lowVolOfVol);
@@ -811,54 +811,54 @@ namespace QLNet.Tests
                 parameters.Add(kappaEqSigRho);
 
                 double[] tol = { 1e-3, 1e-3, 0.2, 0.01, 1e-3 };
-                int count = 0;
+                var count = 0;
                 foreach (var iter in parameters)
                 {
-                    Handle<Quote> s0 = new Handle<Quote>(new SimpleQuote(1.0));
-                    HestonProcess process = new HestonProcess(riskFreeTS, dividendTS, s0, iter.v0, iter.kappa,
+                    var s0 = new Handle<Quote>(new SimpleQuote(1.0));
+                    var process = new HestonProcess(riskFreeTS, dividendTS, s0, iter.v0, iter.kappa,
                                                               iter.theta, iter.sigma, iter.rho);
 
-                    HestonModel model = new HestonModel(process);
+                    var model = new HestonModel(process);
 
-                    AnalyticHestonEngine lobattoEngine = new AnalyticHestonEngine(model, 1e-10, 1000000);
-                    AnalyticHestonEngine laguerreEngine = new AnalyticHestonEngine(model, 128);
-                    AnalyticHestonEngine legendreEngine = new AnalyticHestonEngine(model,
+                    var lobattoEngine = new AnalyticHestonEngine(model, 1e-10, 1000000);
+                    var laguerreEngine = new AnalyticHestonEngine(model, 128);
+                    var legendreEngine = new AnalyticHestonEngine(model,
                                                                                    AnalyticHestonEngine.ComplexLogFormula.Gatheral, AnalyticHestonEngine.Integration.gaussLegendre(512));
-                    AnalyticHestonEngine chebyshevEngine = new AnalyticHestonEngine(model,
+                    var chebyshevEngine = new AnalyticHestonEngine(model,
                                                                                     AnalyticHestonEngine.ComplexLogFormula.Gatheral, AnalyticHestonEngine.Integration.gaussChebyshev(512));
-                    AnalyticHestonEngine chebyshev2ndEngine = new AnalyticHestonEngine(model,
+                    var chebyshev2ndEngine = new AnalyticHestonEngine(model,
                                                                                        AnalyticHestonEngine.ComplexLogFormula.Gatheral, AnalyticHestonEngine.Integration.gaussChebyshev2nd(512));
 
-                    double maxLegendreDiff = 0.0;
-                    double maxChebyshevDiff = 0.0;
-                    double maxChebyshev2ndDiff = 0.0;
-                    double maxLaguerreDiff = 0.0;
+                    var maxLegendreDiff = 0.0;
+                    var maxChebyshevDiff = 0.0;
+                    var maxChebyshev2ndDiff = 0.0;
+                    var maxLaguerreDiff = 0.0;
 
-                    for (int i = 0; i < maturities.Length; ++i)
+                    for (var i = 0; i < maturities.Length; ++i)
                     {
                         Exercise exercise = new EuropeanExercise(settlementDate + new Period(maturities[i], TimeUnit.Months));
-                        for (int j = 0; j < strikes.Length; ++j)
+                        for (var j = 0; j < strikes.Length; ++j)
                         {
-                            for (int k = 0; k < types.Length; ++k)
+                            for (var k = 0; k < types.Length; ++k)
                             {
                                 StrikedTypePayoff payoff = new PlainVanillaPayoff(types[k], strikes[j]);
 
-                                VanillaOption option = new VanillaOption(payoff, exercise);
+                                var option = new VanillaOption(payoff, exercise);
 
                                 option.setPricingEngine(lobattoEngine);
-                                double lobattoNPV = option.NPV();
+                                var lobattoNPV = option.NPV();
 
                                 option.setPricingEngine(laguerreEngine);
-                                double laguerre = option.NPV();
+                                var laguerre = option.NPV();
 
                                 option.setPricingEngine(legendreEngine);
-                                double legendre = option.NPV();
+                                var legendre = option.NPV();
 
                                 option.setPricingEngine(chebyshevEngine);
-                                double chebyshev = option.NPV();
+                                var chebyshev = option.NPV();
 
                                 option.setPricingEngine(chebyshev2ndEngine);
-                                double chebyshev2nd = option.NPV();
+                                var chebyshev2nd = option.NPV();
 
                                 maxLaguerreDiff = System.Math.Max(maxLaguerreDiff, System.Math.Abs(lobattoNPV - laguerre));
                                 maxLegendreDiff = System.Math.Max(maxLegendreDiff, System.Math.Abs(lobattoNPV - legendre));
@@ -867,10 +867,10 @@ namespace QLNet.Tests
                             }
                         }
                     }
-                    double maxDiff = System.Math.Max(System.Math.Max(System.Math.Max(maxLaguerreDiff, maxLegendreDiff), maxChebyshevDiff),
+                    var maxDiff = System.Math.Max(System.Math.Max(System.Math.Max(maxLaguerreDiff, maxLegendreDiff), maxChebyshevDiff),
                                               maxChebyshev2ndDiff);
 
-                    double tr = tol[count++];
+                    var tr = tol[count++];
                     if (maxDiff > tr)
                     {
                         QAssert.Fail("Failed to reproduce Heston pricing values within given tolerance"
@@ -972,53 +972,53 @@ namespace QLNet.Tests
         {
             // Testing analytic piecewise time dependent Heston prices
 
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                Date settlementDate = new Date(27, Month.December, 2004);
+                var settlementDate = new Date(27, Month.December, 2004);
                 Settings.setEvaluationDate(settlementDate);
                 DayCounter dayCounter = new ActualActual();
-                Date exerciseDate = new Date(28, Month.March, 2005);
+                var exerciseDate = new Date(28, Month.March, 2005);
 
                 StrikedTypePayoff payoff = new PlainVanillaPayoff(QLNet.Option.Type.Call, 1.0);
                 Exercise exercise = new EuropeanExercise(exerciseDate);
 
-                List<Date> dates = new List<Date>();
+                var dates = new List<Date>();
                 dates.Add(settlementDate);
                 dates.Add(new Date(01, Month.January, 2007));
-                List<double> irates = new List<double>();
+                var irates = new List<double>();
                 irates.Add(0.0);
                 irates.Add(0.2);
-                Handle<YieldTermStructure> riskFreeTS = new Handle<YieldTermStructure>(
+                var riskFreeTS = new Handle<YieldTermStructure>(
                    new InterpolatedZeroCurve<Linear>(dates, irates, dayCounter));
 
-                List<double> qrates = new List<double>();
+                var qrates = new List<double>();
                 qrates.Add(0.0);
                 qrates.Add(0.3);
-                Handle<YieldTermStructure> dividendTS = new Handle<YieldTermStructure>(
+                var dividendTS = new Handle<YieldTermStructure>(
                    new InterpolatedZeroCurve<Linear>(dates, qrates, dayCounter));
 
 
-                double v0 = 0.1;
-                Handle<Quote> s0 = new Handle<Quote>(new SimpleQuote(1.0));
+                var v0 = 0.1;
+                var s0 = new Handle<Quote>(new SimpleQuote(1.0));
 
-                ConstantParameter theta = new ConstantParameter(0.09, new PositiveConstraint());
-                ConstantParameter kappa = new ConstantParameter(3.16, new PositiveConstraint());
-                ConstantParameter sigma = new ConstantParameter(4.40, new PositiveConstraint());
-                ConstantParameter rho = new ConstantParameter(-0.8, new BoundaryConstraint(-1.0, 1.0));
+                var theta = new ConstantParameter(0.09, new PositiveConstraint());
+                var kappa = new ConstantParameter(3.16, new PositiveConstraint());
+                var sigma = new ConstantParameter(4.40, new PositiveConstraint());
+                var rho = new ConstantParameter(-0.8, new BoundaryConstraint(-1.0, 1.0));
 
-                PiecewiseTimeDependentHestonModel model = new PiecewiseTimeDependentHestonModel(riskFreeTS, dividendTS,
+                var model = new PiecewiseTimeDependentHestonModel(riskFreeTS, dividendTS,
                                                                                                 s0, v0, theta, kappa, sigma, rho, new TimeGrid(20.0, 2));
 
-                VanillaOption option = new VanillaOption(payoff, exercise);
+                var option = new VanillaOption(payoff, exercise);
                 option.setPricingEngine(new AnalyticPTDHestonEngine(model));
 
-                double calculated = option.NPV();
-                HestonProcess hestonProcess = new HestonProcess(riskFreeTS, dividendTS, s0, v0,
+                var calculated = option.NPV();
+                var hestonProcess = new HestonProcess(riskFreeTS, dividendTS, s0, v0,
                                                                 kappa.value(0.0), theta.value(0.0), sigma.value(0.0), rho.value(0.0));
-                HestonModel hestonModel = new HestonModel(hestonProcess);
+                var hestonModel = new HestonModel(hestonProcess);
                 option.setPricingEngine(new AnalyticHestonEngine(hestonModel));
 
-                double expected = option.NPV();
+                var expected = option.NPV();
 
                 if (System.Math.Abs(calculated - expected) > 1e-12)
                 {
@@ -1034,55 +1034,55 @@ namespace QLNet.Tests
         {
             // Testing time-dependent Heston model calibration
 
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                Date settlementDate = new Date(5, Month.July, 2002);
+                var settlementDate = new Date(5, Month.July, 2002);
                 Settings.setEvaluationDate(settlementDate);
 
-                CalibrationMarketData marketData = getDAXCalibrationMarketData();
+                var marketData = getDAXCalibrationMarketData();
 
-                Handle<YieldTermStructure> riskFreeTS = marketData.riskFreeTS;
-                Handle<YieldTermStructure> dividendTS = marketData.dividendYield;
-                Handle<Quote> s0 = marketData.s0;
+                var riskFreeTS = marketData.riskFreeTS;
+                var dividendTS = marketData.dividendYield;
+                var s0 = marketData.s0;
 
-                List<CalibrationHelper> options = marketData.options;
+                var options = marketData.options;
 
-                List<double> modelTimes = new List<double>();
+                var modelTimes = new List<double>();
                 modelTimes.Add(0.25);
                 modelTimes.Add(10.0);
-                TimeGrid modelGrid = new TimeGrid(modelTimes, modelTimes.Count);
+                var modelGrid = new TimeGrid(modelTimes, modelTimes.Count);
 
-                double v0 = 0.1;
-                ConstantParameter sigma = new ConstantParameter(0.5, new PositiveConstraint());
-                ConstantParameter theta = new ConstantParameter(0.1, new PositiveConstraint());
-                ConstantParameter rho = new ConstantParameter(-0.5, new BoundaryConstraint(-1.0, 1.0));
+                var v0 = 0.1;
+                var sigma = new ConstantParameter(0.5, new PositiveConstraint());
+                var theta = new ConstantParameter(0.1, new PositiveConstraint());
+                var rho = new ConstantParameter(-0.5, new BoundaryConstraint(-1.0, 1.0));
 
                 List<double> pTimes = new InitializedList<double>(1, 0.25);
-                PiecewiseConstantParameter kappa = new PiecewiseConstantParameter(pTimes, new PositiveConstraint());
+                var kappa = new PiecewiseConstantParameter(pTimes, new PositiveConstraint());
 
-                for (int i = 0; i < pTimes.Count + 1; ++i)
+                for (var i = 0; i < pTimes.Count + 1; ++i)
                 {
                     kappa.setParam(i, 10.0);
                 }
 
-                PiecewiseTimeDependentHestonModel model = new PiecewiseTimeDependentHestonModel(riskFreeTS, dividendTS,
+                var model = new PiecewiseTimeDependentHestonModel(riskFreeTS, dividendTS,
                                                                                                 s0, v0, theta, kappa, sigma, rho, modelGrid);
 
                 IPricingEngine engine = new AnalyticPTDHestonEngine(model);
-                for (int i = 0; i < options.Count; ++i)
+                for (var i = 0; i < options.Count; ++i)
                     options[i].setPricingEngine(engine);
 
-                LevenbergMarquardt om = new LevenbergMarquardt(1e-8, 1e-8, 1e-8);
+                var om = new LevenbergMarquardt(1e-8, 1e-8, 1e-8);
                 model.calibrate(options, om, new EndCriteria(400, 40, 1.0e-8, 1.0e-8, 1.0e-8));
 
                 double sse = 0;
-                for (int i = 0; i < 13 * 8; ++i)
+                for (var i = 0; i < 13 * 8; ++i)
                 {
-                    double diff = options[i].calibrationError() * 100.0;
+                    var diff = options[i].calibrationError() * 100.0;
                     sse += diff * diff;
                 }
 
-                double expected = 74.4;
+                var expected = 74.4;
                 if (System.Math.Abs(sse - expected) > 1.0)
                 {
                     QAssert.Fail("Failed to reproduce calibration error"
@@ -1102,28 +1102,28 @@ namespace QLNet.Tests
                * http://wilmott.com/messageview.cfm?catid=34&threadid=90957
             */
 
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                Date settlementDate = new Date(5, Month.July, 2002);
+                var settlementDate = new Date(5, Month.July, 2002);
                 Settings.setEvaluationDate(settlementDate);
 
-                Date maturityDate = new Date(5, Month.July, 2003);
+                var maturityDate = new Date(5, Month.July, 2003);
                 Exercise exercise = new EuropeanExercise(maturityDate);
 
                 DayCounter dayCounter = new Actual365Fixed();
-                Handle<YieldTermStructure> riskFreeTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.01, dayCounter));
-                Handle<YieldTermStructure> dividendTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.02, dayCounter));
+                var riskFreeTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.01, dayCounter));
+                var dividendTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.02, dayCounter));
 
-                Handle<Quote> s0 = new Handle<Quote>(new SimpleQuote(100.0));
+                var s0 = new Handle<Quote>(new SimpleQuote(100.0));
 
-                double v0 = 0.04;
-                double rho = -0.5;
-                double sigma = 1.0;
-                double kappa = 4.0;
-                double theta = 0.25;
+                var v0 = 0.04;
+                var rho = -0.5;
+                var sigma = 1.0;
+                var kappa = 4.0;
+                var theta = 0.25;
 
-                HestonProcess process = new HestonProcess(riskFreeTS, dividendTS, s0, v0, kappa, theta, sigma, rho);
-                HestonModel model = new HestonModel(process);
+                var process = new HestonProcess(riskFreeTS, dividendTS, s0, v0, kappa, theta, sigma, rho);
+                var model = new HestonModel(process);
 
                 IPricingEngine laguerreEngine = new AnalyticHestonEngine(model, 128);
 
@@ -1157,36 +1157,36 @@ namespace QLNet.Tests
                }
             };
 
-                double tol = 1e-12; // 3e-15 works on linux/ia32,
+                var tol = 1e-12; // 3e-15 works on linux/ia32,
                                     // but keep some buffer for other platforms
 
-                for (int i = 0; i < strikes.Length; ++i)
+                for (var i = 0; i < strikes.Length; ++i)
                 {
-                    double strike = strikes[i];
+                    var strike = strikes[i];
 
-                    for (int j = 0; j < types.Length; ++j)
+                    for (var j = 0; j < types.Length; ++j)
                     {
-                        QLNet.Option.Type type = types[j];
+                        var type = types[j];
 
-                        for (int k = 0; k < engines.Length; ++k)
+                        for (var k = 0; k < engines.Length; ++k)
                         {
-                            IPricingEngine engine = engines[k];
+                            var engine = engines[k];
 
                             StrikedTypePayoff payoff = new PlainVanillaPayoff(type, strike);
 
-                            VanillaOption option = new VanillaOption(payoff, exercise);
+                            var option = new VanillaOption(payoff, exercise);
                             option.setPricingEngine(engine);
 
-                            double expected = expectedResults[i][j];
-                            double calculated = option.NPV();
-                            double relError = System.Math.Abs(calculated - expected) / expected;
+                            var expected = expectedResults[i][j];
+                            var calculated = option.NPV();
+                            var relError = System.Math.Abs(calculated - expected) / expected;
 
                             if (relError > tol)
                             {
                                 QAssert.Fail("failed to reproduce Alan Lewis Reference prices "
                                              + "\n    strike     : " + strike
-                                             + "\n    option type: " + type
-                                             + "\n    engine type: " + k
+                                             + "\n    option ExerciseType: " + type
+                                             + "\n    engine ExerciseType: " + k
                                              + "\n    rel. error : " + relError);
                             }
                         }
@@ -1200,28 +1200,28 @@ namespace QLNet.Tests
         {
             // Testing expansion on Alan Lewis reference prices
 
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                Date settlementDate = new Date(5, Month.July, 2002);
+                var settlementDate = new Date(5, Month.July, 2002);
                 Settings.setEvaluationDate(settlementDate);
 
-                Date maturityDate = new Date(5, Month.July, 2003);
+                var maturityDate = new Date(5, Month.July, 2003);
                 Exercise exercise = new EuropeanExercise(maturityDate);
 
                 DayCounter dayCounter = new Actual365Fixed();
-                Handle<YieldTermStructure> riskFreeTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.01, dayCounter));
-                Handle<YieldTermStructure> dividendTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.02, dayCounter));
+                var riskFreeTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.01, dayCounter));
+                var dividendTS = new Handle<YieldTermStructure>(Utilities.flatRate(0.02, dayCounter));
 
-                Handle<Quote> s0 = new Handle<Quote>(new SimpleQuote(100.0));
+                var s0 = new Handle<Quote>(new SimpleQuote(100.0));
 
-                double v0 = 0.04;
-                double rho = -0.5;
-                double sigma = 1.0;
-                double kappa = 4.0;
-                double theta = 0.25;
+                var v0 = 0.04;
+                var rho = -0.5;
+                var sigma = 1.0;
+                var kappa = 4.0;
+                var theta = 0.25;
 
-                HestonProcess process = new HestonProcess(riskFreeTS, dividendTS, s0, v0, kappa, theta, sigma, rho);
-                HestonModel model = new HestonModel(process);
+                var process = new HestonProcess(riskFreeTS, dividendTS, s0, v0, kappa, theta, sigma, rho);
+                var model = new HestonModel(process);
 
                 IPricingEngine lpp2Engine = new HestonExpansionEngine(model, HestonExpansionEngine.HestonExpansionFormula.LPP2);
                 //don't test Forde as it does not behave well on this example
@@ -1257,33 +1257,33 @@ namespace QLNet.Tests
 
                 double[] tol = { 1.003e-2, 3.645e-3 };
 
-                for (int i = 0; i < strikes.Length; ++i)
+                for (var i = 0; i < strikes.Length; ++i)
                 {
-                    double strike = strikes[i];
+                    var strike = strikes[i];
 
-                    for (int j = 0; j < types.Length; ++j)
+                    for (var j = 0; j < types.Length; ++j)
                     {
-                        QLNet.Option.Type type = types[j];
+                        var type = types[j];
 
-                        for (int k = 0; k < engines.Length; ++k)
+                        for (var k = 0; k < engines.Length; ++k)
                         {
-                            IPricingEngine engine = engines[k];
+                            var engine = engines[k];
 
                             StrikedTypePayoff payoff = new PlainVanillaPayoff(type, strike);
 
-                            VanillaOption option = new VanillaOption(payoff, exercise);
+                            var option = new VanillaOption(payoff, exercise);
                             option.setPricingEngine(engine);
 
-                            double expected = expectedResults[i][j];
-                            double calculated = option.NPV();
-                            double relError = System.Math.Abs(calculated - expected) / expected;
+                            var expected = expectedResults[i][j];
+                            var calculated = option.NPV();
+                            var relError = System.Math.Abs(calculated - expected) / expected;
 
                             if (relError > tol[k])
                             {
                                 QAssert.Fail("failed to reproduce Alan Lewis Reference prices "
                                              + "\n    strike     : " + strike
-                                             + "\n    option type: " + type
-                                             + "\n    engine type: " + k
+                                             + "\n    option ExerciseType: " + type
+                                             + "\n    engine ExerciseType: " + k
                                              + "\n    rel. error : " + relError);
                             }
                         }
@@ -1297,14 +1297,14 @@ namespace QLNet.Tests
         {
             // Testing expansion on Forde reference prices
 
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                double forward = 100.0;
-                double v0 = 0.04;
-                double rho = -0.4;
-                double sigma = 0.2;
-                double kappa = 1.15;
-                double theta = 0.04;
+                var forward = 100.0;
+                var v0 = 0.04;
+                var rho = -0.4;
+                var sigma = 0.2;
+                var kappa = 1.15;
+                var theta = 0.04;
 
                 double[] terms = { 0.1, 1.0, 5.0, 10.0 };
                 double[] strikes = { 60, 80, 90, 100, 110, 120, 140 };
@@ -1393,30 +1393,30 @@ namespace QLNet.Tests
                }
             };
 
-                for (int j = 0; j < terms.Length; ++j)
+                for (var j = 0; j < terms.Length; ++j)
                 {
-                    double term = terms[j];
+                    var term = terms[j];
                     HestonExpansion lpp2 = new LPP2HestonExpansion(kappa, theta, sigma, v0, rho, term);
                     HestonExpansion lpp3 = new LPP3HestonExpansion(kappa, theta, sigma, v0, rho, term);
                     HestonExpansion forde = new FordeHestonExpansion(kappa, theta, sigma, v0, rho, term);
                     HestonExpansion[] expansions = { lpp2, lpp3, forde };
 
-                    for (int i = 0; i < strikes.Length; ++i)
+                    for (var i = 0; i < strikes.Length; ++i)
                     {
-                        double strike = strikes[i];
-                        for (int k = 0; k < expansions.Length; ++k)
+                        var strike = strikes[i];
+                        for (var k = 0; k < expansions.Length; ++k)
                         {
-                            HestonExpansion expansion = expansions[k];
+                            var expansion = expansions[k];
 
-                            double expected = referenceVols[j][i];
-                            double calculated = expansion.impliedVolatility(strike, forward);
-                            double relError = System.Math.Abs(calculated - expected) / expected;
-                            double refTol = strike == forward ? tolAtm[k][j] : tol[k][j];
+                            var expected = referenceVols[j][i];
+                            var calculated = expansion.impliedVolatility(strike, forward);
+                            var relError = System.Math.Abs(calculated - expected) / expected;
+                            var refTol = strike == forward ? tolAtm[k][j] : tol[k][j];
                             if (relError > refTol)
                             {
                                 QAssert.Fail("failed to reproduce Forde reference vols "
                                              + "\n    strike        : " + strike
-                                             + "\n    expansion type: " + k
+                                             + "\n    expansion ExerciseType: " + k
                                              + "\n    rel. error    : " + relError);
                             }
                         }

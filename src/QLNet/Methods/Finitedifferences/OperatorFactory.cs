@@ -45,9 +45,6 @@ namespace QLNet.Methods.Finitedifferences
             return new BSMOperator(grid, process, residualTime);
         }
 
-        public static TridiagonalOperator getOperator(OneFactorModel.ShortRateDynamics process, Vector grid)
-        {
-            throw new NotImplementedException();
-        }
+        public static TridiagonalOperator getOperator(OneFactorModel.ShortRateDynamics process, Vector grid) => throw new NotImplementedException();
     }
 }

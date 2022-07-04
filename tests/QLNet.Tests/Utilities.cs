@@ -38,7 +38,7 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Tests
 {
-    public class Flag : IObserver
+    [JetBrains.Annotations.PublicAPI] public class Flag : IObserver
     {
         private bool up_;
 
@@ -49,63 +49,41 @@ namespace QLNet.Tests
 
         public void raise() { up_ = true; }
         public void lower() { up_ = false; }
-        public bool isUp() { return up_; }
+        public bool isUp() => up_;
+
         public void update() { raise(); }
     }
 
     public static class Utilities
     {
-        public static YieldTermStructure flatRate(Date today, double forward, DayCounter dc)
-        {
-            return new FlatForward(today, new SimpleQuote(forward), dc);
-        }
+        public static YieldTermStructure flatRate(Date today, double forward, DayCounter dc) => new FlatForward(today, new SimpleQuote(forward), dc);
 
-        public static YieldTermStructure flatRate(Date today, Quote forward, DayCounter dc)
-        {
-            return new FlatForward(today, forward, dc);
-        }
+        public static YieldTermStructure flatRate(Date today, Quote forward, DayCounter dc) => new FlatForward(today, forward, dc);
 
         //philippe2009_17
-        public static YieldTermStructure flatRate(double forward, DayCounter dc)
-        {
-            return flatRate(new SimpleQuote(forward), dc);
-        }
+        public static YieldTermStructure flatRate(double forward, DayCounter dc) => flatRate(new SimpleQuote(forward), dc);
 
-        public static YieldTermStructure flatRate(Quote forward, DayCounter dc)
-        {
-            return new FlatForward(0, new NullCalendar(), forward, dc);
-        }
+        public static YieldTermStructure flatRate(Quote forward, DayCounter dc) => new FlatForward(0, new NullCalendar(), forward, dc);
 
-        public static BlackVolTermStructure flatVol(Date today, double vol, DayCounter dc)
-        {
-            return flatVol(today, new SimpleQuote(vol), dc);
-        }
+        public static BlackVolTermStructure flatVol(Date today, double vol, DayCounter dc) => flatVol(today, new SimpleQuote(vol), dc);
 
-        public static BlackVolTermStructure flatVol(Date today, Quote vol, DayCounter dc)
-        {
-            return new BlackConstantVol(today, new NullCalendar(), new Handle<Quote>(vol), dc);
-        }
+        public static BlackVolTermStructure flatVol(Date today, Quote vol, DayCounter dc) => new BlackConstantVol(today, new NullCalendar(), new Handle<Quote>(vol), dc);
+
         //philippe2009_17
-        public static BlackVolTermStructure flatVol(Quote vol, DayCounter dc)
-        {
-            return new BlackConstantVol(0, new NullCalendar(), new Handle<Quote>(vol), dc);
-        }
+        public static BlackVolTermStructure flatVol(Quote vol, DayCounter dc) => new BlackConstantVol(0, new NullCalendar(), new Handle<Quote>(vol), dc);
 
-        public static BlackVolTermStructure flatVol(double vol, DayCounter dc)
-        {
-            return flatVol(new SimpleQuote(vol), dc);
-        }
+        public static BlackVolTermStructure flatVol(double vol, DayCounter dc) => flatVol(new SimpleQuote(vol), dc);
 
         public static double norm(Vector v, int size, double h)
         {
             // squared values
             List<double> f2 = new InitializedList<double>(size);
 
-            for (int i = 0; i < v.Count; i++)
+            for (var i = 0; i < v.Count; i++)
                 f2[i] = v[i] * v[i];
 
             // numeric integral of f^2
-            double I = h * (f2.Sum() - 0.5 * f2.First() - 0.5 * f2.Last());
+            var I = h * (f2.Sum() - 0.5 * f2.First() - 0.5 * f2.Last());
             return System.Math.Sqrt(I);
         }
 
@@ -134,7 +112,7 @@ namespace QLNet.Tests
             if (hd != null)
                 return "Bermudan";
 
-            Utils.QL_FAIL("unknown exercise type");
+            Utils.QL_FAIL("unknown exercise ExerciseType");
             return string.Empty;
         }
 
@@ -164,15 +142,15 @@ namespace QLNet.Tests
                 return "gap";
             hd = h as FloatingTypePayoff;
             if (hd != null)
-                return "floating-type";
+                return "floating-ExerciseType";
 
-            Utils.QL_FAIL("unknown payoff type");
+            Utils.QL_FAIL("unknown payoff ExerciseType");
             return string.Empty;
         }
     }
 
     // this cleans up index-fixing histories when disposed
-    public class IndexHistoryCleaner : IDisposable
+    [JetBrains.Annotations.PublicAPI] public class IndexHistoryCleaner : IDisposable
     {
         public void Dispose() { IndexManager.instance().clearHistories(); }
     }
@@ -309,10 +287,10 @@ namespace QLNet.Tests
             vols[4, 0] = 0.1400; vols[4, 1] = 0.1300; vols[4, 2] = 0.1250; vols[4, 3] = 0.1100;
             vols[5, 0] = 0.1130; vols[5, 1] = 0.1090; vols[5, 2] = 0.1070; vols[5, 3] = 0.0930;
             volsHandle = new InitializedList<List<Handle<Quote>>>(tenors.options.Count);
-            for (int i = 0; i < tenors.options.Count; i++)
+            for (var i = 0; i < tenors.options.Count; i++)
             {
                 volsHandle[i] = new InitializedList<Handle<Quote>>(tenors.swaps.Count);
-                for (int j = 0; j < tenors.swaps.Count; j++)
+                for (var j = 0; j < tenors.swaps.Count; j++)
                     // every handle must be reassigned, as the ones created by
                     // default are all linked together.
                     volsHandle[i][j] = new Handle<Quote>(new SimpleQuote(vols[i, j]));
@@ -371,10 +349,10 @@ namespace QLNet.Tests
             volSpreads[8, 2] = 0.0000;
             volSpreads[8, 3] = -0.0042; volSpreads[8, 4] = -0.0020;
             volSpreadsHandle = new InitializedList<List<Handle<Quote>>>(tenors.options.Count * tenors.swaps.Count);
-            for (int i = 0; i < tenors.options.Count * tenors.swaps.Count; i++)
+            for (var i = 0; i < tenors.options.Count * tenors.swaps.Count; i++)
             {
                 volSpreadsHandle[i] = new InitializedList<Handle<Quote>>(strikeSpreads.Count);
-                for (int j = 0; j < strikeSpreads.Count; j++)
+                for (var j = 0; j < strikeSpreads.Count; j++)
                 {
                     // every handle must be reassigned, as the ones created by
                     // default are all linked together.

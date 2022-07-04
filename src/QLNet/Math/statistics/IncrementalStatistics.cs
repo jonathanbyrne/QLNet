@@ -29,7 +29,7 @@ namespace QLNet.Math.statistics
         \warning high moments are numerically unstable for high
                  average/standardDeviation ratios.
     */
-    public class IncrementalStatistics : IGeneralStatistics
+    [JetBrains.Annotations.PublicAPI] public class IncrementalStatistics : IGeneralStatistics
     {
         protected int sampleNumber_, downsideSampleNumber_;
         protected double sampleWeight_, downsideSampleWeight_;
@@ -40,18 +40,18 @@ namespace QLNet.Math.statistics
 
         #region required IGeneralStatistics methods not supported by this class
         public KeyValuePair<double, int> expectationValue(Func<KeyValuePair<double, double>, double> f,
-                                                          Func<KeyValuePair<double, double>, bool> inRange)
-        {
+                                                          Func<KeyValuePair<double, double>, bool> inRange) =>
             throw new NotSupportedException();
-        }
-        public double percentile(double percent) { throw new NotSupportedException(); }
+
+        public double percentile(double percent) => throw new NotSupportedException();
+
         #endregion
 
         //! number of samples collected
-        public int samples() { return sampleNumber_; }
+        public int samples() => sampleNumber_;
 
         //! sum of data weights
-        public double weightSum() { return sampleWeight_; }
+        public double weightSum() => sampleWeight_;
 
         /*! returns the mean, defined as
             \f[ \langle x \rangle = \frac{\sum w_i x_i}{\sum w_i}. \f]
@@ -71,8 +71,8 @@ namespace QLNet.Math.statistics
             Utils.QL_REQUIRE(sampleWeight_ > 0.0, () => "sampleWeight_=0, insufficient");
             Utils.QL_REQUIRE(sampleNumber_ > 1, () => "sample number <=1, insufficient");
 
-            double m = mean();
-            double v = quadraticSum_ / sampleWeight_;
+            var m = mean();
+            var v = quadraticSum_ / sampleWeight_;
             v -= m * m;
             v *= sampleNumber_ / (sampleNumber_ - 1.0);
 
@@ -81,7 +81,7 @@ namespace QLNet.Math.statistics
         }
 
         /*! returns the standard deviation \f$ \sigma \f$, defined as the square root of the variance. */
-        public double standardDeviation() { return System.Math.Sqrt(variance()); }
+        public double standardDeviation() => System.Math.Sqrt(variance());
 
         /*! returns the downside variance
         */
@@ -103,7 +103,7 @@ namespace QLNet.Math.statistics
          * square root of the ratio of the variance to the number of samples. */
         public double errorEstimate()
         {
-            double var = variance();
+            var var = variance();
             Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
             return System.Math.Sqrt(var / samples());
         }
@@ -117,12 +117,12 @@ namespace QLNet.Math.statistics
         {
             Utils.QL_REQUIRE(sampleNumber_ > 2, () => "sample number <=2, insufficient");
 
-            double s = standardDeviation();
+            var s = standardDeviation();
             if (s.IsEqual(0.0))
                 return 0.0;
 
-            double m = mean();
-            double result = cubicSum_ / sampleWeight_;
+            var m = mean();
+            var result = cubicSum_ / sampleWeight_;
             result -= 3.0 * m * (quadraticSum_ / sampleWeight_);
             result += 2.0 * m * m * m;
             result /= s * s * s;
@@ -138,17 +138,17 @@ namespace QLNet.Math.statistics
         {
             Utils.QL_REQUIRE(sampleNumber_ > 3, () => "sample number <=3, insufficient");
 
-            double m = mean();
-            double v = variance();
+            var m = mean();
+            var v = variance();
 
-            double c = (sampleNumber_ - 1.0) / (sampleNumber_ - 2.0);
+            var c = (sampleNumber_ - 1.0) / (sampleNumber_ - 2.0);
             c *= (sampleNumber_ - 1.0) / (sampleNumber_ - 3.0);
             c *= 3.0;
 
             if (v.IsEqual(0.0))
                 return c;
 
-            double result = fourthPowerSum_ / sampleWeight_;
+            var result = fourthPowerSum_ / sampleWeight_;
             result -= 4.0 * m * (cubicSum_ / sampleWeight_);
             result += 6.0 * m * m * (quadraticSum_ / sampleWeight_);
             result -= 3.0 * m * m * m * m;
@@ -175,8 +175,7 @@ namespace QLNet.Math.statistics
         }
 
         /*! returns the downside deviation, defined as the square root of the downside variance. */
-        public double downsideDeviation() { return System.Math.Sqrt(downsideVariance()); }
-
+        public double downsideDeviation() => System.Math.Sqrt(downsideVariance());
 
         // Modifiers
         //! adds a datum to the set, possibly with a weight
@@ -189,13 +188,13 @@ namespace QLNet.Math.statistics
         {
             Utils.QL_REQUIRE(weight >= 0.0, () => "negative weight (" + weight + ") not allowed");
 
-            int oldSamples = sampleNumber_;
+            var oldSamples = sampleNumber_;
             sampleNumber_++;
             Utils.QL_REQUIRE(sampleNumber_ > oldSamples, () => "maximum number of samples reached");
 
             sampleWeight_ += weight;
 
-            double temp = weight * value;
+            var temp = weight * value;
             sum_ += temp;
             temp *= value;
             quadraticSum_ += temp;
@@ -239,7 +238,7 @@ namespace QLNet.Math.statistics
         //! adds a sequence of data to the set, with default weight
         public void addSequence(List<double> list)
         {
-            foreach (double v in list)
+            foreach (var v in list)
                 add
                    (v, 1);
         }
@@ -247,7 +246,7 @@ namespace QLNet.Math.statistics
         /*! \pre weights must be positive or null */
         public void addSequence(List<double> data, List<double> weight)
         {
-            for (int i = 0; i < data.Count; i++)
+            for (var i = 0; i < data.Count; i++)
                 add
                    (data[i], weight[i]);
         }

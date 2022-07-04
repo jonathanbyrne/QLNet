@@ -26,7 +26,7 @@ using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Schemes
 {
-    public class ImplicitEulerScheme : IMixedScheme, ISchemeFactory
+    [JetBrains.Annotations.PublicAPI] public class ImplicitEulerScheme : IMixedScheme, ISchemeFactory
     {
         public enum SolverType { BiCGstab, GMRES }
 
@@ -45,10 +45,8 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         }
 
         #region ISchemeFactory
-        public IMixedScheme factory(object L, object bcs, object[] additionalFields = null)
-        {
-            return new ImplicitEulerScheme(L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
-        }
+        public IMixedScheme factory(object L, object bcs, object[] additionalFields = null) => new ImplicitEulerScheme(L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
+
         #endregion
 
         #region IMixedScheme interface
@@ -71,7 +69,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
                     BiCGStab.MatrixMult preconditioner = x => map_.preconditioner(x, -theta * dt_.Value);
                     BiCGStab.MatrixMult applyF = x => apply(x, theta);
 
-                    BiCGStabResult result =
+                    var result =
                        new BiCGStab(applyF, System.Math.Max(10, (a as Vector).Count), relTol_, preconditioner).solve(a as Vector, a as Vector);
 
                     iterations_ += result.Iterations;
@@ -82,14 +80,14 @@ namespace QLNet.Methods.Finitedifferences.Schemes
                     GMRES.MatrixMult preconditioner = x => map_.preconditioner(x, -theta * dt_.Value);
                     GMRES.MatrixMult applyF = x => apply(x, theta);
 
-                    GMRESResult result =
+                    var result =
                        new GMRES(applyF, System.Math.Max(10, (a as Vector).Count) / 10, relTol_, preconditioner).solve(a as Vector, a as Vector);
 
                     iterations_ += result.Errors.Count;
                     a = result.X;
                 }
                 else
-                    Utils.QL_FAIL("unknown/illegal solver type");
+                    Utils.QL_FAIL("unknown/illegal solver ExerciseType");
             }
             bcSet_.applyAfterSolving(a as Vector);
         }
@@ -100,15 +98,9 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         }
         #endregion
 
-        public int numberOfIterations()
-        {
-            return iterations_;
-        }
+        public int numberOfIterations() => iterations_;
 
-        protected Vector apply(Vector r, double theta = 1.0)
-        {
-            return r - theta * dt_.Value * map_.apply(r);
-        }
+        protected Vector apply(Vector r, double theta = 1.0) => r - theta * dt_.Value * map_.apply(r);
 
         protected double? dt_;
         protected int iterations_;

@@ -38,7 +38,7 @@ namespace QLNet.Time
             if (date.weekday() != (int)DayOfWeek.Friday + 1)
                 return false;
 
-            int d = date.Day;
+            var d = date.Day;
             if (d < 8 || d > 14)
                 return false;
 
@@ -63,8 +63,8 @@ namespace QLNet.Time
             if (inString.Length != 2)
                 return false;
 
-            string str1 = "0123456789";
-            bool loc = str1.Contains(inString.Substring(1, 1));
+            var str1 = "0123456789";
+            var loc = str1.Contains(inString.Substring(1, 1));
             if (!loc)
                 return false;
 
@@ -87,8 +87,8 @@ namespace QLNet.Time
 
             Utils.QL_REQUIRE(isASXdate(date, false), () => date + " is not an ASX date");
 
-            string ASXcode = string.Empty;
-            string y = (date.year() % 10).ToString();
+            var ASXcode = string.Empty;
+            var y = (date.year() % 10).ToString();
             switch ((Month)date.month())
             {
                 case Month.January:
@@ -146,10 +146,10 @@ namespace QLNet.Time
             Utils.QL_REQUIRE(isASXcode(asxCode, false), () =>
                              asxCode + " is not a valid ASX code");
 
-            Date referenceDate = refDate ?? Settings.evaluationDate();
+            var referenceDate = refDate ?? Settings.evaluationDate();
 
-            string code = asxCode.ToUpper();
-            string ms = code.Substring(0, 1);
+            var code = asxCode.ToUpper();
+            var ms = code.Substring(0, 1);
             Month m = 0;
             if (ms == "F")
                 m = Month.January;
@@ -180,14 +180,14 @@ namespace QLNet.Time
 
             //       Year y = boost::lexical_cast<Year>(); // lexical_cast causes compilation errors with x64
 
-            int y = int.Parse(code.Substring(1, 1));
+            var y = int.Parse(code.Substring(1, 1));
             /* year<1900 are not valid QuantLib years: to avoid a run-time
               exception few lines below we need to add 10 years right away */
             if (y == 0 && referenceDate.year() <= 1909)
                 y += 10;
-            int referenceYear = referenceDate.year() % 10;
+            var referenceYear = referenceDate.year() % 10;
             y += referenceDate.year() - referenceYear;
-            Date result = nextDate(new Date(1, m, y), false);
+            var result = nextDate(new Date(1, m, y), false);
             if (result < referenceDate)
                 return nextDate(new Date(1, m, y + 10), false);
 
@@ -201,12 +201,12 @@ namespace QLNet.Time
         */
         public static Date nextDate(Date date = null, bool mainCycle = true)
         {
-            Date refDate = date ?? Settings.evaluationDate();
-            int y = refDate.year();
-            int m = refDate.month();
+            var refDate = date ?? Settings.evaluationDate();
+            var y = refDate.year();
+            var m = refDate.month();
 
-            int offset = mainCycle ? 3 : 1;
-            int skipMonths = offset - m % offset;
+            var offset = mainCycle ? 3 : 1;
+            var skipMonths = offset - m % offset;
             if (skipMonths != offset || refDate.Day > 14)
             {
                 skipMonths += m;
@@ -221,7 +221,7 @@ namespace QLNet.Time
                 }
             }
 
-            Date result = Date.nthWeekday(2, DayOfWeek.Friday, m, y);
+            var result = Date.nthWeekday(2, DayOfWeek.Friday, m, y);
             if (result <= refDate)
                 result = nextDate(new Date(15, m, y), mainCycle);
             return result;
@@ -233,7 +233,7 @@ namespace QLNet.Time
         */
         public static Date nextDate(string ASXcode, bool mainCycle = true, Date referenceDate = null)
         {
-            Date asxDate = date(ASXcode, referenceDate);
+            var asxDate = date(ASXcode, referenceDate);
             return nextDate(asxDate + 1, mainCycle);
         }
 
@@ -243,7 +243,7 @@ namespace QLNet.Time
         */
         public static string nextCode(Date d = null, bool mainCycle = true)
         {
-            Date date = nextDate(d, mainCycle);
+            var date = nextDate(d, mainCycle);
             return code(date);
         }
 
@@ -253,7 +253,7 @@ namespace QLNet.Time
         */
         public static string nextCode(string asxCode, bool mainCycle = true, Date referenceDate = null)
         {
-            Date date = nextDate(asxCode, mainCycle, referenceDate);
+            var date = nextDate(asxCode, mainCycle, referenceDate);
             return code(date);
         }
     }

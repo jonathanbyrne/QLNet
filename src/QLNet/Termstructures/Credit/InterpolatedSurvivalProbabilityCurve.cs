@@ -28,7 +28,7 @@ namespace QLNet.Termstructures.Credit
     /// DefaultProbabilityTermStructure based on interpolation of survival probabilities
     /// </summary>
     /// <typeparam name="Interpolator"></typeparam>
-    public class InterpolatedSurvivalProbabilityCurve<Interpolator> : SurvivalProbabilityStructure,
+    [JetBrains.Annotations.PublicAPI] public class InterpolatedSurvivalProbabilityCurve<Interpolator> : SurvivalProbabilityStructure,
       InterpolatedCurve where Interpolator : IInterpolationFactory, new()
     {
         public InterpolatedSurvivalProbabilityCurve(List<Date> dates,
@@ -48,7 +48,7 @@ namespace QLNet.Termstructures.Credit
 
             times_ = new InitializedList<double>(dates_.Count);
             times_[0] = 0.0;
-            for (int i = 1; i < dates_.Count; ++i)
+            for (var i = 1; i < dates_.Count; ++i)
             {
                 Utils.QL_REQUIRE(dates_[i] > dates_[i - 1], () =>
                                  "invalid date (" + dates_[i] + ", vs " + dates_[i - 1] + ")");
@@ -74,16 +74,20 @@ namespace QLNet.Termstructures.Credit
         /// TermStructure interface
         /// </summary>
         /// <returns></returns>
-        public override Date maxDate() { return dates_.Last(); }
+        public override Date maxDate() => dates_.Last();
 
         // other inspectors
-        public List<double> times() { return times_; }
-        public List<Date> dates() { return dates_; }
-        public List<double> data() { return data_; }
-        public List<double> survivalProbabilities() { return data_; }
+        public List<double> times() => times_;
+
+        public List<Date> dates() => dates_;
+
+        public List<double> data() => data_;
+
+        public List<double> survivalProbabilities() => data_;
+
         public Dictionary<Date, double> nodes()
         {
-            Dictionary<Date, double> results = new Dictionary<Date, double>();
+            var results = new Dictionary<Date, double>();
             dates_.ForEach((i, x) => results.Add(x, data_[i]));
             return results;
         }
@@ -120,9 +124,9 @@ namespace QLNet.Termstructures.Credit
                 return interpolation_.value(t, true);
 
             // flat hazard rate extrapolation
-            double tMax = times_.Last();
-            double sMax = data_.Last();
-            double hazardMax = -interpolation_.derivative(tMax) / sMax;
+            var tMax = times_.Last();
+            var sMax = data_.Last();
+            var hazardMax = -interpolation_.derivative(tMax) / sMax;
             return sMax * System.Math.Exp(-hazardMax * (t - tMax));
         }
 
@@ -132,9 +136,9 @@ namespace QLNet.Termstructures.Credit
                 return -interpolation_.derivative(t, true);
 
             // flat hazard rate extrapolation
-            double tMax = times_.Last();
-            double sMax = data_.Last();
-            double hazardMax = -interpolation_.derivative(tMax) / sMax;
+            var tMax = times_.Last();
+            var sMax = data_.Last();
+            var hazardMax = -interpolation_.derivative(tMax) / sMax;
             return sMax * hazardMax * System.Math.Exp(-hazardMax * (t - tMax));
         }
 
@@ -147,7 +151,7 @@ namespace QLNet.Termstructures.Credit
         public Date maxDate_ { get; set; }
 
         public List<double> data_ { get; set; }
-        public List<double> discounts() { return data_; }
+        public List<double> discounts() => data_;
 
         public Interpolation interpolation_ { get; set; }
         public IInterpolationFactory interpolator_ { get; set; }
@@ -159,7 +163,7 @@ namespace QLNet.Termstructures.Credit
 
         public object Clone()
         {
-            InterpolatedCurve copy = MemberwiseClone() as InterpolatedCurve;
+            var copy = MemberwiseClone() as InterpolatedCurve;
             copy.times_ = new List<double>(times_);
             copy.data_ = new List<double>(data_);
             copy.interpolator_ = interpolator_;

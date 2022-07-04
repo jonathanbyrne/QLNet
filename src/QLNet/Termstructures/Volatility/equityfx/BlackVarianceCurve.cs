@@ -40,10 +40,10 @@ namespace QLNet.Termstructures.Volatility.equityfx
         \todo check time extrapolation
 
     */
-    public class BlackVarianceCurve : BlackVarianceTermStructure
+    [JetBrains.Annotations.PublicAPI] public class BlackVarianceCurve : BlackVarianceTermStructure
     {
         DayCounter dayCounter_;
-        public override DayCounter dayCounter() { return dayCounter_; }
+        public override DayCounter dayCounter() => dayCounter_;
 
         Date maxDate_;
         List<double> times_;
@@ -70,7 +70,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
             times_ = new InitializedList<double>(dates.Count + 1);
             variances_[0] = 0.0;
             times_[0] = 0.0;
-            for (int j = 1; j <= blackVolCurve.Count; j++)
+            for (var j = 1; j <= blackVolCurve.Count; j++)
             {
                 times_[j] = timeFromReference(dates[j - 1]);
 
@@ -107,8 +107,10 @@ namespace QLNet.Termstructures.Volatility.equityfx
             notifyObservers();
         }
 
-        public override Date maxDate() { return maxDate_; }
-        public override double minStrike() { return double.MinValue; }
-        public override double maxStrike() { return double.MaxValue; }
+        public override Date maxDate() => maxDate_;
+
+        public override double minStrike() => double.MinValue;
+
+        public override double maxStrike() => double.MaxValue;
     }
 }

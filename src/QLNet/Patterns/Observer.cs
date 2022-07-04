@@ -21,14 +21,14 @@ namespace QLNet.Patterns
 {
     public delegate void Callback();
 
-    public interface IObservable
+    [JetBrains.Annotations.PublicAPI] public interface IObservable
     {
         event Callback notifyObserversEvent;
         void registerWith(Callback handler);
         void unregisterWith(Callback handler);
     }
 
-    public interface IObserver
+    [JetBrains.Annotations.PublicAPI] public interface IObserver
     {
         void update();
     }

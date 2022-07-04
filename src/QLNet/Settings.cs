@@ -57,38 +57,20 @@ namespace QLNet
 
       public static bool enforcesTodaysHistoricFixings
       {
-         get
-         {
-            return enforcesTodaysHistoricFixings_;
-         }
-         set
-         {
-            enforcesTodaysHistoricFixings_ = value;
-         }
+         get => enforcesTodaysHistoricFixings_;
+         set => enforcesTodaysHistoricFixings_ = value;
       }
 
       public static bool includeReferenceDateEvents
       {
-         get
-         {
-            return includeReferenceDateEvents_;
-         }
-         set
-         {
-            includeReferenceDateEvents_ = value;
-         }
+         get => includeReferenceDateEvents_;
+         set => includeReferenceDateEvents_ = value;
       }
 
       public static bool? includeTodaysCashFlows
       {
-         get
-         {
-            return includeTodaysCashFlows_;
-         }
-         set
-         {
-            includeTodaysCashFlows_ = value;
-         }
+         get => includeTodaysCashFlows_;
+         set => includeTodaysCashFlows_ = value;
       }
 
       ////////////////////////////////////////////////////
@@ -96,14 +78,8 @@ namespace QLNet
       private static readonly WeakEventSource eventSource = new WeakEventSource();
       public static event Callback notifyObserversEvent
       {
-         add
-         {
-            eventSource.Subscribe(value);
-         }
-         remove
-         {
-            eventSource.Unsubscribe(value);
-         }
+         add => eventSource.Subscribe(value);
+         remove => eventSource.Unsubscribe(value);
       }
 
       public static void registerWith(Callback handler) { notifyObserversEvent += handler; }
@@ -120,7 +96,7 @@ namespace QLNet
    }
 
    // helper class to temporarily and safely change the settings
-   public class SavedSettings : IDisposable
+   [JetBrains.Annotations.PublicAPI] public class SavedSettings : IDisposable
    {
       private Date evaluationDate_;
       private bool enforcesTodaysHistoricFixings_;

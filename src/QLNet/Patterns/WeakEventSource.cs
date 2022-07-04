@@ -27,7 +27,7 @@ using System.Reflection;
 
 namespace QLNet.Patterns
 {
-    public class WeakEventSource
+    [JetBrains.Annotations.PublicAPI] public class WeakEventSource
     {
         private readonly List<WeakDelegate> _handlers;
 
@@ -61,7 +61,7 @@ namespace QLNet.Patterns
         {
             lock (_handlers)
             {
-                int index = _handlers.FindIndex(h => h.IsMatch(handler));
+                var index = _handlers.FindIndex(h => h.IsMatch(handler));
                 if (index >= 0)
                     _handlers.RemoveAt(index);
             }

@@ -133,15 +133,15 @@ namespace QLNet.Pricingengines
 
         protected override TimeGrid timeGrid()
         {
-            Date lastExerciseDate = arguments_.exercise.lastDate();
-            double t = process_.time(lastExerciseDate);
+            var lastExerciseDate = arguments_.exercise.lastDate();
+            var t = process_.time(lastExerciseDate);
             if (timeSteps_ != null)
             {
                 return new TimeGrid(t, timeSteps_.Value);
             }
             else if (timeStepsPerYear_ != null)
             {
-                int steps = (int)(timeStepsPerYear_.Value * t);
+                var steps = (int)(timeStepsPerYear_.Value * t);
                 return new TimeGrid(t, System.Math.Max(steps, 1));
             }
             else
@@ -159,9 +159,9 @@ namespace QLNet.Pricingengines
 
         protected override IPathGenerator<IRNG> pathGenerator()
         {
-            int dimensions = process_.factors();
-            TimeGrid grid = timeGrid();
-            IRNG generator = FastActivator<RNG>.Create().make_sequence_generator(dimensions * (grid.size() - 1), seed_);
+            var dimensions = process_.factors();
+            var grid = timeGrid();
+            var generator = FastActivator<RNG>.Create().make_sequence_generator(dimensions * (grid.size() - 1), seed_);
             if (typeof(MC) == typeof(SingleVariate))
                 return new PathGenerator<IRNG>(process_, grid, generator, brownianBridge_);
             else
@@ -175,8 +175,10 @@ namespace QLNet.Pricingengines
         protected QLNet.Option.Arguments arguments_ = new QLNet.Option.Arguments();
         protected OneAssetOption.Results results_ = new OneAssetOption.Results();
 
-        public IPricingEngineArguments getArguments() { return arguments_; }
-        public IPricingEngineResults getResults() { return results_; }
+        public IPricingEngineArguments getArguments() => arguments_;
+
+        public IPricingEngineResults getResults() => results_;
+
         public void reset() { results_.reset(); }
 
         #region Observer & Observable
@@ -184,14 +186,8 @@ namespace QLNet.Pricingengines
         private readonly WeakEventSource eventSource = new WeakEventSource();
         public event Callback notifyObserversEvent
         {
-            add
-            {
-                eventSource.Subscribe(value);
-            }
-            remove
-            {
-                eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
         }
 
         public void registerWith(Callback handler) { notifyObserversEvent += handler; }

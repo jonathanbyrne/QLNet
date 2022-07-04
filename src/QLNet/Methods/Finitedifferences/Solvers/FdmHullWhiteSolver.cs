@@ -24,7 +24,7 @@ using System;
 
 namespace QLNet.Methods.Finitedifferences.Solvers
 {
-    public class FdmHullWhiteSolver : LazyObject
+    [JetBrains.Annotations.PublicAPI] public class FdmHullWhiteSolver : LazyObject
     {
         public FdmHullWhiteSolver(
            Handle<HullWhite> model,
@@ -42,22 +42,15 @@ namespace QLNet.Methods.Finitedifferences.Solvers
             calculate();
             return solver_.interpolateAt(s);
         }
-        public double deltaAt(double s)
-        {
-            return 0.0;
-        }
-        public double gammaAt(double s)
-        {
-            return 0.0;
-        }
-        public double thetaAt(double s)
-        {
-            return 0.0;
-        }
+        public double deltaAt(double s) => 0.0;
+
+        public double gammaAt(double s) => 0.0;
+
+        public double thetaAt(double s) => 0.0;
 
         protected override void performCalculations()
         {
-            FdmHullWhiteOp op = new FdmHullWhiteOp(
+            var op = new FdmHullWhiteOp(
                solverDesc_.mesher, model_.currentLink(), 0);
 
             solver_ = new Fdm1DimSolver(solverDesc_, schemeDesc_, op);

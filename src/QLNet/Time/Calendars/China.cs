@@ -50,7 +50,7 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    public class China : Calendar
+    [JetBrains.Annotations.PublicAPI] public class China : Calendar
     {
         public enum Market
         {
@@ -80,19 +80,16 @@ namespace QLNet.Time.Calendars
         {
             public static readonly SseImpl Singleton = new SseImpl();
             private SseImpl() { }
-            public override string name() { return "Shanghai stock exchange"; }
+            public override string name() => "Shanghai stock exchange";
 
-            public override bool isWeekend(DayOfWeek w)
-            {
-                return w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
-            }
+            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
 
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
-                int d = date.Day;
-                Month m = (Month)date.Month;
-                int y = date.Year;
+                var w = date.DayOfWeek;
+                var d = date.Day;
+                var m = (Month)date.Month;
+                var y = date.Year;
 
                 if (isWeekend(w)
                     // New Year's Day
@@ -231,13 +228,14 @@ namespace QLNet.Time.Calendars
                 sseImpl = new China(Market.SSE);
             }
 
-            public override string name() { return "China inter bank market"; }
+            public override string name() => "China inter bank market";
 
-            public override bool isWeekend(DayOfWeek w) { return w == DayOfWeek.Saturday || w == DayOfWeek.Sunday; }
+            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
+
             public override bool isBusinessDay(Date date)
             {
 
-                List<Date> working_weekends = new List<Date>
+                var working_weekends = new List<Date>
             {
                // 2005
                new Date(5, Month.February, 2005),

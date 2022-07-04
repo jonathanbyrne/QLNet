@@ -30,7 +30,7 @@ namespace QLNet.Indexes.Ibor
 
         See <https://www.theice.com/marketdata/reports/170>.
     */
-    public class USDLibor : Libor
+    [JetBrains.Annotations.PublicAPI] public class USDLibor : Libor
     {
         public USDLibor(Period tenor) : this(tenor, new Handle<YieldTermStructure>())
         { }
@@ -42,7 +42,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! base class for the one day deposit ICE %USD %LIBOR indexes
-    public class DailyTenorUSDLibor : DailyTenorLibor
+    [JetBrains.Annotations.PublicAPI] public class DailyTenorUSDLibor : DailyTenorLibor
     {
         public DailyTenorUSDLibor(int settlementDays) : this(settlementDays, new Handle<YieldTermStructure>())
         { }
@@ -53,7 +53,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! Overnight %USD %Libor index
-    public class USDLiborON : DailyTenorUSDLibor
+    [JetBrains.Annotations.PublicAPI] public class USDLiborON : DailyTenorUSDLibor
     {
         public USDLiborON() : this(new Handle<YieldTermStructure>())
         { }

@@ -27,7 +27,7 @@ using QLNet.Math;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Optimizers
+    [JetBrains.Annotations.PublicAPI] public class T_Optimizers
     {
         List<CostFunction> costFunctions_ = new List<CostFunction>();
         List<Constraint> constraints_ = new List<Constraint>();
@@ -67,29 +67,29 @@ namespace QLNet.Tests
             setup();
 
             // Loop over problems (currently there is only 1 problem)
-            for (int i = 0; i < costFunctions_.Count; ++i)
+            for (var i = 0; i < costFunctions_.Count; ++i)
             {
-                Problem problem = new Problem(costFunctions_[i], constraints_[i], initialValues_[i]);
-                Vector initialValues = problem.currentValue();
+                var problem = new Problem(costFunctions_[i], constraints_[i], initialValues_[i]);
+                var initialValues = problem.currentValue();
                 // Loop over optimizers
-                for (int j = 0; j < optimizationMethods_[i].Count; ++j)
+                for (var j = 0; j < optimizationMethods_[i].Count; ++j)
                 {
-                    double rootEpsilon = endCriterias_[i].rootEpsilon();
-                    int endCriteriaTests = 1;
+                    var rootEpsilon = endCriterias_[i].rootEpsilon();
+                    var endCriteriaTests = 1;
                     // Loop over rootEpsilon
-                    for (int k = 0; k < endCriteriaTests; ++k)
+                    for (var k = 0; k < endCriteriaTests; ++k)
                     {
                         problem.setCurrentValue(initialValues);
-                        EndCriteria endCriteria = new EndCriteria(endCriterias_[i].maxIterations(),
+                        var endCriteria = new EndCriteria(endCriterias_[i].maxIterations(),
                                                                   endCriterias_[i].maxStationaryStateIterations(),
                                                                   rootEpsilon,
                                                                   endCriterias_[i].functionEpsilon(),
                                                                   endCriterias_[i].gradientNormEpsilon());
                         rootEpsilon *= .1;
-                        EndCriteria.Type endCriteriaResult =
+                        var endCriteriaResult =
                            optimizationMethods_[i][j].optimizationMethod.minimize(problem, endCriteria);
-                        Vector xMinCalculated = problem.currentValue();
-                        Vector yMinCalculated = problem.values(xMinCalculated);
+                        var xMinCalculated = problem.currentValue();
+                        var yMinCalculated = problem.values(xMinCalculated);
                         // Check optimization results vs known solution
                         if (endCriteriaResult == EndCriteria.Type.None ||
                             endCriteriaResult == EndCriteria.Type.MaxIterations ||
@@ -114,15 +114,15 @@ namespace QLNet.Tests
         public void nestedOptimizationTest()
         {
             //("Testing nested optimizations...");
-            OptimizationBasedCostFunction optimizationBasedCostFunction = new OptimizationBasedCostFunction();
-            NoConstraint constraint = new NoConstraint();
-            Vector initialValues = new Vector(1, 0.0);
-            Problem problem = new Problem(optimizationBasedCostFunction, constraint, initialValues);
-            LevenbergMarquardt optimizationMethod = new LevenbergMarquardt();
+            var optimizationBasedCostFunction = new OptimizationBasedCostFunction();
+            var constraint = new NoConstraint();
+            var initialValues = new Vector(1, 0.0);
+            var problem = new Problem(optimizationBasedCostFunction, constraint, initialValues);
+            var optimizationMethod = new LevenbergMarquardt();
             //Simplex optimizationMethod(0.1);
             //ConjugateGradient optimizationMethod;
             //SteepestDescent optimizationMethod;
-            EndCriteria endCriteria = new EndCriteria(1000, 100, 1e-5, 1e-5, 1e-5);
+            var endCriteria = new EndCriteria(1000, 100, 1e-5, 1e-5, 1e-5);
             optimizationMethod.minimize(problem, endCriteria);
         }
 
@@ -142,7 +142,7 @@ namespace QLNet.Tests
             * version of DifferentialEvolution turns out to be more successful.
             */
 
-            DifferentialEvolution.Configuration conf =
+            var conf =
                new DifferentialEvolution.Configuration()
             .withStepsizeWeight(0.4)
             .withBounds()
@@ -153,7 +153,7 @@ namespace QLNet.Tests
             .withAdaptiveCrossover()
             .withSeed(3242);
 
-            DifferentialEvolution.Configuration conf2 =
+            var conf2 =
                new DifferentialEvolution.Configuration()
             .withStepsizeWeight(1.8)
             .withBounds()
@@ -163,53 +163,53 @@ namespace QLNet.Tests
             .withCrossoverType(DifferentialEvolution.CrossoverType.Normal)
             .withAdaptiveCrossover()
             .withSeed(3242);
-            DifferentialEvolution deOptim2 = new DifferentialEvolution(conf2);
+            var deOptim2 = new DifferentialEvolution(conf2);
 
-            List<DifferentialEvolution> diffEvolOptimisers = new List<DifferentialEvolution>();
+            var diffEvolOptimisers = new List<DifferentialEvolution>();
             diffEvolOptimisers.Add(new DifferentialEvolution(conf));
             diffEvolOptimisers.Add(new DifferentialEvolution(conf));
             diffEvolOptimisers.Add(new DifferentialEvolution(conf));
             diffEvolOptimisers.Add(new DifferentialEvolution(conf));
             diffEvolOptimisers.Add(deOptim2);
 
-            List<CostFunction> costFunctions = new List<CostFunction>();
+            var costFunctions = new List<CostFunction>();
             costFunctions.Add(new FirstDeJong());
             costFunctions.Add(new SecondDeJong());
             costFunctions.Add(new ModThirdDeJong());
             costFunctions.Add(new ModFourthDeJong());
             costFunctions.Add(new Griewangk());
 
-            List<BoundaryConstraint> constraints = new List<BoundaryConstraint>();
+            var constraints = new List<BoundaryConstraint>();
             constraints.Add(new BoundaryConstraint(-10.0, 10.0));
             constraints.Add(new BoundaryConstraint(-10.0, 10.0));
             constraints.Add(new BoundaryConstraint(-10.0, 10.0));
             constraints.Add(new BoundaryConstraint(-10.0, 10.0));
             constraints.Add(new BoundaryConstraint(-600.0, 600.0));
 
-            List<Vector> initialValues = new List<Vector>();
+            var initialValues = new List<Vector>();
             initialValues.Add(new Vector(3, 5.0));
             initialValues.Add(new Vector(2, 5.0));
             initialValues.Add(new Vector(5, 5.0));
             initialValues.Add(new Vector(30, 5.0));
             initialValues.Add(new Vector(10, 100.0));
 
-            List<EndCriteria> endCriteria = new List<EndCriteria>();
+            var endCriteria = new List<EndCriteria>();
             endCriteria.Add(new EndCriteria(100, 10, 1e-10, 1e-8, null));
             endCriteria.Add(new EndCriteria(100, 10, 1e-10, 1e-8, null));
             endCriteria.Add(new EndCriteria(100, 10, 1e-10, 1e-8, null));
             endCriteria.Add(new EndCriteria(500, 100, 1e-10, 1e-8, null));
             endCriteria.Add(new EndCriteria(1000, 800, 1e-12, 1e-10, null));
 
-            List<double> minima = new List<double>();
+            var minima = new List<double>();
             minima.Add(0.0);
             minima.Add(0.0);
             minima.Add(0.0);
             minima.Add(10.9639796558);
             minima.Add(0.0);
 
-            for (int i = 0; i < costFunctions.Count; ++i)
+            for (var i = 0; i < costFunctions.Count; ++i)
             {
-                Problem problem = new Problem(costFunctions[i], constraints[i], initialValues[i]);
+                var problem = new Problem(costFunctions[i], constraints[i], initialValues[i]);
                 diffEvolOptimisers[i].minimize(problem, endCriteria[i]);
 
                 if (i != 3)
@@ -267,7 +267,7 @@ namespace QLNet.Tests
             /// <inheritdoc />
             public override void gradient(ref Vector grad, Vector x)
             {
-                for (int i = 0; i < grad.Count; i++)
+                for (var i = 0; i < grad.Count; i++)
                     grad[i] = 2 * x[i];
             }
         }
@@ -281,13 +281,13 @@ namespace QLNet.Tests
             const double a = 1;   // required a > 0
             const double b = 1;
             const double c = 1;
-            Vector coefficients = new Vector() { c, b, a };
+            var coefficients = new Vector() { c, b, a };
 
             costFunctions_.Add(new OneDimensionalPolynomialDegreeN(coefficients));
             // Set constraint for optimizers: unconstrained problem
             constraints_.Add(new NoConstraint());
             // Set initial guess for optimizer
-            Vector initialValue = new Vector(1);
+            var initialValue = new Vector(1);
             initialValue[0] = -100;
             initialValues_.Add(initialValue);
             // Set end criteria for optimizer
@@ -313,10 +313,10 @@ namespace QLNet.Tests
             OptimizationMethodType.bfgs_goldstein
          };
 
-            double simplexLambda = 0.1;                   // characteristic search length for simplex
-            double levenbergMarquardtEpsfcn = 1.0e-8;     // parameters specific for Levenberg-Marquardt
-            double levenbergMarquardtXtol = 1.0e-8;     //
-            double levenbergMarquardtGtol = 1.0e-8;     //
+            var simplexLambda = 0.1;                   // characteristic search length for simplex
+            var levenbergMarquardtEpsfcn = 1.0e-8;     // parameters specific for Levenberg-Marquardt
+            var levenbergMarquardtXtol = 1.0e-8;     //
+            var levenbergMarquardtGtol = 1.0e-8;     //
             optimizationMethods_.Add(makeOptimizationMethods(
                                         optimizationMethodTypes, optimizationMethodTypes.Length,
                                         simplexLambda, levenbergMarquardtEpsfcn, levenbergMarquardtXtol,
@@ -357,7 +357,7 @@ namespace QLNet.Tests
                 case OptimizationMethodType.bfgs_goldstein:
                     return new BFGS(new GoldsteinLineSearch());
                 default:
-                    throw new Exception("unknown OptimizationMethod type");
+                    throw new Exception("unknown OptimizationMethod ExerciseType");
             }
         }
 
@@ -368,8 +368,8 @@ namespace QLNet.Tests
                                                               double levenbergMarquardtXtol,
                                                               double levenbergMarquardtGtol)
         {
-            List<NamedOptimizationMethod> results = new List<NamedOptimizationMethod>(optimizationMethodNb);
-            for (int i = 0; i < optimizationMethodNb; ++i)
+            var results = new List<NamedOptimizationMethod>(optimizationMethodNb);
+            for (var i = 0; i < optimizationMethodNb; ++i)
             {
                 NamedOptimizationMethod namedOptimizationMethod;
                 namedOptimizationMethod.optimizationMethod = makeOptimizationMethod(optimizationMethodTypes[i],
@@ -406,7 +406,7 @@ namespace QLNet.Tests
                 case OptimizationMethodType.bfgs_goldstein:
                     return "BFGS (Goldstein line search)";
                 default:
-                    throw new Exception("unknown OptimizationMethod type");
+                    throw new Exception("unknown OptimizationMethod ExerciseType");
             }
         }
     }
@@ -427,7 +427,7 @@ namespace QLNet.Tests
             if (x.size() != 1)
                 throw new Exception("independent variable must be 1 dimensional");
             double y = 0;
-            for (int i = 0; i <= polynomialDegree_; ++i)
+            for (var i = 0; i <= polynomialDegree_; ++i)
                 y += coefficients_[i] * Utils.Pow(x[0], i);
             return y;
         }
@@ -436,7 +436,7 @@ namespace QLNet.Tests
         {
             if (x.size() != 1)
                 throw new Exception("independent variable must be 1 dimensional");
-            Vector y = new Vector(1);
+            var y = new Vector(1);
             y[0] = value(x);
             return y;
         }
@@ -446,24 +446,24 @@ namespace QLNet.Tests
     // in order to test nested optimizations
     class OptimizationBasedCostFunction : CostFunction
     {
-        public override double value(Vector x) { return 1.0; }
+        public override double value(Vector x) => 1.0;
 
         public override Vector values(Vector x)
         {
             // dummy nested optimization
-            Vector coefficients = new Vector(3, 1.0);
-            OneDimensionalPolynomialDegreeN oneDimensionalPolynomialDegreeN = new OneDimensionalPolynomialDegreeN(coefficients);
-            NoConstraint constraint = new NoConstraint();
-            Vector initialValues = new Vector(1, 100.0);
-            Problem problem = new Problem(oneDimensionalPolynomialDegreeN, constraint, initialValues);
-            LevenbergMarquardt optimizationMethod = new LevenbergMarquardt();
+            var coefficients = new Vector(3, 1.0);
+            var oneDimensionalPolynomialDegreeN = new OneDimensionalPolynomialDegreeN(coefficients);
+            var constraint = new NoConstraint();
+            var initialValues = new Vector(1, 100.0);
+            var problem = new Problem(oneDimensionalPolynomialDegreeN, constraint, initialValues);
+            var optimizationMethod = new LevenbergMarquardt();
             //Simplex optimizationMethod(0.1);
             //ConjugateGradient optimizationMethod;
             //SteepestDescent optimizationMethod;
-            EndCriteria endCriteria = new EndCriteria(1000, 100, 1e-5, 1e-5, 1e-5);
+            var endCriteria = new EndCriteria(1000, 100, 1e-5, 1e-5, 1e-5);
             optimizationMethod.minimize(problem, endCriteria);
             // return dummy result
-            Vector dummy = new Vector(1, 0);
+            var dummy = new Vector(1, 0);
             return dummy;
         }
     }
@@ -472,40 +472,35 @@ namespace QLNet.Tests
     {
         public override Vector values(Vector x)
         {
-            Vector retVal = new Vector(x.size(), value(x));
+            var retVal = new Vector(x.size(), value(x));
             return retVal;
         }
-        public override double value(Vector x)
-        {
-            return Vector.DotProduct(x, x);
-        }
+        public override double value(Vector x) => Vector.DotProduct(x, x);
     }
 
     class SecondDeJong : CostFunction
     {
         public override Vector values(Vector x)
         {
-            Vector retVal = new Vector(x.size(), value(x));
+            var retVal = new Vector(x.size(), value(x));
             return retVal;
         }
-        public override double value(Vector x)
-        {
-            return 100.0 * (x[0] * x[0] - x[1]) * (x[0] * x[0] - x[1])
-                    + (1.0 - x[0]) * (1.0 - x[0]);
-        }
+        public override double value(Vector x) =>
+            100.0 * (x[0] * x[0] - x[1]) * (x[0] * x[0] - x[1])
+            + (1.0 - x[0]) * (1.0 - x[0]);
     }
 
     class ModThirdDeJong : CostFunction
     {
         public override Vector values(Vector x)
         {
-            Vector retVal = new Vector(x.size(), value(x));
+            var retVal = new Vector(x.size(), value(x));
             return retVal;
         }
         public override double value(Vector x)
         {
-            double fx = 0.0;
-            for (int i = 0; i < x.size(); ++i)
+            var fx = 0.0;
+            for (var i = 0; i < x.size(); ++i)
             {
                 fx += System.Math.Floor(x[i]) * System.Math.Floor(x[i]);
             }
@@ -522,13 +517,13 @@ namespace QLNet.Tests
 
         public override Vector values(Vector x)
         {
-            Vector retVal = new Vector(x.size(), value(x));
+            var retVal = new Vector(x.size(), value(x));
             return retVal;
         }
         public override double value(Vector x)
         {
-            double fx = 0.0;
-            for (int i = 0; i < x.size(); ++i)
+            var fx = 0.0;
+            for (var i = 0; i < x.size(); ++i)
             {
                 fx += (i + 1.0) * System.Math.Pow(x[i], 4.0) + uniformRng_.nextReal();
             }
@@ -541,18 +536,18 @@ namespace QLNet.Tests
     {
         public override Vector values(Vector x)
         {
-            Vector retVal = new Vector(x.size(), value(x));
+            var retVal = new Vector(x.size(), value(x));
             return retVal;
         }
         public override double value(Vector x)
         {
-            double fx = 0.0;
-            for (int i = 0; i < x.size(); ++i)
+            var fx = 0.0;
+            for (var i = 0; i < x.size(); ++i)
             {
                 fx += x[i] * x[i] / 4000.0;
             }
-            double p = 1.0;
-            for (int i = 0; i < x.size(); ++i)
+            var p = 1.0;
+            for (var i = 0; i < x.size(); ++i)
             {
                 p *= System.Math.Cos(x[i] / System.Math.Sqrt(i + 1.0));
             }

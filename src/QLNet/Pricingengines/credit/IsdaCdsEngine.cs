@@ -28,7 +28,7 @@ using System.Linq;
 
 namespace QLNet.Pricingengines.credit
 {
-    public class IsdaCdsEngine : CreditDefaultSwap.Engine
+    [JetBrains.Annotations.PublicAPI] public class IsdaCdsEngine : CreditDefaultSwap.Engine
     {
 
         public enum NumericalFix
@@ -86,8 +86,9 @@ namespace QLNet.Pricingengines.credit
             discountCurve_.registerWith(update);
         }
 
-        public Handle<YieldTermStructure> isdaRateCurve() { return discountCurve_; }
-        public Handle<DefaultProbabilityTermStructure> isdaCreditCurve() { return probability_; }
+        public Handle<YieldTermStructure> isdaRateCurve() => discountCurve_;
+
+        public Handle<DefaultProbabilityTermStructure> isdaCreditCurve() => probability_;
 
         public override void calculate()
         {
@@ -103,11 +104,11 @@ namespace QLNet.Pricingengines.credit
             // but the ISDA engine is not explicitly specified to handle them,
             // so we just forbid them too
 
-            Actual365Fixed dc = new Actual365Fixed();
-            Actual360 dc1 = new Actual360();
-            Actual360 dc2 = new Actual360(true);
+            var dc = new Actual365Fixed();
+            var dc1 = new Actual360();
+            var dc2 = new Actual360(true);
 
-            Date evalDate = Settings.evaluationDate();
+            var evalDate = Settings.evaluationDate();
 
             // check if given curves are ISDA compatible
             // (the interpolation is checked below)
@@ -130,8 +131,8 @@ namespace QLNet.Pricingengines.credit
             Utils.QL_REQUIRE(arguments_.claim as FaceValueClaim != null, () =>
                              "ISDA engine not compatible with non face value claim");
 
-            Date maturity = arguments_.maturity;
-            Date effectiveProtectionStart = Date.Max(arguments_.protectionStart, evalDate + 1);
+            var maturity = arguments_.maturity;
+            var effectiveProtectionStart = Date.Max(arguments_.protectionStart, evalDate + 1);
 
             // collect nodes from both curves and sort them
             List<Date> yDates = new List<Date>(), cDates = new List<Date>();
@@ -182,24 +183,24 @@ namespace QLNet.Pricingengines.credit
             }
 
             // Todo check
-            List<Date> nodes = yDates.Union(cDates).ToList();
+            var nodes = yDates.Union(cDates).ToList();
 
             if (nodes.empty())
             {
                 nodes.Add(maturity);
             }
-            double nFix = numericalFix_ == NumericalFix.None ? 1E-50 : 0.0;
+            var nFix = numericalFix_ == NumericalFix.None ? 1E-50 : 0.0;
 
             // protection leg pricing (npv is always negative at this stage)
-            double protectionNpv = 0.0;
+            var protectionNpv = 0.0;
 
-            Date d0 = effectiveProtectionStart - 1;
-            double P0 = discountCurve_.link.discount(d0);
-            double Q0 = probability_.link.survivalProbability(d0);
+            var d0 = effectiveProtectionStart - 1;
+            var P0 = discountCurve_.link.discount(d0);
+            var Q0 = probability_.link.survivalProbability(d0);
             Date d1;
-            int result = nodes.FindIndex(item => item > effectiveProtectionStart);
+            var result = nodes.FindIndex(item => item > effectiveProtectionStart);
 
-            for (int it = result; it < nodes.Count; ++it)
+            for (var it = result; it < nodes.Count; ++it)
             {
                 if (nodes[it] > maturity)
                 {
@@ -210,16 +211,16 @@ namespace QLNet.Pricingengines.credit
                 {
                     d1 = nodes[it];
                 }
-                double P1 = discountCurve_.link.discount(d1);
-                double Q1 = probability_.link.survivalProbability(d1);
+                var P1 = discountCurve_.link.discount(d1);
+                var Q1 = probability_.link.survivalProbability(d1);
 
-                double fhat = System.Math.Log(P0) - System.Math.Log(P1);
-                double hhat = System.Math.Log(Q0) - System.Math.Log(Q1);
-                double fhphh = fhat + hhat;
+                var fhat = System.Math.Log(P0) - System.Math.Log(P1);
+                var hhat = System.Math.Log(Q0) - System.Math.Log(Q1);
+                var fhphh = fhat + hhat;
 
                 if (fhphh < 1E-4 && numericalFix_ == NumericalFix.Taylor)
                 {
-                    double fhphhq = fhphh * fhphh;
+                    var fhphhq = fhphh * fhphh;
                     protectionNpv +=
                        P0 * Q0 * hhat * (1.0 - 0.5 * fhphh + 1.0 / 6.0 * fhphhq -
                                          1.0 / 24.0 * fhphhq * fhphh +
@@ -240,9 +241,9 @@ namespace QLNet.Pricingengines.credit
             // premium leg pricing (npv is always positive at this stage)
 
             double premiumNpv = 0.0, defaultAccrualNpv = 0.0;
-            for (int i = 0; i < arguments_.leg.Count; ++i)
+            for (var i = 0; i < arguments_.leg.Count; ++i)
             {
-                FixedRateCoupon coupon = arguments_.leg[i] as FixedRateCoupon;
+                var coupon = arguments_.leg[i] as FixedRateCoupon;
 
                 Utils.QL_REQUIRE(coupon.dayCounter() == dc ||
                                  coupon.dayCounter() == dc1 ||
@@ -254,9 +255,9 @@ namespace QLNet.Pricingengines.credit
 
                 if (!arguments_.leg[i].hasOccurred(evalDate, includeSettlementDateFlows_))
                 {
-                    double x1 = coupon.amount();
-                    double x2 = discountCurve_.link.discount(coupon.date());
-                    double x3 = probability_.link.survivalProbability(coupon.date() - 1);
+                    var x1 = coupon.amount();
+                    var x2 = discountCurve_.link.discount(coupon.date());
+                    var x3 = probability_.link.survivalProbability(coupon.date() - 1);
 
                     premiumNpv +=
                        coupon.amount() *
@@ -269,16 +270,16 @@ namespace QLNet.Pricingengines.credit
                 if (!new simple_event(coupon.accrualEndDate())
                     .hasOccurred(effectiveProtectionStart, false))
                 {
-                    Date start = Date.Max(coupon.accrualStartDate(), effectiveProtectionStart) - 1;
-                    Date end = coupon.date() - 1;
-                    double tstart = discountCurve_.link.timeFromReference(coupon.accrualStartDate() - 1) -
-                                    (accrualBias_ == AccrualBias.HalfDayBias ? 1.0 / 730.0 : 0.0);
-                    List<Date> localNodes = new List<Date>();
+                    var start = Date.Max(coupon.accrualStartDate(), effectiveProtectionStart) - 1;
+                    var end = coupon.date() - 1;
+                    var tstart = discountCurve_.link.timeFromReference(coupon.accrualStartDate() - 1) -
+                                 (accrualBias_ == AccrualBias.HalfDayBias ? 1.0 / 730.0 : 0.0);
+                    var localNodes = new List<Date>();
                     localNodes.Add(start);
                     //add intermediary nodes, if any
                     if (forwardsInCouponPeriod_ == ForwardsInCouponPeriod.Piecewise)
                     {
-                        foreach (Date node in nodes)
+                        foreach (var node in nodes)
                         {
                             if (node > start && node < end)
                             {
@@ -291,26 +292,26 @@ namespace QLNet.Pricingengines.credit
                     }
                     localNodes.Add(end);
 
-                    double defaultAccrThisNode = 0.0;
-                    Date firstnode = localNodes.First();
-                    double t0 = discountCurve_.link.timeFromReference(firstnode);
+                    var defaultAccrThisNode = 0.0;
+                    var firstnode = localNodes.First();
+                    var t0 = discountCurve_.link.timeFromReference(firstnode);
                     P0 = discountCurve_.link.discount(firstnode);
                     Q0 = probability_.link.survivalProbability(firstnode);
 
-                    foreach (Date node in localNodes.Skip(1)) //for (++node; node != localNodes.Last(); ++node)
+                    foreach (var node in localNodes.Skip(1)) //for (++node; node != localNodes.Last(); ++node)
                     {
-                        double t1 = discountCurve_.link.timeFromReference(node);
-                        double P1 = discountCurve_.link.discount(node);
-                        double Q1 = probability_.link.survivalProbability(node);
-                        double fhat = System.Math.Log(P0) - System.Math.Log(P1);
-                        double hhat = System.Math.Log(Q0) - System.Math.Log(Q1);
-                        double fhphh = fhat + hhat;
+                        var t1 = discountCurve_.link.timeFromReference(node);
+                        var P1 = discountCurve_.link.discount(node);
+                        var Q1 = probability_.link.survivalProbability(node);
+                        var fhat = System.Math.Log(P0) - System.Math.Log(P1);
+                        var hhat = System.Math.Log(Q0) - System.Math.Log(Q1);
+                        var fhphh = fhat + hhat;
                         if (fhphh < 1E-4 && numericalFix_ == NumericalFix.Taylor)
                         {
                             // see above, terms up to (f+h)^3 seem more than enough,
                             // what exactly is implemented in the standard isda C
                             // code ?
-                            double fhphhq = fhphh * fhphh;
+                            var fhphhq = fhphh * fhphh;
                             defaultAccrThisNode +=
                                hhat * P0 * Q0 *
                                ((t0 - tstart) *
@@ -342,7 +343,7 @@ namespace QLNet.Pricingengines.credit
 
             // upfront flow npv
 
-            double upfPVO1 = 0.0;
+            var upfPVO1 = 0.0;
             results_.upfrontNPV = 0.0;
             if (!arguments_.upfrontPayment.hasOccurred(
                    evalDate, includeSettlementDateFlows_))
@@ -394,7 +395,7 @@ namespace QLNet.Pricingengines.credit
                 results_.fairSpread = null;
             }
 
-            double upfrontSensitivity = upfPVO1 * arguments_.notional.Value;
+            var upfrontSensitivity = upfPVO1 * arguments_.notional.Value;
             if (upfrontSensitivity.IsNotEqual(0.0))
             {
                 results_.fairUpfront =

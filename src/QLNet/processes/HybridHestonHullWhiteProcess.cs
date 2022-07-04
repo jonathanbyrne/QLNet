@@ -28,7 +28,7 @@ namespace QLNet.processes
 
         \ingroup processes
     */
-    public class HybridHestonHullWhiteProcess : StochasticProcess
+    [JetBrains.Annotations.PublicAPI] public class HybridHestonHullWhiteProcess : StochasticProcess
     {
         public enum Discretization { Euler, BSMHullWhite }
 
@@ -58,10 +58,11 @@ namespace QLNet.processes
                              "positive vol of Hull White process is required");
         }
 
-        public override int size() { return 3; }
+        public override int size() => 3;
+
         public override Vector initialValues()
         {
-            Vector retVal = new Vector(3);
+            var retVal = new Vector(3);
             retVal[0] = hestonProcess_.s0().link.value();
             retVal[1] = hestonProcess_.v0();
             retVal[2] = hullWhiteProcess_.x0();
@@ -73,7 +74,7 @@ namespace QLNet.processes
             Vector retVal = new Vector(3), x0 = new Vector(2);
 
             x0[0] = x[0]; x0[1] = x[1];
-            Vector y0 = hestonProcess_.drift(t, x0);
+            var y0 = hestonProcess_.drift(t, x0);
 
             retVal[0] = y0[0]; retVal[1] = y0[1];
             retVal[2] = hullWhiteProcess_.drift(t, x[2]);
@@ -82,16 +83,16 @@ namespace QLNet.processes
         }
         public override Matrix diffusion(double t, Vector x)
         {
-            Matrix retVal = new Matrix(3, 3);
+            var retVal = new Matrix(3, 3);
 
-            Vector xt = new Vector(2);
+            var xt = new Vector(2);
             xt[0] = x[0];
             xt[1] = x[1];
-            Matrix m = hestonProcess_.diffusion(t, xt);
+            var m = hestonProcess_.diffusion(t, xt);
             retVal[0, 0] = m[0, 0]; retVal[0, 1] = 0.0; retVal[0, 2] = 0.0;
             retVal[1, 0] = m[1, 0]; retVal[1, 1] = m[1, 1]; retVal[1, 2] = 0.0;
 
-            double sigma = hullWhiteProcess_.sigma();
+            var sigma = hullWhiteProcess_.sigma();
             retVal[2, 0] = corrEquityShortRate_ * sigma;
             retVal[2, 1] = -retVal[2, 0] * retVal[1, 0] / retVal[1, 1];
             retVal[2, 2] = System.Math.Sqrt(sigma * sigma - retVal[2, 1] * retVal[2, 1]
@@ -106,7 +107,7 @@ namespace QLNet.processes
             xt[0] = x0[0]; xt[1] = x0[1];
             dxt[0] = dx[0]; dxt[1] = dx[1];
 
-            Vector yt = hestonProcess_.apply(xt, dxt);
+            var yt = hestonProcess_.apply(xt, dxt);
 
             retVal[0] = yt[0]; retVal[1] = yt[1];
             retVal[2] = hullWhiteProcess_.apply(x0[2], dx[2]);
@@ -116,80 +117,80 @@ namespace QLNet.processes
 
         public override Vector evolve(double t0, Vector x0, double dt, Vector dw)
         {
-            double r = x0[2];
-            double a = hullWhiteProcess_.a();
-            double sigma = hullWhiteProcess_.sigma();
-            double rho = corrEquityShortRate_;
-            double xi = hestonProcess_.rho();
-            double eta = x0[1] > 0.0 ? System.Math.Sqrt(x0[1]) : 0.0;
-            double s = t0;
-            double t = t0 + dt;
-            double T = T_;
-            double dy = hestonProcess_.dividendYield().link.forwardRate(s, t, Compounding.Continuous, Frequency.NoFrequency).value();
+            var r = x0[2];
+            var a = hullWhiteProcess_.a();
+            var sigma = hullWhiteProcess_.sigma();
+            var rho = corrEquityShortRate_;
+            var xi = hestonProcess_.rho();
+            var eta = x0[1] > 0.0 ? System.Math.Sqrt(x0[1]) : 0.0;
+            var s = t0;
+            var t = t0 + dt;
+            var T = T_;
+            var dy = hestonProcess_.dividendYield().link.forwardRate(s, t, Compounding.Continuous, Frequency.NoFrequency).value();
 
-            double df = System.Math.Log(hestonProcess_.riskFreeRate().link.discount(t)
-                                 / hestonProcess_.riskFreeRate().link.discount(s));
+            var df = System.Math.Log(hestonProcess_.riskFreeRate().link.discount(t)
+                                     / hestonProcess_.riskFreeRate().link.discount(s));
 
-            double eaT = System.Math.Exp(-a * T);
-            double eat = System.Math.Exp(-a * t);
-            double eas = System.Math.Exp(-a * s);
-            double iat = 1.0 / eat;
-            double ias = 1.0 / eas;
+            var eaT = System.Math.Exp(-a * T);
+            var eat = System.Math.Exp(-a * t);
+            var eas = System.Math.Exp(-a * s);
+            var iat = 1.0 / eat;
+            var ias = 1.0 / eas;
 
-            double m1 = -(dy + 0.5 * eta * eta) * dt - df;
+            var m1 = -(dy + 0.5 * eta * eta) * dt - df;
 
-            double m2 = -rho * sigma * eta / a * (dt - 1 / a * eaT * (iat - ias));
+            var m2 = -rho * sigma * eta / a * (dt - 1 / a * eaT * (iat - ias));
 
-            double m3 = (r - hullWhiteProcess_.alpha(s))
-                        * hullWhiteProcess_.B(s, t);
+            var m3 = (r - hullWhiteProcess_.alpha(s))
+                     * hullWhiteProcess_.B(s, t);
 
-            double m4 = sigma * sigma / (2 * a * a) * (dt + 2 / a * (eat - eas) - 1 / (2 * a) * (eat * eat - eas * eas));
+            var m4 = sigma * sigma / (2 * a * a) * (dt + 2 / a * (eat - eas) - 1 / (2 * a) * (eat * eat - eas * eas));
 
-            double m5 = -sigma * sigma / (a * a) * (dt - 1 / a * (1 - eat * ias) - 1 / (2 * a) * eaT * (iat - 2 * ias + eat * ias * ias));
+            var m5 = -sigma * sigma / (a * a) * (dt - 1 / a * (1 - eat * ias) - 1 / (2 * a) * eaT * (iat - 2 * ias + eat * ias * ias));
 
-            double mu = m1 + m2 + m3 + m4 + m5;
+            var mu = m1 + m2 + m3 + m4 + m5;
 
-            Vector retVal = new Vector(3);
+            var retVal = new Vector(3);
 
-            double eta2 = hestonProcess_.sigma() * eta;
-            double nu = hestonProcess_.kappa() * (hestonProcess_.theta() - eta * eta);
+            var eta2 = hestonProcess_.sigma() * eta;
+            var nu = hestonProcess_.kappa() * (hestonProcess_.theta() - eta * eta);
 
             retVal[1] = x0[1] + nu * dt + eta2 * System.Math.Sqrt(dt)
                         * (xi * dw[0] + System.Math.Sqrt(1 - xi * xi) * dw[1]);
 
             if (disc_ == Discretization.BSMHullWhite)
             {
-                double v1 = eta * eta * dt + sigma * sigma / (a * a) * (dt - 2 / a * (1 - eat * ias)
-                                                                        + 1 / (2 * a) * (1 - eat * eat * ias * ias))
-                            + 2 * sigma * eta / a * rho * (dt - 1 / a * (1 - eat * ias));
-                double v2 = hullWhiteProcess_.variance(t0, r, dt);
-                double v12 = (1 - eat * ias) * (sigma * eta / a * rho + sigma * sigma / (a * a))
-                             - sigma * sigma / (2 * a * a) * (1 - eat * eat * ias * ias);
+                var v1 = eta * eta * dt + sigma * sigma / (a * a) * (dt - 2 / a * (1 - eat * ias)
+                                                                     + 1 / (2 * a) * (1 - eat * eat * ias * ias))
+                                        + 2 * sigma * eta / a * rho * (dt - 1 / a * (1 - eat * ias));
+                var v2 = hullWhiteProcess_.variance(t0, r, dt);
+                var v12 = (1 - eat * ias) * (sigma * eta / a * rho + sigma * sigma / (a * a))
+                          - sigma * sigma / (2 * a * a) * (1 - eat * eat * ias * ias);
 
                 Utils.QL_REQUIRE(v1 > 0.0 && v2 > 0.0, () => "zero or negative variance given");
 
                 // terminal rho must be between -maxRho and +maxRho
-                double rhoT = System.Math.Min(maxRho_, System.Math.Max(-maxRho_, v12 / System.Math.Sqrt(v1 * v2)));
+                var rhoT = System.Math.Min(maxRho_, System.Math.Max(-maxRho_, v12 / System.Math.Sqrt(v1 * v2)));
                 Utils.QL_REQUIRE(rhoT <= 1.0 && rhoT >= -1.0
                                  && 1 - rhoT * rhoT / (1 - xi * xi) >= 0.0, () => "invalid terminal correlation");
 
-                double dw_0 = dw[0];
-                double dw_2 = rhoT * dw[0] - rhoT * xi / System.Math.Sqrt(1 - xi * xi) * dw[1]
-                              + System.Math.Sqrt(1 - rhoT * rhoT / (1 - xi * xi)) * dw[2];
+                var dw_0 = dw[0];
+                var dw_2 = rhoT * dw[0] - rhoT * xi / System.Math.Sqrt(1 - xi * xi) * dw[1]
+                           + System.Math.Sqrt(1 - rhoT * rhoT / (1 - xi * xi)) * dw[2];
 
                 retVal[2] = hullWhiteProcess_.evolve(t0, r, dt, dw_2);
 
-                double vol = System.Math.Sqrt(v1) * dw_0;
+                var vol = System.Math.Sqrt(v1) * dw_0;
                 retVal[0] = x0[0] * System.Math.Exp(mu + vol);
             }
             else if (disc_ == Discretization.Euler)
             {
-                double dw_2 = rho * dw[0] - rho * xi / System.Math.Sqrt(1 - xi * xi) * dw[1]
-                              + System.Math.Sqrt(1 - rho * rho / (1 - xi * xi)) * dw[2];
+                var dw_2 = rho * dw[0] - rho * xi / System.Math.Sqrt(1 - xi * xi) * dw[1]
+                           + System.Math.Sqrt(1 - rho * rho / (1 - xi * xi)) * dw[2];
 
                 retVal[2] = hullWhiteProcess_.evolve(t0, r, dt, dw_2);
 
-                double vol = eta * System.Math.Sqrt(dt) * dw[0];
+                var vol = eta * System.Math.Sqrt(dt) * dw[0];
                 retVal[0] = x0[0] * System.Math.Exp(mu + vol);
             }
             else
@@ -198,17 +199,18 @@ namespace QLNet.processes
             return retVal;
         }
 
-        public double numeraire(double t, Vector x)
-        {
-            return hullWhiteModel_.discountBond(t, T_, x[2]) / endDiscount_;
-        }
+        public double numeraire(double t, Vector x) => hullWhiteModel_.discountBond(t, T_, x[2]) / endDiscount_;
 
-        public HestonProcess hestonProcess() { return hestonProcess_; }
-        public HullWhiteForwardProcess hullWhiteProcess() { return hullWhiteProcess_; }
+        public HestonProcess hestonProcess() => hestonProcess_;
 
-        public double eta() { return corrEquityShortRate_; }
-        public override double time(Date date) { return hestonProcess_.time(date); }
-        public Discretization discretization() { return disc_; }
+        public HullWhiteForwardProcess hullWhiteProcess() => hullWhiteProcess_;
+
+        public double eta() => corrEquityShortRate_;
+
+        public override double time(Date date) => hestonProcess_.time(date);
+
+        public Discretization discretization() => disc_;
+
         public override void update() { endDiscount_ = hestonProcess_.riskFreeRate().link.discount(T_); }
 
         protected HestonProcess hestonProcess_;

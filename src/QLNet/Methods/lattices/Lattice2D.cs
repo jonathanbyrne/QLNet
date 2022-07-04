@@ -29,7 +29,7 @@ namespace QLNet.Methods.lattices
 
         \ingroup lattices
     */
-    public class TreeLattice2D<T, Tl> : TreeLattice<T>
+    [JetBrains.Annotations.PublicAPI] public class TreeLattice2D<T, Tl> : TreeLattice<T>
        where T : IGenericLattice
        where Tl : TrinomialTree
     {
@@ -41,7 +41,7 @@ namespace QLNet.Methods.lattices
         public enum Branches { branches = 3 }
         //// smelly
 
-        public override Vector grid(double t) { throw new NotImplementedException("not implemented"); }
+        public override Vector grid(double t) => throw new NotImplementedException("not implemented");
 
         // this is a workaround for CuriouslyRecurringTemplate of TreeLattice
         // recheck it
@@ -80,16 +80,16 @@ namespace QLNet.Methods.lattices
             }
         }
 
-        public int size(int i) { return tree1_.size(i) * tree2_.size(i); }
+        public int size(int i) => tree1_.size(i) * tree2_.size(i);
 
         public int descendant(int i, int index, int branch)
         {
-            int modulo = tree1_.size(i);
+            var modulo = tree1_.size(i);
 
-            int index1 = index % modulo;
-            int index2 = index / modulo;
-            int branch1 = branch % (int)Branches.branches;
-            int branch2 = branch / (int)Branches.branches;
+            var index1 = index % modulo;
+            var index2 = index / modulo;
+            var branch1 = branch % (int)Branches.branches;
+            var branch2 = branch / (int)Branches.branches;
 
             modulo = tree1_.size(i + 1);
             return tree1_.descendant(i, index1, branch1) +
@@ -98,14 +98,14 @@ namespace QLNet.Methods.lattices
 
         public double probability(int i, int index, int branch)
         {
-            int modulo = tree1_.size(i);
-            int index1 = index % modulo;
-            int index2 = index / modulo;
-            int branch1 = branch % (int)Branches.branches;
-            int branch2 = branch / (int)Branches.branches;
+            var modulo = tree1_.size(i);
+            var index1 = index % modulo;
+            var index2 = index / modulo;
+            var branch1 = branch % (int)Branches.branches;
+            var branch2 = branch / (int)Branches.branches;
 
-            double prob1 = tree1_.probability(i, index1, branch1);
-            double prob2 = tree2_.probability(i, index2, branch2);
+            var prob1 = tree1_.probability(i, index1, branch1);
+            var prob2 = tree2_.probability(i, index2, branch2);
             // does the 36 below depend on T::branches?
             return prob1 * prob2 + rho_ * m_[branch1, branch2] / 36.0;
         }

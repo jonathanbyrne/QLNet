@@ -33,7 +33,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Swaption : IDisposable
+    [JetBrains.Annotations.PublicAPI] public class T_Swaption : IDisposable
     {
         #region Initialize&Cleanup
         private SavedSettings backup;
@@ -70,7 +70,7 @@ namespace QLNet.Tests
         public VanillaSwap.Type[] type = new VanillaSwap.Type[] { VanillaSwap.Type.Receiver, VanillaSwap.Type.Payer };
 
 
-        public class CommonVars
+        [JetBrains.Annotations.PublicAPI] public class CommonVars
         {
             // global data
             public Date today, settlement;
@@ -90,9 +90,9 @@ namespace QLNet.Tests
                                          Settlement.Method settlementMethod = Settlement.Method.PhysicalOTC,
                                          BlackStyleSwaptionEngine<Black76Spec>.CashAnnuityModel model = BlackStyleSwaptionEngine<Black76Spec>.CashAnnuityModel.SwapRate)
             {
-                Handle<Quote> vol = new Handle<Quote>(new SimpleQuote(volatility));
+                var vol = new Handle<Quote>(new SimpleQuote(volatility));
                 IPricingEngine engine = new BlackSwaptionEngine(termStructure, vol, new Actual365Fixed(), 0.0, model);
-                Swaption result = new Swaption(swap, new EuropeanExercise(exercise), settlementType, settlementMethod);
+                var result = new Swaption(swap, new EuropeanExercise(exercise), settlementType, settlementMethod);
                 result.setPricingEngine(engine);
                 return result;
             }
@@ -100,7 +100,7 @@ namespace QLNet.Tests
             public IPricingEngine makeEngine(double volatility,
                                              BlackStyleSwaptionEngine<Black76Spec>.CashAnnuityModel model = BlackStyleSwaptionEngine<Black76Spec>.CashAnnuityModel.SwapRate)
             {
-                Handle<Quote> h = new Handle<Quote>(new SimpleQuote(volatility));
+                var h = new Handle<Quote>(new SimpleQuote(volatility));
                 return new BlackSwaptionEngine(termStructure, h, new Actual365Fixed(), 0.0, model);
             }
 
@@ -129,34 +129,34 @@ namespace QLNet.Tests
         public void testStrikeDependency()
         {
             // Testing swaption dependency on strike
-            CommonVars vars = new CommonVars();
-            double[] strikes = new double[] { 0.03, 0.04, 0.05, 0.06, 0.07 };
+            var vars = new CommonVars();
+            var strikes = new double[] { 0.03, 0.04, 0.05, 0.06, 0.07 };
 
-            for (int i = 0; i < exercises.Length; i++)
+            for (var i = 0; i < exercises.Length; i++)
             {
-                for (int j = 0; j < lengths.Length; j++)
+                for (var j = 0; j < lengths.Length; j++)
                 {
-                    for (int k = 0; k < type.Length; k++)
+                    for (var k = 0; k < type.Length; k++)
                     {
-                        Date exerciseDate = vars.calendar.advance(vars.today,
+                        var exerciseDate = vars.calendar.advance(vars.today,
                                                                   exercises[i]);
-                        Date startDate = vars.calendar.advance(exerciseDate,
+                        var startDate = vars.calendar.advance(exerciseDate,
                                                                vars.settlementDays, TimeUnit.Days);
                         // store the results for different rates...
                         List<double> values = new InitializedList<double>(strikes.Length);
                         List<double> values_cash = new InitializedList<double>(strikes.Length);
-                        double vol = 0.20;
+                        var vol = 0.20;
 
-                        for (int l = 0; l < strikes.Length; l++)
+                        for (var l = 0; l < strikes.Length; l++)
                         {
                             VanillaSwap swap = new MakeVanillaSwap(lengths[j], vars.index, strikes[l])
                             .withEffectiveDate(startDate)
                             .withFloatingLegSpread(0.0)
                             .withType(type[k]);
-                            Swaption swaption = vars.makeSwaption(swap, exerciseDate, vol);
+                            var swaption = vars.makeSwaption(swap, exerciseDate, vol);
                             // FLOATING_POINT_EXCEPTION
                             values[l] = swaption.NPV();
-                            Swaption swaption_cash = vars.makeSwaption(swap, exerciseDate, vol,
+                            var swaption_cash = vars.makeSwaption(swap, exerciseDate, vol,
                                                                        Settlement.Type.Cash,
                                                                        Settlement.Method.ParYieldCurve);
                             values_cash[l] = swaption_cash.NPV();
@@ -165,7 +165,7 @@ namespace QLNet.Tests
                         // and check that they go the right way
                         if (type[k] == VanillaSwap.Type.Payer)
                         {
-                            for (int z = 0; z < values.Count - 1; z++)
+                            for (var z = 0; z < values.Count - 1; z++)
                             {
                                 if (values[z] < values[z + 1])
                                 {
@@ -179,7 +179,7 @@ namespace QLNet.Tests
                                                  "\nvalue:        " + values[z + 1] + " at strike: " + strikes[z + 1]);
                                 }
                             }
-                            for (int z = 0; z < values_cash.Count - 1; z++)
+                            for (var z = 0; z < values_cash.Count - 1; z++)
                             {
                                 if (values_cash[z] < values_cash[z + 1])
                                 {
@@ -196,7 +196,7 @@ namespace QLNet.Tests
                         }
                         else
                         {
-                            for (int z = 0; z < values.Count - 1; z++)
+                            for (var z = 0; z < values.Count - 1; z++)
                             {
                                 if (values[z] > values[z + 1])
                                 {
@@ -210,7 +210,7 @@ namespace QLNet.Tests
                                                  "\nvalue:        " + values[z + 1] + " at strike: " + strikes[z + 1]);
                                 }
                             }
-                            for (int z = 0; z < values_cash.Count - 1; z++)
+                            for (var z = 0; z < values_cash.Count - 1; z++)
                             {
                                 if (values[z] > values[z + 1])
                                 {
@@ -234,36 +234,36 @@ namespace QLNet.Tests
         public void testSpreadDependency()
         {
             // Testing swaption dependency on spread
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             double[] spreads = { -0.002, -0.001, 0.0, 0.001, 0.002 };
 
-            for (int i = 0; i < exercises.Length; i++)
+            for (var i = 0; i < exercises.Length; i++)
             {
-                for (int j = 0; j < lengths.Length; j++)
+                for (var j = 0; j < lengths.Length; j++)
                 {
-                    for (int k = 0; k < type.Length; k++)
+                    for (var k = 0; k < type.Length; k++)
                     {
-                        Date exerciseDate = vars.calendar.advance(vars.today,
+                        var exerciseDate = vars.calendar.advance(vars.today,
                                                                   exercises[i]);
-                        Date startDate =
+                        var startDate =
                            vars.calendar.advance(exerciseDate,
                                                  vars.settlementDays, TimeUnit.Days);
                         // store the results for different rates...
                         List<double> values = new InitializedList<double>(spreads.Length);
                         List<double> values_cash = new InitializedList<double>(spreads.Length);
-                        for (int l = 0; l < spreads.Length; l++)
+                        for (var l = 0; l < spreads.Length; l++)
                         {
                             VanillaSwap swap =
                                new MakeVanillaSwap(lengths[j], vars.index, 0.06)
                             .withEffectiveDate(startDate)
                             .withFloatingLegSpread(spreads[l])
                             .withType(type[k]);
-                            Swaption swaption =
+                            var swaption =
                                vars.makeSwaption(swap, exerciseDate, 0.20);
                             // FLOATING_POINT_EXCEPTION
                             values[l] = swaption.NPV();
-                            Swaption swaption_cash =
+                            var swaption_cash =
                                vars.makeSwaption(swap, exerciseDate, 0.20,
                                                  Settlement.Type.Cash,
                                                  Settlement.Method.ParYieldCurve);
@@ -272,7 +272,7 @@ namespace QLNet.Tests
                         // and check that they go the right way
                         if (type[k] == VanillaSwap.Type.Payer)
                         {
-                            for (int n = 0; n < spreads.Length - 1; n++)
+                            for (var n = 0; n < spreads.Length - 1; n++)
                             {
                                 if (values[n] > values[n + 1])
                                     QAssert.Fail("NPV is decreasing with the spread " +
@@ -293,7 +293,7 @@ namespace QLNet.Tests
                         }
                         else
                         {
-                            for (int n = 0; n < spreads.Length - 1; n++)
+                            for (var n = 0; n < spreads.Length - 1; n++)
                             {
                                 if (values[n] < values[n + 1])
                                     QAssert.Fail("NPV is increasing with the spread " +
@@ -321,22 +321,22 @@ namespace QLNet.Tests
         public void testSpreadTreatment()
         {
             // Testing swaption treatment of spread
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             double[] spreads = { -0.002, -0.001, 0.0, 0.001, 0.002 };
 
-            for (int i = 0; i < exercises.Length; i++)
+            for (var i = 0; i < exercises.Length; i++)
             {
-                for (int j = 0; j < lengths.Length; j++)
+                for (var j = 0; j < lengths.Length; j++)
                 {
-                    for (int k = 0; k < type.Length; k++)
+                    for (var k = 0; k < type.Length; k++)
                     {
-                        Date exerciseDate = vars.calendar.advance(vars.today,
+                        var exerciseDate = vars.calendar.advance(vars.today,
                                                                   exercises[i]);
-                        Date startDate =
+                        var startDate =
                            vars.calendar.advance(exerciseDate,
                                                  vars.settlementDays, TimeUnit.Days);
-                        for (int l = 0; l < spreads.Length; l++)
+                        for (var l = 0; l < spreads.Length; l++)
                         {
                             VanillaSwap swap =
                                new MakeVanillaSwap(lengths[j], vars.index, 0.06)
@@ -344,23 +344,23 @@ namespace QLNet.Tests
                             .withFloatingLegSpread(spreads[l])
                             .withType(type[k]);
                             // FLOATING_POINT_EXCEPTION
-                            double correction = spreads[l] *
-                                                swap.floatingLegBPS() /
-                                                swap.fixedLegBPS();
+                            var correction = spreads[l] *
+                                             swap.floatingLegBPS() /
+                                             swap.fixedLegBPS();
                             VanillaSwap equivalentSwap =
                                new MakeVanillaSwap(lengths[j], vars.index, 0.06 + correction)
                             .withEffectiveDate(startDate)
                             .withFloatingLegSpread(0.0)
                             .withType(type[k]);
-                            Swaption swaption1 =
+                            var swaption1 =
                                vars.makeSwaption(swap, exerciseDate, 0.20);
-                            Swaption swaption2 =
+                            var swaption2 =
                                vars.makeSwaption(equivalentSwap, exerciseDate, 0.20);
-                            Swaption swaption1_cash =
+                            var swaption1_cash =
                                vars.makeSwaption(swap, exerciseDate, 0.20,
                                                  Settlement.Type.Cash,
                                                  Settlement.Method.ParYieldCurve);
-                            Swaption swaption2_cash =
+                            var swaption2_cash =
                                vars.makeSwaption(equivalentSwap, exerciseDate, 0.20,
                                                  Settlement.Type.Cash,
                                                  Settlement.Method.ParYieldCurve);
@@ -377,7 +377,7 @@ namespace QLNet.Tests
                                 QAssert.Fail("wrong spread treatment:" +
                                              "\nexercise date: " + exerciseDate +
                                              "\nlength: " + lengths[j] +
-                                             //"\npay " + (type[k] ? "fixed" : "floating") +
+                                             //"\npay " + (ExerciseType[k] ? "fixed" : "floating") +
                                              "\nspread: " + spreads[l] +
                                              "\nvalue of original swaption:   " + swaption1_cash.NPV() +
                                              "\nvalue of equivalent swaption: " + swaption2_cash.NPV());
@@ -391,23 +391,23 @@ namespace QLNet.Tests
         public void testCachedValue()
         {
             // Testing swaption value against cached value
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             vars.today = new Date(13, 3, 2002);
             vars.settlement = new Date(15, 3, 2002);
             Settings.setEvaluationDate(vars.today);
             vars.termStructure.linkTo(Utilities.flatRate(vars.settlement, 0.05, new Actual365Fixed()));
-            Date exerciseDate = vars.calendar.advance(vars.settlement, new Period(5, TimeUnit.Years));
-            Date startDate = vars.calendar.advance(exerciseDate,
+            var exerciseDate = vars.calendar.advance(vars.settlement, new Period(5, TimeUnit.Years));
+            var startDate = vars.calendar.advance(exerciseDate,
                                                    vars.settlementDays, TimeUnit.Days);
             VanillaSwap swap =
                new MakeVanillaSwap(new Period(10, TimeUnit.Years), vars.index, 0.06)
             .withEffectiveDate(startDate);
 
-            Swaption swaption =
+            var swaption =
                vars.makeSwaption(swap, exerciseDate, 0.20);
             //#if QL_USE_INDEXED_COUPON
-            double cachedNPV = 0.036418158579;
+            var cachedNPV = 0.036418158579;
             //#else
             //    double cachedNPV = 0.036421429684;
             //#endif
@@ -424,60 +424,60 @@ namespace QLNet.Tests
         public void testVega()
         {
             // Testing swaption vega
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             Settlement.Type[] types = { Settlement.Type.Physical, Settlement.Type.Cash };
             Settlement.Method[] methods = { Settlement.Method.PhysicalOTC, Settlement.Method.ParYieldCurve };
             double[] strikes = { 0.03, 0.04, 0.05, 0.06, 0.07 };
             double[] vols = { 0.01, 0.20, 0.30, 0.70, 0.90 };
-            double shift = 1e-8;
-            for (int i = 0; i < exercises.Length; i++)
+            var shift = 1e-8;
+            for (var i = 0; i < exercises.Length; i++)
             {
-                Date exerciseDate = vars.calendar.advance(vars.today, exercises[i]);
+                var exerciseDate = vars.calendar.advance(vars.today, exercises[i]);
                 // A VERIFIER§§§§
-                Date startDate = vars.calendar.advance(exerciseDate,
+                var startDate = vars.calendar.advance(exerciseDate,
                                                        vars.settlementDays, TimeUnit.Days);
-                for (int j = 0; j < lengths.Length; j++)
+                for (var j = 0; j < lengths.Length; j++)
                 {
-                    for (int t = 0; t < strikes.Length; t++)
+                    for (var t = 0; t < strikes.Length; t++)
                     {
-                        for (int h = 0; h < type.Length; h++)
+                        for (var h = 0; h < type.Length; h++)
                         {
                             VanillaSwap swap =
                                new MakeVanillaSwap(lengths[j], vars.index, strikes[t])
                             .withEffectiveDate(startDate)
                             .withFloatingLegSpread(0.0)
                             .withType(type[h]);
-                            for (int u = 0; u < vols.Length; u++)
+                            for (var u = 0; u < vols.Length; u++)
                             {
-                                Swaption swaption =
+                                var swaption =
                                    vars.makeSwaption(swap, exerciseDate,
                                                      vols[u], types[h], methods[h]);
                                 // FLOATING_POINT_EXCEPTION
-                                Swaption swaption1 =
+                                var swaption1 =
                                    vars.makeSwaption(swap, exerciseDate,
                                                      vols[u] - shift, types[h], methods[h]);
-                                Swaption swaption2 =
+                                var swaption2 =
                                    vars.makeSwaption(swap, exerciseDate,
                                                      vols[u] + shift, types[h], methods[h]);
 
-                                double swaptionNPV = swaption.NPV();
-                                double numericalVegaPerPoint =
+                                var swaptionNPV = swaption.NPV();
+                                var numericalVegaPerPoint =
                                    (swaption2.NPV() - swaption1.NPV()) / (200.0 * shift);
                                 // check only relevant vega
                                 if (numericalVegaPerPoint / swaptionNPV > 1.0e-7)
                                 {
-                                    double analyticalVegaPerPoint =
+                                    var analyticalVegaPerPoint =
                                        (double)swaption.result("vega") / 100.0;
-                                    double discrepancy = System.Math.Abs(analyticalVegaPerPoint
-                                                                  - numericalVegaPerPoint);
+                                    var discrepancy = System.Math.Abs(analyticalVegaPerPoint
+                                                                      - numericalVegaPerPoint);
                                     discrepancy /= numericalVegaPerPoint;
-                                    double tolerance = 0.015;
+                                    var tolerance = 0.015;
                                     if (discrepancy > tolerance)
                                         QAssert.Fail("failed to compute swaption vega:" +
                                                      "\n  option tenor:    " + exercises[i] +
                                                      "\n  volatility:      " + vols[u] +
-                                                     "\n  option type:     " + swaption.type() +
+                                                     "\n  option ExerciseType:     " + swaption.type() +
                                                      "\n  swap tenor:      " + lengths[j] +
                                                      "\n  strike:          " + strikes[t] +
                                                      "\n  settlement:      " + types[h] +
@@ -499,57 +499,57 @@ namespace QLNet.Tests
         public void testCashSettledSwaptions()
         {
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            double strike = 0.05;
+            var strike = 0.05;
 
-            for (int i = 0; i < exercises.Length; i++)
+            for (var i = 0; i < exercises.Length; i++)
             {
-                for (int j = 0; j < lengths.Length; j++)
+                for (var j = 0; j < lengths.Length; j++)
                 {
 
-                    Date exerciseDate = vars.calendar.advance(vars.today, exercises[i]);
-                    Date startDate = vars.calendar.advance(exerciseDate,
+                    var exerciseDate = vars.calendar.advance(vars.today, exercises[i]);
+                    var startDate = vars.calendar.advance(exerciseDate,
                                                            vars.settlementDays, TimeUnit.Days);
-                    Date maturity =
+                    var maturity =
                        vars.calendar.advance(startDate, lengths[j],
                                              vars.floatingConvention);
-                    Schedule floatSchedule = new Schedule(startDate, maturity, vars.floatingTenor,
+                    var floatSchedule = new Schedule(startDate, maturity, vars.floatingTenor,
                                                           vars.calendar, vars.floatingConvention,
                                                           vars.floatingConvention,
                                                           DateGeneration.Rule.Forward, false);
                     // Swap with fixed leg conventions: Business Days = Unadjusted, DayCount = 30/360
-                    Schedule fixedSchedule_u = new Schedule(startDate, maturity,
+                    var fixedSchedule_u = new Schedule(startDate, maturity,
                                                             new Period(vars.fixedFrequency),
                                                             vars.calendar, BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
                                                             DateGeneration.Rule.Forward, true);
-                    VanillaSwap swap_u360 =
+                    var swap_u360 =
                        new VanillaSwap(type[0], vars.nominal,
                                        fixedSchedule_u, strike, new Thirty360(),
                                        floatSchedule, vars.index, 0.0,
                                        vars.index.dayCounter());
 
                     // Swap with fixed leg conventions: Business Days = Unadjusted, DayCount = Act/365
-                    VanillaSwap swap_u365 =
+                    var swap_u365 =
                        new VanillaSwap(type[0], vars.nominal,
                                        fixedSchedule_u, strike, new Actual365Fixed(),
                                        floatSchedule, vars.index, 0.0,
                                        vars.index.dayCounter());
 
                     // Swap with fixed leg conventions: Business Days = Modified Following, DayCount = 30/360
-                    Schedule fixedSchedule_a = new Schedule(startDate, maturity,
+                    var fixedSchedule_a = new Schedule(startDate, maturity,
                                                             new Period(vars.fixedFrequency),
                                                             vars.calendar, BusinessDayConvention.ModifiedFollowing,
                                                             BusinessDayConvention.ModifiedFollowing,
                                                             DateGeneration.Rule.Forward, true);
-                    VanillaSwap swap_a360 =
+                    var swap_a360 =
                        new VanillaSwap(type[0], vars.nominal,
                                        fixedSchedule_a, strike, new Thirty360(),
                                        floatSchedule, vars.index, 0.0,
                                        vars.index.dayCounter());
 
                     // Swap with fixed leg conventions: Business Days = Modified Following, DayCount = Act/365
-                    VanillaSwap swap_a365 =
+                    var swap_a365 =
                        new VanillaSwap(type[0], vars.nominal,
                                        fixedSchedule_a, strike, new Actual365Fixed(),
                                        floatSchedule, vars.index, 0.0,
@@ -563,51 +563,51 @@ namespace QLNet.Tests
                     swap_u365.setPricingEngine(swapEngine);
                     swap_a365.setPricingEngine(swapEngine);
 
-                    List<CashFlow> swapFixedLeg_u360 = swap_u360.fixedLeg();
-                    List<CashFlow> swapFixedLeg_a360 = swap_a360.fixedLeg();
-                    List<CashFlow> swapFixedLeg_u365 = swap_u365.fixedLeg();
-                    List<CashFlow> swapFixedLeg_a365 = swap_a365.fixedLeg();
+                    var swapFixedLeg_u360 = swap_u360.fixedLeg();
+                    var swapFixedLeg_a360 = swap_a360.fixedLeg();
+                    var swapFixedLeg_u365 = swap_u365.fixedLeg();
+                    var swapFixedLeg_a365 = swap_a365.fixedLeg();
 
                     // FlatForward curves
                     // FLOATING_POINT_EXCEPTION
-                    Handle<YieldTermStructure> termStructure_u360 = new Handle<YieldTermStructure>(
+                    var termStructure_u360 = new Handle<YieldTermStructure>(
                        new FlatForward(vars.settlement, swap_u360.fairRate(),
                                        new Thirty360(), Compounding.Compounded,
                                        vars.fixedFrequency));
-                    Handle<YieldTermStructure> termStructure_a360 = new Handle<YieldTermStructure>(
+                    var termStructure_a360 = new Handle<YieldTermStructure>(
                        new FlatForward(vars.settlement, swap_a360.fairRate(),
                                        new Thirty360(), Compounding.Compounded,
                                        vars.fixedFrequency));
-                    Handle<YieldTermStructure> termStructure_u365 = new Handle<YieldTermStructure>(
+                    var termStructure_u365 = new Handle<YieldTermStructure>(
                        new FlatForward(vars.settlement, swap_u365.fairRate(),
                                        new Actual365Fixed(), Compounding.Compounded,
                                        vars.fixedFrequency));
-                    Handle<YieldTermStructure> termStructure_a365 = new Handle<YieldTermStructure>(
+                    var termStructure_a365 = new Handle<YieldTermStructure>(
                        new FlatForward(vars.settlement, swap_a365.fairRate(),
                                        new Actual365Fixed(), Compounding.Compounded,
                                        vars.fixedFrequency));
 
                     // Annuity calculated by swap method fixedLegBPS().
                     // Fixed leg conventions: Unadjusted, 30/360
-                    double annuity_u360 = swap_u360.fixedLegBPS() / 0.0001;
+                    var annuity_u360 = swap_u360.fixedLegBPS() / 0.0001;
                     annuity_u360 = swap_u360.swapType == VanillaSwap.Type.Payer ?
                                    -annuity_u360 : annuity_u360;
                     // Fixed leg conventions: ModifiedFollowing, act/365
-                    double annuity_a365 = swap_a365.fixedLegBPS() / 0.0001;
+                    var annuity_a365 = swap_a365.fixedLegBPS() / 0.0001;
                     annuity_a365 = swap_a365.swapType == VanillaSwap.Type.Payer ?
                                    -annuity_a365 : annuity_a365;
                     // Fixed leg conventions: ModifiedFollowing, 30/360
-                    double annuity_a360 = swap_a360.fixedLegBPS() / 0.0001;
+                    var annuity_a360 = swap_a360.fixedLegBPS() / 0.0001;
                     annuity_a360 = swap_a360.swapType == VanillaSwap.Type.Payer ?
                                    -annuity_a360 : annuity_a360;
                     // Fixed leg conventions: Unadjusted, act/365
-                    double annuity_u365 = swap_u365.fixedLegBPS() / 0.0001;
+                    var annuity_u365 = swap_u365.fixedLegBPS() / 0.0001;
                     annuity_u365 = swap_u365.swapType == VanillaSwap.Type.Payer ?
                                    -annuity_u365 : annuity_u365;
 
                     // Calculation of Modified Annuity (cash settlement)
                     // Fixed leg conventions of swap: unadjusted, 30/360
-                    double cashannuity_u360 = 0.0;
+                    var cashannuity_u360 = 0.0;
                     int k;
                     for (k = 0; k < swapFixedLeg_u360.Count; k++)
                     {
@@ -616,7 +616,7 @@ namespace QLNet.Tests
                                                swapFixedLeg_u360[k].date());
                     }
                     // Fixed leg conventions of swap: unadjusted, act/365
-                    double cashannuity_u365 = 0.0;
+                    var cashannuity_u365 = 0.0;
                     for (k = 0; k < swapFixedLeg_u365.Count; k++)
                     {
                         cashannuity_u365 += swapFixedLeg_u365[k].amount() / strike
@@ -624,7 +624,7 @@ namespace QLNet.Tests
                                                swapFixedLeg_u365[k].date());
                     }
                     // Fixed leg conventions of swap: modified following, 30/360
-                    double cashannuity_a360 = 0.0;
+                    var cashannuity_a360 = 0.0;
                     for (k = 0; k < swapFixedLeg_a360.Count; k++)
                     {
                         cashannuity_a360 += swapFixedLeg_a360[k].amount() / strike
@@ -632,7 +632,7 @@ namespace QLNet.Tests
                                                swapFixedLeg_a360[k].date());
                     }
                     // Fixed leg conventions of swap: modified following, act/365
-                    double cashannuity_a365 = 0.0;
+                    var cashannuity_a365 = 0.0;
                     for (k = 0; k < swapFixedLeg_a365.Count; k++)
                     {
                         cashannuity_a365 += swapFixedLeg_a365[k].amount() / strike
@@ -644,69 +644,69 @@ namespace QLNet.Tests
                     // unadjusted, 30/360
 
                     // Physical settled swaption
-                    Swaption swaption_p_u360 =
+                    var swaption_p_u360 =
                        vars.makeSwaption(swap_u360, exerciseDate, 0.20);
-                    double value_p_u360 = swaption_p_u360.NPV();
+                    var value_p_u360 = swaption_p_u360.NPV();
                     // Cash settled swaption
-                    Swaption swaption_c_u360 =
+                    var swaption_c_u360 =
                        vars.makeSwaption(swap_u360, exerciseDate, 0.20,
                                          Settlement.Type.Cash,
                                          Settlement.Method.ParYieldCurve);
-                    double value_c_u360 = swaption_c_u360.NPV();
+                    var value_c_u360 = swaption_c_u360.NPV();
                     // the NPV's ratio must be equal to annuities ratio
-                    double npv_ratio_u360 = value_c_u360 / value_p_u360;
-                    double annuity_ratio_u360 = cashannuity_u360 / annuity_u360;
+                    var npv_ratio_u360 = value_c_u360 / value_p_u360;
+                    var annuity_ratio_u360 = cashannuity_u360 / annuity_u360;
 
                     // Swaptions: underlying swap fixed leg conventions:
                     // modified following, act/365
 
                     // Physical settled swaption
-                    Swaption swaption_p_a365 =
+                    var swaption_p_a365 =
                        vars.makeSwaption(swap_a365, exerciseDate, 0.20);
-                    double value_p_a365 = swaption_p_a365.NPV();
+                    var value_p_a365 = swaption_p_a365.NPV();
                     // Cash settled swaption
-                    Swaption swaption_c_a365 =
+                    var swaption_c_a365 =
                        vars.makeSwaption(swap_a365, exerciseDate, 0.20,
                                          Settlement.Type.Cash,
                                          Settlement.Method.ParYieldCurve);
-                    double value_c_a365 = swaption_c_a365.NPV();
+                    var value_c_a365 = swaption_c_a365.NPV();
                     // the NPV's ratio must be equal to annuities ratio
-                    double npv_ratio_a365 = value_c_a365 / value_p_a365;
-                    double annuity_ratio_a365 = cashannuity_a365 / annuity_a365;
+                    var npv_ratio_a365 = value_c_a365 / value_p_a365;
+                    var annuity_ratio_a365 = cashannuity_a365 / annuity_a365;
 
                     // Swaptions: underlying swap fixed leg conventions:
                     // modified following, 30/360
 
                     // Physical settled swaption
-                    Swaption swaption_p_a360 =
+                    var swaption_p_a360 =
                        vars.makeSwaption(swap_a360, exerciseDate, 0.20);
-                    double value_p_a360 = swaption_p_a360.NPV();
+                    var value_p_a360 = swaption_p_a360.NPV();
                     // Cash settled swaption
-                    Swaption swaption_c_a360 =
+                    var swaption_c_a360 =
                        vars.makeSwaption(swap_a360, exerciseDate, 0.20,
                                          Settlement.Type.Cash,
                                          Settlement.Method.ParYieldCurve);
-                    double value_c_a360 = swaption_c_a360.NPV();
+                    var value_c_a360 = swaption_c_a360.NPV();
                     // the NPV's ratio must be equal to annuities ratio
-                    double npv_ratio_a360 = value_c_a360 / value_p_a360;
-                    double annuity_ratio_a360 = cashannuity_a360 / annuity_a360;
+                    var npv_ratio_a360 = value_c_a360 / value_p_a360;
+                    var annuity_ratio_a360 = cashannuity_a360 / annuity_a360;
 
                     // Swaptions: underlying swap fixed leg conventions:
                     // unadjusted, act/365
 
                     // Physical settled swaption
-                    Swaption swaption_p_u365 =
+                    var swaption_p_u365 =
                        vars.makeSwaption(swap_u365, exerciseDate, 0.20);
-                    double value_p_u365 = swaption_p_u365.NPV();
+                    var value_p_u365 = swaption_p_u365.NPV();
                     // Cash settled swaption
-                    Swaption swaption_c_u365 =
+                    var swaption_c_u365 =
                        vars.makeSwaption(swap_u365, exerciseDate, 0.20,
                                          Settlement.Type.Cash,
                                          Settlement.Method.ParYieldCurve);
-                    double value_c_u365 = swaption_c_u365.NPV();
+                    var value_c_u365 = swaption_c_u365.NPV();
                     // the NPV's ratio must be equal to annuities ratio
-                    double npv_ratio_u365 = value_c_u365 / value_p_u365;
-                    double annuity_ratio_u365 = cashannuity_u365 / annuity_u365;
+                    var npv_ratio_u365 = value_c_u365 / value_p_u365;
+                    var annuity_ratio_u365 = cashannuity_u365 / annuity_u365;
 
                     if (System.Math.Abs(annuity_ratio_u360 - npv_ratio_u360) > 1e-10)
                     {
@@ -848,10 +848,10 @@ namespace QLNet.Tests
         public void testImpliedVolatility()
         {
             // Testing implied volatility for swaptions
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            int maxEvaluations = 100;
-            double tolerance = 1.0e-08;
+            var maxEvaluations = 100;
+            var tolerance = 1.0e-08;
 
             Settlement.Type[] types = { Settlement.Type.Physical, Settlement.Type.Cash };
             Settlement.Method[] methods = { Settlement.Method.PhysicalOTC, Settlement.Method.ParYieldCurve };
@@ -859,33 +859,33 @@ namespace QLNet.Tests
             double[] strikes = { 0.02, 0.03, 0.04, 0.05, 0.06, 0.07 };
             double[] vols = { 0.01, 0.05, 0.10, 0.20, 0.30, 0.70, 0.90 };
 
-            for (int i = 0; i < exercises.Length; i++)
+            for (var i = 0; i < exercises.Length; i++)
             {
-                for (int j = 0; j < lengths.Length; j++)
+                for (var j = 0; j < lengths.Length; j++)
                 {
-                    Date exerciseDate = vars.calendar.advance(vars.today, exercises[i]);
-                    Date startDate = vars.calendar.advance(exerciseDate,
+                    var exerciseDate = vars.calendar.advance(vars.today, exercises[i]);
+                    var startDate = vars.calendar.advance(exerciseDate,
                                                            vars.settlementDays, TimeUnit.Days);
-                    Date maturity = vars.calendar.advance(startDate, lengths[j],
+                    var maturity = vars.calendar.advance(startDate, lengths[j],
                                                           vars.floatingConvention);
-                    for (int t = 0; t < strikes.Length; t++)
+                    for (var t = 0; t < strikes.Length; t++)
                     {
-                        for (int k = 0; k < type.Length; k++)
+                        for (var k = 0; k < type.Length; k++)
                         {
                             VanillaSwap swap = new MakeVanillaSwap(lengths[j], vars.index, strikes[t])
                             .withEffectiveDate(startDate)
                             .withFloatingLegSpread(0.0)
                             .withType(type[k]);
-                            for (int h = 0; h < types.Length; h++)
+                            for (var h = 0; h < types.Length; h++)
                             {
-                                for (int u = 0; u < vols.Length; u++)
+                                for (var u = 0; u < vols.Length; u++)
                                 {
-                                    Swaption swaption = vars.makeSwaption(swap, exerciseDate,
+                                    var swaption = vars.makeSwaption(swap, exerciseDate,
                                                                           vols[u], types[h], methods[h],
                                                                           BlackStyleSwaptionEngine<Black76Spec>.CashAnnuityModel.DiscountCurve);
                                     // Black price
-                                    double value = swaption.NPV();
-                                    double implVol = 0.0;
+                                    var value = swaption.NPV();
+                                    var implVol = 0.0;
                                     try
                                     {
                                         implVol =
@@ -899,7 +899,7 @@ namespace QLNet.Tests
                                     {
                                         // couldn't bracket?
                                         swaption.setPricingEngine(vars.makeEngine(0.0, BlackStyleSwaptionEngine<Black76Spec>.CashAnnuityModel.DiscountCurve));
-                                        double value2 = swaption.NPV();
+                                        var value2 = swaption.NPV();
                                         if (System.Math.Abs(value - value2) < tolerance)
                                         {
                                             // ok, just skip:
@@ -919,7 +919,7 @@ namespace QLNet.Tests
                                     {
                                         // the difference might not matter
                                         swaption.setPricingEngine(vars.makeEngine(implVol, BlackStyleSwaptionEngine<Black76Spec>.CashAnnuityModel.DiscountCurve));
-                                        double value2 = swaption.NPV();
+                                        var value2 = swaption.NPV();
                                         if (System.Math.Abs(value - value2) > tolerance)
                                         {
                                             QAssert.Fail("implied vol failure: " +

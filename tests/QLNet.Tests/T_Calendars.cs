@@ -28,15 +28,15 @@ using QLNet.Time;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Calendars
+    [JetBrains.Annotations.PublicAPI] public class T_Calendars
     {
         [Fact]
         public void testModifiedCalendars()
         {
             Calendar c1 = new TARGET();
             Calendar c2 = new UnitedStates(UnitedStates.Market.NYSE);
-            Date d1 = new Date(1, Month.May, 2004);      // holiday for both calendars
-            Date d2 = new Date(26, Month.April, 2004);   // business day
+            var d1 = new Date(1, Month.May, 2004);      // holiday for both calendars
+            var d2 = new Date(26, Month.April, 2004);   // business day
 
             QAssert.IsTrue(c1.isHoliday(d1), "wrong assumption---correct the test");
             QAssert.IsTrue(c1.isBusinessDay(d2), "wrong assumption---correct the test");
@@ -88,7 +88,7 @@ namespace QLNet.Tests
             Date firstDate = Date.Today,
                  endDate = firstDate + new Period(1, TimeUnit.Years);
 
-            for (Date d = firstDate; d < endDate; d++)
+            for (var d = firstDate; d < endDate; d++)
             {
 
                 bool b1 = c1.isBusinessDay(d),
@@ -139,7 +139,7 @@ namespace QLNet.Tests
         public void testUSSettlement()
         {
             // Testing US settlement holiday list
-            List<Date> expectedHol = new List<Date>();
+            var expectedHol = new List<Date>();
 
             expectedHol.Add(new Date(1, Month.January, 2004));
             expectedHol.Add(new Date(19, Month.January, 2004));
@@ -164,14 +164,14 @@ namespace QLNet.Tests
             expectedHol.Add(new Date(26, Month.December, 2005));
 
             Calendar c = new UnitedStates(UnitedStates.Market.Settlement);
-            List<Date> hol = Calendar.holidayList(c, new Date(1, Month.January, 2004),
+            var hol = Calendar.holidayList(c, new Date(1, Month.January, 2004),
                                                   new Date(31, Month.December, 2005));
             if (hol.Count != expectedHol.Count)
                 QAssert.Fail("there were " + expectedHol.Count
                              + " expected holidays, while there are " + hol.Count
                              + " calculated holidays");
 
-            for (int i = 0; i < hol.Count; i++)
+            for (var i = 0; i < hol.Count; i++)
             {
                 if (hol[i] != expectedHol[i])
                     QAssert.Fail("expected holiday was " + expectedHol[i] + " while calculated holiday is " + hol[i]);
@@ -195,7 +195,7 @@ namespace QLNet.Tests
                              " expected holidays, while there are " + hol.Count +
                              " calculated holidays");
 
-            for (int i = 0; i < hol.Count; i++)
+            for (var i = 0; i < hol.Count; i++)
             {
                 if (hol[i] != expectedHol[i])
                     QAssert.Fail("expected holiday was " + expectedHol[i]
@@ -207,7 +207,7 @@ namespace QLNet.Tests
         public void testUSGovernmentBondMarket()
         {
 
-            List<Date> expectedHol = new List<Date>();
+            var expectedHol = new List<Date>();
             expectedHol.Add(new Date(1, Month.January, 2004));
             expectedHol.Add(new Date(19, Month.January, 2004));
             expectedHol.Add(new Date(16, Month.February, 2004));
@@ -222,9 +222,9 @@ namespace QLNet.Tests
             expectedHol.Add(new Date(24, Month.December, 2004));
 
             Calendar c = new UnitedStates(UnitedStates.Market.GovernmentBond);
-            List<Date> hol = Calendar.holidayList(c, new Date(1, Month.January, 2004), new Date(31, Month.December, 2004));
+            var hol = Calendar.holidayList(c, new Date(1, Month.January, 2004), new Date(31, Month.December, 2004));
 
-            for (int i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
+            for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
                     QAssert.Fail("expected holiday was " + expectedHol[i] + " while calculated holiday is " + hol[i]);
@@ -239,7 +239,7 @@ namespace QLNet.Tests
         public void testUSNewYorkStockExchange()
         {
 
-            List<Date> expectedHol = new List<Date>();
+            var expectedHol = new List<Date>();
             expectedHol.Add(new Date(1, Month.January, 2004));
             expectedHol.Add(new Date(19, Month.January, 2004));
             expectedHol.Add(new Date(16, Month.February, 2004));
@@ -271,7 +271,7 @@ namespace QLNet.Tests
             expectedHol.Add(new Date(25, Month.December, 2006));
 
             Calendar c = new UnitedStates(UnitedStates.Market.NYSE);
-            List<Date> hol = Calendar.holidayList(c, new Date(1, Month.January, 2004), new Date(31, Month.December, 2006));
+            var hol = Calendar.holidayList(c, new Date(1, Month.January, 2004), new Date(31, Month.December, 2006));
 
             int i;
             for (i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
@@ -284,7 +284,7 @@ namespace QLNet.Tests
                              " expected holidays, while there are " + hol.Count +
                              " calculated holidays");
 
-            List<Date> histClose = new List<Date>();
+            var histClose = new List<Date>();
             histClose.Add(new Date(30, Month.October, 2012));  // Hurricane Sandy
             histClose.Add(new Date(29, Month.October, 2012));  // Hurricane Sandy
             histClose.Add(new Date(11, Month.June, 2004));     // Reagan's funeral
@@ -339,7 +339,7 @@ namespace QLNet.Tests
         [Fact]
         public void testTARGET()
         {
-            List<Date> expectedHol = new List<Date>();
+            var expectedHol = new List<Date>();
             expectedHol.Add(new Date(1, Month.January, 1999));
             expectedHol.Add(new Date(31, Month.December, 1999));
 
@@ -386,9 +386,9 @@ namespace QLNet.Tests
             expectedHol.Add(new Date(26, Month.December, 2006));
 
             Calendar c = new TARGET();
-            List<Date> hol = Calendar.holidayList(c, new Date(1, Month.January, 1999), new Date(31, Month.December, 2006));
+            var hol = Calendar.holidayList(c, new Date(1, Month.January, 1999), new Date(31, Month.December, 2006));
 
-            for (int i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
+            for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
                     QAssert.Fail("expected holiday was " + expectedHol[i]
@@ -404,7 +404,7 @@ namespace QLNet.Tests
         [Fact]
         public void testGermanyFrankfurt()
         {
-            List<Date> expectedHol = new List<Date>();
+            var expectedHol = new List<Date>();
 
             expectedHol.Add(new Date(1, Month.January, 2003));
             expectedHol.Add(new Date(18, Month.April, 2003));
@@ -420,8 +420,8 @@ namespace QLNet.Tests
             expectedHol.Add(new Date(24, Month.December, 2004));
 
             Calendar c = new Germany(Germany.Market.FrankfurtStockExchange);
-            List<Date> hol = Calendar.holidayList(c, new Date(1, Month.January, 2003), new Date(31, Month.December, 2004));
-            for (int i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
+            var hol = Calendar.holidayList(c, new Date(1, Month.January, 2003), new Date(31, Month.December, 2004));
+            for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
                     QAssert.Fail("expected holiday was " + expectedHol[i]
@@ -436,7 +436,7 @@ namespace QLNet.Tests
         [Fact]
         public void testGermanyEurex()
         {
-            List<Date> expectedHol = new List<Date>();
+            var expectedHol = new List<Date>();
 
             expectedHol.Add(new Date(1, Month.January, 2003));
             expectedHol.Add(new Date(18, Month.April, 2003));
@@ -454,9 +454,9 @@ namespace QLNet.Tests
             expectedHol.Add(new Date(31, Month.December, 2004));
 
             Calendar c = new Germany(Germany.Market.Eurex);
-            List<Date> hol = Calendar.holidayList(c, new Date(1, Month.January, 2003),
+            var hol = Calendar.holidayList(c, new Date(1, Month.January, 2003),
                                                   new Date(31, Month.December, 2004));
-            for (int i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
+            for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
                     QAssert.Fail("expected holiday was " + expectedHol[i]
@@ -471,7 +471,7 @@ namespace QLNet.Tests
         [Fact]
         public void testGermanyXetra()
         {
-            List<Date> expectedHol = new List<Date>();
+            var expectedHol = new List<Date>();
 
             expectedHol.Add(new Date(1, Month.January, 2003));
             expectedHol.Add(new Date(18, Month.April, 2003));
@@ -487,8 +487,8 @@ namespace QLNet.Tests
             expectedHol.Add(new Date(24, Month.December, 2004));
 
             Calendar c = new Germany(Germany.Market.Xetra);
-            List<Date> hol = Calendar.holidayList(c, new Date(1, Month.January, 2003), new Date(31, Month.December, 2004));
-            for (int i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
+            var hol = Calendar.holidayList(c, new Date(1, Month.January, 2003), new Date(31, Month.December, 2004));
+            for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
                     QAssert.Fail("expected holiday was " + expectedHol[i] + " while calculated holiday is " + hol[i]);
@@ -504,7 +504,7 @@ namespace QLNet.Tests
         {
             //BOOST_MESSAGE("Testing UK settlement holiday list...");
 
-            List<Date> expectedHol = new List<Date>();
+            var expectedHol = new List<Date>();
 
             expectedHol.Add(new Date(1, Month.January, 2004));
             expectedHol.Add(new Date(9, Month.April, 2004));
@@ -543,8 +543,8 @@ namespace QLNet.Tests
             expectedHol.Add(new Date(26, Month.December, 2007));
 
             Calendar c = new UnitedKingdom(UnitedKingdom.Market.Settlement);
-            List<Date> hol = Calendar.holidayList(c, new Date(1, Month.January, 2004), new Date(31, Month.December, 2007));
-            for (int i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
+            var hol = Calendar.holidayList(c, new Date(1, Month.January, 2004), new Date(31, Month.December, 2007));
+            for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
                     QAssert.Fail("expected holiday was " + expectedHol[i]
@@ -561,7 +561,7 @@ namespace QLNet.Tests
         {
             //BOOST_MESSAGE("Testing London Stock Exchange holiday list...");
 
-            List<Date> expectedHol = new List<Date>();
+            var expectedHol = new List<Date>();
 
             expectedHol.Add(new Date(1, Month.January, 2004));
             expectedHol.Add(new Date(9, Month.April, 2004));
@@ -600,8 +600,8 @@ namespace QLNet.Tests
             expectedHol.Add(new Date(26, Month.December, 2007));
 
             Calendar c = new UnitedKingdom(UnitedKingdom.Market.Exchange);
-            List<Date> hol = Calendar.holidayList(c, new Date(1, Month.January, 2004), new Date(31, Month.December, 2007));
-            for (int i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
+            var hol = Calendar.holidayList(c, new Date(1, Month.January, 2004), new Date(31, Month.December, 2007));
+            for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
                     QAssert.Fail("expected holiday was " + expectedHol[i]
@@ -618,7 +618,7 @@ namespace QLNet.Tests
         {
             //BOOST_MESSAGE("Testing London Metals Exchange holiday list...");
 
-            List<Date> expectedHol = new List<Date>();
+            var expectedHol = new List<Date>();
 
             expectedHol.Add(new Date(1, Month.January, 2004));
             expectedHol.Add(new Date(9, Month.April, 2004));
@@ -657,8 +657,8 @@ namespace QLNet.Tests
             expectedHol.Add(new Date(26, Month.December, 2007));
 
             Calendar c = new UnitedKingdom(UnitedKingdom.Market.Metals);
-            List<Date> hol = Calendar.holidayList(c, new Date(1, Month.January, 2004), new Date(31, Month.December, 2007));
-            for (int i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
+            var hol = Calendar.holidayList(c, new Date(1, Month.January, 2004), new Date(31, Month.December, 2007));
+            for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
                     QAssert.Fail("expected holiday was " + expectedHol[i]
@@ -675,7 +675,7 @@ namespace QLNet.Tests
         {
             //BOOST_MESSAGE("Testing Milan Stock Exchange holiday list...");
 
-            List<Date> expectedHol = new List<Date>();
+            var expectedHol = new List<Date>();
 
             expectedHol.Add(new Date(1, Month.January, 2002));
             expectedHol.Add(new Date(29, Month.March, 2002));
@@ -704,8 +704,8 @@ namespace QLNet.Tests
             expectedHol.Add(new Date(31, Month.December, 2004));
 
             Calendar c = new Italy(Italy.Market.Exchange);
-            List<Date> hol = Calendar.holidayList(c, new Date(1, Month.January, 2002), new Date(31, Month.December, 2004));
-            for (int i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
+            var hol = Calendar.holidayList(c, new Date(1, Month.January, 2002), new Date(31, Month.December, 2004));
+            for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
                     QAssert.Fail("expected holiday was " + expectedHol[i]
@@ -722,7 +722,7 @@ namespace QLNet.Tests
         {
             //BOOST_MESSAGE("Testing Brazil holiday list...");
 
-            List<Date> expectedHol = new List<Date>();
+            var expectedHol = new List<Date>();
 
             //expectedHol.Add(new Date(1,January,2005)); // Saturday
             expectedHol.Add(new Date(7, Month.February, 2005));
@@ -751,8 +751,8 @@ namespace QLNet.Tests
             expectedHol.Add(new Date(25, Month.December, 2006));
 
             Calendar c = new Brazil();
-            List<Date> hol = Calendar.holidayList(c, new Date(1, Month.January, 2005), new Date(31, Month.December, 2006));
-            for (int i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
+            var hol = Calendar.holidayList(c, new Date(1, Month.January, 2005), new Date(31, Month.December, 2006));
+            for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
                     QAssert.Fail("expected holiday was " + expectedHol[i]
@@ -769,7 +769,7 @@ namespace QLNet.Tests
         {
             //("Testing South-Korean settlement holiday list...");
 
-            List<Date> expectedHol = new List<Date>();
+            var expectedHol = new List<Date>();
             expectedHol.Add(new Date(1, Month.January, 2004));
             expectedHol.Add(new Date(21, Month.January, 2004));
             expectedHol.Add(new Date(22, Month.January, 2004));
@@ -842,9 +842,9 @@ namespace QLNet.Tests
             expectedHol.Add(new Date(25, Month.December, 2007));
 
             Calendar c = new SouthKorea(SouthKorea.Market.Settlement);
-            List<Date> hol = Calendar.holidayList(c, new Date(1, Month.January, 2004),
+            var hol = Calendar.holidayList(c, new Date(1, Month.January, 2004),
                                                   new Date(31, Month.December, 2007));
-            for (int i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
+            for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
                     QAssert.Fail("expected holiday was " + expectedHol[i] + " while calculated holiday is " + hol[i]);
@@ -860,7 +860,7 @@ namespace QLNet.Tests
         {
             //("Testing Korea Stock Exchange holiday list...");
 
-            List<Date> expectedHol = new List<Date>();
+            var expectedHol = new List<Date>();
             expectedHol.Add(new Date(1, Month.January, 2004));
             expectedHol.Add(new Date(21, Month.January, 2004));
             expectedHol.Add(new Date(22, Month.January, 2004));
@@ -937,10 +937,10 @@ namespace QLNet.Tests
             expectedHol.Add(new Date(31, Month.December, 2007));
 
             Calendar c = new SouthKorea(SouthKorea.Market.KRX);
-            List<Date> hol = Calendar.holidayList(c, new Date(1, Month.January, 2004),
+            var hol = Calendar.holidayList(c, new Date(1, Month.January, 2004),
                                                   new Date(31, Month.December, 2007));
 
-            for (int i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
+            for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
                     QAssert.Fail("expected holiday was " + expectedHol[i]
@@ -957,7 +957,7 @@ namespace QLNet.Tests
         {
             // Testing China Shanghai Stock Exchange holiday list
 
-            List<Date> expectedHol = new List<Date>();
+            var expectedHol = new List<Date>();
 
             // China Shanghai Securities Exchange holiday list in the year 2014
             expectedHol.Add(new Date(1, Month.Jan, 2014));
@@ -1114,10 +1114,10 @@ namespace QLNet.Tests
             expectedHol.Add(new Date(7, Month.October, 2021));
 
             Calendar c = new China(China.Market.SSE);
-            List<Date> hol = Calendar.holidayList(c, new Date(1, Month.January, 2014),
+            var hol = Calendar.holidayList(c, new Date(1, Month.January, 2014),
                                                   new Date(31, Month.December, 2021));
 
-            for (int i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
+            for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
                     QAssert.Fail("expected holiday was " + expectedHol[i]
@@ -1133,7 +1133,7 @@ namespace QLNet.Tests
         public void testChinaIB()
         {
             // Testing China Inter Bank working weekends list
-            List<Date> expectedWorkingWeekEnds = new List<Date>();
+            var expectedWorkingWeekEnds = new List<Date>();
 
             // China Inter Bank working weekends list in the year 2014
             expectedWorkingWeekEnds.Add(new Date(26, Month.Jan, 2014));
@@ -1199,10 +1199,10 @@ namespace QLNet.Tests
             expectedWorkingWeekEnds.Add(new Date(9, Month.October, 2021));
 
             Calendar c = new China(China.Market.IB);
-            Date start = new Date(1, Month.Jan, 2014);
-            Date end = new Date(31, Month.Dec, 2021);
+            var start = new Date(1, Month.Jan, 2014);
+            var end = new Date(31, Month.Dec, 2021);
 
-            int k = 0;
+            var k = 0;
 
             while (start <= end)
             {
@@ -1230,7 +1230,7 @@ namespace QLNet.Tests
             Calendar c = new TARGET(); // any calendar would be OK
 
             Date eom, counter = Date.minDate();
-            Date last = Date.maxDate() - new Period(2, TimeUnit.Months);
+            var last = Date.maxDate() - new Period(2, TimeUnit.Months);
 
             while (counter <= last)
             {
@@ -1258,7 +1258,7 @@ namespace QLNet.Tests
 
             // Testing calculation of business days between dates
 
-            List<Date> testDates = new List<Date>();
+            var testDates = new List<Date>();
             testDates.Add(new Date(1, Month.February, 2002));
             testDates.Add(new Date(4, Month.February, 2002));
             testDates.Add(new Date(16, Month.May, 2003));
@@ -1357,9 +1357,9 @@ namespace QLNet.Tests
 
             Calendar calendar = new Brazil();
 
-            for (int i = 1; i < testDates.Count; i++)
+            for (var i = 1; i < testDates.Count; i++)
             {
-                int calculated = calendar.businessDaysBetween(testDates[i - 1], testDates[i]);
+                var calculated = calendar.businessDaysBetween(testDates[i - 1], testDates[i]);
                 if (calculated != expected[i - 1])
                 {
                     QAssert.Fail("from " + testDates[i - 1]
@@ -1406,13 +1406,13 @@ namespace QLNet.Tests
 
             // Testing bespoke calendars
 
-            BespokeCalendar a1 = new BespokeCalendar();
-            BespokeCalendar b1 = new BespokeCalendar();
+            var a1 = new BespokeCalendar();
+            var b1 = new BespokeCalendar();
 
-            Date testDate1 = new Date(4, Month.October, 2008); // Saturday
-            Date testDate2 = new Date(5, Month.October, 2008); // Sunday
-            Date testDate3 = new Date(6, Month.October, 2008); // Monday
-            Date testDate4 = new Date(7, Month.October, 2008); // Tuesday
+            var testDate1 = new Date(4, Month.October, 2008); // Saturday
+            var testDate2 = new Date(5, Month.October, 2008); // Sunday
+            var testDate3 = new Date(6, Month.October, 2008); // Monday
+            var testDate4 = new Date(7, Month.October, 2008); // Tuesday
 
             if (!a1.isBusinessDay(testDate1))
                 QAssert.Fail(testDate1 + " erroneously detected as holiday");
@@ -1472,7 +1472,7 @@ namespace QLNet.Tests
             if (!b1.isBusinessDay(testDate4))
                 QAssert.Fail(testDate4 + " erroneously detected as holiday");
 
-            BespokeCalendar a2 = a1;  // linked to a1
+            var a2 = a1;  // linked to a1
 
             a2.addWeekend(DayOfWeek.Saturday);
 

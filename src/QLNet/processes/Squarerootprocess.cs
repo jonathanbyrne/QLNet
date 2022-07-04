@@ -29,7 +29,7 @@ namespace QLNet.processes
     //
     //        \ingroup processes
     //
-    public class SquareRootProcess : StochasticProcess1D
+    [JetBrains.Annotations.PublicAPI] public class SquareRootProcess : StochasticProcess1D
     {
         private double x0_;
         private double mean_;
@@ -51,18 +51,11 @@ namespace QLNet.processes
             volatility_ = sigma;
         }
         // StochasticProcess interface
-        public override double x0()
-        {
-            return x0_;
-        }
-        public override double drift(double UnnamedParameter1, double x)
-        {
-            return speed_ * (mean_ - x);
-        }
-        public override double diffusion(double UnnamedParameter1, double x)
-        {
-            return volatility_ * System.Math.Sqrt(x);
-        }
+        public override double x0() => x0_;
+
+        public override double drift(double UnnamedParameter1, double x) => speed_ * (mean_ - x);
+
+        public override double diffusion(double UnnamedParameter1, double x) => volatility_ * System.Math.Sqrt(x);
     }
 
 }

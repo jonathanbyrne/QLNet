@@ -26,7 +26,7 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.swap
 {
-    public class JpyLiborSwapIsdaFixAm : SwapIndex
+    [JetBrains.Annotations.PublicAPI] public class JpyLiborSwapIsdaFixAm : SwapIndex
     {
         public JpyLiborSwapIsdaFixAm(Period tenor)
            : this(tenor, new Handle<YieldTermStructure>()) { }
@@ -44,7 +44,7 @@ namespace QLNet.Indexes.swap
         { }
     }
 
-    public class JpyLiborSwapIsdaFixPm : SwapIndex
+    [JetBrains.Annotations.PublicAPI] public class JpyLiborSwapIsdaFixPm : SwapIndex
     {
         public JpyLiborSwapIsdaFixPm(Period tenor)
            : this(tenor, new Handle<YieldTermStructure>()) { }

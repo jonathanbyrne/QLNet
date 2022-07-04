@@ -29,7 +29,7 @@ namespace QLNet.Pricingengines.vanilla
         \test the correctness of the returned greeks is tested by
               reproducing numerical derivatives.
     */
-    public class FDShoutEngine : FDEngineAdapter<FDShoutCondition<FDStepConditionEngine>, OneAssetOption.Engine>,
+    [JetBrains.Annotations.PublicAPI] public class FDShoutEngine : FDEngineAdapter<FDShoutCondition<FDStepConditionEngine>, OneAssetOption.Engine>,
       IFDEngine
     {
         // required for generics
@@ -39,9 +39,6 @@ namespace QLNet.Pricingengines.vanilla
                              bool timeDependent = false)
            : base(process, timeSteps, gridPoints, timeDependent) { }
 
-        public IFDEngine factory(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100)
-        {
-            return new FDShoutEngine(process, timeSteps, gridPoints);
-        }
+        public IFDEngine factory(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100) => new FDShoutEngine(process, timeSteps, gridPoints);
     }
 }

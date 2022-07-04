@@ -33,16 +33,14 @@ namespace QLNet.Math.Optimization
 
         \ingroup optimizers
     */
-    public class ConjugateGradient : LineSearchBasedMethod
+    [JetBrains.Annotations.PublicAPI] public class ConjugateGradient : LineSearchBasedMethod
     {
         public ConjugateGradient(LineSearch lineSearch = null)
            : base(lineSearch)
         { }
 
-        protected override Vector getUpdatedDirection(Problem P, double gold2, Vector gradient)
-        {
-            return lineSearch_.lastGradient() * -1 +
-                   P.gradientNormValue() / gold2 * lineSearch_.searchDirection;
-        }
+        protected override Vector getUpdatedDirection(Problem P, double gold2, Vector gradient) =>
+            lineSearch_.lastGradient() * -1 +
+            P.gradientNormValue() / gold2 * lineSearch_.searchDirection;
     }
 }

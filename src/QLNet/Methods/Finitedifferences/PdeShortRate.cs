@@ -23,7 +23,7 @@ using System;
 
 namespace QLNet.Methods.Finitedifferences
 {
-    public class PdeShortRate : PdeSecondOrderParabolic
+    [JetBrains.Annotations.PublicAPI] public class PdeShortRate : PdeSecondOrderParabolic
     {
         private OneFactorModel.ShortRateDynamics dynamics_;
 
@@ -35,24 +35,12 @@ namespace QLNet.Methods.Finitedifferences
             dynamics_ = d;
         }
 
-        public override double diffusion(double t, double x)
-        {
-            return dynamics_.process().diffusion(t, x);
-        }
+        public override double diffusion(double t, double x) => dynamics_.process().diffusion(t, x);
 
-        public override double drift(double t, double x)
-        {
-            return dynamics_.process().drift(t, x);
-        }
+        public override double drift(double t, double x) => dynamics_.process().drift(t, x);
 
-        public override double discount(double t, double x)
-        {
-            return dynamics_.shortRate(t, x);
-        }
+        public override double discount(double t, double x) => dynamics_.shortRate(t, x);
 
-        public override PdeSecondOrderParabolic factory(GeneralizedBlackScholesProcess process)
-        {
-            throw new NotSupportedException();
-        }
+        public override PdeSecondOrderParabolic factory(GeneralizedBlackScholesProcess process) => throw new NotSupportedException();
     }
 }

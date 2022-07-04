@@ -24,23 +24,23 @@ namespace QLNet.Methods.Finitedifferences
 {
     //! Black-Scholes-Merton differential operator
     /*! \ingroup findiff */
-    public class BSMOperator : TridiagonalOperator
+    [JetBrains.Annotations.PublicAPI] public class BSMOperator : TridiagonalOperator
     {
         public BSMOperator() { }
 
         public BSMOperator(int size, double dx, double r, double q, double sigma) : base(size)
         {
-            double sigma2 = sigma * sigma;
-            double nu = r - q - sigma2 / 2;
-            double pd = -(sigma2 / dx - nu) / (2 * dx);
-            double pu = -(sigma2 / dx + nu) / (2 * dx);
-            double pm = sigma2 / (dx * dx) + r;
+            var sigma2 = sigma * sigma;
+            var nu = r - q - sigma2 / 2;
+            var pd = -(sigma2 / dx - nu) / (2 * dx);
+            var pu = -(sigma2 / dx + nu) / (2 * dx);
+            var pm = sigma2 / (dx * dx) + r;
             setMidRows(pd, pm, pu);
         }
 
         public BSMOperator(Vector grid, GeneralizedBlackScholesProcess process, double residualTime) : base(grid.size())
         {
-            LogGrid logGrid = new LogGrid(grid);
+            var logGrid = new LogGrid(grid);
             var cc = new PdeConstantCoeff<PdeBSM>(process, residualTime, process.stateVariable().link.value());
             cc.generateOperator(residualTime, logGrid, this);
         }

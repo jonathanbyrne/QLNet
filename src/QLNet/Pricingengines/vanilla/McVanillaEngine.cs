@@ -106,15 +106,15 @@ namespace QLNet.Pricingengines.vanilla
         // McSimulation implementation
         protected override TimeGrid timeGrid()
         {
-            Date lastExerciseDate = arguments_.exercise.lastDate();
-            double t = process_.time(lastExerciseDate);
+            var lastExerciseDate = arguments_.exercise.lastDate();
+            var t = process_.time(lastExerciseDate);
             if (timeSteps_ != null)
             {
                 return new TimeGrid(t, timeSteps_.Value);
             }
             else if (timeStepsPerYear_ != null)
             {
-                int steps = (int)(timeStepsPerYear_ * t);
+                var steps = (int)(timeStepsPerYear_ * t);
                 return new TimeGrid(t, System.Math.Max(steps, 1));
             }
             else
@@ -126,9 +126,9 @@ namespace QLNet.Pricingengines.vanilla
 
         protected override IPathGenerator<IRNG> pathGenerator()
         {
-            int dimensions = process_.factors();
-            TimeGrid grid = timeGrid();
-            IRNG generator = FastActivator<RNG>.Create().make_sequence_generator(dimensions * (grid.size() - 1), seed_);
+            var dimensions = process_.factors();
+            var grid = timeGrid();
+            var generator = FastActivator<RNG>.Create().make_sequence_generator(dimensions * (grid.size() - 1), seed_);
             if (typeof(MC) == typeof(SingleVariate))
                 return new PathGenerator<IRNG>(process_, grid, generator, brownianBridge_);
 
@@ -137,17 +137,17 @@ namespace QLNet.Pricingengines.vanilla
 
         protected override double? controlVariateValue()
         {
-            AnalyticHestonHullWhiteEngine controlPE = controlPricingEngine() as AnalyticHestonHullWhiteEngine;
+            var controlPE = controlPricingEngine() as AnalyticHestonHullWhiteEngine;
             Utils.QL_REQUIRE(controlPE != null, () => "engine does not provide control variation pricing engine");
 
-            QLNet.Option.Arguments controlArguments = controlPE.getArguments() as QLNet.Option.Arguments;
+            var controlArguments = controlPE.getArguments() as QLNet.Option.Arguments;
             Utils.QL_REQUIRE(controlArguments != null, () => "engine is using inconsistent arguments");
 
             controlPE.setupArguments(arguments_);
             controlPE.calculate();
 
-            OneAssetOption.Results controlResults = controlPE.getResults() as OneAssetOption.Results;
-            Utils.QL_REQUIRE(controlResults != null, () => "engine returns an inconsistent result type");
+            var controlResults = controlPE.getResults() as OneAssetOption.Results;
+            Utils.QL_REQUIRE(controlResults != null, () => "engine returns an inconsistent result ExerciseType");
 
             return controlResults.value;
         }
@@ -156,8 +156,10 @@ namespace QLNet.Pricingengines.vanilla
         protected QLNet.Option.Arguments arguments_ = new QLNet.Option.Arguments();
         protected OneAssetOption.Results results_ = new OneAssetOption.Results();
 
-        public IPricingEngineArguments getArguments() { return arguments_; }
-        public IPricingEngineResults getResults() { return results_; }
+        public IPricingEngineArguments getArguments() => arguments_;
+
+        public IPricingEngineResults getResults() => results_;
+
         public void reset() { results_.reset(); }
 
         #region Observer & Observable
@@ -165,14 +167,8 @@ namespace QLNet.Pricingengines.vanilla
         private readonly WeakEventSource eventSource = new WeakEventSource();
         public event Callback notifyObserversEvent
         {
-            add
-            {
-                eventSource.Subscribe(value);
-            }
-            remove
-            {
-                eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
         }
 
         public void registerWith(Callback handler) { notifyObserversEvent += handler; }

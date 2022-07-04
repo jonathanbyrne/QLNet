@@ -22,7 +22,7 @@ using System.Linq;
 
 namespace QLNet.Termstructures.Volatility
 {
-    public class SviSmileSection : SmileSection
+    [JetBrains.Annotations.PublicAPI] public class SviSmileSection : SmileSection
     {
         public SviSmileSection(double timeToExpiry, double forward,
                                List<double> sviParameters)
@@ -45,14 +45,16 @@ namespace QLNet.Termstructures.Volatility
 
         protected override double volatilityImpl(double strike)
         {
-            double k = System.Math.Log(System.Math.Max(strike, 1E-6) / forward_);
-            double totalVariance = Utils.sviTotalVariance(param_[0], param_[1], param_[2],
+            var k = System.Math.Log(System.Math.Max(strike, 1E-6) / forward_);
+            var totalVariance = Utils.sviTotalVariance(param_[0], param_[1], param_[2],
                                                           param_[3], param_[4], k);
             return System.Math.Sqrt(System.Math.Max(0.0, totalVariance / exerciseTime()));
         }
-        public override double minStrike() { return 0.0; }
-        public override double maxStrike() { return double.MaxValue; }
-        public override double? atmLevel() { return forward_; }
+        public override double minStrike() => 0.0;
+
+        public override double maxStrike() => double.MaxValue;
+
+        public override double? atmLevel() => forward_;
 
         #region svi smile section
         protected double forward_;

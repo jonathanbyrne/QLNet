@@ -2,7 +2,7 @@
 
 namespace QLNet.Exceptions
 {
-    public class InvalidPriceSignException : Exception
+    [JetBrains.Annotations.PublicAPI] public class InvalidPriceSignException : Exception
     {
         public InvalidPriceSignException()
         {

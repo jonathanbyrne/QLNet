@@ -26,7 +26,7 @@ namespace QLNet.Methods.Finitedifferences.Meshers
     /// <summary>
     /// uniform grid mesher
     /// </summary>
-    public class UniformGridMesher : FdmMesher
+    [JetBrains.Annotations.PublicAPI] public class UniformGridMesher : FdmMesher
     {
         public UniformGridMesher(FdmLinearOpLayout layout, List<Pair<double?, double?>> boundaries)
         : base(layout)
@@ -37,41 +37,33 @@ namespace QLNet.Methods.Finitedifferences.Meshers
             Utils.QL_REQUIRE(boundaries.Count == layout.dim().Count,
                              () => "inconsistent boundaries given");
 
-            for (int i = 0; i < layout.dim().Count; ++i)
+            for (var i = 0; i < layout.dim().Count; ++i)
             {
                 dx_[i] = (boundaries[i].second.Value - boundaries[i].first.Value)
                          / (layout.dim()[i] - 1);
 
                 locations_[i] = new InitializedList<double>(layout.dim()[i]);
-                for (int j = 0; j < layout.dim()[i]; ++j)
+                for (var j = 0; j < layout.dim()[i]; ++j)
                 {
                     locations_[i][j] = boundaries[i].first.Value + j * dx_[i];
                 }
             }
         }
 
-        public override double? dplus(FdmLinearOpIterator iter, int direction)
-        {
-            return dx_[direction];
-        }
+        public override double? dplus(FdmLinearOpIterator iter, int direction) => dx_[direction];
 
-        public override double? dminus(FdmLinearOpIterator iter, int direction)
-        {
-            return dx_[direction];
-        }
+        public override double? dminus(FdmLinearOpIterator iter, int direction) => dx_[direction];
 
         public override double location(FdmLinearOpIterator iter,
-                                        int direction)
-        {
-            return locations_[direction][iter.coordinates()[direction]];
-        }
+                                        int direction) =>
+            locations_[direction][iter.coordinates()[direction]];
 
         public override Vector locations(int direction)
         {
-            Vector retVal = new Vector(layout_.size());
+            var retVal = new Vector(layout_.size());
 
-            FdmLinearOpIterator endIter = layout_.end();
-            for (FdmLinearOpIterator iter = layout_.begin();
+            var endIter = layout_.end();
+            for (var iter = layout_.begin();
                  iter != endIter;
                  ++iter)
             {

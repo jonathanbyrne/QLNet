@@ -32,7 +32,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_CashFlows
+    [JetBrains.Annotations.PublicAPI] public class T_CashFlows
     {
         private void CHECK_INCLUSION(int n, int days, bool expected, List<CashFlow> leg, Date today)
         {
@@ -48,7 +48,7 @@ namespace QLNet.Tests
         {
             do
             {
-                double NPV = CashFlows.npv(leg, no_discount, includeRef, today);
+                var NPV = CashFlows.npv(leg, no_discount, includeRef, today);
                 if (System.Math.Abs(NPV - expected) > 1e-6)
                 {
                     QAssert.Fail("NPV mismatch:\n"
@@ -63,15 +63,15 @@ namespace QLNet.Tests
         public void testSettings()
         {
             // Testing cash-flow settings...
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                Date today = Date.Today;
+                var today = Date.Today;
                 Settings.setEvaluationDate(today);
 
                 // cash flows at T+0, T+1, T+2
-                List<CashFlow> leg = new List<CashFlow>();
+                var leg = new List<CashFlow>();
 
-                for (int i = 0; i < 3; ++i)
+                for (var i = 0; i < 3; ++i)
                     leg.Add(new SimpleCashFlow(1.0, today + i));
 
                 // case 1: don't include reference-date payments, no override at
@@ -159,7 +159,7 @@ namespace QLNet.Tests
                 CHECK_INCLUSION(2, 3, false, leg, today);
 
                 // no discount to make calculations easier
-                InterestRate no_discount = new InterestRate(0.0, new Actual365Fixed(), Compounding.Continuous, Frequency.Annual);
+                var no_discount = new InterestRate(0.0, new Actual365Fixed(), Compounding.Continuous, Frequency.Annual);
 
                 // no override
                 Settings.includeTodaysCashFlows = null;
@@ -180,18 +180,18 @@ namespace QLNet.Tests
         {
             // Testing dynamic cast of coupon in Black pricer...
 
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                Date todaysDate = new Date(7, Month.April, 2010);
-                Date settlementDate = new Date(9, Month.April, 2010);
+                var todaysDate = new Date(7, Month.April, 2010);
+                var settlementDate = new Date(9, Month.April, 2010);
                 Settings.setEvaluationDate(todaysDate);
                 Calendar calendar = new TARGET();
 
-                Handle<YieldTermStructure> rhTermStructure = new Handle<YieldTermStructure>(
+                var rhTermStructure = new Handle<YieldTermStructure>(
                    Utilities.flatRate(settlementDate, 0.04875825, new Actual365Fixed()));
 
-                double volatility = 0.10;
-                Handle<OptionletVolatilityStructure> vol = new Handle<OptionletVolatilityStructure>(
+                var volatility = 0.10;
+                var vol = new Handle<OptionletVolatilityStructure>(
                    new ConstantOptionletVolatility(2,
                                                    calendar,
                                                    BusinessDayConvention.ModifiedFollowing,
@@ -200,12 +200,12 @@ namespace QLNet.Tests
 
                 IborIndex index3m = new USDLibor(new Period(3, TimeUnit.Months), rhTermStructure);
 
-                Date payDate = new Date(20, Month.December, 2013);
-                Date startDate = new Date(20, Month.September, 2013);
-                Date endDate = new Date(20, Month.December, 2013);
-                double spread = 0.0115;
+                var payDate = new Date(20, Month.December, 2013);
+                var startDate = new Date(20, Month.September, 2013);
+                var endDate = new Date(20, Month.December, 2013);
+                var spread = 0.0115;
                 IborCouponPricer pricer = new BlackIborCouponPricer(vol);
-                FloatingRateCoupon coupon = new FloatingRateCoupon(payDate, 100, startDate, endDate, 2,
+                var coupon = new FloatingRateCoupon(payDate, 100, startDate, endDate, 2,
                                                                    index3m, 1.0, spread / 100);
                 coupon.setPricer(pricer);
 
@@ -225,8 +225,8 @@ namespace QLNet.Tests
         public void testDefaultSettlementDate()
         {
             // Testing default evaluation date in cashflows methods...
-            Date today = Settings.evaluationDate();
-            Schedule schedule = new
+            var today = Settings.evaluationDate();
+            var schedule = new
             MakeSchedule()
             .from(today - new Period(2, TimeUnit.Months)).to(today + new Period(4, TimeUnit.Months))
             .withFrequency(Frequency.Semiannual)
@@ -240,15 +240,15 @@ namespace QLNet.Tests
             .withNotionals(100.0)
             .withPaymentAdjustment(BusinessDayConvention.Following);
 
-            double accruedPeriod = CashFlows.accruedPeriod(leg, false);
+            var accruedPeriod = CashFlows.accruedPeriod(leg, false);
             if (accruedPeriod == 0.0)
                 QAssert.Fail("null accrued period with default settlement date");
 
-            int accruedDays = CashFlows.accruedDays(leg, false);
+            var accruedDays = CashFlows.accruedDays(leg, false);
             if (accruedDays == 0)
                 QAssert.Fail("no accrued days with default settlement date");
 
-            double accruedAmount = CashFlows.accruedAmount(leg, false);
+            var accruedAmount = CashFlows.accruedAmount(leg, false);
             if (accruedAmount == 0.0)
                 QAssert.Fail("null accrued amount with default settlement date");
         }
@@ -257,8 +257,8 @@ namespace QLNet.Tests
         public void testNullFixingDays()
         {
             // Testing ibor leg construction with null fixing days...
-            Date today = Settings.evaluationDate();
-            Schedule schedule = new
+            var today = Settings.evaluationDate();
+            var schedule = new
             MakeSchedule()
             .from(today - new Period(2, TimeUnit.Months)).to(today + new Period(4, TimeUnit.Months))
             .withFrequency(Frequency.Semiannual)

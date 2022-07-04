@@ -32,9 +32,9 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_PiecewiseZeroSpreadedTermStructure
+    [JetBrains.Annotations.PublicAPI] public class T_PiecewiseZeroSpreadedTermStructure
     {
-        public class CommonVars
+        [JetBrains.Annotations.PublicAPI] public class CommonVars
         {
             // common data
             public Calendar calendar;
@@ -65,11 +65,11 @@ namespace QLNet.Tests
 
                 Settings.setEvaluationDate(today);
 
-                int[] ts = new int[] { 13, 41, 75, 165, 256, 345, 524, 703 };
-                double[] r = new double[] { 0.035, 0.033, 0.034, 0.034, 0.036, 0.037, 0.039, 0.040 };
-                List<double> rates = new List<double>() { 0.035 };
-                List<Date> dates = new List<Date>() { settlementDate };
-                for (int i = 0; i < 8; ++i)
+                var ts = new int[] { 13, 41, 75, 165, 256, 345, 524, 703 };
+                var r = new double[] { 0.035, 0.033, 0.034, 0.034, 0.036, 0.037, 0.039, 0.040 };
+                var rates = new List<double>() { 0.035 };
+                var dates = new List<Date>() { settlementDate };
+                for (var i = 0; i < 8; ++i)
                 {
                     dates.Add(calendar.advance(today, ts[i], TimeUnit.Days));
                     rates.Add(r[i]);
@@ -83,30 +83,30 @@ namespace QLNet.Tests
         {
             // Testing flat interpolation before the first spreaded date...
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            List<Handle<Quote>> spreads = new List<Handle<Quote>>();
-            SimpleQuote spread1 = new SimpleQuote(0.02);
-            SimpleQuote spread2 = new SimpleQuote(0.03);
+            var spreads = new List<Handle<Quote>>();
+            var spread1 = new SimpleQuote(0.02);
+            var spread2 = new SimpleQuote(0.03);
             spreads.Add(new Handle<Quote>(spread1));
             spreads.Add(new Handle<Quote>(spread2));
 
-            List<Date> spreadDates = new List<Date>();
+            var spreadDates = new List<Date>();
             spreadDates.Add(vars.calendar.advance(vars.today, 8, TimeUnit.Months));
             spreadDates.Add(vars.calendar.advance(vars.today, 15, TimeUnit.Months));
 
-            Date interpolationDate = vars.calendar.advance(vars.today, 6, TimeUnit.Months);
+            var interpolationDate = vars.calendar.advance(vars.today, 6, TimeUnit.Months);
 
             ZeroYieldStructure spreadedTermStructure =
                new PiecewiseZeroSpreadedTermStructure(
                new Handle<YieldTermStructure>(vars.termStructure),
                spreads, spreadDates);
 
-            double t = vars.dayCount.yearFraction(vars.today, interpolationDate);
-            double interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
+            var t = vars.dayCount.yearFraction(vars.today, interpolationDate);
+            var interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
 
-            double tolerance = 1e-9;
-            double expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() + spread1.value();
+            var tolerance = 1e-9;
+            var expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() + spread1.value();
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
                 QAssert.Fail("unable to reproduce interpolated rate\n"
@@ -119,19 +119,19 @@ namespace QLNet.Tests
         {
             // Testing flat interpolation after the last spreaded date...
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            List<Handle<Quote>> spreads = new List<Handle<Quote>>();
-            SimpleQuote spread1 = new SimpleQuote(0.02);
-            SimpleQuote spread2 = new SimpleQuote(0.03);
+            var spreads = new List<Handle<Quote>>();
+            var spread1 = new SimpleQuote(0.02);
+            var spread2 = new SimpleQuote(0.03);
             spreads.Add(new Handle<Quote>(spread1));
             spreads.Add(new Handle<Quote>(spread2));
 
-            List<Date> spreadDates = new List<Date>();
+            var spreadDates = new List<Date>();
             spreadDates.Add(vars.calendar.advance(vars.today, 8, TimeUnit.Months));
             spreadDates.Add(vars.calendar.advance(vars.today, 15, TimeUnit.Months));
 
-            Date interpolationDate = vars.calendar.advance(vars.today, 20, TimeUnit.Months);
+            var interpolationDate = vars.calendar.advance(vars.today, 20, TimeUnit.Months);
 
             ZeroYieldStructure spreadedTermStructure =
                new PiecewiseZeroSpreadedTermStructure(
@@ -139,11 +139,11 @@ namespace QLNet.Tests
                spreads, spreadDates);
             spreadedTermStructure.enableExtrapolation();
 
-            double t = vars.dayCount.yearFraction(vars.today, interpolationDate);
-            double interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
+            var t = vars.dayCount.yearFraction(vars.today, interpolationDate);
+            var interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
 
-            double tolerance = 1e-9;
-            double expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() + spread2.value();
+            var tolerance = 1e-9;
+            var expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() + spread2.value();
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
                 QAssert.Fail("unable to reproduce interpolated rate\n"
@@ -156,37 +156,37 @@ namespace QLNet.Tests
         {
             // Testing linear interpolation with more than two spreaded dates...
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            List<Handle<Quote>> spreads = new List<Handle<Quote>>();
-            SimpleQuote spread1 = new SimpleQuote(0.02);
-            SimpleQuote spread2 = new SimpleQuote(0.02);
-            SimpleQuote spread3 = new SimpleQuote(0.035);
-            SimpleQuote spread4 = new SimpleQuote(0.04);
+            var spreads = new List<Handle<Quote>>();
+            var spread1 = new SimpleQuote(0.02);
+            var spread2 = new SimpleQuote(0.02);
+            var spread3 = new SimpleQuote(0.035);
+            var spread4 = new SimpleQuote(0.04);
             spreads.Add(new Handle<Quote>(spread1));
             spreads.Add(new Handle<Quote>(spread2));
             spreads.Add(new Handle<Quote>(spread3));
             spreads.Add(new Handle<Quote>(spread4));
 
-            List<Date> spreadDates = new List<Date>();
+            var spreadDates = new List<Date>();
             spreadDates.Add(vars.calendar.advance(vars.today, 90, TimeUnit.Days));
             spreadDates.Add(vars.calendar.advance(vars.today, 150, TimeUnit.Days));
             spreadDates.Add(vars.calendar.advance(vars.today, 30, TimeUnit.Months));
             spreadDates.Add(vars.calendar.advance(vars.today, 40, TimeUnit.Months));
 
-            Date interpolationDate = vars.calendar.advance(vars.today, 120, TimeUnit.Days);
+            var interpolationDate = vars.calendar.advance(vars.today, 120, TimeUnit.Days);
 
             ZeroYieldStructure spreadedTermStructure =
                new PiecewiseZeroSpreadedTermStructure(
                new Handle<YieldTermStructure>(vars.termStructure),
                spreads, spreadDates);
 
-            double t = vars.dayCount.yearFraction(vars.today, interpolationDate);
-            double interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
+            var t = vars.dayCount.yearFraction(vars.today, interpolationDate);
+            var interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
 
-            double tolerance = 1e-9;
-            double expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() +
-                                  spread1.value();
+            var tolerance = 1e-9;
+            var expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() +
+                               spread1.value();
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
                 QAssert.Fail(
@@ -201,36 +201,36 @@ namespace QLNet.Tests
         {
             // Testing linear interpolation between two dates...
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            List<Handle<Quote>> spreads = new List<Handle<Quote>>();
-            SimpleQuote spread1 = new SimpleQuote(0.02);
-            SimpleQuote spread2 = new SimpleQuote(0.03);
+            var spreads = new List<Handle<Quote>>();
+            var spread1 = new SimpleQuote(0.02);
+            var spread2 = new SimpleQuote(0.03);
             spreads.Add(new Handle<Quote>(spread1));
             spreads.Add(new Handle<Quote>(spread2));
 
-            List<Date> spreadDates = new List<Date>();
+            var spreadDates = new List<Date>();
             spreadDates.Add(vars.calendar.advance(vars.today, 100, TimeUnit.Days));
             spreadDates.Add(vars.calendar.advance(vars.today, 150, TimeUnit.Days));
 
-            Date interpolationDate = vars.calendar.advance(vars.today, 120, TimeUnit.Days);
+            var interpolationDate = vars.calendar.advance(vars.today, 120, TimeUnit.Days);
 
             ZeroYieldStructure spreadedTermStructure =
                new InterpolatedPiecewiseZeroSpreadedTermStructure<Linear>(
                new Handle<YieldTermStructure>(vars.termStructure),
                spreads, spreadDates);
 
-            Date d0 = vars.calendar.advance(vars.today, 100, TimeUnit.Days);
-            Date d1 = vars.calendar.advance(vars.today, 150, TimeUnit.Days);
-            Date d2 = vars.calendar.advance(vars.today, 120, TimeUnit.Days);
+            var d0 = vars.calendar.advance(vars.today, 100, TimeUnit.Days);
+            var d1 = vars.calendar.advance(vars.today, 150, TimeUnit.Days);
+            var d2 = vars.calendar.advance(vars.today, 120, TimeUnit.Days);
 
-            double m = (0.03 - 0.02) / vars.dayCount.yearFraction(d0, d1);
-            double expectedRate = m * vars.dayCount.yearFraction(d0, d2) + 0.054;
+            var m = (0.03 - 0.02) / vars.dayCount.yearFraction(d0, d1);
+            var expectedRate = m * vars.dayCount.yearFraction(d0, d2) + 0.054;
 
-            double t = vars.dayCount.yearFraction(vars.settlementDate, interpolationDate);
-            double interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
+            var t = vars.dayCount.yearFraction(vars.settlementDate, interpolationDate);
+            var interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
 
-            double tolerance = 1e-9;
+            var tolerance = 1e-9;
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
                 QAssert.Fail(
@@ -244,31 +244,31 @@ namespace QLNet.Tests
         {
             // Testing forward flat interpolation between two dates...
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            List<Handle<Quote>> spreads = new List<Handle<Quote>>();
-            SimpleQuote spread1 = new SimpleQuote(0.02);
-            SimpleQuote spread2 = new SimpleQuote(0.03);
+            var spreads = new List<Handle<Quote>>();
+            var spread1 = new SimpleQuote(0.02);
+            var spread2 = new SimpleQuote(0.03);
             spreads.Add(new Handle<Quote>(spread1));
             spreads.Add(new Handle<Quote>(spread2));
 
-            List<Date> spreadDates = new List<Date>();
+            var spreadDates = new List<Date>();
             spreadDates.Add(vars.calendar.advance(vars.today, 75, TimeUnit.Days));
             spreadDates.Add(vars.calendar.advance(vars.today, 260, TimeUnit.Days));
 
-            Date interpolationDate = vars.calendar.advance(vars.today, 100, TimeUnit.Days);
+            var interpolationDate = vars.calendar.advance(vars.today, 100, TimeUnit.Days);
 
             ZeroYieldStructure spreadedTermStructure =
                new InterpolatedPiecewiseZeroSpreadedTermStructure<ForwardFlat>(
                new Handle<YieldTermStructure>(vars.termStructure),
                spreads, spreadDates);
 
-            double t = vars.dayCount.yearFraction(vars.today, interpolationDate);
-            double interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
+            var t = vars.dayCount.yearFraction(vars.today, interpolationDate);
+            var interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
 
-            double tolerance = 1e-9;
-            double expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() +
-                                  spread1.value();
+            var tolerance = 1e-9;
+            var expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() +
+                               spread1.value();
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
                 QAssert.Fail(
@@ -282,34 +282,34 @@ namespace QLNet.Tests
         {
             // Testing backward flat interpolation between two dates...
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            List<Handle<Quote>> spreads = new List<Handle<Quote>>();
-            SimpleQuote spread1 = new SimpleQuote(0.02);
-            SimpleQuote spread2 = new SimpleQuote(0.03);
-            SimpleQuote spread3 = new SimpleQuote(0.04);
+            var spreads = new List<Handle<Quote>>();
+            var spread1 = new SimpleQuote(0.02);
+            var spread2 = new SimpleQuote(0.03);
+            var spread3 = new SimpleQuote(0.04);
             spreads.Add(new Handle<Quote>(spread1));
             spreads.Add(new Handle<Quote>(spread2));
             spreads.Add(new Handle<Quote>(spread3));
 
-            List<Date> spreadDates = new List<Date>();
+            var spreadDates = new List<Date>();
             spreadDates.Add(vars.calendar.advance(vars.today, 100, TimeUnit.Days));
             spreadDates.Add(vars.calendar.advance(vars.today, 200, TimeUnit.Days));
             spreadDates.Add(vars.calendar.advance(vars.today, 300, TimeUnit.Days));
 
-            Date interpolationDate = vars.calendar.advance(vars.today, 110, TimeUnit.Days);
+            var interpolationDate = vars.calendar.advance(vars.today, 110, TimeUnit.Days);
 
             ZeroYieldStructure spreadedTermStructure =
                new InterpolatedPiecewiseZeroSpreadedTermStructure<BackwardFlat>(
                new Handle<YieldTermStructure>(vars.termStructure),
                spreads, spreadDates);
 
-            double t = vars.dayCount.yearFraction(vars.today, interpolationDate);
-            double interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
+            var t = vars.dayCount.yearFraction(vars.today, interpolationDate);
+            var interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
 
-            double tolerance = 1e-9;
-            double expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() +
-                                  spread2.value();
+            var tolerance = 1e-9;
+            var expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() +
+                               spread2.value();
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
                 QAssert.Fail(
@@ -324,31 +324,31 @@ namespace QLNet.Tests
         {
             // Testing default interpolation between two dates...
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            List<Handle<Quote>> spreads = new List<Handle<Quote>>();
-            SimpleQuote spread1 = new SimpleQuote(0.02);
-            SimpleQuote spread2 = new SimpleQuote(0.02);
+            var spreads = new List<Handle<Quote>>();
+            var spread1 = new SimpleQuote(0.02);
+            var spread2 = new SimpleQuote(0.02);
             spreads.Add(new Handle<Quote>(spread1));
             spreads.Add(new Handle<Quote>(spread2));
 
-            List<Date> spreadDates = new List<Date>();
+            var spreadDates = new List<Date>();
             spreadDates.Add(vars.calendar.advance(vars.today, 75, TimeUnit.Days));
             spreadDates.Add(vars.calendar.advance(vars.today, 160, TimeUnit.Days));
 
-            Date interpolationDate = vars.calendar.advance(vars.today, 100, TimeUnit.Days);
+            var interpolationDate = vars.calendar.advance(vars.today, 100, TimeUnit.Days);
 
             ZeroYieldStructure spreadedTermStructure =
                new PiecewiseZeroSpreadedTermStructure(
                new Handle<YieldTermStructure>(vars.termStructure),
                spreads, spreadDates);
 
-            double t = vars.dayCount.yearFraction(vars.today, interpolationDate);
-            double interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
+            var t = vars.dayCount.yearFraction(vars.today, interpolationDate);
+            var interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
 
-            double tolerance = 1e-9;
-            double expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() +
-                                  spread1.value();
+            var tolerance = 1e-9;
+            var expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() +
+                               spread1.value();
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
                 QAssert.Fail(
@@ -362,28 +362,28 @@ namespace QLNet.Tests
         {
             // Testing factory constructor with additional parameters...
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            List<Handle<Quote>> spreads = new List<Handle<Quote>>();
-            SimpleQuote spread1 = new SimpleQuote(0.02);
-            SimpleQuote spread2 = new SimpleQuote(0.03);
-            SimpleQuote spread3 = new SimpleQuote(0.01);
+            var spreads = new List<Handle<Quote>>();
+            var spread1 = new SimpleQuote(0.02);
+            var spread2 = new SimpleQuote(0.03);
+            var spread3 = new SimpleQuote(0.01);
             spreads.Add(new Handle<Quote>(spread1));
             spreads.Add(new Handle<Quote>(spread2));
             spreads.Add(new Handle<Quote>(spread3));
 
-            List<Date> spreadDates = new List<Date>();
+            var spreadDates = new List<Date>();
             spreadDates.Add(vars.calendar.advance(vars.today, 8, TimeUnit.Months));
             spreadDates.Add(vars.calendar.advance(vars.today, 15, TimeUnit.Months));
             spreadDates.Add(vars.calendar.advance(vars.today, 25, TimeUnit.Months));
 
-            Date interpolationDate = vars.calendar.advance(vars.today, 11, TimeUnit.Months);
+            var interpolationDate = vars.calendar.advance(vars.today, 11, TimeUnit.Months);
 
             ZeroYieldStructure spreadedTermStructure;
 
-            Frequency freq = Frequency.NoFrequency;
+            var freq = Frequency.NoFrequency;
 
-            Cubic factory = new Cubic(CubicInterpolation.DerivativeApprox.Spline,
+            var factory = new Cubic(CubicInterpolation.DerivativeApprox.Spline,
                                       false,
                                       CubicInterpolation.BoundaryCondition.SecondDerivative, 0,
                                       CubicInterpolation.BoundaryCondition.SecondDerivative, 0);
@@ -394,12 +394,12 @@ namespace QLNet.Tests
                spreads, spreadDates, vars.compounding,
                freq, vars.dayCount, factory);
 
-            double t = vars.dayCount.yearFraction(vars.today, interpolationDate);
-            double interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
+            var t = vars.dayCount.yearFraction(vars.today, interpolationDate);
+            var interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
 
-            double tolerance = 1e-9;
-            double expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() +
-                                  0.026065770863;
+            var tolerance = 1e-9;
+            var expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() +
+                               0.026065770863;
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
                 QAssert.Fail(
@@ -413,15 +413,15 @@ namespace QLNet.Tests
         {
             // Testing term structure max date...
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            List<Handle<Quote>> spreads = new List<Handle<Quote>>();
-            SimpleQuote spread1 = new SimpleQuote(0.02);
-            SimpleQuote spread2 = new SimpleQuote(0.03);
+            var spreads = new List<Handle<Quote>>();
+            var spread1 = new SimpleQuote(0.02);
+            var spread2 = new SimpleQuote(0.03);
             spreads.Add(new Handle<Quote>(spread1));
             spreads.Add(new Handle<Quote>(spread2));
 
-            List<Date> spreadDates = new List<Date>();
+            var spreadDates = new List<Date>();
             spreadDates.Add(vars.calendar.advance(vars.today, 8, TimeUnit.Months));
             spreadDates.Add(vars.calendar.advance(vars.today, 15, TimeUnit.Months));
 
@@ -430,9 +430,9 @@ namespace QLNet.Tests
                new Handle<YieldTermStructure>(vars.termStructure),
                spreads, spreadDates);
 
-            Date maxDate = spreadedTermStructure.maxDate();
+            var maxDate = spreadedTermStructure.maxDate();
 
-            Date expectedDate = vars.termStructure.maxDate() < spreadDates.Last() ? vars.termStructure.maxDate() : spreadDates.Last();
+            var expectedDate = vars.termStructure.maxDate() < spreadDates.Last() ? vars.termStructure.maxDate() : spreadDates.Last();
 
             if (maxDate != expectedDate)
                 QAssert.Fail(
@@ -446,30 +446,30 @@ namespace QLNet.Tests
         {
             // Testing quote update...
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            List<Handle<Quote>> spreads = new List<Handle<Quote>>();
-            SimpleQuote spread1 = new SimpleQuote(0.02);
-            SimpleQuote spread2 = new SimpleQuote(0.03);
+            var spreads = new List<Handle<Quote>>();
+            var spread1 = new SimpleQuote(0.02);
+            var spread2 = new SimpleQuote(0.03);
             spreads.Add(new Handle<Quote>(spread1));
             spreads.Add(new Handle<Quote>(spread2));
 
-            List<Date> spreadDates = new List<Date>();
+            var spreadDates = new List<Date>();
             spreadDates.Add(vars.calendar.advance(vars.today, 100, TimeUnit.Days));
             spreadDates.Add(vars.calendar.advance(vars.today, 150, TimeUnit.Days));
 
-            Date interpolationDate = vars.calendar.advance(vars.today, 120, TimeUnit.Days);
+            var interpolationDate = vars.calendar.advance(vars.today, 120, TimeUnit.Days);
 
             ZeroYieldStructure spreadedTermStructure =
                new InterpolatedPiecewiseZeroSpreadedTermStructure<BackwardFlat>(
                new Handle<YieldTermStructure>(vars.termStructure),
                spreads, spreadDates);
 
-            double t = vars.dayCount.yearFraction(vars.settlementDate, interpolationDate);
-            double interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
-            double tolerance = 1e-9;
-            double expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() +
-                                  0.03;
+            var t = vars.dayCount.yearFraction(vars.settlementDate, interpolationDate);
+            var interpolatedZeroRate = spreadedTermStructure.zeroRate(t, vars.compounding).value();
+            var tolerance = 1e-9;
+            var expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() +
+                               0.03;
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
                 QAssert.Fail(

@@ -34,7 +34,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Pathgenerator : IDisposable
+    [JetBrains.Annotations.PublicAPI] public class T_Pathgenerator : IDisposable
     {
         #region Initialize&Cleanup
         private SavedSettings backup;
@@ -57,7 +57,7 @@ namespace QLNet.Tests
         {
             ulong seed = 42;
             double length = 10;
-            int timeSteps = 12;
+            var timeSteps = 12;
 
             var rsg = (InverseCumulativeRsg<RandomSequenceGenerator<MersenneTwisterUniformRng>
                        , InverseCumulativeNormal>)
@@ -65,7 +65,7 @@ namespace QLNet.Tests
 
 
 
-            PathGenerator<IRNG> generator = new PathGenerator<IRNG>(process,
+            var generator = new PathGenerator<IRNG>(process,
                                                                     length,
                                                                     timeSteps,
                                                                     rsg,
@@ -74,12 +74,12 @@ namespace QLNet.Tests
             for (i = 0; i < 100; i++)
                 generator.next();
 
-            Sample<IPath> sample = generator.next();
-            Path value = sample.value as Path;
+            var sample = generator.next();
+            var value = sample.value as Path;
             Utils.QL_REQUIRE(value != null, () => "Invalid Path");
-            double calculated = value.back();
-            double error = System.Math.Abs(calculated - expected);
-            double tolerance = 2.0e-8;
+            var calculated = value.back();
+            var error = System.Math.Abs(calculated - expected);
+            var tolerance = 2.0e-8;
             if (error > tolerance)
             {
                 QAssert.Fail("using " + tag + " process "
@@ -121,30 +121,30 @@ namespace QLNet.Tests
 
             ulong seed = 42;
             double length = 10;
-            int timeSteps = 12;
-            int assets = process.size();
+            var timeSteps = 12;
+            var assets = process.size();
 
             var rsg = (InverseCumulativeRsg<RandomSequenceGenerator<MersenneTwisterUniformRng>
                        , InverseCumulativeNormal>)
                       new PseudoRandom().make_sequence_generator(timeSteps * assets, seed);
 
-            MultiPathGenerator<IRNG> generator = new MultiPathGenerator<IRNG>(process,
+            var generator = new MultiPathGenerator<IRNG>(process,
                                                                               new TimeGrid(length, timeSteps),
                                                                               rsg, false);
             int i;
             for (i = 0; i < 100; i++)
                 generator.next();
 
-            Sample<IPath> sample = generator.next();
-            MultiPath value = sample.value as MultiPath;
+            var sample = generator.next();
+            var value = sample.value as MultiPath;
             Utils.QL_REQUIRE(value != null, () => "Invalid Path");
-            Vector calculated = new Vector(assets);
+            var calculated = new Vector(assets);
             double error, tolerance = 2.0e-7;
 
-            for (int j = 0; j < assets; j++)
+            for (var j = 0; j < assets; j++)
                 calculated[j] = value[j].back();
 
-            for (int j = 0; j < assets; j++)
+            for (var j = 0; j < assets; j++)
             {
                 error = System.Math.Abs(calculated[j] - expected[j]);
                 if (error > tolerance)
@@ -162,9 +162,9 @@ namespace QLNet.Tests
             sample = generator.antithetic();
             value = sample.value as MultiPath;
             Utils.QL_REQUIRE(value != null, () => "Invalid Path");
-            for (int j = 0; j < assets; j++)
+            for (var j = 0; j < assets; j++)
                 calculated[j] = value[j].back();
-            for (int j = 0; j < assets; j++)
+            for (var j = 0; j < assets; j++)
             {
                 error = System.Math.Abs(calculated[j] - antithetic[j]);
                 if (error > tolerance)
@@ -187,10 +187,10 @@ namespace QLNet.Tests
             // Testing 1-D path generation against cached values
             Settings.setEvaluationDate(new Date(26, 4, 2005));
 
-            Handle<Quote> x0 = new Handle<Quote>(new SimpleQuote(100.0));
-            Handle<YieldTermStructure> r = new Handle<YieldTermStructure>(Utilities.flatRate(0.05, new Actual360()));
-            Handle<YieldTermStructure> q = new Handle<YieldTermStructure>(Utilities.flatRate(0.02, new Actual360()));
-            Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(Utilities.flatVol(0.20, new Actual360()));
+            var x0 = new Handle<Quote>(new SimpleQuote(100.0));
+            var r = new Handle<YieldTermStructure>(Utilities.flatRate(0.05, new Actual360()));
+            var q = new Handle<YieldTermStructure>(Utilities.flatRate(0.02, new Actual360()));
+            var sigma = new Handle<BlackVolTermStructure>(Utilities.flatVol(0.20, new Actual360()));
             // commented values must be used when Halley's correction is enabled
             testSingle(new BlackScholesMertonProcess(x0, q, r, sigma),
                        "Black-Scholes", false, 26.13784357783, 467.2928561411);
@@ -217,17 +217,17 @@ namespace QLNet.Tests
             // Testing n-D path generation against cached values
             Settings.setEvaluationDate(new Date(26, 4, 2005));
 
-            Handle<Quote> x0 = new Handle<Quote>(new SimpleQuote(100.0));
-            Handle<YieldTermStructure> r = new Handle<YieldTermStructure>(Utilities.flatRate(0.05, new Actual360()));
-            Handle<YieldTermStructure> q = new Handle<YieldTermStructure>(Utilities.flatRate(0.02, new Actual360()));
-            Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(Utilities.flatVol(0.20, new Actual360()));
+            var x0 = new Handle<Quote>(new SimpleQuote(100.0));
+            var r = new Handle<YieldTermStructure>(Utilities.flatRate(0.05, new Actual360()));
+            var q = new Handle<YieldTermStructure>(Utilities.flatRate(0.02, new Actual360()));
+            var sigma = new Handle<BlackVolTermStructure>(Utilities.flatVol(0.20, new Actual360()));
 
-            Matrix correlation = new Matrix(3, 3);
+            var correlation = new Matrix(3, 3);
             correlation[0, 0] = 1.0; correlation[0, 1] = 0.9; correlation[0, 2] = 0.7;
             correlation[1, 0] = 0.9; correlation[1, 1] = 1.0; correlation[1, 2] = 0.4;
             correlation[2, 0] = 0.7; correlation[2, 1] = 0.4; correlation[2, 2] = 1.0;
 
-            List<StochasticProcess1D> processes = new List<StochasticProcess1D>(3);
+            var processes = new List<StochasticProcess1D>(3);
             StochasticProcess process;
 
             processes.Add(new BlackScholesMertonProcess(x0, q, r, sigma));

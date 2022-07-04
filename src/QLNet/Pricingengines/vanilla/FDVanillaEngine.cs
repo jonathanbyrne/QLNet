@@ -33,7 +33,7 @@ namespace QLNet.Pricingengines.vanilla
 
         \ingroup vanillaengines
     */
-    public class FDVanillaEngine
+    [JetBrains.Annotations.PublicAPI] public class FDVanillaEngine
     {
         protected GeneralizedBlackScholesProcess process_;
         protected int timeSteps_, gridPoints_;
@@ -55,10 +55,8 @@ namespace QLNet.Pricingengines.vanilla
         // this should be defined as new in each deriving class which use template iheritance
         // in order to return a proper class to wrap
         public virtual FDVanillaEngine factory(GeneralizedBlackScholesProcess process,
-                                               int timeSteps, int gridPoints, bool timeDependent)
-        {
-            return new FDVanillaEngine(process, timeSteps, gridPoints, timeDependent);
-        }
+                                               int timeSteps, int gridPoints, bool timeDependent) =>
+            new FDVanillaEngine(process, timeSteps, gridPoints, timeDependent);
 
         public FDVanillaEngine(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
         {
@@ -70,7 +68,7 @@ namespace QLNet.Pricingengines.vanilla
             BCs_ = new InitializedList<BoundaryCondition<IOperator>>(2);
         }
 
-        public Vector grid() { return intrinsicValues_.grid(); }
+        public Vector grid() => intrinsicValues_.grid();
 
         protected virtual void setGridLimits()
         {
@@ -83,17 +81,17 @@ namespace QLNet.Pricingengines.vanilla
             Utils.QL_REQUIRE(center > 0.0, () => "negative or null underlying given");
             Utils.QL_REQUIRE(t > 0.0, () => "negative or zero residual time");
             center_ = center;
-            int newGridPoints = safeGridPoints(gridPoints_, t);
+            var newGridPoints = safeGridPoints(gridPoints_, t);
             if (newGridPoints > intrinsicValues_.size())
             {
                 intrinsicValues_ = new SampledCurve(newGridPoints);
             }
 
-            double volSqrtTime = System.Math.Sqrt(process_.blackVolatility().link.blackVariance(t, center_));
+            var volSqrtTime = System.Math.Sqrt(process_.blackVolatility().link.blackVariance(t, center_));
 
             // the prefactor fine tunes performance at small volatilities
-            double prefactor = 1.0 + 0.02 / volSqrtTime;
-            double minMaxFactor = System.Math.Exp(4.0 * prefactor * volSqrtTime);
+            var prefactor = 1.0 + 0.02 / volSqrtTime;
+            var minMaxFactor = System.Math.Exp(4.0 * prefactor * volSqrtTime);
             sMin_ = center_ / minMaxFactor; // underlying grid min value
             sMax_ = center_ * minMaxFactor; // underlying grid max value
         }
@@ -101,11 +99,11 @@ namespace QLNet.Pricingengines.vanilla
         public void ensureStrikeInGrid()
         {
             // ensure strike is included in the grid
-            StrikedTypePayoff striked_payoff = payoff_ as StrikedTypePayoff;
+            var striked_payoff = payoff_ as StrikedTypePayoff;
             if (striked_payoff == null)
                 return;
 
-            double requiredGridValue = striked_payoff.strike();
+            var requiredGridValue = striked_payoff.strike();
 
             if (sMin_ > requiredGridValue / safetyZoneFactor_)
             {
@@ -141,10 +139,7 @@ namespace QLNet.Pricingengines.vanilla
                                     NeumannBC.Side.Upper);
         }
 
-        public double getResidualTime()
-        {
-            return process_.time(exerciseDate_);
-        }
+        public double getResidualTime() => process_.time(exerciseDate_);
 
         // safety check to be sure we have enough grid points.
         private int safeGridPoints(int gridPoints, double residualTime)
@@ -159,8 +154,8 @@ namespace QLNet.Pricingengines.vanilla
 
         public virtual void setupArguments(IPricingEngineArguments a)
         {
-            QLNet.Option.Arguments args = a as QLNet.Option.Arguments;
-            Utils.QL_REQUIRE(args != null, () => "incorrect argument type");
+            var args = a as QLNet.Option.Arguments;
+            Utils.QL_REQUIRE(args != null, () => "incorrect argument ExerciseType");
 
             exerciseDate_ = args.exercise.lastDate();
             payoff_ = args.payoff;
@@ -171,12 +166,12 @@ namespace QLNet.Pricingengines.vanilla
 
     // this is the interface to allow generic use of FDAmericanEngine and FDShoutEngine
     // those engines are shortcuts to FDEngineAdapter
-    public interface IFDEngine : IPricingEngine
+    [JetBrains.Annotations.PublicAPI] public interface IFDEngine : IPricingEngine
     {
         IFDEngine factory(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100);
     }
 
-    public class FDEngineAdapter<Base, Engine> : FDVanillaEngine, IGenericEngine
+    [JetBrains.Annotations.PublicAPI] public class FDEngineAdapter<Base, Engine> : FDVanillaEngine, IGenericEngine
        where Base : FDConditionEngineTemplate, new()
        where Engine : IGenericEngine, new()
     {
@@ -205,8 +200,10 @@ namespace QLNet.Pricingengines.vanilla
         // we do not need to register with the wrapped engine because all we need is containers for parameters and results
         protected IGenericEngine engine_ = FastActivator<Engine>.Create();
 
-        public IPricingEngineArguments getArguments() { return engine_.getArguments(); }
-        public IPricingEngineResults getResults() { return engine_.getResults(); }
+        public IPricingEngineArguments getArguments() => engine_.getArguments();
+
+        public IPricingEngineResults getResults() => engine_.getResults();
+
         public void reset() { engine_.reset(); }
         #endregion
 
@@ -215,14 +212,8 @@ namespace QLNet.Pricingengines.vanilla
         private readonly WeakEventSource eventSource = new WeakEventSource();
         public event Callback notifyObserversEvent
         {
-            add
-            {
-                eventSource.Subscribe(value);
-            }
-            remove
-            {
-                eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
         }
 
         public void registerWith(Callback handler) { notifyObserversEvent += handler; }

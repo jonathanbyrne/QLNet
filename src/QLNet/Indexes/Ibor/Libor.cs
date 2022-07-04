@@ -30,7 +30,7 @@ namespace QLNet
 
         See <https://www.theice.com/marketdata/reports/170>.
     */
-    public class Libor : IborIndex
+    [JetBrains.Annotations.PublicAPI] public class Libor : IborIndex
    {
       private Calendar financialCenterCalendar_;
       private Calendar jointCalendar_;
@@ -71,29 +71,25 @@ namespace QLNet
          // business day and a business day in the principal financial centre
          // of the currency concerned, the next following day which is a
          // business day in both centres shall be the Value Date.
-         Date d = fixingCalendar().advance(fixingDate, fixingDays_, TimeUnit.Days);
+         var d = fixingCalendar().advance(fixingDate, fixingDays_, TimeUnit.Days);
          return jointCalendar_.adjust(d);
       }
 
-      public override Date maturityDate(Date valueDate)
-      {
-         // Where a deposit is made on the final business day of a
-         // particular calendar month, the maturity of the deposit shall
-         // be on the final business day of the month in which it matures
-         // (not the corresponding date in the month of maturity). Or in
-         // other words, in line with market convention, BBA LIBOR rates
-         // are dealt on an end-end basis. For instance a one month
-         // deposit for value 28th February would mature on 31st March,
-         // not the 28th of March.
-         return jointCalendar_.advance(valueDate, tenor_, convention_, endOfMonth());
-      }
+      public override Date maturityDate(Date valueDate) =>
+          // Where a deposit is made on the final business day of a
+          // particular calendar month, the maturity of the deposit shall
+          // be on the final business day of the month in which it matures
+          // (not the corresponding date in the month of maturity). Or in
+          // other words, in line with market convention, BBA LIBOR rates
+          // are dealt on an end-end basis. For instance a one month
+          // deposit for value 28th February would mature on 31st March,
+          // not the 28th of March.
+          jointCalendar_.advance(valueDate, tenor_, convention_, endOfMonth());
 
       // Other methods
-      public override IborIndex clone(Handle<YieldTermStructure> h)
-      {
-         return new Libor(familyName(), tenor(), fixingDays(), currency(), financialCenterCalendar_,
-                          dayCounter(), h);
-      }
+      public override IborIndex clone(Handle<YieldTermStructure> h) =>
+          new Libor(familyName(), tenor(), fixingDays(), currency(), financialCenterCalendar_,
+              dayCounter(), h);
    }
 
    //! base class for all O/N-S/N BBA LIBOR indexes but the EUR ones
@@ -101,7 +97,7 @@ namespace QLNet
 
        See <https://www.theice.com/marketdata/reports/170>.
    */
-   public class DailyTenorLibor : IborIndex
+   [JetBrains.Annotations.PublicAPI] public class DailyTenorLibor : IborIndex
    {
       // http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1412 :
       // no o/n or s/n fixings (as the case may be) will take place

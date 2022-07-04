@@ -24,10 +24,10 @@ using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences
 {
-    public class FiniteDifferenceModel<Evolver> where Evolver : IMixedScheme, ISchemeFactory, new()
+    [JetBrains.Annotations.PublicAPI] public class FiniteDifferenceModel<Evolver> where Evolver : IMixedScheme, ISchemeFactory, new()
     {
         private Evolver evolver_;
-        public Evolver evolver() { return evolver_; }
+        public Evolver evolver() => evolver_;
 
         private List<double> stoppingTimes_;
 
@@ -73,13 +73,13 @@ namespace QLNet.Methods.Finitedifferences
                 if (condition != null)
                     condition.applyTo(o, from);
             }
-            for (int i = 0; i < steps; ++i, t -= dt)
+            for (var i = 0; i < steps; ++i, t -= dt)
             {
                 double now = t, next = t - dt;
                 if (System.Math.Abs(to - next) < System.Math.Sqrt(Const.QL_EPSILON))
                     next = to;
-                bool hit = false;
-                for (int j = stoppingTimes_.Count - 1; j >= 0; --j)
+                var hit = false;
+                for (var j = stoppingTimes_.Count - 1; j >= 0; --j)
                 {
                     if (next <= stoppingTimes_[j] && stoppingTimes_[j] < now)
                     {

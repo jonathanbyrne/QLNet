@@ -22,10 +22,10 @@ using System.Collections.Generic;
 namespace QLNet.Instruments
 {
     //! %instrument callability
-    public class Callability : Event
+    [JetBrains.Annotations.PublicAPI] public class Callability : Event
     {
         //! amount to be paid upon callability
-        public class Price
+        [JetBrains.Annotations.PublicAPI] public class Price
         {
             public enum Type { Dirty, Clean }
 
@@ -46,13 +46,13 @@ namespace QLNet.Instruments
                 return amount_.Value;
             }
 
-            public Type type() { return type_; }
+            public Type type() => type_;
 
             private double? amount_;
             private Type type_;
         }
 
-        //! type of the callability
+        //! ExerciseType of the callability
         public enum Type { Call, Put }
 
         public Callability(Price price, Type type, Date date)
@@ -66,9 +66,10 @@ namespace QLNet.Instruments
             Utils.QL_REQUIRE(price_ != null, () => "no price given");
             return price_;
         }
-        public Type type() { return type_; }
+        public Type type() => type_;
+
         // Event interface
-        public override Date date() { return date_; }
+        public override Date date() => date_;
 
         private Price price_;
         private Type type_;
@@ -76,7 +77,7 @@ namespace QLNet.Instruments
 
     }
 
-    public class CallabilitySchedule : List<Callability> { }
+    [JetBrains.Annotations.PublicAPI] public class CallabilitySchedule : List<Callability> { }
 
 
 }

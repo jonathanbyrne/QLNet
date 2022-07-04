@@ -77,10 +77,10 @@ namespace QLNet.Termstructures.Yield
             if (t.IsEqual(0.0))
                 return forwardImpl(0.0);
             // implement smarter integration if plan to use the following code
-            double sum = 0.5 * forwardImpl(0.0);
-            int N = 1000;
-            double dt = t / N;
-            for (double i = dt; i < t; i += dt)
+            var sum = 0.5 * forwardImpl(0.0);
+            var N = 1000;
+            var dt = t / N;
+            for (var i = dt; i < t; i += dt)
                 sum += forwardImpl(i);
             sum += 0.5 * forwardImpl(t);
             return sum * dt / t;
@@ -97,7 +97,7 @@ namespace QLNet.Termstructures.Yield
             if (t.IsEqual(0.0))     // this acts as a safe guard in cases where
                 return 1.0;   // zeroYieldImpl(0.0) would throw.
 
-            double r = zeroYieldImpl(t);
+            var r = zeroYieldImpl(t);
             return System.Math.Exp(-r * t);
         }
 

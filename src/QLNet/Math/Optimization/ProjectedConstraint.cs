@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Math.Optimization
 {
-    public class ProjectedConstraint : Constraint
+    [JetBrains.Annotations.PublicAPI] public class ProjectedConstraint : Constraint
     {
         private class Impl : IConstraint
         {
@@ -37,20 +37,11 @@ namespace QLNet.Math.Optimization
                 projection_ = projection;
             }
 
-            public bool test(Vector parameters)
-            {
-                return constraint_.test(projection_.include(parameters));
-            }
+            public bool test(Vector parameters) => constraint_.test(projection_.include(parameters));
 
-            public Vector upperBound(Vector parameters)
-            {
-                return projection_.project(constraint_.upperBound(projection_.include(parameters)));
-            }
+            public Vector upperBound(Vector parameters) => projection_.project(constraint_.upperBound(projection_.include(parameters)));
 
-            public Vector lowerBound(Vector parameters)
-            {
-                return projection_.project(constraint_.lowerBound(projection_.include(parameters)));
-            }
+            public Vector lowerBound(Vector parameters) => projection_.project(constraint_.lowerBound(projection_.include(parameters)));
 
             private Constraint constraint_;
             private Projection projection_;

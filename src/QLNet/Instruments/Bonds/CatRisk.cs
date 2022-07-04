@@ -38,7 +38,7 @@ namespace QLNet.Instruments.Bonds
         public abstract CatSimulation newSimulation(Date start, Date end);
     }
 
-    public class EventSetSimulation : CatSimulation
+    [JetBrains.Annotations.PublicAPI] public class EventSetSimulation : CatSimulation
     {
         public EventSetSimulation(List<KeyValuePair<Date, double>> events, Date eventsStart, Date eventsEnd, Date start, Date end)
            : base(start, end)
@@ -76,7 +76,7 @@ namespace QLNet.Instruments.Bonds
             }
             while (i_ < events_.Count && events_[i_].Key <= periodEnd_)
             {
-                KeyValuePair<Date, double> e = new KeyValuePair<Date, double>
+                var e = new KeyValuePair<Date, double>
                 (events_[i_].Key + new Period(start_.year() - periodStart_.year(), TimeUnit.Years), events_[i_].Value);
                 path.Add(e);
                 ++i_; //i points to the first element after the start of the relevant period.
@@ -104,7 +104,7 @@ namespace QLNet.Instruments.Bonds
         private int i_;
     }
 
-    public class EventSet : CatRisk
+    [JetBrains.Annotations.PublicAPI] public class EventSet : CatRisk
     {
         public EventSet(List<KeyValuePair<Date, double>> events, Date eventsStart, Date eventsEnd)
         {
@@ -113,10 +113,7 @@ namespace QLNet.Instruments.Bonds
             eventsEnd_ = eventsEnd;
         }
 
-        public override CatSimulation newSimulation(Date start, Date end)
-        {
-            return new EventSetSimulation(events_, eventsStart_, eventsEnd_, start, end);
-        }
+        public override CatSimulation newSimulation(Date start, Date end) => new EventSetSimulation(events_, eventsStart_, eventsEnd_, start, end);
 
         private List<KeyValuePair<Date, double>> events_;
         private Date eventsStart_;

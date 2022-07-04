@@ -27,7 +27,7 @@ namespace QLNet.Indexes.Ibor
 
         See <http://www.nzfma.org/Site/data/default.aspx>.
     */
-    public class Bkbm : IborIndex
+    [JetBrains.Annotations.PublicAPI] public class Bkbm : IborIndex
     {
         public Bkbm(Period tenor, Handle<YieldTermStructure> h = null)
            : base("Bkbm", tenor,
@@ -42,7 +42,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! 1-month %Bkbm index
-    public class Bkbm1M : Bkbm
+    [JetBrains.Annotations.PublicAPI] public class Bkbm1M : Bkbm
     {
         public Bkbm1M(Handle<YieldTermStructure> h = null)
            : base(new Period(1, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
@@ -50,7 +50,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! 2-month %Bkbm index
-    public class Bkbm2M : Bkbm
+    [JetBrains.Annotations.PublicAPI] public class Bkbm2M : Bkbm
     {
         public Bkbm2M(Handle<YieldTermStructure> h = null)
            : base(new Period(2, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
@@ -58,7 +58,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! 3-month %Bkbm index
-    public class Bkbm3M : Bkbm
+    [JetBrains.Annotations.PublicAPI] public class Bkbm3M : Bkbm
     {
         public Bkbm3M(Handle<YieldTermStructure> h = null)
            : base(new Period(3, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
@@ -66,7 +66,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! 4-month %Bkbm index
-    public class Bkbm4M : Bkbm
+    [JetBrains.Annotations.PublicAPI] public class Bkbm4M : Bkbm
     {
         public Bkbm4M(Handle<YieldTermStructure> h = null)
            : base(new Period(4, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
@@ -74,7 +74,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! 5-month %Bkbm index
-    public class Bkbm5M : Bkbm
+    [JetBrains.Annotations.PublicAPI] public class Bkbm5M : Bkbm
     {
         public Bkbm5M(Handle<YieldTermStructure> h = null)
            : base(new Period(5, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
@@ -82,7 +82,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! 6-month %Bkbm index
-    public class Bkbm6M : Bkbm
+    [JetBrains.Annotations.PublicAPI] public class Bkbm6M : Bkbm
     {
         public Bkbm6M(Handle<YieldTermStructure> h = null)
            : base(new Period(6, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())

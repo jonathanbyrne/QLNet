@@ -34,7 +34,7 @@ namespace QLNet.Pricingengines.inflation
         \ingroup inflationcapfloorengines
     */
 
-    public class YoYInflationCapFloorEngine : YoYInflationCapFloor.Engine
+    [JetBrains.Annotations.PublicAPI] public class YoYInflationCapFloorEngine : YoYInflationCapFloor.Engine
     {
         public YoYInflationCapFloorEngine(YoYInflationIndex index, Handle<YoYOptionletVolatilitySurface> vol)
         {
@@ -45,8 +45,9 @@ namespace QLNet.Pricingengines.inflation
             volatility_.registerWith(update);
         }
 
-        public YoYInflationIndex index() { return index_; }
-        public Handle<YoYOptionletVolatilitySurface> volatility() { return volatility_; }
+        public YoYInflationIndex index() => index_;
+
+        public Handle<YoYOptionletVolatilitySurface> volatility() => volatility_;
 
         public void setVolatility(Handle<YoYOptionletVolatilitySurface> vol)
         {
@@ -61,30 +62,30 @@ namespace QLNet.Pricingengines.inflation
         {
             // copy black version then adapt to others
 
-            double value = 0.0;
-            int optionlets = arguments_.startDates.Count;
+            var value = 0.0;
+            var optionlets = arguments_.startDates.Count;
             List<double> values = new InitializedList<double>(optionlets, 0.0);
             List<double> stdDevs = new InitializedList<double>(optionlets, 0.0);
             List<double> forwards = new InitializedList<double>(optionlets, 0.0);
-            CapFloorType type = arguments_.type;
+            var type = arguments_.type;
 
-            Handle<YoYInflationTermStructure> yoyTS
+            var yoyTS
                = index().yoyInflationTermStructure();
-            Handle<YieldTermStructure> nominalTS
+            var nominalTS
                = yoyTS.link.nominalTermStructure();
-            Date settlement = nominalTS.link.referenceDate();
+            var settlement = nominalTS.link.referenceDate();
 
 
-            for (int i = 0; i < optionlets; ++i)
+            for (var i = 0; i < optionlets; ++i)
             {
-                Date paymentDate = arguments_.payDates[i];
+                var paymentDate = arguments_.payDates[i];
                 if (paymentDate > settlement)
                 {
                     // discard expired caplets
-                    double d = arguments_.nominals[i] *
-                               arguments_.gearings[i] *
-                               nominalTS.link.discount(paymentDate) *
-                               arguments_.accrualTimes[i];
+                    var d = arguments_.nominals[i] *
+                            arguments_.gearings[i] *
+                            nominalTS.link.discount(paymentDate) *
+                            arguments_.accrualTimes[i];
 
                     // We explicitly have the index and assume that
                     // the fixing is natural, i.e. no convexity adjustment.
@@ -94,10 +95,10 @@ namespace QLNet.Pricingengines.inflation
                     // a pricing engine to return the swaplet rate and then
                     // the adjusted fixing in the instrument.
                     forwards[i] = yoyTS.link.yoyRate(arguments_.fixingDates[i], new Period(0, TimeUnit.Days));
-                    double forward = forwards[i];
+                    var forward = forwards[i];
 
-                    Date fixingDate = arguments_.fixingDates[i];
-                    double sqrtTime = 0.0;
+                    var fixingDate = arguments_.fixingDates[i];
+                    var sqrtTime = 0.0;
                     if (fixingDate > volatility_.link.baseDate())
                     {
                         sqrtTime = System.Math.Sqrt(volatility_.link.timeFromBase(fixingDate));
@@ -105,7 +106,7 @@ namespace QLNet.Pricingengines.inflation
 
                     if (type == CapFloorType.Cap || type == CapFloorType.Collar)
                     {
-                        double strike = arguments_.capRates[i].Value;
+                        var strike = arguments_.capRates[i].Value;
                         if (sqrtTime > 0.0)
                         {
                             stdDevs[i] = System.Math.Sqrt(volatility_.link.totalVariance(fixingDate, strike, new Period(0, TimeUnit.Days)));
@@ -117,12 +118,12 @@ namespace QLNet.Pricingengines.inflation
                     }
                     if (type == CapFloorType.Floor || type == CapFloorType.Collar)
                     {
-                        double strike = arguments_.floorRates[i].Value;
+                        var strike = arguments_.floorRates[i].Value;
                         if (sqrtTime > 0.0)
                         {
                             stdDevs[i] = System.Math.Sqrt(volatility_.link.totalVariance(fixingDate, strike, new Period(0, TimeUnit.Days)));
                         }
-                        double floorlet = optionletImpl(QLNet.Option.Type.Put, strike, forward, stdDevs[i], d);
+                        var floorlet = optionletImpl(QLNet.Option.Type.Put, strike, forward, stdDevs[i], d);
                         if (type == CapFloorType.Floor)
                         {
                             values[i] = floorlet;
@@ -149,30 +150,27 @@ namespace QLNet.Pricingengines.inflation
 
         //! descendents only need to implement this
         protected virtual double optionletImpl(QLNet.Option.Type type, double strike, double forward, double stdDev,
-                                               double d)
-        { throw new NotImplementedException("not implemented"); }
+                                               double d) =>
+            throw new NotImplementedException("not implemented");
 
         protected YoYInflationIndex index_;
         protected Handle<YoYOptionletVolatilitySurface> volatility_;
     }
 
     //! Black-formula inflation cap/floor engine (standalone, i.e. no coupon pricer)
-    public class YoYInflationBlackCapFloorEngine : YoYInflationCapFloorEngine
+    [JetBrains.Annotations.PublicAPI] public class YoYInflationBlackCapFloorEngine : YoYInflationCapFloorEngine
     {
         public YoYInflationBlackCapFloorEngine(YoYInflationIndex index, Handle<YoYOptionletVolatilitySurface> volatility)
            : base(index, volatility)
         { }
 
         protected override double optionletImpl(QLNet.Option.Type type, double strike, double forward, double stdDev,
-                                                double d)
-        {
-            return Utils.blackFormula(type, strike, forward, stdDev, d);
-        }
-
+                                                double d) =>
+            Utils.blackFormula(type, strike, forward, stdDev, d);
     }
 
     //! Unit Displaced Black-formula inflation cap/floor engine (standalone, i.e. no coupon pricer)
-    public class YoYInflationUnitDisplacedBlackCapFloorEngine : YoYInflationCapFloorEngine
+    [JetBrains.Annotations.PublicAPI] public class YoYInflationUnitDisplacedBlackCapFloorEngine : YoYInflationCapFloorEngine
     {
         public YoYInflationUnitDisplacedBlackCapFloorEngine(YoYInflationIndex index, Handle<YoYOptionletVolatilitySurface> vol)
            : base(index, vol)
@@ -180,16 +178,13 @@ namespace QLNet.Pricingengines.inflation
 
         protected override double optionletImpl(QLNet.Option.Type type, double strike,
                                                 double forward, double stdDev,
-                                                double d)
-        {
+                                                double d) =>
             // could use displacement parameter in blackFormula but this is clearer
-            return Utils.blackFormula(type, strike + 1.0, forward + 1.0, stdDev, d);
-        }
-
+            Utils.blackFormula(type, strike + 1.0, forward + 1.0, stdDev, d);
     }
 
     //! Unit Displaced Black-formula inflation cap/floor engine (standalone, i.e. no coupon pricer)
-    public class YoYInflationBachelierCapFloorEngine : YoYInflationCapFloorEngine
+    [JetBrains.Annotations.PublicAPI] public class YoYInflationBachelierCapFloorEngine : YoYInflationCapFloorEngine
     {
         public YoYInflationBachelierCapFloorEngine(YoYInflationIndex index, Handle<YoYOptionletVolatilitySurface> vol)
            : base(index, vol)
@@ -197,11 +192,7 @@ namespace QLNet.Pricingengines.inflation
 
         protected override double optionletImpl(QLNet.Option.Type type, double strike,
                                                 double forward, double stdDev,
-                                                double d)
-        {
-            return Utils.bachelierBlackFormula(type, strike, forward, stdDev, d);
-        }
-
-
+                                                double d) =>
+            Utils.bachelierBlackFormula(type, strike, forward, stdDev, d);
     }
 }

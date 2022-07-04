@@ -22,7 +22,7 @@ namespace QLNet.Time.DayCounters
 {
     //! Actual/360 day count convention
     /*! Actual/360 day count convention, also known as "Act/360", or "A/360". */
-    public class Actual360 : DayCounter
+    [JetBrains.Annotations.PublicAPI] public class Actual360 : DayCounter
     {
         public enum Actual360Convention { excludeLastDay, includeLastDay }
 
@@ -41,13 +41,11 @@ namespace QLNet.Time.DayCounters
             public static readonly Impl Singleton = new Impl();
             private Impl() { }
 
-            public override string name() { return "Actual/360"; }
-            public override int dayCount(Date d1, Date d2) { return d2 - d1; }
-            public override double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd)
-            {
-                return Date.daysBetween(d1, d2) / 360.0;
-            }
+            public override string name() => "Actual/360";
 
+            public override int dayCount(Date d1, Date d2) => d2 - d1;
+
+            public override double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd) => Date.daysBetween(d1, d2) / 360.0;
         }
 
         class IncludedImpl : DayCounter
@@ -55,13 +53,11 @@ namespace QLNet.Time.DayCounters
             public static readonly IncludedImpl Singleton = new IncludedImpl();
             private IncludedImpl() { }
 
-            public override string name() { return "Actual/360 (inc)"; }
-            public override int dayCount(Date d1, Date d2) { return d2 - d1 + 1; }
-            public override double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd)
-            {
-                return (Date.daysBetween(d1, d2) + 1) / 360.0;
-            }
+            public override string name() => "Actual/360 (inc)";
 
+            public override int dayCount(Date d1, Date d2) => d2 - d1 + 1;
+
+            public override double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd) => (Date.daysBetween(d1, d2) + 1) / 360.0;
         }
     }
 }

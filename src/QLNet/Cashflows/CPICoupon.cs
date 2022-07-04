@@ -51,7 +51,7 @@ namespace QLNet.Cashflows
        to the natural ZCIIS lag that was used to create the
        forward inflation curve.
     */
-    public class CPICoupon : InflationCoupon
+    [JetBrains.Annotations.PublicAPI] public class CPICoupon : InflationCoupon
     {
         protected double baseCPI_;
         protected double fixedRate_;
@@ -60,7 +60,7 @@ namespace QLNet.Cashflows
 
         protected override bool checkPricerImpl(InflationCouponPricer pricer)
         {
-            CPICouponPricer p = pricer as CPICouponPricer;
+            var p = pricer as CPICouponPricer;
             return p != null;
         }
 
@@ -80,11 +80,11 @@ namespace QLNet.Cashflows
             else
             {
                 // work out what it should be
-                KeyValuePair<Date, Date> dd = Utils.inflationPeriod(d, cpiIndex().frequency());
-                double indexStart = cpiIndex().fixing(dd.Key);
+                var dd = Utils.inflationPeriod(d, cpiIndex().frequency());
+                var indexStart = cpiIndex().fixing(dd.Key);
                 if (observationInterpolation() == InterpolationType.Linear)
                 {
-                    double indexEnd = cpiIndex().fixing(dd.Value + new Period(1, TimeUnit.Days));
+                    var indexEnd = cpiIndex().fixing(dd.Value + new Period(1, TimeUnit.Days));
                     // linear interpolation
                     I1 = indexStart + (indexEnd - indexStart) * (d - dd.Key)
                          / (dd.Value + new Period(1, TimeUnit.Days) - dd.Key); // can't get to next period's value within current period
@@ -127,31 +127,37 @@ namespace QLNet.Cashflows
 
         // Inspectors
         // fixed rate that will be inflated by the index ratio
-        public double fixedRate() { return fixedRate_; }
+        public double fixedRate() => fixedRate_;
+
         //! spread paid over the fixing of the underlying index
-        public double spread() { return spread_; }
+        public double spread() => spread_;
 
         //! adjusted fixing (already divided by the base fixing)
-        public double adjustedFixing() { return (rate() - spread()) / fixedRate(); }
+        public double adjustedFixing() => (rate() - spread()) / fixedRate();
+
         //! allows for a different interpolation from the index
-        public override double indexFixing() { return indexFixing(fixingDate()); }
+        public override double indexFixing() => indexFixing(fixingDate());
+
         //! base value for the CPI index
         /*! \warning make sure that the interpolation used to create
                     this is what you are using for the fixing,
                     i.e. the observationInterpolation.
         */
-        public double baseCPI() { return baseCPI_; }
+        public double baseCPI() => baseCPI_;
+
         //! how do you observe the index?  as-is, flat, linear?
-        public InterpolationType observationInterpolation() { return observationInterpolation_; }
+        public InterpolationType observationInterpolation() => observationInterpolation_;
+
         //! utility method, calls indexFixing
-        public double indexObservation(Date onDate) { return indexFixing(onDate); }
+        public double indexObservation(Date onDate) => indexFixing(onDate);
+
         //! index used
-        public ZeroInflationIndex cpiIndex() { return index() as ZeroInflationIndex; }
+        public ZeroInflationIndex cpiIndex() => index() as ZeroInflationIndex;
     }
 
     //! Cash flow paying the performance of a CPI (zero inflation) index
     /*! It is NOT a coupon, i.e. no accruals. */
-    public class CPICashFlow : IndexedCashFlow
+    [JetBrains.Annotations.PublicAPI] public class CPICashFlow : IndexedCashFlow
     {
         public CPICashFlow(double notional,
                            ZeroInflationIndex index,
@@ -178,7 +184,7 @@ namespace QLNet.Cashflows
 
         //! value used on base date
         /*! This does not have to agree with index on that date. */
-        public virtual double baseFixing() { return baseFixing_; }
+        public virtual double baseFixing() => baseFixing_;
 
         //! you may not have a valid date
         public override Date baseDate()
@@ -188,14 +194,14 @@ namespace QLNet.Cashflows
         }
 
         //! do you want linear/constant/as-index interpolation of future data?
-        public virtual InterpolationType interpolation() { return interpolation_; }
+        public virtual InterpolationType interpolation() => interpolation_;
 
-        public virtual Frequency frequency() { return frequency_; }
+        public virtual Frequency frequency() => frequency_;
 
         //! redefined to use baseFixing() and interpolation
         public override double amount()
         {
-            double I0 = baseFixing();
+            var I0 = baseFixing();
             double I1;
 
             // what interpolation do we use? Index / flat / linear
@@ -206,11 +212,11 @@ namespace QLNet.Cashflows
             else
             {
                 // work out what it should be
-                KeyValuePair<Date, Date> dd = Utils.inflationPeriod(fixingDate(), frequency());
-                double indexStart = index().fixing(dd.Key);
+                var dd = Utils.inflationPeriod(fixingDate(), frequency());
+                var indexStart = index().fixing(dd.Key);
                 if (interpolation() == InterpolationType.Linear)
                 {
-                    double indexEnd = index().fixing(dd.Value + new Period(1, TimeUnit.Days));
+                    var indexEnd = index().fixing(dd.Value + new Period(1, TimeUnit.Days));
                     // linear interpolation
                     I1 = indexStart + (indexEnd - indexStart) * (fixingDate() - dd.Key)
                          / (dd.Value + new Period(1, TimeUnit.Days) - dd.Key); // can't get to next period's value within current period
@@ -242,7 +248,7 @@ namespace QLNet.Cashflows
 
         payoff is: spread + fixedRate x index
     */
-    public class CPILeg : CPILegBase
+    [JetBrains.Annotations.PublicAPI] public class CPILeg : CPILegBase
     {
         public CPILeg(Schedule schedule,
                       ZeroInflationIndex index,
@@ -266,8 +272,8 @@ namespace QLNet.Cashflows
         {
             Utils.QL_REQUIRE(!notionals_.empty(), () => "no notional given");
 
-            int n = schedule_.Count - 1;
-            List<CashFlow> leg = new List<CashFlow>(n + 1);
+            var n = schedule_.Count - 1;
+            var leg = new List<CashFlow>(n + 1);
 
             if (n > 0)
             {
@@ -275,11 +281,11 @@ namespace QLNet.Cashflows
 
                 Date refStart, start, refEnd, end;
 
-                for (int i = 0; i < n; ++i)
+                for (var i = 0; i < n; ++i)
                 {
                     refStart = start = schedule_.date(i);
                     refEnd = end = schedule_.date(i + 1);
-                    Date paymentDate = paymentCalendar_.adjust(end, paymentAdjustment_);
+                    var paymentDate = paymentCalendar_.adjust(end, paymentAdjustment_);
 
                     Date exCouponDate = null;
                     if (exCouponPeriod_ != null)
@@ -292,12 +298,12 @@ namespace QLNet.Cashflows
 
                     if (i == 0 && !schedule_.isRegular(i + 1))
                     {
-                        BusinessDayConvention bdc = schedule_.businessDayConvention();
+                        var bdc = schedule_.businessDayConvention();
                         refStart = schedule_.calendar().adjust(end - schedule_.tenor(), bdc);
                     }
                     if (i == n - 1 && !schedule_.isRegular(i + 1))
                     {
-                        BusinessDayConvention bdc = schedule_.businessDayConvention();
+                        var bdc = schedule_.businessDayConvention();
                         refEnd = schedule_.calendar().adjust(start + schedule_.tenor(), bdc);
                     }
                     if (fixedRates_.Get(i, 1.0).IsEqual(0.0))
@@ -329,7 +335,7 @@ namespace QLNet.Cashflows
 
                             // in this case you can set a pricer
                             // straight away because it only provides computation - not data
-                            CPICouponPricer pricer = new CPICouponPricer();
+                            var pricer = new CPICouponPricer();
                             coup.setPricer(pricer);
                             leg.Add(coup);
 
@@ -344,8 +350,8 @@ namespace QLNet.Cashflows
             }
 
             // in CPI legs you always have a notional flow of some sort
-            Date pDate = paymentCalendar_.adjust(schedule_.date(n), paymentAdjustment_);
-            Date fixingDate = pDate - observationLag_;
+            var pDate = paymentCalendar_.adjust(schedule_.date(n), paymentAdjustment_);
+            var fixingDate = pDate - observationLag_;
             CashFlow xnl = new CPICashFlow
             (notionals_.Get(n, 0.0), index_,
              new Date(), // is fake, i.e. you do not have one

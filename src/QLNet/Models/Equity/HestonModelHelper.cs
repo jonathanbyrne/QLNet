@@ -24,7 +24,7 @@ using System.Collections.Generic;
 namespace QLNet.Models.Equity
 {
     //! calibration helper for Heston model
-    public class HestonModelHelper : CalibrationHelper
+    [JetBrains.Annotations.PublicAPI] public class HestonModelHelper : CalibrationHelper
     {
         public HestonModelHelper(Period maturity,
                                  Calendar calendar,
@@ -91,14 +91,14 @@ namespace QLNet.Models.Equity
         public override double blackPrice(double volatility)
         {
             calculate();
-            double stdDev = volatility * System.Math.Sqrt(maturity());
+            var stdDev = volatility * System.Math.Sqrt(maturity());
             return Utils.blackFormula(type_, strikePrice_ * termStructure_.link.discount(tau_),
                                       s0_.link.value() * dividendYield_.link.discount(tau_), stdDev);
         }
 
         public double maturity() { calculate(); return tau_; }
         public QLNet.Option.Type optionType() { calculate(); return type_; }
-        public double strike() { return strikePrice_; }
+        public double strike() => strikePrice_;
 
         private Period maturity_;
         private Calendar calendar_;

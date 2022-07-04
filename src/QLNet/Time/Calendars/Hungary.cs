@@ -43,7 +43,7 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    public class Hungary : Calendar
+    [JetBrains.Annotations.PublicAPI] public class Hungary : Calendar
     {
         public Hungary() : base(Impl.Singleton) { }
 
@@ -52,14 +52,15 @@ namespace QLNet.Time.Calendars
             public static readonly Impl Singleton = new Impl();
             private Impl() { }
 
-            public override string name() { return "Hungary"; }
+            public override string name() => "Hungary";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
                 if (isWeekend(w)
                     // Good Friday (since 2017)
                     || dd == em - 3 && y >= 2017

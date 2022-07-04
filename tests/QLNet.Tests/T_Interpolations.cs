@@ -31,7 +31,7 @@ namespace QLNet.Tests
 {
 
     [Collection("QLNet CI Tests")]
-    public class T_Interpolations
+    [JetBrains.Annotations.PublicAPI] public class T_Interpolations
     {
 
         /* See J. M. Hyman, "Accurate monotonicity preserving cubic interpolation"
@@ -56,25 +56,25 @@ namespace QLNet.Tests
             double[] tabulatedMCErrors = { 1.7e-2, 2.0e-3, 4.0e-5, 1.8e-6 };
             double[] toleranceOnTabMCErr = { 0.1e-2, 0.1e-3, 0.1e-5, 0.1e-6 };
 
-            SimpsonIntegral integral = new SimpsonIntegral(1e-12, 10000);
+            var integral = new SimpsonIntegral(1e-12, 10000);
 
             // still unexplained scale factor needed to obtain the numerical
             // results from the paper
-            double scaleFactor = 1.9;
+            var scaleFactor = 1.9;
 
-            for (int i = 0; i < points.Length; i++)
+            for (var i = 0; i < points.Length; i++)
             {
-                int n = points[i];
-                List<double> x = xRange(-1.7, 1.9, n);
-                List<double> y = gaussian(x);
+                var n = points[i];
+                var x = xRange(-1.7, 1.9, n);
+                var y = gaussian(x);
 
                 // Not-a-knot
-                CubicInterpolation f = new CubicInterpolation(x, x.Count, y,
+                var f = new CubicInterpolation(x, x.Count, y,
                                                               CubicInterpolation.DerivativeApprox.Spline, false,
                                                               CubicInterpolation.BoundaryCondition.NotAKnot, 0,
                                                               CubicInterpolation.BoundaryCondition.NotAKnot, 0);
                 f.update();
-                double result = System.Math.Sqrt(integral.value(make_error_function(f).value, -1.7, 1.9));
+                var result = System.Math.Sqrt(integral.value(make_error_function(f).value, -1.7, 1.9));
                 result /= scaleFactor;
                 if (System.Math.Abs(result - tabulatedErrors[i]) > toleranceOnTabErr[i])
                     QAssert.Fail("Not-a-knot spline interpolation "
@@ -110,7 +110,7 @@ namespace QLNet.Tests
             //("Testing spline interpolation on a Gaussian data set...");
 
             double interpolated, interpolated2;
-            int n = 5;
+            var n = 5;
 
             List<double> x = new InitializedList<double>(n), y = new InitializedList<double>(n);
             double x1_bad = -1.7, x2_bad = 1.7;
@@ -121,7 +121,7 @@ namespace QLNet.Tests
                 y = gaussian(x);
 
                 // Not-a-knot spline
-                CubicInterpolation f = new CubicInterpolation(x, x.Count, y,
+                var f = new CubicInterpolation(x, x.Count, y,
                                                               CubicInterpolation.DerivativeApprox.Spline, false,
                                                               CubicInterpolation.BoundaryCondition.NotAKnot, 0,
                                                               CubicInterpolation.BoundaryCondition.NotAKnot, 0);
@@ -181,12 +181,12 @@ namespace QLNet.Tests
 
             //("Testing spline interpolation on RPN15A data set...");
 
-            List<double> RPN15A_x = new List<double>()
+            var RPN15A_x = new List<double>()
          {
             7.99,       8.09,       8.19,      8.7,
                         9.2,     10.0,     12.0,     15.0,     20.0
          };
-            List<double> RPN15A_y = new List<double>()
+            var RPN15A_y = new List<double>()
          {
             0.0, 2.76429e-5, 4.37498e-5, 0.169183,
                  0.469428, 0.943740, 0.998636, 0.999919, 0.999994
@@ -195,7 +195,7 @@ namespace QLNet.Tests
             double interpolated;
 
             // Natural spline
-            CubicInterpolation f = new CubicInterpolation(RPN15A_x, RPN15A_x.Count, RPN15A_y,
+            var f = new CubicInterpolation(RPN15A_x, RPN15A_x.Count, RPN15A_y,
                                                           CubicInterpolation.DerivativeApprox.Spline, false,
                                                           CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
                                                           CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0);
@@ -204,7 +204,7 @@ namespace QLNet.Tests
             check2ndDerivativeValue("Natural spline", f, RPN15A_x.First(), 0.0);
             check2ndDerivativeValue("Natural spline", f, RPN15A_x.Last(), 0.0);
             // poor performance
-            double x_bad = 11.0;
+            var x_bad = 11.0;
             interpolated = f.value(x_bad);
             if (interpolated < 1.0)
             {
@@ -328,16 +328,16 @@ namespace QLNet.Tests
 
             //("Testing spline interpolation on generic values...");
 
-            List<double> generic_x = new List<double>() { 0.0, 1.0, 3.0, 4.0 };
-            List<double> generic_y = new List<double>() { 0.0, 0.0, 2.0, 2.0 };
-            List<double> generic_natural_y2 = new List<double>() { 0.0, 1.5, -1.5, 0.0 };
+            var generic_x = new List<double>() { 0.0, 1.0, 3.0, 4.0 };
+            var generic_y = new List<double>() { 0.0, 0.0, 2.0, 2.0 };
+            var generic_natural_y2 = new List<double>() { 0.0, 1.5, -1.5, 0.0 };
 
             double interpolated, error;
             int i, n = generic_x.Count;
             List<double> x35 = new InitializedList<double>(3);
 
             // Natural spline
-            CubicInterpolation f = new CubicInterpolation(generic_x, generic_x.Count, generic_y,
+            var f = new CubicInterpolation(generic_x, generic_x.Count, generic_y,
                                                           CubicInterpolation.DerivativeApprox.Spline, false,
                                                           CubicInterpolation.BoundaryCondition.SecondDerivative,
                                                           generic_natural_y2[0],
@@ -403,14 +403,14 @@ namespace QLNet.Tests
 
             //("Testing symmetry of spline interpolation end-conditions...");
 
-            int n = 9;
+            var n = 9;
 
             List<double> x, y;
             x = xRange(-1.8, 1.8, n);
             y = gaussian(x);
 
             // Not-a-knot spline
-            CubicInterpolation f = new CubicInterpolation(x, x.Count, y,
+            var f = new CubicInterpolation(x, x.Count, y,
                                                           CubicInterpolation.DerivativeApprox.Spline, false,
                                                           CubicInterpolation.BoundaryCondition.NotAKnot, 0,
                                                           CubicInterpolation.BoundaryCondition.NotAKnot, 0);
@@ -436,14 +436,14 @@ namespace QLNet.Tests
 
             //("Testing derivative end-conditions for spline interpolation...");
 
-            int n = 4;
+            var n = 4;
 
             List<double> x, y;
             x = xRange(-2.0, 2.0, n);
             y = parabolic(x);
 
             // Not-a-knot spline
-            CubicInterpolation f = new CubicInterpolation(x, x.Count, y,
+            var f = new CubicInterpolation(x, x.Count, y,
                                                           CubicInterpolation.DerivativeApprox.Spline, false,
                                                           CubicInterpolation.BoundaryCondition.NotAKnot, 0,
                                                           CubicInterpolation.BoundaryCondition.NotAKnot, 0);
@@ -534,7 +534,7 @@ namespace QLNet.Tests
 
             //("Testing non-restrictive Hyman filter...");
 
-            int n = 4;
+            var n = 4;
 
             List<double> x, y;
             x = xRange(-2.0, 2.0, n);
@@ -542,7 +542,7 @@ namespace QLNet.Tests
             double zero = 0.0, interpolated, expected = 0.0;
 
             // MC Not-a-knot spline
-            CubicInterpolation f = new CubicInterpolation(x, x.Count, y,
+            var f = new CubicInterpolation(x, x.Count, y,
                                                           CubicInterpolation.DerivativeApprox.Spline, true,
                                                           CubicInterpolation.BoundaryCondition.NotAKnot, 0,
                                                           CubicInterpolation.BoundaryCondition.NotAKnot, 0);
@@ -707,21 +707,21 @@ namespace QLNet.Tests
 
             //("Testing use of interpolations as functors...");
 
-            List<double> x = new List<double>() { 0.0, 1.0, 2.0, 3.0, 4.0 };
-            List<double> y = new List<double>() { 5.0, 4.0, 3.0, 2.0, 1.0 };
+            var x = new List<double>() { 0.0, 1.0, 2.0, 3.0, 4.0 };
+            var y = new List<double>() { 5.0, 4.0, 3.0, 2.0, 1.0 };
 
             Interpolation f = new LinearInterpolation(x, x.Count, y);
             f.update();
 
-            List<double> x2 = new List<double>() { -2.0, -1.0, 0.0, 1.0, 3.0, 4.0, 5.0, 6.0, 7.0 };
-            int N = x2.Count;
+            var x2 = new List<double>() { -2.0, -1.0, 0.0, 1.0, 3.0, 4.0, 5.0, 6.0, 7.0 };
+            var N = x2.Count;
             List<double> y2 = new InitializedList<double>(N);
-            double tolerance = 1.0e-12;
+            var tolerance = 1.0e-12;
 
             // case 1: extrapolation not allowed
             try
             {
-                for (int xx = 0; xx < x2.Count; xx++)
+                for (var xx = 0; xx < x2.Count; xx++)
                 {
                     y2[xx] = f.value(x2[xx]);
                 }
@@ -737,14 +737,14 @@ namespace QLNet.Tests
             // case 2: enable extrapolation
             f.enableExtrapolation();
             y2 = new InitializedList<double>(N);
-            for (int xx = 0; xx < x2.Count; xx++)
+            for (var xx = 0; xx < x2.Count; xx++)
             {
                 y2[xx] = f.value(x2[xx]);
             }
             //y2 = x2.ConvertAll<double>(f.value);
-            for (int i = 0; i < N; i++)
+            for (var i = 0; i < N; i++)
             {
-                double expected = 5.0 - x2[i];
+                var expected = 5.0 - x2[i];
                 if (System.Math.Abs(y2[i] - expected) > tolerance)
                     QAssert.Fail(
                        "failed to reproduce " + (i + 1) + " expected datum"
@@ -760,13 +760,13 @@ namespace QLNet.Tests
 
             //("Testing backward-flat interpolation...");
 
-            List<double> x = new List<double>() { 0.0, 1.0, 2.0, 3.0, 4.0 };
-            List<double> y = new List<double>() { 5.0, 4.0, 3.0, 2.0, 1.0 };
+            var x = new List<double>() { 0.0, 1.0, 2.0, 3.0, 4.0 };
+            var y = new List<double>() { 5.0, 4.0, 3.0, 2.0, 1.0 };
 
             Interpolation f = new BackwardFlatInterpolation(x, x.Count, y);
             f.update();
 
-            int N = x.Count;
+            var N = x.Count;
             int i;
             double tolerance = 1.0e-12, p, calculated, expected;
 
@@ -831,7 +831,7 @@ namespace QLNet.Tests
                    + "\n    calculated: " + calculated
                    + "\n    error:      " + System.Math.Abs(calculated - expected));
 
-            double sum = 0.0;
+            var sum = 0.0;
             for (i = 1; i < N; i++)
             {
                 sum += (x[i] - x[i - 1]) * y[i];
@@ -870,13 +870,13 @@ namespace QLNet.Tests
 
             //("Testing forward-flat interpolation...");
 
-            List<double> x = new List<double>() { 0.0, 1.0, 2.0, 3.0, 4.0 };
-            List<double> y = new List<double>() { 5.0, 4.0, 3.0, 2.0, 1.0 };
+            var x = new List<double>() { 0.0, 1.0, 2.0, 3.0, 4.0 };
+            var y = new List<double>() { 5.0, 4.0, 3.0, 2.0, 1.0 };
 
             Interpolation f = new ForwardFlatInterpolation(x, x.Count, y);
             f.update();
 
-            int N = x.Count;
+            var N = x.Count;
             int i;
             double tolerance = 1.0e-12, p, calculated, expected;
 
@@ -941,7 +941,7 @@ namespace QLNet.Tests
                    + "\n    calculated: " + calculated
                    + "\n    error:      " + System.Math.Abs(calculated - expected));
 
-            double sum = 0.0;
+            var sum = 0.0;
             for (i = 1; i < N; i++)
             {
                 sum += (x[i] - x[i - 1]) * y[i - 1];
@@ -979,7 +979,7 @@ namespace QLNet.Tests
             // Testing Sabr interpolation...
 
             // Test SABR function against input volatilities
-            double tolerance = 1.0e-12;
+            var tolerance = 1.0e-12;
             List<double> strikes = new InitializedList<double>(31);
             List<double> volatilities = new InitializedList<double>(31);
             // input strikes
@@ -1007,17 +1007,17 @@ namespace QLNet.Tests
             volatilities[27] = 0.944043915545469; volatilities[28] = 0.939336183299237; volatilities[29] = 0.934753341079515;
             volatilities[30] = 0.930289384251337;
 
-            double expiry = 1.0;
-            double forward = 0.039;
+            var expiry = 1.0;
+            var forward = 0.039;
             // input SABR coefficients (corresponding to the vols above)
-            double initialAlpha = 0.3;
-            double initialBeta = 0.6;
-            double initialNu = 0.02;
-            double initialRho = 0.01;
+            var initialAlpha = 0.3;
+            var initialBeta = 0.6;
+            var initialNu = 0.02;
+            var initialRho = 0.01;
             // calculate SABR vols and compare with input vols
-            for (int i = 0; i < strikes.Count; i++)
+            for (var i = 0; i < strikes.Count; i++)
             {
-                double calculatedVol = Utils.sabrVolatility(strikes[i], forward, expiry,
+                var calculatedVol = Utils.sabrVolatility(strikes[i], forward, expiry,
                                                             initialAlpha, initialBeta,
                                                             initialNu, initialRho);
                 if (System.Math.Abs(volatilities[i] - calculatedVol) > tolerance)
@@ -1032,10 +1032,10 @@ namespace QLNet.Tests
             // will then not be fixed during optimization, see the
             // interpolation constructor, thus rendering the test cases
             // with fixed parameters non-sensical)
-            double alphaGuess = System.Math.Sqrt(0.2);
-            double betaGuess = 0.5;
-            double nuGuess = System.Math.Sqrt(0.4);
-            double rhoGuess = 0.0;
+            var alphaGuess = System.Math.Sqrt(0.2);
+            var betaGuess = 0.5;
+            var nuGuess = System.Math.Sqrt(0.4);
+            var rhoGuess = 0.0;
 
             bool[] vegaWeighted = { true, false };
             bool[] isAlphaFixed = { true, false };
@@ -1043,25 +1043,25 @@ namespace QLNet.Tests
             bool[] isNuFixed = { true, false };
             bool[] isRhoFixed = { true, false };
 
-            double calibrationTolerance = 5.0e-8;
+            var calibrationTolerance = 5.0e-8;
             // initialize optimization methods
-            List<OptimizationMethod> methods_ = new List<OptimizationMethod>();
+            var methods_ = new List<OptimizationMethod>();
             methods_.Add(new Simplex(0.01));
             methods_.Add(new LevenbergMarquardt(1e-8, 1e-8, 1e-8));
             // Initialize end criteria
-            EndCriteria endCriteria = new EndCriteria(100000, 100, 1e-8, 1e-8, 1e-8);
+            var endCriteria = new EndCriteria(100000, 100, 1e-8, 1e-8, 1e-8);
             // Test looping over all possibilities
-            for (int j = 0; j < methods_.Count; ++j)
+            for (var j = 0; j < methods_.Count; ++j)
             {
-                for (int i = 0; i < vegaWeighted.Length; ++i)
+                for (var i = 0; i < vegaWeighted.Length; ++i)
                 {
-                    for (int k_a = 0; k_a < isAlphaFixed.Length; ++k_a)
+                    for (var k_a = 0; k_a < isAlphaFixed.Length; ++k_a)
                     {
-                        for (int k_b = 0; k_b < isBetaFixed.Length; ++k_b)
+                        for (var k_b = 0; k_b < isBetaFixed.Length; ++k_b)
                         {
-                            for (int k_n = 0; k_n < isNuFixed.Length; ++k_n)
+                            for (var k_n = 0; k_n < isNuFixed.Length; ++k_n)
                             {
-                                for (int k_r = 0; k_r < isRhoFixed.Length; ++k_r)
+                                for (var k_r = 0; k_r < isRhoFixed.Length; ++k_r)
                                 {
                                     // to meet the tough calibration tolerance we need to lower the default
                                     // error threshold for accepting a calibration (to be more specific, some
@@ -1070,7 +1070,7 @@ namespace QLNet.Tests
                                     // guess (i.e. optimization runs into a local minimum) - then a series of
                                     // random start values for optimization is chosen until our tight custom
                                     // error threshold is satisfied.
-                                    SABRInterpolation sabrInterpolation = new SABRInterpolation(
+                                    var sabrInterpolation = new SABRInterpolation(
                                        strikes, strikes.Count, volatilities,
                                        expiry, forward, isAlphaFixed[k_a] ? initialAlpha : alphaGuess,
                                        isBetaFixed[k_b] ? initialBeta : betaGuess,
@@ -1081,11 +1081,11 @@ namespace QLNet.Tests
                                     sabrInterpolation.update();
 
                                     // Recover SABR calibration parameters
-                                    bool failed = false;
-                                    double calibratedAlpha = sabrInterpolation.alpha();
-                                    double calibratedBeta = sabrInterpolation.beta();
-                                    double calibratedNu = sabrInterpolation.nu();
-                                    double calibratedRho = sabrInterpolation.rho();
+                                    var failed = false;
+                                    var calibratedAlpha = sabrInterpolation.alpha();
+                                    var calibratedBeta = sabrInterpolation.beta();
+                                    var calibratedNu = sabrInterpolation.nu();
+                                    var calibratedRho = sabrInterpolation.rho();
                                     double error;
 
                                     // compare results: alpha
@@ -1150,7 +1150,7 @@ namespace QLNet.Tests
             // Testing Sabr interpolation...
 
             // Test SABR function against input volatilities
-            double tolerance = 1.0e-12;
+            var tolerance = 1.0e-12;
             List<double> strikes = new InitializedList<double>(31);
             List<double> volatilities = new InitializedList<double>(31);
             // input strikes
@@ -1179,17 +1179,17 @@ namespace QLNet.Tests
             volatilities[30] = 0.00732632956313855;
 
 
-            double expiry = 1.0;
-            double forward = 0.039;
+            var expiry = 1.0;
+            var forward = 0.039;
             // input SABR coefficients (corresponding to the vols above)
-            double initialAlpha = 0.3;
-            double initialBeta = 0.6;
-            double initialNu = 0.02;
-            double initialRho = 0.01;
+            var initialAlpha = 0.3;
+            var initialBeta = 0.6;
+            var initialNu = 0.02;
+            var initialRho = 0.01;
             // calculate SABR vols and compare with input vols
-            for (int i = 0; i < strikes.Count; i++)
+            for (var i = 0; i < strikes.Count; i++)
             {
-                double calculatedVol = Utils.shiftedSabrNormalVolatility(strikes[i], forward, expiry,
+                var calculatedVol = Utils.shiftedSabrNormalVolatility(strikes[i], forward, expiry,
                                                                          initialAlpha, initialBeta,
                                                                          initialNu, initialRho);
                 if (System.Math.Abs(volatilities[i] - calculatedVol) > tolerance)
@@ -1204,10 +1204,10 @@ namespace QLNet.Tests
             // will then not be fixed during optimization, see the
             // interpolation constructor, thus rendering the test cases
             // with fixed parameters non-sensical)
-            double alphaGuess = System.Math.Sqrt(0.2);
-            double betaGuess = 0.5;
-            double nuGuess = System.Math.Sqrt(0.4);
-            double rhoGuess = 0.0;
+            var alphaGuess = System.Math.Sqrt(0.2);
+            var betaGuess = 0.5;
+            var nuGuess = System.Math.Sqrt(0.4);
+            var rhoGuess = 0.0;
 
             bool[] vegaWeighted = { true, false };
             bool[] isAlphaFixed = { true, false };
@@ -1215,25 +1215,25 @@ namespace QLNet.Tests
             bool[] isNuFixed = { true, false };
             bool[] isRhoFixed = { true, false };
 
-            double calibrationTolerance = 5.0e-8;
+            var calibrationTolerance = 5.0e-8;
             // initialize optimization methods
-            List<OptimizationMethod> methods_ = new List<OptimizationMethod>();
+            var methods_ = new List<OptimizationMethod>();
             methods_.Add(new Simplex(0.01));
             methods_.Add(new LevenbergMarquardt(1e-8, 1e-8, 1e-8));
             // Initialize end criteria
-            EndCriteria endCriteria = new EndCriteria(100000, 100, 1e-8, 1e-8, 1e-8);
+            var endCriteria = new EndCriteria(100000, 100, 1e-8, 1e-8, 1e-8);
             // Test looping over all possibilities
-            for (int j = 0; j < methods_.Count; ++j)
+            for (var j = 0; j < methods_.Count; ++j)
             {
-                for (int i = 0; i < vegaWeighted.Length; ++i)
+                for (var i = 0; i < vegaWeighted.Length; ++i)
                 {
-                    for (int k_a = 0; k_a < isAlphaFixed.Length; ++k_a)
+                    for (var k_a = 0; k_a < isAlphaFixed.Length; ++k_a)
                     {
-                        for (int k_b = 0; k_b < isBetaFixed.Length; ++k_b)
+                        for (var k_b = 0; k_b < isBetaFixed.Length; ++k_b)
                         {
-                            for (int k_n = 0; k_n < isNuFixed.Length; ++k_n)
+                            for (var k_n = 0; k_n < isNuFixed.Length; ++k_n)
                             {
-                                for (int k_r = 0; k_r < isRhoFixed.Length; ++k_r)
+                                for (var k_r = 0; k_r < isRhoFixed.Length; ++k_r)
                                 {
                                     // to meet the tough calibration tolerance we need to lower the default
                                     // error threshold for accepting a calibration (to be more specific, some
@@ -1242,7 +1242,7 @@ namespace QLNet.Tests
                                     // guess (i.e. optimization runs into a local minimum) - then a series of
                                     // random start values for optimization is chosen until our tight custom
                                     // error threshold is satisfied.
-                                    SABRInterpolation sabrInterpolation = new SABRInterpolation(
+                                    var sabrInterpolation = new SABRInterpolation(
                                        strikes, strikes.Count, volatilities,
                                        expiry, forward, isAlphaFixed[k_a] ? initialAlpha : alphaGuess,
                                        isBetaFixed[k_b] ? initialBeta : betaGuess,
@@ -1253,11 +1253,11 @@ namespace QLNet.Tests
                                     sabrInterpolation.update();
 
                                     // Recover SABR calibration parameters
-                                    bool failed = false;
-                                    double calibratedAlpha = sabrInterpolation.alpha();
-                                    double calibratedBeta = sabrInterpolation.beta();
-                                    double calibratedNu = sabrInterpolation.nu();
-                                    double calibratedRho = sabrInterpolation.rho();
+                                    var failed = false;
+                                    var calibratedAlpha = sabrInterpolation.alpha();
+                                    var calibratedBeta = sabrInterpolation.beta();
+                                    var calibratedNu = sabrInterpolation.nu();
+                                    var calibratedRho = sabrInterpolation.rho();
                                     double error;
 
                                     // compare results: alpha
@@ -1338,7 +1338,7 @@ namespace QLNet.Tests
             yd3[0] = 10.3000; yd3[1] = 9.6375; yd3[2] = 9.2000;
             yd3[3] = 9.1125; yd3[4] = 9.4000;
 
-            List<List<double>> yd = new List<List<double>>();
+            var yd = new List<List<double>>();
             yd.Add(yd1);
             yd.Add(yd2);
             yd.Add(yd3);
@@ -1347,24 +1347,24 @@ namespace QLNet.Tests
             lambdaVec[0] = 0.05; lambdaVec[1] = 0.50; lambdaVec[2] = 0.75;
             lambdaVec[3] = 1.65; lambdaVec[4] = 2.55;
 
-            double tolerance = 2.0e-5;
+            var tolerance = 2.0e-5;
 
             double expectedVal;
             double calcVal;
 
             // Check that y-values at knots are exactly the feeded y-values,
             // irrespective of kernel parameters
-            for (int i = 0; i < lambdaVec.Count; ++i)
+            for (var i = 0; i < lambdaVec.Count; ++i)
             {
-                GaussianKernel myKernel = new GaussianKernel(0, lambdaVec[i]);
+                var myKernel = new GaussianKernel(0, lambdaVec[i]);
 
-                for (int j = 0; j < yd.Count; ++j)
+                for (var j = 0; j < yd.Count; ++j)
                 {
-                    List<double> currY = yd[j];
-                    KernelInterpolation f = new KernelInterpolation(deltaGrid, deltaGrid.Count, currY, myKernel);
+                    var currY = yd[j];
+                    var f = new KernelInterpolation(deltaGrid, deltaGrid.Count, currY, myKernel);
                     f.update();
 
-                    for (int dIt = 0; dIt < deltaGrid.Count; ++dIt)
+                    for (var dIt = 0; dIt < deltaGrid.Count; ++dIt)
                     {
                         expectedVal = currY[dIt];
                         calcVal = f.value(deltaGrid[dIt]);
@@ -1404,24 +1404,24 @@ namespace QLNet.Tests
             ytd3[0] = 10.17473; ytd3[1] = 9.557842; ytd3[2] = 9.09339;
             ytd3[3] = 9.149687; ytd3[4] = 9.779971;
 
-            List<List<double>> ytd = new List<List<double>>();
+            var ytd = new List<List<double>>();
             ytd.Add(ytd1);
             ytd.Add(ytd2);
             ytd.Add(ytd3);
 
-            GaussianKernel myKernel2 = new GaussianKernel(0, 2.05);
+            var myKernel2 = new GaussianKernel(0, 2.05);
 
-            for (int j = 0; j < ytd.Count; ++j)
+            for (var j = 0; j < ytd.Count; ++j)
             {
-                List<double> currY = yd[j];
-                List<double> currTY = ytd[j];
+                var currY = yd[j];
+                var currTY = ytd[j];
 
                 // Build interpolation according to original grid + y-values
-                KernelInterpolation f = new KernelInterpolation(deltaGrid, deltaGrid.Count, currY, myKernel2);
+                var f = new KernelInterpolation(deltaGrid, deltaGrid.Count, currY, myKernel2);
                 f.update();
 
                 // test values at test Grid
-                for (int dIt = 0; dIt < testDeltaGrid.Count; ++dIt)
+                for (var dIt = 0; dIt < testDeltaGrid.Count; ++dIt)
                 {
                     expectedVal = currTY[dIt];
                     f.enableExtrapolation();// allow extrapolation
@@ -1453,7 +1453,7 @@ namespace QLNet.Tests
             // Testing kernel 2D interpolation...
 
             double mean = 0.0, var = 0.18;
-            GaussianKernel myKernel = new GaussianKernel(mean, var);
+            var myKernel = new GaussianKernel(mean, var);
 
             List<double> xVec = new InitializedList<double>(10);
             xVec[0] = 0.10; xVec[1] = 0.20; xVec[2] = 0.30; xVec[3] = 0.40;
@@ -1463,7 +1463,7 @@ namespace QLNet.Tests
             List<double> yVec = new InitializedList<double>(3);
             yVec[0] = 1.0; yVec[1] = 2.0; yVec[2] = 3.5;
 
-            Matrix M = new Matrix(xVec.Count, yVec.Count);
+            var M = new Matrix(xVec.Count, yVec.Count);
 
             M[0, 0] = 0.25; M[1, 0] = 0.24; M[2, 0] = 0.23; M[3, 0] = 0.20; M[4, 0] = 0.19;
             M[5, 0] = 0.20; M[6, 0] = 0.21; M[7, 0] = 0.22; M[8, 0] = 0.26; M[9, 0] = 0.29;
@@ -1474,14 +1474,14 @@ namespace QLNet.Tests
             M[0, 2] = 0.21; M[1, 2] = 0.22; M[2, 2] = 0.27; M[3, 2] = 0.29; M[4, 2] = 0.24;
             M[5, 2] = 0.28; M[6, 2] = 0.25; M[7, 2] = 0.22; M[8, 2] = 0.29; M[9, 2] = 0.30;
 
-            KernelInterpolation2D kernel2D = new KernelInterpolation2D(xVec, xVec.Count, yVec, yVec.Count, M, myKernel);
+            var kernel2D = new KernelInterpolation2D(xVec, xVec.Count, yVec, yVec.Count, M, myKernel);
 
             double calcVal, expectedVal;
-            double tolerance = 1.0e-10;
+            var tolerance = 1.0e-10;
 
-            for (int i = 0; i < M.rows(); ++i)
+            for (var i = 0; i < M.rows(); ++i)
             {
-                for (int j = 0; j < M.columns(); ++j)
+                for (var j = 0; j < M.columns(); ++j)
                 {
 
                     calcVal = kernel2D.value(xVec[i], yVec[j]);
@@ -1508,7 +1508,7 @@ namespace QLNet.Tests
             yVec1[0] = 0.5; yVec1[1] = 0.7; yVec1[2] = 1.0; yVec1[3] = 2.0;
             yVec1[4] = 3.5; yVec1[5] = 4.5; yVec1[6] = 5.5; yVec1[7] = 6.5;
 
-            Matrix M1 = new Matrix(xVec1.Count, yVec1.Count);
+            var M1 = new Matrix(xVec1.Count, yVec1.Count);
             M1[0, 0] = 10.25; M1[1, 0] = 12.24; M1[2, 0] = 14.23; M1[3, 0] = 17.20;
             M1[0, 1] = 12.25; M1[1, 1] = 15.24; M1[2, 1] = 16.23; M1[3, 1] = 16.20;
             M1[0, 2] = 12.25; M1[1, 2] = 13.24; M1[2, 2] = 13.23; M1[3, 2] = 17.20;
@@ -1519,10 +1519,10 @@ namespace QLNet.Tests
             M1[0, 7] = 14.25; M1[1, 7] = 14.24; M1[2, 7] = 16.23; M1[3, 7] = 19.20;
 
             // test with another kernel
-            KernelInterpolation2D kernel2DEp = new KernelInterpolation2D(xVec1, xVec1.Count, yVec1, yVec1.Count, M1, new epanechnikovKernel());
-            for (int i = 0; i < M1.rows(); ++i)
+            var kernel2DEp = new KernelInterpolation2D(xVec1, xVec1.Count, yVec1, yVec1.Count, M1, new epanechnikovKernel());
+            for (var i = 0; i < M1.rows(); ++i)
             {
-                for (int j = 0; j < M1.columns(); ++j)
+                for (var j = 0; j < M1.columns(); ++j)
                 {
 
                     calcVal = kernel2DEp.value(xVec1[i], yVec1[j]);
@@ -1549,9 +1549,9 @@ namespace QLNet.Tests
 
             kernel2DEp.update();
 
-            for (int i = 0; i < M1.rows(); ++i)
+            for (var i = 0; i < M1.rows(); ++i)
             {
-                for (int j = 0; j < M1.columns(); ++j)
+                for (var j = 0; j < M1.columns(); ++j)
                 {
 
                     calcVal = kernel2DEp.value(xVec1[i], yVec1[j]);
@@ -1577,28 +1577,28 @@ namespace QLNet.Tests
             // Testing bicubic spline derivatives...
 
             List<double> x = new InitializedList<double>(100), y = new InitializedList<double>(100);
-            for (int i = 0; i < 100; ++i)
+            for (var i = 0; i < 100; ++i)
             {
                 x[i] = y[i] = i / 20.0;
             }
 
-            Matrix f = new Matrix(100, 100);
-            for (int i = 0; i < 100; ++i)
-                for (int j = 0; j < 100; ++j)
+            var f = new Matrix(100, 100);
+            for (var i = 0; i < 100; ++i)
+                for (var j = 0; j < 100; ++j)
                     f[i, j] = y[i] / 10 * System.Math.Sin(x[j]) + System.Math.Cos(y[i]);
 
-            double tol = 0.005;
-            BicubicSpline spline = new BicubicSpline(x, x.Count, y, y.Count, f);
+            var tol = 0.005;
+            var spline = new BicubicSpline(x, x.Count, y, y.Count, f);
 
-            for (int i = 5; i < 95; i += 10)
+            for (var i = 5; i < 95; i += 10)
             {
-                for (int j = 5; j < 95; j += 10)
+                for (var j = 5; j < 95; j += 10)
                 {
-                    double f_x = spline.derivativeX(x[j], y[i]);
-                    double f_xx = spline.secondDerivativeX(x[j], y[i]);
-                    double f_y = spline.derivativeY(x[j], y[i]);
-                    double f_yy = spline.secondDerivativeY(x[j], y[i]);
-                    double f_xy = spline.derivativeXY(x[j], y[i]);
+                    var f_x = spline.derivativeX(x[j], y[i]);
+                    var f_xx = spline.secondDerivativeX(x[j], y[i]);
+                    var f_y = spline.derivativeY(x[j], y[i]);
+                    var f_yy = spline.secondDerivativeY(x[j], y[i]);
+                    var f_xy = spline.derivativeXY(x[j], y[i]);
 
                     if (System.Math.Abs(f_x - y[i] / 10 * System.Math.Cos(x[j])) > tol)
                     {
@@ -1628,27 +1628,27 @@ namespace QLNet.Tests
         public void testBicubicUpdate()
         {
             // Testing that bicubic splines actually update...
-            int N = 6;
+            var N = 6;
             List<double> x = new InitializedList<double>(N), y = new InitializedList<double>(N);
-            for (int i = 0; i < N; ++i)
+            for (var i = 0; i < N; ++i)
             {
                 x[i] = y[i] = i * 0.2;
             }
 
-            Matrix f = new Matrix(N, N);
-            for (int i = 0; i < N; ++i)
-                for (int j = 0; j < N; ++j)
+            var f = new Matrix(N, N);
+            for (var i = 0; i < N; ++i)
+                for (var j = 0; j < N; ++j)
                     f[i, j] = x[j] * (x[j] + y[i]);
 
-            BicubicSpline spline = new BicubicSpline(x, x.Count, y, y.Count, f);
+            var spline = new BicubicSpline(x, x.Count, y, y.Count, f);
 
-            double old_result = spline.value(x[2] + 0.1, y[4]);
+            var old_result = spline.value(x[2] + 0.1, y[4]);
 
             // modify input matrix and update.
             f[4, 3] += 1.0;
             spline.update();
 
-            double new_result = spline.value(x[2] + 0.1, y[4]);
+            var new_result = spline.value(x[2] + 0.1, y[4]);
             if (System.Math.Abs(old_result - new_result) < 0.5)
                 QAssert.Fail("Failed to update bicubic spline");
         }
@@ -1664,21 +1664,21 @@ namespace QLNet.Tests
             *      NSG_termine/dateien/Richardson.pdf
             */
 
-            double stepSize = 0.1;
-            double orderOfConvergence = 1.0;
+            var stepSize = 0.1;
+            var orderOfConvergence = 1.0;
 
             RichardsonExtrapolation.function f = delegate (double h)
             {
                 return System.Math.Pow(1.0 + h, 1 / h);
             };
 
-            RichardsonExtrapolation extrap = new RichardsonExtrapolation(f, stepSize, orderOfConvergence);
+            var extrap = new RichardsonExtrapolation(f, stepSize, orderOfConvergence);
 
-            double tol = 0.00002;
-            double expected = 2.71285;
+            var tol = 0.00002;
+            var expected = 2.71285;
 
-            double scalingFactor = 2.0;
-            double calculated = extrap.value(scalingFactor);
+            var scalingFactor = 2.0;
+            var calculated = extrap.value(scalingFactor);
 
             if (System.Math.Abs(expected - calculated) > tol)
             {
@@ -1707,14 +1707,14 @@ namespace QLNet.Tests
         {
             // Testing Sabr calibration single cases...
 
-            List<double> strikes = new List<double>() { 0.01, 0.01125, 0.0125, 0.01375, 0.0150 };
-            List<double> vols = new List<double>() { 0.1667, 0.2020, 0.2785, 0.3279, 0.3727 };
+            var strikes = new List<double>() { 0.01, 0.01125, 0.0125, 0.01375, 0.0150 };
+            var vols = new List<double>() { 0.1667, 0.2020, 0.2785, 0.3279, 0.3727 };
 
 
-            double tte = 0.3833;
-            double forward = 0.011025;
+            var tte = 0.3833;
+            var forward = 0.011025;
 
-            SABRInterpolation s0 = new SABRInterpolation(strikes, strikes.Count, vols, tte, forward,
+            var s0 = new SABRInterpolation(strikes, strikes.Count, vols, tte, forward,
                                                          null, 0.25, null, null,
                                                          false, true, false, false);
             s0.update();
@@ -1733,8 +1733,8 @@ namespace QLNet.Tests
         List<double> xRange(double start, double finish, int points)
         {
             List<double> x = new InitializedList<double>(points);
-            double dx = (finish - start) / (points - 1);
-            for (int i = 0; i < points - 1; i++)
+            var dx = (finish - start) / (points - 1);
+            for (var i = 0; i < points - 1; i++)
                 x[i] = start + i * dx;
             x[points - 1] = finish;
             return x;
@@ -1743,7 +1743,7 @@ namespace QLNet.Tests
         List<double> gaussian(List<double> x)
         {
             List<double> y = new InitializedList<double>(x.Count);
-            for (int i = 0; i < x.Count; i++)
+            for (var i = 0; i < x.Count; i++)
                 y[i] = System.Math.Exp(-x[i] * x[i]);
             return y;
         }
@@ -1751,17 +1751,17 @@ namespace QLNet.Tests
         List<double> parabolic(List<double> x)
         {
             List<double> y = new InitializedList<double>(x.Count);
-            for (int i = 0; i < x.Count; i++)
+            for (var i = 0; i < x.Count; i++)
                 y[i] = -x[i] * x[i];
             return y;
         }
 
         void checkValues(string type, CubicInterpolation cubic, List<double> xBegin, List<double> yBegin)
         {
-            double tolerance = 2.0e-15;
-            for (int i = 0; i < xBegin.Count; i++)
+            var tolerance = 2.0e-15;
+            for (var i = 0; i < xBegin.Count; i++)
             {
-                double interpolated = cubic.value(xBegin[i]);
+                var interpolated = cubic.value(xBegin[i]);
                 if (System.Math.Abs(interpolated - yBegin[i]) > tolerance)
                 {
                     QAssert.Fail(type + " interpolation failed at x = " + xBegin[i]
@@ -1775,9 +1775,9 @@ namespace QLNet.Tests
 
         void check1stDerivativeValue(string type, CubicInterpolation cubic, double x, double value)
         {
-            double tolerance = 1.0e-14;
-            double interpolated = cubic.derivative(x);
-            double error = System.Math.Abs(interpolated - value);
+            var tolerance = 1.0e-14;
+            var interpolated = cubic.derivative(x);
+            var error = System.Math.Abs(interpolated - value);
             if (error > tolerance)
             {
                 QAssert.Fail(type + " interpolation first derivative failure\n"
@@ -1790,9 +1790,9 @@ namespace QLNet.Tests
 
         void check2ndDerivativeValue(string type, CubicInterpolation cubic, double x, double value)
         {
-            double tolerance = 1.0e-13;
-            double interpolated = cubic.secondDerivative(x);
-            double error = System.Math.Abs(interpolated - value);
+            var tolerance = 1.0e-13;
+            var interpolated = cubic.secondDerivative(x);
+            var error = System.Math.Abs(interpolated - value);
             if (error > tolerance)
             {
                 QAssert.Fail(type + " interpolation second derivative failure\n"
@@ -1805,8 +1805,8 @@ namespace QLNet.Tests
 
         void checkNotAKnotCondition(string type, CubicInterpolation cubic)
         {
-            double tolerance = 1.0e-14;
-            List<double> c = cubic.cCoefficients();
+            var tolerance = 1.0e-14;
+            var c = cubic.cCoefficients();
             if (System.Math.Abs(c[0] - c[1]) > tolerance)
             {
                 QAssert.Fail(type + " interpolation failure"
@@ -1815,7 +1815,7 @@ namespace QLNet.Tests
                              + "\n    cubic coefficient of the second"
                              + " polinomial is " + c[1]);
             }
-            int n = c.Count;
+            var n = c.Count;
             if (System.Math.Abs(c[n - 2] - c[n - 1]) > tolerance)
             {
                 QAssert.Fail(type + " interpolation failure"
@@ -1828,8 +1828,8 @@ namespace QLNet.Tests
 
         void checkSymmetry(string type, CubicInterpolation cubic, double xMin)
         {
-            double tolerance = 1.0e-15;
-            for (double x = xMin; x < 0.0; x += 0.1)
+            var tolerance = 1.0e-15;
+            for (var x = xMin; x < 0.0; x += 0.1)
             {
                 double y1 = cubic.value(x), y2 = cubic.value(-x);
                 if (System.Math.Abs(y1 - y2) > tolerance)
@@ -1853,24 +1853,19 @@ namespace QLNet.Tests
             }
             public double value(double x)
             {
-                double temp = f_.value(x) - System.Math.Exp(-x * x);
+                var temp = f_.value(x) - System.Math.Exp(-x * x);
                 return temp * temp;
             }
         }
 
-        errorFunction<IValue> make_error_function(IValue f)
-        {
-            return new errorFunction<IValue>(f);
-        }
+        errorFunction<IValue> make_error_function(IValue f) => new errorFunction<IValue>(f);
 
-        double multif(double s, double t, double u, double v, double w)
-        {
-            return System.Math.Sqrt(s * System.Math.Sinh(System.Math.Log(t)) +
+        double multif(double s, double t, double u, double v, double w) =>
+            System.Math.Sqrt(s * System.Math.Sinh(System.Math.Log(t)) +
                              System.Math.Exp(System.Math.Sin(u) * System.Math.Sin(3 * v)) +
                              System.Math.Sinh(System.Math.Log(v * w)));
-        }
 
-        // Note : a better solution will be an anonymous type casted to IKernelFunction
+        // Note : a better solution will be an anonymous ExerciseType casted to IKernelFunction
         class epanechnikovKernel : IKernelFunction
         {
             public double value(double u)

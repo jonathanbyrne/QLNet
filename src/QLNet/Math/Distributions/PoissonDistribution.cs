@@ -26,7 +26,7 @@ namespace QLNet.Math.Distributions
     /*! \test the correctness of the returned value is tested by
               checking it against known good results.
     */
-    public class InverseCumulativePoisson : IValue
+    [JetBrains.Annotations.PublicAPI] public class InverseCumulativePoisson : IValue
     {
         private double lambda_;
 
@@ -47,7 +47,7 @@ namespace QLNet.Math.Distributions
             if (x.IsEqual(1.0))
                 return double.MaxValue;
 
-            double sum = 0.0;
+            var sum = 0.0;
             uint index = 0;
             while (x > sum)
             {
@@ -58,9 +58,6 @@ namespace QLNet.Math.Distributions
             return index - 1;
         }
 
-        private double calcSummand(uint index)
-        {
-            return System.Math.Exp(-lambda_) * System.Math.Pow(lambda_, index) / Factorial.get(index);
-        }
+        private double calcSummand(uint index) => System.Math.Exp(-lambda_) * System.Math.Pow(lambda_, index) / Factorial.get(index);
     }
 }

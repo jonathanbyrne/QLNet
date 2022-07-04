@@ -23,26 +23,26 @@ using QLNet;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_BlackFormula
+    [JetBrains.Annotations.PublicAPI] public class T_BlackFormula
     {
         [Fact]
         public void testBachelierImpliedVol()
         {
             // Testing Bachelier implied vol...
 
-            double forward = 1.0;
-            double bpvol = 0.01;
-            double tte = 10.0;
-            double stdDev = bpvol * System.Math.Sqrt(tte);
-            QLNet.Option.Type optionType = QLNet.Option.Type.Call;
-            double discount = 0.95;
+            var forward = 1.0;
+            var bpvol = 0.01;
+            var tte = 10.0;
+            var stdDev = bpvol * System.Math.Sqrt(tte);
+            var optionType = QLNet.Option.Type.Call;
+            var discount = 0.95;
 
             double[] d = { -3.0, -2.0, -1.0, -0.5, 0.0, 0.5, 1.0, 2.0, 3.0 };
-            for (int i = 0; i < d.Length; ++i)
+            for (var i = 0; i < d.Length; ++i)
             {
-                double strike = forward - d[i] * bpvol * System.Math.Sqrt(tte);
-                double callPrem = Utils.bachelierBlackFormula(optionType, strike, forward, stdDev, discount);
-                double impliedBpVol = Utils.bachelierBlackFormulaImpliedVol(optionType, strike, forward, tte, callPrem, discount);
+                var strike = forward - d[i] * bpvol * System.Math.Sqrt(tte);
+                var callPrem = Utils.bachelierBlackFormula(optionType, strike, forward, stdDev, discount);
+                var impliedBpVol = Utils.bachelierBlackFormulaImpliedVol(optionType, strike, forward, tte, callPrem, discount);
 
                 if (System.Math.Abs(bpvol - impliedBpVol) > 1.0e-12)
                 {
@@ -64,40 +64,40 @@ namespace QLNet.Tests
             double[] stdDevs = { 0.10, 0.15, 0.20, 0.30, 0.50, 0.60, 0.70, 0.80, 1.00, 1.50, 2.00 };
             double[] discounts = { 1.00, 0.95, 0.80, 1.10 };
 
-            double tol = 5.0E-4;
+            var tol = 5.0E-4;
 
-            for (int i1 = 0; i1 < types.Length; ++i1)
+            for (var i1 = 0; i1 < types.Length; ++i1)
             {
-                for (int i2 = 0; i2 < displacements.Length; ++i2)
+                for (var i2 = 0; i2 < displacements.Length; ++i2)
                 {
-                    for (int i3 = 0; i3 < forwards.Length; ++i3)
+                    for (var i3 = 0; i3 < forwards.Length; ++i3)
                     {
-                        for (int i4 = 0; i4 < strikes.Length; ++i4)
+                        for (var i4 = 0; i4 < strikes.Length; ++i4)
                         {
-                            for (int i5 = 0; i5 < stdDevs.Length; ++i5)
+                            for (var i5 = 0; i5 < stdDevs.Length; ++i5)
                             {
-                                for (int i6 = 0; i6 < discounts.Length; ++i6)
+                                for (var i6 = 0; i6 < discounts.Length; ++i6)
                                 {
                                     if (forwards[i3] + displacements[i2] > 0.0 &&
                                         strikes[i4] + displacements[i2] > 0.0)
                                     {
-                                        double premium = Utils.blackFormula(
+                                        var premium = Utils.blackFormula(
                                                             types[i1], strikes[i4], forwards[i3],
                                                             stdDevs[i5], discounts[i6],
                                                             displacements[i2]);
-                                        double atmPremium = Utils.blackFormula(
+                                        var atmPremium = Utils.blackFormula(
                                                                types[i1], forwards[i3], forwards[i3],
                                                                stdDevs[i5], discounts[i6],
                                                                displacements[i2]);
-                                        double iStdDev = Utils.blackFormulaImpliedStdDevChambers(
+                                        var iStdDev = Utils.blackFormulaImpliedStdDevChambers(
                                                             types[i1], strikes[i4], forwards[i3],
                                                             premium, atmPremium, discounts[i6],
                                                             displacements[i2]);
-                                        double moneyness = (strikes[i4] + displacements[i2]) /
-                                                           (forwards[i3] + displacements[i2]);
+                                        var moneyness = (strikes[i4] + displacements[i2]) /
+                                                        (forwards[i3] + displacements[i2]);
                                         if (moneyness > 1.0)
                                             moneyness = 1.0 / moneyness;
-                                        double error = (iStdDev - stdDevs[i5]) / stdDevs[i5] * moneyness;
+                                        var error = (iStdDev - stdDevs[i5]) / stdDevs[i5] * moneyness;
                                         if (error > tol)
                                             QAssert.Fail("Failed to verify Chambers-Nawalkha approximation for "
                                                          + types[i1]

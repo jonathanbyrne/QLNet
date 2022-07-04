@@ -25,7 +25,7 @@ using System;
 
 namespace QLNet.Pricingengines.vanilla
 {
-    public class MCHestonHullWhiteEngine<RNG, S> : MCVanillaEngine<MultiVariate, RNG, S>
+    [JetBrains.Annotations.PublicAPI] public class MCHestonHullWhiteEngine<RNG, S> : MCVanillaEngine<MultiVariate, RNG, S>
       where RNG : IRSG, new()
       where S : IGeneralStatistics, new()
     {
@@ -58,46 +58,46 @@ namespace QLNet.Pricingengines.vanilla
 
         protected override PathPricer<IPath> pathPricer()
         {
-            Exercise exercise = arguments_.exercise;
+            var exercise = arguments_.exercise;
 
-            Utils.QL_REQUIRE(exercise.type() == Exercise.Type.European, () => "only european exercise is supported");
+            Utils.QL_REQUIRE(exercise.ExerciseType() == Exercise.Type.European, () => "only european exercise is supported");
 
-            double exerciseTime = process_.time(exercise.lastDate());
+            var exerciseTime = process_.time(exercise.lastDate());
 
             return new HestonHullWhitePathPricer(exerciseTime, arguments_.payoff, (HybridHestonHullWhiteProcess)process_);
         }
 
         protected override PathPricer<IPath> controlPathPricer()
         {
-            HybridHestonHullWhiteProcess process = process_ as HybridHestonHullWhiteProcess;
+            var process = process_ as HybridHestonHullWhiteProcess;
             Utils.QL_REQUIRE(process != null, () => "invalid process");
 
-            HestonProcess hestonProcess = process.hestonProcess();
+            var hestonProcess = process.hestonProcess();
 
             Utils.QL_REQUIRE(hestonProcess != null, () =>
-                             "first constituent of the joint stochastic process need to be of type HestonProcess");
+                             "first constituent of the joint stochastic process need to be of ExerciseType HestonProcess");
 
-            Exercise exercise = arguments_.exercise;
+            var exercise = arguments_.exercise;
 
-            Utils.QL_REQUIRE(exercise.type() == Exercise.Type.European, () => "only european exercise is supported");
+            Utils.QL_REQUIRE(exercise.ExerciseType() == Exercise.Type.European, () => "only european exercise is supported");
 
-            double exerciseTime = process.time(exercise.lastDate());
+            var exerciseTime = process.time(exercise.lastDate());
 
             return new HestonHullWhitePathPricer(exerciseTime, arguments_.payoff, process);
 
         }
         protected override IPricingEngine controlPricingEngine()
         {
-            HybridHestonHullWhiteProcess process = process_ as HybridHestonHullWhiteProcess;
+            var process = process_ as HybridHestonHullWhiteProcess;
             Utils.QL_REQUIRE(process != null, () => "invalid process");
 
-            HestonProcess hestonProcess = process.hestonProcess();
+            var hestonProcess = process.hestonProcess();
 
-            HullWhiteForwardProcess hullWhiteProcess = process.hullWhiteProcess();
+            var hullWhiteProcess = process.hullWhiteProcess();
 
-            HestonModel hestonModel = new HestonModel(hestonProcess);
+            var hestonModel = new HestonModel(hestonProcess);
 
-            HullWhite hwModel = new HullWhite(hestonProcess.riskFreeRate(),
+            var hwModel = new HullWhite(hestonProcess.riskFreeRate(),
                                               hullWhiteProcess.a(),
                                               hullWhiteProcess.sigma());
 
@@ -106,12 +106,12 @@ namespace QLNet.Pricingengines.vanilla
 
         protected override IPathGenerator<IRNG> controlPathGenerator()
         {
-            int dimensions = process_.factors();
-            TimeGrid grid = timeGrid();
-            IRNG generator = new RNG().make_sequence_generator(dimensions * (grid.size() - 1), seed_);
-            HybridHestonHullWhiteProcess process = process_ as HybridHestonHullWhiteProcess;
+            var dimensions = process_.factors();
+            var grid = timeGrid();
+            var generator = new RNG().make_sequence_generator(dimensions * (grid.size() - 1), seed_);
+            var process = process_ as HybridHestonHullWhiteProcess;
             Utils.QL_REQUIRE(process != null, () => "invalid process");
-            HybridHestonHullWhiteProcess cvProcess = new HybridHestonHullWhiteProcess(process.hestonProcess(),
+            var cvProcess = new HybridHestonHullWhiteProcess(process.hestonProcess(),
                                                                                       process.hullWhiteProcess(), 0.0, process.discretization());
 
             return new MultiPathGenerator<IRNG>(cvProcess, grid, generator, false);
@@ -119,7 +119,7 @@ namespace QLNet.Pricingengines.vanilla
     }
 
     //! Monte Carlo Heston/Hull-White engine factory
-    public class MakeMCHestonHullWhiteEngine<RNG, S>
+    [JetBrains.Annotations.PublicAPI] public class MakeMCHestonHullWhiteEngine<RNG, S>
        where RNG : IRSG, new()
        where S : IGeneralStatistics, new()
     {
@@ -203,7 +203,7 @@ namespace QLNet.Pricingengines.vanilla
         private ulong seed_;
     }
 
-    public class HestonHullWhitePathPricer : PathPricer<IPath>
+    [JetBrains.Annotations.PublicAPI] public class HestonHullWhitePathPricer : PathPricer<IPath>
     {
         public HestonHullWhitePathPricer(double exerciseTime, Payoff payoff, HybridHestonHullWhiteProcess process)
         {
@@ -214,18 +214,18 @@ namespace QLNet.Pricingengines.vanilla
 
         public double value(IPath path)
         {
-            MultiPath p = path as MultiPath;
+            var p = path as MultiPath;
             Utils.QL_REQUIRE(p != null, () => "invalid path");
 
             Utils.QL_REQUIRE(p.pathSize() > 0, () => "the path cannot be empty");
 
-            Vector states = new Vector(p.assetNumber());
-            for (int j = 0; j < states.size(); ++j)
+            var states = new Vector(p.assetNumber());
+            for (var j = 0; j < states.size(); ++j)
             {
                 states[j] = p[j][p.pathSize() - 1];
             }
 
-            double df = 1.0 / process_.numeraire(exerciseTime_, states);
+            var df = 1.0 / process_.numeraire(exerciseTime_, states);
             return payoff_.value(states[0]) * df;
         }
 

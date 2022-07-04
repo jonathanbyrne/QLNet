@@ -32,23 +32,23 @@ namespace QLNet.Methods.Finitedifferences
 
         public void generateOperator(double t, TransformedGrid tg, TridiagonalOperator L)
         {
-            for (int i = 1; i < tg.size() - 1; i++)
+            for (var i = 1; i < tg.size() - 1; i++)
             {
-                double sigma = diffusion(t, tg.grid(i));
-                double nu = drift(t, tg.grid(i));
-                double r = discount(t, tg.grid(i));
-                double sigma2 = sigma * sigma;
+                var sigma = diffusion(t, tg.grid(i));
+                var nu = drift(t, tg.grid(i));
+                var r = discount(t, tg.grid(i));
+                var sigma2 = sigma * sigma;
 
-                double pd = -(sigma2 / tg.dxm(i) - nu) / tg.dx(i);
-                double pu = -(sigma2 / tg.dxp(i) + nu) / tg.dx(i);
-                double pm = sigma2 / (tg.dxm(i) * tg.dxp(i)) + r;
+                var pd = -(sigma2 / tg.dxm(i) - nu) / tg.dx(i);
+                var pu = -(sigma2 / tg.dxp(i) + nu) / tg.dx(i);
+                var pm = sigma2 / (tg.dxm(i) * tg.dxp(i)) + r;
                 L.setMidRow(i, pd, pm, pu);
             }
         }
     }
 
 
-    public class PdeConstantCoeff<PdeClass> : PdeSecondOrderParabolic where PdeClass : PdeSecondOrderParabolic, new()
+    [JetBrains.Annotations.PublicAPI] public class PdeConstantCoeff<PdeClass> : PdeSecondOrderParabolic where PdeClass : PdeSecondOrderParabolic, new()
     {
         private double diffusion_;
         private double drift_;
@@ -56,23 +56,23 @@ namespace QLNet.Methods.Finitedifferences
 
         public PdeConstantCoeff(GeneralizedBlackScholesProcess process, double t, double x)
         {
-            PdeClass pde = (PdeClass)FastActivator<PdeClass>.Create().factory(process);
+            var pde = (PdeClass)FastActivator<PdeClass>.Create().factory(process);
             diffusion_ = pde.diffusion(t, x);
             drift_ = pde.drift(t, x);
             discount_ = pde.discount(t, x);
         }
 
-        public override double diffusion(double x, double y) { return diffusion_; }
-        public override double drift(double x, double y) { return drift_; }
-        public override double discount(double x, double y) { return discount_; }
-        public override PdeSecondOrderParabolic factory(GeneralizedBlackScholesProcess process)
-        {
-            throw new NotSupportedException();
-        }
+        public override double diffusion(double x, double y) => diffusion_;
+
+        public override double drift(double x, double y) => drift_;
+
+        public override double discount(double x, double y) => discount_;
+
+        public override PdeSecondOrderParabolic factory(GeneralizedBlackScholesProcess process) => throw new NotSupportedException();
     }
 
 
-    public class GenericTimeSetter<PdeClass> : TridiagonalOperator.TimeSetter where PdeClass : PdeSecondOrderParabolic, new()
+    [JetBrains.Annotations.PublicAPI] public class GenericTimeSetter<PdeClass> : TridiagonalOperator.TimeSetter where PdeClass : PdeSecondOrderParabolic, new()
     {
         private LogGrid grid_;
         private PdeClass pde_;
@@ -90,7 +90,7 @@ namespace QLNet.Methods.Finitedifferences
     }
 
 
-    public class PdeOperator<PdeClass> : TridiagonalOperator where PdeClass : PdeSecondOrderParabolic, new()
+    [JetBrains.Annotations.PublicAPI] public class PdeOperator<PdeClass> : TridiagonalOperator where PdeClass : PdeSecondOrderParabolic, new()
     {
         public PdeOperator(Vector grid, GeneralizedBlackScholesProcess process) : this(grid, process, 0) { }
         public PdeOperator(Vector grid, GeneralizedBlackScholesProcess process, double residualTime)

@@ -30,7 +30,7 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
     /// <summary>
     /// bermudan step condition for multi dimensional problems
     /// </summary>
-    public class FdmBermudanStepCondition : IStepCondition<Vector>
+    [JetBrains.Annotations.PublicAPI] public class FdmBermudanStepCondition : IStepCondition<Vector>
     {
         public FdmBermudanStepCondition(List<Date> exerciseDates,
                                         Date referenceDate,
@@ -42,7 +42,7 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
             calculator_ = calculator;
 
             exerciseTimes_ = new List<double>();
-            foreach (Date iter in exerciseDates)
+            foreach (var iter in exerciseDates)
             {
                 exerciseTimes_.Add(
                    dayCounter.yearFraction(referenceDate, iter));
@@ -51,23 +51,23 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
 
         public void applyTo(object o, double t)
         {
-            Vector a = (Vector)o;
+            var a = (Vector)o;
             if (exerciseTimes_.BinarySearch(t) >= 0)
             {
-                FdmLinearOpLayout layout = mesher_.layout();
-                FdmLinearOpIterator endIter = layout.end();
+                var layout = mesher_.layout();
+                var endIter = layout.end();
 
-                int dims = layout.dim().Count;
-                Vector locations = new Vector(dims);
+                var dims = layout.dim().Count;
+                var locations = new Vector(dims);
 
-                for (FdmLinearOpIterator iter = layout.begin();
+                for (var iter = layout.begin();
                      iter != endIter;
                      ++iter)
                 {
-                    for (int i = 0; i < dims; ++i)
+                    for (var i = 0; i < dims; ++i)
                         locations[i] = mesher_.location(iter, i);
 
-                    double innerValue = calculator_.innerValue(iter, t);
+                    var innerValue = calculator_.innerValue(iter, t);
                     if (innerValue > a[iter.index()])
                     {
                         a[iter.index()] = innerValue;
@@ -76,10 +76,7 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
             }
         }
 
-        public List<double> exerciseTimes()
-        {
-            return exerciseTimes_;
-        }
+        public List<double> exerciseTimes() => exerciseTimes_;
 
         protected List<double> exerciseTimes_;
         protected FdmMesher mesher_;

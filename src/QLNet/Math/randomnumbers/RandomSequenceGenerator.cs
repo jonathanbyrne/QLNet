@@ -23,7 +23,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Math.randomnumbers
 {
-    public interface IRNG
+    [JetBrains.Annotations.PublicAPI] public interface IRNG
     {
         int dimension();
         Sample<List<double>> nextSequence();
@@ -35,7 +35,7 @@ namespace QLNet.Math.randomnumbers
     /*! Random sequence generator based on a pseudo-random number generator RNG.
         Do not use with low-discrepancy sequence generator.
     */
-    public class RandomSequenceGenerator<RNG> : IRNG where RNG : IRNGTraits, new()
+    [JetBrains.Annotations.PublicAPI] public class RandomSequenceGenerator<RNG> : IRNG where RNG : IRNGTraits, new()
     {
         private int dimensionality_;
 
@@ -48,8 +48,8 @@ namespace QLNet.Math.randomnumbers
             dimensionality_ = dimensionality;
             rng_ = rng;
 
-            List<double> ls = new List<double>();
-            for (int i = 0; i < dimensionality; i++)
+            var ls = new List<double>();
+            for (var i = 0; i < dimensionality; i++)
                 ls.Add(0.0);
             sequence_ = new Sample<List<double>>(ls, 1.0);
             int32Sequence_ = new InitializedList<ulong>(dimensionality);
@@ -67,7 +67,7 @@ namespace QLNet.Math.randomnumbers
 
         public List<ulong> nextInt32Sequence()
         {
-            for (int i = 0; i < dimensionality_; i++)
+            for (var i = 0; i < dimensionality_; i++)
             {
                 int32Sequence_[i] = rng_.nextInt32();
             }
@@ -78,23 +78,21 @@ namespace QLNet.Math.randomnumbers
         public Sample<List<double>> nextSequence()
         {
             sequence_.weight = 1.0;
-            for (int i = 0; i < dimensionality_; i++)
+            for (var i = 0; i < dimensionality_; i++)
             {
-                Sample<double> x = rng_.next();
+                var x = rng_.next();
                 sequence_.value[i] = x.value;
                 sequence_.weight *= x.weight;
             }
             return sequence_;
         }
 
-        public Sample<List<double>> lastSequence() { return sequence_; }
+        public Sample<List<double>> lastSequence() => sequence_;
 
-        public int dimension() { return dimensionality_; }
+        public int dimension() => dimensionality_;
 
-        public IRNG factory(int dimensionality, ulong seed)
-        {
-            return new RandomSequenceGenerator<RNG>(dimensionality, seed);
-        }
+        public IRNG factory(int dimensionality, ulong seed) => new RandomSequenceGenerator<RNG>(dimensionality, seed);
+
         #endregion
     }
 }

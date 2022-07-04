@@ -26,15 +26,15 @@ using QLNet.Math;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Functions
+    [JetBrains.Annotations.PublicAPI] public class T_Functions
     {
         [Fact]
         public void testFactorial()
         {
             // Testing factorial numbers
 
-            double expected = 1.0;
-            double calculated = Factorial.get(0);
+            var expected = 1.0;
+            var calculated = Factorial.get(0);
             if (calculated != expected)
                 QAssert.Fail("Factorial(0) = " + calculated);
 
@@ -56,14 +56,14 @@ namespace QLNet.Tests
         {
             // Testing Gamma function
 
-            double expected = 0.0;
-            double calculated = GammaFunction.logValue(1);
+            var expected = 0.0;
+            var calculated = GammaFunction.logValue(1);
             if (System.Math.Abs(calculated) > 1.0e-15)
                 QAssert.Fail("GammaFunction(1)\n"
                              + "    calculated: " + calculated + "\n"
                              + "    expected:   " + expected);
 
-            for (int i = 2; i < 9000; i++)
+            for (var i = 2; i < 9000; i++)
             {
                 expected += System.Math.Log(i);
                 calculated = GammaFunction.logValue(i + 1);
@@ -96,12 +96,12 @@ namespace QLNet.Tests
             new double[3] {-21.5, 1.318444918321553e-20, 1e6}
          };
 
-            for (int i = 0; i < tasks.Length; ++i)
+            for (var i = 0; i < tasks.Length; ++i)
             {
-                double x = tasks[i][0];
-                double expected = tasks[i][1];
-                double calculated = GammaFunction.value(x);
-                double tol = tasks[i][2] * Const.QL_EPSILON * System.Math.Abs(expected);
+                var x = tasks[i][0];
+                var expected = tasks[i][1];
+                var calculated = GammaFunction.value(x);
+                var tol = tasks[i][2] * Const.QL_EPSILON * System.Math.Abs(expected);
 
                 if (System.Math.Abs(calculated - expected) > tol)
                 {
@@ -135,17 +135,17 @@ namespace QLNet.Tests
             new double[4] {-10.0001, 1.1, 13857.7715614282552, 69288858.9474423379}
          };
 
-            for (int i = 0; i < r.Length; ++i)
+            for (var i = 0; i < r.Length; ++i)
             {
-                double nu = r[i][0];
-                double x = r[i][1];
-                double expected_i = r[i][2];
-                double expected_k = r[i][3];
-                double tol_i = 5e4 * Const.QL_EPSILON * System.Math.Abs(expected_i);
-                double tol_k = 5e4 * Const.QL_EPSILON * System.Math.Abs(expected_k);
+                var nu = r[i][0];
+                var x = r[i][1];
+                var expected_i = r[i][2];
+                var expected_k = r[i][3];
+                var tol_i = 5e4 * Const.QL_EPSILON * System.Math.Abs(expected_i);
+                var tol_k = 5e4 * Const.QL_EPSILON * System.Math.Abs(expected_k);
 
-                double calculated_i = Utils.modifiedBesselFunction_i(nu, x);
-                double calculated_k = Utils.modifiedBesselFunction_k(nu, x);
+                var calculated_i = Utils.modifiedBesselFunction_i(nu, x);
+                var calculated_k = Utils.modifiedBesselFunction_k(nu, x);
 
                 if (System.Math.Abs(expected_i - calculated_i) > tol_i)
                 {
@@ -188,18 +188,18 @@ namespace QLNet.Tests
             new double[7] { 1.2, 9.0, 9.0, -621.7335051293694,  618.1455736670332, -4.480795479964915e-05, -3.489034389148745e-08}
          };
 
-            for (int i = 0; i < c.Length; ++i)
+            for (var i = 0; i < c.Length; ++i)
             {
-                double nu = c[i][0];
-                Complex z = new Complex(c[i][1], c[i][2]);
-                Complex expected_i = new Complex(c[i][3], c[i][4]);
-                Complex expected_k = new Complex(c[i][5], c[i][6]);
+                var nu = c[i][0];
+                var z = new Complex(c[i][1], c[i][2]);
+                var expected_i = new Complex(c[i][3], c[i][4]);
+                var expected_k = new Complex(c[i][5], c[i][6]);
 
-                double tol_i = 5e4 * Const.QL_EPSILON * Complex.Abs(expected_i);
-                double tol_k = 1e6 * Const.QL_EPSILON * Complex.Abs(expected_k);
+                var tol_i = 5e4 * Const.QL_EPSILON * Complex.Abs(expected_i);
+                var tol_k = 1e6 * Const.QL_EPSILON * Complex.Abs(expected_k);
 
-                Complex calculated_i = Utils.modifiedBesselFunction_i(nu, z);
-                Complex calculated_k = Utils.modifiedBesselFunction_k(nu, z);
+                var calculated_i = Utils.modifiedBesselFunction_i(nu, z);
+                var calculated_k = Utils.modifiedBesselFunction_k(nu, z);
 
                 if (Complex.Abs(expected_i - calculated_i) > tol_i)
                 {
@@ -229,17 +229,17 @@ namespace QLNet.Tests
         public void testWeightedModifiedBesselFunctions()
         {
             // Testing weighted modified Bessel functions
-            double nu = -5.0;
+            var nu = -5.0;
             while (nu <= 5.0)
             {
-                double x = 0.1;
+                var x = 0.1;
                 while (x <= 15.0)
                 {
-                    double vi = Utils.modifiedBesselFunction_i_exponentiallyWeighted(nu, x);
-                    double wi = Utils.modifiedBesselFunction_i(nu, x) * System.Math.Exp(-x);
-                    double vk = Utils.modifiedBesselFunction_k_exponentiallyWeighted(nu, x);
-                    double wk = Const.M_PI_2 * (Utils.modifiedBesselFunction_i(-nu, x) * System.Math.Exp(-x) -
-                                                Utils.modifiedBesselFunction_i(nu, x) * System.Math.Exp(-x)) / System.Math.Sin(Const.M_PI * nu);
+                    var vi = Utils.modifiedBesselFunction_i_exponentiallyWeighted(nu, x);
+                    var wi = Utils.modifiedBesselFunction_i(nu, x) * System.Math.Exp(-x);
+                    var vk = Utils.modifiedBesselFunction_k_exponentiallyWeighted(nu, x);
+                    var wk = Const.M_PI_2 * (Utils.modifiedBesselFunction_i(-nu, x) * System.Math.Exp(-x) -
+                                             Utils.modifiedBesselFunction_i(nu, x) * System.Math.Exp(-x)) / System.Math.Sin(Const.M_PI * nu);
                     if (System.Math.Abs((vi - wi) / (System.Math.Max(System.Math.Exp(x), 1.0) * vi)) > 1E3 * Const.QL_EPSILON)
                         QAssert.Fail("failed to verify exponentially weighted"
                                      + "modified Bessel function of first kind"
@@ -260,19 +260,19 @@ namespace QLNet.Tests
             nu = -5.0;
             while (nu <= 5.0)
             {
-                double x = -5.0;
+                var x = -5.0;
                 while (x <= 5.0)
                 {
-                    double y = -5.0;
+                    var y = -5.0;
                     while (y <= 5.0)
                     {
-                        Complex z = new Complex(x, y);
-                        Complex vi = Utils.modifiedBesselFunction_i_exponentiallyWeighted(nu, z);
-                        Complex wi = Utils.modifiedBesselFunction_i(nu, z) * Complex.Exp(-z);
-                        Complex vk = Utils.modifiedBesselFunction_k_exponentiallyWeighted(nu, z);
-                        Complex wk = Const.M_PI_2 * (Utils.modifiedBesselFunction_i(-nu, z) * Complex.Exp(-z) -
-                                                     Utils.modifiedBesselFunction_i(nu, z) * Complex.Exp(-z)) /
-                                     System.Math.Sin(Const.M_PI * nu);
+                        var z = new Complex(x, y);
+                        var vi = Utils.modifiedBesselFunction_i_exponentiallyWeighted(nu, z);
+                        var wi = Utils.modifiedBesselFunction_i(nu, z) * Complex.Exp(-z);
+                        var vk = Utils.modifiedBesselFunction_k_exponentiallyWeighted(nu, z);
+                        var wk = Const.M_PI_2 * (Utils.modifiedBesselFunction_i(-nu, z) * Complex.Exp(-z) -
+                                                 Utils.modifiedBesselFunction_i(nu, z) * Complex.Exp(-z)) /
+                                 System.Math.Sin(Const.M_PI * nu);
                         if (Complex.Abs((vi - wi) / vi) > 1E3 * Const.QL_EPSILON)
                             QAssert.Fail("failed to verify exponentially weighted"
                                          + "modified Bessel function of first kind"

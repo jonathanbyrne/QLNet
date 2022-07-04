@@ -31,7 +31,7 @@ namespace QLNet.Instruments
 
         \ingroup instruments
     */
-    public class CliquetOption : OneAssetOption
+    [JetBrains.Annotations.PublicAPI] public class CliquetOption : OneAssetOption
     {
         public CliquetOption(PercentageStrikePayoff payoff, EuropeanExercise maturity, List<Date> resetDates)
            : base(payoff, maturity)
@@ -42,8 +42,8 @@ namespace QLNet.Instruments
         {
             base.setupArguments(args);
             // set accrued coupon, last fixing, caps, floors
-            Arguments moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong engine type");
+            var moreArgs = args as Arguments;
+            Utils.QL_REQUIRE(moreArgs != null, () => "wrong engine ExerciseType");
             moreArgs.resetDates = new List<Date>(resetDates_);
         }
         private List<Date> resetDates_;
@@ -63,8 +63,8 @@ namespace QLNet.Instruments
             }
             public override void validate()
             {
-                PercentageStrikePayoff moneyness = payoff as PercentageStrikePayoff;
-                Utils.QL_REQUIRE(moneyness != null, () => "wrong payoff type");
+                var moneyness = payoff as PercentageStrikePayoff;
+                Utils.QL_REQUIRE(moneyness != null, () => "wrong payoff ExerciseType");
                 Utils.QL_REQUIRE(moneyness.strike() > 0.0, () => "negative or zero moneyness given");
                 Utils.QL_REQUIRE(accruedCoupon == null || accruedCoupon >= 0.0, () => "negative accrued coupon");
                 Utils.QL_REQUIRE(localCap == null || localCap >= 0.0, () => "negative local cap");
@@ -72,7 +72,7 @@ namespace QLNet.Instruments
                 Utils.QL_REQUIRE(globalCap == null || globalCap >= 0.0, () => "negative global cap");
                 Utils.QL_REQUIRE(globalFloor == null || globalFloor >= 0.0, () => "negative global floor");
                 Utils.QL_REQUIRE(!resetDates.empty(), () => "no reset dates given");
-                for (int i = 0; i < resetDates.Count; ++i)
+                for (var i = 0; i < resetDates.Count; ++i)
                 {
                     Utils.QL_REQUIRE(exercise.lastDate() > resetDates[i], () => "reset date greater or equal to maturity");
                     Utils.QL_REQUIRE(i == 0 || resetDates[i] > resetDates[i - 1], () => "unsorted reset dates");

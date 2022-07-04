@@ -28,7 +28,7 @@ namespace QLNet.processes
         public abstract double hazardRate(double t, double underlying);
     }
 
-    public class NegativePowerDefaultIntensity : Defaultable
+    [JetBrains.Annotations.PublicAPI] public class NegativePowerDefaultIntensity : Defaultable
     {
         private double alpha_;
         private double p_;
@@ -50,13 +50,10 @@ namespace QLNet.processes
 
             return alpha_ * System.Math.Pow(s, -p_);
         }
-        public override double defaultRecovery(double t, double s)
-        {
-            return recovery_;
-        }
+        public override double defaultRecovery(double t, double s) => recovery_;
     }
 
-    public class ConstantDefaultIntensity : Defaultable
+    [JetBrains.Annotations.PublicAPI] public class ConstantDefaultIntensity : Defaultable
     {
         private double constant_;
         private double recovery_;
@@ -68,13 +65,8 @@ namespace QLNet.processes
             constant_ = constant;
             recovery_ = recovery;
         }
-        public override double hazardRate(double t, double s)
-        {
-            return constant_;
-        }
-        public override double defaultRecovery(double t, double s)
-        {
-            return recovery_;
-        }
+        public override double hazardRate(double t, double s) => constant_;
+
+        public override double defaultRecovery(double t, double s) => recovery_;
     }
 }

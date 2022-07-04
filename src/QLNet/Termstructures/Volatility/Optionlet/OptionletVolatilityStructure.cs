@@ -55,7 +55,7 @@ namespace QLNet.Termstructures.Volatility.Optionlet
         //! returns the volatility for a given option tenor and strike rate
         public double volatility(Period optionTenor, double strike, bool extrapolate = false)
         {
-            Date optionDate = optionDateFromTenor(optionTenor);
+            var optionDate = optionDateFromTenor(optionTenor);
             return volatility(optionDate, strike, extrapolate);
         }
 
@@ -78,29 +78,29 @@ namespace QLNet.Termstructures.Volatility.Optionlet
         //! returns the Black variance for a given option tenor and strike rate
         public double blackVariance(Period optionTenor, double strike, bool extrapolate = false)
         {
-            Date optionDate = optionDateFromTenor(optionTenor);
+            var optionDate = optionDateFromTenor(optionTenor);
             return blackVariance(optionDate, strike, extrapolate);
         }
 
         //! returns the Black variance for a given option date and strike rate
         public double blackVariance(Date optionDate, double strike, bool extrapolate = false)
         {
-            double v = volatility(optionDate, strike, extrapolate);
-            double t = timeFromReference(optionDate);
+            var v = volatility(optionDate, strike, extrapolate);
+            var t = timeFromReference(optionDate);
             return v * v * t;
         }
 
         //! returns the Black variance for a given option time and strike rate
         public double blackVariance(double optionTime, double strike, bool extrapolate = false)
         {
-            double v = volatility(optionTime, strike, extrapolate);
+            var v = volatility(optionTime, strike, extrapolate);
             return v * v * optionTime;
         }
 
         //! returns the smile for a given option tenor
         public SmileSection smileSection(Period optionTenor, bool extr = false)
         {
-            Date optionDate = optionDateFromTenor(optionTenor);
+            var optionDate = optionDateFromTenor(optionTenor);
             return smileSection(optionDate, extrapolate);
         }
 
@@ -120,21 +120,16 @@ namespace QLNet.Termstructures.Volatility.Optionlet
 
         #endregion
 
-        public virtual double displacement() { return 0.0; }
-        public virtual VolatilityType volatilityType() { return VolatilityType.ShiftedLognormal; }
+        public virtual double displacement() => 0.0;
 
-        protected virtual SmileSection smileSectionImpl(Date optionDate)
-        {
-            return smileSectionImpl(timeFromReference(optionDate));
-        }
+        public virtual VolatilityType volatilityType() => VolatilityType.ShiftedLognormal;
+
+        protected virtual SmileSection smileSectionImpl(Date optionDate) => smileSectionImpl(timeFromReference(optionDate));
 
         //! implements the actual smile calculation in derived classes
         protected abstract SmileSection smileSectionImpl(double optionTime);
 
-        protected double volatilityImpl(Date optionDate, double strike)
-        {
-            return volatilityImpl(timeFromReference(optionDate), strike);
-        }
+        protected double volatilityImpl(Date optionDate, double strike) => volatilityImpl(timeFromReference(optionDate), strike);
 
         //! implements the actual volatility calculation in derived classes
         protected abstract double volatilityImpl(double optionTime, double strike);

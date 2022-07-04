@@ -60,7 +60,7 @@ namespace QLNet.Time.Calendars
         \test the correctness of the returned results is tested against a
               list of known holidays.
     */
-    public class Italy : Calendar
+    [JetBrains.Annotations.PublicAPI] public class Italy : Calendar
     {
         //! Italian calendars
         public enum Market
@@ -94,14 +94,15 @@ namespace QLNet.Time.Calendars
             public static readonly Settlement Singleton = new Settlement();
             private Settlement() { }
 
-            public override string name() { return "Italian settlement"; }
+            public override string name() => "Italian settlement";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
 
                 if (isWeekend(w)
                     // New Year's Day
@@ -138,14 +139,15 @@ namespace QLNet.Time.Calendars
             public static readonly Exchange Singleton = new Exchange();
             private Exchange() { }
 
-            public override string name() { return "Milan stock exchange"; }
+            public override string name() => "Milan stock exchange";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
 
                 if (isWeekend(w)
                     // New Year's Day

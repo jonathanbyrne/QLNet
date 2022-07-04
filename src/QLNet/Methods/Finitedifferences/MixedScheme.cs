@@ -22,12 +22,12 @@ using System.Collections.Generic;
 
 namespace QLNet.Methods.Finitedifferences
 {
-    public interface ISchemeFactory
+    [JetBrains.Annotations.PublicAPI] public interface ISchemeFactory
     {
         IMixedScheme factory(object L, object bcs, object[] additionalInputs = null);
     }
 
-    public interface IMixedScheme
+    [JetBrains.Annotations.PublicAPI] public interface IMixedScheme
     {
         void step(ref object a, double t, double theta = 1.0);
         void setStep(double dt);
@@ -39,7 +39,7 @@ namespace QLNet.Methods.Finitedifferences
 
         \ingroup findiff
     */
-    public class MixedScheme<Operator> : IMixedScheme where Operator : IOperator
+    [JetBrains.Annotations.PublicAPI] public class MixedScheme<Operator> : IMixedScheme where Operator : IOperator
     {
         protected Operator L_, I_, explicitPart_, implicitPart_;
         protected double dt_;
@@ -59,7 +59,7 @@ namespace QLNet.Methods.Finitedifferences
 
         public void step(ref object o, double t, double theta = 1.0)
         {
-            Vector a = (Vector)o;
+            var a = (Vector)o;
 
             int i;
             for (i = 0; i < bcs_.Count; i++)

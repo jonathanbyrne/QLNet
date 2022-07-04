@@ -33,7 +33,7 @@ namespace QLNet.Math
         B-spline has \f$ p=3 \f$, etc.
 
     */
-    public class BSpline
+    [JetBrains.Annotations.PublicAPI] public class BSpline
     {
         public BSpline(int p, int n, List<double> knots)
         {
@@ -47,7 +47,7 @@ namespace QLNet.Math
 
             Utils.QL_REQUIRE(knots.Count == p + n + 2, () => "number of knots must equal p+n+2");
 
-            for (int i = 0; i < knots.Count - 1; ++i)
+            for (var i = 0; i < knots.Count - 1; ++i)
             {
                 Utils.QL_REQUIRE(knots[i] <= knots[i + 1], () => "knots points must be nondecreasing");
             }

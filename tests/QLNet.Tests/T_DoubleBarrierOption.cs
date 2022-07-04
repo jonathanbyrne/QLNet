@@ -28,7 +28,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_DoubleBarrierOption
+    [JetBrains.Annotations.PublicAPI] public class T_DoubleBarrierOption
     {
         internal void REPORT_FAILURE(string greekName, DoubleBarrier.Type barrierType, double barrierlo, double barrierhi,
                                    StrikedTypePayoff payoff, Exercise exercise, double s, double q,
@@ -160,7 +160,7 @@ namespace QLNet.Tests
         {
             // Testing double barrier european options against Haug's values
 
-            Exercise.Type european = Exercise.Type.European;
+            var european = Exercise.Type.European;
             NewBarrierOptionData[] values =
             {
             /* The data below are from
@@ -169,7 +169,7 @@ namespace QLNet.Tests
                Note:
                The book uses b instead of q (q=r-b)
             */
-            //           BarrierType, barr.lo,  barr.hi,         type, exercise,strk,     s,   q,   r,    t,    v,  result, tol
+            //           BarrierType, barr.lo,  barr.hi,         ExerciseType, exercise,strk,     s,   q,   r,    t,    v,  result, tol
             new NewBarrierOptionData(DoubleBarrier.Type.KnockOut,   50.0,    150.0, QLNet.Option.Type.Call, european, 100, 100.0, 0.0, 0.1, 0.25, 0.15,  4.3515, 1.0e-4),
             new NewBarrierOptionData(DoubleBarrier.Type.KnockOut,   50.0,    150.0, QLNet.Option.Type.Call, european, 100, 100.0, 0.0, 0.1, 0.25, 0.25,  6.1644, 1.0e-4),
             new NewBarrierOptionData(DoubleBarrier.Type.KnockOut,   50.0,    150.0, QLNet.Option.Type.Call, european, 100, 100.0, 0.0, 0.1, 0.25, 0.35,  7.0373, 1.0e-4),
@@ -205,7 +205,7 @@ namespace QLNet.Tests
             new NewBarrierOptionData(DoubleBarrier.Type.KnockOut,   90.0,    110.0, QLNet.Option.Type.Call, european, 100, 100.0, 0.0, 0.1, 0.50, 0.25,  0.0441, 1.0e-4),
             new NewBarrierOptionData(DoubleBarrier.Type.KnockOut,   90.0,    110.0, QLNet.Option.Type.Call, european, 100, 100.0, 0.0, 0.1, 0.50, 0.35,  0.0011, 1.0e-4),
 
-            //           BarrierType, barr.lo,  barr.hi,         type, exercise,strk,     s,   q,   r,    t,    v,  result, tol
+            //           BarrierType, barr.lo,  barr.hi,         ExerciseType, exercise,strk,     s,   q,   r,    t,    v,  result, tol
             new NewBarrierOptionData(DoubleBarrier.Type.KnockOut,   50.0,    150.0,  QLNet.Option.Type.Put, european, 100, 100.0, 0.0, 0.1, 0.25, 0.15,  1.8825, 1.0e-4),
             new NewBarrierOptionData(DoubleBarrier.Type.KnockOut,   50.0,    150.0,  QLNet.Option.Type.Put, european, 100, 100.0, 0.0, 0.1, 0.25, 0.25,  3.7855, 1.0e-4),
             new NewBarrierOptionData(DoubleBarrier.Type.KnockOut,   50.0,    150.0,  QLNet.Option.Type.Put, european, 100, 100.0, 0.0, 0.1, 0.25, 0.35,  5.7191, 1.0e-4),
@@ -241,7 +241,7 @@ namespace QLNet.Tests
             new NewBarrierOptionData(DoubleBarrier.Type.KnockOut,   90.0,    110.0,  QLNet.Option.Type.Put, european, 100, 100.0, 0.0, 0.1, 0.50, 0.25,  0.0491, 1.0e-4),
             new NewBarrierOptionData(DoubleBarrier.Type.KnockOut,   90.0,    110.0,  QLNet.Option.Type.Put, european, 100, 100.0, 0.0, 0.1, 0.50, 0.35,  0.0013, 1.0e-4),
 
-            //           BarrierType, barr.lo,  barr.hi,         type,  strk,     s,   q,   r,    t,    v,  result, tol
+            //           BarrierType, barr.lo,  barr.hi,         ExerciseType,  strk,     s,   q,   r,    t,    v,  result, tol
             new NewBarrierOptionData(DoubleBarrier.Type.KnockIn,    50.0,    150.0, QLNet.Option.Type.Call, european, 100, 100.0, 0.0, 0.1, 0.25, 0.15,  0.0000, 1.0e-4),
             new NewBarrierOptionData(DoubleBarrier.Type.KnockIn,    50.0,    150.0, QLNet.Option.Type.Call, european, 100, 100.0, 0.0, 0.1, 0.25, 0.25,  0.0900, 1.0e-4),
             new NewBarrierOptionData(DoubleBarrier.Type.KnockIn,    50.0,    150.0, QLNet.Option.Type.Call, european, 100, 100.0, 0.0, 0.1, 0.25, 0.35,  1.1537, 1.0e-4),
@@ -280,19 +280,19 @@ namespace QLNet.Tests
          };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            SimpleQuote qRate = new SimpleQuote(0.0);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol = new SimpleQuote(0.0);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
+            var spot = new SimpleQuote(0.0);
+            var qRate = new SimpleQuote(0.0);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.0);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol = new SimpleQuote(0.0);
+            var volTS = Utilities.flatVol(today, vol, dc);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
-                Date exDate = today + (int)(values[i].t * 360 + 0.5);
+                var exDate = today + (int)(values[i].t * 360 + 0.5);
                 Exercise exercise = new EuropeanExercise(exDate);
 
                 spot.setValue(values[i].s);
@@ -302,13 +302,13 @@ namespace QLNet.Tests
 
                 StrikedTypePayoff payoff = new PlainVanillaPayoff(values[i].type, values[i].strike);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(
+                var stochProcess = new BlackScholesMertonProcess(
                    new Handle<Quote>(spot),
                    new Handle<YieldTermStructure>(qTS),
                    new Handle<YieldTermStructure>(rTS),
                    new Handle<BlackVolTermStructure>(volTS));
 
-                DoubleBarrierOption opt = new DoubleBarrierOption(values[i].barrierType, values[i].barrierlo,
+                var opt = new DoubleBarrierOption(values[i].barrierType, values[i].barrierlo,
                                                                   values[i].barrierhi, 0,  // no rebate
                                                                   payoff, exercise);
 
@@ -316,9 +316,9 @@ namespace QLNet.Tests
                 IPricingEngine engine = new AnalyticDoubleBarrierEngine(stochProcess);
                 opt.setPricingEngine(engine);
 
-                double calculated = opt.NPV();
-                double expected = values[i].result;
-                double error = System.Math.Abs(calculated - expected);
+                var calculated = opt.NPV();
+                var expected = values[i].result;
+                var error = System.Math.Abs(calculated - expected);
                 if (error > values[i].tol)
                 {
                     REPORT_FAILURE("Ikeda/Kunitomo value", values[i].barrierType, values[i].barrierlo,
@@ -349,11 +349,11 @@ namespace QLNet.Tests
         public void testVannaVolgaDoubleBarrierValues()
         {
             // Testing double-barrier FX options against Vanna/Volga values
-            SavedSettings backup = new SavedSettings();
+            var backup = new SavedSettings();
 
             DoubleBarrierFxOptionData[] values =
             {
-            //                             BarrierType,                    barr.1, barr.2, rebate,         type,    strike,          s,         q,         r,  t, vol25Put,    volAtm,vol25Call,      vol,    result,   tol
+            //                             BarrierType,                    barr.1, barr.2, rebate,         ExerciseType,    strike,          s,         q,         r,  t, vol25Put,    volAtm,vol25Call,      vol,    result,   tol
             new DoubleBarrierFxOptionData(DoubleBarrier.Type.KnockOut,    1.1,    1.5,    0.0, QLNet.Option.Type.Call,   1.13321,    1.30265, 0.0003541, 0.0033871, 1.0, 0.10087,   0.08925, 0.08463,   0.11638,   0.14413, 1.0e-4),
             new DoubleBarrierFxOptionData(DoubleBarrier.Type.KnockOut,    1.1,    1.5,    0.0, QLNet.Option.Type.Call,   1.22687,    1.30265, 0.0003541, 0.0033871, 1.0, 0.10087,   0.08925, 0.08463,   0.10088,   0.07456, 1.0e-4),
             new DoubleBarrierFxOptionData(DoubleBarrier.Type.KnockOut,    1.1,    1.5,    0.0, QLNet.Option.Type.Call,   1.31179,    1.30265, 0.0003541, 0.0033871, 1.0, 0.10087,   0.08925, 0.08463,   0.08925,   0.02710, 1.0e-4),
@@ -381,23 +381,23 @@ namespace QLNet.Tests
          };
 
             DayCounter dc = new Actual360();
-            Date today = new Date(05, Month.Mar, 2013);
+            var today = new Date(05, Month.Mar, 2013);
             Settings.setEvaluationDate(today);
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            SimpleQuote qRate = new SimpleQuote(0.0);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol25Put = new SimpleQuote(0.0);
-            SimpleQuote volAtm = new SimpleQuote(0.0);
-            SimpleQuote vol25Call = new SimpleQuote(0.0);
+            var spot = new SimpleQuote(0.0);
+            var qRate = new SimpleQuote(0.0);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.0);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol25Put = new SimpleQuote(0.0);
+            var volAtm = new SimpleQuote(0.0);
+            var vol25Call = new SimpleQuote(0.0);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
-                for (int j = 0; j <= 1; j++)
+                for (var j = 0; j <= 1; j++)
                 {
-                    DoubleBarrier.Type barrierType = (DoubleBarrier.Type)j;
+                    var barrierType = (DoubleBarrier.Type)j;
                     spot.setValue(values[i].s);
                     qRate.setValue(values[i].q);
                     rRate.setValue(values[i].r);
@@ -407,24 +407,24 @@ namespace QLNet.Tests
 
                     StrikedTypePayoff payoff = new PlainVanillaPayoff(values[i].type, values[i].strike);
 
-                    Date exDate = today + (int)(values[i].t * 365 + 0.5);
+                    var exDate = today + (int)(values[i].t * 365 + 0.5);
                     Exercise exercise = new EuropeanExercise(exDate);
 
-                    Handle<DeltaVolQuote> volAtmQuote = new Handle<DeltaVolQuote>(
+                    var volAtmQuote = new Handle<DeltaVolQuote>(
                        new DeltaVolQuote(new Handle<Quote>(volAtm), DeltaVolQuote.DeltaType.Fwd, values[i].t,
                                          DeltaVolQuote.AtmType.AtmDeltaNeutral));
 
                     //always delta neutral atm
-                    Handle<DeltaVolQuote> vol25PutQuote = new Handle<DeltaVolQuote>(new DeltaVolQuote(-0.25,
+                    var vol25PutQuote = new Handle<DeltaVolQuote>(new DeltaVolQuote(-0.25,
                                                                                     new Handle<Quote>(vol25Put), values[i].t, DeltaVolQuote.DeltaType.Fwd));
 
-                    Handle<DeltaVolQuote> vol25CallQuote = new Handle<DeltaVolQuote>(new DeltaVolQuote(0.25,
+                    var vol25CallQuote = new Handle<DeltaVolQuote>(new DeltaVolQuote(0.25,
                                                                                      new Handle<Quote>(vol25Call), values[i].t, DeltaVolQuote.DeltaType.Fwd));
 
-                    DoubleBarrierOption doubleBarrierOption = new DoubleBarrierOption(barrierType,
+                    var doubleBarrierOption = new DoubleBarrierOption(barrierType,
                                                                                       values[i].barrier1, values[i].barrier2, values[i].rebate, payoff, exercise);
 
-                    double bsVanillaPrice = Utils.blackFormula(values[i].type, values[i].strike,
+                    var bsVanillaPrice = Utils.blackFormula(values[i].type, values[i].strike,
                                                                spot.value() * qTS.discount(values[i].t) / rTS.discount(values[i].t),
                                                                values[i].v * System.Math.Sqrt(values[i].t), rTS.discount(values[i].t));
 
@@ -445,8 +445,8 @@ namespace QLNet.Tests
                     else if (barrierType == DoubleBarrier.Type.KnockIn)
                         expected = bsVanillaPrice - values[i].result;
 
-                    double calculated = doubleBarrierOption.NPV();
-                    double error = System.Math.Abs(calculated - expected);
+                    var calculated = doubleBarrierOption.NPV();
+                    var error = System.Math.Abs(calculated - expected);
                     if (error > values[i].tol)
                     {
                         REPORT_FAILURE_VANNAVOLGA("value", values[i].barrierType,
@@ -468,7 +468,7 @@ namespace QLNet.Tests
 
                     calculated = doubleBarrierOption.NPV();
                     error = System.Math.Abs(calculated - expected);
-                    double maxtol = 5.0e-3; // different engines have somewhat different results
+                    var maxtol = 5.0e-3; // different engines have somewhat different results
                     if (error > maxtol)
                     {
                         REPORT_FAILURE_VANNAVOLGA("value", values[i].barrierType,

@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Models.MarketModels
 {
-    public interface IBrownianGenerator
+    [JetBrains.Annotations.PublicAPI] public interface IBrownianGenerator
     {
         double nextStep(List<double> l);
         double nextPath();
@@ -26,7 +26,7 @@ namespace QLNet.Models.MarketModels
         int numberOfSteps();
     }
 
-    public interface IBrownianGeneratorFactory
+    [JetBrains.Annotations.PublicAPI] public interface IBrownianGeneratorFactory
     {
         IBrownianGenerator create(int factors, int steps);
     }

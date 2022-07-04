@@ -47,25 +47,25 @@ namespace QLNet
       */
       public static List<int> qrDecomposition(Matrix M, ref Matrix q, ref Matrix r, bool pivot)
       {
-         Matrix mT = Matrix.transpose(M);
-         int m = M.rows();
-         int n = M.columns();
+         var mT = Matrix.transpose(M);
+         var m = M.rows();
+         var n = M.columns();
 
          List<int> lipvt = new InitializedList<int>(n);
-         Vector rdiag = new Vector(n);
-         Vector wa = new Vector(n);
+         var rdiag = new Vector(n);
+         var wa = new Vector(n);
 
          MINPACK.qrfac(m, n, mT, 0, (pivot) ? 1 : 0, ref lipvt, n, ref rdiag, ref rdiag, wa);
 
          if (r.columns() != n || r.rows() != n)
             r = new Matrix(n, n);
 
-         for (int i = 0; i < n; ++i)
+         for (var i = 0; i < n; ++i)
          {
             r[i, i] = rdiag[i];
             if (i < m)
             {
-               for (int j = i; j < mT.rows() - 1; j++)
+               for (var j = i; j < mT.rows() - 1; j++)
                   r[i, j + 1] = mT[j + 1, i];
             }
          }
@@ -73,22 +73,22 @@ namespace QLNet
          if (q.rows() != m || q.columns() != n)
             q = new Matrix(m, n);
 
-         Vector w = new Vector(m);
-         for (int k = 0; k < m; ++k)
+         var w = new Vector(m);
+         for (var k = 0; k < m; ++k)
          {
             w.Erase();
             w[k] = 1.0;
 
-            for (int j = 0; j < System.Math.Min(n, m); ++j)
+            for (var j = 0; j < System.Math.Min(n, m); ++j)
             {
-               double t3 = mT[j, j];
+               var t3 = mT[j, j];
                if (t3.IsNotEqual(0.0))
                {
                   double t = 0;
-                  for (int kk = j ; kk < mT.columns(); kk++)
+                  for (var kk = j ; kk < mT.columns(); kk++)
                      t += (mT[j, kk] * w[kk]) / t3 ;
 
-                  for (int i = j; i < m; ++i)
+                  for (var i = j; i < m; ++i)
                   {
                      w[i] -= mT[j, i] * t;
                   }
@@ -100,12 +100,12 @@ namespace QLNet
          List<int> ipvt = new InitializedList<int>(n);
          if (pivot)
          {
-            for (int i = 0; i < n; ++i)
+            for (var i = 0; i < n; ++i)
                ipvt[i] = lipvt[i];
          }
          else
          {
-            for (int i = 0; i < n; ++i)
+            for (var i = 0; i < n; ++i)
                ipvt[i] = i;
          }
 
@@ -132,8 +132,8 @@ namespace QLNet
       */
       public static Vector qrSolve(Matrix a, Vector b, bool pivot = true, Vector d = null)
       {
-         int m = a.rows();
-         int n = a.columns();
+         var m = a.rows();
+         var n = a.columns();
          if (d == null)
             d = new Vector();
          Utils.QL_REQUIRE(b.Count == m, () => "dimensions of A and b don't match");
@@ -141,23 +141,23 @@ namespace QLNet
 
          Matrix q = new Matrix(m, n), r = new Matrix(n, n);
 
-         List<int> lipvt = MatrixUtilities.qrDecomposition(a, ref q, ref r, pivot);
-         List<int> ipvt = new List<int>(n);
+         var lipvt = MatrixUtilities.qrDecomposition(a, ref q, ref r, pivot);
+         var ipvt = new List<int>(n);
          ipvt = lipvt;
 
-         Matrix aT = Matrix.transpose(a);
-         Matrix rT = Matrix.transpose(r);
+         var aT = Matrix.transpose(a);
+         var rT = Matrix.transpose(r);
 
-         Vector sdiag = new Vector(n);
-         Vector wa = new Vector(n);
+         var sdiag = new Vector(n);
+         var wa = new Vector(n);
 
-         Vector ld = new Vector(n, 0.0);
+         var ld = new Vector(n, 0.0);
          if (!d.empty())
          {
             ld = d;
          }
-         Vector x = new Vector(n);
-         Vector qtb = Matrix.transpose(q) * b;
+         var x = new Vector(n);
+         var qtb = Matrix.transpose(q) * b;
 
          MINPACK.qrsolv(n, rT, n, ipvt, ld, qtb, x, sdiag, wa);
 

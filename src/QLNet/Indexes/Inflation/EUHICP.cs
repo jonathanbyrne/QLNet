@@ -24,7 +24,7 @@ using QLNet.Time;
 namespace QLNet.Indexes.Inflation
 {
     //! EU HICP index
-    public class EUHICP : ZeroInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class EUHICP : ZeroInflationIndex
     {
         public EUHICP(bool interpolated)
            : this(interpolated, new Handle<ZeroInflationTermStructure>()) { }
@@ -37,7 +37,7 @@ namespace QLNet.Indexes.Inflation
     }
 
     //! Genuine year-on-year EU HICP (i.e. not a ratio of EU HICP)
-    public class YYEUHICP : YoYInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class YYEUHICP : YoYInflationIndex
     {
         public YYEUHICP(bool interpolated)
            : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
@@ -50,7 +50,7 @@ namespace QLNet.Indexes.Inflation
 
 
     //! Fake year-on-year EU HICP (i.e. a ratio of EU HICP)
-    public class YYEUHICPr : YoYInflationIndex
+    [JetBrains.Annotations.PublicAPI] public class YYEUHICPr : YoYInflationIndex
     {
         public YYEUHICPr(bool interpolated)
            : this(interpolated, new Handle<YoYInflationTermStructure>()) { }

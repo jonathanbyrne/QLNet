@@ -30,7 +30,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
                  class should be used with term structures that are
                  time dependant only.
     */
-    public class ImpliedVolTermStructure : BlackVarianceTermStructure
+    [JetBrains.Annotations.PublicAPI] public class ImpliedVolTermStructure : BlackVarianceTermStructure
     {
         public ImpliedVolTermStructure(Handle<BlackVolTermStructure> originalTS, Date referenceDate)
            : base(referenceDate)
@@ -39,11 +39,15 @@ namespace QLNet.Termstructures.Volatility.equityfx
             originalTS_.registerWith(update);
         }
         // TermStructure interface
-        public override DayCounter dayCounter() { return originalTS_.link.dayCounter(); }
-        public override Date maxDate() { return originalTS_.link.maxDate(); }
+        public override DayCounter dayCounter() => originalTS_.link.dayCounter();
+
+        public override Date maxDate() => originalTS_.link.maxDate();
+
         // VolatilityTermStructure interface
-        public override double minStrike() { return originalTS_.link.minStrike(); }
-        public override double maxStrike() { return originalTS_.link.maxStrike(); }
+        public override double minStrike() => originalTS_.link.minStrike();
+
+        public override double maxStrike() => originalTS_.link.maxStrike();
+
         // Visitability
         public virtual void accept(IAcyclicVisitor v)
         {
@@ -57,7 +61,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
             /* timeShift (and/or variance) variance at evaluation date
               cannot be cached since the original curve could change
               between invocations of this method */
-            double timeShift = dayCounter().yearFraction(originalTS_.link.referenceDate(), referenceDate());
+            var timeShift = dayCounter().yearFraction(originalTS_.link.referenceDate(), referenceDate());
             /* t is relative to the current reference date
                and needs to be converted to the time relative
                to the reference date of the original curve */

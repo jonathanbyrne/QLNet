@@ -83,15 +83,11 @@ namespace QLNet.Instruments
 
         public virtual Date settlementDate()
         {
-            Date d = calendar_.advance(Settings.evaluationDate(), settlementDays_, TimeUnit.Days);
+            var d = calendar_.advance(Settings.evaluationDate(), settlementDays_, TimeUnit.Days);
             return Date.Max(d, valueDate_);
         }
 
-        public override bool isExpired()
-        {
-            return new simple_event(maturityDate_).hasOccurred(settlementDate());
-        }
-
+        public override bool isExpired() => new simple_event(maturityDate_).hasOccurred(settlementDate());
 
         //! returns spot value/price of an underlying financial instrument
         public abstract double spotValue();
@@ -122,8 +118,8 @@ namespace QLNet.Instruments
                                          Compounding compoundingConvention, DayCounter dayCounter)
         {
 
-            double tenor = dayCounter.yearFraction(settlementDate, maturityDate_);
-            double compoundingFactor = forwardValue / (underlyingSpotValue - spotIncome(incomeDiscountCurve_));
+            var tenor = dayCounter.yearFraction(settlementDate, maturityDate_);
+            var compoundingFactor = forwardValue / (underlyingSpotValue - spotIncome(incomeDiscountCurve_));
             return InterestRate.impliedRate(compoundingFactor, dayCounter, compoundingConvention, Frequency.Annual, tenor);
         }
 
@@ -131,20 +127,20 @@ namespace QLNet.Instruments
         {
             Utils.QL_REQUIRE(!discountCurve_.empty(), () => "no discounting term structure set to Forward");
 
-            ForwardTypePayoff ftpayoff = payoff_ as ForwardTypePayoff;
-            double fwdValue = forwardValue();
+            var ftpayoff = payoff_ as ForwardTypePayoff;
+            var fwdValue = forwardValue();
             NPV_ = ftpayoff.value(fwdValue) * discountCurve_.link.discount(maturityDate_);
         }
     }
 
-    //! Class for forward type payoffs
-    public class ForwardTypePayoff : Payoff
+    //! Class for forward ExerciseType payoffs
+    [JetBrains.Annotations.PublicAPI] public class ForwardTypePayoff : Payoff
     {
         protected Position.Type type_;
-        public Position.Type forwardType() { return type_; }
+        public Position.Type forwardType() => type_;
 
         protected double strike_;
-        public double strike() { return strike_; }
+        public double strike() => strike_;
 
         public ForwardTypePayoff(Position.Type type, double strike)
         {
@@ -154,10 +150,11 @@ namespace QLNet.Instruments
         }
 
         // Payoff interface
-        public override string name() { return "Forward"; }
+        public override string name() => "Forward";
+
         public override string description()
         {
-            string result = name() + ", " + strike() + " strike";
+            var result = name() + ", " + strike() + " strike";
             return result;
         }
         public override double value(double price)
@@ -169,7 +166,7 @@ namespace QLNet.Instruments
                 case Position.Type.Short:
                     return strike_ - price;
                 default:
-                    Utils.QL_FAIL("unknown/illegal position type");
+                    Utils.QL_FAIL("unknown/illegal position ExerciseType");
                     return 0;
             }
         }

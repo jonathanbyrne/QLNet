@@ -34,7 +34,7 @@ namespace QLNet.Math.integrals
        The original MATLAB version can be downloaded here
        http://www.inf.ethz.ch/personal/gander/adaptlob.m
     */
-    public class GaussLobattoIntegral : Integrator
+    [JetBrains.Annotations.PublicAPI] public class GaussLobattoIntegral : Integrator
     {
 
 
@@ -51,7 +51,7 @@ namespace QLNet.Math.integrals
         protected override double integrate(Func<double, double> f, double a, double b)
         {
             setNumberOfEvaluations(0);
-            double calcAbsTolerance = calculateAbsTolerance(f, a, b);
+            var calcAbsTolerance = calculateAbsTolerance(f, a, b);
 
             increaseNumberOfEvaluations(2);
             return adaptivGaussLobattoStep(f, a, b, f(a), f(b), calcAbsTolerance);
@@ -61,27 +61,27 @@ namespace QLNet.Math.integrals
         {
             Utils.QL_REQUIRE(numberOfEvaluations() < maxEvaluations(), () => "max number of iterations reached");
 
-            double h = (b - a) / 2;
-            double m = (a + b) / 2;
+            var h = (b - a) / 2;
+            var m = (a + b) / 2;
 
-            double mll = m - alpha_ * h;
-            double ml = m - beta_ * h;
-            double mr = m + beta_ * h;
-            double mrr = m + alpha_ * h;
+            var mll = m - alpha_ * h;
+            var ml = m - beta_ * h;
+            var mr = m + beta_ * h;
+            var mrr = m + alpha_ * h;
 
-            double fmll = f(mll);
-            double fml = f(ml);
-            double fm = f(m);
-            double fmr = f(mr);
-            double fmrr = f(mrr);
+            var fmll = f(mll);
+            var fml = f(ml);
+            var fm = f(m);
+            var fmr = f(mr);
+            var fmrr = f(mrr);
             increaseNumberOfEvaluations(5);
 
-            double integral2 = h / 6 * (fa + fb + 5 * (fml + fmr));
-            double integral1 = h / 1470 * (77 * (fa + fb)
-                                           + 432 * (fmll + fmrr) + 625 * (fml + fmr) + 672 * fm);
+            var integral2 = h / 6 * (fa + fb + 5 * (fml + fmr));
+            var integral1 = h / 1470 * (77 * (fa + fb)
+                                        + 432 * (fmll + fmrr) + 625 * (fml + fmr) + 672 * fm);
 
             // avoid 80 bit logic on x86 cpu
-            double dist = acc + (integral1 - integral2);
+            var dist = acc + (integral1 - integral2);
             if (dist.IsEqual(acc) || mll <= a || b <= mrr)
             {
                 Utils.QL_REQUIRE(m > a && b > m, () => "Interval contains no more machine number");
@@ -101,32 +101,32 @@ namespace QLNet.Math.integrals
 
         protected double calculateAbsTolerance(Func<double, double> f, double a, double b)
         {
-            double relTol = System.Math.Max(relAccuracy_ ?? 0, Const.QL_EPSILON);
+            var relTol = System.Math.Max(relAccuracy_ ?? 0, Const.QL_EPSILON);
 
-            double m = (a + b) / 2;
-            double h = (b - a) / 2;
-            double y1 = f(a);
-            double y3 = f(m - alpha_ * h);
-            double y5 = f(m - beta_ * h);
-            double y7 = f(m);
-            double y9 = f(m + beta_ * h);
-            double y11 = f(m + alpha_ * h);
-            double y13 = f(b);
+            var m = (a + b) / 2;
+            var h = (b - a) / 2;
+            var y1 = f(a);
+            var y3 = f(m - alpha_ * h);
+            var y5 = f(m - beta_ * h);
+            var y7 = f(m);
+            var y9 = f(m + beta_ * h);
+            var y11 = f(m + alpha_ * h);
+            var y13 = f(b);
 
-            double f1 = f(m - x1_ * h);
-            double f2 = f(m + x1_ * h);
-            double f3 = f(m - x2_ * h);
-            double f4 = f(m + x2_ * h);
-            double f5 = f(m - x3_ * h);
-            double f6 = f(m + x3_ * h);
+            var f1 = f(m - x1_ * h);
+            var f2 = f(m + x1_ * h);
+            var f3 = f(m - x2_ * h);
+            var f4 = f(m + x2_ * h);
+            var f5 = f(m - x3_ * h);
+            var f6 = f(m + x3_ * h);
 
-            double acc = h * (0.0158271919734801831 * (y1 + y13)
-                              + 0.0942738402188500455 * (f1 + f2)
-                              + 0.1550719873365853963 * (y3 + y11)
-                              + 0.1888215739601824544 * (f3 + f4)
-                              + 0.1997734052268585268 * (y5 + y9)
-                              + 0.2249264653333395270 * (f5 + f6)
-                              + 0.2426110719014077338 * y7);
+            var acc = h * (0.0158271919734801831 * (y1 + y13)
+                           + 0.0942738402188500455 * (f1 + f2)
+                           + 0.1550719873365853963 * (y3 + y11)
+                           + 0.1888215739601824544 * (f3 + f4)
+                           + 0.1997734052268585268 * (y5 + y9)
+                           + 0.2249264653333395270 * (f5 + f6)
+                           + 0.2426110719014077338 * y7);
 
             increaseNumberOfEvaluations(13);
             if (acc.IsEqual(0.0) && (f1.IsNotEqual(0.0) || f2.IsNotEqual(0.0) || f3.IsNotEqual(0.0)
@@ -135,12 +135,12 @@ namespace QLNet.Math.integrals
                 Utils.QL_FAIL("can not calculate absolute accuracy from relative accuracy");
             }
 
-            double r = 1.0;
+            var r = 1.0;
             if (useConvergenceEstimate_)
             {
-                double integral2 = h / 6 * (y1 + y13 + 5 * (y5 + y9));
-                double integral1 = h / 1470 * (77 * (y1 + y13) + 432 * (y3 + y11) +
-                                                 625 * (y5 + y9) + 672 * y7);
+                var integral2 = h / 6 * (y1 + y13 + 5 * (y5 + y9));
+                var integral1 = h / 1470 * (77 * (y1 + y13) + 432 * (y3 + y11) +
+                                            625 * (y5 + y9) + 672 * y7);
 
                 if (System.Math.Abs(integral2 - acc).IsNotEqual(0.0))
                     r = System.Math.Abs(integral1 - acc) / System.Math.Abs(integral2 - acc);

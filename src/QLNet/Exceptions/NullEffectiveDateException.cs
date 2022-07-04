@@ -2,7 +2,7 @@
 
 namespace QLNet.Exceptions
 {
-    public class NullEffectiveDateException : Exception
+    [JetBrains.Annotations.PublicAPI] public class NullEffectiveDateException : Exception
     {
         public NullEffectiveDateException()
         {

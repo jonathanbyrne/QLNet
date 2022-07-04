@@ -26,7 +26,7 @@ namespace QLNet.Indexes.Ibor
 
     See <http://www.isda.org/publications/pdf/Supplement-13-to-2000DefinitionsAnnex.pdf>.
     */
-    public class Aonia : OvernightIndex
+    [JetBrains.Annotations.PublicAPI] public class Aonia : OvernightIndex
     {
         public Aonia(Handle<YieldTermStructure> h = null)
            : base("Aonia", 0, new AUDCurrency(), new Australia(), new Actual365Fixed(),

@@ -29,7 +29,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_DigitalOption
+    [JetBrains.Annotations.PublicAPI] public class T_DigitalOption
     {
         struct DigitalOptionData
         {
@@ -89,26 +89,26 @@ namespace QLNet.Tests
             DigitalOptionData[] values =
             {
             // "Option pricing formulas", E.G. Haug, McGraw-Hill 1998 - pag 88
-            //        type, strike,  spot,    q,    r,    t,  vol,  value, tol
+            //        ExerciseType, strike,  spot,    q,    r,    t,  vol,  value, tol
             new DigitalOptionData(QLNet.Option.Type.Put,   80.00, 100.0, 0.06, 0.06, 0.75, 0.35, 2.6710, 1e-4, true)
          };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            SimpleQuote qRate = new SimpleQuote(0.0);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol = new SimpleQuote(0.0);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
+            var spot = new SimpleQuote(0.0);
+            var qRate = new SimpleQuote(0.0);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.0);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol = new SimpleQuote(0.0);
+            var volTS = Utilities.flatVol(today, vol, dc);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 StrikedTypePayoff payoff = new CashOrNothingPayoff(values[i].type, values[i].strike, 10.0);
 
-                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                var exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
                 Exercise exercise = new EuropeanExercise(exDate);
 
                 spot.setValue(values[i].s);
@@ -116,18 +116,18 @@ namespace QLNet.Tests
                 rRate.setValue(values[i].r);
                 vol.setValue(values[i].v);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
+                var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
                                                                                        new Handle<YieldTermStructure>(qTS),
                                                                                        new Handle<YieldTermStructure>(rTS),
                                                                                        new Handle<BlackVolTermStructure>(volTS));
 
                 IPricingEngine engine = new AnalyticEuropeanEngine(stochProcess);
 
-                VanillaOption opt = new VanillaOption(payoff, exercise);
+                var opt = new VanillaOption(payoff, exercise);
                 opt.setPricingEngine(engine);
 
-                double calculated = opt.NPV();
-                double error = System.Math.Abs(calculated - values[i].result);
+                var calculated = opt.NPV();
+                var error = System.Math.Abs(calculated - values[i].result);
                 if (error > values[i].tol)
                 {
                     REPORT_FAILURE("value", payoff, exercise, values[i].s, values[i].q,
@@ -147,26 +147,26 @@ namespace QLNet.Tests
             // "Option pricing formulas", E.G. Haug, McGraw-Hill 1998 - pag 90
             DigitalOptionData[] values =
             {
-            //        type, strike, spot,    q,    r,    t,  vol,   value, tol
+            //        ExerciseType, strike, spot,    q,    r,    t,  vol,   value, tol
             new  DigitalOptionData(QLNet.Option.Type.Put,   65.00, 70.0, 0.05, 0.07, 0.50, 0.27, 20.2069, 1e-4, true),
          };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            SimpleQuote qRate = new SimpleQuote(0.0);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol = new SimpleQuote(0.0);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
+            var spot = new SimpleQuote(0.0);
+            var qRate = new SimpleQuote(0.0);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.0);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol = new SimpleQuote(0.0);
+            var volTS = Utilities.flatVol(today, vol, dc);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 StrikedTypePayoff payoff = new AssetOrNothingPayoff(values[i].type, values[i].strike);
 
-                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                var exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
                 Exercise exercise = new EuropeanExercise(exDate);
 
                 spot.setValue(values[i].s);
@@ -174,18 +174,18 @@ namespace QLNet.Tests
                 rRate.setValue(values[i].r);
                 vol.setValue(values[i].v);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
+                var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
                                                                                        new Handle<YieldTermStructure>(qTS),
                                                                                        new Handle<YieldTermStructure>(rTS),
                                                                                        new Handle<BlackVolTermStructure>(volTS));
 
                 IPricingEngine engine = new AnalyticEuropeanEngine(stochProcess);
 
-                VanillaOption opt = new VanillaOption(payoff, exercise);
+                var opt = new VanillaOption(payoff, exercise);
                 opt.setPricingEngine(engine);
 
-                double calculated = opt.NPV();
-                double error = System.Math.Abs(calculated - values[i].result);
+                var calculated = opt.NPV();
+                var error = System.Math.Abs(calculated - values[i].result);
                 if (error > values[i].tol)
                 {
                     REPORT_FAILURE("value", payoff, exercise, values[i].s, values[i].q,
@@ -203,26 +203,26 @@ namespace QLNet.Tests
             // "Option pricing formulas", E.G. Haug, McGraw-Hill 1998 - pag 88
             DigitalOptionData[] values =
             {
-            //        type, strike, spot,    q,    r,    t,  vol,   value, tol
+            //        ExerciseType, strike, spot,    q,    r,    t,  vol,   value, tol
             new DigitalOptionData(QLNet.Option.Type.Call,  50.00, 50.0, 0.00, 0.09, 0.50, 0.20, -0.0053, 1e-4, true),
          };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            SimpleQuote qRate = new SimpleQuote(0.0);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol = new SimpleQuote(0.0);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
+            var spot = new SimpleQuote(0.0);
+            var qRate = new SimpleQuote(0.0);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.0);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol = new SimpleQuote(0.0);
+            var volTS = Utilities.flatVol(today, vol, dc);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 StrikedTypePayoff payoff = new GapPayoff(values[i].type, values[i].strike, 57.00);
 
-                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                var exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
                 Exercise exercise = new EuropeanExercise(exDate);
 
                 spot.setValue(values[i].s);
@@ -230,18 +230,18 @@ namespace QLNet.Tests
                 rRate.setValue(values[i].r);
                 vol.setValue(values[i].v);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
+                var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
                                                                                        new Handle<YieldTermStructure>(qTS),
                                                                                        new Handle<YieldTermStructure>(rTS),
                                                                                        new Handle<BlackVolTermStructure>(volTS));
 
                 IPricingEngine engine = new AnalyticEuropeanEngine(stochProcess);
 
-                VanillaOption opt = new VanillaOption(payoff, exercise);
+                var opt = new VanillaOption(payoff, exercise);
                 opt.setPricingEngine(engine);
 
-                double calculated = opt.NPV();
-                double error = System.Math.Abs(calculated - values[i].result);
+                var calculated = opt.NPV();
+                var error = System.Math.Abs(calculated - values[i].result);
                 if (error > values[i].tol)
                 {
                     REPORT_FAILURE("value", payoff, exercise, values[i].s, values[i].q,
@@ -258,7 +258,7 @@ namespace QLNet.Tests
 
             DigitalOptionData[] values =
             {
-            //        type, strike,   spot,    q,    r,   t,  vol,   value, tol
+            //        ExerciseType, strike,   spot,    q,    r,   t,  vol,   value, tol
             // "Option pricing formulas", E.G. Haug, McGraw-Hill 1998 - pag 95, case 1,2
             new DigitalOptionData(QLNet.Option.Type.Put,  100.00, 105.00, 0.00, 0.10, 0.5, 0.20,  9.7264, 1e-4,  true),
             new DigitalOptionData(QLNet.Option.Type.Call, 100.00,  95.00, 0.00, 0.10, 0.5, 0.20, 11.6553, 1e-4,  true),
@@ -275,21 +275,21 @@ namespace QLNet.Tests
          };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            SimpleQuote qRate = new SimpleQuote(0.0);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol = new SimpleQuote(0.0);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
+            var spot = new SimpleQuote(0.0);
+            var qRate = new SimpleQuote(0.0);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.0);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol = new SimpleQuote(0.0);
+            var volTS = Utilities.flatVol(today, vol, dc);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 StrikedTypePayoff payoff = new CashOrNothingPayoff(values[i].type, values[i].strike, 15.00);
 
-                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                var exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
                 Exercise amExercise = new AmericanExercise(today, exDate);
 
                 spot.setValue(values[i].s);
@@ -297,18 +297,18 @@ namespace QLNet.Tests
                 rRate.setValue(values[i].r);
                 vol.setValue(values[i].v);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
+                var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
                                                                                        new Handle<YieldTermStructure>(qTS),
                                                                                        new Handle<YieldTermStructure>(rTS),
                                                                                        new Handle<BlackVolTermStructure>(volTS));
 
                 IPricingEngine engine = new AnalyticDigitalAmericanEngine(stochProcess);
 
-                VanillaOption opt = new VanillaOption(payoff, amExercise);
+                var opt = new VanillaOption(payoff, amExercise);
                 opt.setPricingEngine(engine);
 
-                double calculated = opt.NPV();
-                double error = System.Math.Abs(calculated - values[i].result);
+                var calculated = opt.NPV();
+                var error = System.Math.Abs(calculated - values[i].result);
                 if (error > values[i].tol)
                 {
                     REPORT_FAILURE("value", payoff, amExercise, values[i].s,
@@ -325,7 +325,7 @@ namespace QLNet.Tests
 
             DigitalOptionData[] values =
             {
-            //        type, strike,   spot,    q,    r,   t,  vol,   value, tol
+            //        ExerciseType, strike,   spot,    q,    r,   t,  vol,   value, tol
             // "Option pricing formulas", E.G. Haug, McGraw-Hill 1998 - pag 95, case 3,4
             new DigitalOptionData(QLNet.Option.Type.Put,  100.00, 105.00, 0.00, 0.10, 0.5, 0.20, 64.8426, 1e-04, true),   // Haug value is wrong here, Haug VBA code is right
             new DigitalOptionData(QLNet.Option.Type.Call, 100.00,  95.00, 0.00, 0.10, 0.5, 0.20, 77.7017, 1e-04, true),   // Haug value is wrong here, Haug VBA code is right
@@ -340,21 +340,21 @@ namespace QLNet.Tests
          };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(100.0);
-            SimpleQuote qRate = new SimpleQuote(0.04);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.01);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol = new SimpleQuote(0.25);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
+            var spot = new SimpleQuote(100.0);
+            var qRate = new SimpleQuote(0.04);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.01);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol = new SimpleQuote(0.25);
+            var volTS = Utilities.flatVol(today, vol, dc);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 StrikedTypePayoff payoff = new AssetOrNothingPayoff(values[i].type, values[i].strike);
 
-                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                var exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
                 Exercise amExercise = new AmericanExercise(today, exDate);
 
                 spot.setValue(values[i].s);
@@ -362,18 +362,18 @@ namespace QLNet.Tests
                 rRate.setValue(values[i].r);
                 vol.setValue(values[i].v);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
+                var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
                                                                                        new Handle<YieldTermStructure>(qTS),
                                                                                        new Handle<YieldTermStructure>(rTS),
                                                                                        new Handle<BlackVolTermStructure>(volTS));
 
                 IPricingEngine engine = new AnalyticDigitalAmericanEngine(stochProcess);
 
-                VanillaOption opt = new VanillaOption(payoff, amExercise);
+                var opt = new VanillaOption(payoff, amExercise);
                 opt.setPricingEngine(engine);
 
-                double calculated = opt.NPV();
-                double error = System.Math.Abs(calculated - values[i].result);
+                var calculated = opt.NPV();
+                var error = System.Math.Abs(calculated - values[i].result);
                 if (error > values[i].tol)
                 {
                     REPORT_FAILURE("value", payoff, amExercise, values[i].s,
@@ -390,7 +390,7 @@ namespace QLNet.Tests
 
             DigitalOptionData[] values =
             {
-            //        type, strike,   spot,    q,    r,   t,  vol,   value, tol
+            //        ExerciseType, strike,   spot,    q,    r,   t,  vol,   value, tol
             // "Option pricing formulas", E.G. Haug, McGraw-Hill 1998 - pag 95, case 5,6,9,10
             new DigitalOptionData(QLNet.Option.Type.Put,  100.00, 105.00, 0.00, 0.10, 0.5, 0.20,  9.3604, 1e-4, true),
             new DigitalOptionData(QLNet.Option.Type.Call, 100.00,  95.00, 0.00, 0.10, 0.5, 0.20, 11.2223, 1e-4, true),
@@ -404,21 +404,21 @@ namespace QLNet.Tests
          };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(100.0);
-            SimpleQuote qRate = new SimpleQuote(0.04);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.01);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol = new SimpleQuote(0.25);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
+            var spot = new SimpleQuote(100.0);
+            var qRate = new SimpleQuote(0.04);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.01);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol = new SimpleQuote(0.25);
+            var volTS = Utilities.flatVol(today, vol, dc);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 StrikedTypePayoff payoff = new CashOrNothingPayoff(values[i].type, values[i].strike, 15.0);
 
-                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                var exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
                 Exercise amExercise = new AmericanExercise(today, exDate, true);
 
                 spot.setValue(values[i].s);
@@ -426,7 +426,7 @@ namespace QLNet.Tests
                 rRate.setValue(values[i].r);
                 vol.setValue(values[i].v);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
+                var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
                                                                                        new Handle<YieldTermStructure>(qTS),
                                                                                        new Handle<YieldTermStructure>(rTS),
                                                                                        new Handle<BlackVolTermStructure>(volTS));
@@ -437,11 +437,11 @@ namespace QLNet.Tests
                 else
                     engine = new AnalyticDigitalAmericanKOEngine(stochProcess);
 
-                VanillaOption opt = new VanillaOption(payoff, amExercise);
+                var opt = new VanillaOption(payoff, amExercise);
                 opt.setPricingEngine(engine);
 
-                double calculated = opt.NPV();
-                double error = System.Math.Abs(calculated - values[i].result);
+                var calculated = opt.NPV();
+                var error = System.Math.Abs(calculated - values[i].result);
                 if (error > values[i].tol)
                 {
                     REPORT_FAILURE("value", payoff, amExercise, values[i].s,
@@ -459,7 +459,7 @@ namespace QLNet.Tests
 
             DigitalOptionData[] values =
             {
-            //        type, strike,   spot,    q,    r,   t,  vol,   value, tol
+            //        ExerciseType, strike,   spot,    q,    r,   t,  vol,   value, tol
             // "Option pricing formulas", E.G. Haug, McGraw-Hill 1998 - pag 95, case 7,8,11,12
             new DigitalOptionData(QLNet.Option.Type.Put,  100.00, 105.00, 0.00, 0.10, 0.5, 0.20, 64.8426, 1e-04, true),
             new DigitalOptionData(QLNet.Option.Type.Call, 100.00,  95.00, 0.00, 0.10, 0.5, 0.20, 77.7017, 1e-04, true),
@@ -477,22 +477,22 @@ namespace QLNet.Tests
          };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(100.0);
-            SimpleQuote qRate = new SimpleQuote(0.04);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.01);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol = new SimpleQuote(0.25);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
+            var spot = new SimpleQuote(100.0);
+            var qRate = new SimpleQuote(0.04);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.01);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol = new SimpleQuote(0.25);
+            var volTS = Utilities.flatVol(today, vol, dc);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
 
                 StrikedTypePayoff payoff = new AssetOrNothingPayoff(values[i].type, values[i].strike);
 
-                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                var exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
                 Exercise amExercise = new AmericanExercise(today, exDate, true);
 
                 spot.setValue(values[i].s);
@@ -500,7 +500,7 @@ namespace QLNet.Tests
                 rRate.setValue(values[i].r);
                 vol.setValue(values[i].v);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
+                var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot),
                                                                                        new Handle<YieldTermStructure>(qTS),
                                                                                        new Handle<YieldTermStructure>(rTS),
                                                                                        new Handle<BlackVolTermStructure>(volTS));
@@ -511,11 +511,11 @@ namespace QLNet.Tests
                 else
                     engine = new AnalyticDigitalAmericanKOEngine(stochProcess);
 
-                VanillaOption opt = new VanillaOption(payoff, amExercise);
+                var opt = new VanillaOption(payoff, amExercise);
                 opt.setPricingEngine(engine);
 
-                double calculated = opt.NPV();
-                double error = System.Math.Abs(calculated - values[i].result);
+                var calculated = opt.NPV();
+                var error = System.Math.Abs(calculated - values[i].result);
                 if (error > values[i].tol)
                 {
                     REPORT_FAILURE("value", payoff, amExercise, values[i].s,
@@ -531,11 +531,11 @@ namespace QLNet.Tests
 
             // Testing American cash-(at-hit)-or-nothing digital option greeks
 
-            using (SavedSettings backup = new SavedSettings())
+            using (var backup = new SavedSettings())
             {
-                SortedDictionary<string, double> calculated = new SortedDictionary<string, double>();
-                SortedDictionary<string, double> expected = new SortedDictionary<string, double>();
-                SortedDictionary<string, double> tolerance = new SortedDictionary<string, double>(); // std::map<std::string,Real> calculated, expected, tolerance;
+                var calculated = new SortedDictionary<string, double>();
+                var expected = new SortedDictionary<string, double>();
+                var tolerance = new SortedDictionary<string, double>(); // std::map<std::string,Real> calculated, expected, tolerance;
 
                 tolerance["delta"] = 5.0e-5;
                 tolerance["gamma"] = 5.0e-5;
@@ -543,31 +543,31 @@ namespace QLNet.Tests
 
                 Option.Type[] types = { QLNet.Option.Type.Call, QLNet.Option.Type.Put };
                 double[] strikes = { 50.0, 99.5, 100.5, 150.0 };
-                double cashPayoff = 100.0;
+                var cashPayoff = 100.0;
                 double[] underlyings = { 100 };
                 double[] qRates = { 0.04, 0.05, 0.06 };
                 double[] rRates = { 0.01, 0.05, 0.15 };
                 double[] vols = { 0.11, 0.5, 1.2 };
 
                 DayCounter dc = new Actual360();
-                Date today = Date.Today;
+                var today = Date.Today;
                 Settings.setEvaluationDate(today);
 
-                SimpleQuote spot = new SimpleQuote(0.0);
-                SimpleQuote qRate = new SimpleQuote(0.0);
-                Handle<YieldTermStructure> qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
-                SimpleQuote rRate = new SimpleQuote(0.0);
-                Handle<YieldTermStructure> rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
-                SimpleQuote vol = new SimpleQuote(0.0);
-                Handle<BlackVolTermStructure> volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
+                var spot = new SimpleQuote(0.0);
+                var qRate = new SimpleQuote(0.0);
+                var qTS = new Handle<YieldTermStructure>(Utilities.flatRate(qRate, dc));
+                var rRate = new SimpleQuote(0.0);
+                var rTS = new Handle<YieldTermStructure>(Utilities.flatRate(rRate, dc));
+                var vol = new SimpleQuote(0.0);
+                var volTS = new Handle<BlackVolTermStructure>(Utilities.flatVol(vol, dc));
 
                 // there is no cycling on different residual times
-                Date exDate = today + 360;
+                var exDate = today + 360;
                 Exercise exercise = new EuropeanExercise(exDate);
                 Exercise amExercise = new AmericanExercise(today, exDate, false);
                 Exercise[] exercises = { exercise, amExercise };
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot), qTS, rTS, volTS);
+                var stochProcess = new BlackScholesMertonProcess(new Handle<Quote>(spot), qTS, rTS, volTS);
 
                 IPricingEngine euroEngine = new AnalyticEuropeanEngine(stochProcess);
 
@@ -575,31 +575,31 @@ namespace QLNet.Tests
 
                 IPricingEngine[] engines = { euroEngine, amEngine };
 
-                bool knockin = true;
-                for (int j = 0; j < engines.Length; j++)
+                var knockin = true;
+                for (var j = 0; j < engines.Length; j++)
                 {
-                    for (int i1 = 0; i1 < types.Length; i1++)
+                    for (var i1 = 0; i1 < types.Length; i1++)
                     {
-                        for (int i6 = 0; i6 < strikes.Length; i6++)
+                        for (var i6 = 0; i6 < strikes.Length; i6++)
                         {
                             StrikedTypePayoff payoff = new CashOrNothingPayoff(types[i1], strikes[i6], cashPayoff);
 
-                            VanillaOption opt = new VanillaOption(payoff, exercises[j]);
+                            var opt = new VanillaOption(payoff, exercises[j]);
                             opt.setPricingEngine(engines[j]);
 
-                            for (int i2 = 0; i2 < underlyings.Length; i2++)
+                            for (var i2 = 0; i2 < underlyings.Length; i2++)
                             {
-                                for (int i4 = 0; i4 < qRates.Length; i4++)
+                                for (var i4 = 0; i4 < qRates.Length; i4++)
                                 {
-                                    for (int i3 = 0; i3 < rRates.Length; i3++)
+                                    for (var i3 = 0; i3 < rRates.Length; i3++)
                                     {
-                                        for (int i7 = 0; i7 < vols.Length; i7++)
+                                        for (var i7 = 0; i7 < vols.Length; i7++)
                                         {
                                             // test data
-                                            double u = underlyings[i2];
-                                            double q = qRates[i4];
-                                            double r = rRates[i3];
-                                            double v = vols[i7];
+                                            var u = underlyings[i2];
+                                            var q = qRates[i4];
+                                            var r = rRates[i3];
+                                            var v = vols[i7];
                                             spot.setValue(u);
                                             qRate.setValue(q);
                                             rRate.setValue(r);
@@ -609,7 +609,7 @@ namespace QLNet.Tests
                                             // digital option with american exercise. Greeks of
                                             // digital options with european payoff are tested
                                             // in the europeanoption.cpp test
-                                            double value = opt.NPV();
+                                            var value = opt.NPV();
                                             calculated["delta"] = opt.delta();
                                             calculated["gamma"] = opt.gamma();
                                             calculated["rho"] = opt.rho();
@@ -617,7 +617,7 @@ namespace QLNet.Tests
                                             if (value > 1.0e-6)
                                             {
                                                 // perturb spot and get delta and gamma
-                                                double du = u * 1.0e-4;
+                                                var du = u * 1.0e-4;
                                                 spot.setValue(u + du);
                                                 double value_p = opt.NPV(),
                                                        delta_p = opt.delta();
@@ -629,7 +629,7 @@ namespace QLNet.Tests
                                                 expected["gamma"] = (delta_p - delta_m) / (2 * du);
 
                                                 // perturb rates and get rho and dividend rho
-                                                double dr = r * 1.0e-4;
+                                                var dr = r * 1.0e-4;
                                                 rRate.setValue(r + dr);
                                                 value_p = opt.NPV();
                                                 rRate.setValue(r - dr);
@@ -641,11 +641,11 @@ namespace QLNet.Tests
                                                 //std::map<std::string,Real>::iterator it;
                                                 foreach (var it in calculated)
                                                 {
-                                                    string greek = it.Key;
+                                                    var greek = it.Key;
                                                     double expct = expected[greek],
                                                            calcl = calculated[greek],
                                                            tol = tolerance[greek];
-                                                    double error = Utilities.relativeError(expct, calcl, value);
+                                                    var error = Utilities.relativeError(expct, calcl, value);
                                                     if (error > tol)
                                                     {
                                                         REPORT_FAILURE(greek, payoff, exercise,
@@ -674,7 +674,7 @@ namespace QLNet.Tests
         //   {
 
         //   DigitalOptionData[] values = {
-        //   //                                 type, strike,   spot,    q,    r,   t,  vol,   value, tol
+        //   //                                 ExerciseType, strike,   spot,    q,    r,   t,  vol,   value, tol
         //   new DigitalOptionData( QLNet.Option.Type.Put,  100.00, 105.00, 0.20, 0.10, 0.5, 0.20, 12.2715, 1e-2, true ),
         //   new DigitalOptionData( QLNet.Option.Type.Call, 100.00,  95.00, 0.20, 0.10, 0.5, 0.20,  8.9109, 1e-2, true ),
         //   };
@@ -696,7 +696,7 @@ namespace QLNet.Tests
 
         //   for (int i=0; i< values.Length; i++)
         //   {
-        //      StrikedTypePayoff payoff = new CashOrNothingPayoff(values[i].type, values[i].strike, 15.0);
+        //      StrikedTypePayoff payoff = new CashOrNothingPayoff(values[i].ExerciseType, values[i].strike, 15.0);
         //      //FLOATING_POINT_EXCEPTION
         //      Date exDate = today + Convert.ToInt32(values[i].t*360+0.5);
         //      Exercise amExercise = new AmericanExercise(today, exDate);

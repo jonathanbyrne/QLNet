@@ -25,7 +25,7 @@ using QLNet.Cashflows;
 namespace QLNet.Instruments.Bonds
 {
     //! amortizing floating-rate bond (possibly capped and/or floored)
-    public class AmortizingFloatingRateBond : Bond
+    [JetBrains.Annotations.PublicAPI] public class AmortizingFloatingRateBond : Bond
     {
         public AmortizingFloatingRateBond(int settlementDays,
                                           List<double> notionals,

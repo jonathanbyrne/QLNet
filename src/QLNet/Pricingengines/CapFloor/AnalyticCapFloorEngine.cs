@@ -25,7 +25,7 @@ using System;
 namespace QLNet.Pricingengines.CapFloor
 {
 
-    public class AnalyticCapFloorEngine : GenericModelEngine<IAffineModel,
+    [JetBrains.Annotations.PublicAPI] public class AnalyticCapFloorEngine : GenericModelEngine<IAffineModel,
         QLNet.Instruments.CapFloor.Arguments,
         QLNet.Instruments.CapFloor.Results>
     {
@@ -53,11 +53,11 @@ namespace QLNet.Pricingengines.CapFloor
             if (model_ == null)
                 throw new ArgumentException("null model");
 
-            Date referenceDate = new Date();
-            DayCounter dayCounter = new DayCounter();
+            var referenceDate = new Date();
+            var dayCounter = new DayCounter();
             try
             {
-                TermStructureConsistentModel tsmodel = (TermStructureConsistentModel)model_.link;
+                var tsmodel = (TermStructureConsistentModel)model_.link;
                 ///if (tsmodel != null)
                 referenceDate = tsmodel.termStructure().link.referenceDate();
                 dayCounter = tsmodel.termStructure().link.dayCounter();
@@ -69,16 +69,16 @@ namespace QLNet.Pricingengines.CapFloor
                 dayCounter = termStructure_.link.dayCounter();
             }
 
-            double value = 0.0;
-            CapFloorType type = arguments_.type;
-            int nPeriods = arguments_.endDates.Count;
+            var value = 0.0;
+            var type = arguments_.type;
+            var nPeriods = arguments_.endDates.Count;
 
-            for (int i = 0; i < nPeriods; i++)
+            for (var i = 0; i < nPeriods; i++)
             {
-                double fixingTime =
+                var fixingTime =
                    dayCounter.yearFraction(referenceDate,
                                            arguments_.fixingDates[i]);
-                double paymentTime =
+                var paymentTime =
                    dayCounter.yearFraction(referenceDate,
                                            arguments_.endDates[i]);
 #if QL_TODAYS_PAYMENTS
@@ -88,23 +88,23 @@ namespace QLNet.Pricingengines.CapFloor
                 if (paymentTime > 0.0)
                 {
 #endif
-                    double tenor = arguments_.accrualTimes[i];
-                    double fixing = (double)arguments_.forwards[i];
+                    var tenor = arguments_.accrualTimes[i];
+                    var fixing = (double)arguments_.forwards[i];
                     if (fixingTime <= 0.0)
                     {
                         if (type == CapFloorType.Cap || type == CapFloorType.Collar)
                         {
-                            double discount = model_.link.discount(paymentTime);
-                            double strike = (double)arguments_.capRates[i];
+                            var discount = model_.link.discount(paymentTime);
+                            var strike = (double)arguments_.capRates[i];
                             value += discount * arguments_.nominals[i] * tenor
                                      * arguments_.gearings[i]
                                      * System.Math.Max(0.0, fixing - strike);
                         }
                         if (type == CapFloorType.Floor || type == CapFloorType.Collar)
                         {
-                            double discount = model_.link.discount(paymentTime);
-                            double strike = (double)arguments_.floorRates[i];
-                            double mult = type == CapFloorType.Floor ? 1.0 : -1.0;
+                            var discount = model_.link.discount(paymentTime);
+                            var strike = (double)arguments_.floorRates[i];
+                            var mult = type == CapFloorType.Floor ? 1.0 : -1.0;
                             value += discount * arguments_.nominals[i] * tenor
                                      * mult * arguments_.gearings[i]
                                      * System.Math.Max(0.0, strike - fixing);
@@ -112,12 +112,12 @@ namespace QLNet.Pricingengines.CapFloor
                     }
                     else
                     {
-                        double maturity =
+                        var maturity =
                            dayCounter.yearFraction(referenceDate,
                                                    arguments_.startDates[i]);
                         if (type == CapFloorType.Cap || type == CapFloorType.Collar)
                         {
-                            double temp = 1.0 + (double)arguments_.capRates[i] * tenor;
+                            var temp = 1.0 + (double)arguments_.capRates[i] * tenor;
                             value += arguments_.nominals[i] *
                                      arguments_.gearings[i] * temp *
                                      model_.link.discountBondOption(QLNet.Option.Type.Put, 1.0 / temp,
@@ -125,8 +125,8 @@ namespace QLNet.Pricingengines.CapFloor
                         }
                         if (type == CapFloorType.Floor || type == CapFloorType.Collar)
                         {
-                            double temp = 1.0 + (double)arguments_.floorRates[i] * tenor;
-                            double mult = type == CapFloorType.Floor ? 1.0 : -1.0;
+                            var temp = 1.0 + (double)arguments_.floorRates[i] * tenor;
+                            var mult = type == CapFloorType.Floor ? 1.0 : -1.0;
                             value += arguments_.nominals[i] *
                                      arguments_.gearings[i] * temp * mult *
                                      model_.link.discountBondOption(QLNet.Option.Type.Call, 1.0 / temp,

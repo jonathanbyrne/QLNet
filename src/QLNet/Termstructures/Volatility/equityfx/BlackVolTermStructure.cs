@@ -64,7 +64,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
         {
             checkRange(maturity, extrapolate);
             checkStrike(strike, extrapolate);
-            double t = timeFromReference(maturity);
+            var t = timeFromReference(maturity);
             return blackVolImpl(t, strike);
         }
 
@@ -81,7 +81,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
         {
             checkRange(maturity, extrapolate);
             checkStrike(strike, extrapolate);
-            double t = timeFromReference(maturity);
+            var t = timeFromReference(maturity);
             return blackVarianceImpl(t, strike);
         }
 
@@ -101,8 +101,8 @@ namespace QLNet.Termstructures.Volatility.equityfx
             checkRange(date2, extrapolate);
 
             // using the time implementation
-            double time1 = timeFromReference(date1);
-            double time2 = timeFromReference(date2);
+            var time1 = timeFromReference(date1);
+            var time2 = timeFromReference(date2);
             return blackForwardVol(time1, time2, strike, extrapolate);
         }
 
@@ -116,23 +116,23 @@ namespace QLNet.Termstructures.Volatility.equityfx
             {
                 if (time1.IsEqual(0.0))
                 {
-                    double epsilon = 1.0e-5;
-                    double var = blackVarianceImpl(epsilon, strike);
+                    var epsilon = 1.0e-5;
+                    var var = blackVarianceImpl(epsilon, strike);
                     return System.Math.Sqrt(var / epsilon);
                 }
                 else
                 {
-                    double epsilon = System.Math.Min(1.0e-5, time1);
-                    double var1 = blackVarianceImpl(time1 - epsilon, strike);
-                    double var2 = blackVarianceImpl(time1 + epsilon, strike);
+                    var epsilon = System.Math.Min(1.0e-5, time1);
+                    var var1 = blackVarianceImpl(time1 - epsilon, strike);
+                    var var2 = blackVarianceImpl(time1 + epsilon, strike);
                     Utils.QL_REQUIRE(var2 >= var1, () => "variances must be non-decreasing");
                     return System.Math.Sqrt((var2 - var1) / (2 * epsilon));
                 }
             }
             else
             {
-                double var1 = blackVarianceImpl(time1, strike);
-                double var2 = blackVarianceImpl(time2, strike);
+                var var1 = blackVarianceImpl(time1, strike);
+                var var2 = blackVarianceImpl(time2, strike);
                 Utils.QL_REQUIRE(var2 >= var1, () => "variances must be non-decreasing");
                 return System.Math.Sqrt((var2 - var1) / (time2 - time1));
             }
@@ -146,8 +146,8 @@ namespace QLNet.Termstructures.Volatility.equityfx
             checkRange(date2, extrapolate);
 
             // using the time implementation
-            double time1 = timeFromReference(date1);
-            double time2 = timeFromReference(date2);
+            var time1 = timeFromReference(date1);
+            var time2 = timeFromReference(date2);
             return blackForwardVariance(time1, time2, strike, extrapolate);
         }
 
@@ -157,8 +157,8 @@ namespace QLNet.Termstructures.Volatility.equityfx
             Utils.QL_REQUIRE(time1 <= time2, () => time1 + " later than " + time2);
             checkRange(time2, extrapolate);
             checkStrike(strike, extrapolate);
-            double v1 = blackVarianceImpl(time1, strike);
-            double v2 = blackVarianceImpl(time2, strike);
+            var v1 = blackVarianceImpl(time1, strike);
+            var v2 = blackVarianceImpl(time2, strike);
             Utils.QL_REQUIRE(v2 >= v1, () => "variances must be non-decreasing");
             return v2 - v1;
         }
@@ -224,7 +224,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
         */
         protected override double blackVarianceImpl(double maturity, double strike)
         {
-            double vol = blackVolImpl(maturity, strike);
+            var vol = blackVolImpl(maturity, strike);
             return vol * vol * maturity;
         }
     }
@@ -272,8 +272,8 @@ namespace QLNet.Termstructures.Volatility.equityfx
         */
         protected override double blackVolImpl(double t, double strike)
         {
-            double nonZeroMaturity = t.IsEqual(0.0) ? 0.00001 : t;
-            double var = blackVarianceImpl(nonZeroMaturity, strike);
+            var nonZeroMaturity = t.IsEqual(0.0) ? 0.00001 : t;
+            var var = blackVarianceImpl(nonZeroMaturity, strike);
             return System.Math.Sqrt(var / nonZeroMaturity);
         }
 

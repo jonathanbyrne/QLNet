@@ -26,7 +26,7 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.swap
 {
-    public class UsdLiborSwapIsdaFixAm : SwapIndex
+    [JetBrains.Annotations.PublicAPI] public class UsdLiborSwapIsdaFixAm : SwapIndex
     {
         public UsdLiborSwapIsdaFixAm(Period tenor)
            : this(tenor, new Handle<YieldTermStructure>()) { }
@@ -44,7 +44,7 @@ namespace QLNet.Indexes.swap
         { }
     }
 
-    public class UsdLiborSwapIsdaFixPm : SwapIndex
+    [JetBrains.Annotations.PublicAPI] public class UsdLiborSwapIsdaFixPm : SwapIndex
     {
         public UsdLiborSwapIsdaFixPm(Period tenor)
            : this(tenor, new Handle<YieldTermStructure>()) { }

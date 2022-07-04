@@ -22,8 +22,8 @@ namespace QLNet.Instruments
 {
     public struct Futures
     {
-        //! Futures type enumeration
-        /*! These conventions specify the kind of futures type. */
+        //! Futures ExerciseType enumeration
+        /*! These conventions specify the kind of futures ExerciseType. */
         public enum Type
         {
             IMM, /*!< Chicago Mercantile Internation Money Market, i.e.

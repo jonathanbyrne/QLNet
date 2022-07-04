@@ -21,7 +21,7 @@ namespace QLNet.Instruments
 {
     //! Single-asset barrier option with discrete dividends
     /*! \ingroup instruments */
-    public class DividendBarrierOption : BarrierOption
+    [JetBrains.Annotations.PublicAPI] public class DividendBarrierOption : BarrierOption
     {
         public DividendBarrierOption(Barrier.Type barrierType,
                                      double barrier,
@@ -39,8 +39,8 @@ namespace QLNet.Instruments
         {
             base.setupArguments(args);
 
-            Arguments arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong engine type");
+            var arguments = args as Arguments;
+            Utils.QL_REQUIRE(arguments != null, () => "wrong engine ExerciseType");
 
             arguments.cashFlow = cashFlow_;
         }
@@ -60,9 +60,9 @@ namespace QLNet.Instruments
             {
                 base.validate();
 
-                Date exerciseDate = exercise.lastDate();
+                var exerciseDate = exercise.lastDate();
 
-                for (int i = 0; i < cashFlow.Count; i++)
+                for (var i = 0; i < cashFlow.Count; i++)
                 {
                     Utils.QL_REQUIRE(cashFlow[i].date() <= exerciseDate, () =>
                                      "the " + (i + 1) + " dividend date (" + cashFlow[i].date() + ") is later than the exercise date ("

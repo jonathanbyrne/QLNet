@@ -26,7 +26,7 @@ using System;
 
 namespace QLNet.Pricingengines.Swap
 {
-    public class DiscountingSwapEngine : Instruments.Swap.SwapEngine
+    [JetBrains.Annotations.PublicAPI] public class DiscountingSwapEngine : Instruments.Swap.SwapEngine
     {
         private Handle<YieldTermStructure> discountCurve_;
         private bool? includeSettlementDateFlows_;
@@ -50,9 +50,9 @@ namespace QLNet.Pricingengines.Swap
             results_.value = results_.cash = 0;
             results_.errorEstimate = null;
 
-            Date refDate = discountCurve_.link.referenceDate();
+            var refDate = discountCurve_.link.referenceDate();
 
-            Date settlementDate = settlementDate_;
+            var settlementDate = settlementDate_;
             if (settlementDate_ == null)
             {
                 settlementDate = refDate;
@@ -78,23 +78,23 @@ namespace QLNet.Pricingengines.Swap
 
             results_.npvDateDiscount = discountCurve_.link.discount(results_.valuationDate);
 
-            int n = arguments_.legs.Count;
+            var n = arguments_.legs.Count;
 
             results_.legNPV = new InitializedList<double?>(n);
             results_.legBPS = new InitializedList<double?>(n);
             results_.startDiscounts = new InitializedList<double?>(n);
             results_.endDiscounts = new InitializedList<double?>(n);
 
-            bool includeRefDateFlows =
+            var includeRefDateFlows =
                includeSettlementDateFlows_.HasValue ?
                includeSettlementDateFlows_.Value :
                Settings.includeReferenceDateEvents;
 
-            for (int i = 0; i < n; ++i)
+            for (var i = 0; i < n; ++i)
             {
                 try
                 {
-                    YieldTermStructure discount_ref = discountCurve_.currentLink();
+                    var discount_ref = discountCurve_.currentLink();
                     double npv = 0, bps = 0;
                     CashFlows.npvbps(arguments_.legs[i],
                                      discount_ref,
@@ -108,13 +108,13 @@ namespace QLNet.Pricingengines.Swap
 
                     if (!arguments_.legs[i].empty())
                     {
-                        Date d1 = CashFlows.startDate(arguments_.legs[i]);
+                        var d1 = CashFlows.startDate(arguments_.legs[i]);
                         if (d1 >= refDate)
                             results_.startDiscounts[i] = discountCurve_.link.discount(d1);
                         else
                             results_.startDiscounts[i] = null;
 
-                        Date d2 = CashFlows.maturityDate(arguments_.legs[i]);
+                        var d2 = CashFlows.maturityDate(arguments_.legs[i]);
                         if (d2 >= refDate)
                             results_.endDiscounts[i] = discountCurve_.link.discount(d2);
                         else

@@ -28,26 +28,17 @@ namespace QLNet
    {
       private Lattice method_;
 
-      public Lattice method()
-      {
-         return method_;
-      }
+      public Lattice method() => method_;
 
       protected double time_;
 
-      public double time()
-      {
-         return time_;
-      }
+      public double time() => time_;
 
       protected double latestPreAdjustment_, latestPostAdjustment_;
 
       protected Vector values_;
 
-      public Vector values()
-      {
-         return values_;
-      }
+      public Vector values() => values_;
 
       protected DiscretizedAsset()
       {
@@ -81,10 +72,7 @@ namespace QLNet
          method_.partialRollback(this, to);
       }
 
-      public double presentValue()
-      {
-         return method_.presentValue(this);
-      }
+      public double presentValue() => method_.presentValue(this);
 
       /* Low-level interface
 
@@ -157,7 +145,7 @@ namespace QLNet
 
       protected bool isOnTime(double t)
       {
-         TimeGrid grid = method().timeGrid();
+         var grid = method().timeGrid();
          return Utils.close(grid[grid.index(t)], time());
       }
 
@@ -185,17 +173,14 @@ namespace QLNet
    }
 
    //! Useful discretized discount bond asset
-   public class DiscretizedDiscountBond : DiscretizedAsset
+   [JetBrains.Annotations.PublicAPI] public class DiscretizedDiscountBond : DiscretizedAsset
    {
       public override void reset(int size)
       {
          values_ = new Vector(size, 1.0);
       }
 
-      public override List<double> mandatoryTimes()
-      {
-         return new Vector();
-      }
+      public override List<double> mandatoryTimes() => new Vector();
    }
 
    //! Discretized option on a given asset
@@ -204,7 +189,7 @@ namespace QLNet
                 the underlying.
    */
 
-   public class DiscretizedOption : DiscretizedAsset
+   [JetBrains.Annotations.PublicAPI] public class DiscretizedOption : DiscretizedAsset
    {
       protected DiscretizedAsset underlying_;
       protected Exercise.Type exerciseType_;
@@ -227,7 +212,7 @@ namespace QLNet
 
       public override List<double> mandatoryTimes()
       {
-         List<double> times = underlying_.mandatoryTimes();
+         var times = underlying_.mandatoryTimes();
 
          // add the positive ones
          times.AddRange(exerciseTimes_.FindAll(x => x > 0));
@@ -251,15 +236,15 @@ namespace QLNet
                break;
             case Exercise.Type.Bermudan:
             case Exercise.Type.European:
-               for (int i = 0; i < exerciseTimes_.Count; i++)
+               for (var i = 0; i < exerciseTimes_.Count; i++)
                {
-                  double t = exerciseTimes_[i];
+                  var t = exerciseTimes_[i];
                   if (t >= 0.0 && isOnTime(t))
                      applyExerciseCondition();
                }
                break;
             default:
-               Utils.QL_FAIL("invalid exercise type");
+               Utils.QL_FAIL("invalid exercise ExerciseType");
                break;
          }
          underlying_.postAdjustValues();
@@ -267,7 +252,7 @@ namespace QLNet
 
       protected void applyExerciseCondition()
       {
-         for (int i = 0; i < values_.size(); i++)
+         for (var i = 0; i < values_.size(); i++)
             values_[i] = System.Math.Max(underlying_.values()[i], values_[i]);
       }
    }

@@ -29,7 +29,7 @@ namespace QLNet
         distribution with parameters p and n.
     */
 
-    public class BinomialDistribution
+    [JetBrains.Annotations.PublicAPI] public class BinomialDistribution
    {
       private int n_;
       private double logP_, logOneMinusP_;
@@ -77,7 +77,7 @@ namespace QLNet
        formula here ...
    */
 
-   public class CumulativeBinomialDistribution
+   [JetBrains.Annotations.PublicAPI] public class CumulativeBinomialDistribution
    {
       private int n_;
       private double p_;
@@ -113,7 +113,7 @@ namespace QLNet
       {
          QL_REQUIRE(n % 2 == 1, () => "n must be an odd number: " + n + " not allowed");
 
-         double result = (z / (n + 1.0 / 3.0 + 0.1 / (n + 1.0)));
+         var result = (z / (n + 1.0 / 3.0 + 0.1 / (n + 1.0)));
          result *= result;
          result = System.Math.Exp(-result * (n + 1.0 / 6.0));
          result = 0.5 + (z > 0 ? 1 : -1) * System.Math.Sqrt((0.25 * (1.0 - result)));
@@ -126,9 +126,6 @@ namespace QLNet
          return Factorial.ln(n) - Factorial.ln(k) - Factorial.ln(n - k);
       }
 
-      public static double binomialCoefficient(int n, int k)
-      {
-         return System.Math.Floor(0.5 + System.Math.Exp(Utils.binomialCoefficientLn(n, k)));
-      }
+      public static double binomialCoefficient(int n, int k) => System.Math.Floor(0.5 + System.Math.Exp(Utils.binomialCoefficientLn(n, k)));
    }
 }

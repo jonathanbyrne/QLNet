@@ -28,7 +28,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
     /// <summary>
     /// Craig-Sneyd operator splitting
     /// </summary>
-    public class CraigSneydScheme : IMixedScheme, ISchemeFactory
+    [JetBrains.Annotations.PublicAPI] public class CraigSneydScheme : IMixedScheme, ISchemeFactory
     {
         public CraigSneydScheme()
         { }
@@ -48,8 +48,8 @@ namespace QLNet.Methods.Finitedifferences.Schemes
 
         public IMixedScheme factory(object L, object bcs, object[] additionalInputs = null)
         {
-            double? theta = additionalInputs[0] as double?;
-            double? mu = additionalInputs[1] as double?;
+            var theta = additionalInputs[0] as double?;
+            var mu = additionalInputs[1] as double?;
             return new CraigSneydScheme(theta.Value, mu.Value,
                                         L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
         }
@@ -66,24 +66,24 @@ namespace QLNet.Methods.Finitedifferences.Schemes
             bcSet_.setTime(System.Math.Max(0.0, t - dt_.Value));
 
             bcSet_.applyBeforeApplying(map_);
-            Vector y = (a as Vector) + dt_.Value * map_.apply(a as Vector);
+            var y = (a as Vector) + dt_.Value * map_.apply(a as Vector);
             bcSet_.applyAfterApplying(y);
 
-            Vector y0 = y;
+            var y0 = y;
 
-            for (int i = 0; i < map_.size(); ++i)
+            for (var i = 0; i < map_.size(); ++i)
             {
-                Vector rhs = y - theta_ * dt_.Value * map_.apply_direction(i, a as Vector);
+                var rhs = y - theta_ * dt_.Value * map_.apply_direction(i, a as Vector);
                 y = map_.solve_splitting(i, rhs, -theta_ * dt_.Value);
             }
 
             bcSet_.applyBeforeApplying(map_);
-            Vector yt = y0 + mu_ * dt_.Value * map_.apply_mixed(y - (a as Vector));
+            var yt = y0 + mu_ * dt_.Value * map_.apply_mixed(y - (a as Vector));
             bcSet_.applyAfterApplying(yt);
 
-            for (int i = 0; i < map_.size(); ++i)
+            for (var i = 0; i < map_.size(); ++i)
             {
-                Vector rhs = yt - theta_ * dt_.Value * map_.apply_direction(i, a as Vector);
+                var rhs = yt - theta_ * dt_.Value * map_.apply_direction(i, a as Vector);
                 yt = map_.solve_splitting(i, rhs, -theta_ * dt_.Value);
             }
             bcSet_.applyAfterSolving(yt);

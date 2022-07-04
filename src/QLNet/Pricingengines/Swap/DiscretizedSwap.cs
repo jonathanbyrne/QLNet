@@ -23,7 +23,7 @@ using QLNet.Math;
 
 namespace QLNet.Pricingengines.Swap
 {
-    public class DiscretizedSwap : DiscretizedAsset
+    [JetBrains.Annotations.PublicAPI] public class DiscretizedSwap : DiscretizedAsset
     {
 
         private VanillaSwap.Arguments arguments_;
@@ -38,25 +38,25 @@ namespace QLNet.Pricingengines.Swap
         {
             arguments_ = args;
             fixedResetTimes_ = new InitializedList<double>(args.fixedResetDates.Count);
-            for (int i = 0; i < fixedResetTimes_.Count; ++i)
+            for (var i = 0; i < fixedResetTimes_.Count; ++i)
                 fixedResetTimes_[i] =
                    dayCounter.yearFraction(referenceDate,
                                            args.fixedResetDates[i]);
 
             fixedPayTimes_ = new InitializedList<double>(args.fixedPayDates.Count);
-            for (int i = 0; i < fixedPayTimes_.Count; ++i)
+            for (var i = 0; i < fixedPayTimes_.Count; ++i)
                 fixedPayTimes_[i] =
                    dayCounter.yearFraction(referenceDate,
                                            args.fixedPayDates[i]);
 
             floatingResetTimes_ = new InitializedList<double>(args.floatingResetDates.Count);
-            for (int i = 0; i < floatingResetTimes_.Count; ++i)
+            for (var i = 0; i < floatingResetTimes_.Count; ++i)
                 floatingResetTimes_[i] =
                    dayCounter.yearFraction(referenceDate,
                                            args.floatingResetDates[i]);
 
             floatingPayTimes_ = new InitializedList<double>(args.floatingPayDates.Count);
-            for (int i = 0; i < floatingPayTimes_.Count; ++i)
+            for (var i = 0; i < floatingPayTimes_.Count; ++i)
                 floatingPayTimes_[i] =
                    dayCounter.yearFraction(referenceDate,
                                            args.floatingPayDates[i]);
@@ -70,28 +70,28 @@ namespace QLNet.Pricingengines.Swap
 
         public override List<double> mandatoryTimes()
         {
-            List<double> times = new List<double>();
-            for (int i = 0; i < fixedResetTimes_.Count; i++)
+            var times = new List<double>();
+            for (var i = 0; i < fixedResetTimes_.Count; i++)
             {
-                double t = fixedResetTimes_[i];
+                var t = fixedResetTimes_[i];
                 if (t >= 0.0)
                     times.Add(t);
             }
-            for (int i = 0; i < fixedPayTimes_.Count; i++)
+            for (var i = 0; i < fixedPayTimes_.Count; i++)
             {
-                double t = fixedPayTimes_[i];
+                var t = fixedPayTimes_[i];
                 if (t >= 0.0)
                     times.Add(t);
             }
-            for (int i = 0; i < floatingResetTimes_.Count; i++)
+            for (var i = 0; i < floatingResetTimes_.Count; i++)
             {
-                double t = floatingResetTimes_[i];
+                var t = floatingResetTimes_[i];
                 if (t >= 0.0)
                     times.Add(t);
             }
-            for (int i = 0; i < floatingPayTimes_.Count; i++)
+            for (var i = 0; i < floatingPayTimes_.Count; i++)
             {
-                double t = floatingPayTimes_[i];
+                var t = floatingPayTimes_[i];
                 if (t >= 0.0)
                     times.Add(t);
             }
@@ -101,23 +101,23 @@ namespace QLNet.Pricingengines.Swap
         protected override void preAdjustValuesImpl()
         {
             // floating payments
-            for (int i = 0; i < floatingResetTimes_.Count; i++)
+            for (var i = 0; i < floatingResetTimes_.Count; i++)
             {
-                double t = floatingResetTimes_[i];
+                var t = floatingResetTimes_[i];
                 if (t >= 0.0 && isOnTime(t))
                 {
-                    DiscretizedDiscountBond bond = new DiscretizedDiscountBond();
+                    var bond = new DiscretizedDiscountBond();
                     bond.initialize(method(), floatingPayTimes_[i]);
                     bond.rollback(time_);
 
-                    double nominal = arguments_.nominal;
-                    double T = arguments_.floatingAccrualTimes[i];
-                    double spread = arguments_.floatingSpreads[i];
-                    double accruedSpread = nominal * T * spread;
-                    for (int j = 0; j < values_.size(); j++)
+                    var nominal = arguments_.nominal;
+                    var T = arguments_.floatingAccrualTimes[i];
+                    var spread = arguments_.floatingSpreads[i];
+                    var accruedSpread = nominal * T * spread;
+                    for (var j = 0; j < values_.size(); j++)
                     {
-                        double coupon = nominal * (1.0 - bond.values()[j])
-                                        + accruedSpread * bond.values()[j];
+                        var coupon = nominal * (1.0 - bond.values()[j])
+                                     + accruedSpread * bond.values()[j];
                         if (arguments_.type == VanillaSwap.Type.Payer)
                             values_[j] += coupon;
                         else
@@ -126,19 +126,19 @@ namespace QLNet.Pricingengines.Swap
                 }
             }
             // fixed payments
-            for (int i = 0; i < fixedResetTimes_.Count; i++)
+            for (var i = 0; i < fixedResetTimes_.Count; i++)
             {
-                double t = fixedResetTimes_[i];
+                var t = fixedResetTimes_[i];
                 if (t >= 0.0 && isOnTime(t))
                 {
-                    DiscretizedDiscountBond bond = new DiscretizedDiscountBond();
+                    var bond = new DiscretizedDiscountBond();
                     bond.initialize(method(), fixedPayTimes_[i]);
                     bond.rollback(time_);
 
-                    double fixedCoupon = arguments_.fixedCoupons[i];
-                    for (int j = 0; j < values_.size(); j++)
+                    var fixedCoupon = arguments_.fixedCoupons[i];
+                    for (var j = 0; j < values_.size(); j++)
                     {
-                        double coupon = fixedCoupon * bond.values()[j];
+                        var coupon = fixedCoupon * bond.values()[j];
                         if (arguments_.type == VanillaSwap.Type.Payer)
                             values_[j] -= coupon;
                         else
@@ -152,13 +152,13 @@ namespace QLNet.Pricingengines.Swap
         {
             // fixed coupons whose reset time is in the past won't be managed
             // in preAdjustValues()
-            for (int i = 0; i < fixedPayTimes_.Count; i++)
+            for (var i = 0; i < fixedPayTimes_.Count; i++)
             {
-                double t = fixedPayTimes_[i];
-                double reset = fixedResetTimes_[i];
+                var t = fixedPayTimes_[i];
+                var reset = fixedResetTimes_[i];
                 if (t >= 0.0 && isOnTime(t) && reset < 0.0)
                 {
-                    double fixedCoupon = arguments_.fixedCoupons[i];
+                    var fixedCoupon = arguments_.fixedCoupons[i];
                     if (arguments_.type == VanillaSwap.Type.Payer)
                         values_ -= fixedCoupon;
                     else
@@ -166,13 +166,13 @@ namespace QLNet.Pricingengines.Swap
                 }
             }
             // the same applies to floating payments whose rate is already fixed
-            for (int i = 0; i < floatingPayTimes_.Count; i++)
+            for (var i = 0; i < floatingPayTimes_.Count; i++)
             {
-                double t = floatingPayTimes_[i];
-                double reset = floatingResetTimes_[i];
+                var t = floatingPayTimes_[i];
+                var reset = floatingResetTimes_[i];
                 if (t >= 0.0 && isOnTime(t) && reset < 0.0)
                 {
-                    double currentFloatingCoupon = arguments_.floatingCoupons[i];
+                    var currentFloatingCoupon = arguments_.floatingCoupons[i];
                     if (arguments_.type == VanillaSwap.Type.Payer)
                         values_ += currentFloatingCoupon;
                     else

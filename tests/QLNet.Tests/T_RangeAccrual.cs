@@ -22,7 +22,7 @@
 //namespace TestSuite
 //{
 
-//   public class T_RangeAccrual
+//   [JetBrains.Annotations.PublicAPI] public class T_RangeAccrual
 //   {
 //      private class CommonVars
 //      {

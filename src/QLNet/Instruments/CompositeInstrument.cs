@@ -30,7 +30,7 @@ namespace QLNet.Instruments
 
         \ingroup instruments
     */
-    public class CompositeInstrument : Instrument
+    [JetBrains.Annotations.PublicAPI] public class CompositeInstrument : Instrument
     {
         //! adds an instrument to the composite
         public void add
@@ -50,7 +50,7 @@ namespace QLNet.Instruments
         // Instrument interface
         public override bool isExpired()
         {
-            foreach (component c in components_)
+            foreach (var c in components_)
             {
                 if (!c.Key.isExpired())
                     return false;
@@ -61,7 +61,7 @@ namespace QLNet.Instruments
         protected override void performCalculations()
         {
             NPV_ = 0.0;
-            foreach (component c in components_)
+            foreach (var c in components_)
             {
                 NPV_ += c.Value * c.Key.NPV();
             }

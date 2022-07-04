@@ -40,7 +40,7 @@ namespace QLNet.Termstructures.Volatility.swaption
         - <tt>M[i][j]</tt> contains the volatility corresponding
           to the <tt>i</tt>-th option and <tt>j</tt>-th tenor.
     */
-    public class SwaptionVolatilityMatrix : SwaptionVolatilityDiscrete
+    [JetBrains.Annotations.PublicAPI] public class SwaptionVolatilityMatrix : SwaptionVolatilityDiscrete
     {
         //! floating reference date, floating market data
         public SwaptionVolatilityMatrix(
@@ -67,10 +67,10 @@ namespace QLNet.Termstructures.Volatility.swaption
             if (shiftValues_ == null)
             {
                 shiftValues_ = new InitializedList<List<double>>(volatilities_.rows());
-                for (int i = 0; i < volatilities_.rows(); ++i)
+                for (var i = 0; i < volatilities_.rows(); ++i)
                 {
                     shiftValues_[i] = new InitializedList<double>(volatilities_.columns());
-                    for (int j = 0; j < volatilities_.columns(); ++j)
+                    for (var j = 0; j < volatilities_.columns(); ++j)
                     {
                         shiftValues_[i][j] = shifts_.rows() > 0 ? shifts_[i, j] : 0.0;
                     }
@@ -127,10 +127,10 @@ namespace QLNet.Termstructures.Volatility.swaption
             if (shiftValues_ == null)
             {
                 shiftValues_ = new InitializedList<List<double>>(volatilities_.rows());
-                for (int i = 0; i < volatilities_.rows(); ++i)
+                for (var i = 0; i < volatilities_.rows(); ++i)
                 {
                     shiftValues_[i] = new InitializedList<double>(volatilities_.columns());
-                    for (int j = 0; j < volatilities_.columns(); ++j)
+                    for (var j = 0; j < volatilities_.columns(); ++j)
                     {
                         shiftValues_[i][j] = shifts_.rows() > 0 ? shifts_[i, j] : 0.0;
                     }
@@ -184,11 +184,11 @@ namespace QLNet.Termstructures.Volatility.swaption
 
             // fill dummy handles to allow generic handle-based
             // computations later on
-            for (int i = 0; i < vols.rows(); ++i)
+            for (var i = 0; i < vols.rows(); ++i)
             {
                 volHandles_[i] = new InitializedList<Handle<Quote>>(vols.columns());
                 shiftValues_[i] = new InitializedList<double>(vols.columns());
-                for (int j = 0; j < vols.columns(); ++j)
+                for (var j = 0; j < vols.columns(); ++j)
                     volHandles_[i][j] = new Handle<Quote>(new
                                                            SimpleQuote(vols[i, j]));
             }
@@ -240,11 +240,11 @@ namespace QLNet.Termstructures.Volatility.swaption
 
             // fill dummy handles to allow generic handle-based
             // computations later on
-            for (int i = 0; i < vols.rows(); ++i)
+            for (var i = 0; i < vols.rows(); ++i)
             {
                 volHandles_[i] = new InitializedList<Handle<Quote>>(vols.columns());
                 shiftValues_[i] = new InitializedList<double>(vols.columns());
-                for (int j = 0; j < vols.columns(); ++j)
+                for (var j = 0; j < vols.columns(); ++j)
                 {
                     volHandles_[i][j] = new Handle<Quote>(new
                                                            SimpleQuote(vols[i, j]));
@@ -296,11 +296,11 @@ namespace QLNet.Termstructures.Volatility.swaption
 
             // fill dummy handles to allow generic handle-based
             // computations later on
-            for (int i = 0; i < vols.rows(); ++i)
+            for (var i = 0; i < vols.rows(); ++i)
             {
                 volHandles_[i] = new InitializedList<Handle<Quote>>(vols.columns());
                 shiftValues_[i] = new InitializedList<double>(vols.columns());
-                for (int j = 0; j < vols.columns(); ++j)
+                for (var j = 0; j < vols.columns(); ++j)
                 {
                     volHandles_[i][j] = new Handle<Quote>(new
                                                            SimpleQuote(vols[i, j]));
@@ -339,9 +339,9 @@ namespace QLNet.Termstructures.Volatility.swaption
             base.performCalculations();
 
             // we might use iterators here...
-            for (int i = 0; i < volatilities_.rows(); ++i)
+            for (var i = 0; i < volatilities_.rows(); ++i)
             {
-                for (int j = 0; j < volatilities_.columns(); ++j)
+                for (var j = 0; j < volatilities_.columns(); ++j)
                 {
                     volatilities_[i, j] = volHandles_[i][j].link.value();
                     if (shiftValues_.Count > 0)
@@ -351,58 +351,39 @@ namespace QLNet.Termstructures.Volatility.swaption
         }
 
         // TermStructure interface
-        public override Date maxDate()
-        {
-            return optionDates_.Last();
-        }
+        public override Date maxDate() => optionDates_.Last();
 
         // VolatilityTermStructure interface
-        public override double minStrike()
-        {
-            return double.MinValue;
-        }
+        public override double minStrike() => double.MinValue;
 
-        public override double maxStrike()
-        {
-            return double.MaxValue;
-        }
+        public override double maxStrike() => double.MaxValue;
 
         // SwaptionVolatilityStructure interface
-        public override Period maxSwapTenor()
-        {
-            return swapTenors_.Last();
-        }
+        public override Period maxSwapTenor() => swapTenors_.Last();
 
         // Other inspectors
         //! returns the lower indexes of surrounding volatility matrix corners
         public KeyValuePair<int, int> locate(Date optionDate,
-                                             Period swapTenor)
-        {
-            return locate(timeFromReference(optionDate),
-                          swapLength(swapTenor));
-        }
+                                             Period swapTenor) =>
+            locate(timeFromReference(optionDate),
+                swapLength(swapTenor));
 
         //! returns the lower indexes of surrounding volatility matrix corners
         public KeyValuePair<int, int> locate(double optionTime,
-                                             double swapLength)
-        {
-            return new KeyValuePair<int, int>(interpolation_.locateY(optionTime),
-                                              interpolation_.locateX(swapLength));
-        }
+                                             double swapLength) =>
+            new KeyValuePair<int, int>(interpolation_.locateY(optionTime),
+                interpolation_.locateX(swapLength));
 
-        //Volatility type
-        public override VolatilityType volatilityType()
-        {
-            return volatilityType_;
-        }
+        //Volatility ExerciseType
+        public override VolatilityType volatilityType() => volatilityType_;
 
         #region protected
         // defining the following method would break CMS test suite
         // to be further investigated
         protected override SmileSection smileSectionImpl(double optionTime, double swapLength)
         {
-            double atmVol = volatilityImpl(optionTime, swapLength, 0.05);
-            double shift = interpolationShifts_.value(optionTime, swapLength, true);
+            var atmVol = volatilityImpl(optionTime, swapLength, 0.05);
+            var shift = interpolationShifts_.value(optionTime, swapLength, true);
             return new FlatSmileSection(optionTime, atmVol, dayCounter(), null, volatilityType(), shift);
 
         }
@@ -417,7 +398,7 @@ namespace QLNet.Termstructures.Volatility.swaption
         protected override double shiftImpl(double optionTime, double swapLength)
         {
             calculate();
-            double tmp = interpolationShifts_.value(swapLength, optionTime, true);
+            var tmp = interpolationShifts_.value(swapLength, optionTime, true);
             return tmp;
         }
         #endregion
@@ -451,8 +432,8 @@ namespace QLNet.Termstructures.Volatility.swaption
         }
         private void registerWithMarketData()
         {
-            for (int i = 0; i < volHandles_.Count; ++i)
-                for (int j = 0; j < volHandles_.First().Count; ++j)
+            for (var i = 0; i < volHandles_.Count; ++i)
+                for (var j = 0; j < volHandles_.First().Count; ++j)
                     volHandles_[i][j].registerWith(update);
         }
         private List<List<Handle<Quote>>> volHandles_;

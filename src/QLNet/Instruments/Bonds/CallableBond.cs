@@ -41,17 +41,14 @@ namespace QLNet.Instruments.Bonds
     /// class.
     /// </remarks>
     /// </summary>
-    public class CallableBond : Bond
+    [JetBrains.Annotations.PublicAPI] public class CallableBond : Bond
     {
 
         /// <summary>
         /// Return the bond's put/call schedule
         /// </summary>
         /// <returns></returns>
-        public CallabilitySchedule callability()
-        {
-            return putCallSchedule_;
-        }
+        public CallabilitySchedule callability() => putCallSchedule_;
 
         /// <summary>
         /// Returns the Black implied forward yield volatility
@@ -77,10 +74,10 @@ namespace QLNet.Instruments.Bonds
         {
             calculate();
             Utils.QL_REQUIRE(!isExpired(), () => "instrument expired");
-            double guess = 0.5 * (minVol + maxVol);
+            var guess = 0.5 * (minVol + maxVol);
             blackDiscountCurve_.linkTo(discountCurve, false);
-            ImpliedVolHelper f = new ImpliedVolHelper(this, targetValue);
-            Brent solver = new Brent();
+            var f = new ImpliedVolHelper(this, targetValue);
+            var solver = new Brent();
             solver.setMaxEvaluations(maxEvaluations);
             return solver.solve(f, accuracy, guess, minVol, maxVol);
         }
@@ -116,16 +113,16 @@ namespace QLNet.Instruments.Bonds
             if (settlement == null)
                 settlement = settlementDate();
 
-            double dirtyPrice = cleanPrice + accruedAmount(settlement);
+            var dirtyPrice = cleanPrice + accruedAmount(settlement);
 
             var f = new NpvSpreadHelper(this);
-            OasHelper obj = new OasHelper(f, dirtyPrice);
+            var obj = new OasHelper(f, dirtyPrice);
 
-            Brent solver = new Brent();
+            var solver = new Brent();
             solver.setMaxEvaluations(maxIterations);
 
-            double step = 0.001;
-            double oas = solver.solve(obj, accuracy, guess, step);
+            var step = 0.001;
+            var oas = solver.solve(obj, accuracy, guess, step);
 
             return continuousToConv(oas,
                                     this,
@@ -161,7 +158,7 @@ namespace QLNet.Instruments.Bonds
 
             var f = new NpvSpreadHelper(this);
 
-            double P = f.value(oas) - accruedAmount(settlement);
+            var P = f.value(oas) - accruedAmount(settlement);
 
             return P;
         }
@@ -188,11 +185,11 @@ namespace QLNet.Instruments.Bonds
                                         Frequency frequency,
                                         double bump = 2e-4)
         {
-            double P = cleanPriceOAS(oas, engineTS, dayCounter, compounding, frequency);
+            var P = cleanPriceOAS(oas, engineTS, dayCounter, compounding, frequency);
 
-            double Ppp = cleanPriceOAS(oas + bump, engineTS, dayCounter, compounding, frequency);
+            var Ppp = cleanPriceOAS(oas + bump, engineTS, dayCounter, compounding, frequency);
 
-            double Pmm = cleanPriceOAS(oas - bump, engineTS, dayCounter, compounding, frequency);
+            var Pmm = cleanPriceOAS(oas - bump, engineTS, dayCounter, compounding, frequency);
 
             if (P.IsEqual(0.0))
                 return 0;
@@ -222,11 +219,11 @@ namespace QLNet.Instruments.Bonds
                                          Frequency frequency,
                                          double bump = 2e-4)
         {
-            double P = cleanPriceOAS(oas, engineTS, dayCounter, compounding, frequency);
+            var P = cleanPriceOAS(oas, engineTS, dayCounter, compounding, frequency);
 
-            double Ppp = cleanPriceOAS(oas + bump, engineTS, dayCounter, compounding, frequency);
+            var Ppp = cleanPriceOAS(oas + bump, engineTS, dayCounter, compounding, frequency);
 
-            double Pmm = cleanPriceOAS(oas - bump, engineTS, dayCounter, compounding, frequency);
+            var Pmm = cleanPriceOAS(oas - bump, engineTS, dayCounter, compounding, frequency);
 
             if (P.IsEqual(0.0))
                 return 0;
@@ -247,8 +244,8 @@ namespace QLNet.Instruments.Bonds
 
             if (!putCallSchedule_.empty())
             {
-                Date finalOptionDate = Date.minDate();
-                for (int i = 0; i < putCallSchedule_.Count; ++i)
+                var finalOptionDate = Date.minDate();
+                for (var i = 0; i < putCallSchedule_.Count; ++i)
                 {
                     finalOptionDate = Date.Max(finalOptionDate,
                                                putCallSchedule_[i].date());
@@ -320,9 +317,9 @@ namespace QLNet.Instruments.Bonds
             }
             public double value(double x)
             {
-                Arguments args = bond_.engine_.getArguments() as Arguments;
+                var args = bond_.engine_.getArguments() as Arguments;
                 // Pops the original value when function finishes
-                double originalSpread = args.spread;
+                var originalSpread = args.spread;
                 args.spread = x;
                 bond_.engine_.calculate();
                 args.spread = originalSpread;
@@ -342,10 +339,7 @@ namespace QLNet.Instruments.Bonds
 
             }
 
-            public override double value(double v)
-            {
-                return targetValue_ - npvhelper_.value(v);
-            }
+            public override double value(double v) => targetValue_ - npvhelper_.value(v);
 
             private NpvSpreadHelper npvhelper_;
             private double targetValue_;
@@ -413,15 +407,15 @@ namespace QLNet.Instruments.Bonds
                                         Compounding compounding,
                                         Frequency frequency)
         {
-            double zz = yts.link.zeroRate(b.maturityDate(), dayCounter, Compounding.Continuous, Frequency.NoFrequency).value();
+            var zz = yts.link.zeroRate(b.maturityDate(), dayCounter, Compounding.Continuous, Frequency.NoFrequency).value();
 
-            InterestRate baseRate = new InterestRate(zz, dayCounter, Compounding.Continuous, Frequency.NoFrequency);
+            var baseRate = new InterestRate(zz, dayCounter, Compounding.Continuous, Frequency.NoFrequency);
 
-            InterestRate spreadedRate = new InterestRate(oas + zz, dayCounter, Compounding.Continuous, Frequency.NoFrequency);
+            var spreadedRate = new InterestRate(oas + zz, dayCounter, Compounding.Continuous, Frequency.NoFrequency);
 
-            double br = baseRate.equivalentRate(dayCounter, compounding, frequency, yts.link.referenceDate(), b.maturityDate()).rate();
+            var br = baseRate.equivalentRate(dayCounter, compounding, frequency, yts.link.referenceDate(), b.maturityDate()).rate();
 
-            double sr = spreadedRate.equivalentRate(dayCounter, compounding, frequency, yts.link.referenceDate(), b.maturityDate()).rate();
+            var sr = spreadedRate.equivalentRate(dayCounter, compounding, frequency, yts.link.referenceDate(), b.maturityDate()).rate();
 
             // Return the spread
             return sr - br;
@@ -445,15 +439,15 @@ namespace QLNet.Instruments.Bonds
                                         Compounding compounding,
                                         Frequency frequency)
         {
-            double zz = yts.link.zeroRate(b.maturityDate(), dayCounter, compounding, frequency).value();
+            var zz = yts.link.zeroRate(b.maturityDate(), dayCounter, compounding, frequency).value();
 
-            InterestRate baseRate = new InterestRate(zz, dayCounter, compounding, frequency);
+            var baseRate = new InterestRate(zz, dayCounter, compounding, frequency);
 
-            InterestRate spreadedRate = new InterestRate(oas + zz, dayCounter, compounding, frequency);
+            var spreadedRate = new InterestRate(oas + zz, dayCounter, compounding, frequency);
 
-            double br = baseRate.equivalentRate(dayCounter, Compounding.Continuous, Frequency.NoFrequency, yts.link.referenceDate(), b.maturityDate()).rate();
+            var br = baseRate.equivalentRate(dayCounter, Compounding.Continuous, Frequency.NoFrequency, yts.link.referenceDate(), b.maturityDate()).rate();
 
-            double sr = spreadedRate.equivalentRate(dayCounter, Compounding.Continuous, Frequency.NoFrequency, yts.link.referenceDate(), b.maturityDate()).rate();
+            var sr = spreadedRate.equivalentRate(dayCounter, Compounding.Continuous, Frequency.NoFrequency, yts.link.referenceDate(), b.maturityDate()).rate();
 
             // Return the spread
             return sr - br;
@@ -467,7 +461,7 @@ namespace QLNet.Instruments.Bonds
     /// <summary>
     /// Callable fixed rate bond class.
     /// </summary>
-    public class CallableFixedRateBond : CallableBond
+    [JetBrains.Annotations.PublicAPI] public class CallableFixedRateBond : CallableBond
     {
         public CallableFixedRateBond(int settlementDays,
                                      double faceAmount,
@@ -482,7 +476,7 @@ namespace QLNet.Instruments.Bonds
         {
             frequency_ = schedule.tenor().frequency();
 
-            bool isZeroCouponBond = coupons.Count == 1 && Utils.close(coupons[0], 0.0);
+            var isZeroCouponBond = coupons.Count == 1 && Utils.close(coupons[0], 0.0);
 
             if (!isZeroCouponBond)
             {
@@ -495,12 +489,12 @@ namespace QLNet.Instruments.Bonds
             }
             else
             {
-                Date redemptionDate = calendar_.adjust(maturityDate_, paymentConvention);
+                var redemptionDate = calendar_.adjust(maturityDate_, paymentConvention);
                 setSingleRedemption(faceAmount, redemption, redemptionDate);
             }
 
             // used for impliedVolatility() calculation
-            SimpleQuote dummyVolQuote = new SimpleQuote(0.0);
+            var dummyVolQuote = new SimpleQuote(0.0);
             blackVolQuote_.linkTo(dummyVolQuote);
             blackEngine_ = new BlackCallableFixedRateBondEngine(blackVolQuote_, blackDiscountCurve_);
         }
@@ -508,21 +502,21 @@ namespace QLNet.Instruments.Bonds
         public override void setupArguments(IPricingEngineArguments args)
         {
             base.setupArguments(args);
-            Arguments arguments = args as Arguments;
+            var arguments = args as Arguments;
 
             Utils.QL_REQUIRE(arguments != null, () => "no arguments given");
 
-            Date settlement = arguments.settlementDate;
+            var settlement = arguments.settlementDate;
 
             arguments.redemption = redemption().amount();
             arguments.redemptionDate = redemption().date();
 
-            List<CashFlow> cfs = cashflows();
+            var cfs = cashflows();
 
             arguments.couponDates = new List<Date>(cfs.Count - 1);
             arguments.couponAmounts = new List<double>(cfs.Count - 1);
 
-            for (int i = 0; i < cfs.Count; i++)
+            for (var i = 0; i < cfs.Count; i++)
             {
                 if (!cfs[i].hasOccurred(settlement, false))
                 {
@@ -540,7 +534,7 @@ namespace QLNet.Instruments.Bonds
             arguments.frequency = frequency_;
             arguments.putCallSchedule = putCallSchedule_;
 
-            for (int i = 0; i < putCallSchedule_.Count; i++)
+            for (var i = 0; i < putCallSchedule_.Count; i++)
             {
                 if (!putCallSchedule_[i].hasOccurred(settlement, false))
                 {
@@ -578,13 +572,13 @@ namespace QLNet.Instruments.Bonds
             if (settlement == null)
                 settlement = settlementDate();
 
-            bool IncludeToday = false;
-            for (int i = 0; i < cashflows_.Count; ++i)
+            var IncludeToday = false;
+            for (var i = 0; i < cashflows_.Count; ++i)
             {
                 // the first coupon paying after d is the one we're after
                 if (!cashflows_[i].hasOccurred(settlement, IncludeToday))
                 {
-                    Coupon coupon = cashflows_[i] as Coupon;
+                    var coupon = cashflows_[i] as Coupon;
                     if (coupon != null)
                         // !!!
                         return coupon.accruedAmount(settlement) /
@@ -600,7 +594,7 @@ namespace QLNet.Instruments.Bonds
     /// <summary>
     /// Callable zero coupon bond class.
     /// </summary>
-    public class CallableZeroCouponBond : CallableFixedRateBond
+    [JetBrains.Annotations.PublicAPI] public class CallableZeroCouponBond : CallableFixedRateBond
     {
         public CallableZeroCouponBond(int settlementDays,
                                       double faceAmount,

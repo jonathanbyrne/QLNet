@@ -41,7 +41,7 @@ namespace QLNet.Pricingengines.vanilla
               one, while the two side points would be used for
               estimating partial derivatives.
     */
-    public class BinomialVanillaEngine<T> : OneAssetOption.Engine where T : ITreeFactory<T>, ITree, new()
+    [JetBrains.Annotations.PublicAPI] public class BinomialVanillaEngine<T> : OneAssetOption.Engine where T : ITreeFactory<T>, ITree, new()
     {
         private GeneralizedBlackScholesProcess process_;
         private int timeSteps_;
@@ -59,39 +59,39 @@ namespace QLNet.Pricingengines.vanilla
         public override void calculate()
         {
 
-            DayCounter rfdc = process_.riskFreeRate().link.dayCounter();
-            DayCounter divdc = process_.dividendYield().link.dayCounter();
-            DayCounter voldc = process_.blackVolatility().link.dayCounter();
-            Calendar volcal = process_.blackVolatility().link.calendar();
+            var rfdc = process_.riskFreeRate().link.dayCounter();
+            var divdc = process_.dividendYield().link.dayCounter();
+            var voldc = process_.blackVolatility().link.dayCounter();
+            var volcal = process_.blackVolatility().link.calendar();
 
-            double s0 = process_.stateVariable().link.value();
+            var s0 = process_.stateVariable().link.value();
             Utils.QL_REQUIRE(s0 > 0.0, () => "negative or null underlying given");
-            double v = process_.blackVolatility().link.blackVol(arguments_.exercise.lastDate(), s0);
-            Date maturityDate = arguments_.exercise.lastDate();
-            double r = process_.riskFreeRate().link.zeroRate(maturityDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).rate();
-            double q = process_.dividendYield().link.zeroRate(maturityDate, divdc, Compounding.Continuous, Frequency.NoFrequency).rate();
-            Date referenceDate = process_.riskFreeRate().link.referenceDate();
+            var v = process_.blackVolatility().link.blackVol(arguments_.exercise.lastDate(), s0);
+            var maturityDate = arguments_.exercise.lastDate();
+            var r = process_.riskFreeRate().link.zeroRate(maturityDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).rate();
+            var q = process_.dividendYield().link.zeroRate(maturityDate, divdc, Compounding.Continuous, Frequency.NoFrequency).rate();
+            var referenceDate = process_.riskFreeRate().link.referenceDate();
 
             // binomial trees with constant coefficient
             var flatRiskFree = new Handle<YieldTermStructure>(new FlatForward(referenceDate, r, rfdc));
             var flatDividends = new Handle<YieldTermStructure>(new FlatForward(referenceDate, q, divdc));
             var flatVol = new Handle<BlackVolTermStructure>(new BlackConstantVol(referenceDate, volcal, v, voldc));
 
-            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
-            double maturity = rfdc.yearFraction(referenceDate, maturityDate);
+            var maturity = rfdc.yearFraction(referenceDate, maturityDate);
 
             StochasticProcess1D bs =
                new GeneralizedBlackScholesProcess(process_.stateVariable(), flatDividends, flatRiskFree, flatVol);
 
-            TimeGrid grid = new TimeGrid(maturity, timeSteps_);
+            var grid = new TimeGrid(maturity, timeSteps_);
 
-            T tree = FastActivator<T>.Create().factory(bs, maturity, timeSteps_, payoff.strike());
+            var tree = FastActivator<T>.Create().factory(bs, maturity, timeSteps_, payoff.strike());
 
-            BlackScholesLattice<T> lattice = new BlackScholesLattice<T>(tree, r, maturity, timeSteps_);
+            var lattice = new BlackScholesLattice<T>(tree, r, maturity, timeSteps_);
 
-            DiscretizedVanillaOption option = new DiscretizedVanillaOption(arguments_, process_, grid);
+            var option = new DiscretizedVanillaOption(arguments_, process_, grid);
 
             option.initialize(lattice, maturity);
 
@@ -101,26 +101,26 @@ namespace QLNet.Pricingengines.vanilla
             // Rollback to third-last step, and get underlying price (s2) &
             // option values (p2) at this point
             option.rollback(grid[2]);
-            Vector va2 = new Vector(option.values());
+            var va2 = new Vector(option.values());
             Utils.QL_REQUIRE(va2.size() == 3, () => "Expect 3 nodes in grid at second step");
-            double p2h = va2[2]; // high-price
-            double s2 = lattice.underlying(2, 2); // high price
+            var p2h = va2[2]; // high-price
+            var s2 = lattice.underlying(2, 2); // high price
 
             // Rollback to second-last step, and get option value (p1) at
             // this point
             option.rollback(grid[1]);
-            Vector va = new Vector(option.values());
+            var va = new Vector(option.values());
             Utils.QL_REQUIRE(va.size() == 2, () => "Expect 2 nodes in grid at first step");
-            double p1 = va[1];
+            var p1 = va[1];
 
             // Finally, rollback to t=0
             option.rollback(0.0);
-            double p0 = option.presentValue();
-            double s1 = lattice.underlying(1, 1);
+            var p0 = option.presentValue();
+            var s1 = lattice.underlying(1, 1);
 
             // Calculate partial derivatives
-            double delta0 = (p1 - p0) / (s1 - s0);   // dp/ds
-            double delta1 = (p2h - p1) / (s2 - s1);  // dp/ds
+            var delta0 = (p1 - p0) / (s1 - s0);   // dp/ds
+            var delta1 = (p2h - p1) / (s2 - s1);  // dp/ds
 
             // Store results
             results_.value = p0;

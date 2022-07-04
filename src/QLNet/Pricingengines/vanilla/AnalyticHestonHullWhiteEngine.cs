@@ -40,7 +40,7 @@ namespace QLNet.Pricingengines.vanilla
               against QuantLib's analytic Heston and
               Black-Scholes-Merton Hull-White engine
     */
-    public class AnalyticHestonHullWhiteEngine : AnalyticHestonEngine
+    [JetBrains.Annotations.PublicAPI] public class AnalyticHestonHullWhiteEngine : AnalyticHestonEngine
     {
 
         // see AnalticHestonEninge for usage of different constructors
@@ -80,7 +80,7 @@ namespace QLNet.Pricingengines.vanilla
 
         public override void calculate()
         {
-            double t = model_.link.process().time(arguments_.exercise.lastDate());
+            var t = model_.link.process().time(arguments_.exercise.lastDate());
             if (a_ * t > System.Math.Pow(Const.QL_EPSILON, 0.25))
             {
                 m_ = sigma_ * sigma_ / (2 * a_ * a_)
@@ -95,10 +95,7 @@ namespace QLNet.Pricingengines.vanilla
             base.calculate();
         }
 
-        protected override Complex addOnTerm(double u, double t, int j)
-        {
-            return new Complex(-m_ * u * u, u * (m_ - 2 * m_ * (j - 1)));
-        }
+        protected override Complex addOnTerm(double u, double t, int j) => new Complex(-m_ * u * u, u * (m_ - 2 * m_ * (j - 1)));
 
         protected HullWhite hullWhiteModel_;
 

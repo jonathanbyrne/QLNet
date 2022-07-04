@@ -28,7 +28,7 @@ namespace QLNet.Indexes.Ibor
 
         See <http://www.afma.com.au/data/BBSW>.
     */
-    public class Bbsw : IborIndex
+    [JetBrains.Annotations.PublicAPI] public class Bbsw : IborIndex
     {
         public Bbsw(Period tenor, Handle<YieldTermStructure> h = null)
            : base("Bbsw", tenor,
@@ -43,7 +43,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! 1-month %Bbsw index
-    public class Bbsw1M : Bbsw
+    [JetBrains.Annotations.PublicAPI] public class Bbsw1M : Bbsw
     {
         public Bbsw1M(Handle<YieldTermStructure> h = null)
            : base(new Period(1, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
@@ -51,7 +51,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! 2-month %Bbsw index
-    public class Bbsw2M : Bbsw
+    [JetBrains.Annotations.PublicAPI] public class Bbsw2M : Bbsw
     {
         public Bbsw2M(Handle<YieldTermStructure> h = null)
            : base(new Period(2, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
@@ -59,7 +59,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! 3-month %Bbsw index
-    public class Bbsw3M : Bbsw
+    [JetBrains.Annotations.PublicAPI] public class Bbsw3M : Bbsw
     {
         public Bbsw3M(Handle<YieldTermStructure> h = null)
            : base(new Period(3, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
@@ -67,7 +67,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! 4-month %Bbsw index
-    public class Bbsw4M : Bbsw
+    [JetBrains.Annotations.PublicAPI] public class Bbsw4M : Bbsw
     {
         public Bbsw4M(Handle<YieldTermStructure> h = null)
            : base(new Period(4, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
@@ -75,7 +75,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! 5-month %Bbsw index
-    public class Bbsw5M : Bbsw
+    [JetBrains.Annotations.PublicAPI] public class Bbsw5M : Bbsw
     {
         public Bbsw5M(Handle<YieldTermStructure> h = null)
            : base(new Period(5, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
@@ -83,7 +83,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! 6-month %Bbsw index
-    public class Bbsw6M : Bbsw
+    [JetBrains.Annotations.PublicAPI] public class Bbsw6M : Bbsw
     {
         public Bbsw6M(Handle<YieldTermStructure> h = null)
            : base(new Period(6, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())

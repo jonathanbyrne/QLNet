@@ -66,7 +66,7 @@ namespace QLNet.Termstructures.Volatility.Inflation
             if (obsLag == null)
                 obsLag = new Period(-1, TimeUnit.Days);
 
-            Period useLag = obsLag;
+            var useLag = obsLag;
             if (obsLag == new Period(-1, TimeUnit.Days))
             {
                 useLag = observationLag();
@@ -75,14 +75,14 @@ namespace QLNet.Termstructures.Volatility.Inflation
             if (indexIsInterpolated())
             {
                 checkRange(maturityDate - useLag, strike, extrapolate);
-                double t = timeFromReference(maturityDate - useLag);
+                var t = timeFromReference(maturityDate - useLag);
                 return volatilityImpl(t, strike);
             }
             else
             {
-                KeyValuePair<Date, Date> dd = Utils.inflationPeriod(maturityDate - useLag, frequency());
+                var dd = Utils.inflationPeriod(maturityDate - useLag, frequency());
                 checkRange(dd.Key, strike, extrapolate);
-                double t = timeFromReference(dd.Key);
+                var t = timeFromReference(dd.Key);
                 return volatilityImpl(t, strike);
             }
         }
@@ -94,7 +94,7 @@ namespace QLNet.Termstructures.Volatility.Inflation
             if (obsLag == null)
                 obsLag = new Period(-1, TimeUnit.Days);
 
-            Date maturityDate = optionDateFromTenor(optionTenor);
+            var maturityDate = optionDateFromTenor(optionTenor);
             return volatility(maturityDate, strike, obsLag, extrapolate);
         }
 
@@ -115,8 +115,8 @@ namespace QLNet.Termstructures.Volatility.Inflation
             if (obsLag == null)
                 obsLag = new Period(-1, TimeUnit.Days);
 
-            double vol = volatility(exerciseDate, strike, obsLag, extrapolate);
-            double t = timeFromBase(exerciseDate, obsLag);
+            var vol = volatility(exerciseDate, strike, obsLag, extrapolate);
+            var t = timeFromBase(exerciseDate, obsLag);
             return vol * vol * t;
         }
 
@@ -130,7 +130,7 @@ namespace QLNet.Termstructures.Volatility.Inflation
             if (obsLag == null)
                 obsLag = new Period(-1, TimeUnit.Days);
 
-            Date maturityDate = optionDateFromTenor(optionTenor);
+            var maturityDate = optionDateFromTenor(optionTenor);
             return totalVariance(maturityDate, strike, obsLag, extrapolate);
         }
 
@@ -140,9 +140,12 @@ namespace QLNet.Termstructures.Volatility.Inflation
             inflation rate is given, by default, for the maturity
             requested assuming this lag.
         */
-        public virtual Period observationLag() { return observationLag_; }
-        public virtual Frequency frequency() { return frequency_; }
-        public virtual bool indexIsInterpolated() { return indexIsInterpolated_; }
+        public virtual Period observationLag() => observationLag_;
+
+        public virtual Frequency frequency() => frequency_;
+
+        public virtual bool indexIsInterpolated() => indexIsInterpolated_;
+
         public virtual Date baseDate()
         {
             // Depends on interpolation, or not, of observed index
@@ -165,7 +168,7 @@ namespace QLNet.Termstructures.Volatility.Inflation
             if (obsLag == null)
                 obsLag = new Period(-1, TimeUnit.Days);
 
-            Period useLag = obsLag;
+            var useLag = obsLag;
 
             if (obsLag == new Period(-1, TimeUnit.Days))
             {

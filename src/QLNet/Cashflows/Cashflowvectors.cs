@@ -58,7 +58,7 @@ namespace QLNet
       where FloatingCouponType : FloatingRateCoupon, new ()
       where CappedFlooredCouponType : CappedFlooredCoupon, new ()
       {
-         int n = schedule.Count;
+         var n = schedule.Count;
 
          Utils.QL_REQUIRE(!nominals.empty(), () => "no notional given");
          Utils.QL_REQUIRE(nominals.Count <= n, () => "too many nominals (" + nominals.Count + "), only " + n + " required");
@@ -72,19 +72,19 @@ namespace QLNet
             Utils.QL_REQUIRE(floors.Count <= n, () => "too many floors (" + floors.Count + "), only " + n + " required");
          Utils.QL_REQUIRE(!isZero || !isInArrears, () => "in-arrears and zero features are not compatible");
 
-         List<CashFlow> leg = new List<CashFlow>();
+         var leg = new List<CashFlow>();
 
          // the following is not always correct
-         Calendar calendar = schedule.calendar();
+         var calendar = schedule.calendar();
 
-         Date lastPaymentDate = calendar.adjust(schedule[n - 1], paymentAdj);
+         var lastPaymentDate = calendar.adjust(schedule[n - 1], paymentAdj);
 
-         for (int i = 0; i < n - 1; ++i)
+         for (var i = 0; i < n - 1; ++i)
          {
             Date refStart, start, refEnd, end;
             refStart = start = schedule[i];
             refEnd = end = schedule[i + 1];
-            Date paymentDate = isZero ? lastPaymentDate : calendar.adjust(end, paymentAdj);
+            var paymentDate = isZero ? lastPaymentDate : calendar.adjust(end, paymentAdj);
             if (i == 0 && !schedule.isRegular(i + 1))
                refStart = calendar.adjust(end - schedule.tenor(), schedule.businessDayConvention());
             if (i == n - 1 && !schedule.isRegular(i + 1))
@@ -114,7 +114,7 @@ namespace QLNet
                }
                else
                {
-                  leg.Add(FastActivator<CappedFlooredCouponType>.Create().factory(
+                  leg.Add(FastActivator<CappedFlooredCouponType>.Create().Factory(
                              Utils.Get(nominals, i),
                              paymentDate, start, end,
                              Utils.Get(fixingDays, i, index.fixingDays()),
@@ -154,7 +154,7 @@ namespace QLNet
          where FloatingCouponType : FloatingRateCoupon, new ()
          where DigitalCouponType : DigitalCoupon, new ()
       {
-         int n = schedule.Count;
+         var n = schedule.Count;
          Utils.QL_REQUIRE(!nominals.empty(), () => "no notional given");
          Utils.QL_REQUIRE(nominals.Count <= n, () => "too many nominals (" + nominals.Count + "), only " + n + " required");
          if (gearings != null)
@@ -166,27 +166,27 @@ namespace QLNet
          if (putStrikes != null)
             Utils.QL_REQUIRE(putStrikes.Count <= n, () => "too many nominals (" + putStrikes.Count + "), only " + n + " required");
 
-         List<CashFlow> leg = new List<CashFlow>();
+         var leg = new List<CashFlow>();
 
          // the following is not always correct
-         Calendar calendar = schedule.calendar();
+         var calendar = schedule.calendar();
 
          Date refStart, start, refEnd, end;
          Date paymentDate;
 
-         for (int i = 0; i < n; ++i)
+         for (var i = 0; i < n; ++i)
          {
             refStart = start = schedule.date(i);
             refEnd = end = schedule.date(i + 1);
             paymentDate = calendar.adjust(end, paymentAdj);
             if (i == 0 && !schedule.isRegular(i + 1))
             {
-               BusinessDayConvention bdc = schedule.businessDayConvention();
+               var bdc = schedule.businessDayConvention();
                refStart = calendar.adjust(end - schedule.tenor(), bdc);
             }
             if (i == n - 1 && !schedule.isRegular(i + 1))
             {
-               BusinessDayConvention bdc = schedule.businessDayConvention();
+               var bdc = schedule.businessDayConvention();
                refEnd = calendar.adjust(start + schedule.tenor(), bdc);
             }
             if (Utils.Get(gearings, i, 1.0).IsEqual(0.0))
@@ -200,7 +200,7 @@ namespace QLNet
             else
             {
                // floating digital coupon
-               FloatingCouponType underlying = FastActivator<FloatingCouponType>.Create().factory(
+               var underlying = FastActivator<FloatingCouponType>.Create().factory(
                                                   Utils.Get(nominals, i, 1.0),
                                                   paymentDate, start, end,
                                                   Utils.Get(fixingDays, i, index.fixingDays()),
@@ -210,7 +210,7 @@ namespace QLNet
                                                   refStart, refEnd,
                                                   paymentDayCounter, isInArrears) as FloatingCouponType;
 
-               DigitalCouponType digitalCoupon = FastActivator<DigitalCouponType>.Create().factory(
+               var digitalCoupon = FastActivator<DigitalCouponType>.Create().factory(
                                                     underlying,
                                                     Utils.toNullable(Utils.Get(callStrikes, i, Double.MinValue)),
                                                     callPosition,
@@ -238,16 +238,16 @@ namespace QLNet
       {
          Utils.QL_REQUIRE(!nominals.empty(), () => "no nominal given");
 
-         List<CashFlow> leg = new List<CashFlow>();
+         var leg = new List<CashFlow>();
 
          // the following is not always correct
-         Calendar calendar = schedule.calendar();
+         var calendar = schedule.calendar();
 
          Date refStart, start, refEnd, end;
          Date paymentDate;
 
-         int n = schedule.Count;
-         for (int i = 0; i < n - 1; ++i)
+         var n = schedule.Count;
+         for (var i = 0; i < n - 1; ++i)
          {
             refStart = start = schedule.date(i);
             refEnd = end = schedule.date(i + 1);
@@ -282,7 +282,7 @@ namespace QLNet
                                                    List<int> fixingDays_,
                                                    Period observationLag_)
       {
-         int n = schedule_.Count - 1;
+         var n = schedule_.Count - 1;
 
          Utils.QL_REQUIRE(!notionals_.empty(), () => "no notional given");
          Utils.QL_REQUIRE(notionals_.Count <= n, () => "too many nominals (" + notionals_.Count + "), only " + n + " required");
@@ -296,25 +296,25 @@ namespace QLNet
             Utils.QL_REQUIRE(floors_.Count <= n, () => "too many floors (" + floors_.Count + "), only " + n + " required");
 
 
-         List<CashFlow> leg = new List<CashFlow>(n);
+         var leg = new List<CashFlow>(n);
 
-         Calendar calendar = paymentCalendar_;
+         var calendar = paymentCalendar_;
 
          Date refStart, start, refEnd, end;
 
-         for (int i = 0; i < n; ++i)
+         for (var i = 0; i < n; ++i)
          {
             refStart = start = schedule_.date(i);
             refEnd = end = schedule_.date(i + 1);
-            Date paymentDate = calendar.adjust(end, paymentAdjustment_);
+            var paymentDate = calendar.adjust(end, paymentAdjustment_);
             if (i == 0 && !schedule_.isRegular(i + 1))
             {
-               BusinessDayConvention bdc = schedule_.businessDayConvention();
+               var bdc = schedule_.businessDayConvention();
                refStart = schedule_.calendar().adjust(end - schedule_.tenor(), bdc);
             }
             if (i == n - 1 && !schedule_.isRegular(i + 1))
             {
-               BusinessDayConvention bdc = schedule_.businessDayConvention();
+               var bdc = schedule_.businessDayConvention();
                refEnd = schedule_.calendar().adjust(start + schedule_.tenor(), bdc);
             }
             if (Utils.Get(gearings_, i, 1.0).IsEqual(0.0))
@@ -331,7 +331,7 @@ namespace QLNet
                if (Utils.noOption(caps_, floors_, i))
                {
                   // just swaplet
-                  YoYInflationCoupon coup = new YoYInflationCoupon(paymentDate,
+                  var coup = new YoYInflationCoupon(paymentDate,
                                                                    Utils.Get(notionals_, i, 1.0),
                                                                    start, end,
                                                                    Utils.Get(fixingDays_, i, 0),
@@ -344,7 +344,7 @@ namespace QLNet
 
                   // in this case you can set a pricer
                   // straight away because it only provides computation - not data
-                  YoYInflationCouponPricer pricer = new YoYInflationCouponPricer();
+                  var pricer = new YoYInflationCouponPricer();
                   coup.setPricer(pricer);
                   leg.Add(coup);
                }

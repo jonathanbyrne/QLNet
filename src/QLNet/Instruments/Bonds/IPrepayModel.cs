@@ -21,7 +21,7 @@ using QLNet.Time;
 
 namespace QLNet.Instruments.Bonds
 {
-    public interface IPrepayModel
+    [JetBrains.Annotations.PublicAPI] public interface IPrepayModel
     {
         double getCPR(Date valDate);
         double getSMM(Date valDate);

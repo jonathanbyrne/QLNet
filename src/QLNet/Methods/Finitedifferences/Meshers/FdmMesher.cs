@@ -37,10 +37,7 @@ namespace QLNet.Methods.Finitedifferences.Meshers
                                         int direction);
         public abstract Vector locations(int direction);
 
-        public FdmLinearOpLayout layout()
-        {
-            return layout_;
-        }
+        public FdmLinearOpLayout layout() => layout_;
 
         protected FdmLinearOpLayout layout_;
     }

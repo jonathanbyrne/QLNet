@@ -28,7 +28,7 @@ namespace QLNet.Models.Shortrate.Onefactormodels
     /// <summary>
     /// Vasicek model class
     /// </summary>
-    public class Vasicek : OneFactorAffineModel
+    [JetBrains.Annotations.PublicAPI] public class Vasicek : OneFactorAffineModel
     {
         public Vasicek(double r0, double a, double b = 0.05, double sigma = 0.01, double lambda = 0.0)
            : base(4)
@@ -48,7 +48,7 @@ namespace QLNet.Models.Shortrate.Onefactormodels
                                                   double bondMaturity)
         {
             double v;
-            double _a = a();
+            var _a = a();
             if (System.Math.Abs(maturity) < Const.QL_EPSILON)
             {
                 v = 0.0;
@@ -62,28 +62,25 @@ namespace QLNet.Models.Shortrate.Onefactormodels
                 v = sigma() * B(maturity, bondMaturity) *
                     System.Math.Sqrt(0.5 * (1.0 - System.Math.Exp(-2.0 * _a * maturity)) / _a);
             }
-            double f = discountBond(0.0, bondMaturity, r0_);
-            double k = discountBond(0.0, maturity, r0_) * strike;
+            var f = discountBond(0.0, bondMaturity, r0_);
+            var k = discountBond(0.0, maturity, r0_) * strike;
 
             return Utils.blackFormula(type, k, f, v);
         }
 
-        public override ShortRateDynamics dynamics()
-        {
-            return new Dynamics(a(), b(), sigma(), r0_);
-        }
+        public override ShortRateDynamics dynamics() => new Dynamics(a(), b(), sigma(), r0_);
 
         protected override double A(double t, double T)
         {
-            double _a = a();
+            var _a = a();
             if (_a < System.Math.Sqrt(Const.QL_EPSILON))
             {
                 return 0.0;
             }
             else
             {
-                double sigma2 = sigma() * sigma();
-                double bt = B(t, T);
+                var sigma2 = sigma() * sigma();
+                var bt = B(t, T);
                 return System.Math.Exp((b() + lambda() * sigma() / _a
                                  - 0.5 * sigma2 / (_a * _a)) * (bt - (T - t))
                                 - 0.25 * sigma2 * bt * bt / _a);
@@ -92,32 +89,20 @@ namespace QLNet.Models.Shortrate.Onefactormodels
 
         protected override double B(double t, double T)
         {
-            double _a = a();
+            var _a = a();
             if (_a < System.Math.Sqrt(Const.QL_EPSILON))
                 return T - t;
             else
                 return (1.0 - System.Math.Exp(-_a * (T - t))) / _a;
         }
 
-        public double a()
-        {
-            return a_.value(0.0);
-        }
+        public double a() => a_.value(0.0);
 
-        public double b()
-        {
-            return b_.value(0.0);
-        }
+        public double b() => b_.value(0.0);
 
-        public double lambda()
-        {
-            return lambda_.value(0.0);
-        }
+        public double lambda() => lambda_.value(0.0);
 
-        public double sigma()
-        {
-            return sigma_.value(0.0);
-        }
+        public double sigma() => sigma_.value(0.0);
 
         protected double r0_;
         protected Parameter a_;
@@ -129,7 +114,7 @@ namespace QLNet.Models.Shortrate.Onefactormodels
         /*! The short-rate follows an Ornstein-Uhlenbeck process with mean
             \f$ b \f$.
         */
-        public class Dynamics : ShortRateDynamics
+        [JetBrains.Annotations.PublicAPI] public class Dynamics : ShortRateDynamics
         {
             public Dynamics(double a, double b, double sigma, double r0)
                : base(new OrnsteinUhlenbeckProcess(a, sigma, r0 - b))
@@ -139,15 +124,9 @@ namespace QLNet.Models.Shortrate.Onefactormodels
                 r0_ = r0;
             }
 
-            public override double variable(double t, double r)
-            {
-                return r - b_;
-            }
+            public override double variable(double t, double r) => r - b_;
 
-            public override double shortRate(double t, double x)
-            {
-                return x + b_;
-            }
+            public override double shortRate(double t, double x) => x + b_;
 
             private double a_, b_, r0_;
         }

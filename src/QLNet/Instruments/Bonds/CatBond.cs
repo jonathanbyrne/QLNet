@@ -30,7 +30,7 @@ namespace QLNet.Instruments.Bonds
     /// as a hurricane or earthquake.
     /// </remarks>
     /// </summary>
-    public class CatBond : Bond
+    [JetBrains.Annotations.PublicAPI] public class CatBond : Bond
     {
         public CatBond(int settlementDays,
                        Calendar calendar,
@@ -43,8 +43,8 @@ namespace QLNet.Instruments.Bonds
 
         public override void setupArguments(IPricingEngineArguments args)
         {
-            Arguments arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong arguments type");
+            var arguments = args as Arguments;
+            Utils.QL_REQUIRE(arguments != null, () => "wrong arguments ExerciseType");
 
             base.setupArguments(args);
 
@@ -55,28 +55,19 @@ namespace QLNet.Instruments.Bonds
         public override void fetchResults(IPricingEngineResults r)
         {
             base.fetchResults(r);
-            Results results = r as Results;
-            Utils.QL_REQUIRE(results != null, () => "wrong result type");
+            var results = r as Results;
+            Utils.QL_REQUIRE(results != null, () => "wrong result ExerciseType");
 
             lossProbability_ = results.lossProbability;
             expectedLoss_ = results.expectedLoss;
             exhaustionProbability_ = results.exhaustionProbability;
         }
 
-        public double lossProbability()
-        {
-            return lossProbability_;
-        }
+        public double lossProbability() => lossProbability_;
 
-        public double expectedLoss()
-        {
-            return expectedLoss_;
-        }
+        public double expectedLoss() => expectedLoss_;
 
-        public double exhaustionProbability()
-        {
-            return exhaustionProbability_;
-        }
+        public double exhaustionProbability() => exhaustionProbability_;
 
         protected NotionalRisk notionalRisk_;
         protected double lossProbability_;
@@ -109,7 +100,7 @@ namespace QLNet.Instruments.Bonds
     /// <summary>
     /// floating-rate cat bond (possibly capped and/or floored)
     /// </summary>
-    public class FloatingCatBond : CatBond
+    [JetBrains.Annotations.PublicAPI] public class FloatingCatBond : CatBond
     {
         public FloatingCatBond(int settlementDays,
                                double faceAmount,
@@ -198,7 +189,7 @@ namespace QLNet.Instruments.Bonds
                     break;
             }
 
-            Schedule schedule = new Schedule(startDate, maturityDate_, new Period(couponFrequency),
+            var schedule = new Schedule(startDate, maturityDate_, new Period(couponFrequency),
                                              calendar_, accrualConvention, accrualConvention,
                                              rule, endOfMonth, firstDate, nextToLastDate);
 

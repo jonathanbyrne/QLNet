@@ -23,7 +23,7 @@ namespace QLNet.Methods.lattices
     /// Binomial lattice approximating the Tsiveriotis-Fernandes model
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class TsiveriotisFernandesLattice<T> : BlackScholesLattice<T> where T : ITree
+    [JetBrains.Annotations.PublicAPI] public class TsiveriotisFernandesLattice<T> : BlackScholesLattice<T> where T : ITree
     {
 
         public TsiveriotisFernandesLattice(T tree, double riskFreeRate,
@@ -38,7 +38,7 @@ namespace QLNet.Methods.lattices
         public void stepback(int i, Vector values, Vector conversionProbability, Vector spreadAdjustedRate,
                              Vector newValues, Vector newConversionProbability, Vector newSpreadAdjustedRate)
         {
-            for (int j = 0; j < size(i); j++)
+            for (var j = 0; j < size(i); j++)
             {
                 // new conversion probability is calculated via backward
                 // induction using up and down probabilities on tree on
@@ -63,23 +63,23 @@ namespace QLNet.Methods.lattices
 
         public override void partialRollback(DiscretizedAsset asset, double to)
         {
-            double from = asset.time();
+            var from = asset.time();
 
             if (Utils.close(from, to))
                 return;
 
             Utils.QL_REQUIRE(from > to, () => " cannot roll the asset back to tile to it is already at time from ");
 
-            DiscretizedConvertible convertible = asset as DiscretizedConvertible;
+            var convertible = asset as DiscretizedConvertible;
 
-            int iFrom = t_.index(from);
-            int iTo = t_.index(to);
+            var iFrom = t_.index(from);
+            var iTo = t_.index(to);
 
             for (var i = iFrom - 1; i >= iTo; --i)
             {
-                Vector newValues = new Vector(size(i));
-                Vector newSpreadAdjustedRate = new Vector(size(i));
-                Vector newConversionProbability = new Vector(size(i));
+                var newValues = new Vector(size(i));
+                var newSpreadAdjustedRate = new Vector(size(i));
+                var newConversionProbability = new Vector(size(i));
 
                 stepback(i, convertible.values(), convertible.conversionProbability(), convertible.spreadAdjustedRate(),
                          newValues, newConversionProbability, newSpreadAdjustedRate);

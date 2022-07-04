@@ -33,7 +33,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_CapFloor : IDisposable
+    [JetBrains.Annotations.PublicAPI] public class T_CapFloor : IDisposable
     {
 
         #region Initialize&Cleanup
@@ -70,9 +70,9 @@ namespace QLNet.Tests
                 index = new Euribor6M(termStructure);
                 calendar = index.fixingCalendar();
                 convention = BusinessDayConvention.ModifiedFollowing;
-                Date today = calendar.adjust(Date.Today);
+                var today = calendar.adjust(Date.Today);
                 Settings.setEvaluationDate(today);
-                int settlementDays = 2;
+                var settlementDays = 2;
                 fixingDays = 2;
                 settlement = calendar.advance(today, settlementDays, TimeUnit.Days);
                 termStructure.linkTo(Utilities.flatRate(settlement, 0.05,
@@ -83,8 +83,8 @@ namespace QLNet.Tests
             // utilities
             public List<CashFlow> makeLeg(Date startDate, int length)
             {
-                Date endDate = calendar.advance(startDate, new Period(length, TimeUnit.Years), convention);
-                Schedule schedule = new Schedule(startDate, endDate, new Period(frequency), calendar,
+                var endDate = calendar.advance(startDate, new Period(length, TimeUnit.Years), convention);
+                var schedule = new Schedule(startDate, endDate, new Period(frequency), calendar,
                                                  convention, convention, DateGeneration.Rule.Forward,
                                                  false);
                 return new IborLeg(schedule, index)
@@ -96,7 +96,7 @@ namespace QLNet.Tests
 
             public IPricingEngine makeEngine(double volatility)
             {
-                Handle<Quote> vol = new Handle<Quote>(new SimpleQuote(volatility));
+                var vol = new Handle<Quote>(new SimpleQuote(volatility));
 
                 return (IPricingEngine)new BlackCapFloorEngine(termStructure, vol);
 
@@ -117,7 +117,7 @@ namespace QLNet.Tests
                         result = new Floor(leg, new List<double>() { strike });
                         break;
                     default:
-                        throw new ArgumentException("unknown cap/floor type");
+                        throw new ArgumentException("unknown cap/floor ExerciseType");
                 }
                 result.setPricingEngine(makeEngine(volatility));
                 return result;
@@ -125,10 +125,7 @@ namespace QLNet.Tests
 
         }
 
-        bool checkAbsError(double x1, double x2, double tolerance)
-        {
-            return System.Math.Abs(x1 - x2) < tolerance;
-        }
+        bool checkAbsError(double x1, double x2, double tolerance) => System.Math.Abs(x1 - x2) < tolerance;
 
         string typeToString(CapFloorType type)
         {
@@ -141,7 +138,7 @@ namespace QLNet.Tests
                 case CapFloorType.Collar:
                     return "collar";
                 default:
-                    throw new ArgumentException("unknown cap/floor type");
+                    throw new ArgumentException("unknown cap/floor ExerciseType");
             }
 
         }
@@ -149,40 +146,40 @@ namespace QLNet.Tests
         [Fact]
         public void testVega()
         {
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             int[] lengths = { 1, 2, 3, 4, 5, 6, 7, 10, 15, 20, 30 };
             double[] vols = { 0.01, 0.05, 0.10, 0.15, 0.20 };
             double[] strikes = { 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09 };
             CapFloorType[] types = { CapFloorType.Cap, CapFloorType.Floor };
 
-            Date startDate = vars.termStructure.link.referenceDate();
-            double shift = 1e-8;
-            double tolerance = 0.005;
+            var startDate = vars.termStructure.link.referenceDate();
+            var shift = 1e-8;
+            var tolerance = 0.005;
 
-            for (int i = 0; i < lengths.Length; i++)
+            for (var i = 0; i < lengths.Length; i++)
             {
-                for (int j = 0; j < vols.Length; j++)
+                for (var j = 0; j < vols.Length; j++)
                 {
-                    for (int k = 0; k < strikes.Length; k++)
+                    for (var k = 0; k < strikes.Length; k++)
                     {
-                        for (int h = 0; h < types.Length; h++)
+                        for (var h = 0; h < types.Length; h++)
                         {
-                            List<CashFlow> leg = vars.makeLeg(startDate, lengths[i]);
-                            CapFloor capFloor = vars.makeCapFloor(types[h], leg, strikes[k], vols[j]);
-                            CapFloor shiftedCapFloor2 = vars.makeCapFloor(types[h], leg, strikes[k], vols[j] + shift);
-                            CapFloor shiftedCapFloor1 = vars.makeCapFloor(types[h], leg, strikes[k], vols[j] - shift);
+                            var leg = vars.makeLeg(startDate, lengths[i]);
+                            var capFloor = vars.makeCapFloor(types[h], leg, strikes[k], vols[j]);
+                            var shiftedCapFloor2 = vars.makeCapFloor(types[h], leg, strikes[k], vols[j] + shift);
+                            var shiftedCapFloor1 = vars.makeCapFloor(types[h], leg, strikes[k], vols[j] - shift);
 
-                            double value1 = shiftedCapFloor1.NPV();
-                            double value2 = shiftedCapFloor2.NPV();
+                            var value1 = shiftedCapFloor1.NPV();
+                            var value2 = shiftedCapFloor2.NPV();
 
-                            double numericalVega = (value2 - value1) / (2 * shift);
+                            var numericalVega = (value2 - value1) / (2 * shift);
 
 
                             if (numericalVega > 1.0e-4)
                             {
-                                double analyticalVega = (double)capFloor.result("vega");
-                                double discrepancy = System.Math.Abs(numericalVega - analyticalVega);
+                                var analyticalVega = (double)capFloor.result("vega");
+                                var discrepancy = System.Math.Abs(numericalVega - analyticalVega);
                                 discrepancy /= numericalVega;
                                 if (discrepancy > tolerance)
                                     QAssert.Fail(
@@ -206,24 +203,24 @@ namespace QLNet.Tests
         public void testStrikeDependency()
         {
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             int[] lengths = { 1, 2, 3, 5, 7, 10, 15, 20 };
             double[] vols = { 0.01, 0.05, 0.10, 0.15, 0.20 };
             double[] strikes = { 0.03, 0.04, 0.05, 0.06, 0.07 };
 
-            Date startDate = vars.termStructure.link.referenceDate();
+            var startDate = vars.termStructure.link.referenceDate();
 
-            for (int i = 0; i < lengths.Length; i++)
+            for (var i = 0; i < lengths.Length; i++)
             {
-                for (int j = 0; j < vols.Length; j++)
+                for (var j = 0; j < vols.Length; j++)
                 {
                     // store the results for different strikes...
                     List<double> cap_values = new List<double>(), floor_values = new List<double>();
 
-                    for (int k = 0; k < strikes.Length; k++)
+                    for (var k = 0; k < strikes.Length; k++)
                     {
-                        List<CashFlow> leg = vars.makeLeg(startDate, lengths[i]);
+                        var leg = vars.makeLeg(startDate, lengths[i]);
                         Instrument cap = vars.makeCapFloor(CapFloorType.Cap, leg,
                                                            strikes[k], vols[j]);
                         cap_values.Add(cap.NPV());
@@ -232,7 +229,7 @@ namespace QLNet.Tests
                         floor_values.Add(floor.NPV());
                     }
                     // and check that they go the right way
-                    for (int k = 0; k < cap_values.Count - 1; k++)
+                    for (var k = 0; k < cap_values.Count - 1; k++)
                     {
                         if (cap_values[k] < cap_values[k + 1])
                             QAssert.Fail(
@@ -246,7 +243,7 @@ namespace QLNet.Tests
                     }
 
                     // same for floors
-                    for (int k = 0; k < floor_values.Count - 1; k++)
+                    for (var k = 0; k < floor_values.Count - 1; k++)
                     {
                         if (floor_values[k] > floor_values[k + 1])
                             QAssert.Fail(
@@ -265,30 +262,30 @@ namespace QLNet.Tests
         [Fact]
         public void testConsistency()
         {
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             int[] lengths = { 1, 2, 3, 5, 7, 10, 15, 20 };
             double[] cap_rates = { 0.03, 0.04, 0.05, 0.06, 0.07 };
             double[] floor_rates = { 0.03, 0.04, 0.05, 0.06, 0.07 };
             double[] vols = { 0.01, 0.05, 0.10, 0.15, 0.20 };
 
-            Date startDate = vars.termStructure.link.referenceDate();
+            var startDate = vars.termStructure.link.referenceDate();
 
-            for (int i = 0; i < lengths.Length; i++)
+            for (var i = 0; i < lengths.Length; i++)
             {
-                for (int j = 0; j < cap_rates.Length; j++)
+                for (var j = 0; j < cap_rates.Length; j++)
                 {
-                    for (int k = 0; k < floor_rates.Length; k++)
+                    for (var k = 0; k < floor_rates.Length; k++)
                     {
-                        for (int l = 0; l < vols.Length; l++)
+                        for (var l = 0; l < vols.Length; l++)
                         {
 
-                            List<CashFlow> leg = vars.makeLeg(startDate, lengths[i]);
+                            var leg = vars.makeLeg(startDate, lengths[i]);
                             Instrument cap = vars.makeCapFloor(CapFloorType.Cap, leg,
                                                                cap_rates[j], vols[l]);
                             Instrument floor = vars.makeCapFloor(CapFloorType.Floor, leg,
                                                                  floor_rates[k], vols[l]);
-                            Collar collar = new Collar(leg, new InitializedList<double>(1, cap_rates[j]),
+                            var collar = new Collar(leg, new InitializedList<double>(1, cap_rates[j]),
                                                        new InitializedList<double>(1, floor_rates[k]));
                             collar.setPricingEngine(vars.makeEngine(vols[l]));
 
@@ -313,30 +310,30 @@ namespace QLNet.Tests
         [Fact]
         public void testParity()
         {
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             int[] lengths = { 1, 2, 3, 5, 7, 10, 15, 20 };
             double[] strikes = { 0.0, 0.03, 0.04, 0.05, 0.06, 0.07 };
             double[] vols = { 0.01, 0.05, 0.10, 0.15, 0.20 };
 
-            Date startDate = vars.termStructure.link.referenceDate();
+            var startDate = vars.termStructure.link.referenceDate();
 
-            for (int i = 0; i < lengths.Length; i++)
+            for (var i = 0; i < lengths.Length; i++)
             {
-                for (int j = 0; j < strikes.Length; j++)
+                for (var j = 0; j < strikes.Length; j++)
                 {
-                    for (int k = 0; k < vols.Length; k++)
+                    for (var k = 0; k < vols.Length; k++)
                     {
 
-                        List<CashFlow> leg = vars.makeLeg(startDate, lengths[i]);
+                        var leg = vars.makeLeg(startDate, lengths[i]);
                         Instrument cap = vars.makeCapFloor(CapFloorType.Cap, leg, strikes[j], vols[k]);
                         Instrument floor = vars.makeCapFloor(CapFloorType.Floor, leg, strikes[j], vols[k]);
-                        Date maturity = vars.calendar.advance(startDate, lengths[i], TimeUnit.Years, vars.convention);
-                        Schedule schedule = new Schedule(startDate, maturity,
+                        var maturity = vars.calendar.advance(startDate, lengths[i], TimeUnit.Years, vars.convention);
+                        var schedule = new Schedule(startDate, maturity,
                                                          new Period(vars.frequency), vars.calendar,
                                                          vars.convention, vars.convention,
                                                          DateGeneration.Rule.Forward, false);
-                        VanillaSwap swap = new VanillaSwap(VanillaSwap.Type.Payer, vars.nominals[0],
+                        var swap = new VanillaSwap(VanillaSwap.Type.Payer, vars.nominals[0],
                                                            schedule, strikes[j], vars.index.dayCounter(),
                                                            schedule, vars.index, 0.0,
                                                            vars.index.dayCounter());
@@ -361,32 +358,32 @@ namespace QLNet.Tests
         [Fact]
         public void testATMRate()
         {
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             int[] lengths = { 1, 2, 3, 5, 7, 10, 15, 20 };
             double[] strikes = { 0.0, 0.03, 0.04, 0.05, 0.06, 0.07 };
             double[] vols = { 0.01, 0.05, 0.10, 0.15, 0.20 };
 
-            Date startDate = vars.termStructure.link.referenceDate();
+            var startDate = vars.termStructure.link.referenceDate();
 
-            for (int i = 0; i < lengths.Length; i++)
+            for (var i = 0; i < lengths.Length; i++)
             {
-                List<CashFlow> leg = vars.makeLeg(startDate, lengths[i]);
-                Date maturity = vars.calendar.advance(startDate, lengths[i], TimeUnit.Years, vars.convention);
-                Schedule schedule = new Schedule(startDate, maturity,
+                var leg = vars.makeLeg(startDate, lengths[i]);
+                var maturity = vars.calendar.advance(startDate, lengths[i], TimeUnit.Years, vars.convention);
+                var schedule = new Schedule(startDate, maturity,
                                                  new Period(vars.frequency), vars.calendar,
                                                  vars.convention, vars.convention,
                                                  DateGeneration.Rule.Forward, false);
 
-                for (int j = 0; j < strikes.Length; j++)
+                for (var j = 0; j < strikes.Length; j++)
                 {
-                    for (int k = 0; k < vols.Length; k++)
+                    for (var k = 0; k < vols.Length; k++)
                     {
 
-                        CapFloor cap = vars.makeCapFloor(CapFloorType.Cap, leg, strikes[j], vols[k]);
-                        CapFloor floor = vars.makeCapFloor(CapFloorType.Floor, leg, strikes[j], vols[k]);
-                        double capATMRate = cap.atmRate(vars.termStructure);
-                        double floorATMRate = floor.atmRate(vars.termStructure);
+                        var cap = vars.makeCapFloor(CapFloorType.Cap, leg, strikes[j], vols[k]);
+                        var floor = vars.makeCapFloor(CapFloorType.Floor, leg, strikes[j], vols[k]);
+                        var capATMRate = cap.atmRate(vars.termStructure);
+                        var floorATMRate = floor.atmRate(vars.termStructure);
 
                         if (!checkAbsError(floorATMRate, capATMRate, 1.0e-10))
                             QAssert.Fail(
@@ -398,14 +395,14 @@ namespace QLNet.Tests
                                + "   floor ATM rate:" + floorATMRate + "\n"
                                + "   relative Error:"
                                + Utilities.relativeError(capATMRate, floorATMRate, capATMRate) * 100 + "%");
-                        VanillaSwap swap = new VanillaSwap(VanillaSwap.Type.Payer, vars.nominals[0],
+                        var swap = new VanillaSwap(VanillaSwap.Type.Payer, vars.nominals[0],
                                                            schedule, floorATMRate,
                                                            vars.index.dayCounter(),
                                                            schedule, vars.index, 0.0,
                                                            vars.index.dayCounter());
                         swap.setPricingEngine(
                                                  new DiscountingSwapEngine(vars.termStructure));
-                        double swapNPV = swap.NPV();
+                        var swapNPV = swap.NPV();
                         if (!checkAbsError(swapNPV, 0, 1.0e-10))
                             QAssert.Fail(
                                "the NPV of a Swap struck at ATM rate "
@@ -423,10 +420,10 @@ namespace QLNet.Tests
         [Fact]
         public void testImpliedVolatility()
         {
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            int maxEvaluations = 100;
-            double tolerance = 1.0e-6;
+            var maxEvaluations = 100;
+            var tolerance = 1.0e-6;
 
             CapFloorType[] types = { CapFloorType.Cap, CapFloorType.Floor };
             double[] strikes = { 0.02, 0.03, 0.04 };
@@ -436,27 +433,27 @@ namespace QLNet.Tests
             double[] rRates = { 0.02, 0.03, 0.04 };
             double[] vols = { 0.01, 0.20, 0.30, 0.70, 0.90 };
 
-            for (int k = 0; k < lengths.Length; k++)
+            for (var k = 0; k < lengths.Length; k++)
             {
-                List<CashFlow> leg = vars.makeLeg(vars.settlement, lengths[k]);
+                var leg = vars.makeLeg(vars.settlement, lengths[k]);
 
-                for (int i = 0; i < types.Length; i++)
+                for (var i = 0; i < types.Length; i++)
                 {
-                    for (int j = 0; j < strikes.Length; j++)
+                    for (var j = 0; j < strikes.Length; j++)
                     {
-                        CapFloor capfloor = vars.makeCapFloor(types[i], leg, strikes[j], 0.0);
+                        var capfloor = vars.makeCapFloor(types[i], leg, strikes[j], 0.0);
 
-                        for (int n = 0; n < rRates.Length; n++)
+                        for (var n = 0; n < rRates.Length; n++)
                         {
-                            for (int m = 0; m < vols.Length; m++)
+                            for (var m = 0; m < vols.Length; m++)
                             {
-                                double r = rRates[n];
-                                double v = vols[m];
+                                var r = rRates[n];
+                                var v = vols[m];
                                 vars.termStructure.linkTo(Utilities.flatRate(vars.settlement, r, new Actual360()));
                                 capfloor.setPricingEngine(vars.makeEngine(v));
 
-                                double value = capfloor.NPV();
-                                double implVol = 0.0;
+                                var value = capfloor.NPV();
+                                var implVol = 0.0;
 
                                 try
                                 {
@@ -470,7 +467,7 @@ namespace QLNet.Tests
                                 {
                                     // couldn't bracket?
                                     capfloor.setPricingEngine(vars.makeEngine(0.0));
-                                    double value2 = capfloor.NPV();
+                                    var value2 = capfloor.NPV();
                                     if (System.Math.Abs(value - value2) < tolerance)
                                     {
                                         // ok, just skip:
@@ -488,7 +485,7 @@ namespace QLNet.Tests
                                 {
                                     // the difference might not matter
                                     capfloor.setPricingEngine(vars.makeEngine(implVol));
-                                    double value2 = capfloor.NPV();
+                                    var value2 = capfloor.NPV();
                                     if (System.Math.Abs(value - value2) > tolerance)
                                     {
                                         QAssert.Fail(
@@ -518,14 +515,14 @@ namespace QLNet.Tests
         [Fact]
         public void testCachedValue()
         {
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             Date cachedToday = new Date(14, Month.March, 2002),
             cachedSettlement = new Date(18, Month.March, 2002);
             Settings.setEvaluationDate(cachedToday);
             vars.termStructure.linkTo(Utilities.flatRate(cachedSettlement, 0.05, new Actual360()));
-            Date startDate = vars.termStructure.link.referenceDate();
-            List<CashFlow> leg = vars.makeLeg(startDate, 20);
+            var startDate = vars.termStructure.link.referenceDate();
+            var leg = vars.makeLeg(startDate, 20);
             Instrument cap = vars.makeCapFloor(CapFloorType.Cap, leg, 0.07, 0.20);
             Instrument floor = vars.makeCapFloor(CapFloorType.Floor, leg, 0.03, 0.20);
 

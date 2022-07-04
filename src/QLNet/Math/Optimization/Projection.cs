@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Math.Optimization
 {
-    public class Projection
+    [JetBrains.Annotations.PublicAPI] public class Projection
     {
         public Projection(Vector parameterValues, List<bool> fixParameters = null)
         {
@@ -29,7 +29,7 @@ namespace QLNet.Math.Optimization
 
             Utils.QL_REQUIRE(fixedParameters_.size() == fixParameters_.Count, () =>
                              "fixedParameters_.size()!=parametersFreedoms_.size()");
-            for (int i = 0; i < fixParameters_.Count; i++)
+            for (var i = 0; i < fixParameters_.Count; i++)
                 if (!fixParameters_[i])
                     numberOfFreeParameters_++;
 
@@ -41,9 +41,9 @@ namespace QLNet.Math.Optimization
         public virtual Vector project(Vector parameters)
         {
             Utils.QL_REQUIRE(parameters.size() == fixParameters_.Count, () => "parameters.size()!=parametersFreedoms_.size()");
-            Vector projectedParameters = new Vector(numberOfFreeParameters_);
-            int i = 0;
-            for (int j = 0; j < fixParameters_.Count; j++)
+            var projectedParameters = new Vector(numberOfFreeParameters_);
+            var i = 0;
+            for (var j = 0; j < fixParameters_.Count; j++)
                 if (!fixParameters_[j])
                     projectedParameters[i++] = parameters[j];
             return projectedParameters;
@@ -55,9 +55,9 @@ namespace QLNet.Math.Optimization
         {
             Utils.QL_REQUIRE(projectedParameters.size() == numberOfFreeParameters_, () =>
                              "projectedParameters.size()!=numberOfFreeParameters");
-            Vector y = new Vector(fixedParameters_);
-            int i = 0;
-            for (int j = 0; j < y.size(); j++)
+            var y = new Vector(fixedParameters_);
+            var i = 0;
+            for (var j = 0; j < y.size(); j++)
                 if (!fixParameters_[j])
                     y[j] = projectedParameters[i++];
             return y;
@@ -67,8 +67,8 @@ namespace QLNet.Math.Optimization
         {
             Utils.QL_REQUIRE(parameterValues.size() == numberOfFreeParameters_, () =>
                              "parameterValues.size()!=numberOfFreeParameters");
-            int i = 0;
-            for (int j = 0; j < actualParameters_.size(); j++)
+            var i = 0;
+            for (var j = 0; j < actualParameters_.size(); j++)
                 if (!fixParameters_[j])
                     actualParameters_[j] = parameterValues[i++];
         }

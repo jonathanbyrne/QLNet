@@ -27,7 +27,7 @@ using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Utilities
 {
-    public class FdmAffineModelTermStructure : YieldTermStructure
+    [JetBrains.Annotations.PublicAPI] public class FdmAffineModelTermStructure : YieldTermStructure
     {
         public FdmAffineModelTermStructure(
            Vector r,
@@ -44,17 +44,15 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             model_.registerWith(update);
         }
 
-        public override Date maxDate() { return Date.maxDate(); }
+        public override Date maxDate() => Date.maxDate();
+
         public void setVariable(Vector r)
         {
             r_ = r;
             notifyObservers();
         }
 
-        protected override double discountImpl(double d)
-        {
-            return model_.discountBond(t_, d + t_, r_);
-        }
+        protected override double discountImpl(double d) => model_.discountBond(t_, d + t_, r_);
 
         protected Vector r_;
         protected double t_;

@@ -63,7 +63,7 @@ namespace QLNet
    /// Euribor rate fixed by the ECB.
    /// This is the rate fixed by the ECB. Use EurLibor if you're interested in the London fixing by BBA.
    /// </summary>
-   public class Euribor : IborIndex
+   [JetBrains.Annotations.PublicAPI] public class Euribor : IborIndex
    {
       public Euribor(Period tenor) : this(tenor, new Handle<YieldTermStructure>()) { }
       public Euribor(Period tenor, Handle<YieldTermStructure> h) :
@@ -82,7 +82,7 @@ namespace QLNet
        convention used for Euribor and the actual/365 convention
        previously used by a few pre-EUR currencies.
    */
-   public class Euribor365 : IborIndex
+   [JetBrains.Annotations.PublicAPI] public class Euribor365 : IborIndex
    {
       public Euribor365(Period tenor) : this(tenor, new Handle<YieldTermStructure>()) { }
       public Euribor365(Period tenor, Handle<YieldTermStructure> h)
@@ -97,70 +97,70 @@ namespace QLNet
    }
 
    //! 1-week %Euribor index
-   public class EuriborSW : Euribor
+   [JetBrains.Annotations.PublicAPI] public class EuriborSW : Euribor
    {
       public EuriborSW() : this(new Handle<YieldTermStructure>()) { }
       public EuriborSW(Handle<YieldTermStructure> h) : base(new Period(1, TimeUnit.Weeks), h) { }
    }
 
    //! 2-weeks %Euribor index
-   public class Euribor2W : Euribor
+   [JetBrains.Annotations.PublicAPI] public class Euribor2W : Euribor
    {
       public Euribor2W() : this(new Handle<YieldTermStructure>()) { }
       public Euribor2W(Handle<YieldTermStructure> h) : base(new Period(2, TimeUnit.Weeks), h) { }
    }
 
    //! 3-weeks %Euribor index
-   public class Euribor3W : Euribor
+   [JetBrains.Annotations.PublicAPI] public class Euribor3W : Euribor
    {
       public Euribor3W() : this(new Handle<YieldTermStructure>()) { }
       public Euribor3W(Handle<YieldTermStructure> h) : base(new Period(3, TimeUnit.Weeks), h) { }
    }
 
    //! 1-month %Euribor index
-   public class Euribor1M : Euribor
+   [JetBrains.Annotations.PublicAPI] public class Euribor1M : Euribor
    {
       public Euribor1M() : this(new Handle<YieldTermStructure>()) { }
       public Euribor1M(Handle<YieldTermStructure> h) : base(new Period(1, TimeUnit.Months), h) { }
    }
 
    //! 2-months %Euribor index
-   public class Euribor2M : Euribor
+   [JetBrains.Annotations.PublicAPI] public class Euribor2M : Euribor
    {
       public Euribor2M() : this(new Handle<YieldTermStructure>()) { }
       public Euribor2M(Handle<YieldTermStructure> h) : base(new Period(2, TimeUnit.Months), h) { }
    }
 
    // 3-months %Euribor index
-   public class Euribor3M : Euribor
+   [JetBrains.Annotations.PublicAPI] public class Euribor3M : Euribor
    {
       public Euribor3M() : this(new Handle<YieldTermStructure>()) { }
       public Euribor3M(Handle<YieldTermStructure> h) : base(new Period(3, TimeUnit.Months), h) {}
    }
 
    // 4-months %Euribor index
-   public class Euribor4M : Euribor
+   [JetBrains.Annotations.PublicAPI] public class Euribor4M : Euribor
    {
       public Euribor4M() : this(new Handle<YieldTermStructure>()) { }
       public Euribor4M(Handle<YieldTermStructure> h) : base(new Period(4, TimeUnit.Months), h) { }
    }
 
    // 5-months %Euribor index
-   public class Euribor5M : Euribor
+   [JetBrains.Annotations.PublicAPI] public class Euribor5M : Euribor
    {
       public Euribor5M() : this(new Handle<YieldTermStructure>()) { }
       public Euribor5M(Handle<YieldTermStructure> h) : base(new Period(5, TimeUnit.Months), h) { }
    }
 
    // 6-months %Euribor index
-   public class Euribor6M : Euribor
+   [JetBrains.Annotations.PublicAPI] public class Euribor6M : Euribor
    {
       public Euribor6M() : this(new Handle<YieldTermStructure>()) { }
       public Euribor6M(Handle<YieldTermStructure> h) : base(new Period(6, TimeUnit.Months), h) { }
    }
 
    // 1-year %Euribor index
-   public class Euribor1Y : Euribor
+   [JetBrains.Annotations.PublicAPI] public class Euribor1Y : Euribor
    {
       public Euribor1Y() : this(new Handle<YieldTermStructure>()) { }
       public Euribor1Y(Handle<YieldTermStructure> h) : base(new Period(1, TimeUnit.Years), h) { }

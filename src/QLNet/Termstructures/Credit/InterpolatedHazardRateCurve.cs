@@ -27,7 +27,7 @@ using System.Linq;
 
 namespace QLNet.Termstructures.Credit
 {
-    public class InterpolatedHazardRateCurve<Interpolator> : HazardRateStructure, InterpolatedCurve
+    [JetBrains.Annotations.PublicAPI] public class InterpolatedHazardRateCurve<Interpolator> : HazardRateStructure, InterpolatedCurve
       where Interpolator : IInterpolationFactory, new()
     {
         public InterpolatedHazardRateCurve(List<Date> dates, List<double> hazardRates, DayCounter dayCounter, Calendar cal = null,
@@ -72,7 +72,7 @@ namespace QLNet.Termstructures.Credit
         }
 
 
-        public List<double> hazardRates() { return data_; }
+        public List<double> hazardRates() => data_;
 
         protected InterpolatedHazardRateCurve(DayCounter dc,
                                               List<Handle<Quote>> jumps = null,
@@ -129,7 +129,7 @@ namespace QLNet.Termstructures.Credit
             Utils.QL_REQUIRE(data_.Count == dates_.Count, () => "dates/data count mismatch");
 
             times_.Add(0.0);
-            for (int i = 1; i < dates_.Count; ++i)
+            for (var i = 1; i < dates_.Count; ++i)
             {
                 Utils.QL_REQUIRE(dates_[i] > dates_[i - 1], () => "invalid date (" + dates_[i] + ", vs " + dates_[i - 1] + ")");
                 times_.Add(dayCounter().yearFraction(dates_[0], dates_[i]));
@@ -145,10 +145,11 @@ namespace QLNet.Termstructures.Credit
         #region InterpolatedCurve
 
         public List<double> times_ { get; set; }
-        public List<double> times() { return times_; }
+        public List<double> times() => times_;
 
         public List<Date> dates_ { get; set; }
-        public List<Date> dates() { return dates_; }
+        public List<Date> dates() => dates_;
+
         public Date maxDate_ { get; set; }
         public override Date maxDate()
         {
@@ -159,15 +160,16 @@ namespace QLNet.Termstructures.Credit
         }
 
         public List<double> data_ { get; set; }
-        public List<double> discounts() { return data_; }
-        public List<double> data() { return discounts(); }
+        public List<double> discounts() => data_;
+
+        public List<double> data() => discounts();
 
         public Interpolation interpolation_ { get; set; }
         public IInterpolationFactory interpolator_ { get; set; }
 
         public Dictionary<Date, double> nodes()
         {
-            Dictionary<Date, double> results = new Dictionary<Date, double>();
+            var results = new Dictionary<Date, double>();
             dates_.ForEach((i, x) => results.Add(x, data_[i]));
             return results;
         }
@@ -179,7 +181,7 @@ namespace QLNet.Termstructures.Credit
 
         public object Clone()
         {
-            InterpolatedCurve copy = MemberwiseClone() as InterpolatedCurve;
+            var copy = MemberwiseClone() as InterpolatedCurve;
             copy.times_ = new List<double>(times_);
             copy.data_ = new List<double>(data_);
             copy.interpolator_ = interpolator_;

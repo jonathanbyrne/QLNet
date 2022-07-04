@@ -47,7 +47,7 @@ namespace QLNet.Pricingengines.barrier
     */
 
     // calc helper object
-    public class AnalyticDoubleBarrierBinaryEngineHelper
+    [JetBrains.Annotations.PublicAPI] public class AnalyticDoubleBarrierBinaryEngineHelper
     {
         public AnalyticDoubleBarrierBinaryEngineHelper(
            GeneralizedBlackScholesProcess process,
@@ -71,36 +71,36 @@ namespace QLNet.Pricingengines.barrier
             Utils.QL_REQUIRE(variance >= 0.0,
                              () => "negative variance not allowed");
 
-            double residualTime = process_.time(arguments_.exercise.lastDate());
+            var residualTime = process_.time(arguments_.exercise.lastDate());
             Utils.QL_REQUIRE(residualTime > 0.0,
                              () => "expiration time must be > 0");
 
-            // Option::Type type   = payoff_->optionType(); // this is not used ?
-            double cash = payoff_.cashPayoff();
-            double barrier_lo = arguments_.barrier_lo.Value;
-            double barrier_hi = arguments_.barrier_hi.Value;
+            // Option::Type ExerciseType   = payoff_->optionType(); // this is not used ?
+            var cash = payoff_.cashPayoff();
+            var barrier_lo = arguments_.barrier_lo.Value;
+            var barrier_hi = arguments_.barrier_hi.Value;
 
-            double sigmaq = variance / residualTime;
-            double r = process_.riskFreeRate().currentLink().zeroRate(residualTime, Compounding.Continuous,
+            var sigmaq = variance / residualTime;
+            var r = process_.riskFreeRate().currentLink().zeroRate(residualTime, Compounding.Continuous,
                                                                       Frequency.NoFrequency).rate();
-            double q = process_.dividendYield().currentLink().zeroRate(residualTime,
+            var q = process_.dividendYield().currentLink().zeroRate(residualTime,
                                                                        Compounding.Continuous, Frequency.NoFrequency).rate();
-            double b = r - q;
+            var b = r - q;
 
-            double alpha = -0.5 * (2 * b / sigmaq - 1);
-            double beta = -0.25 * System.Math.Pow(2 * b / sigmaq - 1, 2) - 2 * r / sigmaq;
-            double Z = System.Math.Log(barrier_hi / barrier_lo);
-            double factor = 2 * Const.M_PI * cash / System.Math.Pow(Z, 2); // common factor
-            double lo_alpha = System.Math.Pow(spot / barrier_lo, alpha);
-            double hi_alpha = System.Math.Pow(spot / barrier_hi, alpha);
+            var alpha = -0.5 * (2 * b / sigmaq - 1);
+            var beta = -0.25 * System.Math.Pow(2 * b / sigmaq - 1, 2) - 2 * r / sigmaq;
+            var Z = System.Math.Log(barrier_hi / barrier_lo);
+            var factor = 2 * Const.M_PI * cash / System.Math.Pow(Z, 2); // common factor
+            var lo_alpha = System.Math.Pow(spot / barrier_lo, alpha);
+            var hi_alpha = System.Math.Pow(spot / barrier_hi, alpha);
 
             double tot = 0, term = 0;
-            for (int i = 1; i < maxIteration; ++i)
+            for (var i = 1; i < maxIteration; ++i)
             {
-                double term1 = (lo_alpha - System.Math.Pow(-1.0, i) * hi_alpha) /
-                               (System.Math.Pow(alpha, 2) + System.Math.Pow(i * Const.M_PI / Z, 2));
-                double term2 = System.Math.Sin(i * Const.M_PI / Z * System.Math.Log(spot / barrier_lo));
-                double term3 = System.Math.Exp(-0.5 * (System.Math.Pow(i * Const.M_PI / Z, 2) - beta) * variance);
+                var term1 = (lo_alpha - System.Math.Pow(-1.0, i) * hi_alpha) /
+                            (System.Math.Pow(alpha, 2) + System.Math.Pow(i * Const.M_PI / Z, 2));
+                var term2 = System.Math.Sin(i * Const.M_PI / Z * System.Math.Log(spot / barrier_lo));
+                var term3 = System.Math.Exp(-0.5 * (System.Math.Pow(i * Const.M_PI / Z, 2) - beta) * variance);
                 term = factor * i * term1 * term2 * term3;
                 tot += term;
             }
@@ -113,7 +113,7 @@ namespace QLNet.Pricingengines.barrier
                 return System.Math.Max(tot, 0.0); // KO
             else
             {
-                double discount = process_.riskFreeRate().currentLink().discount(
+                var discount = process_.riskFreeRate().currentLink().discount(
                    arguments_.exercise.lastDate());
                 Utils.QL_REQUIRE(discount > 0.0,
                                  () => "positive discount required");
@@ -132,34 +132,34 @@ namespace QLNet.Pricingengines.barrier
             Utils.QL_REQUIRE(variance >= 0.0,
                              () => "negative variance not allowed");
 
-            double residualTime = process_.time(arguments_.exercise.lastDate());
+            var residualTime = process_.time(arguments_.exercise.lastDate());
             Utils.QL_REQUIRE(residualTime > 0.0,
                              () => "expiration time must be > 0");
 
-            double cash = payoff_.cashPayoff();
-            double barrier_lo = arguments_.barrier_lo.Value;
-            double barrier_hi = arguments_.barrier_hi.Value;
+            var cash = payoff_.cashPayoff();
+            var barrier_lo = arguments_.barrier_lo.Value;
+            var barrier_hi = arguments_.barrier_hi.Value;
             if (barrierType == DoubleBarrier.Type.KOKI)
                 Utils.swap(ref barrier_lo, ref barrier_hi);
 
-            double sigmaq = variance / residualTime;
-            double r = process_.riskFreeRate().currentLink().zeroRate(residualTime, Compounding.Continuous,
+            var sigmaq = variance / residualTime;
+            var r = process_.riskFreeRate().currentLink().zeroRate(residualTime, Compounding.Continuous,
                                                                       Frequency.NoFrequency).rate();
-            double q = process_.dividendYield().currentLink().zeroRate(residualTime,
+            var q = process_.dividendYield().currentLink().zeroRate(residualTime,
                                                                        Compounding.Continuous, Frequency.NoFrequency).rate();
-            double b = r - q;
+            var b = r - q;
 
-            double alpha = -0.5 * (2 * b / sigmaq - 1);
-            double beta = -0.25 * System.Math.Pow(2 * b / sigmaq - 1, 2) - 2 * r / sigmaq;
-            double Z = System.Math.Log(barrier_hi / barrier_lo);
-            double log_S_L = System.Math.Log(spot / barrier_lo);
+            var alpha = -0.5 * (2 * b / sigmaq - 1);
+            var beta = -0.25 * System.Math.Pow(2 * b / sigmaq - 1, 2) - 2 * r / sigmaq;
+            var Z = System.Math.Log(barrier_hi / barrier_lo);
+            var log_S_L = System.Math.Log(spot / barrier_lo);
 
             double tot = 0, term = 0;
-            for (int i = 1; i < maxIteration; ++i)
+            for (var i = 1; i < maxIteration; ++i)
             {
-                double factor = System.Math.Pow(i * Const.M_PI / Z, 2) - beta;
-                double term1 = (beta - System.Math.Pow(i * Const.M_PI / Z, 2) * System.Math.Exp(-0.5 * factor * variance)) / factor;
-                double term2 = System.Math.Sin(i * Const.M_PI / Z * log_S_L);
+                var factor = System.Math.Pow(i * Const.M_PI / Z, 2) - beta;
+                var term1 = (beta - System.Math.Pow(i * Const.M_PI / Z, 2) * System.Math.Exp(-0.5 * factor * variance)) / factor;
+                var term2 = System.Math.Sin(i * Const.M_PI / Z * log_S_L);
                 term = 2.0 / (i * Const.M_PI) * term1 * term2;
                 tot += term;
             }
@@ -176,7 +176,7 @@ namespace QLNet.Pricingengines.barrier
         protected CashOrNothingPayoff payoff_;
         protected DoubleBarrierOption.Arguments arguments_;
     }
-    public class AnalyticDoubleBarrierBinaryEngine : DoubleBarrierOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class AnalyticDoubleBarrierBinaryEngine : DoubleBarrierOption.Engine
     {
         public AnalyticDoubleBarrierBinaryEngine(GeneralizedBlackScholesProcess process)
         {
@@ -189,7 +189,7 @@ namespace QLNet.Pricingengines.barrier
             if (arguments_.barrierType == DoubleBarrier.Type.KIKO ||
                 arguments_.barrierType == DoubleBarrier.Type.KOKI)
             {
-                AmericanExercise ex = arguments_.exercise as AmericanExercise;
+                var ex = arguments_.exercise as AmericanExercise;
                 Utils.QL_REQUIRE(ex != null, () => "KIKO/KOKI options must have American exercise");
                 Utils.QL_REQUIRE(ex.dates()[0] <=
                                  process_.blackVolatility().currentLink().referenceDate(),
@@ -197,22 +197,22 @@ namespace QLNet.Pricingengines.barrier
             }
             else
             {
-                EuropeanExercise ex = arguments_.exercise as EuropeanExercise;
+                var ex = arguments_.exercise as EuropeanExercise;
                 Utils.QL_REQUIRE(ex != null, () => "non-European exercise given");
             }
-            CashOrNothingPayoff payoff = arguments_.payoff as CashOrNothingPayoff;
+            var payoff = arguments_.payoff as CashOrNothingPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "a cash-or-nothing payoff must be given");
 
-            double spot = process_.stateVariable().currentLink().value();
+            var spot = process_.stateVariable().currentLink().value();
             Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
 
-            double variance =
+            var variance =
                process_.blackVolatility().currentLink().blackVariance(
                   arguments_.exercise.lastDate(),
                   payoff.strike());
-            double barrier_lo = arguments_.barrier_lo.Value;
-            double barrier_hi = arguments_.barrier_hi.Value;
-            DoubleBarrier.Type barrierType = arguments_.barrierType;
+            var barrier_lo = arguments_.barrier_lo.Value;
+            var barrier_hi = arguments_.barrier_hi.Value;
+            var barrierType = arguments_.barrierType;
             Utils.QL_REQUIRE(barrier_lo > 0.0,
                              () => "positive low barrier value required");
             Utils.QL_REQUIRE(barrier_hi > 0.0,
@@ -223,7 +223,7 @@ namespace QLNet.Pricingengines.barrier
                              barrierType == DoubleBarrier.Type.KnockOut ||
                              barrierType == DoubleBarrier.Type.KIKO ||
                              barrierType == DoubleBarrier.Type.KOKI,
-                             () => "Unsupported barrier type");
+                             () => "Unsupported barrier ExerciseType");
 
             // degenerate cases
             switch (barrierType)
@@ -301,7 +301,7 @@ namespace QLNet.Pricingengines.barrier
                     break;
             }
 
-            AnalyticDoubleBarrierBinaryEngineHelper helper = new AnalyticDoubleBarrierBinaryEngineHelper(process_,
+            var helper = new AnalyticDoubleBarrierBinaryEngineHelper(process_,
                   payoff, arguments_);
             switch (barrierType)
             {

@@ -26,7 +26,7 @@ using QLNet.Cashflows;
 namespace QLNet.Instruments
 {
     //! Overnight indexed swap: fix vs compounded overnight rate
-    public class OvernightIndexedSwap : Swap
+    [JetBrains.Annotations.PublicAPI] public class OvernightIndexedSwap : Swap
     {
         private Type type_;
         private double fixedNominal_;
@@ -71,9 +71,9 @@ namespace QLNet.Instruments
             .withNotionals(nominal)
             .withSpreads(spread_);
 
-            for (int j = 0; j < 2; ++j)
+            for (var j = 0; j < 2; ++j)
             {
-                for (int i = 0; i < legs_[j].Count; i++)
+                for (var i = 0; i < legs_[j].Count; i++)
                     legs_[j][i].registerWith(update);
             }
 
@@ -88,7 +88,7 @@ namespace QLNet.Instruments
                     payer_[1] = -1.0;
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown overnight-swap type");
+                    Utils.QL_FAIL("Unknown overnight-swap ExerciseType");
                     break;
             }
         }
@@ -126,9 +126,9 @@ namespace QLNet.Instruments
             .withNotionals(overnightNominal_)
             .withSpreads(spread_);
 
-            for (int j = 0; j < 2; ++j)
+            for (var j = 0; j < 2; ++j)
             {
-                for (int i = 0; i < legs_[j].Count; i++)
+                for (var i = 0; i < legs_[j].Count; i++)
                     legs_[j][i].registerWith(update);
             }
 
@@ -143,24 +143,31 @@ namespace QLNet.Instruments
                     payer_[1] = -1.0;
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown overnight-swap type");
+                    Utils.QL_FAIL("Unknown overnight-swap ExerciseType");
                     break;
 
             }
         }
 
-        public Type type() { return type_; }
-        public double fixedNominal() { return fixedNominal_; }
-        public double overnightNominal() { return overnightNominal_; }
-        public Frequency fixedPaymentFrequency() { return fixedPaymentFrequency_; }
-        public Frequency overnightPaymentFrequency() { return overnightPaymentFrequency_; }
-        public double fixedRate() { return fixedRate_; }
-        public DayCounter fixedDayCount() { return fixedDC_; }
-        public double spread() { return spread_; }
+        public Type type() => type_;
 
-        public List<CashFlow> fixedLeg() { return legs_[0]; }
-        public List<CashFlow> overnightLeg() { return legs_[1]; }
+        public double fixedNominal() => fixedNominal_;
 
+        public double overnightNominal() => overnightNominal_;
+
+        public Frequency fixedPaymentFrequency() => fixedPaymentFrequency_;
+
+        public Frequency overnightPaymentFrequency() => overnightPaymentFrequency_;
+
+        public double fixedRate() => fixedRate_;
+
+        public DayCounter fixedDayCount() => fixedDC_;
+
+        public double spread() => spread_;
+
+        public List<CashFlow> fixedLeg() => legs_[0];
+
+        public List<CashFlow> overnightLeg() => legs_[1];
 
         public double? fairRate()
         {

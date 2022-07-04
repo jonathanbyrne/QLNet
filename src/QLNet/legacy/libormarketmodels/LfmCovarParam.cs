@@ -37,7 +37,7 @@ namespace QLNet.legacy.libormarketmodels
 
         public virtual double value(double t)
         {
-            Matrix m = param_.diffusion(t, new Vector());
+            var m = param_.diffusion(t, new Vector());
             double u = 0;
             m.row(i_).ForEach((ii, vv) => u += vv * m.row(j_)[ii]);
             return u;
@@ -55,29 +55,20 @@ namespace QLNet.legacy.libormarketmodels
             factors_ = factors;
         }
 
-        public int size()
-        {
-            return size_;
-        }
+        public int size() => size_;
 
-        public int factors()
-        {
-            return factors_;
-        }
+        public int factors() => factors_;
 
         public abstract Matrix diffusion(double t);
 
         public abstract Matrix diffusion(double t, Vector x);
 
-        public virtual Matrix covariance(double t)
-        {
-            return covariance(t, null);
-        }
+        public virtual Matrix covariance(double t) => covariance(t, null);
 
         public virtual Matrix covariance(double t, Vector x)
         {
-            Matrix sigma = diffusion(t, x);
-            Matrix result = sigma * Matrix.transpose(sigma);
+            var sigma = diffusion(t, x);
+            var result = sigma * Matrix.transpose(sigma);
             return result;
         }
 
@@ -90,15 +81,15 @@ namespace QLNet.legacy.libormarketmodels
 
             Utils.QL_REQUIRE(x == null, () => "can not handle given x here");
 
-            Matrix tmp = new Matrix(size_, size_, 0.0);
+            var tmp = new Matrix(size_, size_, 0.0);
 
-            for (int i = 0; i < size_; ++i)
+            for (var i = 0; i < size_; ++i)
             {
-                for (int j = 0; j <= i; ++j)
+                for (var j = 0; j <= i; ++j)
                 {
-                    Var_Helper helper = new Var_Helper(this, i, j);
-                    GaussKronrodAdaptive integrator = new GaussKronrodAdaptive(1e-10, 10000);
-                    for (int k = 0; k < 64; ++k)
+                    var helper = new Var_Helper(this, i, j);
+                    var integrator = new GaussKronrodAdaptive(1e-10, 10000);
+                    for (var k = 0; k < 64; ++k)
                     {
                         tmp[i, j] += integrator.value(helper.value, k * t / 64.0, (k + 1) * t / 64.0);
                     }

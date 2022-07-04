@@ -26,7 +26,7 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.Ibor
 {
-    public class Shibor : IborIndex
+    [JetBrains.Annotations.PublicAPI] public class Shibor : IborIndex
     {
         private static BusinessDayConvention shiborConvention(Period p)
         {

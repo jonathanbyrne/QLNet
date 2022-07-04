@@ -27,14 +27,14 @@ namespace QLNet.Math
         Derived classes will serve as functors.
     */
 
-    public interface IKernelFunction
+    [JetBrains.Annotations.PublicAPI] public interface IKernelFunction
     {
         double value(double x);
     }
 
 
     //! Gaussian kernel function
-    public class GaussianKernel : IKernelFunction
+    [JetBrains.Annotations.PublicAPI] public class GaussianKernel : IKernelFunction
     {
         public GaussianKernel(double average, double sigma)
         {
@@ -44,20 +44,11 @@ namespace QLNet.Math
             normFact_ = Const.M_SQRT2 * Const.M_SQRTPI;
         }
 
-        public double value(double x)
-        {
-            return nd_.value(x) * normFact_;
-        }
+        public double value(double x) => nd_.value(x) * normFact_;
 
-        public double derivative(double x)
-        {
-            return nd_.derivative(x) * normFact_;
-        }
+        public double derivative(double x) => nd_.derivative(x) * normFact_;
 
-        public double primitive(double x)
-        {
-            return cnd_.value(x) * normFact_;
-        }
+        public double primitive(double x) => cnd_.value(x) * normFact_;
 
         private NormalDistribution nd_;
         private CumulativeNormalDistribution cnd_;

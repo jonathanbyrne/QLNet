@@ -28,7 +28,7 @@ namespace QLNet.Cashflows
     /// should be already rolled to a business day.
     /// </remarks>
     /// </summary>
-    public class CmsSpreadCoupon : FloatingRateCoupon
+    [JetBrains.Annotations.PublicAPI] public class CmsSpreadCoupon : FloatingRateCoupon
     {
         // need by CashFlowVectors
         public CmsSpreadCoupon() { }
@@ -54,12 +54,12 @@ namespace QLNet.Cashflows
         }
 
         // Inspectors
-        public SwapSpreadIndex swapSpreadIndex() { return index_; }
+        public SwapSpreadIndex swapSpreadIndex() => index_;
 
         private new SwapSpreadIndex index_;
     }
 
-    public class CappedFlooredCmsSpreadCoupon : CappedFlooredCoupon
+    [JetBrains.Annotations.PublicAPI] public class CappedFlooredCmsSpreadCoupon : CappedFlooredCoupon
     {
         public CappedFlooredCmsSpreadCoupon()
         { }
@@ -86,7 +86,7 @@ namespace QLNet.Cashflows
     /// <summary>
     /// helper class building a sequence of capped/floored cms-spread-rate coupons
     /// </summary>
-    public class CmsSpreadLeg : FloatingLegBase
+    [JetBrains.Annotations.PublicAPI] public class CmsSpreadLeg : FloatingLegBase
     {
         public CmsSpreadLeg(Schedule schedule, SwapSpreadIndex swapSpreadIndex)
         {
@@ -96,13 +96,11 @@ namespace QLNet.Cashflows
             inArrears_ = false;
             zeroPayments_ = false;
         }
-        public override List<CashFlow> value()
-        {
-            return CashFlowVectors.FloatingLeg<SwapSpreadIndex, CmsSpreadCoupon, CappedFlooredCmsSpreadCoupon>(
-                      notionals_, schedule_, swapSpreadIndex_, paymentDayCounter_,
-                      paymentAdjustment_, fixingDays_, gearings_, spreads_, caps_,
-                      floors_, inArrears_, zeroPayments_);
-        }
+        public override List<CashFlow> value() =>
+            CashFlowVectors.FloatingLeg<SwapSpreadIndex, CmsSpreadCoupon, CappedFlooredCmsSpreadCoupon>(
+                notionals_, schedule_, swapSpreadIndex_, paymentDayCounter_,
+                paymentAdjustment_, fixingDays_, gearings_, spreads_, caps_,
+                floors_, inArrears_, zeroPayments_);
 
         private SwapSpreadIndex swapSpreadIndex_;
     }

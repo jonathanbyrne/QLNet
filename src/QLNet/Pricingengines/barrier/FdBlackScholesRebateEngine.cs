@@ -35,7 +35,7 @@ using System.Linq;
 
 namespace QLNet.Pricingengines.barrier
 {
-    public class FdBlackScholesRebateEngine : DividendBarrierOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class FdBlackScholesRebateEngine : DividendBarrierOption.Engine
     {
         // Constructor
         public FdBlackScholesRebateEngine(
@@ -59,8 +59,8 @@ namespace QLNet.Pricingengines.barrier
         public override void calculate()
         {
             // 1. Mesher
-            StrikedTypePayoff payoff = arguments_.payoff as StrikedTypePayoff;
-            double maturity = process_.time(arguments_.exercise.lastDate());
+            var payoff = arguments_.payoff as StrikedTypePayoff;
+            var maturity = process_.time(arguments_.exercise.lastDate());
 
             double? xMin = null;
             double? xMax = null;
@@ -91,10 +91,10 @@ namespace QLNet.Pricingengines.barrier
                new FdmLogInnerValue(rebatePayoff, mesher, 0);
 
             // 3. Step conditions
-            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European,
+            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European,
                              () => "only european style option are supported");
 
-            FdmStepConditionComposite conditions =
+            var conditions =
                FdmStepConditionComposite.vanillaComposite(
                   arguments_.cashFlow, arguments_.exercise,
                   mesher, calculator,
@@ -102,7 +102,7 @@ namespace QLNet.Pricingengines.barrier
                   process_.riskFreeRate().currentLink().dayCounter());
 
             // 4. Boundary conditions
-            FdmBoundaryConditionSet boundaries = new FdmBoundaryConditionSet();
+            var boundaries = new FdmBoundaryConditionSet();
             if (arguments_.barrierType == Barrier.Type.DownIn
                 || arguments_.barrierType == Barrier.Type.DownOut)
             {
@@ -118,7 +118,7 @@ namespace QLNet.Pricingengines.barrier
             }
 
             // 5. Solver
-            FdmSolverDesc solverDesc = new FdmSolverDesc();
+            var solverDesc = new FdmSolverDesc();
             solverDesc.mesher = mesher;
             solverDesc.bcSet = boundaries;
             solverDesc.condition = conditions;
@@ -127,13 +127,13 @@ namespace QLNet.Pricingengines.barrier
             solverDesc.dampingSteps = dampingSteps_;
             solverDesc.timeSteps = tGrid_;
 
-            FdmBlackScholesSolver solver =
+            var solver =
                new FdmBlackScholesSolver(
                new Handle<GeneralizedBlackScholesProcess>(process_),
                payoff.strike(), solverDesc, schemeDesc_,
                localVol_, illegalLocalVolOverwrite_);
 
-            double spot = process_.x0();
+            var spot = process_.x0();
             results_.value = solver.valueAt(spot);
             results_.delta = solver.deltaAt(spot);
             results_.gamma = solver.gammaAt(spot);

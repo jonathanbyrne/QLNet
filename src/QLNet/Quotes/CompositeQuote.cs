@@ -21,7 +21,7 @@ using System;
 
 namespace QLNet.Quotes
 {
-    public class CompositeQuote : Quote
+    [JetBrains.Annotations.PublicAPI] public class CompositeQuote : Quote
     {
         //! market element whose value depends on two other market element
         /*! \test the correctness of the returned values is tested by
@@ -42,8 +42,9 @@ namespace QLNet.Quotes
         }
 
         // inspectors
-        public double value1() { return element1_.link.value(); }
-        public double value2() { return element2_.link.value(); }
+        public double value1() => element1_.link.value();
+
+        public double value2() => element2_.link.value();
 
         public void update()
         {
@@ -58,10 +59,6 @@ namespace QLNet.Quotes
             return f_(element1_.link.value(), element2_.link.value());
         }
 
-        public override bool isValid()
-        {
-            return element1_.link.isValid() && element2_.link.isValid();
-        }
-
+        public override bool isValid() => element1_.link.isValid() && element2_.link.isValid();
     }
 }

@@ -26,7 +26,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Methods.Finitedifferences.Operators
 {
-    public class FdmHullWhiteOp : FdmLinearOpComposite
+    [JetBrains.Annotations.PublicAPI] public class FdmHullWhiteOp : FdmLinearOpComposite
     {
         public FdmHullWhiteOp(FdmMesher mesher,
                               HullWhite model,
@@ -40,27 +40,24 @@ namespace QLNet.Methods.Finitedifferences.Operators
             direction_ = direction;
             model_ = model;
         }
-        public override int size() { return 1; }
+        public override int size() => 1;
 
         //! Time \f$t1 <= t2\f$ is required
         public override void setTime(double t1, double t2)
         {
-            OneFactorModel.ShortRateDynamics dynamics = model_.dynamics();
+            var dynamics = model_.dynamics();
 
-            double phi = 0.5 * (dynamics.shortRate(t1, 0.0)
-                                + dynamics.shortRate(t2, 0.0));
+            var phi = 0.5 * (dynamics.shortRate(t1, 0.0)
+                             + dynamics.shortRate(t2, 0.0));
 
             mapT_.axpyb(new Vector(), dzMap_, dzMap_, -1.0 * (x_ + phi));
         }
 
-        public override Vector apply(Vector r)
-        {
-            return mapT_.apply(r);
-        }
+        public override Vector apply(Vector r) => mapT_.apply(r);
 
         public override Vector apply_mixed(Vector r)
         {
-            Vector retVal = new Vector(r.size(), 0.0);
+            var retVal = new Vector(r.size(), 0.0);
             return retVal;
         }
 
@@ -70,7 +67,7 @@ namespace QLNet.Methods.Finitedifferences.Operators
                 return mapT_.apply(r);
             else
             {
-                Vector retVal = new Vector(r.size(), 0.0);
+                var retVal = new Vector(r.size(), 0.0);
                 return retVal;
             }
         }
@@ -80,11 +77,11 @@ namespace QLNet.Methods.Finitedifferences.Operators
                 return mapT_.solve_splitting(r, s, 1.0);
             else
             {
-                Vector retVal = new Vector(r.size(), 0.0);
+                var retVal = new Vector(r.size(), 0.0);
                 return retVal;
             }
         }
-        public override Vector preconditioner(Vector r, double s) { return solve_splitting(direction_, r, s); }
+        public override Vector preconditioner(Vector r, double s) => solve_splitting(direction_, r, s);
 
         public override List<SparseMatrix> toMatrixDecomp()
         {
@@ -93,19 +90,25 @@ namespace QLNet.Methods.Finitedifferences.Operators
         }
 
         #region IOperator interface
-        public override IOperator identity(int size) { return null; }
-        public override Vector applyTo(Vector v) { return new Vector(); }
-        public override Vector solveFor(Vector rhs) { return new Vector(); }
+        public override IOperator identity(int size) => null;
 
-        public override IOperator multiply(double a, IOperator D) { return null; }
+        public override Vector applyTo(Vector v) => new Vector();
+
+        public override Vector solveFor(Vector rhs) => new Vector();
+
+        public override IOperator multiply(double a, IOperator D) => null;
+
         public override IOperator add
-           (IOperator A, IOperator B)
-        { return null; }
-        public override IOperator subtract(IOperator A, IOperator B) { return null; }
+           (IOperator A, IOperator B) =>
+            null;
 
-        public override bool isTimeDependent() { return false; }
+        public override IOperator subtract(IOperator A, IOperator B) => null;
+
+        public override bool isTimeDependent() => false;
+
         public override void setTime(double t) { }
-        public override object Clone() { return MemberwiseClone(); }
+        public override object Clone() => MemberwiseClone();
+
         #endregion
 
         protected HullWhite model_;

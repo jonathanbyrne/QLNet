@@ -24,7 +24,7 @@ using QLNet.Cashflows;
 
 namespace QLNet.Instruments.Bonds
 {
-    public class CmsRateBond : Bond
+    [JetBrains.Annotations.PublicAPI] public class CmsRateBond : Bond
     {
         public CmsRateBond(int settlementDays,
                            double faceAmount,

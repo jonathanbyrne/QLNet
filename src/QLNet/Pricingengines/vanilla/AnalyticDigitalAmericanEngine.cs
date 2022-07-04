@@ -42,7 +42,7 @@ namespace QLNet.Pricingengines.vanilla
           cash-or-nothing at-hit digital payoff is tested by
           reproducing numerical derivatives.
     */
-    public class AnalyticDigitalAmericanEngine : OneAssetOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class AnalyticDigitalAmericanEngine : OneAssetOption.Engine
     {
         public AnalyticDigitalAmericanEngine(GeneralizedBlackScholesProcess process)
         {
@@ -52,43 +52,43 @@ namespace QLNet.Pricingengines.vanilla
 
         public override void calculate()
         {
-            AmericanExercise ex = arguments_.exercise as AmericanExercise;
+            var ex = arguments_.exercise as AmericanExercise;
             Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
             Utils.QL_REQUIRE(ex.dates()[0] <= process_.blackVolatility().link.referenceDate(), () =>
                              "American option with window exercise not handled yet");
 
-            StrikedTypePayoff payoff = arguments_.payoff as StrikedTypePayoff;
+            var payoff = arguments_.payoff as StrikedTypePayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
-            double spot = process_.stateVariable().link.value();
+            var spot = process_.stateVariable().link.value();
             Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
 
-            double variance = process_.blackVolatility().link.blackVariance(ex.lastDate(), payoff.strike());
-            double dividendDiscount = process_.dividendYield().link.discount(ex.lastDate());
-            double riskFreeDiscount = process_.riskFreeRate().link.discount(ex.lastDate());
+            var variance = process_.blackVolatility().link.blackVariance(ex.lastDate(), payoff.strike());
+            var dividendDiscount = process_.dividendYield().link.discount(ex.lastDate());
+            var riskFreeDiscount = process_.riskFreeRate().link.discount(ex.lastDate());
 
             if (ex.payoffAtExpiry())
             {
-                AmericanPayoffAtExpiry pricer = new AmericanPayoffAtExpiry(spot, riskFreeDiscount,
+                var pricer = new AmericanPayoffAtExpiry(spot, riskFreeDiscount,
                                                                            dividendDiscount, variance,
                                                                            payoff, knock_in());
                 results_.value = pricer.value();
             }
             else
             {
-                AmericanPayoffAtHit pricer = new AmericanPayoffAtHit(spot, riskFreeDiscount, dividendDiscount, variance, payoff);
+                var pricer = new AmericanPayoffAtHit(spot, riskFreeDiscount, dividendDiscount, variance, payoff);
                 results_.value = pricer.value();
                 results_.delta = pricer.delta();
                 results_.gamma = pricer.gamma();
 
-                DayCounter rfdc = process_.riskFreeRate().link.dayCounter();
-                double t = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(),
+                var rfdc = process_.riskFreeRate().link.dayCounter();
+                var t = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(),
                                              arguments_.exercise.lastDate());
                 results_.rho = pricer.rho(t);
             }
 
         }
-        public virtual bool knock_in() { return true; }
+        public virtual bool knock_in() => true;
 
         private GeneralizedBlackScholesProcess process_;
     }
@@ -116,14 +116,13 @@ namespace QLNet.Pricingengines.vanilla
            reproducing numerical derivatives.
     */
 
-    public class AnalyticDigitalAmericanKOEngine : AnalyticDigitalAmericanEngine
+    [JetBrains.Annotations.PublicAPI] public class AnalyticDigitalAmericanKOEngine : AnalyticDigitalAmericanEngine
     {
         public AnalyticDigitalAmericanKOEngine(GeneralizedBlackScholesProcess engine) :
            base(engine)
         { }
 
-        public override bool knock_in() { return false; }
-
+        public override bool knock_in() => false;
     }
 
 }

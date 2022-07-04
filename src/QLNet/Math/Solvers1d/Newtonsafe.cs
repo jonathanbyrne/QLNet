@@ -23,7 +23,7 @@ using System;
 
 namespace QLNet.Math.Solvers1d
 {
-    public class NewtonSafe : Solver1D
+    [JetBrains.Annotations.PublicAPI] public class NewtonSafe : Solver1D
     {
         //! safe %Newton 1-D solver
         /*! \note This solver requires that the passed function object

@@ -24,7 +24,7 @@ using System.Linq;
 namespace QLNet.Math.matrixutilities
 {
     //general sparse matrix taken from http://www.blackbeltcoder.com/Articles/algorithms/creating-a-sparse-matrix-in-net and completed for QLNet
-    public class SparseMatrix
+    [JetBrains.Annotations.PublicAPI] public class SparseMatrix
     {
         // Master dictionary hold rows of column dictionary
         protected Dictionary<int, Dictionary<int, double>> _rows;
@@ -58,12 +58,12 @@ namespace QLNet.Math.matrixutilities
             rows_ = lhs.rows_;
             columns_ = lhs.columns_;
             _rows = new Dictionary<int, Dictionary<int, double>>();
-            foreach (KeyValuePair<int, Dictionary<int, double>> row in lhs._rows)
+            foreach (var row in lhs._rows)
             {
                 if (!_rows.ContainsKey(row.Key))
                     _rows.Add(row.Key, new Dictionary<int, double>());
 
-                foreach (KeyValuePair<int, double> col in row.Value)
+                foreach (var col in row.Value)
                 {
                     if (!_rows[row.Key].ContainsKey(col.Key))
                         _rows[row.Key].Add(col.Key, col.Value);
@@ -78,14 +78,8 @@ namespace QLNet.Math.matrixutilities
         /// <param name="col">Matrix column</param>
         public double this[int row, int col]
         {
-            get
-            {
-                return GetAt(row, col);
-            }
-            set
-            {
-                SetAt(row, col, value);
-            }
+            get => GetAt(row, col);
+            set => SetAt(row, col, value);
         }
 
         /// <summary>
@@ -159,7 +153,7 @@ namespace QLNet.Math.matrixutilities
             Dictionary<int, double> cols;
             if (_rows.TryGetValue(row, out cols))
             {
-                foreach (KeyValuePair<int, double> pair in cols)
+                foreach (var pair in cols)
                 {
                     yield return pair.Value;
                 }
@@ -188,7 +182,7 @@ namespace QLNet.Math.matrixutilities
         /// <returns></returns>
         public IEnumerable<double> GetColumnData(int col)
         {
-            foreach (KeyValuePair<int, Dictionary<int, double>> rowdata in _rows)
+            foreach (var rowdata in _rows)
             {
                 double result;
                 if (rowdata.Value.TryGetValue(col, out result))
@@ -203,9 +197,9 @@ namespace QLNet.Math.matrixutilities
         /// <param name="col">Matrix column</param>
         public int GetColumnDataCount(int col)
         {
-            int result = 0;
+            var result = 0;
 
-            foreach (KeyValuePair<int, Dictionary<int, double>> cols in _rows)
+            foreach (var cols in _rows)
             {
                 if (cols.Value.ContainsKey(col))
                     result++;
@@ -218,20 +212,22 @@ namespace QLNet.Math.matrixutilities
             _rows.Clear();
         }
 
-        public int rows() { return rows_; }
-        public int columns() { return columns_; }
+        public int rows() => rows_;
+
+        public int columns() => columns_;
+
         public int values() { return _rows.Sum(x => GetRowDataCount(x.Key)); }
 
         //operator overloads
         public static SparseMatrix operator *(double a, SparseMatrix m)
         {
-            SparseMatrix result = new SparseMatrix(m.rows(), m.columns());
+            var result = new SparseMatrix(m.rows(), m.columns());
 
-            foreach (KeyValuePair<int, Dictionary<int, double>> row in m._rows)
+            foreach (var row in m._rows)
             {
-                foreach (KeyValuePair<int, double> col in row.Value)
+                foreach (var col in row.Value)
                 {
-                    double val = a * col.Value;
+                    var val = a * col.Value;
                     result.SetAt(row.Key, col.Key, val);
                 }
             }
@@ -241,12 +237,12 @@ namespace QLNet.Math.matrixutilities
 
         public static Vector operator *(SparseMatrix m, Vector x)
         {
-            Vector b = new Vector(x.size());
+            var b = new Vector(x.size());
 
-            foreach (KeyValuePair<int, Dictionary<int, double>> row in m._rows)
+            foreach (var row in m._rows)
             {
-                double val = 0.0;
-                foreach (KeyValuePair<int, double> col in row.Value)
+                var val = 0.0;
+                foreach (var col in row.Value)
                     val += b[col.Key] * col.Value;
 
                 b[row.Key] = val;
@@ -257,14 +253,14 @@ namespace QLNet.Math.matrixutilities
         public static SparseMatrix operator *(SparseMatrix m1, SparseMatrix m2)
         {
             Utils.QL_REQUIRE(m1.columns() == m2.rows() && m1.rows() == m2.columns(), () => "invalid dimensions");
-            SparseMatrix result = new SparseMatrix(m1.rows(), m2.columns());
+            var result = new SparseMatrix(m1.rows(), m2.columns());
 
-            foreach (KeyValuePair<int, Dictionary<int, double>> row in m1._rows)
+            foreach (var row in m1._rows)
             {
-                foreach (KeyValuePair<int, double> colRight in m2._rows[row.Key])
+                foreach (var colRight in m2._rows[row.Key])
                 {
-                    double val = 0.0;
-                    foreach (KeyValuePair<int, double> col in row.Value)
+                    var val = 0.0;
+                    foreach (var col in row.Value)
                         val += m2._rows[row.Key][colRight.Key] * col.Value;
 
                     result.SetAt(row.Key, colRight.Key, val);
@@ -276,13 +272,13 @@ namespace QLNet.Math.matrixutilities
 
         public static SparseMatrix operator +(SparseMatrix m1, SparseMatrix m2)
         {
-            SparseMatrix result = new SparseMatrix(m1);
+            var result = new SparseMatrix(m1);
 
-            foreach (KeyValuePair<int, Dictionary<int, double>> row in m2._rows)
+            foreach (var row in m2._rows)
             {
-                foreach (KeyValuePair<int, double> col in row.Value)
+                foreach (var col in row.Value)
                 {
-                    double val = result.GetAt(row.Key, col.Key) + col.Value;
+                    var val = result.GetAt(row.Key, col.Key) + col.Value;
                     result.SetAt(row.Key, col.Key, val);
                 }
             }

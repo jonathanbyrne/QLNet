@@ -28,7 +28,7 @@ namespace QLNet.Currencies
     /// application of direct and derived exchange rate is
     /// tested against calculations.
     /// </summary>
-    public class ExchangeRate
+    [JetBrains.Annotations.PublicAPI] public class ExchangeRate
     {
         private Currency source_;
         private Currency target_;
@@ -39,56 +39,26 @@ namespace QLNet.Currencies
         /// <summary>
         /// the source currency.
         /// </summary>
-        public Currency source
-        {
-            get
-            {
-                return source_;
-            }
-        }
+        public Currency source => source_;
 
         /// <summary>
         /// the target currency.
         /// </summary>
-        public Currency target
-        {
-            get
-            {
-                return target_;
-            }
-        }
+        public Currency target => target_;
 
         /// <summary>
-        /// the type
+        /// the ExerciseType
         /// </summary>
         /// <returns></returns>
-        public Type type
-        {
-            get
-            {
-                return type_;
-            }
-        }
+        public Type type => type_;
 
         /// <summary>
         /// the exchange rate (when available)
         /// </summary>
         /// <returns></returns>
-        public double rate
-        {
-            get
-            {
-                return rate_.Value;
-            }
-        }
+        public double rate => rate_.Value;
 
-        public bool HasValue
-        {
-            get
-            {
-                return rate_.HasValue;
-            }
-        }
+        public bool HasValue => rate_.HasValue;
 
         /// <summary>
         /// given directly by the user
@@ -151,7 +121,7 @@ namespace QLNet.Currencies
                     Utils.QL_FAIL("exchange rate not applicable");
                     return null;
                 default:
-                    Utils.QL_FAIL("unknown exchange-rate type");
+                    Utils.QL_FAIL("unknown exchange-rate ExerciseType");
                     return null;
             }
         }
@@ -164,7 +134,7 @@ namespace QLNet.Currencies
         /// <returns></returns>
         public static ExchangeRate chain(ExchangeRate r1, ExchangeRate r2)
         {
-            ExchangeRate result = new ExchangeRate();
+            var result = new ExchangeRate();
             result.type_ = Type.Derived;
             result.rateChain_ = new KeyValuePair<ExchangeRate, ExchangeRate>(r1, r2);
             if (r1.source_ == r2.source_)

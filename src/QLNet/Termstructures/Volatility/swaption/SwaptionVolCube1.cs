@@ -36,7 +36,7 @@ using System.Linq;
 namespace QLNet.Termstructures.Volatility.swaption
 {
 
-    public class SwaptionVolCube1x : SwaptionVolatilityCube
+    [JetBrains.Annotations.PublicAPI] public class SwaptionVolCube1x : SwaptionVolatilityCube
     {
         const double SWAPTIONVOLCUBE_VEGAWEIGHTED_TOL = 15.0e-4;
         const double SWAPTIONVOLCUBE_TOL = 100.0e-4;
@@ -44,7 +44,7 @@ namespace QLNet.Termstructures.Volatility.swaption
 
         public delegate SABRInterpolation GetInterpolation(GeneralizedBlackScholesProcess process);
 
-        public class Cube
+        [JetBrains.Annotations.PublicAPI] public class Cube
         {
             public Cube() { }
             public Cube(List<Date> optionDates,
@@ -72,12 +72,12 @@ namespace QLNet.Termstructures.Volatility.swaption
                 Utils.QL_REQUIRE(swapTenors.Count == swapLengths.Count, () => "Cube::Cube(...): swapTenors/swapLengths mismatch");
 
                 List<Matrix> points = new InitializedList<Matrix>(nLayers_);
-                for (int i = 0; i < nLayers; i++)
+                for (var i = 0; i < nLayers; i++)
                 {
                     points[i] = new Matrix(optionTimes_.Count, swapLengths_.Count, 0.0);
                 }
 
-                for (int k = 0; k < nLayers_; k++)
+                for (var k = 0; k < nLayers_; k++)
                 {
                     Interpolation2D interpolation;
                     transposedPoints_.Add(Matrix.transpose(points[k]));
@@ -103,7 +103,7 @@ namespace QLNet.Termstructures.Volatility.swaption
                 extrapolation_ = o.extrapolation_;
                 backwardFlat_ = o.backwardFlat_;
                 transposedPoints_ = o.transposedPoints_;
-                for (int k = 0; k < nLayers_; k++)
+                for (var k = 0; k < nLayers_; k++)
                 {
                     Interpolation2D interpolation;
                     if (k <= 4 && backwardFlat_)
@@ -133,7 +133,7 @@ namespace QLNet.Termstructures.Volatility.swaption
                 extrapolation_ = o.extrapolation_;
                 backwardFlat_ = o.backwardFlat_;
                 transposedPoints_ = o.transposedPoints_;
-                for (int k = 0; k < nLayers_; ++k)
+                for (var k = 0; k < nLayers_; ++k)
                 {
                     Interpolation2D interpolation;
                     if (k <= 4 && backwardFlat_)
@@ -157,7 +157,7 @@ namespace QLNet.Termstructures.Volatility.swaption
                 Utils.QL_REQUIRE(IndexOfLayer < nLayers_, () => "Cube::setElement: incompatible IndexOfLayer ");
                 Utils.QL_REQUIRE(IndexOfRow < optionTimes_.Count, () => "Cube::setElement: incompatible IndexOfRow");
                 Utils.QL_REQUIRE(IndexOfColumn < swapLengths_.Count, () => "Cube::setElement: incompatible IndexOfColumn");
-                Matrix p = points_[IndexOfLayer];
+                var p = points_[IndexOfLayer];
                 p[IndexOfRow, IndexOfColumn] = x;
             }
             public void setPoints(List<Matrix> x)
@@ -171,23 +171,23 @@ namespace QLNet.Termstructures.Volatility.swaption
 
             public void setPoint(Date optionDate, Period swapTenor, double optionTime, double swapLength, List<double> point)
             {
-                bool expandOptionTimes = !optionTimes_.Exists(x => x.IsEqual(optionTime));
-                bool expandSwapLengths = !swapLengths_.Exists(x => x.IsEqual(swapLength));
+                var expandOptionTimes = !optionTimes_.Exists(x => x.IsEqual(optionTime));
+                var expandSwapLengths = !swapLengths_.Exists(x => x.IsEqual(swapLength));
 
                 double optionTimesPreviousNode, swapLengthsPreviousNode;
 
                 optionTimesPreviousNode = optionTimes_.First(x => x >= System.Math.Min(optionTime, optionTimes_.Max()));
-                int optionTimesIndex = optionTimes_.IndexOf(optionTimesPreviousNode);
+                var optionTimesIndex = optionTimes_.IndexOf(optionTimesPreviousNode);
 
                 swapLengthsPreviousNode = swapLengths_.First(x => x >= System.Math.Min(swapLength, swapLengths_.Max()));
-                int swapLengthsIndex = swapLengths_.IndexOf(swapLengthsPreviousNode);
+                var swapLengthsIndex = swapLengths_.IndexOf(swapLengthsPreviousNode);
 
                 if (expandOptionTimes || expandSwapLengths)
                     expandLayers(optionTimesIndex, expandOptionTimes, swapLengthsIndex, expandSwapLengths);
 
-                for (int k = 0; k < nLayers_; ++k)
+                for (var k = 0; k < nLayers_; ++k)
                 {
-                    Matrix p = points_[k];
+                    var p = points_[k];
                     p[optionTimesIndex, swapLengthsIndex] = point[k];
                 }
                 optionTimes_[optionTimesIndex] = optionTime;
@@ -222,22 +222,22 @@ namespace QLNet.Termstructures.Volatility.swaption
                 }
 
                 List<Matrix> newPoints = new InitializedList<Matrix>(nLayers_);
-                for (int ii = 0; ii < nLayers_; ii++)
+                for (var ii = 0; ii < nLayers_; ii++)
                 {
                     newPoints[ii]
                        = new Matrix(optionTimes_.Count, swapLengths_.Count, 0.0);
                 }
 
-                for (int k = 0; k < nLayers_; ++k)
+                for (var k = 0; k < nLayers_; ++k)
                 {
-                    for (int u = 0; u < points_[k].rows(); ++u)
+                    for (var u = 0; u < points_[k].rows(); ++u)
                     {
-                        int indexOfRow = u;
+                        var indexOfRow = u;
                         if (u >= i && expandOptionTimes)
                             indexOfRow = u + 1;
-                        for (int v = 0; v < points_[k].columns(); ++v)
+                        for (var v = 0; v < points_[k].columns(); ++v)
                         {
-                            int indexOfCol = v;
+                            var indexOfCol = v;
                             if (v >= j && expandSwapLengths)
                                 indexOfCol = v + 1;
                             Matrix p = newPoints[k], p1 = points_[k];
@@ -248,21 +248,26 @@ namespace QLNet.Termstructures.Volatility.swaption
                 setPoints(newPoints);
             }
 
-            public List<Date> optionDates() { return optionDates_; }
-            public List<Period> swapTenors() { return swapTenors_; }
-            public List<double> optionTimes() { return optionTimes_; }
-            public List<double> swapLengths() { return swapLengths_; }
-            public List<Matrix> points() { return points_; }
+            public List<Date> optionDates() => optionDates_;
+
+            public List<Period> swapTenors() => swapTenors_;
+
+            public List<double> optionTimes() => optionTimes_;
+
+            public List<double> swapLengths() => swapLengths_;
+
+            public List<Matrix> points() => points_;
+
             public List<double> value(double optionTime, double swapLength)
             {
-                List<double> result = new List<double>();
-                for (int k = 0; k < nLayers_; ++k)
+                var result = new List<double>();
+                for (var k = 0; k < nLayers_; ++k)
                     result.Add(interpolators_[k].value(optionTime, swapLength));
                 return result;
             }
             public void updateInterpolators()
             {
-                for (int k = 0; k < nLayers_; ++k)
+                for (var k = 0; k < nLayers_; ++k)
                 {
                     transposedPoints_[k] = Matrix.transpose(points_[k]);
                     Interpolation2D interpolation;
@@ -282,16 +287,16 @@ namespace QLNet.Termstructures.Volatility.swaption
             }
             public Matrix browse()
             {
-                Matrix result = new Matrix(swapLengths_.Count * optionTimes_.Count, nLayers_ + 2, 0.0);
-                for (int i = 0; i < swapLengths_.Count; ++i)
+                var result = new Matrix(swapLengths_.Count * optionTimes_.Count, nLayers_ + 2, 0.0);
+                for (var i = 0; i < swapLengths_.Count; ++i)
                 {
-                    for (int j = 0; j < optionTimes_.Count; ++j)
+                    for (var j = 0; j < optionTimes_.Count; ++j)
                     {
                         result[i * optionTimes_.Count + j, 0] = swapLengths_[i];
                         result[i * optionTimes_.Count + j, 1] = optionTimes_[j];
-                        for (int k = 0; k < nLayers_; ++k)
+                        for (var k = 0; k < nLayers_; ++k)
                         {
-                            Matrix p = points_[k];
+                            var p = points_[k];
                             result[i * optionTimes_.Count + j, 2 + k] = p[j, i];
                         }
                     }
@@ -374,13 +379,13 @@ namespace QLNet.Termstructures.Volatility.swaption
             marketVolCube_ = new Cube(optionDates_, swapTenors_, optionTimes_, swapLengths_, nStrikes_);
             double atmForward;
             double atmVol, vol;
-            for (int j = 0; j < nOptionTenors_; ++j)
+            for (var j = 0; j < nOptionTenors_; ++j)
             {
-                for (int k = 0; k < nSwapTenors_; ++k)
+                for (var k = 0; k < nSwapTenors_; ++k)
                 {
                     atmForward = atmStrike(optionDates_[j], swapTenors_[k]);
                     atmVol = atmVol_.link.volatility(optionDates_[j], swapTenors_[k], atmForward);
-                    for (int i = 0; i < nStrikes_; ++i)
+                    for (var i = 0; i < nStrikes_; ++i)
                     {
                         vol = atmVol + volSpreads_[j * nSwapTenors_ + k][i].link.value();
                         marketVolCube_.setElement(i, j, k, vol);
@@ -410,7 +415,8 @@ namespace QLNet.Termstructures.Volatility.swaption
             return smileSection(optionTime, swapLength, ref sparseParameters_);
         }
         // Other inspectors
-        public Matrix marketVolCube(int i) { return marketVolCube_.points()[i]; }
+        public Matrix marketVolCube(int i) => marketVolCube_.points()[i];
+
         public Matrix sparseSabrParameters()
         {
             calculate();
@@ -434,30 +440,30 @@ namespace QLNet.Termstructures.Volatility.swaption
 
         public void sabrCalibrationSection(Cube marketVolCube, Cube parametersCube, Period swapTenor)
         {
-            List<double> optionTimes = marketVolCube.optionTimes();
-            List<double> swapLengths = marketVolCube.swapLengths();
-            List<Date> optionDates = marketVolCube.optionDates();
-            List<Period> swapTenors = marketVolCube.swapTenors();
+            var optionTimes = marketVolCube.optionTimes();
+            var swapLengths = marketVolCube.swapLengths();
+            var optionDates = marketVolCube.optionDates();
+            var swapTenors = marketVolCube.swapTenors();
 
-            int k = swapTenors.IndexOf(swapTenors.First(x => x == swapTenor));
+            var k = swapTenors.IndexOf(swapTenors.First(x => x == swapTenor));
 
             Utils.QL_REQUIRE(k != swapTenors.Count, () => "swap tenor not found");
 
             List<double> calibrationResult = new InitializedList<double>(8, 0.0);
-            List<Matrix> tmpMarketVolCube = marketVolCube.points();
+            var tmpMarketVolCube = marketVolCube.points();
 
-            List<double> strikes = new List<double>(strikeSpreads_.Count);
-            List<double> volatilities = new List<double>(strikeSpreads_.Count);
+            var strikes = new List<double>(strikeSpreads_.Count);
+            var volatilities = new List<double>(strikeSpreads_.Count);
 
-            for (int j = 0; j < optionTimes.Count; j++)
+            for (var j = 0; j < optionTimes.Count; j++)
             {
-                double atmForward = atmStrike(optionDates[j], swapTenors[k]);
-                double shiftTmp = atmVol_.link.shift(optionTimes[j], swapLengths[k]);
+                var atmForward = atmStrike(optionDates[j], swapTenors[k]);
+                var shiftTmp = atmVol_.link.shift(optionTimes[j], swapLengths[k]);
                 strikes.Clear();
                 volatilities.Clear();
-                for (int i = 0; i < nStrikes_; i++)
+                for (var i = 0; i < nStrikes_; i++)
                 {
-                    double strike = atmForward + strikeSpreads_[i];
+                    var strike = atmForward + strikeSpreads_[i];
                     if (strike + shiftTmp >= cutoffStrike_)
                     {
                         strikes.Add(strike);
@@ -465,7 +471,7 @@ namespace QLNet.Termstructures.Volatility.swaption
                     }
                 }
 
-                List<double> guess = parametersGuess_.value(optionTimes[j], swapLengths[k]);
+                var guess = parametersGuess_.value(optionTimes[j], swapLengths[k]);
 
                 var sabrInterpolation = new SABRInterpolation(strikes,
                                                               strikes.Count,
@@ -487,7 +493,7 @@ namespace QLNet.Termstructures.Volatility.swaption
                                                               volatilityType());//shiftTmp
 
                 sabrInterpolation.update();
-                double interpolationError = sabrInterpolation.rmsError();
+                var interpolationError = sabrInterpolation.rmsError();
                 calibrationResult[0] = sabrInterpolation.alpha();
                 calibrationResult[1] = sabrInterpolation.beta();
                 calibrationResult[2] = sabrInterpolation.nu();
@@ -540,12 +546,12 @@ namespace QLNet.Termstructures.Volatility.swaption
             Utils.QL_REQUIRE(beta.Count == nOptionTenors_, () =>
                              "beta size (" + beta.Count + ") must be equal to number of option tenors (" + nOptionTenors_ + ")");
 
-            List<Period> swapTenors = marketVolCube_.swapTenors();
-            int k = swapTenors.IndexOf(swapTenors.First(x => x == swapTenor));
+            var swapTenors = marketVolCube_.swapTenors();
+            var k = swapTenors.IndexOf(swapTenors.First(x => x == swapTenor));
 
             Utils.QL_REQUIRE(k != swapTenors.Count, () => "swap tenor (" + swapTenor + ") not found");
 
-            for (int i = 0; i < nOptionTenors_; ++i)
+            for (var i = 0; i < nOptionTenors_; ++i)
             {
                 parametersGuess_.setElement(1, i, k, beta[i]);
             }
@@ -567,16 +573,16 @@ namespace QLNet.Termstructures.Volatility.swaption
                              "beta size (" + beta.Count + ") must be equal to number of swap lenghts ("
                              + swapLengths.Count + ")");
 
-            List<double> betaTimes = new List<double>();
-            for (int i = 0; i < beta.Count; i++)
+            var betaTimes = new List<double>();
+            for (var i = 0; i < beta.Count; i++)
                 betaTimes.Add(timeFromReference(optionDateFromTenor(swapLengths[i])));
 
-            LinearInterpolation betaInterpolation = new LinearInterpolation(betaTimes, betaTimes.Count, beta);
+            var betaInterpolation = new LinearInterpolation(betaTimes, betaTimes.Count, beta);
 
-            List<double> cubeBeta = new List<double>();
-            for (int i = 0; i < optionTimes().Count; i++)
+            var cubeBeta = new List<double>();
+            for (var i = 0; i < optionTimes().Count; i++)
             {
-                double t = optionTimes()[i];
+                var t = optionTimes()[i];
                 // flat extrapolation ensures admissable values
                 if (t < betaTimes.First())
                     t = betaTimes.First();
@@ -602,9 +608,9 @@ namespace QLNet.Termstructures.Volatility.swaption
 
         protected void registerWithParametersGuess()
         {
-            for (int i = 0; i < 4; i++)
-                for (int j = 0; j < nOptionTenors_; j++)
-                    for (int k = 0; k < nSwapTenors_; k++)
+            for (var i = 0; i < 4; i++)
+                for (var j = 0; j < nOptionTenors_; j++)
+                    for (var k = 0; k < nSwapTenors_; k++)
                         parametersGuessQuotes_[j + k * nOptionTenors_][i].registerWith(privateObserver_.update);
         }
         protected void setParameterGuess()
@@ -613,8 +619,8 @@ namespace QLNet.Termstructures.Volatility.swaption
             parametersGuess_ = new Cube(optionDates_, swapTenors_, optionTimes_, swapLengths_, 4, true, backwardFlat_);
             int i;
             for (i = 0; i < 4; i++)
-                for (int j = 0; j < nOptionTenors_; j++)
-                    for (int k = 0; k < nSwapTenors_; k++)
+                for (var j = 0; j < nOptionTenors_; j++)
+                    for (var k = 0; k < nSwapTenors_; k++)
                     {
                         parametersGuess_.setElement(i, j, k,
                                                     parametersGuessQuotes_[j + k * nOptionTenors_][i].link.value());
@@ -624,53 +630,53 @@ namespace QLNet.Termstructures.Volatility.swaption
         protected SmileSection smileSection(double optionTime, double swapLength, ref Cube sabrParametersCube)
         {
             calculate();
-            List<double> sabrParameters = sabrParametersCube.value(optionTime, swapLength);
-            double shiftTmp = atmVol_.link.shift(optionTime, swapLength);
+            var sabrParameters = sabrParametersCube.value(optionTime, swapLength);
+            var shiftTmp = atmVol_.link.shift(optionTime, swapLength);
             return new SabrSmileSection(optionTime, sabrParameters[4], sabrParameters, volatilityType(), shiftTmp);   // ,shiftTmp
         }
         protected Cube sabrCalibration(Cube marketVolCube)
         {
-            List<double> optionTimes = marketVolCube.optionTimes();
-            List<double> swapLengths = marketVolCube.swapLengths();
-            List<Date> optionDates = marketVolCube.optionDates();
-            List<Period> swapTenors = marketVolCube.swapTenors();
-            Matrix alphas = new Matrix(optionTimes.Count, swapLengths.Count, 0.0);
-            Matrix betas = new Matrix(alphas);
-            Matrix nus = new Matrix(alphas);
-            Matrix rhos = new Matrix(alphas);
-            Matrix forwards = new Matrix(alphas);
-            Matrix errors = new Matrix(alphas);
-            Matrix maxErrors = new Matrix(alphas);
-            Matrix endCriteria = new Matrix(alphas);
+            var optionTimes = marketVolCube.optionTimes();
+            var swapLengths = marketVolCube.swapLengths();
+            var optionDates = marketVolCube.optionDates();
+            var swapTenors = marketVolCube.swapTenors();
+            var alphas = new Matrix(optionTimes.Count, swapLengths.Count, 0.0);
+            var betas = new Matrix(alphas);
+            var nus = new Matrix(alphas);
+            var rhos = new Matrix(alphas);
+            var forwards = new Matrix(alphas);
+            var errors = new Matrix(alphas);
+            var maxErrors = new Matrix(alphas);
+            var endCriteria = new Matrix(alphas);
 
-            List<Matrix> tmpMarketVolCube = marketVolCube.points();
+            var tmpMarketVolCube = marketVolCube.points();
 
             List<double> strikes = new InitializedList<double>(strikeSpreads_.Count);
             List<double> volatilities = new InitializedList<double>(strikeSpreads_.Count);
 
-            for (int j = 0; j < optionTimes.Count; j++)
+            for (var j = 0; j < optionTimes.Count; j++)
             {
-                for (int k = 0; k < swapLengths.Count; k++)
+                for (var k = 0; k < swapLengths.Count; k++)
                 {
-                    double atmForward = atmStrike(optionDates[j], swapTenors[k]);
-                    double shiftTmp = atmVol_.link.shift(optionTimes[j], swapLengths[k]);
+                    var atmForward = atmStrike(optionDates[j], swapTenors[k]);
+                    var shiftTmp = atmVol_.link.shift(optionTimes[j], swapLengths[k]);
                     strikes.Clear();
                     volatilities.Clear();
-                    for (int i = 0; i < nStrikes_; i++)
+                    for (var i = 0; i < nStrikes_; i++)
                     {
-                        double strike = atmForward + strikeSpreads_[i];
+                        var strike = atmForward + strikeSpreads_[i];
                         if (strike + shiftTmp >= cutoffStrike_)
                         {
                             strikes.Add(strike);
-                            Matrix matrix = tmpMarketVolCube[i];
+                            var matrix = tmpMarketVolCube[i];
                             volatilities.Add(matrix[j, k]);
                         }
                     }
 
-                    List<double> guess = parametersGuess_.value(optionTimes[j], swapLengths[k]);
+                    var guess = parametersGuess_.value(optionTimes[j], swapLengths[k]);
 
 
-                    SABRInterpolation sabrInterpolation = new SABRInterpolation(strikes, strikes.Count,
+                    var sabrInterpolation = new SABRInterpolation(strikes, strikes.Count,
                                                                                 volatilities,
                                                                                 optionTimes[j], atmForward,
                                                                                 guess[0], guess[1],
@@ -689,8 +695,8 @@ namespace QLNet.Termstructures.Volatility.swaption
                                                                                 volatilityType());// shiftTmp
                     sabrInterpolation.update();
 
-                    double rmsError = sabrInterpolation.rmsError();
-                    double maxError = sabrInterpolation.maxError();
+                    var rmsError = sabrInterpolation.rmsError();
+                    var maxError = sabrInterpolation.maxError();
                     alphas[j, k] = sabrInterpolation.alpha();
                     betas[j, k] = sabrInterpolation.beta();
                     nus[j, k] = sabrInterpolation.nu();
@@ -729,7 +735,7 @@ namespace QLNet.Termstructures.Volatility.swaption
                                     );
                 }
             }
-            Cube sabrParametersCube = new Cube(optionDates, swapTenors, optionTimes, swapLengths, 8, true, backwardFlat_);
+            var sabrParametersCube = new Cube(optionDates, swapTenors, optionTimes, swapLengths, 8, true, backwardFlat_);
             sabrParametersCube.setLayer(0, alphas);
             sabrParametersCube.setLayer(1, betas);
             sabrParametersCube.setLayer(2, nus);
@@ -744,48 +750,48 @@ namespace QLNet.Termstructures.Volatility.swaption
         }
         protected void fillVolatilityCube()
         {
-            SwaptionVolatilityDiscrete atmVolStructure = atmVol_.currentLink() as SwaptionVolatilityDiscrete;
+            var atmVolStructure = atmVol_.currentLink() as SwaptionVolatilityDiscrete;
 
-            List<double> atmOptionTimes = new List<double>(atmVolStructure.optionTimes());
-            List<double> optionTimes = new List<double>(volCubeAtmCalibrated_.optionTimes());
+            var atmOptionTimes = new List<double>(atmVolStructure.optionTimes());
+            var optionTimes = new List<double>(volCubeAtmCalibrated_.optionTimes());
             atmOptionTimes.InsertRange(atmOptionTimes.Count, optionTimes);
             atmOptionTimes.Sort();
             atmOptionTimes = atmOptionTimes.Distinct().ToList();
 
 
-            List<double> atmSwapLengths = new List<double>(atmVolStructure.swapLengths());
-            List<double> swapLengths = new List<double>(volCubeAtmCalibrated_.swapLengths());
+            var atmSwapLengths = new List<double>(atmVolStructure.swapLengths());
+            var swapLengths = new List<double>(volCubeAtmCalibrated_.swapLengths());
             atmSwapLengths.InsertRange(atmSwapLengths.Count, swapLengths);
             atmSwapLengths.Sort();
             atmSwapLengths = atmSwapLengths.Distinct().ToList();
 
-            List<Date> atmOptionDates = new List<Date>(atmVolStructure.optionDates());
-            List<Date> optionDates = new List<Date>(volCubeAtmCalibrated_.optionDates());
+            var atmOptionDates = new List<Date>(atmVolStructure.optionDates());
+            var optionDates = new List<Date>(volCubeAtmCalibrated_.optionDates());
             atmOptionDates.InsertRange(atmOptionDates.Count, optionDates);
             atmOptionDates.Sort();
             atmOptionDates = atmOptionDates.Distinct().ToList();
 
-            List<Period> atmSwapTenors = new List<Period>(atmVolStructure.swapTenors());
-            List<Period> swapTenors = new List<Period>(volCubeAtmCalibrated_.swapTenors());
+            var atmSwapTenors = new List<Period>(atmVolStructure.swapTenors());
+            var swapTenors = new List<Period>(volCubeAtmCalibrated_.swapTenors());
             atmSwapTenors.InsertRange(atmSwapTenors.Count, swapTenors);
             atmSwapTenors.Sort();
             atmSwapTenors = atmSwapTenors.Distinct().ToList();
 
             createSparseSmiles();
 
-            for (int j = 0; j < atmOptionTimes.Count; j++)
+            for (var j = 0; j < atmOptionTimes.Count; j++)
             {
-                for (int k = 0; k < atmSwapLengths.Count; k++)
+                for (var k = 0; k < atmSwapLengths.Count; k++)
                 {
-                    bool expandOptionTimes = !optionTimes.Exists(x => x.IsEqual(atmOptionTimes[j]));
-                    bool expandSwapLengths = !swapLengths.Exists(x => x.IsEqual(atmSwapLengths[k]));
+                    var expandOptionTimes = !optionTimes.Exists(x => x.IsEqual(atmOptionTimes[j]));
+                    var expandSwapLengths = !swapLengths.Exists(x => x.IsEqual(atmSwapLengths[k]));
                     if (expandOptionTimes || expandSwapLengths)
                     {
-                        double atmForward = atmStrike(atmOptionDates[j], atmSwapTenors[k]);
-                        double atmVol = atmVol_.link.volatility(atmOptionDates[j], atmSwapTenors[k], atmForward);
-                        List<double> spreadVols = spreadVolInterpolation(atmOptionDates[j], atmSwapTenors[k]);
-                        List<double> volAtmCalibrated = new List<double>(nStrikes_);
-                        for (int i = 0; i < nStrikes_; i++)
+                        var atmForward = atmStrike(atmOptionDates[j], atmSwapTenors[k]);
+                        var atmVol = atmVol_.link.volatility(atmOptionDates[j], atmSwapTenors[k], atmForward);
+                        var spreadVols = spreadVolInterpolation(atmOptionDates[j], atmSwapTenors[k]);
+                        var volAtmCalibrated = new List<double>(nStrikes_);
+                        for (var i = 0; i < nStrikes_; i++)
                             volAtmCalibrated.Add(atmVol + spreadVols[i]);
                         volCubeAtmCalibrated_.setPoint(atmOptionDates[j], atmSwapTenors[k],
                                                        atmOptionTimes[j], atmSwapLengths[k],
@@ -798,18 +804,18 @@ namespace QLNet.Termstructures.Volatility.swaption
         }
         protected void createSparseSmiles()
         {
-            List<double> optionTimes = new List<double>(sparseParameters_.optionTimes());
-            List<double> swapLengths = new List<double>(sparseParameters_.swapLengths());
+            var optionTimes = new List<double>(sparseParameters_.optionTimes());
+            var swapLengths = new List<double>(sparseParameters_.swapLengths());
             if (sparseSmiles_ == null)
                 sparseSmiles_ = new List<List<SmileSection>>();
             sparseSmiles_.Clear();
 
-            for (int j = 0; j < optionTimes.Count; j++)
+            for (var j = 0; j < optionTimes.Count; j++)
             {
                 List<SmileSection> tmp;
-                int n = swapLengths.Count;
+                var n = swapLengths.Count;
                 tmp = new List<SmileSection>(n);
-                for (int k = 0; k < n; ++k)
+                for (var k = 0; k < n; ++k)
                 {
                     tmp.Add(smileSection(optionTimes[j], swapLengths[k], ref sparseParameters_));
                 }
@@ -818,22 +824,22 @@ namespace QLNet.Termstructures.Volatility.swaption
         }
         protected List<double> spreadVolInterpolation(Date atmOptionDate, Period atmSwapTenor)
         {
-            double atmOptionTime = timeFromReference(atmOptionDate);
-            double atmTimeLength = swapLength(atmSwapTenor);
+            var atmOptionTime = timeFromReference(atmOptionDate);
+            var atmTimeLength = swapLength(atmSwapTenor);
 
-            List<double> result = new List<double>();
-            List<double> optionTimes = sparseParameters_.optionTimes();
-            List<double> swapLengths = sparseParameters_.swapLengths();
-            List<Date> optionDates = sparseParameters_.optionDates();
-            List<Period> swapTenors = sparseParameters_.swapTenors();
+            var result = new List<double>();
+            var optionTimes = sparseParameters_.optionTimes();
+            var swapLengths = sparseParameters_.swapLengths();
+            var optionDates = sparseParameters_.optionDates();
+            var swapTenors = sparseParameters_.swapTenors();
 
             double optionTimesPreviousNode, swapLengthsPreviousNode;
 
             optionTimesPreviousNode = optionTimes_.First(x => x >= System.Math.Min(atmOptionTime, optionTimes_.Max()));
-            int optionTimesPreviousIndex = optionTimes_.IndexOf(optionTimesPreviousNode);
+            var optionTimesPreviousIndex = optionTimes_.IndexOf(optionTimesPreviousNode);
 
             swapLengthsPreviousNode = swapLengths_.First(x => x >= System.Math.Min(atmTimeLength, swapLengths_.Max()));
-            int swapLengthsPreviousIndex = swapLengths_.IndexOf(swapLengthsPreviousNode);
+            var swapLengthsPreviousIndex = swapLengths_.IndexOf(swapLengthsPreviousNode);
 
             if (optionTimesPreviousIndex > 0)
                 optionTimesPreviousIndex--;
@@ -841,9 +847,9 @@ namespace QLNet.Termstructures.Volatility.swaption
             if (swapLengthsPreviousIndex > 0)
                 swapLengthsPreviousIndex--;
 
-            List<List<SmileSection>> smiles = new List<List<SmileSection>>();
-            List<SmileSection> smilesOnPreviousExpiry = new List<SmileSection>();
-            List<SmileSection> smilesOnNextExpiry = new List<SmileSection>();
+            var smiles = new List<List<SmileSection>>();
+            var smilesOnPreviousExpiry = new List<SmileSection>();
+            var smilesOnNextExpiry = new List<SmileSection>();
 
             Utils.QL_REQUIRE(optionTimesPreviousIndex + 1 < sparseSmiles_.Count, () =>
                              "optionTimesPreviousIndex+1 >= sparseSmiles_.size()");
@@ -873,15 +879,15 @@ namespace QLNet.Termstructures.Volatility.swaption
             swapTenorNodes[0] = swapTenors[swapLengthsPreviousIndex];
             swapTenorNodes[1] = swapTenors[swapLengthsPreviousIndex + 1];
 
-            double atmForward = atmStrike(atmOptionDate, atmSwapTenor);
-            double shift = atmVol_.link.shift(atmOptionTime, atmTimeLength);
+            var atmForward = atmStrike(atmOptionDate, atmSwapTenor);
+            var shift = atmVol_.link.shift(atmOptionTime, atmTimeLength);
 
-            Matrix atmForwards = new Matrix(2, 2, 0.0);
-            Matrix atmShifts = new Matrix(2, 2, 0.0);
-            Matrix atmVols = new Matrix(2, 2, 0.0);
-            for (int i = 0; i < 2; i++)
+            var atmForwards = new Matrix(2, 2, 0.0);
+            var atmShifts = new Matrix(2, 2, 0.0);
+            var atmVols = new Matrix(2, 2, 0.0);
+            for (var i = 0; i < 2; i++)
             {
-                for (int j = 0; j < 2; j++)
+                for (var j = 0; j < 2; j++)
                 {
                     atmForwards[i, j] = atmStrike(optionsDateNodes[i], swapTenorNodes[j]);
                     atmShifts[i, j] = atmVol_.link.shift(optionsNodes[i], swapLengthsNodes[j]);
@@ -906,22 +912,22 @@ namespace QLNet.Termstructures.Volatility.swaption
 
             }
 
-            for (int k = 0; k < nStrikes_; k++)
+            for (var k = 0; k < nStrikes_; k++)
             {
-                double strike = System.Math.Max(atmForward + strikeSpreads_[k], cutoffStrike_ - shift);
-                double moneyness = (atmForward + shift) / (strike + shift);
+                var strike = System.Math.Max(atmForward + strikeSpreads_[k], cutoffStrike_ - shift);
+                var moneyness = (atmForward + shift) / (strike + shift);
 
-                Matrix strikes = new Matrix(2, 2, 0.0);
-                Matrix spreadVols = new Matrix(2, 2, 0.0);
-                for (int i = 0; i < 2; i++)
+                var strikes = new Matrix(2, 2, 0.0);
+                var spreadVols = new Matrix(2, 2, 0.0);
+                for (var i = 0; i < 2; i++)
                 {
-                    for (int j = 0; j < 2; j++)
+                    for (var j = 0; j < 2; j++)
                     {
                         strikes[i, j] = (atmForwards[i, j] + atmShifts[i, j]) / moneyness - atmShifts[i, j];
                         spreadVols[i, j] = smiles[i][j].volatility(strikes[i, j]) - atmVols[i, j];
                     }
                 }
-                Cube localInterpolator = new Cube(optionsDateNodes, swapTenorNodes, optionsNodes, swapLengthsNodes, 1);
+                var localInterpolator = new Cube(optionsDateNodes, swapTenorNodes, optionsNodes, swapLengthsNodes, 1);
                 localInterpolator.setLayer(0, spreadVols);
                 localInterpolator.updateInterpolators();
 
@@ -931,7 +937,8 @@ namespace QLNet.Termstructures.Volatility.swaption
 
         }
 
-        protected override int requiredNumberOfStrikes() { return 1; }
+        protected override int requiredNumberOfStrikes() => 1;
+
         private Cube marketVolCube_;
         private Cube volCubeAtmCalibrated_;
         private Cube sparseParameters_;

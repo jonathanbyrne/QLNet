@@ -29,7 +29,7 @@ namespace QLNet.Time
     /// <summary>
     /// Payment schedule
     /// </summary>
-    public class Schedule
+    [JetBrains.Annotations.PublicAPI] public class Schedule
     {
 
 
@@ -116,7 +116,7 @@ namespace QLNet.Time
             // really necessary. In these cases a decent placeholder is enough
             if (effectiveDate == null && firstDate == null && rule == DateGeneration.Rule.Backward)
             {
-                Date evalDate = Settings.evaluationDate();
+                var evalDate = Settings.evaluationDate();
                 Utils.QL_REQUIRE(evalDate < terminationDate, () => "null effective date", QLNetExceptionEnum.NullEffectiveDate);
                 int y;
                 if (nextToLastDate != null)
@@ -209,7 +209,7 @@ namespace QLNet.Time
 
             // calendar needed for endOfMonth adjustment
             Calendar nullCalendar = new NullCalendar();
-            int periods = 1;
+            var periods = 1;
             Date seed = new Date(), exitDate = new Date();
             switch (rule_.Value)
             {
@@ -227,7 +227,7 @@ namespace QLNet.Time
                     if (nextToLastDate_ != null)
                     {
                         dates_.Insert(0, nextToLastDate_);
-                        Date temp = nullCalendar.advance(seed, -periods * tenor_, convention_, endOfMonth_.Value);
+                        var temp = nullCalendar.advance(seed, -periods * tenor_, convention_, endOfMonth_.Value);
                         if (temp != nextToLastDate_)
                             isRegular_.Insert(0, false);
                         else
@@ -240,7 +240,7 @@ namespace QLNet.Time
 
                     while (true)
                     {
-                        Date temp = nullCalendar.advance(seed, -periods * tenor_, convention_, endOfMonth_.Value);
+                        var temp = nullCalendar.advance(seed, -periods * tenor_, convention_, endOfMonth_.Value);
                         if (temp < exitDate)
                         {
                             if (firstDate_ != null && calendar_.adjust(dates_.First(), convention_) !=
@@ -296,7 +296,7 @@ namespace QLNet.Time
                     if (firstDate_ != null)
                     {
                         dates_.Add(firstDate_);
-                        Date temp = nullCalendar.advance(seed, periods * tenor_, convention_, endOfMonth_.Value);
+                        var temp = nullCalendar.advance(seed, periods * tenor_, convention_, endOfMonth_.Value);
                         if (temp != firstDate_)
                             isRegular_.Add(false);
                         else
@@ -309,7 +309,7 @@ namespace QLNet.Time
                              rule_.Value == DateGeneration.Rule.CDS ||
                              rule_.Value == DateGeneration.Rule.CDS2015)
                     {
-                        Date next20th = nextTwentieth(effectiveDate, rule_.Value);
+                        var next20th = nextTwentieth(effectiveDate, rule_.Value);
                         if (rule_ == DateGeneration.Rule.OldCDS)
                         {
                             // distance rule inforced in natural days
@@ -339,7 +339,7 @@ namespace QLNet.Time
                     }
                     while (true)
                     {
-                        Date temp = nullCalendar.advance(seed, periods * tenor_, convention_, endOfMonth_.Value);
+                        var temp = nullCalendar.advance(seed, periods * tenor_, convention_, endOfMonth_.Value);
                         if (temp > exitDate)
                         {
                             if (nextToLastDate_ != null &&
@@ -376,7 +376,7 @@ namespace QLNet.Time
                         }
                         else if (rule_ == DateGeneration.Rule.CDS2015)
                         {
-                            Date tentativeTerminationDate = nextTwentieth(terminationDate, rule_.Value);
+                            var tentativeTerminationDate = nextTwentieth(terminationDate, rule_.Value);
                             if (tentativeTerminationDate.month() % 2 == 0)
                             {
                                 dates_.Add(tentativeTerminationDate);
@@ -398,7 +398,7 @@ namespace QLNet.Time
 
             // adjustments
             if (rule_ == DateGeneration.Rule.ThirdWednesday)
-                for (int i = 1; i < dates_.Count - 1; ++i)
+                for (var i = 1; i < dates_.Count - 1; ++i)
                     dates_[i] = Date.nthWeekday(3, DayOfWeek.Wednesday, dates_[i].Month, dates_[i].Year);
 
             if (endOfMonth && calendar_.isEndOfMonth(seed))
@@ -406,12 +406,12 @@ namespace QLNet.Time
                 // adjust to end of month
                 if (convention_ == BusinessDayConvention.Unadjusted)
                 {
-                    for (int i = 1; i < dates_.Count - 1; ++i)
+                    for (var i = 1; i < dates_.Count - 1; ++i)
                         dates_[i] = Date.endOfMonth(dates_[i]);
                 }
                 else
                 {
-                    for (int i = 1; i < dates_.Count - 1; ++i)
+                    for (var i = 1; i < dates_.Count - 1; ++i)
                         dates_[i] = calendar_.endOfMonth(dates_[i]);
                 }
                 if (terminationDateConvention_ != BusinessDayConvention.Unadjusted)
@@ -434,7 +434,7 @@ namespace QLNet.Time
                 // first date not adjusted for CDS schedules
                 if (rule_ != DateGeneration.Rule.OldCDS)
                     dates_[0] = calendar_.adjust(dates_[0], convention_);
-                for (int i = 1; i < dates_.Count - 1; ++i)
+                for (var i = 1; i < dates_.Count - 1; ++i)
                     dates_[i] = calendar_.adjust(dates_[i], convention_);
 
                 // termination date is NOT adjusted as per ISDA specifications, unless otherwise specified in the
@@ -482,7 +482,8 @@ namespace QLNet.Time
 
 
         // Date access
-        public int size() { return dates_.Count; }
+        public int size() => dates_.Count;
+
         public Date this[int i]
         {
             get
@@ -492,11 +493,13 @@ namespace QLNet.Time
                 return dates_[i];
             }
         }
-        public Date at(int i) { return this[i]; }
-        public Date date(int i) { return this[i]; }
+        public Date at(int i) => this[i];
+
+        public Date date(int i) => this[i];
+
         public Date previousDate(Date d)
         {
-            int i = dates_.BinarySearch(d);
+            var i = dates_.BinarySearch(d);
             if (i <= 0)
                 return null;
             else
@@ -504,13 +507,14 @@ namespace QLNet.Time
         }
         public Date nextDate(Date d)
         {
-            int i = dates_.BinarySearch(d);
+            var i = dates_.BinarySearch(d);
             if (i < 0 || i == dates_.Count - 1)
                 return null;
             else
                 return dates_[i + 1];
         }
-        public List<Date> dates() { return dates_; }
+        public List<Date> dates() => dates_;
+
         public bool isRegular(int i)
         {
             Utils.QL_REQUIRE(isRegular_.Count > 0, () => "full interface (isRegular) not available");
@@ -524,19 +528,21 @@ namespace QLNet.Time
         }
 
         // Other inspectors
-        public bool empty() { return dates_.Count == 0; }
-        public Calendar calendar() { return calendar_; }
-        public Date startDate() { return dates_.First(); }
-        public Date endDate() { return dates_.Last(); }
+        public bool empty() => dates_.Count == 0;
+
+        public Calendar calendar() => calendar_;
+
+        public Date startDate() => dates_.First();
+
+        public Date endDate() => dates_.Last();
+
         public Period tenor()
         {
             Utils.QL_REQUIRE(tenor_ != null, () => "full interface (tenor) not available");
             return tenor_;
         }
-        public BusinessDayConvention businessDayConvention()
-        {
-            return convention_;
-        }
+        public BusinessDayConvention businessDayConvention() => convention_;
+
         public BusinessDayConvention terminationDateBusinessDayConvention()
         {
             Utils.QL_REQUIRE(terminationDateConvention_.HasValue, () => "full interface (termination date business day convention) not available");
@@ -556,7 +562,7 @@ namespace QLNet.Time
         //! truncated schedule
         public Schedule until(Date truncationDate)
         {
-            Schedule result = (Schedule)MemberwiseClone();
+            var result = (Schedule)MemberwiseClone();
 
             Utils.QL_REQUIRE(truncationDate > result.dates_[0], () =>
                              "truncation date " + truncationDate +
@@ -592,12 +598,11 @@ namespace QLNet.Time
 
             return result;
         }
-        public int Count { get { return dates_.Count; } }
-
+        public int Count => dates_.Count;
 
         private Date nextTwentieth(Date d, DateGeneration.Rule rule)
         {
-            Date result = new Date(20, d.month(), d.year());
+            var result = new Date(20, d.month(), d.year());
             if (result < d)
                 result += new Period(1, TimeUnit.Months);
             if (rule == DateGeneration.Rule.TwentiethIMM ||
@@ -605,11 +610,11 @@ namespace QLNet.Time
                 rule == DateGeneration.Rule.CDS ||
                 rule == DateGeneration.Rule.CDS2015)
             {
-                int m = result.month();
+                var m = result.month();
                 if (m % 3 != 0)
                 {
                     // not a main IMM nmonth
-                    int skip = 3 - m % 3;
+                    var skip = 3 - m % 3;
                     result += new Period(skip, TimeUnit.Months);
                 }
             }
@@ -617,7 +622,7 @@ namespace QLNet.Time
         }
         private Date previousTwentieth(Date d, DateGeneration.Rule rule)
         {
-            Date result = new Date(20, d.month(), d.year());
+            var result = new Date(20, d.month(), d.year());
             if (result > d)
                 result -= new Period(1, TimeUnit.Months);
             if (rule == DateGeneration.Rule.TwentiethIMM ||
@@ -625,21 +630,19 @@ namespace QLNet.Time
                 rule == DateGeneration.Rule.CDS ||
                 rule == DateGeneration.Rule.CDS2015)
             {
-                int m = result.month();
+                var m = result.month();
                 if (m % 3 != 0)
                 {
                     // not a main IMM nmonth
-                    int skip = m % 3;
+                    var skip = m % 3;
                     result -= new Period(skip, TimeUnit.Months);
                 }
             }
             return result;
         }
-        private bool allowsEndOfMonth(Period tenor)
-        {
-            return (tenor.units() == TimeUnit.Months || tenor.units() == TimeUnit.Years)
-                   && tenor >= new Period(1, TimeUnit.Months);
-        }
+        private bool allowsEndOfMonth(Period tenor) =>
+            (tenor.units() == TimeUnit.Months || tenor.units() == TimeUnit.Years)
+            && tenor >= new Period(1, TimeUnit.Months);
 
         private Period tenor_;
         private Calendar calendar_;
@@ -656,7 +659,7 @@ namespace QLNet.Time
     /// <summary>
     /// This class provides a more comfortable interface to the argument list of Schedule's constructor.
     /// </summary>
-    public class MakeSchedule
+    [JetBrains.Annotations.PublicAPI] public class MakeSchedule
     {
         public MakeSchedule() { rule_ = DateGeneration.Rule.Backward; endOfMonth_ = false; }
 

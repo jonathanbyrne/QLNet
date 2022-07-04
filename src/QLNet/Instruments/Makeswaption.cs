@@ -27,7 +27,7 @@ namespace QLNet.Instruments
     /// <summary>
     /// Helper class to instantiate standard market swaption.
     /// </summary>
-    public class MakeSwaption
+    [JetBrains.Annotations.PublicAPI] public class MakeSwaption
     {
         public MakeSwaption(SwapIndex swapIndex,
                             Period optionTenor,
@@ -101,15 +101,12 @@ namespace QLNet.Instruments
         }
 
         // swap creator
-        public static implicit operator Swaption(MakeSwaption o)
-        {
-            return o.value();
-        }
+        public static implicit operator Swaption(MakeSwaption o) => o.value();
 
         public Swaption value()
         {
-            Date evaluationDate = Settings.evaluationDate();
-            Calendar fixingCalendar = swapIndex_.fixingCalendar();
+            var evaluationDate = Settings.evaluationDate();
+            var fixingCalendar = swapIndex_.fixingCalendar();
             fixingDate_ = fixingCalendar.advance(evaluationDate, optionTenor_, optionConvention_);
 
             if (exerciseDate_ == null)
@@ -129,14 +126,14 @@ namespace QLNet.Instruments
                 // ATM on the forecasting curve
                 Utils.QL_REQUIRE(!swapIndex_.forwardingTermStructure().empty(), () =>
                                  "no forecasting term structure set to " + swapIndex_.name());
-                VanillaSwap temp = swapIndex_.underlyingSwap(fixingDate_);
+                var temp = swapIndex_.underlyingSwap(fixingDate_);
                 temp.setPricingEngine(new DiscountingSwapEngine(swapIndex_.forwardingTermStructure()));
                 usedStrike = temp.fairRate();
             }
             else
                 usedStrike = strike_.Value;
 
-            BusinessDayConvention bdc = swapIndex_.fixedLegConvention();
+            var bdc = swapIndex_.fixedLegConvention();
             underlyingSwap_ = new MakeVanillaSwap(swapIndex_.tenor(),
                                                   swapIndex_.iborIndex(),
                                                   usedStrike)
@@ -148,7 +145,7 @@ namespace QLNet.Instruments
             .withType(underlyingType_)
             .withNominal(nominal_);
 
-            Swaption swaption = new Swaption(underlyingSwap_, exercise_, delivery_, settlementMethod_);
+            var swaption = new Swaption(underlyingSwap_, exercise_, delivery_, settlementMethod_);
             swaption.setPricingEngine(engine_);
             return swaption;
         }

@@ -31,7 +31,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Operators
+    [JetBrains.Annotations.PublicAPI] public class T_Operators
     {
         public const double average = 0.0, sigma = 1.0;
 
@@ -41,13 +41,13 @@ namespace QLNet.Tests
 
             //("Testing differential operators...");
 
-            NormalDistribution normal = new NormalDistribution(average, sigma);
-            CumulativeNormalDistribution cum = new CumulativeNormalDistribution(average, sigma);
+            var normal = new NormalDistribution(average, sigma);
+            var cum = new CumulativeNormalDistribution(average, sigma);
 
             double xMin = average - 4 * sigma,
                    xMax = average + 4 * sigma;
-            int N = 10001;
-            double h = (xMax - xMin) / (N - 1);
+            var N = 10001;
+            var h = (xMax - xMin) / (N - 1);
 
             Vector x = new Vector(N),
             y = new Vector(N),
@@ -56,27 +56,27 @@ namespace QLNet.Tests
             temp = new Vector(N),
             diff = new Vector(N);
 
-            for (int i = 0; i < N; i++)
+            for (var i = 0; i < N; i++)
                 x[i] = xMin + h * i;
 
-            for (int i = 0; i < x.Count; i++)
+            for (var i = 0; i < x.Count; i++)
                 y[i] = normal.value(x[i]);
-            for (int i = 0; i < x.Count; i++)
+            for (var i = 0; i < x.Count; i++)
                 yi[i] = cum.value(x[i]);
 
-            for (int i = 0; i < x.size(); i++)
+            for (var i = 0; i < x.size(); i++)
                 yd[i] = normal.derivative(x[i]);
 
             // define the differential operators
-            DZero D = new DZero(N, h);
-            DPlusDMinus D2 = new DPlusDMinus(N, h);
+            var D = new DZero(N, h);
+            var D2 = new DPlusDMinus(N, h);
 
             // check that the derivative of cum is Gaussian
             temp = D.applyTo(yi);
 
-            for (int i = 0; i < y.Count; i++)
+            for (var i = 0; i < y.Count; i++)
                 diff[i] = y[i] - temp[i];
-            double e = Utilities.norm(diff, diff.size(), h);
+            var e = Utilities.norm(diff, diff.size(), h);
             if (e > 1.0e-6)
             {
                 QAssert.Fail("norm of 1st derivative of cum minus Gaussian: " + e + "\ntolerance exceeded");
@@ -85,7 +85,7 @@ namespace QLNet.Tests
             // check that the second derivative of cum is normal.derivative
             temp = D2.applyTo(yi);
 
-            for (int i = 0; i < yd.Count; i++)
+            for (var i = 0; i < yd.Count; i++)
                 diff[i] = yd[i] - temp[i];
 
             e = Utilities.norm(diff, diff.size(), h);
@@ -100,45 +100,45 @@ namespace QLNet.Tests
         {
             //("Testing consistency of BSM operators...");
 
-            Vector grid = new Vector(10);
-            double price = 20.0;
-            double factor = 1.1;
-            for (int i = 0; i < grid.size(); i++)
+            var grid = new Vector(10);
+            var price = 20.0;
+            var factor = 1.1;
+            for (var i = 0; i < grid.size(); i++)
             {
                 grid[i] = price;
                 price *= factor;
             }
 
-            double dx = System.Math.Log(factor);
-            double r = 0.05;
-            double q = 0.01;
-            double sigma = 0.5;
+            var dx = System.Math.Log(factor);
+            var r = 0.05;
+            var q = 0.01;
+            var sigma = 0.5;
 
-            BSMOperator refer = new BSMOperator(grid.size(), dx, r, q, sigma);
+            var refer = new BSMOperator(grid.size(), dx, r, q, sigma);
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
-            Date exercise = today + new Period(2, TimeUnit.Years);
-            double residualTime = dc.yearFraction(today, exercise);
+            var today = Date.Today;
+            var exercise = today + new Period(2, TimeUnit.Years);
+            var residualTime = dc.yearFraction(today, exercise);
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            YieldTermStructure qTS = Utilities.flatRate(today, q, dc);
-            YieldTermStructure rTS = Utilities.flatRate(today, r, dc);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, sigma, dc);
-            GeneralizedBlackScholesProcess stochProcess = new GeneralizedBlackScholesProcess(
+            var spot = new SimpleQuote(0.0);
+            var qTS = Utilities.flatRate(today, q, dc);
+            var rTS = Utilities.flatRate(today, r, dc);
+            var volTS = Utilities.flatVol(today, sigma, dc);
+            var stochProcess = new GeneralizedBlackScholesProcess(
                new Handle<Quote>(spot),
                new Handle<YieldTermStructure>(qTS),
                new Handle<YieldTermStructure>(rTS),
                new Handle<BlackVolTermStructure>(volTS));
-            BSMOperator op1 = new BSMOperator(grid, stochProcess, residualTime);
-            PdeOperator<PdeBSM> op2 = new PdeOperator<PdeBSM>(grid, stochProcess, residualTime);
+            var op1 = new BSMOperator(grid, stochProcess, residualTime);
+            var op2 = new PdeOperator<PdeBSM>(grid, stochProcess, residualTime);
 
-            double tolerance = 1.0e-6;
-            Vector lderror = refer.lowerDiagonal() - op1.lowerDiagonal();
-            Vector derror = refer.diagonal() - op1.diagonal();
-            Vector uderror = refer.upperDiagonal() - op1.upperDiagonal();
+            var tolerance = 1.0e-6;
+            var lderror = refer.lowerDiagonal() - op1.lowerDiagonal();
+            var derror = refer.diagonal() - op1.diagonal();
+            var uderror = refer.upperDiagonal() - op1.upperDiagonal();
 
-            for (int i = 2; i < grid.size() - 2; i++)
+            for (var i = 2; i < grid.size() - 2; i++)
             {
                 if (System.Math.Abs(lderror[i]) > tolerance ||
                     System.Math.Abs(derror[i]) > tolerance ||
@@ -160,7 +160,7 @@ namespace QLNet.Tests
             derror = refer.diagonal() - op2.diagonal();
             uderror = refer.upperDiagonal() - op2.upperDiagonal();
 
-            for (int i = 2; i < grid.size() - 2; i++)
+            for (var i = 2; i < grid.size() - 2; i++)
             {
                 if (System.Math.Abs(lderror[i]) > tolerance ||
                     System.Math.Abs(derror[i]) > tolerance ||

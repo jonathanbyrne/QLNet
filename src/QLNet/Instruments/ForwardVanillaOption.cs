@@ -18,7 +18,7 @@ using QLNet.Time;
 
 namespace QLNet.Instruments
 {
-    public class ForwardVanillaOption : OneAssetOption
+    [JetBrains.Annotations.PublicAPI] public class ForwardVanillaOption : OneAssetOption
     {
         public ForwardVanillaOption(double moneyness,
                                     Date resetDate,
@@ -33,8 +33,8 @@ namespace QLNet.Instruments
         public override void setupArguments(IPricingEngineArguments args)
         {
             base.setupArguments(args);
-            Arguments arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong argument type");
+            var arguments = args as Arguments;
+            Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
 
             arguments.moneyness = moneyness_;
             arguments.resetDate = resetDate_;
@@ -42,7 +42,7 @@ namespace QLNet.Instruments
         public override void fetchResults(IPricingEngineResults r)
         {
             base.fetchResults(r);
-            Results results = r as Results;
+            var results = r as Results;
             Utils.QL_REQUIRE(results != null, () => "no results returned from pricing engine");
             delta_ = results.delta;
             gamma_ = results.gamma;

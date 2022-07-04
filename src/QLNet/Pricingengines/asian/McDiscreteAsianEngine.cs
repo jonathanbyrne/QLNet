@@ -36,7 +36,7 @@ namespace QLNet.Pricingengines.asian
         \ingroup asianengines
     */
 
-    public class MCDiscreteAveragingAsianEngine<RNG, S> : McSimulation<SingleVariate, RNG, S>, IGenericEngine
+    [JetBrains.Annotations.PublicAPI] public class MCDiscreteAveragingAsianEngine<RNG, S> : McSimulation<SingleVariate, RNG, S>, IGenericEngine
       //DiscreteAveragingAsianOption.Engine,
       //McSimulation<SingleVariate,RNG,S>
       where RNG : IRSG, new()
@@ -84,15 +84,15 @@ namespace QLNet.Pricingengines.asian
         // McSimulation implementation
         protected override TimeGrid timeGrid()
         {
-            Date referenceDate = process_.riskFreeRate().link.referenceDate();
-            DayCounter voldc = process_.blackVolatility().link.dayCounter();
+            var referenceDate = process_.riskFreeRate().link.referenceDate();
+            var voldc = process_.blackVolatility().link.dayCounter();
             List<double> fixingTimes = new InitializedList<double>(arguments_.fixingDates.Count);
 
-            for (int i = 0; i < arguments_.fixingDates.Count; i++)
+            for (var i = 0; i < arguments_.fixingDates.Count; i++)
             {
                 if (arguments_.fixingDates[i] >= referenceDate)
                 {
-                    double t = voldc.yearFraction(referenceDate,
+                    var t = voldc.yearFraction(referenceDate,
                                                   arguments_.fixingDates[i]);
                     fixingTimes[i] = t;
                 }
@@ -104,40 +104,39 @@ namespace QLNet.Pricingengines.asian
         protected override IPathGenerator<IRNG> pathGenerator()
         {
 
-            TimeGrid grid = timeGrid();
-            IRNG gen = new RNG().make_sequence_generator(grid.size() - 1, seed_);
+            var grid = timeGrid();
+            var gen = new RNG().make_sequence_generator(grid.size() - 1, seed_);
             return new PathGenerator<IRNG>(process_, grid,
                                            gen, brownianBridge_);
         }
 
         protected override double? controlVariateValue()
         {
-            IPricingEngine controlPE = controlPricingEngine();
+            var controlPE = controlPricingEngine();
             Utils.QL_REQUIRE(controlPE != null, () => "engine does not provide control variation pricing engine");
 
-            DiscreteAveragingAsianOption.Arguments controlArguments =
+            var controlArguments =
                (DiscreteAveragingAsianOption.Arguments)controlPE.getArguments();
             controlArguments = arguments_;
             controlPE.calculate();
 
-            OneAssetOption.Results controlResults =
+            var controlResults =
                (OneAssetOption.Results)controlPE.getResults();
 
             return controlResults.value;
 
         }
 
-        protected override PathPricer<IPath> pathPricer()
-        {
-            throw new System.NotImplementedException();
-        }
+        protected override PathPricer<IPath> pathPricer() => throw new System.NotImplementedException();
 
         #region PricingEngine
         protected DiscreteAveragingAsianOption.Arguments arguments_ = new DiscreteAveragingAsianOption.Arguments();
         protected OneAssetOption.Results results_ = new OneAssetOption.Results();
 
-        public IPricingEngineArguments getArguments() { return arguments_; }
-        public IPricingEngineResults getResults() { return results_; }
+        public IPricingEngineArguments getArguments() => arguments_;
+
+        public IPricingEngineResults getResults() => results_;
+
         public void reset() { results_.reset(); }
 
         #region Observer & Observable
@@ -145,14 +144,8 @@ namespace QLNet.Pricingengines.asian
         private readonly WeakEventSource eventSource = new WeakEventSource();
         public event Callback notifyObserversEvent
         {
-            add
-            {
-                eventSource.Subscribe(value);
-            }
-            remove
-            {
-                eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
         }
 
         public void registerWith(Callback handler) { notifyObserversEvent += handler; }

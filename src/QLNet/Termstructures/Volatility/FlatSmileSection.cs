@@ -23,14 +23,11 @@ using QLNet.Time;
 
 namespace QLNet.Termstructures.Volatility
 {
-    public class FlatSmileSection : SmileSection
+    [JetBrains.Annotations.PublicAPI] public class FlatSmileSection : SmileSection
     {
         private double vol_;
         private double? atmLevel_;
-        public override double? atmLevel()
-        {
-            return atmLevel_;
-        }
+        public override double? atmLevel() => atmLevel_;
 
         public FlatSmileSection(Date d, double vol, DayCounter dc, Date referenceDate = null, double? atmLevel = null,
                                 VolatilityType type = VolatilityType.ShiftedLognormal, double shift = 0.0)
@@ -48,19 +45,10 @@ namespace QLNet.Termstructures.Volatility
             atmLevel_ = atmLevel;
         }
 
-        public override double minStrike()
-        {
-            return double.MinValue - shift();
-        }
+        public override double minStrike() => double.MinValue - shift();
 
-        public override double maxStrike()
-        {
-            return double.MaxValue;
-        }
+        public override double maxStrike() => double.MaxValue;
 
-        protected override double volatilityImpl(double d)
-        {
-            return vol_;
-        }
+        protected override double volatilityImpl(double d) => vol_;
     }
 }

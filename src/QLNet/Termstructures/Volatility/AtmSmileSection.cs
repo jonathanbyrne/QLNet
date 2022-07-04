@@ -19,7 +19,7 @@ using QLNet.Time;
 
 namespace QLNet.Termstructures.Volatility
 {
-    public class AtmSmileSection : SmileSection
+    [JetBrains.Annotations.PublicAPI] public class AtmSmileSection : SmileSection
     {
         public AtmSmileSection(SmileSection source, double? atm = null)
         {
@@ -29,18 +29,27 @@ namespace QLNet.Termstructures.Volatility
                 f_ = source_.atmLevel();
         }
 
-        public override double minStrike() { return source_.minStrike(); }
-        public override double maxStrike() { return source_.maxStrike(); }
-        public override double? atmLevel() { return f_; }
-        public override Date exerciseDate() { return source_.exerciseDate(); }
-        public override double exerciseTime() { return source_.exerciseTime(); }
-        public override DayCounter dayCounter() { return source_.dayCounter(); }
-        public override Date referenceDate() { return source_.referenceDate(); }
-        public override VolatilityType volatilityType() { return source_.volatilityType(); }
-        public override double shift() { return source_.shift(); }
+        public override double minStrike() => source_.minStrike();
 
-        protected override double volatilityImpl(double strike) { return source_.volatility(strike); }
-        protected override double varianceImpl(double strike) { return source_.variance(strike); }
+        public override double maxStrike() => source_.maxStrike();
+
+        public override double? atmLevel() => f_;
+
+        public override Date exerciseDate() => source_.exerciseDate();
+
+        public override double exerciseTime() => source_.exerciseTime();
+
+        public override DayCounter dayCounter() => source_.dayCounter();
+
+        public override Date referenceDate() => source_.referenceDate();
+
+        public override VolatilityType volatilityType() => source_.volatilityType();
+
+        public override double shift() => source_.shift();
+
+        protected override double volatilityImpl(double strike) => source_.volatility(strike);
+
+        protected override double varianceImpl(double strike) => source_.variance(strike);
 
         private SmileSection source_;
         private double? f_;

@@ -25,22 +25,22 @@ namespace QLNet.Methods.Finitedifferences.Utilities
     /// <summary>
     /// helper class to extract the indices on a boundary
     /// </summary>
-    public class FdmIndicesOnBoundary
+    [JetBrains.Annotations.PublicAPI] public class FdmIndicesOnBoundary
     {
         public FdmIndicesOnBoundary(FdmLinearOpLayout layout,
                                     int direction, FdmDirichletBoundary.Side side)
         {
-            List<int> newDim = new List<int>(layout.dim());
+            var newDim = new List<int>(layout.dim());
             newDim[direction] = 1;
-            int hyperSize
+            var hyperSize
                = newDim.accumulate(0, newDim.Count, 1,
                                    (a, b) => a * b);
 
             indices_ = new InitializedList<int>(hyperSize);
 
-            int i = 0;
-            FdmLinearOpIterator endIter = layout.end();
-            for (FdmLinearOpIterator iter = layout.begin();
+            var i = 0;
+            var endIter = layout.end();
+            for (var iter = layout.begin();
                  iter != endIter;
                  ++iter)
             {
@@ -56,10 +56,7 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             }
         }
 
-        public List<int> getIndices()
-        {
-            return indices_;
-        }
+        public List<int> getIndices() => indices_;
 
         protected List<int> indices_;
     }

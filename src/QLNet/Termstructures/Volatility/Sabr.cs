@@ -29,19 +29,19 @@ namespace QLNet
       public static double unsafeSabrNormalVolatility(double strike, double forward, double expiryTime, double alpha, double beta,
                                                       double nu, double rho)
       {
-         double oneMinusBeta = 1.0 - beta;
-         double Fmid = forward * strike < 0.0 ? (forward + strike) * 0.5 : System.Math.Sqrt(forward * strike);
-         double gamma1 = beta / Fmid;
-         double gamma2 = -beta * oneMinusBeta / (Fmid * Fmid);
-         double zeta = alpha / (nu * oneMinusBeta) * (System.Math.Pow(forward, oneMinusBeta) - System.Math.Pow(strike, oneMinusBeta));
-         double D = System.Math.Log((System.Math.Sqrt(1.0 - 2.0 * rho * zeta + zeta * zeta) + zeta - rho) / (1.0 - rho));
-         double epsilon = alpha * alpha * expiryTime;
-         double M = forward - strike;
-         double a = nu * System.Math.Pow(Fmid, beta) / alpha;
-         double b = System.Math.Pow(a, 2.0);
-         double d = 1.0 + ((2.0 * gamma2 - gamma1 * gamma1) / 24.0 * b
-                           + rho * gamma1 / 4.0 * a
-                           + (2.0 - 3.0 * rho * rho) / 24.0) * epsilon;
+         var oneMinusBeta = 1.0 - beta;
+         var Fmid = forward * strike < 0.0 ? (forward + strike) * 0.5 : System.Math.Sqrt(forward * strike);
+         var gamma1 = beta / Fmid;
+         var gamma2 = -beta * oneMinusBeta / (Fmid * Fmid);
+         var zeta = alpha / (nu * oneMinusBeta) * (System.Math.Pow(forward, oneMinusBeta) - System.Math.Pow(strike, oneMinusBeta));
+         var D = System.Math.Log((System.Math.Sqrt(1.0 - 2.0 * rho * zeta + zeta * zeta) + zeta - rho) / (1.0 - rho));
+         var epsilon = alpha * alpha * expiryTime;
+         var M = forward - strike;
+         var a = nu * System.Math.Pow(Fmid, beta) / alpha;
+         var b = System.Math.Pow(a, 2.0);
+         var d = 1.0 + ((2.0 * gamma2 - gamma1 * gamma1) / 24.0 * b
+                        + rho * gamma1 / 4.0 * a
+                        + (2.0 - 3.0 * rho * rho) / 24.0) * epsilon;
 
          return alpha * M / D * d;
       }
@@ -51,25 +51,25 @@ namespace QLNet
       {
          if (approximationModel == SabrApproximationModel.Hagan2002)
          {
-            double oneMinusBeta = 1.0 - beta;
-            double A = System.Math.Pow(forward * strike, oneMinusBeta);
-            double sqrtA = System.Math.Sqrt(A);
+            var oneMinusBeta = 1.0 - beta;
+            var A = System.Math.Pow(forward * strike, oneMinusBeta);
+            var sqrtA = System.Math.Sqrt(A);
             double logM;
 
             if (!close(forward, strike))
                logM = System.Math.Log(forward / strike);
             else
             {
-               double epsilon = (forward - strike) / strike;
+               var epsilon = (forward - strike) / strike;
                logM = epsilon - .5 * epsilon * epsilon;
             }
-            double z = (nu / alpha) * sqrtA * logM;
-            double B = 1.0 - 2.0 * rho * z + z * z;
-            double C = oneMinusBeta * oneMinusBeta * logM * logM;
-            double tmp = (System.Math.Sqrt(B) + z - rho) / (1.0 - rho);
-            double xx = System.Math.Log(tmp);
-            double D = sqrtA * (1.0 + C / 24.0 + C * C / 1920.0);
-            double d = 1.0 + expiryTime *
+            var z = (nu / alpha) * sqrtA * logM;
+            var B = 1.0 - 2.0 * rho * z + z * z;
+            var C = oneMinusBeta * oneMinusBeta * logM * logM;
+            var tmp = (System.Math.Sqrt(B) + z - rho) / (1.0 - rho);
+            var xx = System.Math.Log(tmp);
+            var D = sqrtA * (1.0 + C / 24.0 + C * C / 1920.0);
+            var d = 1.0 + expiryTime *
                        (oneMinusBeta * oneMinusBeta * alpha * alpha / (24.0 * A)
                         + 0.25 * rho * beta * nu * alpha / sqrtA
                         + (2.0 - 3.0 * rho * rho) * (nu * nu / 24.0));
@@ -88,13 +88,13 @@ namespace QLNet
          }
          else if (approximationModel == SabrApproximationModel.Obloj2008)
          {
-            double oneMinusBeta = 1.0 - beta;
-            double Fmid = System.Math.Sqrt(forward * strike);
-            double gamma1 = beta / Fmid;
-            double gamma2 = -beta * oneMinusBeta / (Fmid * Fmid);
-            double zeta = alpha / (nu * oneMinusBeta) * (System.Math.Pow(forward, oneMinusBeta) - System.Math.Pow(strike, oneMinusBeta));
-            double D = System.Math.Log((System.Math.Sqrt(1.0 - 2.0 * rho * zeta + zeta * zeta) + zeta - rho) / (1.0 - rho));
-            double epsilon = alpha * alpha * expiryTime;
+            var oneMinusBeta = 1.0 - beta;
+            var Fmid = System.Math.Sqrt(forward * strike);
+            var gamma1 = beta / Fmid;
+            var gamma2 = -beta * oneMinusBeta / (Fmid * Fmid);
+            var zeta = alpha / (nu * oneMinusBeta) * (System.Math.Pow(forward, oneMinusBeta) - System.Math.Pow(strike, oneMinusBeta));
+            var D = System.Math.Log((System.Math.Sqrt(1.0 - 2.0 * rho * zeta + zeta * zeta) + zeta - rho) / (1.0 - rho));
+            var epsilon = alpha * alpha * expiryTime;
 
             double logM;
 
@@ -102,15 +102,15 @@ namespace QLNet
                logM = System.Math.Log(forward / strike);
             else
             {
-               double eps = (forward - strike) / strike;
+               var eps = (forward - strike) / strike;
                logM = eps - .5 * eps * eps;
             }
 
-            double a = nu * System.Math.Pow(Fmid, beta) / alpha;
-            double b = System.Math.Pow(a, 2.0);
-            double d = 1.0 + ((2.0 * gamma2 - gamma1 * gamma1 + 1 / (Fmid * Fmid)) / 24.0 * b
-                              + rho * gamma1 / 4.0 * a
-                              + (2.0 - 3.0 * rho * rho) / 24.0) * epsilon;
+            var a = nu * System.Math.Pow(Fmid, beta) / alpha;
+            var b = System.Math.Pow(a, 2.0);
+            var d = 1.0 + ((2.0 * gamma2 - gamma1 * gamma1 + 1 / (Fmid * Fmid)) / 24.0 * b
+                           + rho * gamma1 / 4.0 * a
+                           + (2.0 - 3.0 * rho * rho) / 24.0) * epsilon;
 
             return alpha * logM / D * d;
          }
@@ -129,12 +129,9 @@ namespace QLNet
                                                        double nu,
                                                        double rho,
                                                        double shift,
-                                                       SabrApproximationModel approximationModel = SabrApproximationModel.Hagan2002)
-      {
-
-         return unsafeSabrVolatility(strike + shift, forward + shift, expiryTime,
-                                     alpha, beta, nu, rho, approximationModel);
-      }
+                                                       SabrApproximationModel approximationModel = SabrApproximationModel.Hagan2002) =>
+          unsafeSabrVolatility(strike + shift, forward + shift, expiryTime,
+              alpha, beta, nu, rho, approximationModel);
 
       public static void validateSabrParameters(double alpha, double beta, double nu, double rho)
       {

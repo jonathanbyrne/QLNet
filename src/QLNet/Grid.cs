@@ -26,25 +26,22 @@ namespace QLNet
 
       public static Vector CenteredGrid(double center, double dx, int steps)
       {
-         Vector result = new Vector(steps + 1);
-         for (int i = 0; i < steps + 1; i++)
+         var result = new Vector(steps + 1);
+         for (var i = 0; i < steps + 1; i++)
             result[i] = center + (i - steps / 2.0) * dx;
          return result;
       }
 
-      public static Vector BoundedGrid(double xMin, double xMax, int steps)
-      {
-         return new Vector(steps + 1, xMin, (xMax - xMin) / steps);
-      }
+      public static Vector BoundedGrid(double xMin, double xMax, int steps) => new Vector(steps + 1, xMin, (xMax - xMin) / steps);
 
       public static Vector BoundedLogGrid(double xMin, double xMax, int steps)
       {
-         Vector result = new Vector(steps + 1);
-         double gridLogSpacing = (System.Math.Log(xMax) - System.Math.Log(xMin)) /
-                                 (steps);
-         double edx = System.Math.Exp(gridLogSpacing);
+         var result = new Vector(steps + 1);
+         var gridLogSpacing = (System.Math.Log(xMax) - System.Math.Log(xMin)) /
+                              (steps);
+         var edx = System.Math.Exp(gridLogSpacing);
          result[0] = xMin;
-         for (int j = 1; j < steps + 1; j++)
+         for (var j = 1; j < steps + 1; j++)
          {
             result[j] = result[j - 1] * edx;
          }

@@ -28,7 +28,7 @@ namespace QLNet.Math
     /// <summary>
     /// Basic rounding class
     /// </summary>
-    public class Rounding
+    [JetBrains.Annotations.PublicAPI] public class Rounding
     {
         private int precision_;
         private Type type_;
@@ -100,29 +100,11 @@ namespace QLNet.Math
             digit_ = digit;
         }
 
-        public int Precision
-        {
-            get
-            {
-                return precision_;
-            }
-        }
+        public int Precision => precision_;
 
-        public Type getType
-        {
-            get
-            {
-                return type_;
-            }
-        }
+        public Type getType => type_;
 
-        public int Digit
-        {
-            get
-            {
-                return digit_;
-            }
-        }
+        public int Digit => digit_;
 
         /// <summary>
         /// Up-rounding
@@ -134,11 +116,11 @@ namespace QLNet.Math
             if (type_ == Type.None)
                 return value;
 
-            double mult = System.Math.Pow(10.0, precision_);
-            bool neg = value < 0.0;
-            double lvalue = System.Math.Abs(value) * mult;
-            double integral = 0.0;
-            double modVal = lvalue - (integral = System.Math.Floor(lvalue));
+            var mult = System.Math.Pow(10.0, precision_);
+            var neg = value < 0.0;
+            var lvalue = System.Math.Abs(value) * mult;
+            var integral = 0.0;
+            var modVal = lvalue - (integral = System.Math.Floor(lvalue));
 
             lvalue -= modVal;
             switch (type_)
@@ -178,7 +160,7 @@ namespace QLNet.Math
     /// <summary>
     /// Up-rounding
     /// </summary>
-    public class UpRounding : Rounding
+    [JetBrains.Annotations.PublicAPI] public class UpRounding : Rounding
     {
         public UpRounding(int precision) : base(precision, Type.Up, 5) { }
         public UpRounding(int precision, int digit) : base(precision, Type.Up, digit) { }
@@ -187,7 +169,7 @@ namespace QLNet.Math
     /// <summary>
     /// Down-rounding.
     /// </summary>
-    public class DownRounding : Rounding
+    [JetBrains.Annotations.PublicAPI] public class DownRounding : Rounding
     {
         public DownRounding(int precision) : base(precision, Type.Down, 5) { }
         public DownRounding(int precision, int digit) : base(precision, Type.Down, digit) { }
@@ -196,7 +178,7 @@ namespace QLNet.Math
     /// <summary>
     /// Closest rounding.
     /// </summary>
-    public class ClosestRounding : Rounding
+    [JetBrains.Annotations.PublicAPI] public class ClosestRounding : Rounding
     {
         public ClosestRounding(int precision) : base(precision, Type.Closest, 5) { }
         public ClosestRounding(int precision, int digit) : base(precision, Type.Closest, digit) { }
@@ -206,7 +188,7 @@ namespace QLNet.Math
     /// <summary>
     /// Ceiling truncation.
     /// </summary>
-    public class CeilingTruncation : Rounding
+    [JetBrains.Annotations.PublicAPI] public class CeilingTruncation : Rounding
     {
         public CeilingTruncation(int precision) : base(precision, Type.Ceiling, 5) { }
         public CeilingTruncation(int precision, int digit) : base(precision, Type.Ceiling, digit) { }
@@ -215,7 +197,7 @@ namespace QLNet.Math
     /// <summary>
     /// Floor truncation.
     /// </summary>
-    public class FloorTruncation : Rounding
+    [JetBrains.Annotations.PublicAPI] public class FloorTruncation : Rounding
     {
         public FloorTruncation(int precision) : base(precision, Type.Floor, 5) { }
         public FloorTruncation(int precision, int digit) : base(precision, Type.Floor, digit) { }

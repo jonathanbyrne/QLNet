@@ -43,27 +43,27 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_FdmLinearOp
+    [JetBrains.Annotations.PublicAPI] public class T_FdmLinearOp
     {
         [Fact]
         public void testFdmLinearOpLayout()
         {
 
-            int[] dims = new int[] { 5, 7, 8 };
-            List<int> dim = new List<int>(dims);
+            var dims = new int[] { 5, 7, 8 };
+            var dim = new List<int>(dims);
 
-            FdmLinearOpLayout layout = new FdmLinearOpLayout(dim);
+            var layout = new FdmLinearOpLayout(dim);
 
-            int calculatedDim = layout.dim().Count;
-            int expectedDim = dim.Count;
+            var calculatedDim = layout.dim().Count;
+            var expectedDim = dim.Count;
             if (calculatedDim != expectedDim)
             {
                 QAssert.Fail("index.dimensions() should be " + expectedDim
                              + ", but is " + calculatedDim);
             }
 
-            int calculatedSize = layout.size();
-            int expectedSize = dim.accumulate(0, 3, 1, (x, y) => x * y);
+            var calculatedSize = layout.size();
+            var expectedSize = dim.accumulate(0, 3, 1, (x, y) => x * y);
 
             if (calculatedSize != expectedSize)
             {
@@ -71,17 +71,17 @@ namespace QLNet.Tests
                              + expectedSize + ", but is " + calculatedSize);
             }
 
-            for (int k = 0; k < dim[0]; ++k)
+            for (var k = 0; k < dim[0]; ++k)
             {
-                for (int l = 0; l < dim[1]; ++l)
+                for (var l = 0; l < dim[1]; ++l)
                 {
-                    for (int m = 0; m < dim[2]; ++m)
+                    for (var m = 0; m < dim[2]; ++m)
                     {
                         List<int> tmp = new InitializedList<int>(3);
                         tmp[0] = k; tmp[1] = l; tmp[2] = m;
 
-                        int calculatedIndex = layout.index(tmp);
-                        int expectedIndex = k + l * dim[0] + m * dim[0] * dim[1];
+                        var calculatedIndex = layout.index(tmp);
+                        var expectedIndex = k + l * dim[0] + m * dim[0] * dim[1];
 
                         if (expectedIndex != layout.index(tmp))
                         {
@@ -92,20 +92,20 @@ namespace QLNet.Tests
                 }
             }
 
-            FdmLinearOpIterator iter = layout.begin();
+            var iter = layout.begin();
 
-            for (int m = 0; m < dim[2]; ++m)
+            for (var m = 0; m < dim[2]; ++m)
             {
-                for (int l = 0; l < dim[1]; ++l)
+                for (var l = 0; l < dim[1]; ++l)
                 {
-                    for (int k = 0; k < dim[0]; ++k, ++iter)
+                    for (var k = 0; k < dim[0]; ++k, ++iter)
                     {
-                        for (int n = 1; n < 4; ++n)
+                        for (var n = 1; n < 4; ++n)
                         {
-                            int nn = layout.neighbourhood(iter, 1, n);
-                            int calculatedIndex = k + m * dim[0] * dim[1]
-                                                  + (l < dim[1] - n ? l + n
-                                                     : dim[1] - 1 - (l + n - (dim[1] - 1))) * dim[0];
+                            var nn = layout.neighbourhood(iter, 1, n);
+                            var calculatedIndex = k + m * dim[0] * dim[1]
+                                                    + (l < dim[1] - n ? l + n
+                                                        : dim[1] - 1 - (l + n - (dim[1] - 1))) * dim[0];
 
                             if (nn != calculatedIndex)
                             {
@@ -114,11 +114,11 @@ namespace QLNet.Tests
                             }
                         }
 
-                        for (int n = 1; n < 7; ++n)
+                        for (var n = 1; n < 7; ++n)
                         {
-                            int nn = layout.neighbourhood(iter, 2, -n);
-                            int calculatedIndex = k + l * dim[0]
-                                                  + (m < n ? n - m : m - n) * dim[0] * dim[1];
+                            var nn = layout.neighbourhood(iter, 2, -n);
+                            var calculatedIndex = k + l * dim[0]
+                                                    + (m < n ? n - m : m - n) * dim[0] * dim[1];
                             if (nn != calculatedIndex)
                             {
                                 QAssert.Fail("next neighbourhood index is " + nn
@@ -133,22 +133,22 @@ namespace QLNet.Tests
         [Fact]
         public void testUniformGridMesher()
         {
-            int[] dims = new int[] { 5, 7, 8 };
-            List<int> dim = new List<int>(dims);
+            var dims = new int[] { 5, 7, 8 };
+            var dim = new List<int>(dims);
 
-            FdmLinearOpLayout layout = new FdmLinearOpLayout(dim);
-            List<Pair<double?, double?>> boundaries = new List<Pair<double?, double?>>(); ;
+            var layout = new FdmLinearOpLayout(dim);
+            var boundaries = new List<Pair<double?, double?>>(); ;
             boundaries.Add(new Pair<double?, double?>(-5, 10));
             boundaries.Add(new Pair<double?, double?>(5, 100));
             boundaries.Add(new Pair<double?, double?>(10, 20));
 
-            UniformGridMesher mesher = new UniformGridMesher(layout, boundaries);
+            var mesher = new UniformGridMesher(layout, boundaries);
 
-            double dx1 = 15.0 / (dim[0] - 1);
-            double dx2 = 95.0 / (dim[1] - 1);
-            double dx3 = 10.0 / (dim[2] - 1);
+            var dx1 = 15.0 / (dim[0] - 1);
+            var dx2 = 95.0 / (dim[1] - 1);
+            var dx3 = 10.0 / (dim[2] - 1);
 
-            double tol = 100 * Const.QL_EPSILON;
+            var tol = 100 * Const.QL_EPSILON;
             if (System.Math.Abs(dx1 - mesher.dminus(layout.begin(), 0).Value) > tol
                 || System.Math.Abs(dx1 - mesher.dplus(layout.begin(), 0).Value) > tol
                 || System.Math.Abs(dx2 - mesher.dminus(layout.begin(), 1).Value) > tol
@@ -163,39 +163,39 @@ namespace QLNet.Tests
         [Fact]
         public void testFirstDerivativesMapApply()
         {
-            int[] dims = new int[] { 400, 100, 50 };
-            List<int> dim = new List<int>(dims);
+            var dims = new int[] { 400, 100, 50 };
+            var dim = new List<int>(dims);
 
-            FdmLinearOpLayout index = new FdmLinearOpLayout(dim);
+            var index = new FdmLinearOpLayout(dim);
 
-            List<Pair<double?, double?>> boundaries = new List<Pair<double?, double?>>();
+            var boundaries = new List<Pair<double?, double?>>();
             boundaries.Add(new Pair<double?, double?>(-5, 5));
             boundaries.Add(new Pair<double?, double?>(0, 10));
             boundaries.Add(new Pair<double?, double?>(5, 15));
 
             FdmMesher mesher = new UniformGridMesher(index, boundaries);
 
-            FirstDerivativeOp map = new FirstDerivativeOp(2, mesher);
+            var map = new FirstDerivativeOp(2, mesher);
 
-            Vector r = new Vector(mesher.layout().size());
-            FdmLinearOpIterator endIter = index.end();
+            var r = new Vector(mesher.layout().size());
+            var endIter = index.end();
 
-            for (FdmLinearOpIterator iter = index.begin(); iter != endIter; ++iter)
+            for (var iter = index.begin(); iter != endIter; ++iter)
             {
                 r[iter.index()] = System.Math.Sin(mesher.location(iter, 0))
                                    + System.Math.Cos(mesher.location(iter, 2));
             }
 
-            Vector t = map.apply(r);
-            double dz = (boundaries[2].second.Value - boundaries[2].first.Value) / (dims[2] - 1);
-            for (FdmLinearOpIterator iter = index.begin(); iter != endIter; ++iter)
+            var t = map.apply(r);
+            var dz = (boundaries[2].second.Value - boundaries[2].first.Value) / (dims[2] - 1);
+            for (var iter = index.begin(); iter != endIter; ++iter)
             {
-                int z = iter.coordinates()[2];
+                var z = iter.coordinates()[2];
 
-                int z0 = z > 0 ? z - 1 : 1;
-                int z2 = z < dims[2] - 1 ? z + 1 : dims[2] - 2;
-                double lz0 = boundaries[2].first.Value + z0 * dz;
-                double lz2 = boundaries[2].first.Value + z2 * dz;
+                var z0 = z > 0 ? z - 1 : 1;
+                var z2 = z < dims[2] - 1 ? z + 1 : dims[2] - 2;
+                var lz0 = boundaries[2].first.Value + z0 * dz;
+                var lz2 = boundaries[2].first.Value + z2 * dz;
 
                 double expected;
                 if (z == 0)
@@ -213,7 +213,7 @@ namespace QLNet.Tests
                     expected = (System.Math.Cos(lz2) - System.Math.Cos(lz0)) / (2 * dz);
                 }
 
-                double calculated = t[iter.index()];
+                var calculated = t[iter.index()];
                 if (System.Math.Abs(calculated - expected) > 1e-10)
                 {
                     QAssert.Fail("first derivative calculation failed."
@@ -226,41 +226,41 @@ namespace QLNet.Tests
         [Fact]
         public void testSecondDerivativesMapApply()
         {
-            int[] dims = new int[] { 50, 50, 50 };
-            List<int> dim = new List<int>(dims);
+            var dims = new int[] { 50, 50, 50 };
+            var dim = new List<int>(dims);
 
-            FdmLinearOpLayout index = new FdmLinearOpLayout(dim);
+            var index = new FdmLinearOpLayout(dim);
 
-            List<Pair<double?, double?>> boundaries = new List<Pair<double?, double?>>();
+            var boundaries = new List<Pair<double?, double?>>();
             boundaries.Add(new Pair<double?, double?>(0, 0.5));
             boundaries.Add(new Pair<double?, double?>(0, 0.5));
             boundaries.Add(new Pair<double?, double?>(0, 0.5));
 
             FdmMesher mesher = new UniformGridMesher(index, boundaries);
 
-            Vector r = new Vector(mesher.layout().size());
-            FdmLinearOpIterator endIter = index.end();
+            var r = new Vector(mesher.layout().size());
+            var endIter = index.end();
 
-            for (FdmLinearOpIterator iter = index.begin(); iter != endIter; ++iter)
+            for (var iter = index.begin(); iter != endIter; ++iter)
             {
-                double x = mesher.location(iter, 0);
-                double y = mesher.location(iter, 1);
-                double z = mesher.location(iter, 2);
+                var x = mesher.location(iter, 0);
+                var y = mesher.location(iter, 1);
+                var z = mesher.location(iter, 2);
 
                 r[iter.index()] = System.Math.Sin(x) * System.Math.Cos(y) * System.Math.Exp(z);
             }
 
-            Vector t = new SecondDerivativeOp(0, mesher).apply(r);
+            var t = new SecondDerivativeOp(0, mesher).apply(r);
 
-            double tol = 5e-2;
-            for (FdmLinearOpIterator iter = index.begin(); iter != endIter; ++iter)
+            var tol = 5e-2;
+            for (var iter = index.begin(); iter != endIter; ++iter)
             {
-                int i = iter.index();
-                double x = mesher.location(iter, 0);
-                double y = mesher.location(iter, 1);
-                double z = mesher.location(iter, 2);
+                var i = iter.index();
+                var x = mesher.location(iter, 0);
+                var y = mesher.location(iter, 1);
+                var z = mesher.location(iter, 2);
 
-                double d = -System.Math.Sin(x) * System.Math.Cos(y) * System.Math.Exp(z);
+                var d = -System.Math.Sin(x) * System.Math.Cos(y) * System.Math.Exp(z);
                 if (iter.coordinates()[0] == 0 || iter.coordinates()[0] == dims[0] - 1)
                 {
                     d = 0;
@@ -274,14 +274,14 @@ namespace QLNet.Tests
             }
 
             t = new SecondDerivativeOp(1, mesher).apply(r);
-            for (FdmLinearOpIterator iter = index.begin(); iter != endIter; ++iter)
+            for (var iter = index.begin(); iter != endIter; ++iter)
             {
-                int i = iter.index();
-                double x = mesher.location(iter, 0);
-                double y = mesher.location(iter, 1);
-                double z = mesher.location(iter, 2);
+                var i = iter.index();
+                var x = mesher.location(iter, 0);
+                var y = mesher.location(iter, 1);
+                var z = mesher.location(iter, 2);
 
-                double d = -System.Math.Sin(x) * System.Math.Cos(y) * System.Math.Exp(z);
+                var d = -System.Math.Sin(x) * System.Math.Cos(y) * System.Math.Exp(z);
                 if (iter.coordinates()[1] == 0 || iter.coordinates()[1] == dims[1] - 1)
                 {
                     d = 0;
@@ -295,14 +295,14 @@ namespace QLNet.Tests
             }
 
             t = new SecondDerivativeOp(2, mesher).apply(r);
-            for (FdmLinearOpIterator iter = index.begin(); iter != endIter; ++iter)
+            for (var iter = index.begin(); iter != endIter; ++iter)
             {
-                int i = iter.index();
-                double x = mesher.location(iter, 0);
-                double y = mesher.location(iter, 1);
-                double z = mesher.location(iter, 2);
+                var i = iter.index();
+                var x = mesher.location(iter, 0);
+                var y = mesher.location(iter, 1);
+                var z = mesher.location(iter, 2);
 
-                double d = System.Math.Sin(x) * System.Math.Cos(y) * System.Math.Exp(z);
+                var d = System.Math.Sin(x) * System.Math.Cos(y) * System.Math.Exp(z);
                 if (iter.coordinates()[2] == 0 || iter.coordinates()[2] == dims[2] - 1)
                 {
                     d = 0;
@@ -329,40 +329,40 @@ namespace QLNet.Tests
             FdmMesher meshers =
                new FdmMesherComposite(mesherX, mesherY, mesherZ);
 
-            FdmLinearOpLayout layout = meshers.layout();
-            FdmLinearOpIterator endIter = layout.end();
+            var layout = meshers.layout();
+            var endIter = layout.end();
 
-            double tol = 1e-13;
-            for (int direction = 0; direction < 3; ++direction)
+            var tol = 1e-13;
+            for (var direction = 0; direction < 3; ++direction)
             {
 
-                SparseMatrix dfdx
+                var dfdx
                    = new FirstDerivativeOp(direction, meshers).toMatrix();
-                SparseMatrix d2fdx2
+                var d2fdx2
                    = new SecondDerivativeOp(direction, meshers).toMatrix();
 
-                Vector gridPoints = meshers.locations(direction);
+                var gridPoints = meshers.locations(direction);
 
-                for (FdmLinearOpIterator iter = layout.begin();
+                for (var iter = layout.begin();
                      iter != endIter; ++iter)
                 {
 
-                    int c = iter.coordinates()[direction];
-                    int index = iter.index();
-                    int indexM1 = layout.neighbourhood(iter, direction, -1);
-                    int indexP1 = layout.neighbourhood(iter, direction, +1);
+                    var c = iter.coordinates()[direction];
+                    var index = iter.index();
+                    var indexM1 = layout.neighbourhood(iter, direction, -1);
+                    var indexP1 = layout.neighbourhood(iter, direction, +1);
 
                     // test only if not on the boundary
                     if (c == 0)
                     {
-                        Vector twoPoints = new Vector(2);
+                        var twoPoints = new Vector(2);
                         twoPoints[0] = 0.0;
                         twoPoints[1] = gridPoints[indexP1] - gridPoints[index];
 
-                        Vector ndWeights1st = new NumericalDifferentiation(x => x, 1, twoPoints).weights();
+                        var ndWeights1st = new NumericalDifferentiation(x => x, 1, twoPoints).weights();
 
-                        double beta1 = dfdx[index, index];
-                        double gamma1 = dfdx[index, indexP1];
+                        var beta1 = dfdx[index, index];
+                        var gamma1 = dfdx[index, indexP1];
                         if (System.Math.Abs((beta1 - ndWeights1st[0]) / beta1) > tol
                             || System.Math.Abs((gamma1 - ndWeights1st[1]) / gamma1) > tol)
                         {
@@ -380,8 +380,8 @@ namespace QLNet.Tests
                         }
 
                         // free boundary condition by default
-                        double beta2 = d2fdx2[index, index];
-                        double gamma2 = d2fdx2[index, indexP1];
+                        var beta2 = d2fdx2[index, index];
+                        var gamma2 = d2fdx2[index, indexP1];
 
                         if (System.Math.Abs(beta2) > Const.QL_EPSILON
                             || System.Math.Abs(gamma2) > Const.QL_EPSILON)
@@ -397,14 +397,14 @@ namespace QLNet.Tests
                     }
                     else if (c == layout.dim()[direction] - 1)
                     {
-                        Vector twoPoints = new Vector(2);
+                        var twoPoints = new Vector(2);
                         twoPoints[0] = gridPoints[indexM1] - gridPoints[index];
                         twoPoints[1] = 0.0;
 
-                        Vector ndWeights1st = new NumericalDifferentiation(x => x, 1, twoPoints).weights();
+                        var ndWeights1st = new NumericalDifferentiation(x => x, 1, twoPoints).weights();
 
-                        double alpha1 = dfdx[index, indexM1];
-                        double beta1 = dfdx[index, index];
+                        var alpha1 = dfdx[index, indexM1];
+                        var beta1 = dfdx[index, index];
                         if (System.Math.Abs((alpha1 - ndWeights1st[0]) / alpha1) > tol
                             || System.Math.Abs((beta1 - ndWeights1st[1]) / beta1) > tol)
                         {
@@ -422,8 +422,8 @@ namespace QLNet.Tests
                         }
 
                         // free boundary condition by default
-                        double alpha2 = d2fdx2[index, indexM1];
-                        double beta2 = d2fdx2[index, index];
+                        var alpha2 = d2fdx2[index, indexM1];
+                        var beta2 = d2fdx2[index, index];
 
                         if (System.Math.Abs(alpha2) > Const.QL_EPSILON
                             || System.Math.Abs(beta2) > Const.QL_EPSILON)
@@ -439,16 +439,16 @@ namespace QLNet.Tests
                     }
                     else
                     {
-                        Vector threePoints = new Vector(3);
+                        var threePoints = new Vector(3);
                         threePoints[0] = gridPoints[indexM1] - gridPoints[index];
                         threePoints[1] = 0.0;
                         threePoints[2] = gridPoints[indexP1] - gridPoints[index];
 
-                        Vector ndWeights1st = new NumericalDifferentiation(x => x, 1, threePoints).weights();
+                        var ndWeights1st = new NumericalDifferentiation(x => x, 1, threePoints).weights();
 
-                        double alpha1 = dfdx[index, indexM1];
-                        double beta1 = dfdx[index, index];
-                        double gamma1 = dfdx[index, indexP1];
+                        var alpha1 = dfdx[index, indexM1];
+                        var beta1 = dfdx[index, index];
+                        var gamma1 = dfdx[index, indexP1];
 
                         if (System.Math.Abs((alpha1 - ndWeights1st[0]) / alpha1) > tol
                             || System.Math.Abs((beta1 - ndWeights1st[1]) / beta1) > tol
@@ -470,11 +470,11 @@ namespace QLNet.Tests
                                          + (gamma1 - ndWeights1st[2]));
                         }
 
-                        Vector ndWeights2nd = new NumericalDifferentiation(x => x, 2, threePoints).weights();
+                        var ndWeights2nd = new NumericalDifferentiation(x => x, 2, threePoints).weights();
 
-                        double alpha2 = d2fdx2[index, indexM1];
-                        double beta2 = d2fdx2[index, index];
-                        double gamma2 = d2fdx2[index, indexP1];
+                        var alpha2 = d2fdx2[index, indexM1];
+                        var beta2 = d2fdx2[index, index];
+                        var gamma2 = d2fdx2[index, indexP1];
                         if (System.Math.Abs((alpha2 - ndWeights2nd[0]) / alpha2) > tol
                             || System.Math.Abs((beta2 - ndWeights2nd[1]) / beta2) > tol
                             || System.Math.Abs((gamma2 - ndWeights2nd[2]) / gamma2) > tol)
@@ -502,42 +502,42 @@ namespace QLNet.Tests
         [Fact]
         public void testSecondOrderMixedDerivativesMapApply()
         {
-            int[] dims = new int[] { 50, 50, 50 };
-            List<int> dim = new List<int>(dims);
+            var dims = new int[] { 50, 50, 50 };
+            var dim = new List<int>(dims);
 
-            FdmLinearOpLayout index = new FdmLinearOpLayout(dim);
+            var index = new FdmLinearOpLayout(dim);
 
-            List<Pair<double?, double?>> boundaries = new List<Pair<double?, double?>>();
+            var boundaries = new List<Pair<double?, double?>>();
             boundaries.Add(new Pair<double?, double?>(0, 0.5));
             boundaries.Add(new Pair<double?, double?>(0, 0.5));
             boundaries.Add(new Pair<double?, double?>(0, 0.5));
 
             FdmMesher mesher = new UniformGridMesher(index, boundaries);
 
-            Vector r = new Vector(mesher.layout().size());
-            FdmLinearOpIterator endIter = index.end();
+            var r = new Vector(mesher.layout().size());
+            var endIter = index.end();
 
-            for (FdmLinearOpIterator iter = index.begin(); iter != endIter; ++iter)
+            for (var iter = index.begin(); iter != endIter; ++iter)
             {
-                double x = mesher.location(iter, 0);
-                double y = mesher.location(iter, 1);
-                double z = mesher.location(iter, 2);
+                var x = mesher.location(iter, 0);
+                var y = mesher.location(iter, 1);
+                var z = mesher.location(iter, 2);
 
                 r[iter.index()] = System.Math.Sin(x) * System.Math.Cos(y) * System.Math.Exp(z);
             }
 
-            Vector t = new SecondOrderMixedDerivativeOp(0, 1, mesher).apply(r);
-            Vector u = new SecondOrderMixedDerivativeOp(1, 0, mesher).apply(r);
+            var t = new SecondOrderMixedDerivativeOp(0, 1, mesher).apply(r);
+            var u = new SecondOrderMixedDerivativeOp(1, 0, mesher).apply(r);
 
-            double tol = 5e-2;
-            for (FdmLinearOpIterator iter = index.begin(); iter != endIter; ++iter)
+            var tol = 5e-2;
+            for (var iter = index.begin(); iter != endIter; ++iter)
             {
-                int i = iter.index();
-                double x = mesher.location(iter, 0);
-                double y = mesher.location(iter, 1);
-                double z = mesher.location(iter, 2);
+                var i = iter.index();
+                var x = mesher.location(iter, 0);
+                var y = mesher.location(iter, 1);
+                var z = mesher.location(iter, 2);
 
-                double d = -System.Math.Cos(x) * System.Math.Sin(y) * System.Math.Exp(z);
+                var d = -System.Math.Cos(x) * System.Math.Sin(y) * System.Math.Exp(z);
 
                 if (System.Math.Abs(d - t[i]) > tol)
                 {
@@ -555,14 +555,14 @@ namespace QLNet.Tests
 
             t = new SecondOrderMixedDerivativeOp(0, 2, mesher).apply(r);
             u = new SecondOrderMixedDerivativeOp(2, 0, mesher).apply(r);
-            for (FdmLinearOpIterator iter = index.begin(); iter != endIter; ++iter)
+            for (var iter = index.begin(); iter != endIter; ++iter)
             {
-                int i = iter.index();
-                double x = mesher.location(iter, 0);
-                double y = mesher.location(iter, 1);
-                double z = mesher.location(iter, 2);
+                var i = iter.index();
+                var x = mesher.location(iter, 0);
+                var y = mesher.location(iter, 1);
+                var z = mesher.location(iter, 2);
 
-                double d = System.Math.Cos(x) * System.Math.Cos(y) * System.Math.Exp(z);
+                var d = System.Math.Cos(x) * System.Math.Cos(y) * System.Math.Exp(z);
 
                 if (System.Math.Abs(d - t[i]) > tol)
                 {
@@ -580,14 +580,14 @@ namespace QLNet.Tests
 
             t = new SecondOrderMixedDerivativeOp(1, 2, mesher).apply(r);
             u = new SecondOrderMixedDerivativeOp(2, 1, mesher).apply(r);
-            for (FdmLinearOpIterator iter = index.begin(); iter != endIter; ++iter)
+            for (var iter = index.begin(); iter != endIter; ++iter)
             {
-                int i = iter.index();
-                double x = mesher.location(iter, 0);
-                double y = mesher.location(iter, 1);
-                double z = mesher.location(iter, 2);
+                var i = iter.index();
+                var x = mesher.location(iter, 0);
+                var y = mesher.location(iter, 1);
+                var z = mesher.location(iter, 2);
 
-                double d = -System.Math.Sin(x) * System.Math.Sin(y) * System.Math.Exp(z);
+                var d = -System.Math.Sin(x) * System.Math.Sin(y) * System.Math.Exp(z);
 
                 if (System.Math.Abs(d - t[i]) > tol)
                 {
@@ -609,29 +609,29 @@ namespace QLNet.Tests
         [Fact]
         public void testTripleBandMapSolve()
         {
-            int[] dims = new int[] { 100, 400 };
-            List<int> dim = new List<int>(dims);
+            var dims = new int[] { 100, 400 };
+            var dim = new List<int>(dims);
 
-            FdmLinearOpLayout layout = new FdmLinearOpLayout(dim);
+            var layout = new FdmLinearOpLayout(dim);
 
-            List<Pair<double?, double?>> boundaries = new List<Pair<double?, double?>>();
+            var boundaries = new List<Pair<double?, double?>>();
             boundaries.Add(new Pair<double?, double?>(0, 1.0));
             boundaries.Add(new Pair<double?, double?>(0, 1.0));
 
             FdmMesher mesher = new UniformGridMesher(layout, boundaries);
 
-            FirstDerivativeOp dy = new FirstDerivativeOp(1, mesher);
+            var dy = new FirstDerivativeOp(1, mesher);
             dy.axpyb(new Vector(1, 2.0), dy, dy, new Vector(1, 1.0));
 
             // check copy constructor
-            FirstDerivativeOp copyOfDy = new FirstDerivativeOp(dy);
+            var copyOfDy = new FirstDerivativeOp(dy);
 
-            Vector u = new Vector(layout.size());
-            for (int i = 0; i < layout.size(); ++i)
+            var u = new Vector(layout.size());
+            for (var i = 0; i < layout.size(); ++i)
                 u[i] = System.Math.Sin(0.1 * i) + System.Math.Cos(0.35 * i);
 
-            Vector t = new Vector(dy.solve_splitting(copyOfDy.apply(u), 1.0, 0.0));
-            for (int i = 0; i < u.size(); ++i)
+            var t = new Vector(dy.solve_splitting(copyOfDy.apply(u), 1.0, 0.0));
+            for (var i = 0; i < u.size(); ++i)
             {
                 if (System.Math.Abs(u[i] - t[i]) > 1e-6)
                 {
@@ -641,15 +641,15 @@ namespace QLNet.Tests
                 }
             }
 
-            FirstDerivativeOp dx = new FirstDerivativeOp(0, mesher);
+            var dx = new FirstDerivativeOp(0, mesher);
             dx.axpyb(new Vector(), dx, dx, new Vector(1, 1.0));
 
-            FirstDerivativeOp copyOfDx = new FirstDerivativeOp(0, mesher);
+            var copyOfDx = new FirstDerivativeOp(0, mesher);
             // check assignment
             copyOfDx = dx;
 
             t = dx.solve_splitting(copyOfDx.apply(u), 1.0, 0.0);
-            for (int i = 0; i < u.size(); ++i)
+            for (var i = 0; i < u.size(); ++i)
             {
                 if (System.Math.Abs(u[i] - t[i]) > 1e-6)
                 {
@@ -659,15 +659,15 @@ namespace QLNet.Tests
                 }
             }
 
-            SecondDerivativeOp dxx = new SecondDerivativeOp(0, mesher);
+            var dxx = new SecondDerivativeOp(0, mesher);
             dxx.axpyb(new Vector(1, 0.5), dxx, dx, new Vector(1, 1.0));
 
             // check of copy constructor
-            SecondDerivativeOp copyOfDxx = new SecondDerivativeOp(dxx);
+            var copyOfDxx = new SecondDerivativeOp(dxx);
 
             t = dxx.solve_splitting(copyOfDxx.apply(u), 1.0, 0.0);
 
-            for (int i = 0; i < u.size(); ++i)
+            for (var i = 0; i < u.size(); ++i)
             {
                 if (System.Math.Abs(u[i] - t[i]) > 1e-6)
                 {
@@ -683,7 +683,7 @@ namespace QLNet.Tests
 
             t = dxx.solve_splitting(copyOfDxx.apply(u), 1.0, 0.0);
 
-            for (int i = 0; i < u.size(); ++i)
+            for (var i = 0; i < u.size(); ++i)
             {
                 if (System.Math.Abs(u[i] - t[i]) > 1e-6)
                 {
@@ -697,24 +697,24 @@ namespace QLNet.Tests
         [Fact]
         public void testCrankNicolsonWithDamping()
         {
-            SavedSettings backup = new SavedSettings();
+            var backup = new SavedSettings();
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(100.0);
-            YieldTermStructure qTS = Utilities.flatRate(today, 0.06, dc);
-            YieldTermStructure rTS = Utilities.flatRate(today, 0.06, dc);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, 0.35, dc);
+            var spot = new SimpleQuote(100.0);
+            var qTS = Utilities.flatRate(today, 0.06, dc);
+            var rTS = Utilities.flatRate(today, 0.06, dc);
+            var volTS = Utilities.flatVol(today, 0.35, dc);
 
             StrikedTypePayoff payoff =
                new CashOrNothingPayoff(QLNet.Option.Type.Put, 100, 10.0);
 
-            double maturity = 0.75;
-            Date exDate = today + Convert.ToInt32(maturity * 360 + 0.5);
+            var maturity = 0.75;
+            var exDate = today + Convert.ToInt32(maturity * 360 + 0.5);
             Exercise exercise = new EuropeanExercise(exDate);
 
-            BlackScholesMertonProcess process = new
+            var process = new
             BlackScholesMertonProcess(new Handle<Quote>(spot),
                                       new Handle<YieldTermStructure>(qTS),
                                       new Handle<YieldTermStructure>(rTS),
@@ -722,16 +722,16 @@ namespace QLNet.Tests
             IPricingEngine engine =
                new AnalyticEuropeanEngine(process);
 
-            VanillaOption opt = new VanillaOption(payoff, exercise);
+            var opt = new VanillaOption(payoff, exercise);
             opt.setPricingEngine(engine);
-            double expectedPV = opt.NPV();
-            double expectedGamma = opt.gamma();
+            var expectedPV = opt.NPV();
+            var expectedGamma = opt.gamma();
 
             // fd pricing using implicit damping steps and Crank Nicolson
             int csSteps = 25, dampingSteps = 3, xGrid = 400;
             List<int> dim = new InitializedList<int>(1, xGrid);
 
-            FdmLinearOpLayout layout = new FdmLinearOpLayout(dim);
+            var layout = new FdmLinearOpLayout(dim);
             Fdm1dMesher equityMesher =
                new FdmBlackScholesMesher(
                dim[0], process, maturity, payoff.strike(),
@@ -741,36 +741,36 @@ namespace QLNet.Tests
             FdmMesher mesher =
                new FdmMesherComposite(equityMesher);
 
-            FdmBlackScholesOp map =
+            var map =
                new FdmBlackScholesOp(mesher, process, payoff.strike());
 
             FdmInnerValueCalculator calculator =
                new FdmLogInnerValue(payoff, mesher, 0);
 
             object rhs = new Vector(layout.size());
-            Vector x = new Vector(layout.size());
-            FdmLinearOpIterator endIter = layout.end();
+            var x = new Vector(layout.size());
+            var endIter = layout.end();
 
-            for (FdmLinearOpIterator iter = layout.begin(); iter != endIter;
+            for (var iter = layout.begin(); iter != endIter;
                  ++iter)
             {
                 (rhs as Vector)[iter.index()] = calculator.avgInnerValue(iter, maturity);
                 x[iter.index()] = mesher.location(iter, 0);
             }
 
-            FdmBackwardSolver solver = new FdmBackwardSolver(map, new FdmBoundaryConditionSet(),
+            var solver = new FdmBackwardSolver(map, new FdmBoundaryConditionSet(),
                                                              new FdmStepConditionComposite(),
                                                              new FdmSchemeDesc().Douglas());
             solver.rollback(ref rhs, maturity, 0.0, csSteps, dampingSteps);
 
-            MonotonicCubicNaturalSpline spline = new MonotonicCubicNaturalSpline(x, x.Count, rhs as Vector);
+            var spline = new MonotonicCubicNaturalSpline(x, x.Count, rhs as Vector);
 
-            double s = spot.value();
-            double calculatedPV = spline.value(System.Math.Log(s));
-            double calculatedGamma = (spline.secondDerivative(System.Math.Log(s))
-                                      - spline.derivative(System.Math.Log(s))) / (s * s);
+            var s = spot.value();
+            var calculatedPV = spline.value(System.Math.Log(s));
+            var calculatedGamma = (spline.secondDerivative(System.Math.Log(s))
+                                   - spline.derivative(System.Math.Log(s))) / (s * s);
 
-            double relTol = 2e-3;
+            var relTol = 2e-3;
 
             if (System.Math.Abs(calculatedPV - expectedPV) > relTol * expectedPV)
             {
@@ -791,25 +791,25 @@ namespace QLNet.Tests
         [Fact]
         public void testSpareMatrixReference()
         {
-            int rows = 10;
-            int columns = 10;
-            int nMatrices = 5;
-            int nElements = 50;
+            var rows = 10;
+            var columns = 10;
+            var nMatrices = 5;
+            var nElements = 50;
 
-            MersenneTwisterUniformRng rng = new MersenneTwisterUniformRng(1234);
+            var rng = new MersenneTwisterUniformRng(1234);
 
-            SparseMatrix expected = new SparseMatrix(rows, columns);
-            List<SparseMatrix> refs = new List<SparseMatrix>();
+            var expected = new SparseMatrix(rows, columns);
+            var refs = new List<SparseMatrix>();
 
-            for (int i = 0; i < nMatrices; ++i)
+            for (var i = 0; i < nMatrices; ++i)
             {
-                SparseMatrix m = new SparseMatrix(rows, columns);
-                for (int j = 0; j < nElements; ++j)
+                var m = new SparseMatrix(rows, columns);
+                for (var j = 0; j < nElements; ++j)
                 {
-                    int row = Convert.ToInt32(rng.next().value * rows);
-                    int column = Convert.ToInt32(rng.next().value * columns);
+                    var row = Convert.ToInt32(rng.next().value * rows);
+                    var column = Convert.ToInt32(rng.next().value * columns);
 
-                    double value = rng.next().value;
+                    var value = rng.next().value;
                     m[row, column] += value;
                     expected[row, column] += value;
                 }
@@ -817,11 +817,11 @@ namespace QLNet.Tests
                 refs.Add(m);
             }
 
-            SparseMatrix calculated = refs.accumulate(1, refs.Count, refs[0], (a, b) => a + b);
+            var calculated = refs.accumulate(1, refs.Count, refs[0], (a, b) => a + b);
 
-            for (int i = 0; i < rows; ++i)
+            for (var i = 0; i < rows; ++i)
             {
-                for (int j = 0; j < columns; ++j)
+                for (var j = 0; j < columns; ++j)
                 {
                     if (System.Math.Abs(calculated[i, j] - expected[i, j]) > 100 * Const.QL_EPSILON)
                     {
@@ -837,34 +837,34 @@ namespace QLNet.Tests
         [Fact]
         public void testFdmMesherIntegral()
         {
-            FdmMesherComposite mesher =
+            var mesher =
                new FdmMesherComposite(
                new Concentrating1dMesher(-1, 1.6, 21, new Pair<double?, double?>(0, 0.1)),
                new Concentrating1dMesher(-3, 4, 11, new Pair<double?, double?>(1, 0.01)),
                new Concentrating1dMesher(-2, 1, 5, new Pair<double?, double?>(0.5, 0.1)));
 
-            FdmLinearOpLayout layout = mesher.layout();
+            var layout = mesher.layout();
 
-            Vector f = new Vector(mesher.layout().size());
-            for (FdmLinearOpIterator iter = layout.begin();
+            var f = new Vector(mesher.layout().size());
+            for (var iter = layout.begin();
                  iter != layout.end(); ++iter)
             {
-                double x = mesher.location(iter, 0);
-                double y = mesher.location(iter, 1);
-                double z = mesher.location(iter, 2);
+                var x = mesher.location(iter, 0);
+                var y = mesher.location(iter, 1);
+                var z = mesher.location(iter, 2);
 
                 f[iter.index()] = x * x + 3 * y * y - 3 * z * z
                                   + 2 * x * y - x * z - 3 * y * z
                                   + 4 * x - y - 3 * z + 2;
             }
 
-            double tol = 1e-12;
+            var tol = 1e-12;
 
             // Simpson's rule has to be exact here, Mathematica code gives
             // Integrate[x*x+3*y*y-3*z*z+2*x*y-x*z-3*y*z+4*x-y-3*z+2,
             //           {x, -1, 16/10}, {y, -3, 4}, {z, -2, 1}]
-            double expectedSimpson = 876.512;
-            double calculatedSimpson
+            var expectedSimpson = 876.512;
+            var calculatedSimpson
                = new FdmMesherIntegral(mesher, new DiscreteSimpsonIntegral().value).integrate(f);
 
             if (System.Math.Abs(calculatedSimpson - expectedSimpson) > tol * expectedSimpson)
@@ -874,8 +874,8 @@ namespace QLNet.Tests
                              + "\n    expected:   " + expectedSimpson);
             }
 
-            double expectedTrapezoid = 917.0148209153263;
-            double calculatedTrapezoid
+            var expectedTrapezoid = 917.0148209153263;
+            var calculatedTrapezoid
                = new FdmMesherIntegral(mesher, new DiscreteTrapezoidIntegral().value).integrate(f);
 
             if (System.Math.Abs(calculatedTrapezoid - expectedTrapezoid)

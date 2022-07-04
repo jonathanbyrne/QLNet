@@ -36,7 +36,7 @@ namespace QLNet.Termstructures.Yield
         assumed to be equal to the settlement date of the swap itself.
                 \ingroup termstructures
     */
-    public class BasisSwapHelper : RelativeDateRateHelper
+    [JetBrains.Annotations.PublicAPI] public class BasisSwapHelper : RelativeDateRateHelper
     {
         public BasisSwapHelper(Handle<Quote> spreadQuote,
                                int settlementDays,
@@ -60,8 +60,8 @@ namespace QLNet.Termstructures.Yield
             eom_ = eom;
             discountHandle_ = discount ?? new Handle<YieldTermStructure>();
 
-            bool shortIndexHasCurve = !shortIndex_.forwardingTermStructure().empty();
-            bool longIndexHasCurve = !longIndex_.forwardingTermStructure().empty();
+            var shortIndexHasCurve = !shortIndex_.forwardingTermStructure().empty();
+            var longIndexHasCurve = !longIndex_.forwardingTermStructure().empty();
 
             Utils.QL_REQUIRE(!(shortIndexHasCurve && longIndexHasCurve), () => "Have all curves, nothing to solve for.");
 
@@ -102,16 +102,16 @@ namespace QLNet.Termstructures.Yield
         //@}
         //! \name inspectors
         //@{
-        public BasisSwap swap() { return swap_; }
+        public BasisSwap swap() => swap_;
         //@}
 
         protected override void initializeDates()
         {
-            Date settlementDate = settlementCalendar_.advance(evaluationDate_, settlementDays_, TimeUnit.Days);
-            Date maturityDate = settlementDate + swapTenor_;
+            var settlementDate = settlementCalendar_.advance(evaluationDate_, settlementDays_, TimeUnit.Days);
+            var maturityDate = settlementDate + swapTenor_;
 
-            Period shortLegTenor = shortIndex_.tenor();
-            Schedule shortLegSchedule = new MakeSchedule()
+            var shortLegTenor = shortIndex_.tenor();
+            var shortLegSchedule = new MakeSchedule()
             .from(settlementDate)
             .to(maturityDate)
             .withTenor(shortLegTenor)
@@ -120,8 +120,8 @@ namespace QLNet.Termstructures.Yield
             .endOfMonth(eom_)
             .value();
 
-            Period longLegTenor = longIndex_.tenor();
-            Schedule longLegSchedule = new MakeSchedule()
+            var longLegTenor = longIndex_.tenor();
+            var longLegSchedule = new MakeSchedule()
             .from(settlementDate)
             .to(maturityDate)
             .withTenor(longLegTenor)
@@ -130,9 +130,9 @@ namespace QLNet.Termstructures.Yield
             .endOfMonth(eom_)
             .value();
 
-            double nominal = 1.0;
-            double shortLegSpread = 0.0;
-            double longLegSpread = 0.0;
+            var nominal = 1.0;
+            var shortLegSpread = 0.0;
+            var longLegSpread = 0.0;
 
             if (spreadOnShort_)
             {

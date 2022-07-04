@@ -37,8 +37,8 @@ namespace QLNet.Methods.montecarlo
 
         public static List<Func<double, double>> pathBasisSystem(int order, PolynomType polynomType)
         {
-            List<Func<double, double>> ret = new List<Func<double, double>>();
-            for (int i = 0; i <= order; ++i)
+            var ret = new List<Func<double, double>>();
+            for (var i = 0; i <= order; ++i)
             {
                 switch (polynomType)
                 {
@@ -64,7 +64,7 @@ namespace QLNet.Methods.montecarlo
                         ret.Add((x) => new GaussChebyshev2ndPolynomial().weightedValue(i, x));
                         break;
                     default:
-                        Utils.QL_FAIL("unknown regression type");
+                        Utils.QL_FAIL("unknown regression ExerciseType");
                         break;
                 }
             }
@@ -75,14 +75,14 @@ namespace QLNet.Methods.montecarlo
         public static List<Func<Vector, double>> multiPathBasisSystem(int dim, int order, PolynomType polynomType)
         {
 
-            List<Func<double, double>> b = pathBasisSystem(order, polynomType);
+            var b = pathBasisSystem(order, polynomType);
 
-            List<Func<Vector, double>> ret = new List<Func<Vector, double>>();
+            var ret = new List<Func<Vector, double>>();
             ret.Add((xx) => 1.0);
 
-            for (int i = 1; i <= order; ++i)
+            for (var i = 1; i <= order; ++i)
             {
-                List<Func<Vector, double>> a = w(dim, i, polynomType, b);
+                var a = w(dim, i, polynomType, b);
 
                 foreach (var iter in a)
                 {
@@ -96,9 +96,9 @@ namespace QLNet.Methods.montecarlo
             List<bool> rm = new InitializedList<bool>(ret.Count, true);
 
             Vector x = new Vector(dim), v = new Vector(ret.Count);
-            MersenneTwisterUniformRng rng = new MersenneTwisterUniformRng(1234UL);
+            var rng = new MersenneTwisterUniformRng(1234UL);
 
-            for (int i = 0; i < 10; ++i)
+            for (var i = 0; i < 10; ++i)
             {
                 int k;
 
@@ -125,8 +125,8 @@ namespace QLNet.Methods.montecarlo
                 }
             }
 
-            int iter2 = 0;
-            for (int i = 0; i < rm.Count; ++i)
+            var iter2 = 0;
+            for (var i = 0; i < rm.Count; ++i)
             {
                 if (rm[i])
                 {
@@ -144,13 +144,13 @@ namespace QLNet.Methods.montecarlo
         private static List<Func<Vector, double>> w(int dim, int order, PolynomType polynomType, List<Func<double, double>> b)
         {
 
-            List<Func<Vector, double>> ret = new List<Func<Vector, double>>();
+            var ret = new List<Func<Vector, double>>();
 
-            for (int i = order; i >= 1; --i)
+            for (var i = order; i >= 1; --i)
             {
-                List<Func<Vector, double>> left = w(dim, order - i, polynomType, b);
+                var left = w(dim, order - i, polynomType, b);
 
-                for (int j = 0; j < dim; ++j)
+                for (var j = 0; j < dim; ++j)
                 {
                     Func<Vector, double> a = xx => b[i](xx[j]);
 
@@ -166,7 +166,7 @@ namespace QLNet.Methods.montecarlo
     }
 
 
-    public class MonomialFct : IValue
+    [JetBrains.Annotations.PublicAPI] public class MonomialFct : IValue
     {
         private int order_;
 
@@ -177,8 +177,8 @@ namespace QLNet.Methods.montecarlo
 
         public double value(double x)
         {
-            double ret = 1.0;
-            for (int i = 0; i < order_; ++i)
+            var ret = 1.0;
+            for (var i = 0; i < order_; ++i)
             {
                 ret *= x;
             }

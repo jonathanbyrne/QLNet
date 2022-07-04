@@ -24,5 +24,5 @@ namespace QLNet.Math.Interpolations
     // data structures
 
     // Multi-cubic spline
-    public class SplineGrid : InitializedList<List<double>> { }
+    [JetBrains.Annotations.PublicAPI] public class SplineGrid : InitializedList<List<double>> { }
 }

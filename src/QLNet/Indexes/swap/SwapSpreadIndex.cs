@@ -21,7 +21,7 @@ namespace QLNet.Indexes.swap
     /// <summary>
     /// class for swap-rate spread indexes
     /// </summary>
-    public class SwapSpreadIndex : InterestRateIndex
+    [JetBrains.Annotations.PublicAPI] public class SwapSpreadIndex : InterestRateIndex
     {
         public SwapSpreadIndex(string familyName,
                                SwapIndex swapIndex1,
@@ -89,24 +89,24 @@ namespace QLNet.Indexes.swap
             return null;
         }
 
-        public override double forecastFixing(Date fixingDate)
-        {
-            return gearing1_ * swapIndex1_.fixing(fixingDate, false) +
-                   gearing2_ * swapIndex2_.fixing(fixingDate, false);
-        }
+        public override double forecastFixing(Date fixingDate) =>
+            gearing1_ * swapIndex1_.fixing(fixingDate, false) +
+            gearing2_ * swapIndex2_.fixing(fixingDate, false);
 
-        public override double? pastFixing(Date fixingDate)
-        {
-            return gearing1_ * swapIndex1_.pastFixing(fixingDate) +
-                   gearing2_ * swapIndex2_.pastFixing(fixingDate);
-        }
-        public override bool allowsNativeFixings() { return false; }
+        public override double? pastFixing(Date fixingDate) =>
+            gearing1_ * swapIndex1_.pastFixing(fixingDate) +
+            gearing2_ * swapIndex2_.pastFixing(fixingDate);
+
+        public override bool allowsNativeFixings() => false;
 
         //! \name Inspectors
-        public SwapIndex swapIndex1() { return swapIndex1_; }
-        public SwapIndex swapIndex2() { return swapIndex2_; }
-        public double gearing1() { return gearing1_; }
-        public double gearing2() { return gearing2_; }
+        public SwapIndex swapIndex1() => swapIndex1_;
+
+        public SwapIndex swapIndex2() => swapIndex2_;
+
+        public double gearing1() => gearing1_;
+
+        public double gearing2() => gearing2_;
 
         private SwapIndex swapIndex1_, swapIndex2_;
         private double gearing1_, gearing2_;

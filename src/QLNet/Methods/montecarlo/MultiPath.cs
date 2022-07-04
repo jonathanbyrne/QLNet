@@ -27,7 +27,7 @@ namespace QLNet.Methods.montecarlo
 
         \ingroup mcarlo
     */
-    public class MultiPath : IPath
+    [JetBrains.Annotations.PublicAPI] public class MultiPath : IPath
     {
         private List<Path> multiPath_;
 
@@ -35,7 +35,7 @@ namespace QLNet.Methods.montecarlo
         public MultiPath(int nAsset, TimeGrid timeGrid)
         {
             multiPath_ = new List<Path>(nAsset);
-            for (int i = 0; i < nAsset; i++)
+            for (var i = 0; i < nAsset; i++)
                 multiPath_.Add(new Path(timeGrid));
             Utils.QL_REQUIRE(nAsset > 0, () => "number of asset must be positive");
         }
@@ -46,17 +46,21 @@ namespace QLNet.Methods.montecarlo
         }
 
         // inspectors
-        public int assetNumber() { return multiPath_.Count; }
-        public int length() { return pathSize(); }
-        public int pathSize() { return multiPath_[0].length(); }
+        public int assetNumber() => multiPath_.Count;
+
+        public int length() => pathSize();
+
+        public int pathSize() => multiPath_[0].length();
 
         // read/write access to components
-        public Path this[int j] { get { return multiPath_[j]; } set { multiPath_[j] = value; } }
+        public Path this[int j] { get => multiPath_[j];
+            set => multiPath_[j] = value;
+        }
 
         // ICloneable interface
         public object Clone()
         {
-            MultiPath temp = (MultiPath)MemberwiseClone();
+            var temp = (MultiPath)MemberwiseClone();
             temp.multiPath_ = new List<Path>(multiPath_);
             return temp;
         }

@@ -39,8 +39,8 @@ namespace QLNet.Tests
 
             public Vector state(MultiPath path, int t)
             {
-                Vector tmp = new Vector(path.assetNumber());
-                for (int i = 0; i < path.assetNumber(); ++i)
+                var tmp = new Vector(path.assetNumber());
+                for (var i = 0; i < path.assetNumber(); ++i)
                 {
                     tmp[i] = path[i][t];
                 }
@@ -49,14 +49,11 @@ namespace QLNet.Tests
 
             public double value(MultiPath path, int t)
             {
-                Vector tmp = state(path, t);
+                var tmp = state(path, t);
                 return payoff_.value(tmp.Max());
             }
 
-            public List<Func<Vector, double>> basisSystem()
-            {
-                return LsmBasisSystem.multiPathBasisSystem(2, 2, LsmBasisSystem.PolynomType.Monomial);
-            }
+            public List<Func<Vector, double>> basisSystem() => LsmBasisSystem.multiPathBasisSystem(2, 2, LsmBasisSystem.PolynomType.Monomial);
         }
 
         //class MCAmericanMaxEngine<RNG> : MCLongstaffSchwartzEngine<VanillaOption.Engine, MultiVariate, RNG>

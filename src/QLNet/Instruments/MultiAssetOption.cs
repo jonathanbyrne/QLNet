@@ -20,9 +20,9 @@
 namespace QLNet.Instruments
 {
     //! Base class for options on multiple assets
-    public class MultiAssetOption : Option
+    [JetBrains.Annotations.PublicAPI] public class MultiAssetOption : Option
     {
-        public class Engine : GenericEngine<Arguments, Results>
+        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results>
         { }
 
         public new class Results : Instrument.Results
@@ -44,10 +44,7 @@ namespace QLNet.Instruments
         { }
 
         // Instrument interface
-        public override bool isExpired()
-        {
-            return new simple_event(exercise_.lastDate()).hasOccurred();
-        }
+        public override bool isExpired() => new simple_event(exercise_.lastDate()).hasOccurred();
 
         // greeks
         public double delta()
@@ -94,8 +91,8 @@ namespace QLNet.Instruments
 
         public override void setupArguments(IPricingEngineArguments args)
         {
-            Arguments arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong argument type");
+            var arguments = args as Arguments;
+            Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
 
             arguments.payoff = payoff_;
             arguments.exercise = exercise_;
@@ -105,7 +102,7 @@ namespace QLNet.Instruments
         {
             base.fetchResults(r);
 
-            Results results = r as Results;
+            var results = r as Results;
             Utils.QL_REQUIRE(results != null, () => "no greeks returned from pricing engine");
 
             delta_ = results.delta;

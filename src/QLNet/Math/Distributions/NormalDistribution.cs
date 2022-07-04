@@ -30,7 +30,7 @@ namespace QLNet.Math.Distributions
               CumulativeNormalDistribution and InverseCumulativeNormal
               classes.
     */
-    public class NormalDistribution : IValue
+    [JetBrains.Annotations.PublicAPI] public class NormalDistribution : IValue
     {
         private double average_, sigma_, normalizationFactor_, denominator_, derNormalizationFactor_;
 
@@ -50,17 +50,14 @@ namespace QLNet.Math.Distributions
         // function
         public double value(double x)
         {
-            double deltax = x - average_;
-            double exponent = -(deltax * deltax) / denominator_;
+            var deltax = x - average_;
+            var exponent = -(deltax * deltax) / denominator_;
             // debian alpha had some strange problem in the very-low range
             return exponent <= -690.0 ? 0.0 :  // exp(x) < 1.0e-300 anyway
                    normalizationFactor_ * System.Math.Exp(exponent);
         }
 
-        public double derivative(double x)
-        {
-            return value(x) * (average_ - x) / derNormalizationFactor_;
-        }
+        public double derivative(double x) => value(x) * (average_ - x) / derNormalizationFactor_;
     }
 
 
@@ -73,7 +70,7 @@ namespace QLNet.Math.Distributions
         Handbook of Mathematical Functions,
         Dover Publications, New York (1972)
     */
-    public class CumulativeNormalDistribution : IValue
+    [JetBrains.Annotations.PublicAPI] public class CumulativeNormalDistribution : IValue
     {
         private double average_, sigma_;
         private NormalDistribution gaussian_ = new NormalDistribution();
@@ -92,7 +89,7 @@ namespace QLNet.Math.Distributions
         {
             z = (z - average_) / sigma_;
 
-            double result = 0.5 * (1.0 + erf(z * Const.M_SQRT_2));
+            var result = 0.5 * (1.0 + erf(z * Const.M_SQRT_2));
             if (result <= 1e-8)   //todo: investigate the threshold level
             {
                 // Asymptotic expansion for very negative z following (26.2.12)
@@ -119,7 +116,7 @@ namespace QLNet.Math.Distributions
 
         public double derivative(double x)
         {
-            double xn = (x - average_) / sigma_;
+            var xn = (x - average_) / sigma_;
             return gaussian_.value(xn) / sigma_;
         }
 
@@ -371,7 +368,7 @@ namespace QLNet.Math.Distributions
       variants would not preserve the sequence's low-discrepancy.
 
     */
-    public class InverseCumulativeNormal : IValue
+    [JetBrains.Annotations.PublicAPI] public class InverseCumulativeNormal : IValue
     {
         double average_, sigma_;
 
@@ -498,7 +495,7 @@ namespace QLNet.Math.Distributions
         Peter J. Acklam's approximation is better and is available
         as QuantLib::InverseCumulativeNormal
     */
-    public class MoroInverseCumulativeNormal : IValue
+    [JetBrains.Annotations.PublicAPI] public class MoroInverseCumulativeNormal : IValue
     {
         private double average_, sigma_;
 
@@ -536,7 +533,7 @@ namespace QLNet.Math.Distributions
             Utils.QL_REQUIRE(x > 0.0 && x < 1.0, () => "MoroInverseCumulativeNormal(" + x + ") undefined: must be 0<x<1");
 
             double result;
-            double temp = x - 0.5;
+            var temp = x - 0.5;
 
             if (System.Math.Abs(temp) < 0.42)
             {

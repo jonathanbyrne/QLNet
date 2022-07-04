@@ -27,7 +27,7 @@ namespace QLNet.Pricingengines.vanilla
 {
     //! Finite-differences Bermudan engine
     /*! \ingroup vanillaengines */
-    public class FDBermudanEngine : FDMultiPeriodEngine, IGenericEngine
+    [JetBrains.Annotations.PublicAPI] public class FDBermudanEngine : FDMultiPeriodEngine, IGenericEngine
     {
         protected double extraTermInBermudan;
 
@@ -49,8 +49,8 @@ namespace QLNet.Pricingengines.vanilla
 
         protected override void executeIntermediateStep(int i)
         {
-            int size = intrinsicValues_.size();
-            for (int j = 0; j < size; j++)
+            var size = intrinsicValues_.size();
+            for (var j = 0; j < size; j++)
                 prices_.setValue(j, System.Math.Max(prices_.value(j), intrinsicValues_.value(j)));
         }
 
@@ -58,8 +58,10 @@ namespace QLNet.Pricingengines.vanilla
         protected QLNet.Option.Arguments arguments_ = new QLNet.Option.Arguments();
         protected OneAssetOption.Results results_ = new OneAssetOption.Results();
 
-        public IPricingEngineArguments getArguments() { return arguments_; }
-        public IPricingEngineResults getResults() { return results_; }
+        public IPricingEngineArguments getArguments() => arguments_;
+
+        public IPricingEngineResults getResults() => results_;
+
         public void reset() { results_.reset(); }
 
         #region Observer & Observable
@@ -67,14 +69,8 @@ namespace QLNet.Pricingengines.vanilla
         private readonly WeakEventSource eventSource = new WeakEventSource();
         public event Callback notifyObserversEvent
         {
-            add
-            {
-                eventSource.Subscribe(value);
-            }
-            remove
-            {
-                eventSource.Unsubscribe(value);
-            }
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
         }
 
         public void registerWith(Callback handler) { notifyObserversEvent += handler; }

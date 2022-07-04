@@ -25,7 +25,7 @@ using System.Linq;
 namespace QLNet
 {
     //! Base exercise class
-    public class Exercise
+    [JetBrains.Annotations.PublicAPI] public class Exercise
    {
       public enum Type
       {
@@ -36,17 +36,11 @@ namespace QLNet
 
       protected Type type_;
 
-      public Type type()
-      {
-         return type_;
-      }
+      public Type ExerciseType() => type_;
 
       protected List<Date> dates_;
 
-      public List<Date> dates()
-      {
-         return dates_;
-      }
+      public List<Date> dates() => dates_;
 
       // constructor
       public Exercise(Type type)
@@ -55,28 +49,19 @@ namespace QLNet
       }
 
       // inspectors
-      public Date date(int index)
-      {
-         return dates_[index];
-      }
+      public Date date(int index) => dates_[index];
 
-      public Date lastDate()
-      {
-         return dates_.Last();
-      }
+      public Date lastDate() => dates_.Last();
    }
 
    //! Early-exercise base class
    /*! The payoff can be at exercise (the default) or at expiry */
 
-   public class EarlyExercise : Exercise
+   [JetBrains.Annotations.PublicAPI] public class EarlyExercise : Exercise
    {
       private bool payoffAtExpiry_;
 
-      public bool payoffAtExpiry()
-      {
-         return payoffAtExpiry_;
-      }
+      public bool payoffAtExpiry() => payoffAtExpiry_;
 
       public EarlyExercise(Type type, bool payoffAtExpiry) : base(type)
       {
@@ -93,7 +78,7 @@ namespace QLNet
              from earliestDate and not earlier
    */
 
-   public class AmericanExercise : EarlyExercise
+   [JetBrains.Annotations.PublicAPI] public class AmericanExercise : EarlyExercise
    {
       public AmericanExercise(Date earliestDate, Date latestDate, bool payoffAtExpiry = false)
          : base(Type.American, payoffAtExpiry)
@@ -115,7 +100,7 @@ namespace QLNet
    //! Bermudan exercise
    /*! A Bermudan option can only be exercised at a set of fixed dates. */
 
-   public class BermudanExercise : EarlyExercise
+   [JetBrains.Annotations.PublicAPI] public class BermudanExercise : EarlyExercise
    {
       public BermudanExercise(List<Date> dates) : this(dates, false)
       {}
@@ -133,7 +118,7 @@ namespace QLNet
    //! European exercise
    /*! A European option can only be exercised at one (expiry) date. */
 
-   public class EuropeanExercise : Exercise
+   [JetBrains.Annotations.PublicAPI] public class EuropeanExercise : Exercise
    {
       public EuropeanExercise(Date date) : base(Type.European)
       {

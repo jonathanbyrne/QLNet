@@ -33,7 +33,7 @@ namespace QLNet
       public static Date time2Date(Date referenceDate, DayCounter dc, double t)
       {
          t -= 1e4 * Const.QL_EPSILON; // add a small buffer for rounding errors
-         Date d = new Date(referenceDate);
+         var d = new Date(referenceDate);
          while (dc.yearFraction(referenceDate, d += new Period(1, TimeUnit.Years)) < t);
          d -= new Period(1, TimeUnit.Years);
          while (dc.yearFraction(referenceDate, d += new Period(1, TimeUnit.Months)) < t);
@@ -43,7 +43,7 @@ namespace QLNet
       }
    }
 
-   public class FixedLocalVolSurface : LocalVolTermStructure
+   [JetBrains.Annotations.PublicAPI] public class FixedLocalVolSurface : LocalVolTermStructure
    {
       public enum Extrapolation
       {
@@ -73,7 +73,7 @@ namespace QLNet
                           () => "cannot have dates[0] < referenceDate");
 
          times_ = new InitializedList<double>(dates.Count);
-         for (int j = 0; j < times_.Count; j++)
+         for (var j = 0; j < times_.Count; j++)
             times_[j] = timeFromReference(dates[j]);
 
          checkSurface();
@@ -136,17 +136,20 @@ namespace QLNet
       }
 
 
-      public override Date maxDate() { return maxDate_; }
-      public override double maxTime() { return times_.Last(); }
-      public override double minStrike() { return strikes_.Min().Min(); }
-      public override double maxStrike() { return strikes_.Max().Max(); }
+      public override Date maxDate() => maxDate_;
+
+      public override double maxTime() => times_.Last();
+
+      public override double minStrike() => strikes_.Min().Min();
+
+      public override double maxStrike() => strikes_.Max().Max();
 
       public void setInterpolation<Interpolator>(Interpolator i = default(Interpolator))
       where Interpolator : class, IInterpolationFactory, new ()
       {
          localVolInterpol_.Clear();
-         Interpolator i_ = i ?? FastActivator<Interpolator>.Create();
-         for (int j = 0; j < times_.Count; ++j)
+         var i_ = i ?? FastActivator<Interpolator>.Create();
+         for (var j = 0; j < times_.Count; ++j)
          {
             localVolInterpol_.Add(i_.interpolate(
                                      strikes_[j], strikes_[j].Count,
@@ -159,7 +162,7 @@ namespace QLNet
       {
          t = System.Math.Min(times_.Last(), System.Math.Max(t, times_.First()));
 
-         int idx = times_.BinarySearch(t);
+         var idx = times_.BinarySearch(t);
          if (idx < 0)
             idx = ~idx;
 
@@ -191,11 +194,11 @@ namespace QLNet
                   laterStrike = strikes_[idx].Last();
             }
 
-            double earlyVol =
+            var earlyVol =
                (strikes_[idx - 1].First() < strikes_[idx - 1].Last())
                ? localVolInterpol_[idx - 1].value(earlierStrike, true)
                : localVolMatrix_[localVolMatrix_.rows() / 2, idx - 1];
-            double laterVol = localVolInterpol_[idx].value(laterStrike, true);
+            var laterVol = localVolInterpol_[idx].value(laterStrike, true);
 
             return earlyVol
                    + (laterVol - earlyVol) / (times_[idx] - times_[idx - 1])
@@ -215,21 +218,21 @@ namespace QLNet
       {
          Utils.QL_REQUIRE(times_.Count == localVolMatrix_.columns(),
                           () => "mismatch between date vector and vol matrix colums");
-         for (int i = 0; i < strikes_.Count; ++i)
+         for (var i = 0; i < strikes_.Count; ++i)
          {
             Utils.QL_REQUIRE(strikes_[i].Count == localVolMatrix_.rows(),
                              () => "mismatch between money-strike vector and "
                              + "vol matrix rows");
          }
 
-         for (int j = 1; j < times_.Count; j++)
+         for (var j = 1; j < times_.Count; j++)
          {
             Utils.QL_REQUIRE(times_[j] > times_[j - 1],
                              () => "dates must be sorted unique!");
          }
 
-         for (int i = 0; i < strikes_.Count; ++i)
-            for (int j = 1; j < strikes_[i].Count; j++)
+         for (var i = 0; i < strikes_.Count; ++i)
+            for (var j = 1; j < strikes_[i].Count; j++)
             {
                Utils.QL_REQUIRE(strikes_[i][j] >= strikes_[i][j - 1],
                                 () => "strikes must be sorted");

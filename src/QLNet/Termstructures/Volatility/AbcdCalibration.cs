@@ -22,7 +22,7 @@ using QLNet.Math.Distributions;
 
 namespace QLNet.Termstructures.Volatility
 {
-    public class AbcdCalibration
+    [JetBrains.Annotations.PublicAPI] public class AbcdCalibration
     {
         private class AbcdError : CostFunction
         {
@@ -33,7 +33,7 @@ namespace QLNet.Termstructures.Volatility
 
             public override double value(Vector x)
             {
-                Vector y = abcd_.transformation_.direct(x);
+                var y = abcd_.transformation_.direct(x);
                 abcd_.a_ = y[0];
                 abcd_.b_ = y[1];
                 abcd_.c_ = y[2];
@@ -43,7 +43,7 @@ namespace QLNet.Termstructures.Volatility
 
             public override Vector values(Vector x)
             {
-                Vector y = abcd_.transformation_.direct(x);
+                var y = abcd_.transformation_.direct(x);
                 abcd_.a_ = y[0];
                 abcd_.b_ = y[1];
                 abcd_.c_ = y[2];
@@ -126,20 +126,20 @@ namespace QLNet.Termstructures.Volatility
             // if no optimization method or endCriteria is provided, we provide one
             if (optMethod_ == null)
             {
-                double epsfcn = 1.0e-8;
-                double xtol = 1.0e-8;
-                double gtol = 1.0e-8;
-                bool useCostFunctionsJacobian = false;
+                var epsfcn = 1.0e-8;
+                var xtol = 1.0e-8;
+                var gtol = 1.0e-8;
+                var useCostFunctionsJacobian = false;
                 optMethod_ = new LevenbergMarquardt(epsfcn, xtol, gtol, useCostFunctionsJacobian);
             }
 
             if (endCriteria_ == null)
             {
-                int maxIterations = 10000;
-                int maxStationaryStateIterations = 1000;
-                double rootEpsilon = 1.0e-8;
-                double functionEpsilon = 0.3e-4;     // Why 0.3e-4 ?
-                double gradientNormEpsilon = 0.3e-4; // Why 0.3e-4 ?
+                var maxIterations = 10000;
+                var maxStationaryStateIterations = 1000;
+                var rootEpsilon = 1.0e-8;
+                var functionEpsilon = 0.3e-4;     // Why 0.3e-4 ?
+                var gradientNormEpsilon = 0.3e-4; // Why 0.3e-4 ?
                 endCriteria_ = new EndCriteria(maxIterations, maxStationaryStateIterations, rootEpsilon, functionEpsilon,
                                                gradientNormEpsilon);
             }
@@ -151,7 +151,7 @@ namespace QLNet.Termstructures.Volatility
             Utils.QL_REQUIRE(blackVols.Count == t.Count, () =>
                              "mismatch between number of times (" + t.Count + ") and blackVols (" + blackVols.Count + ")");
             List<double> k = new InitializedList<double>(t.Count);
-            for (int i = 0; i < t.Count; i++)
+            for (var i = 0; i < t.Count; i++)
             {
                 k[i] = blackVols[i] / value(t[i]);
             }
@@ -163,16 +163,16 @@ namespace QLNet.Termstructures.Volatility
         {
             if (vegaWeighted_)
             {
-                double weightsSum = 0.0;
-                for (int i = 0; i < times_.Count; i++)
+                var weightsSum = 0.0;
+                for (var i = 0; i < times_.Count; i++)
                 {
-                    double stdDev = System.Math.Sqrt(blackVols_[i] * blackVols_[i] * times_[i]);
+                    var stdDev = System.Math.Sqrt(blackVols_[i] * blackVols_[i] * times_[i]);
                     // when strike==forward, the blackFormulaStdDevDerivative becomes
                     weights_[i] = new CumulativeNormalDistribution().derivative(.5 * stdDev);
                     weightsSum += weights_[i];
                 }
                 // weight normalization
-                for (int i = 0; i < times_.Count; i++)
+                for (var i = 0; i < times_.Count; i++)
                 {
                     weights_[i] /= weightsSum;
                 }
@@ -186,10 +186,10 @@ namespace QLNet.Termstructures.Volatility
             }
             else
             {
-                AbcdError costFunction = new AbcdError(this);
+                var costFunction = new AbcdError(this);
                 transformation_ = new AbcdParametersTransformation();
 
-                Vector guess = new Vector(4);
+                var guess = new Vector(4);
                 guess[0] = a_;
                 guess[1] = b_;
                 guess[2] = c_;
@@ -201,20 +201,20 @@ namespace QLNet.Termstructures.Volatility
                 parameterAreFixed[2] = cIsFixed_;
                 parameterAreFixed[3] = dIsFixed_;
 
-                Vector inversedTransformatedGuess = new Vector(transformation_.inverse(guess));
+                var inversedTransformatedGuess = new Vector(transformation_.inverse(guess));
 
-                ProjectedCostFunction projectedAbcdCostFunction = new ProjectedCostFunction(costFunction,
+                var projectedAbcdCostFunction = new ProjectedCostFunction(costFunction,
                                                                                             inversedTransformatedGuess, parameterAreFixed);
 
-                Vector projectedGuess = new Vector(projectedAbcdCostFunction.project(inversedTransformatedGuess));
+                var projectedGuess = new Vector(projectedAbcdCostFunction.project(inversedTransformatedGuess));
 
-                NoConstraint constraint = new NoConstraint();
-                Problem problem = new Problem(projectedAbcdCostFunction, constraint, projectedGuess);
+                var constraint = new NoConstraint();
+                var problem = new Problem(projectedAbcdCostFunction, constraint, projectedGuess);
                 abcdEndCriteria_ = optMethod_.minimize(problem, endCriteria_);
-                Vector projectedResult = new Vector(problem.currentValue());
-                Vector transfResult = new Vector(projectedAbcdCostFunction.include(projectedResult));
+                var projectedResult = new Vector(problem.currentValue());
+                var transfResult = new Vector(projectedAbcdCostFunction.include(projectedResult));
 
-                Vector result = transformation_.direct(transfResult);
+                var result = transformation_.direct(transfResult);
                 AbcdMathFunction.validate(a_, b_, c_, d_);
                 a_ = result[0];
                 b_ = result[1];
@@ -224,13 +224,13 @@ namespace QLNet.Termstructures.Volatility
         }
 
         //calibration results
-        public double value(double x) { return abcdBlackVolatility(x, a_, b_, c_, d_); }
+        public double value(double x) => abcdBlackVolatility(x, a_, b_, c_, d_);
 
         public double error()
         {
-            int n = times_.Count;
+            var n = times_.Count;
             double error, squaredError = 0.0;
-            for (int i = 0; i < times_.Count; i++)
+            for (var i = 0; i < times_.Count; i++)
             {
                 error = value(times_[i]) - blackVols_[i];
                 squaredError += error * error * weights_[i];
@@ -241,7 +241,7 @@ namespace QLNet.Termstructures.Volatility
         public double maxError()
         {
             double error, maxError = double.MinValue;
-            for (int i = 0; i < times_.Count; i++)
+            for (var i = 0; i < times_.Count; i++)
             {
                 error = System.Math.Abs(value(times_[i]) - blackVols_[i]);
                 maxError = System.Math.Max(maxError, error);
@@ -251,8 +251,8 @@ namespace QLNet.Termstructures.Volatility
 
         public Vector errors()
         {
-            Vector results = new Vector(times_.Count);
-            for (int i = 0; i < times_.Count; i++)
+            var results = new Vector(times_.Count);
+            for (var i = 0; i < times_.Count; i++)
             {
                 results[i] = (value(times_[i]) - blackVols_[i]) * System.Math.Sqrt(weights_[i]);
             }
@@ -261,15 +261,20 @@ namespace QLNet.Termstructures.Volatility
 
         public double abcdBlackVolatility(double u, double a, double b, double c, double d)
         {
-            AbcdFunction model = new AbcdFunction(a, b, c, d);
+            var model = new AbcdFunction(a, b, c, d);
             return model.volatility(0.0, u, u);
         }
 
-        public EndCriteria.Type endCriteria() { return abcdEndCriteria_; }
-        public double a() { return a_; }
-        public double b() { return b_; }
-        public double c() { return c_; }
-        public double d() { return d_; }
+        public EndCriteria.Type endCriteria() => abcdEndCriteria_;
+
+        public double a() => a_;
+
+        public double b() => b_;
+
+        public double c() => c_;
+
+        public double d() => d_;
+
         public bool aIsFixed_ { get; set; }
         public bool bIsFixed_ { get; set; }
         public bool cIsFixed_ { get; set; }

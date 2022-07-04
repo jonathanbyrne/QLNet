@@ -62,7 +62,7 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    public class Canada : Calendar
+    [JetBrains.Annotations.PublicAPI] public class Canada : Calendar
     {
         public enum Market
         {
@@ -94,14 +94,15 @@ namespace QLNet.Time.Calendars
             public static readonly Settlement Singleton = new Settlement();
             private Settlement() { }
 
-            public override string name() { return "Canada"; }
+            public override string name() => "Canada";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
 
                 if (isWeekend(w)
                     // New Year's Day (possibly moved to Monday)
@@ -146,14 +147,15 @@ namespace QLNet.Time.Calendars
             public static readonly TSX Singleton = new TSX();
             private TSX() { }
 
-            public override string name() { return "TSX"; }
+            public override string name() => "TSX";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
 
                 if (isWeekend(w)
                     // New Year's Day (possibly moved to Monday)

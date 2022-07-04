@@ -75,22 +75,29 @@ namespace QLNet.Termstructures.Volatility
         }
         public abstract double minStrike();
         public abstract double maxStrike();
-        public double variance(double strike) { return varianceImpl(strike); }
-        public double volatility(double strike) { return volatilityImpl(strike); }
+        public double variance(double strike) => varianceImpl(strike);
+
+        public double volatility(double strike) => volatilityImpl(strike);
+
         public abstract double? atmLevel();
-        public virtual Date exerciseDate() { return exerciseDate_; }
-        public virtual VolatilityType volatilityType() { return volatilityType_; }
-        public virtual double shift() { return shift_; }
+        public virtual Date exerciseDate() => exerciseDate_;
+
+        public virtual VolatilityType volatilityType() => volatilityType_;
+
+        public virtual double shift() => shift_;
+
         public virtual Date referenceDate()
         {
             Utils.QL_REQUIRE(referenceDate_ != null, () => "referenceDate not available for this instance");
             return referenceDate_;
         }
-        public virtual double exerciseTime() { return exerciseTime_; }
-        public virtual DayCounter dayCounter() { return dc_; }
+        public virtual double exerciseTime() => exerciseTime_;
+
+        public virtual DayCounter dayCounter() => dc_;
+
         public virtual double optionPrice(double strike, QLNet.Option.Type type = QLNet.Option.Type.Call, double discount = 1.0)
         {
-            double? atm = atmLevel();
+            var atm = atmLevel();
             Utils.QL_REQUIRE(atm != null, () => "smile section must provide atm level to compute option price");
             // if lognormal or shifted lognormal,
             // for strike at -shift, return option price even if outside
@@ -104,15 +111,15 @@ namespace QLNet.Termstructures.Volatility
         public virtual double digitalOptionPrice(double strike, QLNet.Option.Type type = QLNet.Option.Type.Call, double discount = 1.0,
                                                  double gap = 1.0e-5)
         {
-            double m = volatilityType() == VolatilityType.ShiftedLognormal ? -shift() : -double.MaxValue;
-            double kl = System.Math.Max(strike - gap / 2.0, m);
-            double kr = kl + gap;
+            var m = volatilityType() == VolatilityType.ShiftedLognormal ? -shift() : -double.MaxValue;
+            var kl = System.Math.Max(strike - gap / 2.0, m);
+            var kr = kl + gap;
             return (type == QLNet.Option.Type.Call ? 1.0 : -1.0) *
                    (optionPrice(kl, type, discount) - optionPrice(kr, type, discount)) / gap;
         }
         public virtual double vega(double strike, double discount = 1.0)
         {
-            double? atm = atmLevel();
+            var atm = atmLevel();
             Utils.QL_REQUIRE(atm != null, () =>
                              "smile section must provide atm level to compute option vega");
             if (volatilityType() == VolatilityType.ShiftedLognormal)
@@ -127,9 +134,9 @@ namespace QLNet.Termstructures.Volatility
         }
         public virtual double density(double strike, double discount = 1.0, double gap = 1.0E-4)
         {
-            double m = volatilityType() == VolatilityType.ShiftedLognormal ? -shift() : -double.MaxValue;
-            double kl = System.Math.Max(strike - gap / 2.0, m);
-            double kr = kl + gap;
+            var m = volatilityType() == VolatilityType.ShiftedLognormal ? -shift() : -double.MaxValue;
+            var kl = System.Math.Max(strike - gap / 2.0, m);
+            var kr = kl + gap;
             return (digitalOptionPrice(kl, QLNet.Option.Type.Call, discount, gap) -
                     digitalOptionPrice(kr, QLNet.Option.Type.Call, discount, gap)) / gap;
         }
@@ -138,11 +145,11 @@ namespace QLNet.Termstructures.Volatility
 
             if (volatilityType == volatilityType_ && Utils.close(shift, this.shift()))
                 return volatility(strike);
-            double? atm = atmLevel();
+            var atm = atmLevel();
             Utils.QL_REQUIRE(atm != null, () => "smile section must provide atm level to compute converted volatilties");
-            QLNet.Option.Type type = strike >= atm ? QLNet.Option.Type.Call : QLNet.Option.Type.Put;
-            double premium = optionPrice(strike, type);
-            double premiumAtm = optionPrice(atm.Value, type);
+            var type = strike >= atm ? QLNet.Option.Type.Call : QLNet.Option.Type.Put;
+            var premium = optionPrice(strike, type);
+            var premiumAtm = optionPrice(atm.Value, type);
             if (volatilityType == VolatilityType.ShiftedLognormal)
             {
                 try
@@ -172,7 +179,7 @@ namespace QLNet.Termstructures.Volatility
         }
         protected virtual double varianceImpl(double strike)
         {
-            double v = volatilityImpl(strike);
+            var v = volatilityImpl(strike);
             return v * v * exerciseTime();
         }
         protected abstract double volatilityImpl(double strike);
@@ -186,7 +193,7 @@ namespace QLNet.Termstructures.Volatility
         private VolatilityType volatilityType_;
         private double shift_;
     }
-    public class SabrSmileSection : SmileSection
+    [JetBrains.Annotations.PublicAPI] public class SabrSmileSection : SmileSection
     {
         private double alpha_, beta_, nu_, rho_, forward_, shift_;
         private VolatilityType volatilityType_;
@@ -223,9 +230,11 @@ namespace QLNet.Termstructures.Volatility
             Utils.validateSabrParameters(alpha_, beta_, nu_, rho_);
         }
 
-        public override double minStrike() { return 0.0; }
-        public override double maxStrike() { return double.MaxValue; }
-        public override double? atmLevel() { return forward_; }
+        public override double minStrike() => 0.0;
+
+        public override double maxStrike() => double.MaxValue;
+
+        public override double? atmLevel() => forward_;
 
         protected override double varianceImpl(double strike)
         {

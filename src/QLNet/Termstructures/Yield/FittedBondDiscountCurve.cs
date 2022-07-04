@@ -73,7 +73,7 @@ namespace QLNet.Termstructures.Yield
 
         \ingroup yieldtermstructures
     */
-    public class FittedBondDiscountCurve : YieldTermStructure
+    [JetBrains.Annotations.PublicAPI] public class FittedBondDiscountCurve : YieldTermStructure
     {
         // Constructors
         //! reference date based on current evaluation date
@@ -127,7 +127,8 @@ namespace QLNet.Termstructures.Yield
 
         // Inspectors
         //! total number of bonds used to fit the yield curve
-        public int numberOfBonds() { return bondHelpers_.Count; }
+        public int numberOfBonds() => bondHelpers_.Count;
+
         //! the latest date for which the curve can return values
         public override Date maxDate()
         {
@@ -143,7 +144,7 @@ namespace QLNet.Termstructures.Yield
 
         private void setup()
         {
-            for (int i = 0; i < bondHelpers_.Count; ++i)
+            for (var i = 0; i < bondHelpers_.Count; ++i)
                 bondHelpers_[i].registerWith(update);
         }
 
@@ -152,16 +153,16 @@ namespace QLNet.Termstructures.Yield
             Utils.QL_REQUIRE(!bondHelpers_.empty(), () => "no bondHelpers given");
 
             maxDate_ = Date.minDate();
-            Date refDate = referenceDate();
+            var refDate = referenceDate();
 
             // double check bond quotes still valid and/or instruments not expired
-            for (int i = 0; i < bondHelpers_.Count; ++i)
+            for (var i = 0; i < bondHelpers_.Count; ++i)
             {
-                Bond bond = bondHelpers_[i].bond();
+                var bond = bondHelpers_[i].bond();
                 Utils.QL_REQUIRE(bondHelpers_[i].quote().link.isValid(), () =>
                                  i + 1 + " bond (maturity: " +
                                  bond.maturityDate() + ") has an invalid price quote");
-                Date bondSettlement = bond.settlementDate();
+                var bondSettlement = bond.settlementDate();
                 Utils.QL_REQUIRE(bondSettlement >= refDate, () =>
                                  i + 1 + " bond settlemente date (" +
                                  bondSettlement + ") before curve reference date (" +
@@ -229,10 +230,10 @@ namespace QLNet.Termstructures.Yield
                      depending on the fitting method used, in order to get
                      proper/reasonable/faster convergence.
         */
-        public class FittingMethod
+        [JetBrains.Annotations.PublicAPI] public class FittingMethod
         {
             // internal class
-            public class FittingCost : CostFunction
+            [JetBrains.Annotations.PublicAPI] public class FittingCost : CostFunction
             {
                 public FittingCost(FittingMethod fittingMethod)
                 {
@@ -241,9 +242,9 @@ namespace QLNet.Termstructures.Yield
 
                 public override double value(Vector x)
                 {
-                    double squaredError = 0.0;
-                    Vector vals = values(x);
-                    for (int i = 0; i < vals.size(); ++i)
+                    var squaredError = 0.0;
+                    var vals = values(x);
+                    for (var i = 0; i < vals.size(); ++i)
                     {
                         squaredError += vals[i];
                     }
@@ -251,23 +252,23 @@ namespace QLNet.Termstructures.Yield
                 }
                 public override Vector values(Vector x)
                 {
-                    Date refDate = fittingMethod_.curve_.referenceDate();
-                    DayCounter dc = fittingMethod_.curve_.dayCounter();
-                    int n = fittingMethod_.curve_.bondHelpers_.Count;
-                    Vector values = new Vector(n);
-                    for (int i = 0; i < n; ++i)
+                    var refDate = fittingMethod_.curve_.referenceDate();
+                    var dc = fittingMethod_.curve_.dayCounter();
+                    var n = fittingMethod_.curve_.bondHelpers_.Count;
+                    var values = new Vector(n);
+                    for (var i = 0; i < n; ++i)
                     {
-                        BondHelper helper = fittingMethod_.curve_.bondHelpers_[i];
+                        var helper = fittingMethod_.curve_.bondHelpers_[i];
 
-                        Bond bond = helper.bond();
-                        Date bondSettlement = bond.settlementDate();
+                        var bond = helper.bond();
+                        var bondSettlement = bond.settlementDate();
 
                         // CleanPrice_i = sum( cf_k * d(t_k) ) - accruedAmount
-                        double modelPrice = 0.0;
-                        List<CashFlow> cf = bond.cashflows();
-                        for (int k = firstCashFlow_[i]; k < cf.Count; ++k)
+                        var modelPrice = 0.0;
+                        var cf = bond.cashflows();
+                        for (var k = firstCashFlow_[i]; k < cf.Count; ++k)
                         {
-                            double tenor = dc.yearFraction(refDate, cf[k].date());
+                            var tenor = dc.yearFraction(refDate, cf[k].date());
                             modelPrice += cf[k].amount() * fittingMethod_.discountFunction(x, tenor);
                         }
                         if (helper.useCleanPrice())
@@ -276,12 +277,12 @@ namespace QLNet.Termstructures.Yield
                         // adjust price (NPV) for forward settlement
                         if (bondSettlement != refDate)
                         {
-                            double tenor = dc.yearFraction(refDate, bondSettlement);
+                            var tenor = dc.yearFraction(refDate, bondSettlement);
                             modelPrice /= fittingMethod_.discountFunction(x, tenor);
                         }
-                        double marketPrice = helper.quote().link.value();
-                        double error = modelPrice - marketPrice;
-                        double weightedError = fittingMethod_.weights_[i] * error;
+                        var marketPrice = helper.quote().link.value();
+                        var error = modelPrice - marketPrice;
+                        var weightedError = fittingMethod_.weights_[i] * error;
                         values[i] = weightedError * weightedError;
                     }
                     return values;
@@ -294,23 +295,31 @@ namespace QLNet.Termstructures.Yield
             }
 
             //! total number of coefficients to fit/solve for
-            public virtual int size() { throw new NotImplementedException(); }
+            public virtual int size() => throw new NotImplementedException();
+
             //! output array of results of optimization problem
-            public Vector solution() { return solution_; }
+            public Vector solution() => solution_;
+
             //! final number of iterations used in the optimization problem
-            public int numberOfIterations() { return numberOfIterations_; }
+            public int numberOfIterations() => numberOfIterations_;
+
             //! final value of cost function after optimization
-            public double minimumCostValue() { return costValue_; }
+            public double minimumCostValue() => costValue_;
+
             //! clone of the current object
-            public virtual FittingMethod clone() { throw new NotImplementedException(); }
+            public virtual FittingMethod clone() => throw new NotImplementedException();
+
             //! return whether there is a constraint at zero
-            public bool constrainAtZero() { return constrainAtZero_; }
+            public bool constrainAtZero() => constrainAtZero_;
+
             //! return weights being used
-            public Vector weights() { return weights_; }
+            public Vector weights() => weights_;
+
             //! return optimization method being used
-            public OptimizationMethod optimizationMethod() { return optimizationMethod_; }
+            public OptimizationMethod optimizationMethod() => optimizationMethod_;
+
             //! open discountFunction to public
-            public double discount(Vector x, double t) { return discountFunction(x, t); }
+            public double discount(Vector x, double t) => discountFunction(x, t);
 
             //! constructor
             protected FittingMethod(bool constrainAtZero = true,
@@ -326,20 +335,20 @@ namespace QLNet.Termstructures.Yield
             internal virtual void init()
             {
                 // yield conventions
-                DayCounter yieldDC = curve_.dayCounter();
-                Compounding yieldComp = Compounding.Compounded;
-                Frequency yieldFreq = Frequency.Annual;
+                var yieldDC = curve_.dayCounter();
+                var yieldComp = Compounding.Compounded;
+                var yieldFreq = Frequency.Annual;
 
-                int n = curve_.bondHelpers_.Count;
+                var n = curve_.bondHelpers_.Count;
                 costFunction_ = new FittingCost(this);
                 costFunction_.firstCashFlow_ = new InitializedList<int>(n);
 
-                for (int i = 0; i < curve_.bondHelpers_.Count; ++i)
+                for (var i = 0; i < curve_.bondHelpers_.Count; ++i)
                 {
-                    Bond bond = curve_.bondHelpers_[i].bond();
-                    List<CashFlow> cf = bond.cashflows();
-                    Date bondSettlement = bond.settlementDate();
-                    for (int k = 0; k < cf.Count; ++k)
+                    var bond = curve_.bondHelpers_[i].bond();
+                    var cf = bond.cashflows();
+                    var bondSettlement = bond.settlementDate();
+                    for (var k = 0; k < cf.Count; ++k)
                     {
                         if (!cf[k].hasOccurred(bondSettlement, false))
                         {
@@ -354,17 +363,17 @@ namespace QLNet.Termstructures.Yield
                     //if (weights_.empty())
                     weights_ = new Vector(n);
 
-                    double squaredSum = 0.0;
-                    for (int i = 0; i < curve_.bondHelpers_.Count; ++i)
+                    var squaredSum = 0.0;
+                    for (var i = 0; i < curve_.bondHelpers_.Count; ++i)
                     {
-                        Bond bond = curve_.bondHelpers_[i].bond();
+                        var bond = curve_.bondHelpers_[i].bond();
 
-                        double cleanPrice = curve_.bondHelpers_[i].quote().link.value();
+                        var cleanPrice = curve_.bondHelpers_[i].quote().link.value();
 
-                        Date bondSettlement = bond.settlementDate();
-                        double ytm = BondFunctions.yield(bond, cleanPrice, yieldDC, yieldComp, yieldFreq, bondSettlement);
+                        var bondSettlement = bond.settlementDate();
+                        var ytm = BondFunctions.yield(bond, cleanPrice, yieldDC, yieldComp, yieldFreq, bondSettlement);
 
-                        double dur = BondFunctions.duration(bond, ytm, yieldDC, yieldComp, yieldFreq,
+                        var dur = BondFunctions.duration(bond, ytm, yieldDC, yieldComp, yieldFreq,
                                                             Duration.Type.Modified, bondSettlement);
                         weights_[i] = 1.0 / dur;
                         squaredSum += weights_[i] * weights_[i];
@@ -378,7 +387,7 @@ namespace QLNet.Termstructures.Yield
             }
 
             //! discount function called by FittedBondDiscountCurve
-            internal virtual double discountFunction(Vector x, double t) { throw new NotImplementedException(); }
+            internal virtual double discountFunction(Vector x, double t) => throw new NotImplementedException();
 
             //! constrains discount function to unity at \f$ T=0 \f$, if true
             protected bool constrainAtZero_;
@@ -397,11 +406,11 @@ namespace QLNet.Termstructures.Yield
             // curve optimization called here- adjust optimization parameters here
             internal void calculate()
             {
-                FittingCost costFunction = costFunction_;
+                var costFunction = costFunction_;
                 Constraint constraint = new NoConstraint();
 
                 // start with the guess solution, if it exists
-                Vector x = new Vector(size(), 0.0);
+                var x = new Vector(size(), 0.0);
                 if (!curve_.guessSolution_.empty())
                 {
                     x = curve_.guessSolution_;
@@ -418,19 +427,19 @@ namespace QLNet.Termstructures.Yield
                 }
 
                 //workaround for backwards compatibility
-                OptimizationMethod optimization = optimizationMethod_;
+                var optimization = optimizationMethod_;
                 if (optimization == null)
                 {
                     optimization = new Simplex(curve_.simplexLambda_);
                 }
 
-                Problem problem = new Problem(costFunction, constraint, x);
+                var problem = new Problem(costFunction, constraint, x);
 
-                double rootEpsilon = curve_.accuracy_;
-                double functionEpsilon = curve_.accuracy_;
-                double gradientNormEpsilon = curve_.accuracy_;
+                var rootEpsilon = curve_.accuracy_;
+                var functionEpsilon = curve_.accuracy_;
+                var gradientNormEpsilon = curve_.accuracy_;
 
-                EndCriteria endCriteria = new EndCriteria(curve_.maxEvaluations_,
+                var endCriteria = new EndCriteria(curve_.maxEvaluations_,
                                                           curve_.maxStationaryStateIterations_,
                                                           rootEpsilon,
                                                           functionEpsilon,

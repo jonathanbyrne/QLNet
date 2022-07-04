@@ -54,7 +54,7 @@ namespace QLNet.Instruments
         \note we do not need Schedules on the legs because they use
               one or two dates only per leg.
     */
-    public class ZeroCouponInflationSwap : Swap
+    [JetBrains.Annotations.PublicAPI] public class ZeroCouponInflationSwap : Swap
     {
 
         public enum Type { Receiver = -1, Payer = 1 }
@@ -95,7 +95,7 @@ namespace QLNet.Instruments
             // first check compatibility of index and swap definitions
             if (infIndex_.interpolated())
             {
-                Period pShift = new Period(infIndex_.frequency());
+                var pShift = new Period(infIndex_.frequency());
                 Utils.QL_REQUIRE(observationLag_ - pShift > infIndex_.availabilityLag(), () =>
                                  "inconsistency between swap observation of index " + observationLag_ +
                                  " index availability " + infIndex_.availabilityLag() +
@@ -128,22 +128,22 @@ namespace QLNet.Instruments
                 obsDate_ = maturity - observationLag_;
             }
 
-            Date infPayDate = infCalendar_.adjust(maturity, infConvention_);
-            Date fixedPayDate = fixCalendar_.adjust(maturity, fixConvention_);
+            var infPayDate = infCalendar_.adjust(maturity, infConvention_);
+            var fixedPayDate = fixCalendar_.adjust(maturity, fixConvention_);
 
             // At this point the index may not be able to forecast
             // i.e. do not want to force the existence of an inflation
             // term structure before allowing users to create instruments.
-            double T = Utils.inflationYearFraction(infIndex_.frequency(), infIndex_.interpolated(),
+            var T = Utils.inflationYearFraction(infIndex_.frequency(), infIndex_.interpolated(),
                                                    dayCounter_, baseDate_, obsDate_);
             // N.B. the -1.0 is because swaps only exchange growth, not notionals as well
-            double fixedAmount = nominal * (System.Math.Pow(1.0 + fixedRate, T) - 1.0);
+            var fixedAmount = nominal * (System.Math.Pow(1.0 + fixedRate, T) - 1.0);
 
             legs_[0].Add(new SimpleCashFlow(fixedAmount, fixedPayDate));
-            bool growthOnly = true;
+            var growthOnly = true;
             legs_[1].Add(new IndexedCashFlow(nominal, infIndex, baseDate_, obsDate_, infPayDate, growthOnly));
 
-            for (int j = 0; j < 2; ++j)
+            for (var j = 0; j < 2; ++j)
             {
                 legs_[j].ForEach((i, x) => x.registerWith(update));
             }
@@ -159,7 +159,7 @@ namespace QLNet.Instruments
                     payer_[1] = +1.0;
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown zero-inflation-swap type");
+                    Utils.QL_FAIL("Unknown zero-inflation-swap ExerciseType");
                     break;
             }
         }
@@ -167,24 +167,38 @@ namespace QLNet.Instruments
         #region Inspectors
 
         //! "payer" or "receiver" refer to the inflation-indexed leg
-        public Type type() { return type_; }
-        public double nominal() { return nominal_; }
-        public new Date startDate() { return startDate_; }
-        public new Date maturityDate() { return maturityDate_; }
-        public Calendar fixedCalendar() { return fixCalendar_; }
-        public BusinessDayConvention fixedConvention() { return fixConvention_; }
-        public DayCounter dayCounter() { return dayCounter_; }
+        public Type type() => type_;
+
+        public double nominal() => nominal_;
+
+        public new Date startDate() => startDate_;
+
+        public new Date maturityDate() => maturityDate_;
+
+        public Calendar fixedCalendar() => fixCalendar_;
+
+        public BusinessDayConvention fixedConvention() => fixConvention_;
+
+        public DayCounter dayCounter() => dayCounter_;
+
         //! \f$ K \f$ in the above formula.
-        public double fixedRate() { return fixedRate_; }
-        public ZeroInflationIndex inflationIndex() { return infIndex_; }
-        public Period observationLag() { return observationLag_; }
-        public bool adjustObservationDates() { return adjustInfObsDates_; }
-        public Calendar inflationCalendar() { return infCalendar_; }
-        public BusinessDayConvention inflationConvention() { return infConvention_; }
+        public double fixedRate() => fixedRate_;
+
+        public ZeroInflationIndex inflationIndex() => infIndex_;
+
+        public Period observationLag() => observationLag_;
+
+        public bool adjustObservationDates() => adjustInfObsDates_;
+
+        public Calendar inflationCalendar() => infCalendar_;
+
+        public BusinessDayConvention inflationConvention() => infConvention_;
+
         //! just one cashflow (that is not a coupon) in each leg
-        public List<CashFlow> fixedLeg() { return legs_[0]; }
+        public List<CashFlow> fixedLeg() => legs_[0];
+
         //! just one cashflow (that is not a coupon) in each leg
-        public List<CashFlow> inflationLeg() { return legs_[1]; }
+        public List<CashFlow> inflationLeg() => legs_[1];
 
         #endregion
 
@@ -224,12 +238,12 @@ namespace QLNet.Instruments
             // if it was created with _this_ rate
             // _knowing_ the time from base to obs (etc).
 
-            IndexedCashFlow icf = legs_[1][0] as IndexedCashFlow;
+            var icf = legs_[1][0] as IndexedCashFlow;
             Utils.QL_REQUIRE(icf != null, () => "failed to downcast to IndexedCashFlow in ::fairRate()");
 
             // +1 because the IndexedCashFlow has growthOnly=true
-            double growth = icf.amount() / icf.notional() + 1.0;
-            double T = Utils.inflationYearFraction(infIndex_.frequency(),
+            var growth = icf.amount() / icf.notional() + 1.0;
+            var T = Utils.inflationYearFraction(infIndex_.frequency(),
                                                    infIndex_.interpolated(),
                                                    dayCounter_, baseDate_, obsDate_);
 
@@ -258,7 +272,7 @@ namespace QLNet.Instruments
             public double fixedRate { get; set; }
         }
 
-        public class Engine : GenericEngine<Arguments, Results> { }
+        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results> { }
 
     }
 }

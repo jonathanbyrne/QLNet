@@ -107,7 +107,7 @@ namespace QLNet.Time.Calendars
               against a list of known holidays.
     */
 
-    public class UnitedStates : Calendar
+    [JetBrains.Annotations.PublicAPI] public class UnitedStates : Calendar
     {
         // a few rules used by multiple calendars
         protected static bool isWashingtonBirthday(int d, Month m, int y, DayOfWeek w)
@@ -140,18 +140,14 @@ namespace QLNet.Time.Calendars
             }
         }
 
-        protected static bool isLaborDay(int d, Month m, int y, DayOfWeek w)
-        {
+        protected static bool isLaborDay(int d, Month m, int y, DayOfWeek w) =>
             // first Monday in September
-            return d <= 7 && w == DayOfWeek.Monday && m == Month.September;
-        }
+            d <= 7 && w == DayOfWeek.Monday && m == Month.September;
 
-        protected static bool isColumbusDay(int d, Month m, int y, DayOfWeek w)
-        {
+        protected static bool isColumbusDay(int d, Month m, int y, DayOfWeek w) =>
             // second Monday in October
-            return d >= 8 && d <= 14 && w == DayOfWeek.Monday && m == Month.October
-                   && y >= 1971;
-        }
+            d >= 8 && d <= 14 && w == DayOfWeek.Monday && m == Month.October
+            && y >= 1971;
 
         protected static bool isVeteransDay(int d, Month m, int y, DayOfWeek w)
         {
@@ -182,13 +178,10 @@ namespace QLNet.Time.Calendars
             }
         }
 
-        protected static bool isJuneteenth(int d, Month m, int y, DayOfWeek w)
-        {
+        protected static bool isJuneteenth(int d, Month m, int y, DayOfWeek w) =>
             // declared in 2021, but only observed by exchanges since 2022
-            return (d == 19 || d == 20 && w == DayOfWeek.Monday || d == 18 && w == DayOfWeek.Friday)
-                   && m == Month.June && y >= 2022;
-        }
-
+            (d == 19 || d == 20 && w == DayOfWeek.Monday || d == 18 && w == DayOfWeek.Friday)
+            && m == Month.June && y >= 2022;
 
         //! US calendars
         public enum Market
@@ -234,13 +227,14 @@ namespace QLNet.Time.Calendars
             public static readonly Settlement Singleton = new Settlement();
             protected Settlement() { }
 
-            public override string name() { return "US settlement"; }
+            public override string name() => "US settlement";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
-                int d = date.Day;
-                Month m = (Month)date.Month;
-                int y = date.Year;
+                var w = date.DayOfWeek;
+                var d = date.Day;
+                var m = (Month)date.Month;
+                var y = date.Year;
                 if (isWeekend(w)
                     // New Year's Day (possibly moved to Monday if on Sunday)
                     || (d == 1 || d == 2 && w == DayOfWeek.Monday) && m == Month.January
@@ -277,14 +271,15 @@ namespace QLNet.Time.Calendars
             public static readonly NYSE Singleton = new NYSE();
             private NYSE() { }
 
-            public override string name() { return "New York stock exchange"; }
+            public override string name() => "New York stock exchange";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
                 if (isWeekend(w)
                     // New Year's Day (possibly moved to Monday if on Sunday)
                     || (d == 1 || d == 2 && w == DayOfWeek.Monday) && m == Month.January
@@ -375,14 +370,15 @@ namespace QLNet.Time.Calendars
             public static readonly GovernmentBond Singleton = new GovernmentBond();
             private GovernmentBond() { }
 
-            public override string name() { return "US government bond market"; }
+            public override string name() => "US government bond market";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
-                int em = easterMonday(y);
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
                 if (isWeekend(w)
                     // New Year's Day (possibly moved to Monday if on Sunday)
                     || (d == 1 || d == 2 && w == DayOfWeek.Monday) && m == Month.January
@@ -429,13 +425,14 @@ namespace QLNet.Time.Calendars
             public static readonly NERC Singleton = new NERC();
             private NERC() { }
 
-            public override string name() { return "North American Energy Reliability Council"; }
+            public override string name() => "North American Energy Reliability Council";
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
-                int d = date.Day;
-                Month m = (Month)date.Month;
-                int y = date.Year;
+                var w = date.DayOfWeek;
+                var d = date.Day;
+                var m = (Month)date.Month;
+                var y = date.Year;
                 if (isWeekend(w)
                     // New Year's Day (possibly moved to Monday if on Sunday)
                     || (d == 1 || d == 2 && w == DayOfWeek.Monday) && m == Month.January
@@ -458,15 +455,16 @@ namespace QLNet.Time.Calendars
             public new static readonly LiborImpact Singleton = new LiborImpact();
             private LiborImpact() { }
 
-            public override string name() { return "US with Libor impact"; }
+            public override string name() => "US with Libor impact";
+
             public override bool isBusinessDay(Date date)
             {
                 // Since 2015 Independence Day only impacts Libor if it falls
                 // on a weekday
-                DayOfWeek w = date.DayOfWeek;
-                int d = date.Day;
-                Month m = (Month)date.Month;
-                int y = date.year();
+                var w = date.DayOfWeek;
+                var d = date.Day;
+                var m = (Month)date.Month;
+                var y = date.year();
                 if ((d == 5 && w == DayOfWeek.Monday ||
                      d == 3 && w == DayOfWeek.Friday) && m == Month.July && y >= 2015)
                     return true;
@@ -480,15 +478,15 @@ namespace QLNet.Time.Calendars
 
             private FederalReserve() { }
 
-            public override string name() { return "Federal Reserve Bankwire System"; }
+            public override string name() => "Federal Reserve Bankwire System";
 
             public override bool isBusinessDay(Date date)
             {
                 // see https://www.frbservices.org/holidayschedules/ for details
-                DayOfWeek w = date.DayOfWeek;
-                int d = date.Day;
-                Month m = (Month)date.Month;
-                int y = date.year();
+                var w = date.DayOfWeek;
+                var d = date.Day;
+                var m = (Month)date.Month;
+                var y = date.year();
                 if (isWeekend(w)
                     // New Year's Day (possibly moved to Monday if on Sunday)
                     || (d == 1 || d == 2 && w == DayOfWeek.Monday) && m == Month.January

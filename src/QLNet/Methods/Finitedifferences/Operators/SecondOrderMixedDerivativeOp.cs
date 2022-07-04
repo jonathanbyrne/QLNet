@@ -21,31 +21,31 @@ using System;
 
 namespace QLNet.Methods.Finitedifferences.Operators
 {
-    public class SecondOrderMixedDerivativeOp : NinePointLinearOp
+    [JetBrains.Annotations.PublicAPI] public class SecondOrderMixedDerivativeOp : NinePointLinearOp
     {
         public SecondOrderMixedDerivativeOp(int d0, int d1, FdmMesher mesher)
            : base(d0, d1, mesher)
         {
-            FdmLinearOpLayout layout = mesher.layout();
-            FdmLinearOpIterator endIter = layout.end();
+            var layout = mesher.layout();
+            var endIter = layout.end();
 
-            for (FdmLinearOpIterator iter = layout.begin(); iter != endIter; ++iter)
+            for (var iter = layout.begin(); iter != endIter; ++iter)
             {
-                int i = iter.index();
-                double? hm_d0 = mesher.dminus(iter, d0_);
-                double? hp_d0 = mesher.dplus(iter, d0_);
-                double? hm_d1 = mesher.dminus(iter, d1_);
-                double? hp_d1 = mesher.dplus(iter, d1_);
+                var i = iter.index();
+                var hm_d0 = mesher.dminus(iter, d0_);
+                var hp_d0 = mesher.dplus(iter, d0_);
+                var hm_d1 = mesher.dminus(iter, d1_);
+                var hp_d1 = mesher.dplus(iter, d1_);
 
-                double? zetam1 = hm_d0 * (hm_d0 + hp_d0);
-                double? zeta0 = hm_d0 * hp_d0;
-                double? zetap1 = hp_d0 * (hm_d0 + hp_d0);
-                double? phim1 = hm_d1 * (hm_d1 + hp_d1);
-                double? phi0 = hm_d1 * hp_d1;
-                double? phip1 = hp_d1 * (hm_d1 + hp_d1);
+                var zetam1 = hm_d0 * (hm_d0 + hp_d0);
+                var zeta0 = hm_d0 * hp_d0;
+                var zetap1 = hp_d0 * (hm_d0 + hp_d0);
+                var phim1 = hm_d1 * (hm_d1 + hp_d1);
+                var phi0 = hm_d1 * hp_d1;
+                var phip1 = hp_d1 * (hm_d1 + hp_d1);
 
-                int c0 = iter.coordinates()[d0_];
-                int c1 = iter.coordinates()[d1_];
+                var c0 = iter.coordinates()[d0_];
+                var c1 = iter.coordinates()[d1_];
                 if (c0 == 0 && c1 == 0)
                 {
                     // lower left corner

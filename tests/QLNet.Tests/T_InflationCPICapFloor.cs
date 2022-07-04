@@ -34,7 +34,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_InflationCPICapFloor
+    [JetBrains.Annotations.PublicAPI] public class T_InflationCPICapFloor
     {
         internal struct Datum
         {
@@ -56,11 +56,11 @@ namespace QLNet.Tests
                                                                                   BusinessDayConvention bdc,
                                                                                   DayCounter dc)
             {
-                List<BootstrapHelper<ZeroInflationTermStructure>> instruments = new List<BootstrapHelper<ZeroInflationTermStructure>>();
-                for (int i = 0; i < N; i++)
+                var instruments = new List<BootstrapHelper<ZeroInflationTermStructure>>();
+                for (var i = 0; i < N; i++)
                 {
-                    Date maturity = iiData[i].date;
-                    Handle<Quote> quote = new Handle<Quote>(new SimpleQuote(iiData[i].rate / 100.0));
+                    var maturity = iiData[i].date;
+                    var quote = new Handle<Quote>(new SimpleQuote(iiData[i].rate / 100.0));
                     BootstrapHelper<ZeroInflationTermStructure> anInstrument = new ZeroCouponInflationSwapHelper(quote, observationLag, maturity,
                           calendar, bdc, dc, ii);
                     instruments.Add(anInstrument);
@@ -126,7 +126,7 @@ namespace QLNet.Tests
                 length = 7;
                 calendar = new UnitedKingdom();
                 convention = BusinessDayConvention.ModifiedFollowing;
-                Date today = new Date(1, Month.June, 2010);
+                var today = new Date(1, Month.June, 2010);
                 evaluationDate = calendar.adjust(today);
                 Settings.setEvaluationDate(evaluationDate);
                 settlementDays = 0;
@@ -138,9 +138,9 @@ namespace QLNet.Tests
 
                 // uk rpi index
                 //      fixing data
-                Date from = new Date(1, Month.July, 2007);
-                Date to = new Date(1, Month.June, 2010);
-                Schedule rpiSchedule = new MakeSchedule().from(from).to(to)
+                var from = new Date(1, Month.July, 2007);
+                var to = new Date(1, Month.June, 2010);
+                var rpiSchedule = new MakeSchedule().from(from).to(to)
                 .withTenor(new Period(1, TimeUnit.Months))
                 .withCalendar(new UnitedKingdom())
                 .withConvention(BusinessDayConvention.ModifiedFollowing).value();
@@ -156,10 +156,10 @@ namespace QLNet.Tests
             };
 
                 // link from cpi index to cpi TS
-                bool interp = false;// this MUST be false because the observation lag is only 2 months
+                var interp = false;// this MUST be false because the observation lag is only 2 months
                                     // for ZCIIS; but not for contract if the contract uses a bigger lag.
                 ii = new UKRPI(interp, hcpi);
-                for (int i = 0; i < rpiSchedule.Count; i++)
+                for (var i = 0; i < rpiSchedule.Count; i++)
                 {
                     ii.addFixing(rpiSchedule[i], fixData[i], true);// force overwrite in case multiple use
                 }
@@ -200,11 +200,11 @@ namespace QLNet.Tests
                new Datum(new Date(2, Month.June, 2070), 3.757542),
                new Datum(new Date(3, Month.June, 2080), 3.651379)
             };
-                int nominalDataLength = 33 - 1;
+                var nominalDataLength = 33 - 1;
 
-                List<Date> nomD = new List<Date>();
-                List<double> nomR = new List<double>();
-                for (int i = 0; i < nominalDataLength; i++)
+                var nomD = new List<Date>();
+                var nomR = new List<double>();
+                for (var i = 0; i < nominalDataLength; i++)
                 {
                     nomD.Add(nominalData[i].date);
                     nomR.Add(nominalData[i].rate / 100.0);
@@ -238,20 +238,20 @@ namespace QLNet.Tests
                new Datum(new Date(1, Month.June, 2060), 3.629),
             };
                 zciisDataLength = 17;
-                for (int i = 0; i < zciisDataLength; i++)
+                for (var i = 0; i < zciisDataLength; i++)
                 {
                     zciisD.Add(zciisData[i].date);
                     zciisR.Add(zciisData[i].rate);
                 }
 
                 // now build the helpers ...
-                List<BootstrapHelper<ZeroInflationTermStructure>> helpers = makeHelpers(zciisData, zciisDataLength, ii,
+                var helpers = makeHelpers(zciisData, zciisDataLength, ii,
                                                                                           observationLag, calendar, convention, dcZCIIS);
 
                 // we can use historical or first ZCIIS for this
                 // we know historical is WAY off market-implied, so use market implied flat.
                 baseZeroRate = zciisData[0].rate / 100.0;
-                PiecewiseZeroInflationCurve<Linear> pCPIts = new PiecewiseZeroInflationCurve<Linear>(
+                var pCPIts = new PiecewiseZeroInflationCurve<Linear>(
                    evaluationDate, calendar, dcZCIIS, observationLag, ii.frequency(), ii.interpolated(), baseZeroRate,
                    new Handle<YieldTermStructure>(nominalTS), helpers);
                 pCPIts.recalculate();
@@ -300,24 +300,24 @@ namespace QLNet.Tests
                 cStrikesUK = new List<double>();
                 fStrikesUK = new List<double>();
                 cfMaturitiesUK = new List<Period>();
-                for (int i = 0; i < ncStrikes; i++)
+                for (var i = 0; i < ncStrikes; i++)
                     cStrikesUK.Add(cStrike[i]);
-                for (int i = 0; i < nfStrikes; i++)
+                for (var i = 0; i < nfStrikes; i++)
                     fStrikesUK.Add(fStrike[i]);
-                for (int i = 0; i < ncfMaturities; i++)
+                for (var i = 0; i < ncfMaturities; i++)
                     cfMaturitiesUK.Add(cfMat[i]);
                 cPriceUK = new Matrix(ncStrikes, ncfMaturities);
                 fPriceUK = new Matrix(nfStrikes, ncfMaturities);
-                for (int i = 0; i < ncStrikes; i++)
+                for (var i = 0; i < ncStrikes; i++)
                 {
-                    for (int j = 0; j < ncfMaturities; j++)
+                    for (var j = 0; j < ncfMaturities; j++)
                     {
                         cPriceUK[i, j] = cPrice[j][i] / 10000.0;
                     }
                 }
-                for (int i = 0; i < nfStrikes; i++)
+                for (var i = 0; i < nfStrikes; i++)
                 {
-                    for (int j = 0; j < ncfMaturities; j++)
+                    for (var j = 0; j < ncfMaturities; j++)
                     {
                         fPriceUK[i, j] = fPrice[j][i] / 10000.0;
                     }
@@ -329,10 +329,10 @@ namespace QLNet.Tests
         public void cpicapfloorpricesurface()
         {
             // check inflation leg vs calculation directly from inflation TS
-            CommonVars common = new CommonVars();
+            var common = new CommonVars();
 
-            double nominal = 1.0;
-            InterpolatedCPICapFloorTermPriceSurface<Bilinear> cpiSurf = new InterpolatedCPICapFloorTermPriceSurface<Bilinear>(
+            var nominal = 1.0;
+            var cpiSurf = new InterpolatedCPICapFloorTermPriceSurface<Bilinear>(
                nominal,
                common.baseZeroRate,
                common.observationLag,
@@ -348,15 +348,15 @@ namespace QLNet.Tests
                common.fPriceUK);
 
             // test code - note order of indices
-            for (int i = 0; i < common.fStrikesUK.Count; i++)
+            for (var i = 0; i < common.fStrikesUK.Count; i++)
             {
-                double qK = common.fStrikesUK[i];
-                int nMat = common.cfMaturitiesUK.Count;
-                for (int j = 0; j < nMat; j++)
+                var qK = common.fStrikesUK[i];
+                var nMat = common.cfMaturitiesUK.Count;
+                for (var j = 0; j < nMat; j++)
                 {
-                    Period t = common.cfMaturitiesUK[j];
-                    double a = common.fPriceUK[i, j];
-                    double b = cpiSurf.floorPrice(t, qK);
+                    var t = common.cfMaturitiesUK[j];
+                    var a = common.fPriceUK[i, j];
+                    var b = cpiSurf.floorPrice(t, qK);
 
                     Utils.QL_REQUIRE(System.Math.Abs(a - b) < 1e-7, () => "cannot reproduce cpi floor data from surface: "
                                      + a + " vs constructed = " + b);
@@ -364,15 +364,15 @@ namespace QLNet.Tests
 
             }
 
-            for (int i = 0; i < common.cStrikesUK.Count; i++)
+            for (var i = 0; i < common.cStrikesUK.Count; i++)
             {
-                double qK = common.cStrikesUK[i];
-                int nMat = common.cfMaturitiesUK.Count;
-                for (int j = 0; j < nMat; j++)
+                var qK = common.cStrikesUK[i];
+                var nMat = common.cfMaturitiesUK.Count;
+                for (var j = 0; j < nMat; j++)
                 {
-                    Period t = common.cfMaturitiesUK[j];
-                    double a = common.cPriceUK[i, j];
-                    double b = cpiSurf.capPrice(t, qK);
+                    var t = common.cfMaturitiesUK[j];
+                    var a = common.cPriceUK[i, j];
+                    var b = cpiSurf.capPrice(t, qK);
 
                     QAssert.IsTrue(System.Math.Abs(a - b) < 1e-7, "cannot reproduce cpi cap data from surface: "
                                    + a + " vs constructed = " + b);
@@ -386,8 +386,8 @@ namespace QLNet.Tests
         [Fact]
         public void cpicapfloorpricer()
         {
-            CommonVars common = new CommonVars();
-            double nominal = 1.0;
+            var common = new CommonVars();
+            var nominal = 1.0;
             CPICapFloorTermPriceSurface cpiCFpriceSurf = new InterpolatedCPICapFloorTermPriceSurface
             <Bilinear>(nominal,
                        common.baseZeroRate,
@@ -408,15 +408,15 @@ namespace QLNet.Tests
             // interpolation pricer first
             // N.B. no new instrument required but we do need a new pricer
 
-            Date startDate = Settings.evaluationDate();
-            Date maturity = startDate + new Period(3, TimeUnit.Years);
+            var startDate = Settings.evaluationDate();
+            var maturity = startDate + new Period(3, TimeUnit.Years);
             Calendar fixCalendar = new UnitedKingdom(), payCalendar = new UnitedKingdom();
             BusinessDayConvention fixConvention = BusinessDayConvention.Unadjusted,
                                   payConvention = BusinessDayConvention.ModifiedFollowing;
-            double strike = 0.03;
-            double baseCPI = common.hii.link.fixing(fixCalendar.adjust(startDate - common.observationLag, fixConvention));
-            InterpolationType observationInterpolation = InterpolationType.AsIndex;
-            CPICapFloor aCap = new CPICapFloor(QLNet.Option.Type.Call,
+            var strike = 0.03;
+            var baseCPI = common.hii.link.fixing(fixCalendar.adjust(startDate - common.observationLag, fixConvention));
+            var observationInterpolation = InterpolationType.AsIndex;
+            var aCap = new CPICapFloor(QLNet.Option.Type.Call,
                                                nominal,
                                                startDate,   // start date of contract (only)
                                                baseCPI,
@@ -430,15 +430,15 @@ namespace QLNet.Tests
                                                common.observationLag,
                                                observationInterpolation);
 
-            Handle<CPICapFloorTermPriceSurface> cpiCFsurfUKh = new Handle<CPICapFloorTermPriceSurface>(common.cpiCFsurfUK);
+            var cpiCFsurfUKh = new Handle<CPICapFloorTermPriceSurface>(common.cpiCFsurfUK);
             IPricingEngine engine = new InterpolatingCPICapFloorEngine(cpiCFsurfUKh);
 
             aCap.setPricingEngine(engine);
 
-            Date d = common.cpiCFsurfUK.cpiOptionDateFromTenor(new Period(3, TimeUnit.Years));
+            var d = common.cpiCFsurfUK.cpiOptionDateFromTenor(new Period(3, TimeUnit.Years));
 
 
-            double cached = cpiCFsurfUKh.link.capPrice(d, strike);
+            var cached = cpiCFsurfUKh.link.capPrice(d, strike);
             QAssert.IsTrue(System.Math.Abs(cached - aCap.NPV()) < 1e-10, "InterpolatingCPICapFloorEngine does not reproduce cached price: "
                            + cached + " vs " + aCap.NPV());
 

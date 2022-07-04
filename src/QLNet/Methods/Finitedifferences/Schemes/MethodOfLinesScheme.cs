@@ -29,7 +29,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         Douglas scheme and in higher dimensions it is usually inferior to
         operator splitting methods like Craig-Sneyd or Hundsdorfer-Verwer.
     */
-    public class MethodOfLinesScheme : IMixedScheme, ISchemeFactory
+    [JetBrains.Annotations.PublicAPI] public class MethodOfLinesScheme : IMixedScheme, ISchemeFactory
     {
         public MethodOfLinesScheme()
         { }
@@ -50,8 +50,8 @@ namespace QLNet.Methods.Finitedifferences.Schemes
 
         public IMixedScheme factory(object L, object bcs, object[] additionalInputs = null)
         {
-            double? eps = additionalInputs[0] as double?;
-            double? relInitStepSize = additionalInputs[1] as double?;
+            var eps = additionalInputs[0] as double?;
+            var relInitStepSize = additionalInputs[1] as double?;
             return new MethodOfLinesScheme(eps.Value, relInitStepSize.Value,
                                            L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
         }
@@ -63,7 +63,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
             map_.setTime(t, t + 0.0001);
             bcSet_.applyBeforeApplying(map_);
 
-            Vector dxdt = -1.0 * map_.apply(new Vector(r));
+            var dxdt = -1.0 * map_.apply(new Vector(r));
 
             return dxdt;
         }
@@ -71,8 +71,8 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         public void step(ref object a, double t, double theta = 1.0)
         {
             Utils.QL_REQUIRE(t - dt_ > -1e-8, () => "a step towards negative time given");
-            List<double> v = new AdaptiveRungeKutta(eps_, relInitStepSize_ * dt_.Value).value(this.apply, a as Vector, t, System.Math.Max(0.0, t - dt_.Value));
-            Vector y = new Vector(v);
+            var v = new AdaptiveRungeKutta(eps_, relInitStepSize_ * dt_.Value).value(this.apply, a as Vector, t, System.Math.Max(0.0, t - dt_.Value));
+            var y = new Vector(v);
             bcSet_.applyAfterSolving(y);
             a = y;
         }

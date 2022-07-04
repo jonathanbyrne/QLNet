@@ -43,7 +43,7 @@ namespace QLNet.Pricingengines.asian
 
        \ingroup asianengines
     */
-    public class AnalyticDiscreteGeometricAveragePriceAsianEngine : DiscreteAveragingAsianOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class AnalyticDiscreteGeometricAveragePriceAsianEngine : DiscreteAveragingAsianOption.Engine
     {
         private GeneralizedBlackScholesProcess process_;
 
@@ -59,7 +59,7 @@ namespace QLNet.Pricingengines.asian
                since it can be used as control variate for the Arithmetic version
                QL_REQUIRE(arguments_.averageType == Average::Geometric,"not a geometric average option")
             */
-            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European, () => "not an European Option");
+            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European Option");
 
             double runningLog;
             int pastFixings;
@@ -78,60 +78,60 @@ namespace QLNet.Pricingengines.asian
                 pastFixings = 0;
             }
 
-            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
-            Date referenceDate = process_.riskFreeRate().link.referenceDate();
-            DayCounter rfdc = process_.riskFreeRate().link.dayCounter();
-            DayCounter divdc = process_.dividendYield().link.dayCounter();
-            DayCounter voldc = process_.blackVolatility().link.dayCounter();
-            List<double> fixingTimes = new List<double>();
+            var referenceDate = process_.riskFreeRate().link.referenceDate();
+            var rfdc = process_.riskFreeRate().link.dayCounter();
+            var divdc = process_.dividendYield().link.dayCounter();
+            var voldc = process_.blackVolatility().link.dayCounter();
+            var fixingTimes = new List<double>();
             int i;
             for (i = 0; i < arguments_.fixingDates.Count; i++)
             {
                 if (arguments_.fixingDates[i] >= referenceDate)
                 {
-                    double t = voldc.yearFraction(referenceDate, arguments_.fixingDates[i]);
+                    var t = voldc.yearFraction(referenceDate, arguments_.fixingDates[i]);
                     fixingTimes.Add(t);
                 }
             }
 
-            int remainingFixings = fixingTimes.Count;
-            int numberOfFixings = pastFixings + remainingFixings;
+            var remainingFixings = fixingTimes.Count;
+            var numberOfFixings = pastFixings + remainingFixings;
             double N = numberOfFixings;
 
-            double pastWeight = pastFixings / N;
-            double futureWeight = 1.0 - pastWeight;
+            var pastWeight = pastFixings / N;
+            var futureWeight = 1.0 - pastWeight;
 
             double timeSum = 0;
             fixingTimes.ForEach((ii, vv) => timeSum += fixingTimes[ii]);
 
-            double vola = process_.blackVolatility().link.blackVol(arguments_.exercise.lastDate(), payoff.strike());
-            double temp = 0.0;
+            var vola = process_.blackVolatility().link.blackVol(arguments_.exercise.lastDate(), payoff.strike());
+            var temp = 0.0;
             for (i = pastFixings + 1; i < numberOfFixings; i++)
                 temp += fixingTimes[i - pastFixings - 1] * (N - i);
-            double variance = vola * vola / N / N * (timeSum + 2.0 * temp);
-            double dsigG_dsig = System.Math.Sqrt(timeSum + 2.0 * temp) / N;
-            double sigG = vola * dsigG_dsig;
-            double dmuG_dsig = -(vola * timeSum) / N;
+            var variance = vola * vola / N / N * (timeSum + 2.0 * temp);
+            var dsigG_dsig = System.Math.Sqrt(timeSum + 2.0 * temp) / N;
+            var sigG = vola * dsigG_dsig;
+            var dmuG_dsig = -(vola * timeSum) / N;
 
-            Date exDate = arguments_.exercise.lastDate();
-            double dividendRate = process_.dividendYield().link.
+            var exDate = arguments_.exercise.lastDate();
+            var dividendRate = process_.dividendYield().link.
                                   zeroRate(exDate, divdc, Compounding.Continuous, Frequency.NoFrequency).rate();
-            double riskFreeRate = process_.riskFreeRate().link.
+            var riskFreeRate = process_.riskFreeRate().link.
                                   zeroRate(exDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).rate();
-            double nu = riskFreeRate - dividendRate - 0.5 * vola * vola;
+            var nu = riskFreeRate - dividendRate - 0.5 * vola * vola;
 
-            double s = process_.stateVariable().link.value();
+            var s = process_.stateVariable().link.value();
             Utils.QL_REQUIRE(s > 0.0, () => "positive underlying value required");
 
-            int M = pastFixings == 0 ? 1 : pastFixings;
-            double muG = pastWeight * runningLog / M + futureWeight * System.Math.Log(s) + nu * timeSum / N;
-            double forwardPrice = System.Math.Exp(muG + variance / 2.0);
+            var M = pastFixings == 0 ? 1 : pastFixings;
+            var muG = pastWeight * runningLog / M + futureWeight * System.Math.Log(s) + nu * timeSum / N;
+            var forwardPrice = System.Math.Exp(muG + variance / 2.0);
 
-            double riskFreeDiscount = process_.riskFreeRate().link.discount(arguments_.exercise.lastDate());
+            var riskFreeDiscount = process_.riskFreeRate().link.discount(arguments_.exercise.lastDate());
 
-            BlackCalculator black = new BlackCalculator(payoff, forwardPrice, System.Math.Sqrt(variance), riskFreeDiscount);
+            var black = new BlackCalculator(payoff, forwardPrice, System.Math.Sqrt(variance), riskFreeDiscount);
 
             results_.value = black.value();
             results_.delta = futureWeight * black.delta(forwardPrice) * forwardPrice / s;
@@ -140,11 +140,11 @@ namespace QLNet.Pricingengines.asian
                                 - pastWeight * black.delta(forwardPrice));
 
             double Nx_1, nx_1;
-            CumulativeNormalDistribution CND = new CumulativeNormalDistribution();
-            NormalDistribution ND = new NormalDistribution();
+            var CND = new CumulativeNormalDistribution();
+            var ND = new NormalDistribution();
             if (sigG > Const.QL_EPSILON)
             {
-                double x_1 = (muG - System.Math.Log(payoff.strike()) + variance) / sigG;
+                var x_1 = (muG - System.Math.Log(payoff.strike()) + variance) / sigG;
                 Nx_1 = CND.value(x_1);
                 nx_1 = ND.value(x_1);
             }
@@ -160,12 +160,12 @@ namespace QLNet.Pricingengines.asian
                 results_.vega -= riskFreeDiscount * forwardPrice *
                                  (dmuG_dsig + sigG * dsigG_dsig);
 
-            double tRho = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(),
+            var tRho = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(),
                                             arguments_.exercise.lastDate());
             results_.rho = black.rho(tRho) * timeSum / (N * tRho)
                            - (tRho - timeSum / N) * results_.value;
 
-            double tDiv = divdc.yearFraction(
+            var tDiv = divdc.yearFraction(
                              process_.dividendYield().link.referenceDate(),
                              arguments_.exercise.lastDate());
 

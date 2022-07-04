@@ -25,7 +25,7 @@ using System.Collections.Generic;
 namespace QLNet.Instruments
 {
     // Abstract instrument class. It defines the interface of concrete instruments
-    public class Instrument : LazyObject
+    [JetBrains.Annotations.PublicAPI] public class Instrument : LazyObject
     {
         // The value of these attributes and any other that derived classes might declare must be set during calculation.
         protected double? NPV_, errorEstimate_, CASH_;
@@ -89,7 +89,7 @@ namespace QLNet.Instruments
          * This is mandatory in case a pricing engine is used.  */
         public virtual void fetchResults(IPricingEngineResults r)
         {
-            Results results = r as Results;
+            var results = r as Results;
             if (results == null)
                 throw new ArgumentException("no results returned from pricing engine");
             NPV_ = results.value;
@@ -148,7 +148,8 @@ namespace QLNet.Instruments
         }
 
         // returns all additional result returned by the pricing engine.
-        public Dictionary<string, object> additionalResults() { return additionalResults_; }
+        public Dictionary<string, object> additionalResults() => additionalResults_;
+
         #endregion
 
         // This method must leave the instrument in a consistent state when the expiration condition is met.
@@ -160,10 +161,9 @@ namespace QLNet.Instruments
         }
 
         //! returns whether the instrument is still tradable.
-        public virtual bool isExpired() { throw new NotSupportedException(); }
+        public virtual bool isExpired() => throw new NotSupportedException();
 
-
-        public class Results : IPricingEngineResults
+        [JetBrains.Annotations.PublicAPI] public class Results : IPricingEngineResults
         {
             public Results()
             {

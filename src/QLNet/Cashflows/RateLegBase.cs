@@ -31,10 +31,7 @@ namespace QLNet.Cashflows
         protected DayCounter paymentDayCounter_;
         protected BusinessDayConvention paymentAdjustment_;
 
-        public static implicit operator List<CashFlow>(RateLegBase o)
-        {
-            return o.value();
-        }
+        public static implicit operator List<CashFlow>(RateLegBase o) => o.value();
 
         public abstract List<CashFlow> value();
 
@@ -137,10 +134,7 @@ namespace QLNet.Cashflows
             return this;
         }
 
-        public FloatingLegBase inArrears()
-        {
-            return inArrears(true);
-        }
+        public FloatingLegBase inArrears() => inArrears(true);
 
         public FloatingLegBase inArrears(bool flag)
         {
@@ -148,10 +142,7 @@ namespace QLNet.Cashflows
             return this;
         }
 
-        public FloatingLegBase withZeroPayments()
-        {
-            return withZeroPayments(true);
-        }
+        public FloatingLegBase withZeroPayments() => withZeroPayments(true);
 
         public FloatingLegBase withZeroPayments(bool flag)
         {

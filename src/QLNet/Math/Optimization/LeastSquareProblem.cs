@@ -39,7 +39,7 @@ namespace QLNet.Math.Optimization
     //    ! Implements a cost function using the interface provided by
     //        the LeastSquareProblem class.
     //
-    public class LeastSquareFunction : CostFunction
+    [JetBrains.Annotations.PublicAPI] public class LeastSquareFunction : CostFunction
     {
         //! least square problem
         protected LeastSquareProblem lsp_ = null;
@@ -54,38 +54,38 @@ namespace QLNet.Math.Optimization
         public override double value(Vector x)
         {
             // size of target and function to fit vectors
-            Vector target = new Vector(lsp_.size());
-            Vector fct2fit = new Vector(lsp_.size());
+            var target = new Vector(lsp_.size());
+            var fct2fit = new Vector(lsp_.size());
             // compute its values
             lsp_.targetAndValue(x, ref target, ref fct2fit);
             // do the difference
-            Vector diff = target - fct2fit;
+            var diff = target - fct2fit;
             // and compute the scalar product (square of the norm)
             return Vector.DotProduct(diff, diff);
         }
         public override Vector values(Vector x)
         {
             // size of target and function to fit vectors
-            Vector target = new Vector(lsp_.size());
-            Vector fct2fit = new Vector(lsp_.size());
+            var target = new Vector(lsp_.size());
+            var fct2fit = new Vector(lsp_.size());
             // compute its values
             lsp_.targetAndValue(x, ref target, ref fct2fit);
             // do the difference
-            Vector diff = target - fct2fit;
+            var diff = target - fct2fit;
             return Vector.DirectMultiply(diff, diff);
         }
         //! compute vector of derivatives of the least square function
         public override void gradient(ref Vector grad_f, Vector x)
         {
             // size of target and function to fit vectors
-            Vector target = new Vector(lsp_.size());
-            Vector fct2fit = new Vector(lsp_.size());
+            var target = new Vector(lsp_.size());
+            var fct2fit = new Vector(lsp_.size());
             // size of gradient matrix
-            Matrix grad_fct2fit = new Matrix(lsp_.size(), x.size());
+            var grad_fct2fit = new Matrix(lsp_.size(), x.size());
             // compute its values
             lsp_.targetValueAndGradient(x, ref grad_fct2fit, ref target, ref fct2fit);
             // do the difference
-            Vector diff = target - fct2fit;
+            var diff = target - fct2fit;
             // compute derivative
             grad_f = -2.0 * (Matrix.transpose(grad_fct2fit) * diff);
         }
@@ -93,14 +93,14 @@ namespace QLNet.Math.Optimization
         public override double valueAndGradient(ref Vector grad_f, Vector x)
         {
             // size of target and function to fit vectors
-            Vector target = new Vector(lsp_.size());
-            Vector fct2fit = new Vector(lsp_.size());
+            var target = new Vector(lsp_.size());
+            var fct2fit = new Vector(lsp_.size());
             // size of gradient matrix
-            Matrix grad_fct2fit = new Matrix(lsp_.size(), x.size());
+            var grad_fct2fit = new Matrix(lsp_.size(), x.size());
             // compute its values
             lsp_.targetValueAndGradient(x, ref grad_fct2fit, ref target, ref fct2fit);
             // do the difference
-            Vector diff = target - fct2fit;
+            var diff = target - fct2fit;
             // compute derivative
             grad_f = -2.0 * (Matrix.transpose(grad_fct2fit) * diff);
             // and compute the scalar product (square of the norm)
@@ -125,7 +125,7 @@ namespace QLNet.Math.Optimization
     //        \f$ r \f$ is defined by
     //        \f[ grad r(x) = f'(x)^t.f(x) \f]
     //
-    public class NonLinearLeastSquare
+    [JetBrains.Annotations.PublicAPI] public class NonLinearLeastSquare
     {
         //! solution vector
         private Vector results_;
@@ -174,16 +174,16 @@ namespace QLNet.Math.Optimization
         //! Solve least square problem using numerix solver
         public Vector perform(ref LeastSquareProblem lsProblem)
         {
-            double eps = accuracy_;
+            var eps = accuracy_;
 
             // wrap the least square problem in an optimization function
-            LeastSquareFunction lsf = new LeastSquareFunction(lsProblem);
+            var lsf = new LeastSquareFunction(lsProblem);
 
             // define optimization problem
-            Problem P = new Problem(lsf, c_, initialValue_);
+            var P = new Problem(lsf, c_, initialValue_);
 
             // minimize
-            EndCriteria ec = new EndCriteria(maxIterations_, System.Math.Min(maxIterations_ / 2, 100), eps, eps, eps);
+            var ec = new EndCriteria(maxIterations_, System.Math.Min(maxIterations_ / 2, 100), eps, eps, eps);
             exitFlag_ = (int)om_.minimize(P, ec);
 
             results_ = P.currentValue();
@@ -199,28 +199,15 @@ namespace QLNet.Math.Optimization
         }
 
         //! return the results
-        public Vector results()
-        {
-            return results_;
-        }
+        public Vector results() => results_;
 
         //! return the least square residual norm
-        public double residualNorm()
-        {
-            return resnorm_;
-        }
+        public double residualNorm() => resnorm_;
 
         //! return last function value
-        public double lastValue()
-        {
-            return bestAccuracy_;
-        }
+        public double lastValue() => bestAccuracy_;
 
         //! return exit flag
-        public int exitFlag()
-        {
-            return exitFlag_;
-        }
-
+        public int exitFlag() => exitFlag_;
     }
 }

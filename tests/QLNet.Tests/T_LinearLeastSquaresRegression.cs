@@ -30,7 +30,7 @@ namespace QLNet.Tests
     /// Summary description for LinearLeastSquaresRegression
     /// </summary>
     [Collection("QLNet CI Tests")]
-    public class T_LinearLeastSquaresRegression : IDisposable
+    [JetBrains.Annotations.PublicAPI] public class T_LinearLeastSquaresRegression : IDisposable
     {
 
         #region Initialize&Cleanup
@@ -58,16 +58,16 @@ namespace QLNet.Tests
             var rng = new InverseCumulativeRng<MersenneTwisterUniformRng, InverseCumulativeNormal>(
                new MersenneTwisterUniformRng(1234u));
 
-            List<Func<double, double>> v = new List<Func<double, double>>();
+            var v = new List<Func<double, double>>();
             v.Add(x => 1.0);
             v.Add(x => x);
             v.Add(x => x * x);
             v.Add(System.Math.Sin);
 
-            List<Func<double, double>> w = new List<Func<double, double>>(v);
+            var w = new List<Func<double, double>>(v);
             w.Add(x => x * x);
 
-            for (int k = 0; k < 3; ++k)
+            for (var k = 0; k < 3; ++k)
             {
                 int i;
                 double[] a = { rng.next().value,
@@ -86,7 +86,7 @@ namespace QLNet.Tests
                             + a[3] * v[3](x[i]) + rng.next().value;
                 }
 
-                LinearLeastSquaresRegression m = new LinearLeastSquaresRegression(x, y, v);
+                var m = new LinearLeastSquaresRegression(x, y, v);
 
                 for (i = 0; i < v.Count; ++i)
                 {
@@ -143,17 +143,17 @@ namespace QLNet.Tests
             y[0] = 7.8; y[1] = 5.5; y[2] = 8.0; y[3] = 9.0;
             y[4] = 6.5; y[5] = 4.0; y[6] = 6.3; y[7] = 8.4; y[8] = 10.2;
 
-            List<Func<double, double>> v = new List<Func<double, double>>();
+            var v = new List<Func<double, double>>();
             v.Add(a => 1.0);
             v.Add(a => a);
 
-            LinearRegression m = new LinearRegression(x, y);
+            var m = new LinearRegression(x, y);
 
             const double tol = 0.0002;
-            double[] coeffExpected = new double[] { 0.9448, 2.6853 };
-            double[] errorsExpected = new double[] { 0.3654, 0.1487 };
+            var coeffExpected = new double[] { 0.9448, 2.6853 };
+            var errorsExpected = new double[] { 0.3654, 0.1487 };
 
-            for (int i = 0; i < 2; ++i)
+            for (var i = 0; i < 2; ++i)
             {
                 if (System.Math.Abs(m.standardErrors()[i] - errorsExpected[i]) > tol)
                 {
@@ -184,38 +184,38 @@ namespace QLNet.Tests
             var rng = new InverseCumulativeRng<MersenneTwisterUniformRng, InverseCumulativeNormal>(
                new MersenneTwisterUniformRng(1234u));
 
-            List<Func<Vector, double>> v = new List<Func<Vector, double>>();
+            var v = new List<Func<Vector, double>>();
             v.Add(xx => 1.0);
-            for (int i = 0; i < dims; ++i)
+            for (var i = 0; i < dims; ++i)
             {
-                int jj = i;     // c# delegate work-around vs. boost bind; jj has to be evaluted before add delegate to the list
+                var jj = i;     // c# delegate work-around vs. boost bind; jj has to be evaluted before add delegate to the list
                 v.Add(vv => vv[jj]);
             }
 
-            Vector coeff = new Vector(v.Count);
-            for (int i = 0; i < v.Count; ++i)
+            var coeff = new Vector(v.Count);
+            for (var i = 0; i < v.Count; ++i)
                 coeff[i] = rng.next().value;
 
             List<double> y = new InitializedList<double>(nr, 0.0);
             List<Vector> x = new InitializedList<Vector>(nr);
-            for (int i = 0; i < nr; ++i)
+            for (var i = 0; i < nr; ++i)
             {
                 x[i] = new Vector(dims);
-                for (int j = 0; j < dims; ++j)
+                for (var j = 0; j < dims; ++j)
                 {
                     x[i][j] = rng.next().value;
                 }
 
-                for (int j = 0; j < v.Count; ++j)
+                for (var j = 0; j < v.Count; ++j)
                 {
                     y[i] += coeff[j] * v[j](x[i]);
                 }
                 y[i] += rng.next().value;
             }
 
-            LinearLeastSquaresRegression<Vector> m = new LinearLeastSquaresRegression<Vector>(x, y, v);
+            var m = new LinearLeastSquaresRegression<Vector>(x, y, v);
 
-            for (int i = 0; i < v.Count; ++i)
+            for (var i = 0; i < v.Count; ++i)
             {
                 if (m.standardErrors()[i] > tolerance)
                 {

@@ -22,7 +22,7 @@ using QLNet.Instruments;
 namespace QLNet
 {
     //! base option class
-    public class Option : Instrument
+    [JetBrains.Annotations.PublicAPI] public class Option : Instrument
    {
       public enum Type
       {
@@ -33,17 +33,11 @@ namespace QLNet
       // arguments
       protected Payoff payoff_;
 
-      public Payoff payoff()
-      {
-         return payoff_;
-      }
+      public Payoff payoff() => payoff_;
 
       protected Exercise exercise_;
 
-      public Exercise exercise()
-      {
-         return exercise_;
-      }
+      public Exercise exercise() => exercise_;
 
       public Option(Payoff payoff, Exercise exercise)
       {
@@ -53,16 +47,16 @@ namespace QLNet
 
       public override void setupArguments(IPricingEngineArguments args)
       {
-         Option.Arguments arguments = args as Option.Arguments;
+         var arguments = args as Option.Arguments;
 
-         Utils.QL_REQUIRE(arguments != null, () => "wrong argument type");
+         Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
 
          arguments.payoff = payoff_;
          arguments.exercise = exercise_;
       }
 
       //! basic %option %arguments
-      public class Arguments : IPricingEngineArguments
+      [JetBrains.Annotations.PublicAPI] public class Arguments : IPricingEngineArguments
       {
          public Payoff payoff { get; set; }
          public Exercise exercise { get; set; }

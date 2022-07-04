@@ -34,7 +34,7 @@ namespace QLNet.Indexes.Ibor
     //
     //        \todo check settlement days and end-of-month adjustment.
     //
-    public class Tibor : IborIndex
+    [JetBrains.Annotations.PublicAPI] public class Tibor : IborIndex
     {
         public Tibor(Period tenor)
            : base("Tibor", tenor, 2, new JPYCurrency(), new Japan(), BusinessDayConvention.ModifiedFollowing, false, new Actual365Fixed(), new Handle<YieldTermStructure>())

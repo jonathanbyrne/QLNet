@@ -23,12 +23,12 @@ using QLNet.Termstructures;
 
 namespace QLNet.Pricingengines.Loan
 {
-    public class DiscountingLoanEngine : QLNet.Instruments.Loan.Engine
+    [JetBrains.Annotations.PublicAPI] public class DiscountingLoanEngine : QLNet.Instruments.Loan.Engine
     {
         private readonly Handle<YieldTermStructure> discountCurve_;
         private readonly bool? includeSettlementDateFlows_;
 
-        public Handle<YieldTermStructure> discountCurve() { return discountCurve_; }
+        public Handle<YieldTermStructure> discountCurve() => discountCurve_;
 
         public DiscountingLoanEngine(Handle<YieldTermStructure> discountCurve, bool? includeSettlementDateFlows = null)
         {
@@ -42,14 +42,14 @@ namespace QLNet.Pricingengines.Loan
             Utils.QL_REQUIRE(!discountCurve_.empty(), () => "discounting term structure handle is empty");
 
             results_.valuationDate = discountCurve_.link.referenceDate();
-            bool includeRefDateFlows =
+            var includeRefDateFlows =
                includeSettlementDateFlows_.HasValue ?
                includeSettlementDateFlows_.Value :
                Settings.includeReferenceDateEvents;
 
             results_.value = 0;
             results_.cash = 0;
-            for (int i = 0; i < arguments_.legs.Count; ++i)
+            for (var i = 0; i < arguments_.legs.Count; ++i)
             {
                 results_.value += CashFlows.npv(arguments_.legs[i],
                                                 discountCurve_,

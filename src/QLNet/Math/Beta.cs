@@ -24,29 +24,25 @@ namespace QLNet
 {
     public partial class Utils
    {
-      public static double betaFunction(double z, double w)
-      {
-         return System.Math.Exp(GammaFunction.logValue(z) +
-                         GammaFunction.logValue(w) -
-                         GammaFunction.logValue(z + w));
-      }
+      public static double betaFunction(double z, double w) =>
+          System.Math.Exp(GammaFunction.logValue(z) +
+                          GammaFunction.logValue(w) -
+                          GammaFunction.logValue(z + w));
 
-      public static double betaContinuedFraction(double a, double b, double x)
-      {
-         return betaContinuedFraction(a, b, x, 1e-16, 100);
-      }
+      public static double betaContinuedFraction(double a, double b, double x) => betaContinuedFraction(a, b, x, 1e-16, 100);
+
       public static double betaContinuedFraction(double a, double b, double x, double accuracy, int maxIteration)
       {
          double aa, del;
-         double qab = a + b;
-         double qap = a + 1.0;
-         double qam = a - 1.0;
-         double c = 1.0;
-         double d = 1.0 - qab * x / qap;
+         var qab = a + b;
+         var qap = a + 1.0;
+         var qam = a - 1.0;
+         var c = 1.0;
+         var d = 1.0 - qab * x / qap;
          if (System.Math.Abs(d) < Const.QL_EPSILON)
             d = Const.QL_EPSILON;
          d = 1.0 / d;
-         double result = d;
+         var result = d;
 
          int m, m2;
          for (m = 1; m <= maxIteration; m++)
@@ -84,10 +80,8 @@ namespace QLNet
           "Numerical Recipes in C", 2nd edition,
           Press, Teukolsky, Vetterling, Flannery, chapter 6
       */
-      public static double incompleteBetaFunction(double a, double b, double x)
-      {
-         return incompleteBetaFunction(a, b, x, 1e-16, 100);
-      }
+      public static double incompleteBetaFunction(double a, double b, double x) => incompleteBetaFunction(a, b, x, 1e-16, 100);
+
       public static double incompleteBetaFunction(double a, double b, double x, double accuracy, int maxIteration)
       {
 
@@ -100,9 +94,9 @@ namespace QLNet
             return 1.0;
          QL_REQUIRE(x > 0.0 && x<1.0, () => "x must be in [0,1]");
 
-         double result = System.Math.Exp(GammaFunction.logValue(a + b) -
-                                  GammaFunction.logValue(a) - GammaFunction.logValue(b) +
-                                  a* System.Math.Log(x) + b* System.Math.Log(1.0 - x));
+         var result = System.Math.Exp(GammaFunction.logValue(a + b) -
+                                      GammaFunction.logValue(a) - GammaFunction.logValue(b) +
+                                      a* System.Math.Log(x) + b* System.Math.Log(1.0 - x));
 
          if (x < (a + 1.0) / (a + b + 2.0))
             return result*

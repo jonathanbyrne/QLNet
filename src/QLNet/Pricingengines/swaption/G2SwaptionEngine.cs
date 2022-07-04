@@ -33,7 +33,7 @@ namespace QLNet.Pricingengines.swaption
         \warning The engine assumes that the exercise date equals the
                  start date of the passed swap.
     */
-    public class G2SwaptionEngine : GenericModelEngine<G2, Swaption.Arguments,
+    [JetBrains.Annotations.PublicAPI] public class G2SwaptionEngine : GenericModelEngine<G2, Swaption.Arguments,
       Instrument.Results>
     {
         double range_;
@@ -60,11 +60,11 @@ namespace QLNet.Pricingengines.swaption
             // adjust the fixed rate of the swap for the spread on the
             // floating leg (which is not taken into account by the
             // model)
-            VanillaSwap swap = arguments_.swap;
+            var swap = arguments_.swap;
             swap.setPricingEngine(new DiscountingSwapEngine(model_.link.termStructure()));
-            double correction = swap.spread *
-                                System.Math.Abs(swap.floatingLegBPS() / swap.fixedLegBPS());
-            double fixedRate = swap.fixedRate - correction;
+            var correction = swap.spread *
+                             System.Math.Abs(swap.floatingLegBPS() / swap.fixedLegBPS());
+            var fixedRate = swap.fixedRate - correction;
 
             results_.value = model_.link.swaption(arguments_, fixedRate,
                                                    range_, intervals_);

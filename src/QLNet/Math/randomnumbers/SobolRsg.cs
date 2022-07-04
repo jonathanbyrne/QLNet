@@ -132,7 +132,7 @@ namespace QLNet
          integerSequence_ = new InitializedList<ulong>(dimensionality);
 
          directionIntegers_ = new InitializedList<List<ulong>>(dimensionality);
-         for (int i = 0; i < dimensionality; i++)
+         for (var i = 0; i < dimensionality; i++)
             directionIntegers_[i] = new InitializedList<ulong>(bits_);
 
          Utils.QL_REQUIRE(dimensionality > 0, () => "dimensionality must be greater than 0");
@@ -145,7 +145,7 @@ namespace QLNet
          List<uint> degree = new InitializedList<uint>(dimensionality_);
          List<long> ppmt = new InitializedList<long>(dimensionality_);
 
-         bool useAltPolynomials = false;
+         var useAltPolynomials = false;
 
          if (directionIntegers == DirectionIntegers.Kuo || directionIntegers == DirectionIntegers.Kuo2
              || directionIntegers == DirectionIntegers.Kuo3 || directionIntegers == DirectionIntegers.SobolLevitan
@@ -160,7 +160,7 @@ namespace QLNet
          k = 1;
          index = 0;
 
-         uint altDegree = useAltPolynomials ? maxAltDegree : 0;
+         var altDegree = useAltPolynomials ? maxAltDegree : 0;
 
          for (; k < System.Math.Min(dimensionality_, altDegree); k++, index++)
          {
@@ -201,7 +201,7 @@ namespace QLNet
          for (j = 0; j < bits_; j++)
             directionIntegers_[0][j] = (1UL << (bits_ - j - 1));
 
-         int maxTabulated = 0;
+         var maxTabulated = 0;
          // dimensions from 2 (k=1) to maxTabulated (k=maxTabulated-1) included
          // are initialized from tabulated coefficients
          switch (directionIntegers)
@@ -210,7 +210,7 @@ namespace QLNet
                maxTabulated = dimensionality_;
                for (k = 1; k < maxTabulated; k++)
                {
-                  for (int l = 1; l <= degree[k]; l++)
+                  for (var l = 1; l <= degree[k]; l++)
                   {
                      directionIntegers_[k][l - 1] = 1UL;
                      directionIntegers_[k][l - 1] <<= (bits_ - l);
@@ -364,15 +364,15 @@ namespace QLNet
          // random initialization for higher dimensions
          if (dimensionality_ > maxTabulated)
          {
-            MersenneTwisterUniformRng uniformRng = new MersenneTwisterUniformRng(seed);
+            var uniformRng = new MersenneTwisterUniformRng(seed);
             for (k = maxTabulated; k < dimensionality_; k++)
             {
-               for (int l = 1; l <= degree[k]; l++)
+               for (var l = 1; l <= degree[k]; l++)
                {
                   do
                   {
                      // u is in (0,1)
-                     double u = uniformRng.next().value;
+                     var u = uniformRng.next().value;
                      // the direction integer has at most the
                      // rightmost l bits non-zero
                      directionIntegers_[k][l - 1] = (ulong)(u * (1UL << l));
@@ -394,11 +394,11 @@ namespace QLNet
          // by recurrence relation
          for (k = 1; k < dimensionality_; k++)
          {
-            uint gk = degree[k];
-            for (int l = (int)gk; l < bits_; l++)
+            var gk = degree[k];
+            for (var l = (int)gk; l < bits_; l++)
             {
                // eq. 8.19 "Monte Carlo Methods in Finance" by P. Jдckel
-               ulong n = (directionIntegers_[k][(int)(l - gk)] >> (int)gk);
+               var n = (directionIntegers_[k][(int)(l - gk)] >> (int)gk);
                // a[k][j] are the coefficients of the monomials in ppmt[k]
                // The highest order coefficient a[k][0] is not actually
                // used in the recurrence relation, and the lowest order
@@ -432,15 +432,15 @@ namespace QLNet
       /*! skip to the n-th sample in the low-discrepancy sequence */
       public void skipTo(ulong skip)
       {
-         ulong N = skip + 1;
-         uint ops = (uint)(System.Math.Log((double)N) / Const.M_LN2) + 1;
+         var N = skip + 1;
+         var ops = (uint)(System.Math.Log((double)N) / Const.M_LN2) + 1;
 
          // Convert to Gray code
-         ulong G = N ^ (N >> 1);
-         for (int k = 0; k < dimensionality_; k++)
+         var G = N ^ (N >> 1);
+         for (var k = 0; k < dimensionality_; k++)
          {
             integerSequence_[k] = 0;
-            for (int index = 0; index < ops; index++)
+            for (var index = 0; index < ops; index++)
             {
                if ((G >> index & 1) != 0)
                   integerSequence_[k] ^= directionIntegers_[k][index];
@@ -465,15 +465,15 @@ namespace QLNet
          // instead of using the counter n as new unique generating integer
          // for the n-th draw use the Gray code G(n) as proposed
          // by Antonov and Saleev
-         ulong n = sequenceCounter_;
+         var n = sequenceCounter_;
          // Find rightmost zero bit of n
-         int j = 0;
+         var j = 0;
          while ((n & 1) != 0)
          {
             n >>= 1;
             j++;
          }
-         for (int k = 0; k < dimensionality_; k++)
+         for (var k = 0; k < dimensionality_; k++)
          {
             // XOR the appropriate direction number into each component of
             // the integer sequence to obtain a new Sobol integer for that
@@ -486,21 +486,19 @@ namespace QLNet
       #region IRNG interface
       public Sample<List<double>> nextSequence()
       {
-         List<ulong> v = nextInt32Sequence();
+         var v = nextInt32Sequence();
          // normalize to get a double in (0,1)
-         for (int k = 0; k < dimensionality_; ++k)
+         for (var k = 0; k < dimensionality_; ++k)
             sequence_.value[k] = v[k] * normalizationFactor_;
          return sequence_;
       }
 
-      public Sample<List<double>> lastSequence() { return sequence_; }
+      public Sample<List<double>> lastSequence() => sequence_;
 
-      public int dimension() { return dimensionality_; }
+      public int dimension() => dimensionality_;
 
-      public IRNG factory(int dimensionality, ulong seed)
-      {
-         return new SobolRsg(dimensionality, seed);
-      }
+      public IRNG factory(int dimensionality, ulong seed) => new SobolRsg(dimensionality, seed);
+
       #endregion
    }
 }

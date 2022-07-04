@@ -27,7 +27,7 @@ namespace QLNet.Instruments
 {
     // Interest rate swap
     // The cash flows belonging to the first leg are paid; the ones belonging to the second leg are received.
-    public class Swap : Instrument
+    [JetBrains.Annotations.PublicAPI] public class Swap : Instrument
     {
         #region Data members
 
@@ -64,8 +64,8 @@ namespace QLNet.Instruments
             endDiscounts_ = new InitializedList<double?>(2);
             npvDateDiscount_ = 0.0;
 
-            for (int i = 0; i < legs_.Count; i++)
-                for (int j = 0; j < legs_[i].Count; j++)
+            for (var i = 0; i < legs_.Count; i++)
+                for (var j = 0; j < legs_[i].Count; j++)
                     legs_[i][j].registerWith(update);
         }
 
@@ -82,11 +82,11 @@ namespace QLNet.Instruments
 
             Utils.QL_REQUIRE(payer.Count == legs_.Count, () => "size mismatch between payer (" + payer.Count +
                              ") and legs (" + legs_.Count + ")");
-            for (int i = 0; i < legs_.Count; ++i)
+            for (var i = 0; i < legs_.Count; ++i)
             {
                 if (payer[i])
                     payer_[i] = -1;
-                for (int j = 0; j < legs_[i].Count; j++)
+                for (var j = 0; j < legs_[i].Count; j++)
                     legs_[i][j].registerWith(update);
             }
         }
@@ -110,7 +110,7 @@ namespace QLNet.Instruments
 
         public override bool isExpired()
         {
-            Date today = Settings.evaluationDate();
+            var today = Settings.evaluationDate();
             return !legs_.Any(leg => leg.Any(cf => !cf.hasOccurred(today)));
         }
 
@@ -126,8 +126,8 @@ namespace QLNet.Instruments
 
         public override void setupArguments(IPricingEngineArguments args)
         {
-            Arguments arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong argument type");
+            var arguments = args as Arguments;
+            Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
 
             arguments.legs = legs_;
             arguments.payer = payer_;
@@ -137,8 +137,8 @@ namespace QLNet.Instruments
         {
             base.fetchResults(r);
 
-            Results results = r as Results;
-            Utils.QL_REQUIRE(results != null, () => "wrong result type");
+            var results = r as Results;
+            Utils.QL_REQUIRE(results != null, () => "wrong result ExerciseType");
 
             if (!results.legNPV.empty())
             {
@@ -256,7 +256,7 @@ namespace QLNet.Instruments
 
         ////////////////////////////////////////////////////////////////
         // arguments, results, pricing engine
-        public class Arguments : IPricingEngineArguments
+        [JetBrains.Annotations.PublicAPI] public class Arguments : IPricingEngineArguments
         {
             public List<List<CashFlow>> legs { get; set; }
             public List<double> payer { get; set; }

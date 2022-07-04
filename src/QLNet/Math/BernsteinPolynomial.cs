@@ -20,12 +20,12 @@ using System.Text;
 
 namespace QLNet.Math
 {
-    public class BernsteinPolynomial
+    [JetBrains.Annotations.PublicAPI] public class BernsteinPolynomial
     {
         public static double get(uint i, uint n, double x)
         {
-            double coeff = Factorial.get(n) /
-                           (Factorial.get(n - i) * Factorial.get(i));
+            var coeff = Factorial.get(n) /
+                        (Factorial.get(n - i) * Factorial.get(i));
 
             return coeff * System.Math.Pow(x, i) * System.Math.Pow(1.0 - x, n - i);
         }

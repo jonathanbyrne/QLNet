@@ -40,10 +40,10 @@ namespace QLNet.Pricingengines.Swap
 
      to do: Compute fair rate through iteration instead of the
      current approximation .
-     to do: write Issuer based constructors (event type)
+     to do: write Issuer based constructors (event ExerciseType)
      to do: Check consistency between option engine discount and the one given
     */
-    public class CounterpartyAdjSwapEngine : VanillaSwap.Engine
+    [JetBrains.Annotations.PublicAPI] public class CounterpartyAdjSwapEngine : VanillaSwap.Engine
     {
         // Constructors
         //!
@@ -144,14 +144,14 @@ namespace QLNet.Pricingengines.Swap
             Utils.QL_REQUIRE(!defaultTS_.empty(), () => "no ctpty default term structure set");
             Utils.QL_REQUIRE(!swaptionletEngine_.empty(), () => "no swap option engine set");
 
-            Date priceDate = defaultTS_.link.referenceDate();
+            var priceDate = defaultTS_.link.referenceDate();
 
             double cumOptVal = 0.0, cumPutVal = 0.0;
             // Vanilla swap so 0 leg is floater
 
-            int index = 0;
-            Date nextFD = arguments_.fixedPayDates[index];
-            Date swapletStart = priceDate;
+            var index = 0;
+            var nextFD = arguments_.fixedPayDates[index];
+            var swapletStart = priceDate;
             while (nextFD < priceDate)
             {
                 index++;
@@ -161,21 +161,21 @@ namespace QLNet.Pricingengines.Swap
 
             // Compute fair spread for strike value:
             // copy args into the non risky engine
-            QLNet.Instruments.Swap.Arguments noCVAArgs = baseSwapEngine_.link.getArguments() as QLNet.Instruments.Swap.Arguments;
+            var noCVAArgs = baseSwapEngine_.link.getArguments() as QLNet.Instruments.Swap.Arguments;
 
             noCVAArgs.legs = arguments_.legs;
             noCVAArgs.payer = arguments_.payer;
 
             baseSwapEngine_.link.calculate();
 
-            double baseSwapRate = ((FixedRateCoupon)arguments_.legs[0][0]).rate();
+            var baseSwapRate = ((FixedRateCoupon)arguments_.legs[0][0]).rate();
 
-            QLNet.Instruments.Swap.Results vSResults = baseSwapEngine_.link.getResults() as QLNet.Instruments.Swap.Results;
+            var vSResults = baseSwapEngine_.link.getResults() as QLNet.Instruments.Swap.Results;
 
-            double? baseSwapFairRate = -baseSwapRate * vSResults.legNPV[1] / vSResults.legNPV[0];
-            double? baseSwapNPV = vSResults.value;
+            var baseSwapFairRate = -baseSwapRate * vSResults.legNPV[1] / vSResults.legNPV[0];
+            var baseSwapNPV = vSResults.value;
 
-            VanillaSwap.Type reversedType = arguments_.type == VanillaSwap.Type.Payer
+            var reversedType = arguments_.type == VanillaSwap.Type.Payer
                                             ? VanillaSwap.Type.Receiver
                                             : VanillaSwap.Type.Payer;
 
@@ -183,25 +183,25 @@ namespace QLNet.Pricingengines.Swap
             while (nextFD != arguments_.fixedPayDates.Last())
             {
                 // iFD coupon not fixed, create swaptionlet:
-                IborIndex swapIndex = ((FloatingRateCoupon)arguments_.legs[1][0]).index() as IborIndex;
+                var swapIndex = ((FloatingRateCoupon)arguments_.legs[1][0]).index() as IborIndex;
 
                 // Alternatively one could cap this period to, say, 1M
-                Period baseSwapsTenor = new Period(arguments_.fixedPayDates.Last().serialNumber()
-                                                   - swapletStart.serialNumber(), TimeUnit.Days);
-                VanillaSwap swaplet = new MakeVanillaSwap(baseSwapsTenor, swapIndex, baseSwapFairRate)
+                var baseSwapsTenor = new Period(arguments_.fixedPayDates.Last().serialNumber()
+                                                - swapletStart.serialNumber(), TimeUnit.Days);
+                var swaplet = new MakeVanillaSwap(baseSwapsTenor, swapIndex, baseSwapFairRate)
                 .withType(arguments_.type)
                 .withNominal(arguments_.nominal)
                 .withEffectiveDate(swapletStart)
                 .withTerminationDate(arguments_.fixedPayDates.Last()).value();
 
-                VanillaSwap revSwaplet = new MakeVanillaSwap(baseSwapsTenor, swapIndex, baseSwapFairRate)
+                var revSwaplet = new MakeVanillaSwap(baseSwapsTenor, swapIndex, baseSwapFairRate)
                 .withType(reversedType)
                 .withNominal(arguments_.nominal)
                 .withEffectiveDate(swapletStart)
                 .withTerminationDate(arguments_.fixedPayDates.Last()).value();
 
-                Swaption swaptionlet = new Swaption(swaplet, new EuropeanExercise(swapletStart));
-                Swaption putSwaplet = new Swaption(revSwaplet, new EuropeanExercise(swapletStart));
+                var swaptionlet = new Swaption(swaplet, new EuropeanExercise(swapletStart));
+                var putSwaplet = new Swaption(revSwaplet, new EuropeanExercise(swapletStart));
                 swaptionlet.setPricingEngine(swaptionletEngine_.currentLink());
                 putSwaplet.setPricingEngine(swaptionletEngine_.currentLink());
 

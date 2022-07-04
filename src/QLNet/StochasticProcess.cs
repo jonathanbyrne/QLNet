@@ -24,7 +24,7 @@ using System;
 namespace QLNet
 {
     //! discretization of a stochastic process over a given time interval
-    public interface IDiscretization
+    [JetBrains.Annotations.PublicAPI] public interface IDiscretization
    {
       Vector drift(StochasticProcess sp, double t0, Vector x0, double dt);
       Matrix diffusion(StochasticProcess sp, double t0, Vector x0, double dt);
@@ -32,7 +32,7 @@ namespace QLNet
    }
 
    //! discretization of a 1D stochastic process over a given time interval
-   public interface IDiscretization1D
+   [JetBrains.Annotations.PublicAPI] public interface IDiscretization1D
    {
       double drift(StochasticProcess1D sp, double t0, double x0, double dt);
       double diffusion(StochasticProcess1D sp, double t0, double x0, double dt);
@@ -61,7 +61,7 @@ namespace QLNet
       public abstract int size();
 
       //! returns the number of independent factors of the process
-      public virtual int factors() { return size(); }
+      public virtual int factors() => size();
 
       //! returns the initial values of the state variables
       public abstract Vector initialValues();
@@ -78,40 +78,25 @@ namespace QLNet
           overridden in derived classes which want to hard-code a
           particular discretization.
       */
-      public virtual Vector expectation(double t0, Vector x0, double dt)
-      {
-         return apply(x0, discretization_.drift(this, t0, x0, dt));
-      }
+      public virtual Vector expectation(double t0, Vector x0, double dt) => apply(x0, discretization_.drift(this, t0, x0, dt));
 
       /*! returns the standard deviation. This method can be
           overridden in derived classes which want to hard-code a
           particular discretization.
       */
-      public virtual Matrix stdDeviation(double t0, Vector x0, double dt)
-      {
-         return discretization_.diffusion(this, t0, x0, dt);
-      }
+      public virtual Matrix stdDeviation(double t0, Vector x0, double dt) => discretization_.diffusion(this, t0, x0, dt);
 
       /*! returns the covariance. This method can be
           overridden in derived classes which want to hard-code a
           particular discretization.
       */
-      public virtual Matrix covariance(double t0, Vector x0, double dt)
-      {
-         return discretization_.covariance(this, t0, x0, dt);
-      }
+      public virtual Matrix covariance(double t0, Vector x0, double dt) => discretization_.covariance(this, t0, x0, dt);
 
       // returns the asset value after a time interval
-      public virtual Vector evolve(double t0, Vector x0, double dt, Vector dw)
-      {
-         return apply(expectation(t0, x0, dt), stdDeviation(t0, x0, dt) * dw);
-      }
+      public virtual Vector evolve(double t0, Vector x0, double dt, Vector dw) => apply(expectation(t0, x0, dt), stdDeviation(t0, x0, dt) * dw);
 
       // applies a change to the asset value.
-      public virtual Vector apply(Vector x0, Vector dx)
-      {
-         return x0 + dx;
-      }
+      public virtual Vector apply(Vector x0, Vector dx) => x0 + dx;
 
       // utilities
       /*! returns the time value corresponding to the given date
@@ -121,25 +106,15 @@ namespace QLNet
                 functionality, a default implementation is given
                 which raises an exception.
       */
-      public virtual double time(Date d)
-      {
-         throw new NotSupportedException("date/time conversion not supported");
-      }
-
+      public virtual double time(Date d) => throw new NotSupportedException("date/time conversion not supported");
 
       #region Observer & Observable
       // Subjects, i.e. observables, should define interface internally like follows.
       private readonly WeakEventSource eventSource = new WeakEventSource();
       public event Callback notifyObserversEvent
       {
-         add
-         {
-            eventSource.Subscribe(value);
-         }
-         remove
-         {
-            eventSource.Unsubscribe(value);
-         }
+         add => eventSource.Subscribe(value);
+         remove => eventSource.Unsubscribe(value);
       }
 
       public void registerWith(Callback handler) { notifyObserversEvent += handler; }
@@ -178,7 +153,7 @@ namespace QLNet
 #if QL_EXTRA_SAFETY_CHECKS
          QL_REQUIRE(x.size() == 1, () => "1-D array required");
 #endif
-         Vector a = new Vector(1, drift(t, x[0]));
+         var a = new Vector(1, drift(t, x[0]));
          return a;
       }
 
@@ -189,7 +164,7 @@ namespace QLNet
 #if QL_EXTRA_SAFETY_CHECKS
          QL_REQUIRE(x.size() == 1, () => "1-D array required");
 #endif
-         Matrix m = new Matrix(1, 1, diffusion(t, x[0]));
+         var m = new Matrix(1, 1, diffusion(t, x[0]));
          return m;
       }
 
@@ -197,16 +172,14 @@ namespace QLNet
           overridden in derived classes which want to hard-code a
           particular discretization.
       */
-      public virtual double expectation(double t0, double x0, double dt)
-      {
-         return apply(x0, discretization_.drift(this, t0, x0, dt));
-      }
+      public virtual double expectation(double t0, double x0, double dt) => apply(x0, discretization_.drift(this, t0, x0, dt));
+
       public override Vector expectation(double t0, Vector x0, double dt)
       {
 #if QL_EXTRA_SAFETY_CHECKS
          QL_REQUIRE(x0.size() == 1, () => "1-D array required");
 #endif
-         Vector a = new Vector(1, expectation(t0, x0[0], dt));
+         var a = new Vector(1, expectation(t0, x0[0], dt));
          return a;
       }
 
@@ -214,16 +187,14 @@ namespace QLNet
           overridden in derived classes which want to hard-code a
           particular discretization.
       */
-      public virtual double stdDeviation(double t0, double x0, double dt)
-      {
-         return discretization_.diffusion(this, t0, x0, dt);
-      }
+      public virtual double stdDeviation(double t0, double x0, double dt) => discretization_.diffusion(this, t0, x0, dt);
+
       public override Matrix stdDeviation(double t0, Vector x0, double dt)
       {
 #if QL_EXTRA_SAFETY_CHECKS
          QL_REQUIRE(x0.size() == 1, () => "1-D array required");
 #endif
-         Matrix m = new Matrix(1, 1, stdDeviation(t0, x0[0], dt));
+         var m = new Matrix(1, 1, stdDeviation(t0, x0[0], dt));
          return m;
       }
 
@@ -231,52 +202,49 @@ namespace QLNet
           overridden in derived classes which want to hard-code a
           particular discretization.
       */
-      public virtual double variance(double t0, double x0, double dt)
-      {
-         return discretization_.variance(this, t0, x0, dt);
-      }
+      public virtual double variance(double t0, double x0, double dt) => discretization_.variance(this, t0, x0, dt);
+
       public virtual Matrix variance(double t0, Vector x0, double dt)
       {
 #if QL_EXTRA_SAFETY_CHECKS
          QL_REQUIRE(x0.size() == 1, () => "1-D array required");
 #endif
-         Matrix m = new Matrix(1, 1, variance(t0, x0[0], dt));
+         var m = new Matrix(1, 1, variance(t0, x0[0], dt));
          return m;
       }
 
       // returns the asset value after a time interval.
-      public virtual double evolve(double t0, double x0, double dt, double dw)
-      {
-         return apply(expectation(t0, x0, dt), stdDeviation(t0, x0, dt) * dw);
-      }
+      public virtual double evolve(double t0, double x0, double dt, double dw) => apply(expectation(t0, x0, dt), stdDeviation(t0, x0, dt) * dw);
+
       public virtual Vector evolve(double t0, ref Vector x0, double dt, ref Vector dw)
       {
 #if QL_EXTRA_SAFETY_CHECKS
          QL_REQUIRE(x0.size() == 1, () => "1-D array required");
          QL_REQUIRE(dw.size() == 1, () => "1-D array required");
 #endif
-         Vector a = new Vector(1, evolve(t0, x0[0], dt, dw[0]));
+         var a = new Vector(1, evolve(t0, x0[0], dt, dw[0]));
          return a;
       }
 
       // applies a change to the asset value.
-      public virtual double apply(double x0, double dx) { return x0 + dx; }
+      public virtual double apply(double x0, double dx) => x0 + dx;
+
       public virtual Vector apply(ref Vector x0, ref Vector dx)
       {
 #if QL_EXTRA_SAFETY_CHECKS
          QL_REQUIRE(x0.size() == 1, () => "1-D array required");
          QL_REQUIRE(dx.size() == 1, () => "1-D array required");
 #endif
-         Vector a = new Vector(1, apply(x0[0], dx[0]));
+         var a = new Vector(1, apply(x0[0], dx[0]));
          return a;
       }
 
       //! returns the initial values of the state variables
       public override Vector initialValues()
       {
-         Vector a = new Vector(1, x0());
+         var a = new Vector(1, x0());
          return a;
       }
-      public override int size() { return 1; }
+      public override int size() => 1;
    }
 }

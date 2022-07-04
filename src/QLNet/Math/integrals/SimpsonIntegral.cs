@@ -24,18 +24,18 @@ namespace QLNet.Math.integrals
     /*! \test the correctness of the result is tested by checking it
               against known good values.
     */
-    public class SimpsonIntegral : TrapezoidIntegral<Default>
+    [JetBrains.Annotations.PublicAPI] public class SimpsonIntegral : TrapezoidIntegral<Default>
     {
         public SimpsonIntegral(double accuracy, int maxIterations) : base(accuracy, maxIterations) { }
 
         protected override double integrate(Func<double, double> f, double a, double b)
         {
             // start from the coarsest trapezoid...
-            int N = 1;
+            var N = 1;
             double I = (f(a) + f(b)) * (b - a) / 2.0, newI;
             double adjI = I, newAdjI;
             // ...and refine it
-            int i = 1;
+            var i = 1;
 
             IIntegrationPolicy ip = new Default();
             do

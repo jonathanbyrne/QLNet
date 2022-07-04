@@ -36,7 +36,7 @@ namespace QLNet.Instruments
 
         \ingroup instruments
     */
-    public class DoubleBarrierOption : OneAssetOption
+    [JetBrains.Annotations.PublicAPI] public class DoubleBarrierOption : OneAssetOption
     {
 
         public DoubleBarrierOption(DoubleBarrier.Type barrierType,
@@ -57,8 +57,8 @@ namespace QLNet.Instruments
         {
             base.setupArguments(args);
 
-            Arguments moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument type");
+            var moreArgs = args as Arguments;
+            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
             moreArgs.barrierType = barrierType_;
             moreArgs.barrier_lo = barrier_lo_;
             moreArgs.barrier_hi = barrier_hi_;
@@ -77,14 +77,14 @@ namespace QLNet.Instruments
         {
             Utils.QL_REQUIRE(!isExpired(), () => "option expired");
 
-            SimpleQuote volQuote = new SimpleQuote();
+            var volQuote = new SimpleQuote();
 
-            GeneralizedBlackScholesProcess newProcess = ImpliedVolatilityHelper.clone(process, volQuote);
+            var newProcess = ImpliedVolatilityHelper.clone(process, volQuote);
 
             // engines are built-in for the time being
             IPricingEngine engine = null;
 
-            switch (exercise_.type())
+            switch (exercise_.ExerciseType())
             {
                 case Exercise.Type.European:
                     engine = new AnalyticDoubleBarrierEngine(newProcess);
@@ -94,7 +94,7 @@ namespace QLNet.Instruments
                     Utils.QL_FAIL("engine not available for non-European barrier option");
                     break;
                 default:
-                    Utils.QL_FAIL("unknown exercise type");
+                    Utils.QL_FAIL("unknown exercise ExerciseType");
                     break;
             }
 
@@ -129,7 +129,7 @@ namespace QLNet.Instruments
                                  barrierType == DoubleBarrier.Type.KnockOut ||
                                  barrierType == DoubleBarrier.Type.KIKO ||
                                  barrierType == DoubleBarrier.Type.KOKI, () =>
-                                 "Invalid barrier type");
+                                 "Invalid barrier ExerciseType");
 
                 Utils.QL_REQUIRE(barrier_lo != null, () => "no low barrier given");
                 Utils.QL_REQUIRE(barrier_hi != null, () => "no high barrier given");
@@ -140,10 +140,7 @@ namespace QLNet.Instruments
         //! %Double-Barrier-option %engine base class
         public new class Engine : GenericEngine<Arguments, Results>
         {
-            protected bool triggered(double underlying)
-            {
-                return underlying <= arguments_.barrier_lo || underlying >= arguments_.barrier_hi;
-            }
+            protected bool triggered(double underlying) => underlying <= arguments_.barrier_lo || underlying >= arguments_.barrier_hi;
         }
 
     }

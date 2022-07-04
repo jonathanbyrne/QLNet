@@ -55,7 +55,7 @@ namespace QLNet.Termstructures
             jumpTimes_ = new List<double>(jumpDates_.Count);
             nJumps_ = jumps_.Count;
             setJumps();
-            for (int i = 0; i < nJumps_; ++i)
+            for (var i = 0; i < nJumps_; ++i)
                 jumps_[i].registerWith(update);
         }
 
@@ -76,7 +76,7 @@ namespace QLNet.Termstructures
             jumpTimes_ = new List<double>(jumpDates_.Count);
             nJumps_ = jumps_.Count;
             setJumps();
-            for (int i = 0; i < nJumps_; ++i)
+            for (var i = 0; i < nJumps_; ++i)
                 jumps_[i].registerWith(update);
         }
 
@@ -97,7 +97,7 @@ namespace QLNet.Termstructures
             jumpTimes_ = new List<double>(jumpDates_.Count);
             nJumps_ = jumps_.Count;
             setJumps();
-            for (int i = 0; i < nJumps_; ++i)
+            for (var i = 0; i < nJumps_; ++i)
                 jumps_[i].registerWith(update);
         }
 
@@ -109,10 +109,7 @@ namespace QLNet.Termstructures
         //    to the reference date.  In the latter case, the time is calculated
         //    as a fraction of year from the reference date.
 
-        public double discount(Date d, bool extrapolate = false)
-        {
-            return discount(timeFromReference(d), extrapolate);
-        }
+        public double discount(Date d, bool extrapolate = false) => discount(timeFromReference(d), extrapolate);
 
         /*! The same day-counting rule used by the term structure
             should be used for calculating the passed time t.
@@ -124,13 +121,13 @@ namespace QLNet.Termstructures
             if (jumps_.empty())
                 return discountImpl(t);
 
-            double jumpEffect = 1.0;
-            for (int i = 0; i < nJumps_; ++i)
+            var jumpEffect = 1.0;
+            for (var i = 0; i < nJumps_; ++i)
             {
                 if (jumpTimes_[i] > 0 && jumpTimes_[i] < t)
                 {
                     Utils.QL_REQUIRE(jumps_[i].link.isValid(), () => "invalid " + (i + 1) + " jump quote");
-                    double thisJump = jumps_[i].link.value();
+                    var thisJump = jumps_[i].link.value();
                     Utils.QL_REQUIRE(thisJump > 0.0, () => "invalid " + (i + 1) + " jump value: " + thisJump);
 #if !QL_NEGATIVE_RATES
                Utils.QL_REQUIRE(thisJump <= 1.0, () => "invalid " + (i + 1) + " jump value: " + thisJump);
@@ -157,12 +154,12 @@ namespace QLNet.Termstructures
         {
             if (d == referenceDate())
             {
-                double compound = 1.0 / discount(dt, extrapolate);
+                var compound = 1.0 / discount(dt, extrapolate);
                 // t has been calculated with a possibly different daycounter
                 // but the difference should not matter for very small times
                 return InterestRate.impliedRate(compound, dayCounter, comp, freq, dt);
             }
-            double compound1 = 1.0 / discount(d, extrapolate);
+            var compound1 = 1.0 / discount(d, extrapolate);
             return InterestRate.impliedRate(compound1, dayCounter, comp, freq, referenceDate(), d);
         }
 
@@ -174,7 +171,7 @@ namespace QLNet.Termstructures
         {
             if (t.IsEqual(0.0))
                 t = dt;
-            double compound = 1.0 / discount(t, extrapolate);
+            var compound = 1.0 / discount(t, extrapolate);
             return InterestRate.impliedRate(compound, dayCounter(), comp, freq, t);
         }
 
@@ -198,15 +195,15 @@ namespace QLNet.Termstructures
             if (d1 == d2)
             {
                 checkRange(d1, extrapolate);
-                double t1 = System.Math.Max(timeFromReference(d1) - dt / 2.0, 0.0);
-                double t2 = t1 + dt;
-                double compound = discount(t1, true) / discount(t2, true);
+                var t1 = System.Math.Max(timeFromReference(d1) - dt / 2.0, 0.0);
+                var t2 = t1 + dt;
+                var compound = discount(t1, true) / discount(t2, true);
                 // times have been calculated with a possibly different daycounter
                 // but the difference should not matter for very small times
                 return InterestRate.impliedRate(compound, dayCounter, comp, freq, dt);
             }
             Utils.QL_REQUIRE(d1 < d2, () => d1 + " later than " + d2);
-            double compound1 = discount(d1, extrapolate) / discount(d2, extrapolate);
+            var compound1 = discount(d1, extrapolate) / discount(d2, extrapolate);
             return InterestRate.impliedRate(compound1, dayCounter, comp, freq, d1, d2);
         }
 
@@ -215,10 +212,8 @@ namespace QLNet.Termstructures
             \warning dates are not adjusted for holidays
         */
         public InterestRate forwardRate(Date d, Period p, DayCounter dayCounter, Compounding comp,
-                                        Frequency freq = Frequency.Annual, bool extrapolate = false)
-        {
-            return forwardRate(d, d + p, dayCounter, comp, freq, extrapolate);
-        }
+                                        Frequency freq = Frequency.Annual, bool extrapolate = false) =>
+            forwardRate(d, d + p, dayCounter, comp, freq, extrapolate);
 
         /*! The resulting interest rate has the same day-counting rule
             used by the term structure. The same rule should be used
@@ -247,14 +242,9 @@ namespace QLNet.Termstructures
 
         #region Jump inspectors
 
-        public List<Date> jumpDates()
-        {
-            return jumpDates_;
-        }
-        public List<double> jumpTimes()
-        {
-            return jumpTimes_;
-        }
+        public List<Date> jumpDates() => jumpDates_;
+
+        public List<double> jumpTimes() => jumpTimes_;
 
         #endregion
 
@@ -289,8 +279,8 @@ namespace QLNet.Termstructures
                 // turn of year dates
                 jumpDates_.Clear();
                 jumpTimes_.Clear();
-                int y = referenceDate().year();
-                for (int i = 0; i < nJumps_; ++i)
+                var y = referenceDate().year();
+                for (var i = 0; i < nJumps_; ++i)
                     jumpDates_.Add(new Date(31, Month.December, y + i));
 
             }
@@ -301,7 +291,7 @@ namespace QLNet.Termstructures
                                  "mismatch between number of jumps (" + nJumps_ +
                                  ") and jump dates (" + jumpDates_.Count + ")");
             }
-            for (int i = 0; i < nJumps_; ++i)
+            for (var i = 0; i < nJumps_; ++i)
                 jumpTimes_.Add(timeFromReference(jumpDates_[i]));
 
             latestReference_ = base.referenceDate();

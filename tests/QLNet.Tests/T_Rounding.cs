@@ -24,7 +24,7 @@ using QLNet.Math;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Rounding
+    [JetBrains.Annotations.PublicAPI] public class T_Rounding
     {
         public struct TestCase
         {
@@ -76,12 +76,12 @@ namespace QLNet.Tests
         [Fact]
         public void testClosest()
         {
-            for (int i = 0; i < testData.Length; i++)
+            for (var i = 0; i < testData.Length; i++)
             {
-                int precision = testData[i].precision;
-                ClosestRounding closest = new ClosestRounding(precision);
-                double calculated = closest.Round(testData[i].x);
-                double expected = testData[i].closest;
+                var precision = testData[i].precision;
+                var closest = new ClosestRounding(precision);
+                var calculated = closest.Round(testData[i].x);
+                var expected = testData[i].closest;
                 if (!Utils.close(calculated, expected, 1))
                     QAssert.Fail("Original number: " + testData[i].x + "Expected: " + expected + "Calculated: " + calculated);
             }
@@ -89,12 +89,12 @@ namespace QLNet.Tests
         [Fact]
         public void testUp()
         {
-            for (int i = 0; i < testData.Length; i++)
+            for (var i = 0; i < testData.Length; i++)
             {
-                int digits = testData[i].precision;
-                UpRounding up = new UpRounding(digits);
-                double calculated = up.Round(testData[i].x);
-                double expected = testData[i].up;
+                var digits = testData[i].precision;
+                var up = new UpRounding(digits);
+                var calculated = up.Round(testData[i].x);
+                var expected = testData[i].up;
                 if (!Utils.close(calculated, expected, 1))
                     QAssert.Fail("Original number: " + testData[i].x + "Expected: " + expected + "Calculated: " + calculated);
             }
@@ -103,12 +103,12 @@ namespace QLNet.Tests
         [Fact]
         public void testDown()
         {
-            for (int i = 0; i < testData.Length; i++)
+            for (var i = 0; i < testData.Length; i++)
             {
-                int digits = testData[i].precision;
-                DownRounding down = new DownRounding(digits);
-                double calculated = down.Round(testData[i].x);
-                double expected = testData[i].down;
+                var digits = testData[i].precision;
+                var down = new DownRounding(digits);
+                var calculated = down.Round(testData[i].x);
+                var expected = testData[i].down;
                 if (!Utils.close(calculated, expected, 1))
                     QAssert.Fail("Original number: " + testData[i].x + "Expected: " + expected + "Calculated: " + calculated);
             }
@@ -117,12 +117,12 @@ namespace QLNet.Tests
         [Fact]
         public void testFloor()
         {
-            for (int i = 0; i < testData.Length; i++)
+            for (var i = 0; i < testData.Length; i++)
             {
-                int digits = testData[i].precision;
-                FloorTruncation floor = new FloorTruncation(digits);
-                double calculated = floor.Round(testData[i].x);
-                double expected = testData[i].floor;
+                var digits = testData[i].precision;
+                var floor = new FloorTruncation(digits);
+                var calculated = floor.Round(testData[i].x);
+                var expected = testData[i].floor;
                 if (!Utils.close(calculated, expected, 1))
                     QAssert.Fail("Original number: " + testData[i].x + "Expected: " + expected + "Calculated: " + calculated);
             }
@@ -131,12 +131,12 @@ namespace QLNet.Tests
         [Fact]
         public void testCeiling()
         {
-            for (int i = 0; i < testData.Length; i++)
+            for (var i = 0; i < testData.Length; i++)
             {
-                int digits = testData[i].precision;
-                CeilingTruncation ceiling = new CeilingTruncation(digits);
-                double calculated = ceiling.Round(testData[i].x);
-                double expected = testData[i].ceiling;
+                var digits = testData[i].precision;
+                var ceiling = new CeilingTruncation(digits);
+                var calculated = ceiling.Round(testData[i].x);
+                var expected = testData[i].ceiling;
                 if (!Utils.close(calculated, expected, 1))
                     QAssert.Fail("Original number: " + testData[i].x + "Expected: " + expected + "Calculated: " + calculated);
             }

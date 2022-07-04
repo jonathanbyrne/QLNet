@@ -30,16 +30,13 @@ namespace QLNet.Methods.Finitedifferences
 
         \ingroup findiff
     */
-    public class CrankNicolson<Operator> : MixedScheme<Operator>, ISchemeFactory where Operator : IOperator
+    [JetBrains.Annotations.PublicAPI] public class CrankNicolson<Operator> : MixedScheme<Operator>, ISchemeFactory where Operator : IOperator
     {
         // constructors
         public CrankNicolson() { }  // required for generics
         public CrankNicolson(Operator L, List<BoundaryCondition<IOperator>> bcs)
            : base(L, 0.5, bcs) { }
 
-        public IMixedScheme factory(object L, object bcs, object[] additionalFields = null)
-        {
-            return new CrankNicolson<Operator>((Operator)L, (List<BoundaryCondition<IOperator>>)bcs);
-        }
+        public IMixedScheme factory(object L, object bcs, object[] additionalFields = null) => new CrankNicolson<Operator>((Operator)L, (List<BoundaryCondition<IOperator>>)bcs);
     }
 }

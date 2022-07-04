@@ -27,7 +27,7 @@ namespace QLNet.Math.Distributions
     /// <summary>
     /// Chi-square (central and non-central) distributions
     /// </summary>
-    public class ChiSquareDistribution
+    [JetBrains.Annotations.PublicAPI] public class ChiSquareDistribution
     {
         private double df_;
 
@@ -36,13 +36,10 @@ namespace QLNet.Math.Distributions
             df_ = df;
         }
 
-        public double value(double x)
-        {
-            return new GammaDistribution(0.5 * df_).value(0.5 * x);
-        }
+        public double value(double x) => new GammaDistribution(0.5 * df_).value(0.5 * x);
     }
 
-    public class NonCentralChiSquareDistribution
+    [JetBrains.Annotations.PublicAPI] public class NonCentralChiSquareDistribution
     {
         private double df_, ncp_;
 
@@ -57,17 +54,17 @@ namespace QLNet.Math.Distributions
             if (x <= 0.0)
                 return 0.0;
 
-            double errmax = 1e-12;
+            var errmax = 1e-12;
             const int itrmax = 10000;
-            double lam = 0.5 * ncp_;
+            var lam = 0.5 * ncp_;
 
-            double u = System.Math.Exp(-lam);
-            double v = u;
-            double x2 = 0.5 * x;
-            double f2 = 0.5 * df_;
-            double f_x_2n = df_ - x;
+            var u = System.Math.Exp(-lam);
+            var v = u;
+            var x2 = 0.5 * x;
+            var f2 = 0.5 * df_;
+            var f_x_2n = df_ - x;
 
-            double t = 0.0;
+            var t = 0.0;
             if (f2 * Const.QL_EPSILON > 0.125 &&
                 System.Math.Abs(x2 - f2) < System.Math.Sqrt(Const.QL_EPSILON) * f2)
             {
@@ -80,11 +77,11 @@ namespace QLNet.Math.Distributions
                              GammaFunction.logValue(f2 + 1));
             }
 
-            double ans = v * t;
+            var ans = v * t;
 
-            bool flag = false;
-            int n = 1;
-            double f_2n = df_ + 2.0;
+            var flag = false;
+            var n = 1;
+            var f_2n = df_ + 2.0;
             f_x_2n += 2.0;
 
             double bound;
@@ -120,7 +117,7 @@ namespace QLNet.Math.Distributions
         }
     }
 
-    public class InverseNonCentralChiSquareDistribution
+    [JetBrains.Annotations.PublicAPI] public class InverseNonCentralChiSquareDistribution
     {
         private NonCentralChiSquareDistribution nonCentralDist_;
         private double guess_;
@@ -148,8 +145,8 @@ namespace QLNet.Math.Distributions
         public double value(double x)
         {
             // first find the right side of the interval
-            double upper = guess_;
-            int evaluations = maxEvaluations_;
+            var upper = guess_;
+            var evaluations = maxEvaluations_;
             while (nonCentralDist_.value(upper) < x && evaluations > 0)
             {
                 upper *= 2.0;
@@ -157,7 +154,7 @@ namespace QLNet.Math.Distributions
             }
 
             // use a brent solver for the rest
-            Brent solver = new Brent();
+            var solver = new Brent();
             solver.setMaxEvaluations(evaluations);
             return solver.solve(new IncChiQuareFinder(x, nonCentralDist_.value),
                                 accuracy_, 0.75 * upper, evaluations == maxEvaluations_ ? 0.0 : 0.5 * upper,
@@ -175,14 +172,11 @@ namespace QLNet.Math.Distributions
                 g_ = g;
             }
 
-            public override double value(double x)
-            {
-                return g_(x) - y_;
-            }
+            public override double value(double x) => g_(x) - y_;
         }
     }
 
-    public class CumulativeChiSquareDistribution
+    [JetBrains.Annotations.PublicAPI] public class CumulativeChiSquareDistribution
     {
         private double df_;
 
@@ -191,13 +185,10 @@ namespace QLNet.Math.Distributions
             df_ = df;
         }
 
-        public double value(double x)
-        {
-            return new CumulativeGammaDistribution(0.5 * df_).value(0.5 * x);
-        }
+        public double value(double x) => new CumulativeGammaDistribution(0.5 * df_).value(0.5 * x);
     }
 
-    public class NonCentralCumulativeChiSquareDistribution
+    [JetBrains.Annotations.PublicAPI] public class NonCentralCumulativeChiSquareDistribution
     {
         protected double df_, ncp_;
 
@@ -212,17 +203,17 @@ namespace QLNet.Math.Distributions
             if (x <= 0.0)
                 return 0.0;
 
-            double errmax = 1e-12;
-            int itrmax = 10000;
-            double lam = 0.5 * ncp_;
+            var errmax = 1e-12;
+            var itrmax = 10000;
+            var lam = 0.5 * ncp_;
 
-            double u = System.Math.Exp(-lam);
-            double v = u;
-            double x2 = 0.5 * x;
-            double f2 = 0.5 * df_;
-            double f_x_2n = df_ - x;
+            var u = System.Math.Exp(-lam);
+            var v = u;
+            var x2 = 0.5 * x;
+            var f2 = 0.5 * df_;
+            var f_x_2n = df_ - x;
 
-            double t = 0.0;
+            var t = 0.0;
             if (f2 * Const.QL_EPSILON > 0.125 &&
                 System.Math.Abs(x2 - f2) < System.Math.Sqrt(Const.QL_EPSILON) * f2)
             {
@@ -235,15 +226,15 @@ namespace QLNet.Math.Distributions
                              GammaFunction.logValue(f2 + 1));
             }
 
-            double ans = v * t;
+            var ans = v * t;
 
-            bool flag = false;
-            int n = 1;
-            double f_2n = df_ + 2.0;
+            var flag = false;
+            var n = 1;
+            var f_2n = df_ + 2.0;
             f_x_2n += 2.0;
 
             double bound;
-            bool skip = false;
+            var skip = false;
             for (; ; )
             {
                 if (f_x_2n > 0)
@@ -278,7 +269,7 @@ namespace QLNet.Math.Distributions
         }
     }
 
-    public class NonCentralCumulativeChiSquareSankaranApprox
+    [JetBrains.Annotations.PublicAPI] public class NonCentralCumulativeChiSquareSankaranApprox
     {
         protected double df_, ncp_;
 
@@ -290,19 +281,19 @@ namespace QLNet.Math.Distributions
 
         double value(double x)
         {
-            double h = 1 - 2 * (df_ + ncp_) * (df_ + 3 * ncp_) / (3 * System.Math.Pow(df_ + 2 * ncp_, 2));
-            double p = (df_ + 2 * ncp_) / System.Math.Pow(df_ + ncp_, 2);
-            double m = (h - 1) * (1 - 3 * h);
+            var h = 1 - 2 * (df_ + ncp_) * (df_ + 3 * ncp_) / (3 * System.Math.Pow(df_ + 2 * ncp_, 2));
+            var p = (df_ + 2 * ncp_) / System.Math.Pow(df_ + ncp_, 2);
+            var m = (h - 1) * (1 - 3 * h);
 
-            double u = (System.Math.Pow(x / (df_ + ncp_), h) - (1 + h * p * (h - 1 - 0.5 * (2 - h) * m * p))) /
-                       (h * System.Math.Sqrt(2 * p) * (1 + 0.5 * m * p));
+            var u = (System.Math.Pow(x / (df_ + ncp_), h) - (1 + h * p * (h - 1 - 0.5 * (2 - h) * m * p))) /
+                    (h * System.Math.Sqrt(2 * p) * (1 + 0.5 * m * p));
 
             return new CumulativeNormalDistribution().value(u);
         }
     }
 
 
-    public class InverseNonCentralCumulativeChiSquareDistribution
+    [JetBrains.Annotations.PublicAPI] public class InverseNonCentralCumulativeChiSquareDistribution
     {
         protected NonCentralCumulativeChiSquareDistribution nonCentralDist_;
         protected double guess_;
@@ -322,8 +313,8 @@ namespace QLNet.Math.Distributions
         public double value(double x)
         {
             // first find the right side of the interval
-            double upper = guess_;
-            int evaluations = maxEvaluations_;
+            var upper = guess_;
+            var evaluations = maxEvaluations_;
             while (nonCentralDist_.value(upper) < x && evaluations > 0)
             {
                 upper *= 2.0;
@@ -331,7 +322,7 @@ namespace QLNet.Math.Distributions
             }
 
             // use a Brent solver for the rest
-            Brent solver = new Brent();
+            var solver = new Brent();
             ISolver1d f = new MinFinder(nonCentralDist_, x);
             solver.setMaxEvaluations(evaluations);
 
@@ -352,10 +343,7 @@ namespace QLNet.Math.Distributions
                 x_ = x;
             }
 
-            public override double value(double y)
-            {
-                return x_ - nonCentralDist_.value(y);
-            }
+            public override double value(double y) => x_ - nonCentralDist_.value(y);
         }
     }
 }

@@ -35,7 +35,7 @@ namespace QLNet.Indexes.Ibor
         \warning This is the rate fixed in London by BBA. Use ZIBOR if
                  you're interested in the Zurich fixing.
     */
-    public class CHFLibor : Libor
+    [JetBrains.Annotations.PublicAPI] public class CHFLibor : Libor
     {
         public CHFLibor(Period tenor)
            : base("CHFLibor", tenor, 2, new CHFCurrency(), new Switzerland(), new Actual360(), new Handle<YieldTermStructure>())
@@ -47,7 +47,7 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! base class for the one day deposit BBA %CHF %LIBOR indexes
-    public class DailyTenorCHFLibor : DailyTenorLibor
+    [JetBrains.Annotations.PublicAPI] public class DailyTenorCHFLibor : DailyTenorLibor
     {
         public DailyTenorCHFLibor(int settlementDays, Handle<YieldTermStructure> h)
            : base("CHFLibor", settlementDays, new CHFCurrency(), new Switzerland(), new Actual360(), h)

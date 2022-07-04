@@ -20,7 +20,7 @@ using System.Collections.Generic;
 
 namespace QLNet.Instruments
 {
-    public class DividendSchedule : List<Dividend>
+    [JetBrains.Annotations.PublicAPI] public class DividendSchedule : List<Dividend>
     {
 
     }

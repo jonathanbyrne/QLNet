@@ -25,21 +25,22 @@ using QLNet.Math.Solvers1d;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Solvers
+    [JetBrains.Annotations.PublicAPI] public class T_Solvers
     {
         class Foo : ISolver1d
         {
-            public override double value(double x) { return x * x - 1.0; }
-            public override double derivative(double x) { return 2.0 * x; }
+            public override double value(double x) => x * x - 1.0;
+
+            public override double derivative(double x) => 2.0 * x;
         }
 
         internal void test(Solver1D solver, string name)
         {
-            double[] accuracy = new double[] { 1.0e-4, 1.0e-6, 1.0e-8 };
-            double expected = 1.0;
-            for (int i = 0; i < accuracy.Length; i++)
+            var accuracy = new double[] { 1.0e-4, 1.0e-6, 1.0e-8 };
+            var expected = 1.0;
+            for (var i = 0; i < accuracy.Length; i++)
             {
-                double root = solver.solve(new Foo(), accuracy[i], 1.5, 0.1);
+                var root = solver.solve(new Foo(), accuracy[i], 1.5, 0.1);
                 if (System.Math.Abs(root - expected) > accuracy[i])
                 {
                     QAssert.Fail(name + " solver:\n"

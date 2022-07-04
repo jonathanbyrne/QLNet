@@ -32,7 +32,7 @@ namespace QLNet.Pricingengines.asian
     /// </summary>
     /// <typeparam name="RNG"></typeparam>
     /// <typeparam name="S"></typeparam>
-    public class MCDiscreteArithmeticASEngine<RNG, S>
+    [JetBrains.Annotations.PublicAPI] public class MCDiscreteArithmeticASEngine<RNG, S>
       : MCDiscreteAveragingAsianEngine<RNG, S>
         where RNG : IRSG, new()
         where S : Statistics, new()
@@ -52,10 +52,10 @@ namespace QLNet.Pricingengines.asian
 
         protected override PathPricer<IPath> pathPricer()
         {
-            PlainVanillaPayoff payoff = (PlainVanillaPayoff)arguments_.payoff;
+            var payoff = (PlainVanillaPayoff)arguments_.payoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
-            EuropeanExercise exercise = (EuropeanExercise)arguments_.exercise;
+            var exercise = (EuropeanExercise)arguments_.exercise;
             Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
 
             return (PathPricer<IPath>)new ArithmeticASOPathPricer(
@@ -66,7 +66,7 @@ namespace QLNet.Pricingengines.asian
         }
     }
 
-    public class ArithmeticASOPathPricer : PathPricer<Path>
+    [JetBrains.Annotations.PublicAPI] public class ArithmeticASOPathPricer : PathPricer<Path>
     {
         private QLNet.Option.Type type_;
         private double discount_;
@@ -97,20 +97,20 @@ namespace QLNet.Pricingengines.asian
 
         public double value(Path path)
         {
-            int n = path.length();
+            var n = path.length();
             Utils.QL_REQUIRE(n > 1, () => "the path cannot be empty");
-            double averageStrike = runningSum_;
+            var averageStrike = runningSum_;
             if (path.timeGrid().mandatoryTimes()[0].IsEqual(0.0))
             {
                 //averageStrike =
                 //std::accumulate(path.begin(),path.end(),runningSum_)/(pastFixings_ + n)
-                for (int i = 0; i < path.length(); i++)
+                for (var i = 0; i < path.length(); i++)
                     averageStrike += path[i];
                 averageStrike /= pastFixings_ + n;
             }
             else
             {
-                for (int i = 1; i < path.length(); i++)
+                for (var i = 1; i < path.length(); i++)
                     averageStrike += path[i];
                 averageStrike /= pastFixings_ + n - 1;
             }
@@ -119,7 +119,7 @@ namespace QLNet.Pricingengines.asian
         }
     }
 
-    public class MakeMCDiscreteArithmeticASEngine<RNG, S>
+    [JetBrains.Annotations.PublicAPI] public class MakeMCDiscreteArithmeticASEngine<RNG, S>
        where RNG : IRSG, new()
        where S : Statistics, new()
     {
@@ -141,10 +141,7 @@ namespace QLNet.Pricingengines.asian
             return this;
         }
 
-        public MakeMCDiscreteArithmeticASEngine<RNG, S> withBrownianBridge()
-        {
-            return withBrownianBridge(true);
-        }
+        public MakeMCDiscreteArithmeticASEngine<RNG, S> withBrownianBridge() => withBrownianBridge(true);
 
         public MakeMCDiscreteArithmeticASEngine<RNG, S> withSamples(int samples)
         {
@@ -180,21 +177,16 @@ namespace QLNet.Pricingengines.asian
             return this;
         }
 
-        public MakeMCDiscreteArithmeticASEngine<RNG, S> withAntitheticVariate()
-        {
-            return withAntitheticVariate(true);
-        }
+        public MakeMCDiscreteArithmeticASEngine<RNG, S> withAntitheticVariate() => withAntitheticVariate(true);
 
         // conversion to pricing engine
-        public IPricingEngine value()
-        {
-            return new MCDiscreteArithmeticASEngine<RNG, S>(process_,
-                                                            brownianBridge_,
-                                                            antithetic_,
-                                                            samples_.Value, tolerance_.Value,
-                                                            maxSamples_.Value,
-                                                            seed_);
-        }
+        public IPricingEngine value() =>
+            new MCDiscreteArithmeticASEngine<RNG, S>(process_,
+                brownianBridge_,
+                antithetic_,
+                samples_.Value, tolerance_.Value,
+                maxSamples_.Value,
+                seed_);
 
         private GeneralizedBlackScholesProcess process_;
         private bool antithetic_;

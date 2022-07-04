@@ -27,7 +27,7 @@ using System.Linq;
 
 namespace QLNet.Termstructures.Yield
 {
-    public class InterpolatedPiecewiseZeroSpreadedTermStructure<Interpolator> : ZeroYieldStructure
+    [JetBrains.Annotations.PublicAPI] public class InterpolatedPiecewiseZeroSpreadedTermStructure<Interpolator> : ZeroYieldStructure
       where Interpolator : class, IInterpolationFactory, new()
     {
         public InterpolatedPiecewiseZeroSpreadedTermStructure(Handle<YieldTermStructure> h,
@@ -53,7 +53,7 @@ namespace QLNet.Termstructures.Yield
 
             originalCurve_.registerWith(update);
 
-            for (int i = 0; i < spreads_.Count; i++)
+            for (var i = 0; i < spreads_.Count; i++)
                 spreads_[i].registerWith(update);
 
             if (!originalCurve_.empty())
@@ -71,17 +71,21 @@ namespace QLNet.Termstructures.Yield
         protected Interpolator factory_;
         protected Interpolation interpolator_;
 
-        public override DayCounter dayCounter() { return originalCurve_.link.dayCounter(); }
-        public override Calendar calendar() { return originalCurve_.link.calendar(); }
-        public override int settlementDays() { return originalCurve_.link.settlementDays(); }
-        public override Date referenceDate() { return originalCurve_.link.referenceDate(); }
-        public override Date maxDate() { return originalCurve_.link.maxDate() < dates_.Last() ? originalCurve_.link.maxDate() : dates_.Last(); }
+        public override DayCounter dayCounter() => originalCurve_.link.dayCounter();
+
+        public override Calendar calendar() => originalCurve_.link.calendar();
+
+        public override int settlementDays() => originalCurve_.link.settlementDays();
+
+        public override Date referenceDate() => originalCurve_.link.referenceDate();
+
+        public override Date maxDate() => originalCurve_.link.maxDate() < dates_.Last() ? originalCurve_.link.maxDate() : dates_.Last();
 
         protected override double zeroYieldImpl(double t)
         {
-            double spread = calcSpread(t);
-            InterestRate zeroRate = originalCurve_.link.zeroRate(t, compounding_, frequency_, true);
-            InterestRate spreadedRate = new InterestRate(zeroRate.value() + spread,
+            var spread = calcSpread(t);
+            var zeroRate = originalCurve_.link.zeroRate(t, compounding_, frequency_, true);
+            var spreadedRate = new InterestRate(zeroRate.value() + spread,
                                                          zeroRate.dayCounter(),
                                                          zeroRate.compounding(),
                                                          zeroRate.frequency());
@@ -117,7 +121,7 @@ namespace QLNet.Termstructures.Yield
 
         protected void updateInterpolation()
         {
-            for (int i = 0; i < dates_.Count; i++)
+            for (var i = 0; i < dates_.Count; i++)
             {
                 times_[i] = timeFromReference(dates_[i]);
                 spreadValues_[i] = spreads_[i].link.value();
@@ -126,7 +130,7 @@ namespace QLNet.Termstructures.Yield
         }
     }
 
-    public class PiecewiseZeroSpreadedTermStructure : InterpolatedPiecewiseZeroSpreadedTermStructure<Linear>
+    [JetBrains.Annotations.PublicAPI] public class PiecewiseZeroSpreadedTermStructure : InterpolatedPiecewiseZeroSpreadedTermStructure<Linear>
     {
         public PiecewiseZeroSpreadedTermStructure(Handle<YieldTermStructure> h,
                                                   List<Handle<Quote>> spreads,

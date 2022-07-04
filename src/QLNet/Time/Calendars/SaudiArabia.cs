@@ -41,7 +41,7 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    public class SaudiArabia : Calendar
+    [JetBrains.Annotations.PublicAPI] public class SaudiArabia : Calendar
     {
         public SaudiArabia() : base(Impl.Singleton) { }
 
@@ -50,18 +50,16 @@ namespace QLNet.Time.Calendars
             public static readonly Impl Singleton = new Impl();
             private Impl() { }
 
-            public override string name() { return "Tadawul"; }
-            public override bool isWeekend(DayOfWeek w)
-            {
-                return w == DayOfWeek.Thursday || w == DayOfWeek.Friday;
-            }
+            public override string name() => "Tadawul";
+
+            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Thursday || w == DayOfWeek.Friday;
 
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
+                var m = (Month)date.Month;
+                var y = date.Year;
 
                 if (isWeekend(w)
                     // National Day

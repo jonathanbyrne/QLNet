@@ -26,22 +26,21 @@ using QLNet.Cashflows;
 namespace QLNet.Instruments
 {
     //! swap paying Libor against BMA coupons
-    public class BMASwap : Swap
+    [JetBrains.Annotations.PublicAPI] public class BMASwap : Swap
     {
         public enum Type { Receiver = -1, Payer = 1 }
 
         private Type type_;
-        public Type type() { return type_; }
+        public Type BmaSwapType() => type_;
 
         private double nominal_;
-        public double nominal() { return nominal_; }
+        public double nominal() => nominal_;
 
         private double liborFraction_;
-        public double liborFraction() { return liborFraction_; }
+        public double liborFraction() => liborFraction_;
 
         private double liborSpread_;
-        public double liborSpread() { return liborSpread_; }
-
+        public double liborSpread() => liborSpread_;
 
         public BMASwap(Type type, double nominal,
                        // Libor leg
@@ -55,7 +54,7 @@ namespace QLNet.Instruments
             liborFraction_ = liborFraction;
             liborSpread_ = liborSpread;
 
-            BusinessDayConvention convention = liborSchedule.businessDayConvention();
+            var convention = liborSchedule.businessDayConvention();
 
             legs_[0] = new IborLeg(liborSchedule, liborIndex)
             .withPaymentDayCounter(liborDayCount)
@@ -65,14 +64,14 @@ namespace QLNet.Instruments
             .withNotionals(nominal)
             .withPaymentAdjustment(convention);
 
-            legs_[1] = new AverageBMALeg(bmaSchedule, bmaIndex)
-            .withPaymentDayCounter(bmaDayCount)
+            legs_[1] = new AverageBmaLeg(bmaSchedule, bmaIndex)
+            .WithPaymentDayCounter(bmaDayCount)
             .withNotionals(nominal)
             .withPaymentAdjustment(bmaSchedule.businessDayConvention());
 
-            for (int j = 0; j < 2; ++j)
+            for (var j = 0; j < 2; ++j)
             {
-                for (int i = 0; i < legs_[j].Count; i++)
+                for (var i = 0; i < legs_[j].Count; i++)
                     legs_[j][i].registerWith(update);
             }
 
@@ -87,14 +86,15 @@ namespace QLNet.Instruments
                     payer_[1] = +1.0;
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown BMA-swap type");
+                    Utils.QL_FAIL("Unknown BMA-swap ExerciseType");
                     break;
             }
         }
 
 
-        public List<CashFlow> liborLeg() { return legs_[0]; }
-        public List<CashFlow> bmaLeg() { return legs_[1]; }
+        public List<CashFlow> liborLeg() => legs_[0];
+
+        public List<CashFlow> bmaLeg() => legs_[1];
 
         public double liborLegBPS()
         {
@@ -112,16 +112,13 @@ namespace QLNet.Instruments
 
         public double fairLiborFraction()
         {
-            double spreadNPV = liborSpread_ / Const.BASIS_POINT * liborLegBPS();
-            double pureLiborNPV = liborLegNPV() - spreadNPV;
+            var spreadNPV = liborSpread_ / Const.BASIS_POINT * liborLegBPS();
+            var pureLiborNPV = liborLegNPV() - spreadNPV;
             Utils.QL_REQUIRE(pureLiborNPV.IsNotEqual(0.0), () => "result not available (null libor NPV)");
             return -liborFraction_ * (bmaLegNPV() + spreadNPV) / pureLiborNPV;
         }
 
-        public double fairLiborSpread()
-        {
-            return liborSpread_ - NPV() / (liborLegBPS() / Const.BASIS_POINT);
-        }
+        public double fairLiborSpread() => liborSpread_ - NPV() / (liborLegBPS() / Const.BASIS_POINT);
 
         public double bmaLegBPS()
         {

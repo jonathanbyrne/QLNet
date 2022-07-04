@@ -25,7 +25,7 @@ using System;
 namespace QLNet.Termstructures.Volatility.swaption
 {
     //! Constant swaption volatility, no time-strike dependence
-    public class ConstantSwaptionVolatility : SwaptionVolatilityStructure
+    [JetBrains.Annotations.PublicAPI] public class ConstantSwaptionVolatility : SwaptionVolatilityStructure
     {
         private Handle<Quote> volatility_;
         private Period maxSwapTenor_;
@@ -100,53 +100,33 @@ namespace QLNet.Termstructures.Volatility.swaption
         }
 
         // TermStructure interface
-        public override Date maxDate()
-        {
-            return Date.maxDate();
-        }
-        // VolatilityTermStructure interface
-        public override double minStrike()
-        {
-            return double.MinValue;
-        }
+        public override Date maxDate() => Date.maxDate();
 
-        public override double maxStrike()
-        {
-            return double.MaxValue;
-        }
+        // VolatilityTermStructure interface
+        public override double minStrike() => double.MinValue;
+
+        public override double maxStrike() => double.MaxValue;
 
         // SwaptionVolatilityStructure interface
-        public override Period maxSwapTenor()
-        {
-            return maxSwapTenor_;
-        }
+        public override Period maxSwapTenor() => maxSwapTenor_;
 
-        public override VolatilityType volatilityType()
-        {
-            return volatilityType_;
-        }
+        public override VolatilityType volatilityType() => volatilityType_;
 
         protected new SmileSection smileSectionImpl(Date d, Period p)
         {
-            double atmVol = volatility_.link.value();
+            var atmVol = volatility_.link.value();
             return new FlatSmileSection(d, atmVol, dayCounter(), referenceDate());
         }
 
         protected override SmileSection smileSectionImpl(double optionTime, double time)
         {
-            double atmVol = volatility_.link.value();
+            var atmVol = volatility_.link.value();
             return new FlatSmileSection(optionTime, atmVol, dayCounter());
         }
 
-        protected new double volatilityImpl(Date date, Period period, double rate)
-        {
-            return volatility_.link.value();
-        }
+        protected new double volatilityImpl(Date date, Period period, double rate) => volatility_.link.value();
 
-        protected override double volatilityImpl(double time, double t, double rate)
-        {
-            return volatility_.link.value();
-        }
+        protected override double volatilityImpl(double time, double t, double rate) => volatility_.link.value();
 
         protected override double shiftImpl(double optionTime, double swapLength)
         {

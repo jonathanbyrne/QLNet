@@ -26,7 +26,7 @@ namespace QLNet.Instruments
     /// <summary>
     /// float float swap
     /// </summary>
-    public class FloatFloatSwap : Swap
+    [JetBrains.Annotations.PublicAPI] public class FloatFloatSwap : Swap
     {
         public FloatFloatSwap(VanillaSwap.Type type,
                               double nominal1,
@@ -120,44 +120,56 @@ namespace QLNet.Instruments
         }
 
         //! \name Inspectors
-        public VanillaSwap.Type type() { return type_; }
-        public List<double> nominal1() { return nominal1_; }
-        public List<double> nominal2() { return nominal2_; }
+        public VanillaSwap.Type type() => type_;
 
-        public Schedule schedule1() { return schedule1_; }
-        public Schedule schedule2() { return schedule2_; }
+        public List<double> nominal1() => nominal1_;
 
-        public InterestRateIndex index1() { return index1_; }
-        public InterestRateIndex index2() { return index2_; }
+        public List<double> nominal2() => nominal2_;
 
-        public List<double> spread1() { return spread1_; }
-        public List<double> spread2() { return spread2_; }
+        public Schedule schedule1() => schedule1_;
 
-        public List<double> gearing1() { return gearing1_; }
-        public List<double> gearing2() { return gearing2_; }
+        public Schedule schedule2() => schedule2_;
 
-        public List<double?> cappedRate1() { return cappedRate1_; }
-        public List<double?> flooredRate1() { return flooredRate1_; }
-        public List<double?> cappedRate2() { return cappedRate2_; }
-        public List<double?> flooredRate2() { return flooredRate2_; }
+        public InterestRateIndex index1() => index1_;
 
-        public DayCounter dayCount1() { return dayCount1_; }
-        public DayCounter dayCount2() { return dayCount2_; }
+        public InterestRateIndex index2() => index2_;
 
-        public BusinessDayConvention paymentConvention1() { return paymentConvention1_; }
-        public BusinessDayConvention paymentConvention2() { return paymentConvention2_; }
+        public List<double> spread1() => spread1_;
 
-        public List<CashFlow> leg1() { return legs_[0]; }
-        public List<CashFlow> leg2() { return legs_[1]; }
+        public List<double> spread2() => spread2_;
+
+        public List<double> gearing1() => gearing1_;
+
+        public List<double> gearing2() => gearing2_;
+
+        public List<double?> cappedRate1() => cappedRate1_;
+
+        public List<double?> flooredRate1() => flooredRate1_;
+
+        public List<double?> cappedRate2() => cappedRate2_;
+
+        public List<double?> flooredRate2() => flooredRate2_;
+
+        public DayCounter dayCount1() => dayCount1_;
+
+        public DayCounter dayCount2() => dayCount2_;
+
+        public BusinessDayConvention paymentConvention1() => paymentConvention1_;
+
+        public BusinessDayConvention paymentConvention2() => paymentConvention2_;
+
+        public List<CashFlow> leg1() => legs_[0];
+
+        public List<CashFlow> leg2() => legs_[1];
 
         // other
         public override void setupArguments(IPricingEngineArguments args)
         {
             base.setupArguments(args);
 
-            Arguments arguments = args as Arguments;
+            var arguments = args as Arguments;
 
-            Utils.QL_REQUIRE(arguments != null, () => "argument type does not match");
+            Utils.QL_REQUIRE(arguments != null, () => "argument ExerciseType does not match");
 
             arguments.type = type_;
             arguments.nominal1 = nominal1_;
@@ -165,8 +177,8 @@ namespace QLNet.Instruments
             arguments.index1 = index1_;
             arguments.index2 = index2_;
 
-            List<CashFlow> leg1Coupons = leg1();
-            List<CashFlow> leg2Coupons = leg2();
+            var leg1Coupons = leg1();
+            var leg2Coupons = leg2();
 
             arguments.leg1ResetDates = arguments.leg1PayDates =
                                           arguments.leg1FixingDates = new InitializedList<Date>(leg1Coupons.Count);
@@ -189,9 +201,9 @@ namespace QLNet.Instruments
             arguments.leg2CappedRates = arguments.leg2FlooredRates =
                                            new InitializedList<double?>(leg2Coupons.Count, null);
 
-            for (int i = 0; i < leg1Coupons.Count; ++i)
+            for (var i = 0; i < leg1Coupons.Count; ++i)
             {
-                FloatingRateCoupon coupon = leg1Coupons[i] as FloatingRateCoupon;
+                var coupon = leg1Coupons[i] as FloatingRateCoupon;
                 if (coupon != null)
                 {
                     arguments.leg1AccrualTimes[i] = coupon.accrualPeriod();
@@ -208,20 +220,20 @@ namespace QLNet.Instruments
                     {
                         arguments.leg1Coupons[i] = null;
                     }
-                    CappedFlooredCoupon cfcoupon = leg1Coupons[i] as CappedFlooredCoupon;
+                    var cfcoupon = leg1Coupons[i] as CappedFlooredCoupon;
                     if (cfcoupon != null)
                     {
-                        arguments.leg1CappedRates[i] = cfcoupon.cap();
-                        arguments.leg1FlooredRates[i] = cfcoupon.floor();
+                        arguments.leg1CappedRates[i] = cfcoupon.Cap();
+                        arguments.leg1FlooredRates[i] = cfcoupon.Floor();
                     }
                 }
                 else
                 {
-                    CashFlow cashflow = leg1Coupons[i] as CashFlow;
-                    int j = arguments.leg1PayDates.FindIndex(x => x == cashflow.date());
+                    var cashflow = leg1Coupons[i] as CashFlow;
+                    var j = arguments.leg1PayDates.FindIndex(x => x == cashflow.date());
                     Utils.QL_REQUIRE(j != -1, () =>
                                      "nominal redemption on " + cashflow.date() + "has no corresponding coupon");
-                    int jIdx = j; // Size jIdx = j - arguments->leg1PayDates.begin();
+                    var jIdx = j; // Size jIdx = j - arguments->leg1PayDates.begin();
                     arguments.leg1IsRedemptionFlow[i] = true;
                     arguments.leg1Coupons[i] = cashflow.amount();
                     arguments.leg1ResetDates[i] = arguments.leg1ResetDates[jIdx];
@@ -233,9 +245,9 @@ namespace QLNet.Instruments
                 }
             }
 
-            for (int i = 0; i < leg2Coupons.Count; ++i)
+            for (var i = 0; i < leg2Coupons.Count; ++i)
             {
-                FloatingRateCoupon coupon = leg2Coupons[i] as FloatingRateCoupon;
+                var coupon = leg2Coupons[i] as FloatingRateCoupon;
                 if (coupon != null)
                 {
                     arguments.leg2AccrualTimes[i] = coupon.accrualPeriod();
@@ -252,20 +264,20 @@ namespace QLNet.Instruments
                     {
                         arguments.leg2Coupons[i] = null;
                     }
-                    CappedFlooredCoupon cfcoupon = leg2Coupons[i] as CappedFlooredCoupon;
+                    var cfcoupon = leg2Coupons[i] as CappedFlooredCoupon;
                     if (cfcoupon != null)
                     {
-                        arguments.leg2CappedRates[i] = cfcoupon.cap();
-                        arguments.leg2FlooredRates[i] = cfcoupon.floor();
+                        arguments.leg2CappedRates[i] = cfcoupon.Cap();
+                        arguments.leg2FlooredRates[i] = cfcoupon.Floor();
                     }
                 }
                 else
                 {
-                    CashFlow cashflow = leg2Coupons[i] as CashFlow;
-                    int j = arguments.leg2PayDates.FindIndex(x => x == cashflow.date());
+                    var cashflow = leg2Coupons[i] as CashFlow;
+                    var j = arguments.leg2PayDates.FindIndex(x => x == cashflow.date());
                     Utils.QL_REQUIRE(j != -1, () =>
                                      "nominal redemption on " + cashflow.date() + "has no corresponding coupon");
-                    int jIdx = j; // j - arguments->leg2PayDates.begin();
+                    var jIdx = j; // j - arguments->leg2PayDates.begin();
                     arguments.leg2IsRedemptionFlow[i] = true;
                     arguments.leg2Coupons[i] = cashflow.amount();
                     arguments.leg2ResetDates[i] = arguments.leg2ResetDates[jIdx];
@@ -336,8 +348,8 @@ namespace QLNet.Instruments
             if (flooredRate2_.Count == 0)
                 flooredRate2_ = new InitializedList<double?>(nominal2_.Count, null);
 
-            bool isNull = cappedRate1_[0] == null;
-            for (int i = 0; i < cappedRate1_.Count; i++)
+            var isNull = cappedRate1_[0] == null;
+            for (var i = 0; i < cappedRate1_.Count; i++)
             {
                 if (isNull)
                     Utils.QL_REQUIRE(cappedRate1_[i] == null, () =>
@@ -349,7 +361,7 @@ namespace QLNet.Instruments
                                      + "1st is " + cappedRate1_[0] + ")");
             }
             isNull = cappedRate2_[0] == null;
-            for (int i = 0; i < cappedRate2_.Count; i++)
+            for (var i = 0; i < cappedRate2_.Count; i++)
             {
                 if (isNull)
                     Utils.QL_REQUIRE(cappedRate2_[i] == null, () =>
@@ -361,7 +373,7 @@ namespace QLNet.Instruments
                                      + "1st is " + cappedRate2_[0] + ")");
             }
             isNull = flooredRate1_[0] == null;
-            for (int i = 0; i < flooredRate1_.Count; i++)
+            for (var i = 0; i < flooredRate1_.Count; i++)
             {
                 if (isNull)
                     Utils.QL_REQUIRE(flooredRate1_[i] == null, () =>
@@ -374,7 +386,7 @@ namespace QLNet.Instruments
                                      + "1st is " + flooredRate1_[0] + ")");
             }
             isNull = flooredRate2_[0] == null;
-            for (int i = 0; i < flooredRate2_.Count; i++)
+            for (var i = 0; i < flooredRate2_.Count; i++)
             {
                 if (isNull)
                     Utils.QL_REQUIRE(flooredRate2_[i] == null, () =>
@@ -390,19 +402,19 @@ namespace QLNet.Instruments
             // if the gearing is zero then the ibor / cms leg will be set up with
             // fixed coupons which makes trouble here in this context. We therefore
             // use a dirty trick and enforce the gearing to be non zero.
-            for (int i = 0; i < gearing1_.Count; i++)
+            for (var i = 0; i < gearing1_.Count; i++)
                 if (Utils.close(gearing1_[i], 0.0))
                     gearing1_[i] = Const.QL_EPSILON;
-            for (int i = 0; i < gearing2_.Count; i++)
+            for (var i = 0; i < gearing2_.Count; i++)
                 if (Utils.close(gearing2_[i], 0.0))
                     gearing2_[i] = Const.QL_EPSILON;
 
-            IborIndex ibor1 = index1_ as IborIndex;
-            IborIndex ibor2 = index2_ as IborIndex;
-            SwapIndex cms1 = index1_ as SwapIndex;
-            SwapIndex cms2 = index2_ as SwapIndex;
-            SwapSpreadIndex cmsspread1 = index1_ as SwapSpreadIndex;
-            SwapSpreadIndex cmsspread2 = index2_ as SwapSpreadIndex;
+            var ibor1 = index1_ as IborIndex;
+            var ibor2 = index2_ as IborIndex;
+            var cms1 = index1_ as SwapIndex;
+            var cms2 = index2_ as SwapIndex;
+            var cmsspread1 = index1_ as SwapSpreadIndex;
+            var cmsspread2 = index2_ as SwapSpreadIndex;
 
             Utils.QL_REQUIRE(ibor1 != null || cms1 != null || cmsspread1 != null, () =>
                              "index1 must be ibor or cms or cms spread");
@@ -411,7 +423,7 @@ namespace QLNet.Instruments
 
             if (ibor1 != null)
             {
-                IborLeg leg = new IborLeg(schedule1_, ibor1);
+                var leg = new IborLeg(schedule1_, ibor1);
                 leg = (IborLeg)leg.withPaymentDayCounter(dayCount1_)
                       .withSpreads(spread1_)
                       .withGearings(gearing1_)
@@ -427,7 +439,7 @@ namespace QLNet.Instruments
 
             if (ibor2 != null)
             {
-                IborLeg leg = new IborLeg(schedule2_, ibor2);
+                var leg = new IborLeg(schedule2_, ibor2);
                 leg = (IborLeg)leg.withPaymentDayCounter(dayCount2_)
                       .withSpreads(spread2_)
                       .withGearings(gearing2_)
@@ -443,7 +455,7 @@ namespace QLNet.Instruments
 
             if (cms1 != null)
             {
-                CmsLeg leg = new CmsLeg(schedule1_, cms1);
+                var leg = new CmsLeg(schedule1_, cms1);
                 leg = (CmsLeg)leg.withPaymentDayCounter(dayCount1_)
                       .withSpreads(spread1_)
                       .withGearings(gearing1_)
@@ -459,7 +471,7 @@ namespace QLNet.Instruments
 
             if (cms2 != null)
             {
-                CmsLeg leg = new CmsLeg(schedule2_, cms2);
+                var leg = new CmsLeg(schedule2_, cms2);
                 leg = (CmsLeg)leg.withPaymentDayCounter(dayCount2_)
                       .withSpreads(spread2_)
                       .withGearings(gearing2_)
@@ -475,7 +487,7 @@ namespace QLNet.Instruments
 
             if (cmsspread1 != null)
             {
-                CmsSpreadLeg leg = new CmsSpreadLeg(schedule1_, cmsspread1);
+                var leg = new CmsSpreadLeg(schedule1_, cmsspread1);
                 leg = (CmsSpreadLeg)leg.withPaymentDayCounter(dayCount1_)
                       .withSpreads(spread1_)
                       .withGearings(gearing1_)
@@ -490,7 +502,7 @@ namespace QLNet.Instruments
 
             if (cmsspread2 != null)
             {
-                CmsSpreadLeg leg = new CmsSpreadLeg(schedule2_, cmsspread2);
+                var leg = new CmsSpreadLeg(schedule2_, cmsspread2);
                 leg = (CmsSpreadLeg)leg.withPaymentDayCounter(dayCount2_)
                       .withSpreads(spread2_)
                       .withGearings(gearing2_)
@@ -506,9 +518,9 @@ namespace QLNet.Instruments
 
             if (intermediateCapitalExchange_)
             {
-                for (int i = 0; i < legs_[0].Count - 1; i++)
+                for (var i = 0; i < legs_[0].Count - 1; i++)
                 {
-                    double cap = nominal1_[i] - nominal1_[i + 1];
+                    var cap = nominal1_[i] - nominal1_[i + 1];
                     if (!Utils.close(cap, 0.0))
                     {
                         legs_[0].Insert(i + 1, new Redemption(cap, legs_[0][i].date()));
@@ -516,9 +528,9 @@ namespace QLNet.Instruments
                         i++;
                     }
                 }
-                for (int i = 0; i < legs_[1].Count - 1; i++)
+                for (var i = 0; i < legs_[1].Count - 1; i++)
                 {
-                    double cap = nominal2_[i] - nominal2_[i + 1];
+                    var cap = nominal2_[i] - nominal2_[i + 1];
                     if (!Utils.close(cap, 0.0))
                     {
                         legs_[1].Insert(i + 1, new Redemption(cap, legs_[1][i].date()));
@@ -553,7 +565,7 @@ namespace QLNet.Instruments
                     payer_[1] = -1.0;
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown float float - swap type");
+                    Utils.QL_FAIL("Unknown float float - swap ExerciseType");
                     break;
             }
         }
@@ -666,7 +678,7 @@ namespace QLNet.Instruments
         public new class Results : Swap.Results
         { }
 
-        public class Engine : GenericEngine<Arguments, Results>
+        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results>
         { }
     }
 }

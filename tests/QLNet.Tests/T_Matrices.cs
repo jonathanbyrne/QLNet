@@ -28,22 +28,19 @@ using QLNet.Math;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_Matrices
+    [JetBrains.Annotations.PublicAPI] public class T_Matrices
     {
 
         int N;
         Matrix M1, M2, M3, M4, M5, M6, M7, I;
 
-        double norm(Vector v)
-        {
-            return System.Math.Sqrt(Vector.DotProduct(v, v));
-        }
+        double norm(Vector v) => System.Math.Sqrt(Vector.DotProduct(v, v));
 
         double norm(Matrix m)
         {
-            double sum = 0.0;
-            for (int i = 0; i < m.rows(); i++)
-                for (int j = 0; j < m.columns(); j++)
+            var sum = 0.0;
+            for (var i = 0; i < m.rows(); i++)
+                for (var j = 0; j < m.columns(); j++)
                     sum += m[i, j] * m[i, j];
             return System.Math.Sqrt(sum);
         }
@@ -104,23 +101,23 @@ namespace QLNet.Tests
 
             Matrix[] testMatrices = { M1, M2 };
 
-            for (int k = 0; k < testMatrices.Length; k++)
+            for (var k = 0; k < testMatrices.Length; k++)
             {
 
-                Matrix M = testMatrices[k];
-                SymmetricSchurDecomposition dec = new SymmetricSchurDecomposition(M);
-                Vector eigenValues = dec.eigenvalues();
-                Matrix eigenVectors = dec.eigenvectors();
-                double minHolder = double.MaxValue;
+                var M = testMatrices[k];
+                var dec = new SymmetricSchurDecomposition(M);
+                var eigenValues = dec.eigenvalues();
+                var eigenVectors = dec.eigenvectors();
+                var minHolder = double.MaxValue;
 
-                for (int i = 0; i < N; i++)
+                for (var i = 0; i < N; i++)
                 {
-                    Vector v = new Vector(N);
-                    for (int j = 0; j < N; j++)
+                    var v = new Vector(N);
+                    for (var j = 0; j < N; j++)
                         v[j] = eigenVectors[j, i];
                     // check definition
-                    Vector a = M * v;
-                    Vector b = eigenValues[i] * v;
+                    var a = M * v;
+                    var b = eigenValues[i] * v;
                     if (norm(a - b) > 1.0e-15)
                         QAssert.Fail("Eigenvector definition not satisfied");
                     // check decreasing ordering
@@ -133,7 +130,7 @@ namespace QLNet.Tests
                 }
 
                 // check normalization
-                Matrix m = eigenVectors * Matrix.transpose(eigenVectors);
+                var m = eigenVectors * Matrix.transpose(eigenVectors);
                 if (norm(m - I) > 1.0e-15)
                     QAssert.Fail("Eigenvector not normalized");
             }
@@ -147,10 +144,10 @@ namespace QLNet.Tests
 
             setup();
 
-            Matrix m = MatrixUtilitites.pseudoSqrt(M1, MatrixUtilitites.SalvagingAlgorithm.None);
-            Matrix temp = m * Matrix.transpose(m);
-            double error = norm(temp - M1);
-            double tolerance = 1.0e-12;
+            var m = MatrixUtilitites.pseudoSqrt(M1, MatrixUtilitites.SalvagingAlgorithm.None);
+            var temp = m * Matrix.transpose(m);
+            var error = norm(temp - M1);
+            var tolerance = 1.0e-12;
             if (error > tolerance)
             {
                 QAssert.Fail("Matrix square root calculation failed\n"
@@ -169,10 +166,10 @@ namespace QLNet.Tests
 
             setup();
 
-            Matrix tempSqrt = MatrixUtilitites.pseudoSqrt(M5, MatrixUtilitites.SalvagingAlgorithm.Higham);
-            Matrix ansSqrt = MatrixUtilitites.pseudoSqrt(M6, MatrixUtilitites.SalvagingAlgorithm.None);
-            double error = norm(ansSqrt - tempSqrt);
-            double tolerance = 1.0e-4;
+            var tempSqrt = MatrixUtilitites.pseudoSqrt(M5, MatrixUtilitites.SalvagingAlgorithm.Higham);
+            var ansSqrt = MatrixUtilitites.pseudoSqrt(M6, MatrixUtilitites.SalvagingAlgorithm.None);
+            var error = norm(ansSqrt - tempSqrt);
+            var tolerance = 1.0e-4;
             if (error > tolerance)
             {
                 QAssert.Fail("Higham matrix correction failed\n"
@@ -192,39 +189,39 @@ namespace QLNet.Tests
 
             setup();
 
-            double tol = 1.0e-12;
+            var tol = 1.0e-12;
             Matrix[] testMatrices = { M1, M2, M3, M4 };
 
-            for (int j = 0; j < testMatrices.Length; j++)
+            for (var j = 0; j < testMatrices.Length; j++)
             {
                 // m >= n required (rows >= columns)
-                Matrix A = testMatrices[j];
-                SVD svd = new SVD(A);
+                var A = testMatrices[j];
+                var svd = new SVD(A);
                 // U is m x n
-                Matrix U = svd.U();
+                var U = svd.U();
                 // s is n long
-                Vector s = svd.singularValues();
+                var s = svd.singularValues();
                 // S is n x n
-                Matrix S = svd.S();
+                var S = svd.S();
                 // V is n x n
-                Matrix V = svd.V();
+                var V = svd.V();
 
-                for (int i = 0; i < S.rows(); i++)
+                for (var i = 0; i < S.rows(); i++)
                 {
                     if (S[i, i] != s[i])
                         QAssert.Fail("S not consistent with s");
                 }
 
                 // tests
-                Matrix U_Utranspose = Matrix.transpose(U) * U;
+                var U_Utranspose = Matrix.transpose(U) * U;
                 if (norm(U_Utranspose - I) > tol)
                     QAssert.Fail("U not orthogonal (norm of U^T*U-I = " + norm(U_Utranspose - I) + ")");
 
-                Matrix V_Vtranspose = Matrix.transpose(V) * V;
+                var V_Vtranspose = Matrix.transpose(V) * V;
                 if (norm(V_Vtranspose - I) > tol)
                     QAssert.Fail("V not orthogonal (norm of V^T*V-I = " + norm(V_Vtranspose - I) + ")");
 
-                Matrix A_reconstructed = U * S * Matrix.transpose(V);
+                var A_reconstructed = U * S * Matrix.transpose(V);
                 if (norm(A_reconstructed - A) > tol)
                     QAssert.Fail("Product does not recover A: (norm of U*S*V^T-A = " + norm(A_reconstructed - A) + ")");
             }
@@ -238,22 +235,22 @@ namespace QLNet.Tests
 
             setup();
 
-            double tol = 1.0e-12;
+            var tol = 1.0e-12;
             Matrix[] testMatrices = { M1, M2, I,
                                    M3, Matrix.transpose(M3), M4, Matrix.transpose(M4), M5
                                  };
 
-            for (int j = 0; j < testMatrices.Length; j++)
+            for (var j = 0; j < testMatrices.Length; j++)
             {
                 Matrix Q = new Matrix(), R = new Matrix();
-                bool pivot = true;
-                Matrix A = testMatrices[j];
-                List<int> ipvt = MatrixUtilities.qrDecomposition(A, ref Q, ref R, pivot);
+                var pivot = true;
+                var A = testMatrices[j];
+                var ipvt = MatrixUtilities.qrDecomposition(A, ref Q, ref R, pivot);
 
-                Matrix P = new Matrix(A.columns(), A.columns(), 0.0);
+                var P = new Matrix(A.columns(), A.columns(), 0.0);
 
                 // reverse column pivoting
-                for (int i = 0; i < P.columns(); ++i)
+                for (var i = 0; i < P.columns(); ++i)
                 {
                     P[ipvt[i], i] = 1.0;
                 }
@@ -278,10 +275,10 @@ namespace QLNet.Tests
             // Testing QR solve...
             setup();
 
-            double tol = 1.0e-12;
-            MersenneTwisterUniformRng rng = new MersenneTwisterUniformRng(1234);
-            Matrix bigM = new Matrix(50, 100, 0.0);
-            for (int i = 0; i < System.Math.Min(bigM.rows(), bigM.columns()); ++i)
+            var tol = 1.0e-12;
+            var rng = new MersenneTwisterUniformRng(1234);
+            var bigM = new Matrix(50, 100, 0.0);
+            for (var i = 0; i < System.Math.Min(bigM.rows(), bigM.columns()); ++i)
             {
                 bigM[i, i] = i + 1.0;
             }
@@ -289,18 +286,18 @@ namespace QLNet.Tests
                                    M4, Matrix.transpose(M4), M5, I, M7, bigM, Matrix.transpose(bigM)
                                  };
 
-            for (int j = 0; j < testMatrices.Length; j++)
+            for (var j = 0; j < testMatrices.Length; j++)
             {
-                Matrix A = testMatrices[j];
-                Vector b = new Vector(A.rows());
+                var A = testMatrices[j];
+                var b = new Vector(A.rows());
 
-                for (int k = 0; k < 10; ++k)
+                for (var k = 0; k < 10; ++k)
                 {
-                    for (int i = 0; i < b.Count; ++i)
+                    for (var i = 0; i < b.Count; ++i)
                     {
                         b[i] = rng.next().value;
                     }
-                    Vector x = MatrixUtilities.qrSolve(A, b, true);
+                    var x = MatrixUtilities.qrSolve(A, b, true);
 
                     if (A.columns() >= A.rows())
                     {
@@ -311,25 +308,25 @@ namespace QLNet.Tests
                     else
                     {
                         // use the SVD to calculate the reference values
-                        int n = A.columns();
-                        Vector xr = new Vector(n, 0.0);
+                        var n = A.columns();
+                        var xr = new Vector(n, 0.0);
 
-                        SVD svd = new SVD(A);
-                        Matrix V = svd.V();
-                        Matrix U = svd.U();
-                        Vector w = svd.singularValues();
-                        double threshold = n * Const.QL_EPSILON;
+                        var svd = new SVD(A);
+                        var V = svd.V();
+                        var U = svd.U();
+                        var w = svd.singularValues();
+                        var threshold = n * Const.QL_EPSILON;
 
-                        for (int i = 0; i < n; ++i)
+                        for (var i = 0; i < n; ++i)
                         {
                             if (w[i] > threshold)
                             {
                                 double u = 0;
-                                int zero = 0;
-                                for (int kk = 0; kk < U.rows(); kk++)
+                                var zero = 0;
+                                for (var kk = 0; kk < U.rows(); kk++)
                                     u += U[kk, i] * b[zero++] / w[i];
 
-                                for (int jj = 0; jj < n; ++jj)
+                                for (var jj = 0; jj < n; ++jj)
                                 {
                                     xr[jj] += u * V[jj, i];
                                 }
@@ -354,19 +351,19 @@ namespace QLNet.Tests
             // Testing LU inverse calculation
             setup();
 
-            double tol = 1.0e-12;
+            var tol = 1.0e-12;
             Matrix[] testMatrices = { M1, M2, I, M5 };
 
-            for (int j = 0; j < testMatrices.Length; j++)
+            for (var j = 0; j < testMatrices.Length; j++)
             {
-                Matrix A = testMatrices[j];
-                Matrix invA = Matrix.inverse(A);
+                var A = testMatrices[j];
+                var invA = Matrix.inverse(A);
 
-                Matrix I1 = invA * A;
-                Matrix I2 = A * invA;
+                var I1 = invA * A;
+                var I2 = A * invA;
 
-                Matrix eins = new Matrix(A.rows(), A.rows(), 0.0);
-                for (int i = 0; i < A.rows(); ++i)
+                var eins = new Matrix(A.rows(), A.rows(), 0.0);
+                for (var i = 0; i < A.rows(); ++i)
                     eins[i, i] = 1.0;
 
                 if (norm(I1 - eins) > tol)

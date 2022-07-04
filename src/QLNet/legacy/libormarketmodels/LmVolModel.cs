@@ -32,20 +32,15 @@ namespace QLNet.legacy.libormarketmodels
             arguments_ = new InitializedList<Parameter>(nArguments);
         }
 
-        public int size()
-        {
-            return size_;
-        }
+        public int size() => size_;
 
         public abstract void generateArguments();
 
         public abstract Vector volatility(double t, Vector x = null);
 
-        public virtual double volatility(int i, double t, Vector x = null)
-        {
+        public virtual double volatility(int i, double t, Vector x = null) =>
             // inefficient implementation, please overload in derived classes
-            return volatility(t, x)[i];
-        }
+            volatility(t, x)[i];
 
         public virtual double integratedVariance(int i, int j, double u, Vector x = null)
         {
@@ -53,10 +48,7 @@ namespace QLNet.legacy.libormarketmodels
             return 0;
         }
 
-        public List<Parameter> parameters()
-        {
-            return arguments_;
-        }
+        public List<Parameter> parameters() => arguments_;
 
         public void setParams(List<Parameter> arguments)
         {

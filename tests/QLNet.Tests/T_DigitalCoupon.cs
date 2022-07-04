@@ -32,7 +32,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_DigitalCoupon
+    [JetBrains.Annotations.PublicAPI] public class T_DigitalCoupon
     {
         private class CommonVars
         {
@@ -81,40 +81,40 @@ namespace QLNet.Tests
                d1' = ln(F/X')/stdDev + 0.5*stdDev;
             */
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             double[] vols = { 0.05, 0.15, 0.30 };
             double[] strikes = { 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07 };
             double[] gearings = { 1.0, 2.8 };
             double[] spreads = { 0.0, 0.005 };
 
-            double gap = 1e-7; /* low, in order to compare digital option value
+            var gap = 1e-7; /* low, in order to compare digital option value
                            with black formula result */
-            DigitalReplication replication = new DigitalReplication(Replication.Type.Central, gap);
-            for (int i = 0; i < vols.Length; i++)
+            var replication = new DigitalReplication(Replication.Type.Central, gap);
+            for (var i = 0; i < vols.Length; i++)
             {
-                double capletVol = vols[i];
-                RelinkableHandle<OptionletVolatilityStructure> vol = new RelinkableHandle<OptionletVolatilityStructure>();
+                var capletVol = vols[i];
+                var vol = new RelinkableHandle<OptionletVolatilityStructure>();
                 vol.linkTo(new ConstantOptionletVolatility(vars.today, vars.calendar, BusinessDayConvention.Following,
                                                            capletVol, new Actual360()));
-                for (int j = 0; j < strikes.Length; j++)
+                for (var j = 0; j < strikes.Length; j++)
                 {
-                    double strike = strikes[j];
-                    for (int k = 9; k < 10; k++)
+                    var strike = strikes[j];
+                    for (var k = 9; k < 10; k++)
                     {
-                        Date startDate = vars.calendar.advance(vars.settlement, new Period(k + 1, TimeUnit.Years));
-                        Date endDate = vars.calendar.advance(vars.settlement, new Period(k + 2, TimeUnit.Years));
+                        var startDate = vars.calendar.advance(vars.settlement, new Period(k + 1, TimeUnit.Years));
+                        var endDate = vars.calendar.advance(vars.settlement, new Period(k + 2, TimeUnit.Years));
                         double? nullstrike = null;
-                        Date paymentDate = endDate;
-                        for (int h = 0; h < gearings.Length; h++)
+                        var paymentDate = endDate;
+                        for (var h = 0; h < gearings.Length; h++)
                         {
-                            double gearing = gearings[h];
-                            double spread = spreads[h];
+                            var gearing = gearings[h];
+                            var spread = spreads[h];
 
                             FloatingRateCoupon underlying = new IborCoupon(paymentDate, vars.nominal, startDate, endDate,
                                                                            vars.fixingDays, vars.index, gearing, spread);
                             // Floating Rate Coupon - Call Digital option
-                            DigitalCoupon digitalCappedCoupon = new DigitalCoupon(underlying,
+                            var digitalCappedCoupon = new DigitalCoupon(underlying,
                                                                                   strike, Position.Type.Short, false, nullstrike,
                                                                                   nullstrike, Position.Type.Short, false, nullstrike,
                                                                                   replication);
@@ -122,23 +122,23 @@ namespace QLNet.Tests
                             digitalCappedCoupon.setPricer(pricer);
 
                             // Check digital option price vs N(d1) price
-                            double accrualPeriod = underlying.accrualPeriod();
-                            double discount = vars.termStructure.link.discount(endDate);
-                            Date exerciseDate = underlying.fixingDate();
-                            double forward = underlying.rate();
-                            double effFwd = (forward - spread) / gearing;
-                            double effStrike = (strike - spread) / gearing;
-                            double stdDev = System.Math.Sqrt(vol.link.blackVariance(exerciseDate, effStrike));
-                            CumulativeNormalDistribution phi = new CumulativeNormalDistribution();
-                            double d1 = System.Math.Log(effFwd / effStrike) / stdDev + 0.5 * stdDev;
-                            double d2 = d1 - stdDev;
-                            double N_d1 = phi.value(d1);
-                            double N_d2 = phi.value(d2);
-                            double nd1Price = (gearing * effFwd * N_d1 + spread * N_d2)
-                                              * vars.nominal * accrualPeriod * discount;
-                            double optionPrice = digitalCappedCoupon.callOptionRate() *
-                                                 vars.nominal * accrualPeriod * discount;
-                            double error = System.Math.Abs(nd1Price - optionPrice);
+                            var accrualPeriod = underlying.accrualPeriod();
+                            var discount = vars.termStructure.link.discount(endDate);
+                            var exerciseDate = underlying.fixingDate();
+                            var forward = underlying.rate();
+                            var effFwd = (forward - spread) / gearing;
+                            var effStrike = (strike - spread) / gearing;
+                            var stdDev = System.Math.Sqrt(vol.link.blackVariance(exerciseDate, effStrike));
+                            var phi = new CumulativeNormalDistribution();
+                            var d1 = System.Math.Log(effFwd / effStrike) / stdDev + 0.5 * stdDev;
+                            var d2 = d1 - stdDev;
+                            var N_d1 = phi.value(d1);
+                            var N_d2 = phi.value(d2);
+                            var nd1Price = (gearing * effFwd * N_d1 + spread * N_d2)
+                                           * vars.nominal * accrualPeriod * discount;
+                            var optionPrice = digitalCappedCoupon.callOptionRate() *
+                                              vars.nominal * accrualPeriod * discount;
+                            var error = System.Math.Abs(nd1Price - optionPrice);
                             if (error > vars.optionTolerance)
                                 QAssert.Fail("\nDigital Call Option:" +
                                              "\nVolatility = " + capletVol +
@@ -152,24 +152,24 @@ namespace QLNet.Tests
                             if (spread == 0.0)
                             {
                                 Exercise exercise = new EuropeanExercise(exerciseDate);
-                                double discountAtFixing = vars.termStructure.link.discount(exerciseDate);
-                                SimpleQuote fwd = new SimpleQuote(effFwd * discountAtFixing);
-                                SimpleQuote qRate = new SimpleQuote(0.0);
-                                YieldTermStructure qTS = Utilities.flatRate(vars.today, qRate, new Actual360());
-                                SimpleQuote vol1 = new SimpleQuote(0.0);
-                                BlackVolTermStructure volTS = Utilities.flatVol(vars.today, capletVol, new Actual360());
+                                var discountAtFixing = vars.termStructure.link.discount(exerciseDate);
+                                var fwd = new SimpleQuote(effFwd * discountAtFixing);
+                                var qRate = new SimpleQuote(0.0);
+                                var qTS = Utilities.flatRate(vars.today, qRate, new Actual360());
+                                var vol1 = new SimpleQuote(0.0);
+                                var volTS = Utilities.flatVol(vars.today, capletVol, new Actual360());
                                 StrikedTypePayoff callPayoff = new AssetOrNothingPayoff(QLNet.Option.Type.Call, effStrike);
-                                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(
+                                var stochProcess = new BlackScholesMertonProcess(
                                    new Handle<Quote>(fwd),
                                    new Handle<YieldTermStructure>(qTS),
                                    new Handle<YieldTermStructure>(vars.termStructure),
                                    new Handle<BlackVolTermStructure>(volTS));
                                 IPricingEngine engine = new AnalyticEuropeanEngine(stochProcess);
-                                VanillaOption callOpt = new VanillaOption(callPayoff, exercise);
+                                var callOpt = new VanillaOption(callPayoff, exercise);
                                 callOpt.setPricingEngine(engine);
-                                double callVO = vars.nominal * gearing
-                                                * accrualPeriod * callOpt.NPV()
-                                                * discount / discountAtFixing
+                                var callVO = vars.nominal * gearing
+                                                          * accrualPeriod * callOpt.NPV()
+                                                          * discount / discountAtFixing
                                                 * forward / effFwd;
                                 error = System.Math.Abs(nd1Price - callVO);
                                 if (error > vars.blackTolerance)
@@ -183,7 +183,7 @@ namespace QLNet.Tests
                             }
 
                             // Floating Rate Coupon + Put Digital option
-                            DigitalCoupon digitalFlooredCoupon = new DigitalCoupon(underlying, nullstrike, Position.Type.Long,
+                            var digitalFlooredCoupon = new DigitalCoupon(underlying, nullstrike, Position.Type.Long,
                                                                                    false, nullstrike, strike, Position.Type.Long, false, nullstrike, replication);
                             digitalFlooredCoupon.setPricer(pricer);
 
@@ -208,24 +208,24 @@ namespace QLNet.Tests
                             if (spread == 0.0)
                             {
                                 Exercise exercise = new EuropeanExercise(exerciseDate);
-                                double discountAtFixing = vars.termStructure.link.discount(exerciseDate);
-                                SimpleQuote fwd = new SimpleQuote(effFwd * discountAtFixing);
-                                SimpleQuote qRate = new SimpleQuote(0.0);
-                                YieldTermStructure qTS = Utilities.flatRate(vars.today, qRate, new Actual360());
+                                var discountAtFixing = vars.termStructure.link.discount(exerciseDate);
+                                var fwd = new SimpleQuote(effFwd * discountAtFixing);
+                                var qRate = new SimpleQuote(0.0);
+                                var qTS = Utilities.flatRate(vars.today, qRate, new Actual360());
                                 //SimpleQuote vol = new SimpleQuote(0.0);
-                                BlackVolTermStructure volTS = Utilities.flatVol(vars.today, capletVol, new Actual360());
-                                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(
+                                var volTS = Utilities.flatVol(vars.today, capletVol, new Actual360());
+                                var stochProcess = new BlackScholesMertonProcess(
                                    new Handle<Quote>(fwd),
                                    new Handle<YieldTermStructure>(qTS),
                                    new Handle<YieldTermStructure>(vars.termStructure),
                                    new Handle<BlackVolTermStructure>(volTS));
                                 StrikedTypePayoff putPayoff = new AssetOrNothingPayoff(QLNet.Option.Type.Put, effStrike);
                                 IPricingEngine engine = new AnalyticEuropeanEngine(stochProcess);
-                                VanillaOption putOpt = new VanillaOption(putPayoff, exercise);
+                                var putOpt = new VanillaOption(putPayoff, exercise);
                                 putOpt.setPricingEngine(engine);
-                                double putVO = vars.nominal * gearing
-                                                * accrualPeriod * putOpt.NPV()
-                                                * discount / discountAtFixing
+                                var putVO = vars.nominal * gearing
+                                                         * accrualPeriod * putOpt.NPV()
+                                                         * discount / discountAtFixing
                                                 * forward / effFwd;
                                 error = System.Math.Abs(nd1Price - putVO);
                                 if (error > vars.blackTolerance)
@@ -247,45 +247,45 @@ namespace QLNet.Tests
         public void testAssetOrNothingDeepInTheMoney()
         {
             // Testing European deep in-the-money asset-or-nothing digital coupon
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            double gearing = 1.0;
-            double spread = 0.0;
+            var gearing = 1.0;
+            var spread = 0.0;
 
-            double capletVolatility = 0.0001;
-            RelinkableHandle<OptionletVolatilityStructure> volatility = new RelinkableHandle<OptionletVolatilityStructure>();
+            var capletVolatility = 0.0001;
+            var volatility = new RelinkableHandle<OptionletVolatilityStructure>();
             volatility.linkTo(new ConstantOptionletVolatility(vars.today, vars.calendar, BusinessDayConvention.Following,
                                                               capletVolatility, new Actual360()));
-            double gap = 1e-4;
-            DigitalReplication replication = new DigitalReplication(Replication.Type.Central, gap);
+            var gap = 1e-4;
+            var replication = new DigitalReplication(Replication.Type.Central, gap);
 
-            for (int k = 0; k < 10; k++)
+            for (var k = 0; k < 10; k++)
             {
                 // Loop on start and end dates
-                Date startDate = vars.calendar.advance(vars.settlement, new Period(k + 1, TimeUnit.Years));
-                Date endDate = vars.calendar.advance(vars.settlement, new Period(k + 2, TimeUnit.Years));
+                var startDate = vars.calendar.advance(vars.settlement, new Period(k + 1, TimeUnit.Years));
+                var endDate = vars.calendar.advance(vars.settlement, new Period(k + 2, TimeUnit.Years));
                 double? nullstrike = null;
-                Date paymentDate = endDate;
+                var paymentDate = endDate;
 
                 FloatingRateCoupon underlying = new IborCoupon(paymentDate, vars.nominal, startDate, endDate,
                                                                vars.fixingDays, vars.index, gearing, spread);
 
                 // Floating Rate Coupon - Deep-in-the-money Call Digital option
-                double strike = 0.001;
-                DigitalCoupon digitalCappedCoupon = new DigitalCoupon(underlying, strike, Position.Type.Short, false,
+                var strike = 0.001;
+                var digitalCappedCoupon = new DigitalCoupon(underlying, strike, Position.Type.Short, false,
                                                                       nullstrike, nullstrike, Position.Type.Short, false, nullstrike, replication);
                 IborCouponPricer pricer = new BlackIborCouponPricer(volatility);
                 digitalCappedCoupon.setPricer(pricer);
 
                 // Check price vs its target price
-                double accrualPeriod = underlying.accrualPeriod();
-                double discount = vars.termStructure.link.discount(endDate);
+                var accrualPeriod = underlying.accrualPeriod();
+                var discount = vars.termStructure.link.discount(endDate);
 
-                double targetOptionPrice = underlying.price(vars.termStructure);
-                double targetPrice = 0.0;
-                double digitalPrice = digitalCappedCoupon.price(vars.termStructure);
-                double error = System.Math.Abs(targetPrice - digitalPrice);
-                double tolerance = 1e-08;
+                var targetOptionPrice = underlying.price(vars.termStructure);
+                var targetPrice = 0.0;
+                var digitalPrice = digitalCappedCoupon.price(vars.termStructure);
+                var error = System.Math.Abs(targetPrice - digitalPrice);
+                var tolerance = 1e-08;
                 if (error > tolerance)
                     QAssert.Fail("\nFloating Coupon - Digital Call Option:" +
                                  "\nVolatility = " + capletVolatility +
@@ -296,10 +296,10 @@ namespace QLNet.Tests
                                  "\nError = " + error);
 
                 // Check digital option price
-                double replicationOptionPrice = digitalCappedCoupon.callOptionRate() *
-                                                vars.nominal * accrualPeriod * discount;
+                var replicationOptionPrice = digitalCappedCoupon.callOptionRate() *
+                                             vars.nominal * accrualPeriod * discount;
                 error = System.Math.Abs(targetOptionPrice - replicationOptionPrice);
-                double optionTolerance = 1e-08;
+                var optionTolerance = 1e-08;
                 if (error > optionTolerance)
                     QAssert.Fail("\nDigital Call Option:" +
                                  "\nVolatility = " + +capletVolatility +
@@ -311,7 +311,7 @@ namespace QLNet.Tests
 
                 // Floating Rate Coupon + Deep-in-the-money Put Digital option
                 strike = 0.99;
-                DigitalCoupon digitalFlooredCoupon = new DigitalCoupon(underlying, nullstrike, Position.Type.Long, false,
+                var digitalFlooredCoupon = new DigitalCoupon(underlying, nullstrike, Position.Type.Long, false,
                                                                        nullstrike, strike, Position.Type.Long, false, nullstrike, replication);
                 digitalFlooredCoupon.setPricer(pricer);
 
@@ -350,44 +350,44 @@ namespace QLNet.Tests
         public void testAssetOrNothingDeepOutTheMoney()
         {
             // Testing European deep out-the-money asset-or-nothing digital coupon
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            double gearing = 1.0;
-            double spread = 0.0;
+            var gearing = 1.0;
+            var spread = 0.0;
 
-            double capletVolatility = 0.0001;
-            RelinkableHandle<OptionletVolatilityStructure> volatility = new RelinkableHandle<OptionletVolatilityStructure>();
+            var capletVolatility = 0.0001;
+            var volatility = new RelinkableHandle<OptionletVolatilityStructure>();
             volatility.linkTo(new ConstantOptionletVolatility(vars.today, vars.calendar, BusinessDayConvention.Following,
                                                               capletVolatility, new Actual360()));
-            double gap = 1e-4;
-            DigitalReplication replication = new DigitalReplication(Replication.Type.Central, gap);
+            var gap = 1e-4;
+            var replication = new DigitalReplication(Replication.Type.Central, gap);
 
-            for (int k = 0; k < 10; k++)
+            for (var k = 0; k < 10; k++)
             {
                 // loop on start and end dates
-                Date startDate = vars.calendar.advance(vars.settlement, new Period(k + 1, TimeUnit.Years));
-                Date endDate = vars.calendar.advance(vars.settlement, new Period(k + 2, TimeUnit.Years));
+                var startDate = vars.calendar.advance(vars.settlement, new Period(k + 1, TimeUnit.Years));
+                var endDate = vars.calendar.advance(vars.settlement, new Period(k + 2, TimeUnit.Years));
                 double? nullstrike = null;
-                Date paymentDate = endDate;
+                var paymentDate = endDate;
 
                 FloatingRateCoupon underlying = new IborCoupon(paymentDate, vars.nominal, startDate, endDate,
                                                                 vars.fixingDays, vars.index, gearing, spread);
 
                 // Floating Rate Coupon - Deep-out-of-the-money Call Digital option
-                double strike = 0.99;
-                DigitalCoupon digitalCappedCoupon = new DigitalCoupon(underlying, strike, Position.Type.Short, false,
+                var strike = 0.99;
+                var digitalCappedCoupon = new DigitalCoupon(underlying, strike, Position.Type.Short, false,
                                                                       nullstrike, nullstrike, Position.Type.Long, false, nullstrike, replication/*Replication::Central, gap*/);
                 IborCouponPricer pricer = new BlackIborCouponPricer(volatility);
                 digitalCappedCoupon.setPricer(pricer);
 
                 // Check price vs its target
-                double accrualPeriod = underlying.accrualPeriod();
-                double discount = vars.termStructure.link.discount(endDate);
+                var accrualPeriod = underlying.accrualPeriod();
+                var discount = vars.termStructure.link.discount(endDate);
 
-                double targetPrice = underlying.price(vars.termStructure);
-                double digitalPrice = digitalCappedCoupon.price(vars.termStructure);
-                double error = System.Math.Abs(targetPrice - digitalPrice);
-                double tolerance = 1e-10;
+                var targetPrice = underlying.price(vars.termStructure);
+                var digitalPrice = digitalCappedCoupon.price(vars.termStructure);
+                var error = System.Math.Abs(targetPrice - digitalPrice);
+                var tolerance = 1e-10;
                 if (error > tolerance)
                     QAssert.Fail("\nFloating Coupon - Digital Call Option :" +
                                  "\nVolatility = " + capletVolatility +
@@ -398,11 +398,11 @@ namespace QLNet.Tests
                                  "\nError = " + error);
 
                 // Check digital option price
-                double targetOptionPrice = 0.0;
-                double replicationOptionPrice = digitalCappedCoupon.callOptionRate() *
-                                                vars.nominal * accrualPeriod * discount;
+                var targetOptionPrice = 0.0;
+                var replicationOptionPrice = digitalCappedCoupon.callOptionRate() *
+                                             vars.nominal * accrualPeriod * discount;
                 error = System.Math.Abs(targetOptionPrice - replicationOptionPrice);
-                double optionTolerance = 1e-08;
+                var optionTolerance = 1e-08;
                 if (error > optionTolerance)
                     QAssert.Fail("\nDigital Call Option:" +
                                  "\nVolatility = " + capletVolatility +
@@ -414,7 +414,7 @@ namespace QLNet.Tests
 
                 // Floating Rate Coupon - Deep-out-of-the-money Put Digital option
                 strike = 0.01;
-                DigitalCoupon digitalFlooredCoupon = new DigitalCoupon(underlying, nullstrike, Position.Type.Long, false,
+                var digitalFlooredCoupon = new DigitalCoupon(underlying, nullstrike, Position.Type.Long, false,
                                                                        nullstrike, strike, Position.Type.Long, false, nullstrike, replication);
                 digitalFlooredCoupon.setPricer(pricer);
 
@@ -461,56 +461,56 @@ namespace QLNet.Tests
                d2' = ln(F/X')/stdDev - 0.5*stdDev;
             */
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             double[] vols = { 0.05, 0.15, 0.30 };
             double[] strikes = { 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07 };
 
-            double gearing = 3.0;
-            double spread = -0.0002;
+            var gearing = 3.0;
+            var spread = -0.0002;
 
-            double gap = 1e-08; /* very low, in order to compare digital option value
+            var gap = 1e-08; /* very low, in order to compare digital option value
                                           with black formula result */
-            DigitalReplication replication = new DigitalReplication(Replication.Type.Central, gap);
-            RelinkableHandle<OptionletVolatilityStructure> vol = new RelinkableHandle<OptionletVolatilityStructure>();
+            var replication = new DigitalReplication(Replication.Type.Central, gap);
+            var vol = new RelinkableHandle<OptionletVolatilityStructure>();
 
-            for (int i = 0; i < vols.Length; i++)
+            for (var i = 0; i < vols.Length; i++)
             {
-                double capletVol = vols[i];
+                var capletVol = vols[i];
                 vol.linkTo(new ConstantOptionletVolatility(vars.today, vars.calendar, BusinessDayConvention.Following,
                                                            capletVol, new Actual360()));
-                for (int j = 0; j < strikes.Length; j++)
+                for (var j = 0; j < strikes.Length; j++)
                 {
-                    double strike = strikes[j];
-                    for (int k = 0; k < 10; k++)
+                    var strike = strikes[j];
+                    for (var k = 0; k < 10; k++)
                     {
-                        Date startDate = vars.calendar.advance(vars.settlement, new Period(k + 1, TimeUnit.Years));
-                        Date endDate = vars.calendar.advance(vars.settlement, new Period(k + 2, TimeUnit.Years));
+                        var startDate = vars.calendar.advance(vars.settlement, new Period(k + 1, TimeUnit.Years));
+                        var endDate = vars.calendar.advance(vars.settlement, new Period(k + 2, TimeUnit.Years));
                         double? nullstrike = null;
-                        double cashRate = 0.01;
+                        var cashRate = 0.01;
 
-                        Date paymentDate = endDate;
+                        var paymentDate = endDate;
                         FloatingRateCoupon underlying = new IborCoupon(paymentDate, vars.nominal, startDate, endDate,
                                                                        vars.fixingDays, vars.index, gearing, spread);
                         // Floating Rate Coupon - Call Digital option
-                        DigitalCoupon digitalCappedCoupon = new DigitalCoupon(underlying, strike, Position.Type.Short, false,
+                        var digitalCappedCoupon = new DigitalCoupon(underlying, strike, Position.Type.Short, false,
                                                                               cashRate, nullstrike, Position.Type.Short, false, nullstrike, replication);
                         IborCouponPricer pricer = new BlackIborCouponPricer(vol);
                         digitalCappedCoupon.setPricer(pricer);
 
                         // Check digital option price vs N(d2) price
-                        Date exerciseDate = underlying.fixingDate();
-                        double forward = underlying.rate();
-                        double effFwd = (forward - spread) / gearing;
-                        double effStrike = (strike - spread) / gearing;
-                        double accrualPeriod = underlying.accrualPeriod();
-                        double discount = vars.termStructure.link.discount(endDate);
-                        double stdDev = System.Math.Sqrt(vol.link.blackVariance(exerciseDate, effStrike));
-                        double ITM = Utils.blackFormulaCashItmProbability(QLNet.Option.Type.Call, effStrike, effFwd, stdDev);
-                        double nd2Price = ITM * vars.nominal * accrualPeriod * discount * cashRate;
-                        double optionPrice = digitalCappedCoupon.callOptionRate() *
-                                             vars.nominal * accrualPeriod * discount;
-                        double error = System.Math.Abs(nd2Price - optionPrice);
+                        var exerciseDate = underlying.fixingDate();
+                        var forward = underlying.rate();
+                        var effFwd = (forward - spread) / gearing;
+                        var effStrike = (strike - spread) / gearing;
+                        var accrualPeriod = underlying.accrualPeriod();
+                        var discount = vars.termStructure.link.discount(endDate);
+                        var stdDev = System.Math.Sqrt(vol.link.blackVariance(exerciseDate, effStrike));
+                        var ITM = Utils.blackFormulaCashItmProbability(QLNet.Option.Type.Call, effStrike, effFwd, stdDev);
+                        var nd2Price = ITM * vars.nominal * accrualPeriod * discount * cashRate;
+                        var optionPrice = digitalCappedCoupon.callOptionRate() *
+                                          vars.nominal * accrualPeriod * discount;
+                        var error = System.Math.Abs(nd2Price - optionPrice);
                         if (error > vars.optionTolerance)
                             QAssert.Fail("\nDigital Call Option:" +
                                          "\nVolatility = " + capletVol +
@@ -522,22 +522,22 @@ namespace QLNet.Tests
 
                         // Check digital option price vs N(d2) price using Vanilla Option class
                         Exercise exercise = new EuropeanExercise(exerciseDate);
-                        double discountAtFixing = vars.termStructure.link.discount(exerciseDate);
-                        SimpleQuote fwd = new SimpleQuote(effFwd * discountAtFixing);
-                        SimpleQuote qRate = new SimpleQuote(0.0);
-                        YieldTermStructure qTS = Utilities.flatRate(vars.today, qRate, new Actual360());
+                        var discountAtFixing = vars.termStructure.link.discount(exerciseDate);
+                        var fwd = new SimpleQuote(effFwd * discountAtFixing);
+                        var qRate = new SimpleQuote(0.0);
+                        var qTS = Utilities.flatRate(vars.today, qRate, new Actual360());
                         //SimpleQuote vol = new SimpleQuote(0.0);
-                        BlackVolTermStructure volTS = Utilities.flatVol(vars.today, capletVol, new Actual360());
+                        var volTS = Utilities.flatVol(vars.today, capletVol, new Actual360());
                         StrikedTypePayoff callPayoff = new CashOrNothingPayoff(QLNet.Option.Type.Call, effStrike, cashRate);
-                        BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(
+                        var stochProcess = new BlackScholesMertonProcess(
                            new Handle<Quote>(fwd),
                            new Handle<YieldTermStructure>(qTS),
                            new Handle<YieldTermStructure>(vars.termStructure),
                            new Handle<BlackVolTermStructure>(volTS));
                         IPricingEngine engine = new AnalyticEuropeanEngine(stochProcess);
-                        VanillaOption callOpt = new VanillaOption(callPayoff, exercise);
+                        var callOpt = new VanillaOption(callPayoff, exercise);
                         callOpt.setPricingEngine(engine);
-                        double callVO = vars.nominal * accrualPeriod * callOpt.NPV()
+                        var callVO = vars.nominal * accrualPeriod * callOpt.NPV()
                                         * discount / discountAtFixing;
                         error = System.Math.Abs(nd2Price - callVO);
                         if (error > vars.blackTolerance)
@@ -550,7 +550,7 @@ namespace QLNet.Tests
                                          "\nError " + error);
 
                         // Floating Rate Coupon + Put Digital option
-                        DigitalCoupon digitalFlooredCoupon = new DigitalCoupon(underlying, nullstrike, Position.Type.Long, false,
+                        var digitalFlooredCoupon = new DigitalCoupon(underlying, nullstrike, Position.Type.Long, false,
                                                                                nullstrike, strike, Position.Type.Long, false, cashRate, replication);
                         digitalFlooredCoupon.setPricer(pricer);
 
@@ -572,9 +572,9 @@ namespace QLNet.Tests
 
                         // Check digital option price vs N(d2) price using Vanilla Option class
                         StrikedTypePayoff putPayoff = new CashOrNothingPayoff(QLNet.Option.Type.Put, effStrike, cashRate);
-                        VanillaOption putOpt = new VanillaOption(putPayoff, exercise);
+                        var putOpt = new VanillaOption(putPayoff, exercise);
                         putOpt.setPricingEngine(engine);
-                        double putVO = vars.nominal * accrualPeriod * putOpt.NPV()
+                        var putVO = vars.nominal * accrualPeriod * putOpt.NPV()
                                         * discount / discountAtFixing;
                         error = System.Math.Abs(nd2Price - putVO);
                         if (error > vars.blackTolerance)
@@ -594,46 +594,46 @@ namespace QLNet.Tests
         public void testCashOrNothingDeepInTheMoney()
         {
             // Testing European deep in-the-money cash-or-nothing digital coupon
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            double gearing = 1.0;
-            double spread = 0.0;
+            var gearing = 1.0;
+            var spread = 0.0;
 
-            double capletVolatility = 0.0001;
-            RelinkableHandle<OptionletVolatilityStructure> volatility = new RelinkableHandle<OptionletVolatilityStructure>();
+            var capletVolatility = 0.0001;
+            var volatility = new RelinkableHandle<OptionletVolatilityStructure>();
             volatility.linkTo(new ConstantOptionletVolatility(vars.today, vars.calendar, BusinessDayConvention.Following,
                                                               capletVolatility, new Actual360()));
 
-            for (int k = 0; k < 10; k++)
+            for (var k = 0; k < 10; k++)
             {
                 // Loop on start and end dates
-                Date startDate = vars.calendar.advance(vars.settlement, new Period(k + 1, TimeUnit.Years));
-                Date endDate = vars.calendar.advance(vars.settlement, new Period(k + 2, TimeUnit.Years));
+                var startDate = vars.calendar.advance(vars.settlement, new Period(k + 1, TimeUnit.Years));
+                var endDate = vars.calendar.advance(vars.settlement, new Period(k + 2, TimeUnit.Years));
                 double? nullstrike = null;
-                double cashRate = 0.01;
-                double gap = 1e-4;
-                DigitalReplication replication = new DigitalReplication(Replication.Type.Central, gap);
-                Date paymentDate = endDate;
+                var cashRate = 0.01;
+                var gap = 1e-4;
+                var replication = new DigitalReplication(Replication.Type.Central, gap);
+                var paymentDate = endDate;
 
                 FloatingRateCoupon underlying = new IborCoupon(paymentDate, vars.nominal, startDate, endDate,
                                                                vars.fixingDays, vars.index, gearing, spread);
                 // Floating Rate Coupon - Deep-in-the-money Call Digital option
-                double strike = 0.001;
-                DigitalCoupon digitalCappedCoupon = new DigitalCoupon(underlying, strike, Position.Type.Short, false,
+                var strike = 0.001;
+                var digitalCappedCoupon = new DigitalCoupon(underlying, strike, Position.Type.Short, false,
                                                                       cashRate, nullstrike, Position.Type.Short, false, nullstrike, replication);
                 IborCouponPricer pricer = new BlackIborCouponPricer(volatility);
                 digitalCappedCoupon.setPricer(pricer);
 
                 // Check price vs its target
-                double accrualPeriod = underlying.accrualPeriod();
-                double discount = vars.termStructure.link.discount(endDate);
+                var accrualPeriod = underlying.accrualPeriod();
+                var discount = vars.termStructure.link.discount(endDate);
 
-                double targetOptionPrice = cashRate * vars.nominal * accrualPeriod * discount;
-                double targetPrice = underlying.price(vars.termStructure) - targetOptionPrice;
-                double digitalPrice = digitalCappedCoupon.price(vars.termStructure);
+                var targetOptionPrice = cashRate * vars.nominal * accrualPeriod * discount;
+                var targetPrice = underlying.price(vars.termStructure) - targetOptionPrice;
+                var digitalPrice = digitalCappedCoupon.price(vars.termStructure);
 
-                double error = System.Math.Abs(targetPrice - digitalPrice);
-                double tolerance = 1e-07;
+                var error = System.Math.Abs(targetPrice - digitalPrice);
+                var tolerance = 1e-07;
                 if (error > tolerance)
                     QAssert.Fail("\nFloating Coupon - Digital Call Coupon:" +
                                  "\nVolatility = " + capletVolatility +
@@ -644,10 +644,10 @@ namespace QLNet.Tests
                                  "\nError " + error);
 
                 // Check digital option price
-                double replicationOptionPrice = digitalCappedCoupon.callOptionRate() *
-                                                vars.nominal * accrualPeriod * discount;
+                var replicationOptionPrice = digitalCappedCoupon.callOptionRate() *
+                                             vars.nominal * accrualPeriod * discount;
                 error = System.Math.Abs(targetOptionPrice - replicationOptionPrice);
-                double optionTolerance = 1e-07;
+                var optionTolerance = 1e-07;
                 if (error > optionTolerance)
                     QAssert.Fail("\nDigital Call Option:" +
                                  "\nVolatility = " + capletVolatility +
@@ -659,7 +659,7 @@ namespace QLNet.Tests
 
                 // Floating Rate Coupon + Deep-in-the-money Put Digital option
                 strike = 0.99;
-                DigitalCoupon digitalFlooredCoupon = new DigitalCoupon(underlying, nullstrike, Position.Type.Long, false,
+                var digitalFlooredCoupon = new DigitalCoupon(underlying, nullstrike, Position.Type.Long, false,
                                                                        nullstrike, strike, Position.Type.Long, false, cashRate, replication);
                 digitalFlooredCoupon.setPricer(pricer);
 
@@ -695,45 +695,45 @@ namespace QLNet.Tests
         public void testCashOrNothingDeepOutTheMoney()
         {
             // Testing European deep out-the-money cash-or-nothing digital coupon
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            double gearing = 1.0;
-            double spread = 0.0;
+            var gearing = 1.0;
+            var spread = 0.0;
 
-            double capletVolatility = 0.0001;
-            RelinkableHandle<OptionletVolatilityStructure> volatility = new RelinkableHandle<OptionletVolatilityStructure>();
+            var capletVolatility = 0.0001;
+            var volatility = new RelinkableHandle<OptionletVolatilityStructure>();
             volatility.linkTo(new ConstantOptionletVolatility(vars.today, vars.calendar, BusinessDayConvention.Following,
                                                               capletVolatility, new Actual360()));
 
-            for (int k = 0; k < 10; k++)
+            for (var k = 0; k < 10; k++)
             {
                 // loop on start and end dates
-                Date startDate = vars.calendar.advance(vars.settlement, new Period(k + 1, TimeUnit.Years));
-                Date endDate = vars.calendar.advance(vars.settlement, new Period(k + 2, TimeUnit.Years));
+                var startDate = vars.calendar.advance(vars.settlement, new Period(k + 1, TimeUnit.Years));
+                var endDate = vars.calendar.advance(vars.settlement, new Period(k + 2, TimeUnit.Years));
                 double? nullstrike = null;
-                double cashRate = 0.01;
-                double gap = 1e-4;
-                DigitalReplication replication = new DigitalReplication(Replication.Type.Central, gap);
-                Date paymentDate = endDate;
+                var cashRate = 0.01;
+                var gap = 1e-4;
+                var replication = new DigitalReplication(Replication.Type.Central, gap);
+                var paymentDate = endDate;
 
                 FloatingRateCoupon underlying = new IborCoupon(paymentDate, vars.nominal, startDate, endDate,
                                                                vars.fixingDays, vars.index, gearing, spread);
                 // Deep out-of-the-money Capped Digital Coupon
-                double strike = 0.99;
-                DigitalCoupon digitalCappedCoupon = new DigitalCoupon(underlying, strike, Position.Type.Short, false,
+                var strike = 0.99;
+                var digitalCappedCoupon = new DigitalCoupon(underlying, strike, Position.Type.Short, false,
                                                                       cashRate, nullstrike, Position.Type.Short, false, nullstrike, replication);
 
                 IborCouponPricer pricer = new BlackIborCouponPricer(volatility);
                 digitalCappedCoupon.setPricer(pricer);
 
                 // Check price vs its target
-                double accrualPeriod = underlying.accrualPeriod();
-                double discount = vars.termStructure.link.discount(endDate);
+                var accrualPeriod = underlying.accrualPeriod();
+                var discount = vars.termStructure.link.discount(endDate);
 
-                double targetPrice = underlying.price(vars.termStructure);
-                double digitalPrice = digitalCappedCoupon.price(vars.termStructure);
-                double error = System.Math.Abs(targetPrice - digitalPrice);
-                double tolerance = 1e-10;
+                var targetPrice = underlying.price(vars.termStructure);
+                var digitalPrice = digitalCappedCoupon.price(vars.termStructure);
+                var error = System.Math.Abs(targetPrice - digitalPrice);
+                var tolerance = 1e-10;
                 if (error > tolerance)
                     QAssert.Fail("\nFloating Coupon + Digital Call Option:" +
                                  "\nVolatility = " + +capletVolatility +
@@ -744,11 +744,11 @@ namespace QLNet.Tests
                                  "\nError = " + error);
 
                 // Check digital option price
-                double targetOptionPrice = 0.0;
-                double replicationOptionPrice = digitalCappedCoupon.callOptionRate() *
-                                                vars.nominal * accrualPeriod * discount;
+                var targetOptionPrice = 0.0;
+                var replicationOptionPrice = digitalCappedCoupon.callOptionRate() *
+                                             vars.nominal * accrualPeriod * discount;
                 error = System.Math.Abs(targetOptionPrice - replicationOptionPrice);
-                double optionTolerance = 1e-10;
+                var optionTolerance = 1e-10;
                 if (error > optionTolerance)
                     QAssert.Fail("\nDigital Call Option:" +
                                  "\nVolatility = " + +capletVolatility +
@@ -760,7 +760,7 @@ namespace QLNet.Tests
 
                 // Deep out-of-the-money Floored Digital Coupon
                 strike = 0.01;
-                DigitalCoupon digitalFlooredCoupon = new DigitalCoupon(underlying, nullstrike, Position.Type.Long, false,
+                var digitalFlooredCoupon = new DigitalCoupon(underlying, nullstrike, Position.Type.Long, false,
                                                                        nullstrike, strike, Position.Type.Long, false, cashRate, replication);
                 digitalFlooredCoupon.setPricer(pricer);
 
@@ -798,57 +798,57 @@ namespace QLNet.Tests
         public void testCallPutParity()
         {
             // Testing call/put parity for European digital coupon
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             double[] vols = { 0.05, 0.15, 0.30 };
             double[] strikes = { 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07 };
 
-            double gearing = 1.0;
-            double spread = 0.0;
+            var gearing = 1.0;
+            var spread = 0.0;
 
-            double gap = 1e-04;
-            DigitalReplication replication = new DigitalReplication(Replication.Type.Central, gap);
+            var gap = 1e-04;
+            var replication = new DigitalReplication(Replication.Type.Central, gap);
 
-            for (int i = 0; i < vols.Length; i++)
+            for (var i = 0; i < vols.Length; i++)
             {
-                double capletVolatility = vols[i];
-                RelinkableHandle<OptionletVolatilityStructure> volatility = new RelinkableHandle<OptionletVolatilityStructure>();
+                var capletVolatility = vols[i];
+                var volatility = new RelinkableHandle<OptionletVolatilityStructure>();
                 volatility.linkTo(new ConstantOptionletVolatility(vars.today, vars.calendar, BusinessDayConvention.Following,
                                                                   capletVolatility, new Actual360()));
-                for (int j = 0; j < strikes.Length; j++)
+                for (var j = 0; j < strikes.Length; j++)
                 {
-                    double strike = strikes[j];
-                    for (int k = 0; k < 10; k++)
+                    var strike = strikes[j];
+                    for (var k = 0; k < 10; k++)
                     {
-                        Date startDate = vars.calendar.advance(vars.settlement, new Period(k + 1, TimeUnit.Years));
-                        Date endDate = vars.calendar.advance(vars.settlement, new Period(k + 2, TimeUnit.Years));
+                        var startDate = vars.calendar.advance(vars.settlement, new Period(k + 1, TimeUnit.Years));
+                        var endDate = vars.calendar.advance(vars.settlement, new Period(k + 2, TimeUnit.Years));
                         double? nullstrike = null;
 
-                        Date paymentDate = endDate;
+                        var paymentDate = endDate;
 
                         FloatingRateCoupon underlying = new IborCoupon(paymentDate, vars.nominal, startDate, endDate,
                                                                        vars.fixingDays, vars.index, gearing, spread);
                         // Cash-or-Nothing
-                        double cashRate = 0.01;
+                        var cashRate = 0.01;
                         // Floating Rate Coupon + Call Digital option
-                        DigitalCoupon cash_digitalCallCoupon = new DigitalCoupon(underlying, strike, Position.Type.Long, false,
+                        var cash_digitalCallCoupon = new DigitalCoupon(underlying, strike, Position.Type.Long, false,
                                                                                  cashRate, nullstrike, Position.Type.Long, false, nullstrike, replication);
                         IborCouponPricer pricer = new BlackIborCouponPricer(volatility);
                         cash_digitalCallCoupon.setPricer(pricer);
                         // Floating Rate Coupon - Put Digital option
-                        DigitalCoupon cash_digitalPutCoupon = new DigitalCoupon(underlying, nullstrike, Position.Type.Long,
+                        var cash_digitalPutCoupon = new DigitalCoupon(underlying, nullstrike, Position.Type.Long,
                                                                                 false, nullstrike, strike, Position.Type.Short, false, cashRate, replication);
 
                         cash_digitalPutCoupon.setPricer(pricer);
-                        double digitalPrice = cash_digitalCallCoupon.price(vars.termStructure) -
-                                              cash_digitalPutCoupon.price(vars.termStructure);
+                        var digitalPrice = cash_digitalCallCoupon.price(vars.termStructure) -
+                                           cash_digitalPutCoupon.price(vars.termStructure);
                         // Target price
-                        double accrualPeriod = underlying.accrualPeriod();
-                        double discount = vars.termStructure.link.discount(endDate);
-                        double targetPrice = vars.nominal * accrualPeriod * discount * cashRate;
+                        var accrualPeriod = underlying.accrualPeriod();
+                        var discount = vars.termStructure.link.discount(endDate);
+                        var targetPrice = vars.nominal * accrualPeriod * discount * cashRate;
 
-                        double error = System.Math.Abs(targetPrice - digitalPrice);
-                        double tolerance = 1.0e-08;
+                        var error = System.Math.Abs(targetPrice - digitalPrice);
+                        var tolerance = 1.0e-08;
                         if (error > tolerance)
                             QAssert.Fail("\nCash-or-nothing:" +
                                          "\nVolatility = " + +capletVolatility +
@@ -860,11 +860,11 @@ namespace QLNet.Tests
 
                         // Asset-or-Nothing
                         // Floating Rate Coupon + Call Digital option
-                        DigitalCoupon asset_digitalCallCoupon = new DigitalCoupon(underlying, strike, Position.Type.Long, false,
+                        var asset_digitalCallCoupon = new DigitalCoupon(underlying, strike, Position.Type.Long, false,
                                                                                   nullstrike, nullstrike, Position.Type.Long, false, nullstrike, replication);
                         asset_digitalCallCoupon.setPricer(pricer);
                         // Floating Rate Coupon - Put Digital option
-                        DigitalCoupon asset_digitalPutCoupon = new DigitalCoupon(underlying, nullstrike, Position.Type.Long,
+                        var asset_digitalPutCoupon = new DigitalCoupon(underlying, nullstrike, Position.Type.Long,
                                                                                  false, nullstrike, strike, Position.Type.Short, false, nullstrike, replication);
                         asset_digitalPutCoupon.setPricer(pricer);
                         digitalPrice = asset_digitalCallCoupon.price(vars.termStructure) -
@@ -889,57 +889,57 @@ namespace QLNet.Tests
         [Fact]
         public void testReplicationType()
         {
-            // Testing replication type for European digital coupon
-            CommonVars vars = new CommonVars();
+            // Testing replication ExerciseType for European digital coupon
+            var vars = new CommonVars();
 
             double[] vols = { 0.05, 0.15, 0.30 };
             double[] strikes = { 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07 };
 
-            double gearing = 1.0;
-            double spread = 0.0;
+            var gearing = 1.0;
+            var spread = 0.0;
 
-            double gap = 1e-04;
-            DigitalReplication subReplication = new DigitalReplication(Replication.Type.Sub, gap);
-            DigitalReplication centralReplication = new DigitalReplication(Replication.Type.Central, gap);
-            DigitalReplication superReplication = new DigitalReplication(Replication.Type.Super, gap);
+            var gap = 1e-04;
+            var subReplication = new DigitalReplication(Replication.Type.Sub, gap);
+            var centralReplication = new DigitalReplication(Replication.Type.Central, gap);
+            var superReplication = new DigitalReplication(Replication.Type.Super, gap);
 
-            for (int i = 0; i < vols.Length; i++)
+            for (var i = 0; i < vols.Length; i++)
             {
-                double capletVolatility = vols[i];
-                RelinkableHandle<OptionletVolatilityStructure> volatility = new RelinkableHandle<OptionletVolatilityStructure>();
+                var capletVolatility = vols[i];
+                var volatility = new RelinkableHandle<OptionletVolatilityStructure>();
                 volatility.linkTo(new ConstantOptionletVolatility(vars.today, vars.calendar, BusinessDayConvention.Following,
                                                                   capletVolatility, new Actual360()));
-                for (int j = 0; j < strikes.Length; j++)
+                for (var j = 0; j < strikes.Length; j++)
                 {
-                    double strike = strikes[j];
-                    for (int k = 0; k < 10; k++)
+                    var strike = strikes[j];
+                    for (var k = 0; k < 10; k++)
                     {
-                        Date startDate = vars.calendar.advance(vars.settlement, new Period(k + 1, TimeUnit.Years));
-                        Date endDate = vars.calendar.advance(vars.settlement, new Period(k + 2, TimeUnit.Years));
+                        var startDate = vars.calendar.advance(vars.settlement, new Period(k + 1, TimeUnit.Years));
+                        var endDate = vars.calendar.advance(vars.settlement, new Period(k + 2, TimeUnit.Years));
                         double? nullstrike = null;
 
-                        Date paymentDate = endDate;
+                        var paymentDate = endDate;
 
                         FloatingRateCoupon underlying = new IborCoupon(paymentDate, vars.nominal, startDate, endDate,
                                                                        vars.fixingDays, vars.index, gearing, spread);
                         // Cash-or-Nothing
-                        double cashRate = 0.005;
+                        var cashRate = 0.005;
                         // Floating Rate Coupon + Call Digital option
-                        DigitalCoupon sub_cash_longDigitalCallCoupon = new DigitalCoupon(underlying, strike, Position.Type.Long,
+                        var sub_cash_longDigitalCallCoupon = new DigitalCoupon(underlying, strike, Position.Type.Long,
                                                                                          false, cashRate, nullstrike, Position.Type.Long, false, nullstrike, subReplication);
-                        DigitalCoupon central_cash_longDigitalCallCoupon = new DigitalCoupon(underlying, strike,
+                        var central_cash_longDigitalCallCoupon = new DigitalCoupon(underlying, strike,
                                                                                              Position.Type.Long, false, cashRate, nullstrike, Position.Type.Long, false, nullstrike,
                                                                                              centralReplication);
-                        DigitalCoupon over_cash_longDigitalCallCoupon = new DigitalCoupon(underlying, strike, Position.Type.Long,
+                        var over_cash_longDigitalCallCoupon = new DigitalCoupon(underlying, strike, Position.Type.Long,
                                                                                           false, cashRate, nullstrike, Position.Type.Long, false, nullstrike, superReplication);
                         IborCouponPricer pricer = new BlackIborCouponPricer(volatility);
                         sub_cash_longDigitalCallCoupon.setPricer(pricer);
                         central_cash_longDigitalCallCoupon.setPricer(pricer);
                         over_cash_longDigitalCallCoupon.setPricer(pricer);
-                        double sub_digitalPrice = sub_cash_longDigitalCallCoupon.price(vars.termStructure);
-                        double central_digitalPrice = central_cash_longDigitalCallCoupon.price(vars.termStructure);
-                        double over_digitalPrice = over_cash_longDigitalCallCoupon.price(vars.termStructure);
-                        double tolerance = 1.0e-09;
+                        var sub_digitalPrice = sub_cash_longDigitalCallCoupon.price(vars.termStructure);
+                        var central_digitalPrice = central_cash_longDigitalCallCoupon.price(vars.termStructure);
+                        var over_digitalPrice = over_cash_longDigitalCallCoupon.price(vars.termStructure);
+                        var tolerance = 1.0e-09;
                         if (sub_digitalPrice > central_digitalPrice &&
                              System.Math.Abs(central_digitalPrice - sub_digitalPrice) > tolerance ||
                             central_digitalPrice > over_digitalPrice &&
@@ -955,12 +955,12 @@ namespace QLNet.Tests
                         }
 
                         // Floating Rate Coupon - Call Digital option
-                        DigitalCoupon sub_cash_shortDigitalCallCoupon = new DigitalCoupon(underlying, strike, Position.Type.Short,
+                        var sub_cash_shortDigitalCallCoupon = new DigitalCoupon(underlying, strike, Position.Type.Short,
                                                                                           false, cashRate, nullstrike, Position.Type.Long, false, nullstrike, subReplication);
-                        DigitalCoupon central_cash_shortDigitalCallCoupon = new DigitalCoupon(underlying, strike,
+                        var central_cash_shortDigitalCallCoupon = new DigitalCoupon(underlying, strike,
                                                                                               Position.Type.Short, false, cashRate, nullstrike, Position.Type.Long, false, nullstrike,
                                                                                               centralReplication);
-                        DigitalCoupon over_cash_shortDigitalCallCoupon = new DigitalCoupon(underlying, strike,
+                        var over_cash_shortDigitalCallCoupon = new DigitalCoupon(underlying, strike,
                                                                                            Position.Type.Short, false, cashRate, nullstrike, Position.Type.Long, false, nullstrike,
                                                                                            superReplication);
                         sub_cash_shortDigitalCallCoupon.setPricer(pricer);
@@ -983,11 +983,11 @@ namespace QLNet.Tests
                                          "\nOver-Replication Price = " + over_digitalPrice);
                         }
                         // Floating Rate Coupon + Put Digital option
-                        DigitalCoupon sub_cash_longDigitalPutCoupon = new DigitalCoupon(underlying, nullstrike,
+                        var sub_cash_longDigitalPutCoupon = new DigitalCoupon(underlying, nullstrike,
                                                                                         Position.Type.Long, false, nullstrike, strike, Position.Type.Long, false, cashRate, subReplication);
-                        DigitalCoupon central_cash_longDigitalPutCoupon = new DigitalCoupon(underlying, nullstrike,
+                        var central_cash_longDigitalPutCoupon = new DigitalCoupon(underlying, nullstrike,
                                                                                             Position.Type.Long, false, nullstrike, strike, Position.Type.Long, false, cashRate, centralReplication);
-                        DigitalCoupon over_cash_longDigitalPutCoupon = new DigitalCoupon(underlying, nullstrike,
+                        var over_cash_longDigitalPutCoupon = new DigitalCoupon(underlying, nullstrike,
                                                                                          Position.Type.Long, false, nullstrike, strike, Position.Type.Long, false, cashRate, superReplication);
                         sub_cash_longDigitalPutCoupon.setPricer(pricer);
                         central_cash_longDigitalPutCoupon.setPricer(pricer);
@@ -1010,11 +1010,11 @@ namespace QLNet.Tests
                         }
 
                         // Floating Rate Coupon - Put Digital option
-                        DigitalCoupon sub_cash_shortDigitalPutCoupon = new DigitalCoupon(underlying, nullstrike,
+                        var sub_cash_shortDigitalPutCoupon = new DigitalCoupon(underlying, nullstrike,
                                                                                          Position.Type.Long, false, nullstrike, strike, Position.Type.Short, false, cashRate, subReplication);
-                        DigitalCoupon central_cash_shortDigitalPutCoupon = new DigitalCoupon(underlying, nullstrike,
+                        var central_cash_shortDigitalPutCoupon = new DigitalCoupon(underlying, nullstrike,
                                                                                              Position.Type.Long, false, nullstrike, strike, Position.Type.Short, false, cashRate, centralReplication);
-                        DigitalCoupon over_cash_shortDigitalPutCoupon = new DigitalCoupon(underlying, nullstrike,
+                        var over_cash_shortDigitalPutCoupon = new DigitalCoupon(underlying, nullstrike,
                                                                                           Position.Type.Long, false, nullstrike, strike, Position.Type.Short, false, cashRate, superReplication);
                         sub_cash_shortDigitalPutCoupon.setPricer(pricer);
                         central_cash_shortDigitalPutCoupon.setPricer(pricer);

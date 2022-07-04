@@ -25,7 +25,7 @@ using QLNet.Cashflows;
 namespace QLNet.Instruments.Bonds
 {
     //! amortizing CMS-rate bond
-    public class AmortizingCmsRateBond : Bond
+    [JetBrains.Annotations.PublicAPI] public class AmortizingCmsRateBond : Bond
     {
         public AmortizingCmsRateBond(int settlementDays,
                                      List<double> notionals,

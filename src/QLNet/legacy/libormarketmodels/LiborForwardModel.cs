@@ -27,7 +27,7 @@ using System.Linq;
 
 namespace QLNet.legacy.libormarketmodels
 {
-    public class LiborForwardModel : CalibratedModel, IAffineModel
+    [JetBrains.Annotations.PublicAPI] public class LiborForwardModel : CalibratedModel, IAffineModel
     {
         List<double> f_;
         List<double> accrualPeriod_;
@@ -47,13 +47,13 @@ namespace QLNet.legacy.libormarketmodels
             covarProxy_ = new LfmCovarianceProxy(volaModel, corrModel);
             process_ = process;
 
-            int k = volaModel.parameters().Count;
-            for (int j = 0; j < k; j++)
+            var k = volaModel.parameters().Count;
+            for (var j = 0; j < k; j++)
                 arguments_[j] = volaModel.parameters()[j];
-            for (int j = 0; j < corrModel.parameters().Count; j++)
+            for (var j = 0; j < corrModel.parameters().Count; j++)
                 arguments_[j + k] = corrModel.parameters()[j];
 
-            for (int i = 0; i < process.size(); ++i)
+            for (var i = 0; i < process.size(); ++i)
             {
                 accrualPeriod_[i] = process.accrualEndTimes()[i]
                                      - process.accrualStartTimes()[i];
@@ -67,7 +67,7 @@ namespace QLNet.legacy.libormarketmodels
         {
             base.setParams(parameters);
 
-            int k = covarProxy_.volatilityModel().parameters().Count;
+            var k = covarProxy_.volatilityModel().parameters().Count;
 
             covarProxy_.volatilityModel().setParams(new List<Parameter>(arguments_.GetRange(0, k)));
             covarProxy_.correlationModel().setParams(new List<Parameter>(arguments_.GetRange(k, arguments_.Count - k)));
@@ -81,15 +81,15 @@ namespace QLNet.legacy.libormarketmodels
                                          double bondMaturity)
         {
 
-            List<double> accrualStartTimes
+            var accrualStartTimes
                = process_.accrualStartTimes();
-            List<double> accrualEndTimes
+            var accrualEndTimes
                = process_.accrualEndTimes();
 
             Utils.QL_REQUIRE(accrualStartTimes.First() <= maturity && accrualStartTimes.Last() >= maturity, () =>
                              "capet maturity does not fit to the process");
 
-            int i = accrualStartTimes.BinarySearch(maturity);
+            var i = accrualStartTimes.BinarySearch(maturity);
             if (i < 0)
                 // The lower_bound() algorithm finds the first position in a sequence that value can occupy
                 // without violating the sequence's ordering
@@ -104,51 +104,45 @@ namespace QLNet.legacy.libormarketmodels
                              && System.Math.Abs(bondMaturity - accrualEndTimes[i]) < 100 * Const.QL_EPSILON, () =>
                              "irregular fixings are not (yet) supported");
 
-            double tenor = accrualEndTimes[i] - accrualStartTimes[i];
-            double forward = process_.initialValues()[i];
-            double capRate = (1.0 / strike - 1.0) / tenor;
-            double var = covarProxy_.integratedCovariance(i, i, process_.fixingTimes()[i]);
-            double dis = process_.index().forwardingTermStructure().link.discount(bondMaturity);
+            var tenor = accrualEndTimes[i] - accrualStartTimes[i];
+            var forward = process_.initialValues()[i];
+            var capRate = (1.0 / strike - 1.0) / tenor;
+            var var = covarProxy_.integratedCovariance(i, i, process_.fixingTimes()[i]);
+            var dis = process_.index().forwardingTermStructure().link.discount(bondMaturity);
 
-            double black = Utils.blackFormula(
+            var black = Utils.blackFormula(
                               type == QLNet.Option.Type.Put ? QLNet.Option.Type.Call : QLNet.Option.Type.Put,
                               capRate, forward, System.Math.Sqrt(var));
 
-            double npv = dis * tenor * black;
+            var npv = dis * tenor * black;
 
             return npv / (1.0 + capRate * tenor);
         }
 
-        public double discount(double t)
-        {
-            return process_.index().forwardingTermStructure().link.discount(t);
-        }
+        public double discount(double t) => process_.index().forwardingTermStructure().link.discount(t);
 
-        public double discountBond(double t, double maturity, Vector v)
-        {
-            return discount(maturity);
-        }
+        public double discountBond(double t, double maturity, Vector v) => discount(maturity);
 
         public Vector w_0(int alpha, int beta)
         {
-            Vector omega = new Vector(beta + 1, 0.0);
+            var omega = new Vector(beta + 1, 0.0);
             Utils.QL_REQUIRE(alpha < beta, () => "alpha needs to be smaller than beta");
 
-            double s = 0.0;
-            for (int k = alpha + 1; k <= beta; ++k)
+            var s = 0.0;
+            for (var k = alpha + 1; k <= beta; ++k)
             {
-                double b = accrualPeriod_[k];
-                for (int j = alpha + 1; j <= k; ++j)
+                var b = accrualPeriod_[k];
+                for (var j = alpha + 1; j <= k; ++j)
                 {
                     b *= f_[j];
                 }
                 s += b;
             }
 
-            for (int i = alpha + 1; i <= beta; ++i)
+            for (var i = alpha + 1; i <= beta; ++i)
             {
-                double a = accrualPeriod_[i];
-                for (int j = alpha + 1; j <= i; ++j)
+                var a = accrualPeriod_[i];
+                for (var j = alpha + 1; j <= i; ++j)
                 {
                     a *= f_[j];
                 }
@@ -159,11 +153,11 @@ namespace QLNet.legacy.libormarketmodels
 
         public double S_0(int alpha, int beta)
         {
-            Vector w = w_0(alpha, beta);
-            Vector f = process_.initialValues();
+            var w = w_0(alpha, beta);
+            var f = process_.initialValues();
 
-            double fwdRate = 0.0;
-            for (int i = alpha + 1; i <= beta; ++i)
+            var fwdRate = 0.0;
+            for (var i = alpha + 1; i <= beta; ++i)
             {
                 fwdRate += w[i] * f[i];
             }
@@ -183,49 +177,49 @@ namespace QLNet.legacy.libormarketmodels
                 return swaptionVola;
             }
 
-            IborIndex index = process_.index();
-            Date today = process_.fixingDates()[0];
+            var index = process_.index();
+            var today = process_.fixingDates()[0];
 
-            int size = process_.size() / 2;
-            Matrix volatilities = new Matrix(size, size);
+            var size = process_.size() / 2;
+            var volatilities = new Matrix(size, size);
 
             List<Date> exercises = new InitializedList<Date>(size);
-            for (int i = 0; i < size; ++i)
+            for (var i = 0; i < size; ++i)
             {
                 exercises[i] = process_.fixingDates()[i + 1];
             }
 
             List<Period> lengths = new InitializedList<Period>(size);
-            for (int i = 0; i < size; ++i)
+            for (var i = 0; i < size; ++i)
             {
                 lengths[i] = (i + 1) * index.tenor();
             }
 
-            Vector f = process_.initialValues();
-            for (int k = 0; k < size; ++k)
+            var f = process_.initialValues();
+            for (var k = 0; k < size; ++k)
             {
-                int alpha = k;
-                double t_alpha = process_.fixingTimes()[alpha + 1];
+                var alpha = k;
+                var t_alpha = process_.fixingTimes()[alpha + 1];
 
-                Matrix var = new Matrix(size, size);
-                for (int i = alpha + 1; i <= k + size; ++i)
+                var var = new Matrix(size, size);
+                for (var i = alpha + 1; i <= k + size; ++i)
                 {
-                    for (int j = i; j <= k + size; ++j)
+                    for (var j = i; j <= k + size; ++j)
                     {
                         var[i - alpha - 1, j - alpha - 1] = var[j - alpha - 1, i - alpha - 1] =
                                                                covarProxy_.integratedCovariance(i, j, t_alpha, null);
                     }
                 }
 
-                for (int l = 1; l <= size; ++l)
+                for (var l = 1; l <= size; ++l)
                 {
-                    int beta = l + k;
-                    Vector w = w_0(alpha, beta);
+                    var beta = l + k;
+                    var w = w_0(alpha, beta);
 
-                    double sum = 0.0;
-                    for (int i = alpha + 1; i <= beta; ++i)
+                    var sum = 0.0;
+                    for (var i = alpha + 1; i <= beta; ++i)
                     {
-                        for (int j = alpha + 1; j <= beta; ++j)
+                        for (var j = alpha + 1; j <= beta; ++j)
                         {
                             sum += w[i] * w[j] * f[i] * f[j] * var[i - alpha - 1, j - alpha - 1];
                         }

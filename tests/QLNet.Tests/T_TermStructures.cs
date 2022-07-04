@@ -34,10 +34,9 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_TermStructures : IDisposable
+    [JetBrains.Annotations.PublicAPI] public class T_TermStructures : IDisposable
     {
-        private double sub(double x, double y)
-        { return x - y; }
+        private double sub(double x, double y) => x - y;
 
         #region Initialize&Cleanup
 
@@ -55,7 +54,7 @@ namespace QLNet.Tests
 
         #endregion Initialize&Cleanup
 
-        public class CommonVars
+        [JetBrains.Annotations.PublicAPI] public class CommonVars
         {
             #region Values
 
@@ -98,23 +97,23 @@ namespace QLNet.Tests
             {
                 calendar = new TARGET();
                 settlementDays = 2;
-                Date today = calendar.adjust(Date.Today);
+                var today = calendar.adjust(Date.Today);
                 Settings.setEvaluationDate(today);
-                Date settlement = calendar.advance(today, settlementDays, TimeUnit.Days);
+                var settlement = calendar.advance(today, settlementDays, TimeUnit.Days);
 
                 int deposits = depositData.Length,
                     swaps = swapData.Length;
 
                 var instruments = new List<RateHelper>(deposits + swaps);
-                for (int i = 0; i < deposits; i++)
+                for (var i = 0; i < deposits; i++)
                 {
                     instruments.Add(new DepositRateHelper(depositData[i].rate / 100, new Period(depositData[i].n, depositData[i].units),
                                                           settlementDays, calendar, BusinessDayConvention.ModifiedFollowing, true, new Actual360()));
                 }
 
-                IborIndex index = new IborIndex("dummy", new Period(6, TimeUnit.Months), settlementDays, new Currency(),
+                var index = new IborIndex("dummy", new Period(6, TimeUnit.Months), settlementDays, new Currency(),
                                                 calendar, BusinessDayConvention.ModifiedFollowing, false, new Actual360());
-                for (int i = 0; i < swaps; ++i)
+                for (var i = 0; i < swaps; ++i)
                 {
                     instruments.Add(new SwapRateHelper(swapData[i].rate / 100, new Period(swapData[i].n, swapData[i].units),
                                                        calendar, Frequency.Annual, BusinessDayConvention.Unadjusted, new Thirty360(), index));
@@ -128,26 +127,26 @@ namespace QLNet.Tests
         public void testReferenceChange()
         {
             // Testing term structure against evaluation date change
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            SimpleQuote flatRate = new SimpleQuote();
-            Handle<Quote> flatRateHandle = new Handle<Quote>(flatRate);
+            var flatRate = new SimpleQuote();
+            var flatRateHandle = new Handle<Quote>(flatRate);
             vars.termStructure = new FlatForward(vars.settlementDays, new NullCalendar(), flatRateHandle, new Actual360());
             flatRate.setValue(.03);
 
-            int[] days = new int[] { 10, 30, 60, 120, 360, 720 };
+            var days = new int[] { 10, 30, 60, 120, 360, 720 };
 
-            Date today = Settings.evaluationDate();
+            var today = Settings.evaluationDate();
             List<double> expected = new InitializedList<double>(days.Length);
-            for (int i = 0; i < days.Length; i++)
+            for (var i = 0; i < days.Length; i++)
                 expected[i] = vars.termStructure.discount(today + days[i]);
 
             Settings.setEvaluationDate(today + 30);
             List<double> calculated = new InitializedList<double>(days.Length);
-            for (int i = 0; i < days.Length; i++)
+            for (var i = 0; i < days.Length; i++)
                 calculated[i] = vars.termStructure.discount(today + 30 + days[i]);
 
-            for (int i = 0; i < days.Length; i++)
+            for (var i = 0; i < days.Length; i++)
             {
                 if (!Utils.close(expected[i], calculated[i]))
                     QAssert.Fail("\n  Discount at " + days[i] + " days:\n"
@@ -160,17 +159,17 @@ namespace QLNet.Tests
         public void testImplied()
         {
             // Testing consistency of implied term structure
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            double tolerance = 1.0e-10;
-            Date today = Settings.evaluationDate();
-            Date newToday = today + new Period(3, TimeUnit.Years);
-            Date newSettlement = vars.calendar.advance(newToday, vars.settlementDays, TimeUnit.Days);
-            Date testDate = newSettlement + new Period(5, TimeUnit.Years);
+            var tolerance = 1.0e-10;
+            var today = Settings.evaluationDate();
+            var newToday = today + new Period(3, TimeUnit.Years);
+            var newSettlement = vars.calendar.advance(newToday, vars.settlementDays, TimeUnit.Days);
+            var testDate = newSettlement + new Period(5, TimeUnit.Years);
             YieldTermStructure implied = new ImpliedTermStructure(new Handle<YieldTermStructure>(vars.termStructure), newSettlement);
-            double baseDiscount = vars.termStructure.discount(newSettlement);
-            double discount = vars.termStructure.discount(testDate);
-            double impliedDiscount = implied.discount(testDate);
+            var baseDiscount = vars.termStructure.discount(newSettlement);
+            var discount = vars.termStructure.discount(testDate);
+            var impliedDiscount = implied.discount(testDate);
             if (System.Math.Abs(discount - baseDiscount * impliedDiscount) > tolerance)
                 QAssert.Fail("unable to reproduce discount from implied curve\n"
                              + "    calculated: " + baseDiscount * impliedDiscount + "\n"
@@ -181,14 +180,14 @@ namespace QLNet.Tests
         public void testImpliedObs()
         {
             // Testing observability of implied term structure
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            Date today = Settings.evaluationDate();
-            Date newToday = today + new Period(3, TimeUnit.Years);
-            Date newSettlement = vars.calendar.advance(newToday, vars.settlementDays, TimeUnit.Days);
-            RelinkableHandle<YieldTermStructure> h = new RelinkableHandle<YieldTermStructure>();
+            var today = Settings.evaluationDate();
+            var newToday = today + new Period(3, TimeUnit.Years);
+            var newSettlement = vars.calendar.advance(newToday, vars.settlementDays, TimeUnit.Days);
+            var h = new RelinkableHandle<YieldTermStructure>();
             YieldTermStructure implied = new ImpliedTermStructure(h, newSettlement);
-            Flag flag = new Flag();
+            var flag = new Flag();
             implied.registerWith(flag.update);
             h.linkTo(vars.termStructure);
             if (!flag.isUp())
@@ -199,18 +198,18 @@ namespace QLNet.Tests
         public void testFSpreaded()
         {
             // Testing consistency of forward-spreaded term structure
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            double tolerance = 1.0e-10;
+            var tolerance = 1.0e-10;
             Quote me = new SimpleQuote(0.01);
-            Handle<Quote> mh = new Handle<Quote>(me);
+            var mh = new Handle<Quote>(me);
             YieldTermStructure spreaded = new ForwardSpreadedTermStructure(new Handle<YieldTermStructure>(vars.termStructure), mh);
-            Date testDate = vars.termStructure.referenceDate() + new Period(5, TimeUnit.Years);
-            DayCounter tsdc = vars.termStructure.dayCounter();
-            DayCounter sprdc = spreaded.dayCounter();
-            double forward = vars.termStructure.forwardRate(testDate, testDate, tsdc, Compounding.Continuous,
+            var testDate = vars.termStructure.referenceDate() + new Period(5, TimeUnit.Years);
+            var tsdc = vars.termStructure.dayCounter();
+            var sprdc = spreaded.dayCounter();
+            var forward = vars.termStructure.forwardRate(testDate, testDate, tsdc, Compounding.Continuous,
                                                             Frequency.NoFrequency).rate();
-            double spreadedForward = spreaded.forwardRate(testDate, testDate, sprdc, Compounding.Continuous,
+            var spreadedForward = spreaded.forwardRate(testDate, testDate, sprdc, Compounding.Continuous,
                                                           Frequency.NoFrequency).rate();
             if (System.Math.Abs(forward - (spreadedForward - me.value())) > tolerance)
                 QAssert.Fail("unable to reproduce forward from spreaded curve\n"
@@ -223,13 +222,13 @@ namespace QLNet.Tests
         public void testFSpreadedObs()
         {
             // Testing observability of forward-spreaded term structure
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            SimpleQuote me = new SimpleQuote(0.01);
-            Handle<Quote> mh = new Handle<Quote>(me);
-            RelinkableHandle<YieldTermStructure> h = new RelinkableHandle<YieldTermStructure>(); //(vars.dummyTermStructure);
+            var me = new SimpleQuote(0.01);
+            var mh = new Handle<Quote>(me);
+            var h = new RelinkableHandle<YieldTermStructure>(); //(vars.dummyTermStructure);
             YieldTermStructure spreaded = new ForwardSpreadedTermStructure(h, mh);
-            Flag flag = new Flag();
+            var flag = new Flag();
             spreaded.registerWith(flag.update);
             h.linkTo(vars.termStructure);
             if (!flag.isUp())
@@ -244,16 +243,16 @@ namespace QLNet.Tests
         public void testZSpreaded()
         {
             // Testing consistency of zero-spreaded term structure
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            double tolerance = 1.0e-10;
+            var tolerance = 1.0e-10;
             Quote me = new SimpleQuote(0.01);
-            Handle<Quote> mh = new Handle<Quote>(me);
+            var mh = new Handle<Quote>(me);
             YieldTermStructure spreaded = new ZeroSpreadedTermStructure(new Handle<YieldTermStructure>(vars.termStructure), mh);
-            Date testDate = vars.termStructure.referenceDate() + new Period(5, TimeUnit.Years);
-            DayCounter rfdc = vars.termStructure.dayCounter();
-            double zero = vars.termStructure.zeroRate(testDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).rate();
-            double spreadedZero = spreaded.zeroRate(testDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).rate();
+            var testDate = vars.termStructure.referenceDate() + new Period(5, TimeUnit.Years);
+            var rfdc = vars.termStructure.dayCounter();
+            var zero = vars.termStructure.zeroRate(testDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).rate();
+            var spreadedZero = spreaded.zeroRate(testDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).rate();
             if (System.Math.Abs(zero - (spreadedZero - me.value())) > tolerance)
                 QAssert.Fail("unable to reproduce zero yield from spreaded curve\n"
                              + "    calculated: " + (spreadedZero - me.value()) + "\n"
@@ -264,14 +263,14 @@ namespace QLNet.Tests
         public void testZSpreadedObs()
         {
             // Testing observability of zero-spreaded term structure
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            SimpleQuote me = new SimpleQuote(0.01);
-            Handle<Quote> mh = new Handle<Quote>(me);
-            RelinkableHandle<YieldTermStructure> h = new RelinkableHandle<YieldTermStructure>(vars.dummyTermStructure);
+            var me = new SimpleQuote(0.01);
+            var mh = new Handle<Quote>(me);
+            var h = new RelinkableHandle<YieldTermStructure>(vars.dummyTermStructure);
 
             YieldTermStructure spreaded = new ZeroSpreadedTermStructure(h, mh);
-            Flag flag = new Flag();
+            var flag = new Flag();
             spreaded.registerWith(flag.update);
             h.linkTo(vars.termStructure);
             if (!flag.isUp())
@@ -397,11 +396,11 @@ namespace QLNet.Tests
             rates.Add(0.0828451659139004);
             rates.Add(0.0503573807521742);
 
-            double tolerance = 1.0e-10;
+            var tolerance = 1.0e-10;
             for (var i = 0; i < dates.Count; ++i)
             {
-                double actual = compoundCurve.zeroRate(dates[i], new Actual365Fixed(), Compounding.Continuous).rate();
-                double expected = rates[i];
+                var actual = compoundCurve.zeroRate(dates[i], new Actual365Fixed(), Compounding.Continuous).rate();
+                var expected = rates[i];
 
                 QAssert.IsTrue(System.Math.Abs(actual - expected) <= tolerance,
                                "unable to reproduce zero yield rate from composite input curve\n"
@@ -413,7 +412,7 @@ namespace QLNet.Tests
         [Fact]
         public void testInterpolatedZeroCurveWithRefDateAndTenorDates()
         {
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             // Create the interpolated curve
             var refDate = new Date(1, 10, 2015);
@@ -462,7 +461,7 @@ namespace QLNet.Tests
                                                           Compounding.Continuous,
                                                           Frequency.Annual, refDate);
 
-            Dictionary<Date, double> tenors2 = new Dictionary<Date, double>
+            var tenors2 = new Dictionary<Date, double>
          {
             {new Date(30, 12, 2015), -0.002558362},
             {new Date(30, 3, 2016), -0.002478462},
@@ -484,7 +483,7 @@ namespace QLNet.Tests
             // Make sure the points come back as expected
             var tenors = new[] { 0.25, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 15.0, 20.0, 30.0 };
 
-            for (int i = 0; i < tenors.Length; i++)
+            for (var i = 0; i < tenors.Length; i++)
             {
                 var test = curve.interpolation_.value(tenors[i], true);
                 QAssert.AreEqual(yields[i], test);

@@ -63,12 +63,12 @@ namespace QLNet.Termstructures.Credit
         /// <returns></returns>
         protected override double defaultDensityImpl(double t)
         {
-            double dt = 0.0001;
-            double t1 = System.Math.Max(t - dt, 0.0);
-            double t2 = t + dt;
+            var dt = 0.0001;
+            var t1 = System.Math.Max(t - dt, 0.0);
+            var t2 = t + dt;
 
-            double p1 = survivalProbabilityImpl(t1);
-            double p2 = survivalProbabilityImpl(t2);
+            var p1 = survivalProbabilityImpl(t1);
+            var p2 = survivalProbabilityImpl(t2);
 
             return (p1 - p2) / (t2 - t1);
         }

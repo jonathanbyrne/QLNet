@@ -23,7 +23,7 @@ using QLNet.Math;
 namespace QLNet.legacy.libormarketmodels
 {
     //! caplet const volatility model
-    public class LmConstWrapperVolatilityModel : LmVolatilityModel
+    [JetBrains.Annotations.PublicAPI] public class LmConstWrapperVolatilityModel : LmVolatilityModel
     {
         public LmConstWrapperVolatilityModel(LmVolatilityModel volaModel)
            : base(volaModel.size(), 0)
@@ -31,20 +31,11 @@ namespace QLNet.legacy.libormarketmodels
             volaModel_ = volaModel;
         }
 
-        public override Vector volatility(double t, Vector x = null)
-        {
-            return volaModel_.volatility(t, x);
-        }
+        public override Vector volatility(double t, Vector x = null) => volaModel_.volatility(t, x);
 
-        public override double volatility(int i, double t, Vector x = null)
-        {
-            return volaModel_.volatility(i, t, x);
-        }
+        public override double volatility(int i, double t, Vector x = null) => volaModel_.volatility(i, t, x);
 
-        public override double integratedVariance(int i, int j, double u, Vector x = null)
-        {
-            return volaModel_.integratedVariance(i, j, u, x);
-        }
+        public override double integratedVariance(int i, int j, double u, Vector x = null) => volaModel_.integratedVariance(i, j, u, x);
 
         protected LmVolatilityModel volaModel_;
 

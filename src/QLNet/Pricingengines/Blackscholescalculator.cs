@@ -23,7 +23,7 @@ namespace QLNet.Pricingengines
 {
 
     //! Black-Scholes 1973 calculator class
-    public class BlackScholesCalculator : BlackCalculator
+    [JetBrains.Annotations.PublicAPI] public class BlackScholesCalculator : BlackCalculator
     {
         protected double spot_;
         protected double growth_;
@@ -40,34 +40,21 @@ namespace QLNet.Pricingengines
 
         //! Sensitivity to change in the underlying spot price.
 
-        public double delta()
-        {
-            return base.delta(spot_);
-        }
+        public double delta() => base.delta(spot_);
 
         //        ! Sensitivity in percent to a percent change in the
         //            underlying spot price.
-        public double elasticity()
-        {
-            return base.elasticity(spot_);
-        }
+        public double elasticity() => base.elasticity(spot_);
 
         //        ! Second order derivative with respect to change in the
         //            underlying spot price.
-        public double gamma()
-        {
-            return base.gamma(spot_);
-        }
+        public double gamma() => base.gamma(spot_);
+
         //! Sensitivity to time to maturity.
-        public double theta(double maturity)
-        {
-            return base.theta(spot_, maturity);
-        }
+        public double theta(double maturity) => base.theta(spot_, maturity);
+
         //        ! Sensitivity to time to maturity per day
         //            (assuming 365 day in a year).
-        public double thetaPerDay(double maturity)
-        {
-            return base.thetaPerDay(spot_, maturity);
-        }
+        public double thetaPerDay(double maturity) => base.thetaPerDay(spot_, maturity);
     }
 }

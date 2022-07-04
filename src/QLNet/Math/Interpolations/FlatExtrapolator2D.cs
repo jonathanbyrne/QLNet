@@ -19,7 +19,7 @@ using System.Collections.Generic;
 namespace QLNet.Math.Interpolations
 {
 
-    public class FlatExtrapolator2D : Interpolation2D
+    [JetBrains.Annotations.PublicAPI] public class FlatExtrapolator2D : Interpolation2D
     {
         public FlatExtrapolator2D(Interpolation2D decoratedInterpolation)
         {
@@ -33,16 +33,26 @@ namespace QLNet.Math.Interpolations
                 decoratedInterp_ = decoratedInterpolation;
                 calculate();
             }
-            public double xMin() { return decoratedInterp_.xMin(); }
-            public double xMax() { return decoratedInterp_.xMax(); }
-            public List<double> xValues() { return decoratedInterp_.xValues(); }
-            public int locateX(double x) { return decoratedInterp_.locateX(x); }
-            public double yMin() { return decoratedInterp_.yMin(); }
-            public double yMax() { return decoratedInterp_.yMax(); }
-            public List<double> yValues() { return decoratedInterp_.yValues(); }
-            public int locateY(double y) { return decoratedInterp_.locateY(y); }
-            public Matrix zData() { return decoratedInterp_.zData(); }
-            public bool isInRange(double x, double y) { return decoratedInterp_.isInRange(x, y); }
+            public double xMin() => decoratedInterp_.xMin();
+
+            public double xMax() => decoratedInterp_.xMax();
+
+            public List<double> xValues() => decoratedInterp_.xValues();
+
+            public int locateX(double x) => decoratedInterp_.locateX(x);
+
+            public double yMin() => decoratedInterp_.yMin();
+
+            public double yMax() => decoratedInterp_.yMax();
+
+            public List<double> yValues() => decoratedInterp_.yValues();
+
+            public int locateY(double y) => decoratedInterp_.locateY(y);
+
+            public Matrix zData() => decoratedInterp_.zData();
+
+            public bool isInRange(double x, double y) => decoratedInterp_.isInRange(x, y);
+
             public void update() { decoratedInterp_.update(); }
             public void calculate()
             {

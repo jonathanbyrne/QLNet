@@ -38,7 +38,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_InflationCapFloorTest : IDisposable
+    [JetBrains.Annotations.PublicAPI] public class T_InflationCapFloorTest : IDisposable
     {
         #region Initialize&Cleanup
         private SavedSettings backup;
@@ -83,7 +83,7 @@ namespace QLNet.Tests
                 // usual setup
                 calendar = new UnitedKingdom();
                 convention = BusinessDayConvention.ModifiedFollowing;
-                Date today = new Date(13, Month.August, 2007);
+                var today = new Date(13, Month.August, 2007);
                 evaluationDate = calendar.adjust(today);
                 Settings.setEvaluationDate(evaluationDate);
                 settlementDays = 0;
@@ -93,9 +93,9 @@ namespace QLNet.Tests
 
                 // yoy index
                 //      fixing data
-                Date from = new Date(1, Month.January, 2005);
-                Date to = new Date(13, Month.August, 2007);
-                Schedule rpiSchedule = new MakeSchedule().from(from).to(to)
+                var from = new Date(1, Month.January, 2005);
+                var to = new Date(13, Month.August, 2007);
+                var rpiSchedule = new MakeSchedule().from(from).to(to)
                 .withConvention(BusinessDayConvention.ModifiedFollowing)
                 .withCalendar(new UnitedKingdom())
                 .withTenor(new Period(1, TimeUnit.Months)).value();
@@ -107,9 +107,9 @@ namespace QLNet.Tests
                                  207.3, -999.0, -999
                                };
                 // link from yoy index to yoy TS
-                bool interp = false;
+                var interp = false;
                 iir = new YYUKRPIr(interp, hy);
-                for (int i = 0; i < rpiSchedule.Count; i++)
+                for (var i = 0; i < rpiSchedule.Count; i++)
                 {
                     iir.addFixing(rpiSchedule[i], fixData[i]);
                 }
@@ -118,7 +118,7 @@ namespace QLNet.Tests
                 nominalTS.linkTo(nominalFF);
 
                 // now build the YoY inflation curve
-                Period observationLag = new Period(2, TimeUnit.Months);
+                var observationLag = new Period(2, TimeUnit.Months);
 
                 Datum[] yyData =
                 {
@@ -140,13 +140,13 @@ namespace QLNet.Tests
             };
 
                 // now build the helpers ...
-                List<BootstrapHelper<YoYInflationTermStructure>> helpers =
+                var helpers =
                    makeHelpers(yyData, yyData.Length, iir,
                                observationLag,
                                calendar, convention, dc);
 
-                double baseYYRate = yyData[0].rate / 100.0;
-                PiecewiseYoYInflationCurve<Linear> pYYTS =
+                var baseYYRate = yyData[0].rate / 100.0;
+                var pYYTS =
                    new PiecewiseYoYInflationCurve<Linear>(
                    evaluationDate, calendar, dc, observationLag,
                    iir.frequency(), iir.interpolated(), baseYYRate,
@@ -162,9 +162,9 @@ namespace QLNet.Tests
             // utilities
             public List<CashFlow> makeYoYLeg(Date startDate, int length)
             {
-                YoYInflationIndex ii = iir as YoYInflationIndex;
-                Date endDate = calendar.advance(startDate, new Period(length, TimeUnit.Years), BusinessDayConvention.Unadjusted);
-                Schedule schedule = new Schedule(startDate, endDate, new Period(frequency), calendar,
+                var ii = iir as YoYInflationIndex;
+                var endDate = calendar.advance(startDate, new Period(length, TimeUnit.Years), BusinessDayConvention.Unadjusted);
+                var schedule = new Schedule(startDate, endDate, new Period(frequency), calendar,
                                                  BusinessDayConvention.Unadjusted,
                                                  BusinessDayConvention.Unadjusted,// ref periods & acc periods
                                                  DateGeneration.Rule.Forward, false);
@@ -178,9 +178,9 @@ namespace QLNet.Tests
             public IPricingEngine makeEngine(double volatility, int which)
             {
 
-                YoYInflationIndex yyii = iir as YoYInflationIndex;
+                var yyii = iir as YoYInflationIndex;
 
-                Handle<YoYOptionletVolatilitySurface> vol =
+                var vol =
                    new Handle<YoYOptionletVolatilitySurface>(new ConstantYoYOptionletVolatility(volatility,
                                                                                                 settlementDays,
                                                                                                 calendar,
@@ -229,7 +229,7 @@ namespace QLNet.Tests
                         result = new YoYInflationFloor(leg, new List<double>() { strike });
                         break;
                     default:
-                        Utils.QL_FAIL("unknown YoYInflation cap/floor type");
+                        Utils.QL_FAIL("unknown YoYInflation cap/floor ExerciseType");
                         break;
                 }
                 result.setPricingEngine(makeEngine(volatility, which));
@@ -243,11 +243,11 @@ namespace QLNet.Tests
                                                                                  BusinessDayConvention bdc,
                                                                                  DayCounter dc)
             {
-                List<BootstrapHelper<YoYInflationTermStructure>> instruments = new List<BootstrapHelper<YoYInflationTermStructure>>();
-                for (int i = 0; i < N; i++)
+                var instruments = new List<BootstrapHelper<YoYInflationTermStructure>>();
+                for (var i = 0; i < N; i++)
                 {
-                    Date maturity = iiData[i].date;
-                    Handle<Quote> quote = new Handle<Quote>(new SimpleQuote(iiData[i].rate / 100.0));
+                    var maturity = iiData[i].date;
+                    var quote = new Handle<Quote>(new SimpleQuote(iiData[i].rate / 100.0));
                     BootstrapHelper<YoYInflationTermStructure> anInstrument = new YearOnYearInflationSwapHelper(quote, observationLag, maturity,
                           calendar, bdc, dc, ii);
                     instruments.Add(anInstrument);
@@ -260,33 +260,33 @@ namespace QLNet.Tests
         public void testConsistency()
         {
             // Testing consistency between yoy inflation cap,floor and collar...
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             int[] lengths = { 1, 2, 3, 5, 7, 10, 15, 20 };
             double[] cap_rates = { 0.01, 0.025, 0.029, 0.03, 0.031, 0.035, 0.07 };
             double[] floor_rates = { 0.01, 0.025, 0.029, 0.03, 0.031, 0.035, 0.07 };
             double[] vols = { 0.001, 0.005, 0.010, 0.015, 0.020 };
 
-            for (int whichPricer = 0; whichPricer < 3; whichPricer++)
+            for (var whichPricer = 0; whichPricer < 3; whichPricer++)
             {
-                for (int i = 0; i < lengths.Length; i++)
+                for (var i = 0; i < lengths.Length; i++)
                 {
-                    for (int j = 0; j < cap_rates.Length; j++)
+                    for (var j = 0; j < cap_rates.Length; j++)
                     {
-                        for (int k = 0; k < floor_rates.Length; k++)
+                        for (var k = 0; k < floor_rates.Length; k++)
                         {
-                            for (int l = 0; l < vols.Length; l++)
+                            for (var l = 0; l < vols.Length; l++)
                             {
 
-                                List<CashFlow> leg = vars.makeYoYLeg(vars.evaluationDate, lengths[i]);
+                                var leg = vars.makeYoYLeg(vars.evaluationDate, lengths[i]);
 
-                                YoYInflationCapFloor cap = vars.makeYoYCapFloor(CapFloorType.Cap,
+                                var cap = vars.makeYoYCapFloor(CapFloorType.Cap,
                                                                                 leg, cap_rates[j], vols[l], whichPricer);
 
-                                YoYInflationCapFloor floor = vars.makeYoYCapFloor(CapFloorType.Floor,
+                                var floor = vars.makeYoYCapFloor(CapFloorType.Floor,
                                                                                   leg, floor_rates[k], vols[l], whichPricer);
 
-                                YoYInflationCollar collar = new YoYInflationCollar(leg, new List<double>() { cap_rates[j] },
+                                var collar = new YoYInflationCollar(leg, new List<double>() { cap_rates[j] },
                                 new List<double>() { floor_rates[k] });
 
                                 collar.setPricingEngine(vars.makeEngine(vols[l], whichPricer));
@@ -305,9 +305,9 @@ namespace QLNet.Tests
 
                                 }
                                 // test re-composition by optionlets, N.B. ONE per year
-                                double capletsNPV = 0.0;
-                                List<YoYInflationCapFloor> caplets = new List<YoYInflationCapFloor>();
-                                for (int m = 0; m < lengths[i] * 1; m++)
+                                var capletsNPV = 0.0;
+                                var caplets = new List<YoYInflationCapFloor>();
+                                for (var m = 0; m < lengths[i] * 1; m++)
                                 {
                                     caplets.Add(cap.optionlet(m));
                                     caplets[m].setPricingEngine(vars.makeEngine(vols[l], whichPricer));
@@ -327,9 +327,9 @@ namespace QLNet.Tests
                                     );
                                 }
 
-                                double floorletsNPV = 0.0;
-                                List<YoYInflationCapFloor> floorlets = new List<YoYInflationCapFloor>();
-                                for (int m = 0; m < lengths[i] * 1; m++)
+                                var floorletsNPV = 0.0;
+                                var floorlets = new List<YoYInflationCapFloor>();
+                                for (var m = 0; m < lengths[i] * 1; m++)
                                 {
                                     floorlets.Add(floor.optionlet(m));
                                     floorlets[m].setPricingEngine(vars.makeEngine(vols[l], whichPricer));
@@ -349,9 +349,9 @@ namespace QLNet.Tests
                                     );
                                 }
 
-                                double collarletsNPV = 0.0;
-                                List<YoYInflationCapFloor> collarlets = new List<YoYInflationCapFloor>();
-                                for (int m = 0; m < lengths[i] * 1; m++)
+                                var collarletsNPV = 0.0;
+                                var collarlets = new List<YoYInflationCapFloor>();
+                                for (var m = 0; m < lengths[i] * 1; m++)
                                 {
                                     collarlets.Add(collar.optionlet(m));
                                     collarlets[m].setPricingEngine(vars.makeEngine(vols[l], whichPricer));
@@ -394,7 +394,7 @@ namespace QLNet.Tests
 
             // Testing yoy inflation cap/floor parity...
 
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
             int[] lengths = { 1, 2, 3, 5, 7, 10, 15, 20 };
             // vol is low ...
@@ -403,16 +403,16 @@ namespace QLNet.Tests
             double[] vols = { 0.001, 0.005, 0.010, 0.015, 0.020 };
 
             // cap-floor-swap parity is model-independent
-            for (int whichPricer = 0; whichPricer < 3; whichPricer++)
+            for (var whichPricer = 0; whichPricer < 3; whichPricer++)
             {
-                for (int i = 0; i < lengths.Length; i++)
+                for (var i = 0; i < lengths.Length; i++)
                 {
-                    for (int j = 0; j < strikes.Length; j++)
+                    for (var j = 0; j < strikes.Length; j++)
                     {
-                        for (int k = 0; k < vols.Length; k++)
+                        for (var k = 0; k < vols.Length; k++)
                         {
 
-                            List<CashFlow> leg = vars.makeYoYLeg(vars.evaluationDate, lengths[i]);
+                            var leg = vars.makeYoYLeg(vars.evaluationDate, lengths[i]);
 
                             Instrument cap = vars.makeYoYCapFloor(CapFloorType.Cap,
                                                                   leg, strikes[j], vols[k], whichPricer);
@@ -420,14 +420,14 @@ namespace QLNet.Tests
                             Instrument floor = vars.makeYoYCapFloor(CapFloorType.Floor,
                                                                     leg, strikes[j], vols[k], whichPricer);
 
-                            Date from = vars.nominalTS.link.referenceDate();
-                            Date to = from + new Period(lengths[i], TimeUnit.Years);
-                            Schedule yoySchedule = new MakeSchedule().from(from).to(to)
+                            var from = vars.nominalTS.link.referenceDate();
+                            var to = from + new Period(lengths[i], TimeUnit.Years);
+                            var yoySchedule = new MakeSchedule().from(from).to(to)
                             .withTenor(new Period(1, TimeUnit.Years))
                             .withConvention(BusinessDayConvention.Unadjusted)
                             .withCalendar(new UnitedKingdom()).backwards().value();
 
-                            YearOnYearInflationSwap swap = new YearOnYearInflationSwap
+                            var swap = new YearOnYearInflationSwap
                             (YearOnYearInflationSwap.Type.Payer,
                              1000000.0,
                              yoySchedule,//fixed schedule, but same as yoy
@@ -440,7 +440,7 @@ namespace QLNet.Tests
                              vars.dc,
                              new UnitedKingdom());
 
-                            Handle<YieldTermStructure> hTS = new Handle<YieldTermStructure>(vars.nominalTS);
+                            var hTS = new Handle<YieldTermStructure>(vars.nominalTS);
                             IPricingEngine sppe = new DiscountingSwapEngine(hTS);
                             swap.setPricingEngine(sppe);
 
@@ -469,21 +469,21 @@ namespace QLNet.Tests
         public void testCachedValue()
         {
             // Testing Black yoy inflation cap/floor price  against cached values...
-            CommonVars vars = new CommonVars();
+            var vars = new CommonVars();
 
-            int whichPricer = 0; // black
+            var whichPricer = 0; // black
 
-            double K = 0.0295; // one centi-point is fair rate error i.e. < 1 cp
-            int j = 2;
-            List<CashFlow> leg = vars.makeYoYLeg(vars.evaluationDate, j);
+            var K = 0.0295; // one centi-point is fair rate error i.e. < 1 cp
+            var j = 2;
+            var leg = vars.makeYoYLeg(vars.evaluationDate, j);
             Instrument cap = vars.makeYoYCapFloor(CapFloorType.Cap, leg, K, 0.01, whichPricer);
 
             Instrument floor = vars.makeYoYCapFloor(CapFloorType.Floor, leg, K, 0.01, whichPricer);
 
 
             // close to atm prices
-            double cachedCapNPVblack = 219.452;
-            double cachedFloorNPVblack = 314.641;
+            var cachedCapNPVblack = 219.452;
+            var cachedFloorNPVblack = 314.641;
             // N.B. notionals are 10e6.
             QAssert.IsTrue(System.Math.Abs(cap.NPV() - cachedCapNPVblack) < 0.02, "yoy cap cached NPV wrong "
                            + cap.NPV() + " should be " + cachedCapNPVblack + " Black pricer"
@@ -498,8 +498,8 @@ namespace QLNet.Tests
             floor = vars.makeYoYCapFloor(CapFloorType.Floor, leg, K, 0.01, whichPricer);
 
             // close to atm prices
-            double cachedCapNPVdd = 9114.61;
-            double cachedFloorNPVdd = 9209.8;
+            var cachedCapNPVdd = 9114.61;
+            var cachedFloorNPVdd = 9209.8;
             // N.B. notionals are 10e6.
             QAssert.IsTrue(System.Math.Abs(cap.NPV() - cachedCapNPVdd) < 0.22, "yoy cap cached NPV wrong "
                            + cap.NPV() + " should be " + cachedCapNPVdd + " dd Black pricer"
@@ -514,8 +514,8 @@ namespace QLNet.Tests
             floor = vars.makeYoYCapFloor(CapFloorType.Floor, leg, K, 0.01, whichPricer);
 
             // close to atm prices
-            double cachedCapNPVbac = 8852.4;
-            double cachedFloorNPVbac = 8947.59;
+            var cachedCapNPVbac = 8852.4;
+            var cachedFloorNPVbac = 8947.59;
             // N.B. notionals are 10e6.
             QAssert.IsTrue(System.Math.Abs(cap.NPV() - cachedCapNPVbac) < 0.22, "yoy cap cached NPV wrong "
                            + cap.NPV() + " should be " + cachedCapNPVbac + " bac Black pricer"

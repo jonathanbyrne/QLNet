@@ -26,7 +26,7 @@ using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Operators
 {
-    public class TripleBandLinearOp : FdmLinearOp
+    [JetBrains.Annotations.PublicAPI] public class TripleBandLinearOp : FdmLinearOp
     {
         public TripleBandLinearOp(int direction, FdmMesher mesher)
         {
@@ -39,30 +39,30 @@ namespace QLNet.Methods.Finitedifferences.Operators
             upper_ = new InitializedList<double>(mesher.layout().size());
             mesher_ = mesher;
 
-            FdmLinearOpLayout layout = mesher.layout();
-            FdmLinearOpIterator endIter = layout.end();
+            var layout = mesher.layout();
+            var endIter = layout.end();
 
             int tmp;
-            List<int> newDim = new List<int>(layout.dim());
+            var newDim = new List<int>(layout.dim());
             tmp = newDim[direction_];
             newDim[direction_] = newDim[0];
             newDim[0] = tmp;
 
-            List<int> newSpacing = new FdmLinearOpLayout(newDim).spacing();
+            var newSpacing = new FdmLinearOpLayout(newDim).spacing();
             tmp = newSpacing[direction_];
             newSpacing[direction_] = newSpacing[0];
             newSpacing[0] = tmp;
 
-            for (FdmLinearOpIterator iter = layout.begin(); iter != endIter; ++iter)
+            for (var iter = layout.begin(); iter != endIter; ++iter)
             {
-                int i = iter.index();
+                var i = iter.index();
 
                 i0_[i] = layout.neighbourhood(iter, direction, -1);
                 i2_[i] = layout.neighbourhood(iter, direction, 1);
 
-                List<int> coordinates = iter.coordinates();
+                var coordinates = iter.coordinates();
 
-                int newIndex = coordinates.inner_product(0, coordinates.Count, 0, newSpacing, 0);
+                var newIndex = coordinates.inner_product(0, coordinates.Count, 0, newSpacing, 0);
                 reverseIndex_[newIndex] = i;
             }
         }
@@ -78,7 +78,7 @@ namespace QLNet.Methods.Finitedifferences.Operators
             upper_ = new InitializedList<double>(m.mesher_.layout().size());
             mesher_ = m.mesher_;
 
-            int len = m.mesher_.layout().size();
+            var len = m.mesher_.layout().size();
             m.i0_.copy(0, len, 0, i0_);
             m.i2_.copy(0, len, 0, i2_);
             m.reverseIndex_.copy(0, len, 0, reverseIndex_);
@@ -94,13 +94,13 @@ namespace QLNet.Methods.Finitedifferences.Operators
 
         public override Vector apply(Vector r)
         {
-            FdmLinearOpLayout index = mesher_.layout();
+            var index = mesher_.layout();
 
             Utils.QL_REQUIRE(r.size() == index.size(), () => "inconsistent length of r");
 
-            Vector retVal = new Vector(r.size());
+            var retVal = new Vector(r.size());
             //#pragma omp parallel for
-            for (int i = 0; i < index.size(); ++i)
+            for (var i = 0; i < index.size(); ++i)
             {
                 retVal[i] = r[i0_[i]] * lower_[i] + r[i] * diag_[i] + r[i2_[i]] * upper_[i];
             }
@@ -110,11 +110,11 @@ namespace QLNet.Methods.Finitedifferences.Operators
 
         public override SparseMatrix toMatrix()
         {
-            FdmLinearOpLayout index = mesher_.layout();
-            int n = index.size();
+            var index = mesher_.layout();
+            var n = index.size();
 
-            SparseMatrix retVal = new SparseMatrix(n, n);
-            for (int i = 0; i < n; ++i)
+            var retVal = new SparseMatrix(n, n);
+            for (var i = 0; i < n; ++i)
             {
                 retVal[i, i0_[i]] += lower_[i];
                 retVal[i, i] += diag_[i];
@@ -126,13 +126,13 @@ namespace QLNet.Methods.Finitedifferences.Operators
 
         public Vector solve_splitting(Vector r, double a, double b = 1.0)
         {
-            FdmLinearOpLayout layout = mesher_.layout();
+            var layout = mesher_.layout();
             Utils.QL_REQUIRE(r.size() == layout.size(), () => "inconsistent size of rhs");
 
-            for (FdmLinearOpIterator iter = layout.begin();
+            for (var iter = layout.begin();
                  iter != layout.end(); ++iter)
             {
-                List<int> coordinates = iter.coordinates();
+                var coordinates = iter.coordinates();
                 Utils.QL_REQUIRE(coordinates[direction_] != 0
                                  || lower_[iter.index()] == 0, () => "removing non zero entry!");
                 Utils.QL_REQUIRE(coordinates[direction_] != layout.dim()[direction_] - 1
@@ -144,14 +144,14 @@ namespace QLNet.Methods.Finitedifferences.Operators
             // Thomson algorithm to solve a tridiagonal system.
             // Example code taken from Tridiagonalopertor and
             // changed to fit for the triple band operator.
-            int rim1 = reverseIndex_[0];
-            double bet = 1.0 / (a * diag_[rim1] + b);
+            var rim1 = reverseIndex_[0];
+            var bet = 1.0 / (a * diag_[rim1] + b);
             Utils.QL_REQUIRE(bet != 0.0, () => "division by zero");
             retVal[reverseIndex_[0]] = r[rim1] * bet;
 
-            for (int j = 1; j <= layout.size() - 1; j++)
+            for (var j = 1; j <= layout.size() - 1; j++)
             {
-                int ri = reverseIndex_[j];
+                var ri = reverseIndex_[j];
                 tmp[j] = a * upper_[rim1] * bet;
 
                 bet = b + a * (diag_[ri] - tmp[j] * lower_[ri]);
@@ -162,7 +162,7 @@ namespace QLNet.Methods.Finitedifferences.Operators
                 rim1 = ri;
             }
             // cannot be j>=0 with Size j
-            for (int j = layout.size() - 2; j > 0; --j)
+            for (var j = layout.size() - 2; j > 0; --j)
                 retVal[reverseIndex_[j]] -= tmp[j + 1] * retVal[reverseIndex_[j + 1]];
             retVal[reverseIndex_[0]] -= tmp[1] * retVal[reverseIndex_[1]];
 
@@ -171,13 +171,13 @@ namespace QLNet.Methods.Finitedifferences.Operators
 
         public TripleBandLinearOp mult(Vector u)
         {
-            TripleBandLinearOp retVal = new TripleBandLinearOp(direction_, mesher_);
+            var retVal = new TripleBandLinearOp(direction_, mesher_);
 
-            int size = mesher_.layout().size();
+            var size = mesher_.layout().size();
             //#pragma omp parallel for
-            for (int i = 0; i < size; ++i)
+            for (var i = 0; i < size; ++i)
             {
-                double s = u[i];
+                var s = u[i];
                 retVal.lower_[i] = lower_[i] * s;
                 retVal.diag_[i] = diag_[i] * s;
                 retVal.upper_[i] = upper_[i] * s;
@@ -188,16 +188,16 @@ namespace QLNet.Methods.Finitedifferences.Operators
 
         public TripleBandLinearOp multR(Vector u)
         {
-            FdmLinearOpLayout layout = mesher_.layout();
-            int size = layout.size();
+            var layout = mesher_.layout();
+            var size = layout.size();
             Utils.QL_REQUIRE(u.size() == size, () => "inconsistent size of rhs");
-            TripleBandLinearOp retVal = new TripleBandLinearOp(direction_, mesher_);
+            var retVal = new TripleBandLinearOp(direction_, mesher_);
 
-            for (int i = 0; i < size; ++i)
+            for (var i = 0; i < size; ++i)
             {
-                double sm1 = i > 0 ? u[i - 1] : 1.0;
-                double s0 = u[i];
-                double sp1 = i < size - 1 ? u[i + 1] : 1.0;
+                var sm1 = i > 0 ? u[i - 1] : 1.0;
+                var s0 = u[i];
+                var sp1 = i < size - 1 ? u[i + 1] : 1.0;
                 retVal.lower_[i] = lower_[i] * sm1;
                 retVal.diag_[i] = diag_[i] * s0;
                 retVal.upper_[i] = upper_[i] * sp1;
@@ -209,10 +209,10 @@ namespace QLNet.Methods.Finitedifferences.Operators
         public TripleBandLinearOp add
            (TripleBandLinearOp m)
         {
-            TripleBandLinearOp retVal = new TripleBandLinearOp(direction_, mesher_);
-            int size = mesher_.layout().size();
+            var retVal = new TripleBandLinearOp(direction_, mesher_);
+            var size = mesher_.layout().size();
             //#pragma omp parallel for
-            for (int i = 0; i < size; ++i)
+            for (var i = 0; i < size; ++i)
             {
                 retVal.lower_[i] = lower_[i] + m.lower_[i];
                 retVal.diag_[i] = diag_[i] + m.diag_[i];
@@ -226,11 +226,11 @@ namespace QLNet.Methods.Finitedifferences.Operators
            (Vector u)
         {
 
-            TripleBandLinearOp retVal = new TripleBandLinearOp(direction_, mesher_);
+            var retVal = new TripleBandLinearOp(direction_, mesher_);
 
-            int size = mesher_.layout().size();
+            var size = mesher_.layout().size();
             //#pragma omp parallel for
-            for (int i = 0; i < size; ++i)
+            for (var i = 0; i < size; ++i)
             {
                 retVal.lower_[i] = lower_[i];
                 retVal.upper_[i] = upper_[i];
@@ -242,14 +242,14 @@ namespace QLNet.Methods.Finitedifferences.Operators
 
         public void axpyb(Vector a, TripleBandLinearOp x, TripleBandLinearOp y, Vector b)
         {
-            int size = mesher_.layout().size();
+            var size = mesher_.layout().size();
 
             if (a.empty())
             {
                 if (b.empty())
                 {
                     //#pragma omp parallel for
-                    for (int i = 0; i < size; ++i)
+                    for (var i = 0; i < size; ++i)
                     {
                         diag_[i] = y.diag_[i];
                         lower_[i] = y.lower_[i];
@@ -258,9 +258,9 @@ namespace QLNet.Methods.Finitedifferences.Operators
                 }
                 else
                 {
-                    int binc = b.size() > 1 ? 1 : 0;
+                    var binc = b.size() > 1 ? 1 : 0;
                     //#pragma omp parallel for
-                    for (int i = 0; i < size; ++i)
+                    for (var i = 0; i < size; ++i)
                     {
                         diag_[i] = y.diag_[i] + b[i * binc];
                         lower_[i] = y.lower_[i];
@@ -270,12 +270,12 @@ namespace QLNet.Methods.Finitedifferences.Operators
             }
             else if (b.empty())
             {
-                int ainc = a.size() > 1 ? 1 : 0;
+                var ainc = a.size() > 1 ? 1 : 0;
 
                 //#pragma omp parallel for
-                for (int i = 0; i < size; ++i)
+                for (var i = 0; i < size; ++i)
                 {
-                    double s = a[i * ainc];
+                    var s = a[i * ainc];
                     diag_[i] = y.diag_[i] + s * x.diag_[i];
                     lower_[i] = y.lower_[i] + s * x.lower_[i];
                     upper_[i] = y.upper_[i] + s * x.upper_[i];
@@ -283,13 +283,13 @@ namespace QLNet.Methods.Finitedifferences.Operators
             }
             else
             {
-                int binc = b.size() > 1 ? 1 : 0;
-                int ainc = a.size() > 1 ? 1 : 0;
+                var binc = b.size() > 1 ? 1 : 0;
+                var ainc = a.size() > 1 ? 1 : 0;
 
                 //#pragma omp parallel for
-                for (int i = 0; i < size; ++i)
+                for (var i = 0; i < size; ++i)
                 {
-                    double s = a[i * ainc];
+                    var s = a[i * ainc];
                     diag_[i] = y.diag_[i] + s * x.diag_[i] + b[i * binc];
                     lower_[i] = y.lower_[i] + s * x.lower_[i];
                     upper_[i] = y.upper_[i] + s * x.upper_[i];
@@ -310,20 +310,27 @@ namespace QLNet.Methods.Finitedifferences.Operators
         }
 
         #region IOperator interface
-        public override int size() { return 0; }
-        public override IOperator identity(int size) { return null; }
-        public override Vector applyTo(Vector v) { return null; }
-        public override Vector solveFor(Vector rhs) { return null; }
+        public override int size() => 0;
 
-        public override IOperator multiply(double a, IOperator D) { return null; }
+        public override IOperator identity(int size) => null;
+
+        public override Vector applyTo(Vector v) => null;
+
+        public override Vector solveFor(Vector rhs) => null;
+
+        public override IOperator multiply(double a, IOperator D) => null;
+
         public override IOperator add
-           (IOperator A, IOperator B)
-        { return null; }
-        public override IOperator subtract(IOperator A, IOperator B) { return null; }
+           (IOperator A, IOperator B) =>
+            null;
 
-        public override bool isTimeDependent() { return false; }
+        public override IOperator subtract(IOperator A, IOperator B) => null;
+
+        public override bool isTimeDependent() => false;
+
         public override void setTime(double t) { }
-        public override object Clone() { return MemberwiseClone(); }
+        public override object Clone() => MemberwiseClone();
+
         #endregion
 
         protected int direction_;

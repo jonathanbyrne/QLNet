@@ -840,7 +840,7 @@ namespace QLNet.Math.Optimization
             int i, j, ij;
             double eps, h, temp;
 
-            double zero = 0.0;
+            var zero = 0.0;
 
             temp = dmax1(epsfcn, MACHEP);
             eps = System.Math.Sqrt(temp);
@@ -948,9 +948,9 @@ namespace QLNet.Math.Optimization
             int i, ij, jj, j, jp1, k, kmax, minmn;
             double ajnorm, sum, temp;
 
-            double zero = 0.0;
-            double one = 1.0;
-            double p05 = 0.05;
+            var zero = 0.0;
+            var one = 1.0;
+            var p05 = 0.05;
 
             /*
             *     compute the initial column norms and initialize several arrays.
@@ -1151,9 +1151,9 @@ namespace QLNet.Math.Optimization
             int i, ij, ik, kk, j, jp1, k, kp1, l, nsing;
             double cos, cotan, qtbpj, sin, sum, tan, temp;
 
-            double zero = 0.0;
-            double p25 = 0.25;
-            double p5 = 0.5;
+            var zero = 0.0;
+            var p25 = 0.25;
+            var p5 = 0.5;
 
             /*
             *     copy r and (q transpose)*b to preserve input and initialize s.
@@ -1397,9 +1397,9 @@ namespace QLNet.Math.Optimization
             double dxnorm, fp, gnorm, parc, parl, paru;
             double sum, temp;
 
-            double zero = 0.0;
-            double p1 = 0.1;
-            double p001 = 0.001;
+            var zero = 0.0;
+            var p1 = 0.1;
+            var p001 = 0.001;
 
             /*
             *     compute and store in x the gauss-newton direction. if the
@@ -1599,10 +1599,12 @@ namespace QLNet.Math.Optimization
         }
 
 
-        static double dmax1(double a, double b) { return a >= b ? a : b; }
-        static double dmin1(double a, double b) { return a <= b ? a : b; }
-        static int min0(int a, int b) { return a <= b ? a : b; }
-        static int mod(int k, int m) { return k % m; }
+        static double dmax1(double a, double b) => a >= b ? a : b;
 
+        static double dmin1(double a, double b) => a <= b ? a : b;
+
+        static int min0(int a, int b) => a <= b ? a : b;
+
+        static int mod(int k, int m) => k % m;
     }
 }

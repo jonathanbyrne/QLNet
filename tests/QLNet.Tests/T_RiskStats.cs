@@ -27,19 +27,19 @@ namespace QLNet.Tests
 {
     class IncrementalGaussianStatistics : GenericGaussianStatistics<IncrementalStatistics>
     {
-        public double downsideVariance() { return impl_.downsideVariance(); }
+        public double downsideVariance() => impl_.downsideVariance();
     }
 
     [Collection("QLNet CI Tests")]
-    public class T_RiskStats
+    [JetBrains.Annotations.PublicAPI] public class T_RiskStats
     {
         [Fact]
         public void RiskStatisticsTest()
         {
             //    ("Testing risk measures...");
 
-            IncrementalGaussianStatistics igs = new IncrementalGaussianStatistics();
-            RiskStatistics s = new RiskStatistics();
+            var igs = new IncrementalGaussianStatistics();
+            var s = new RiskStatistics();
 
             double[] averages = { -100.0, -1.0, 0.0, 1.0, 100.0 };
             double[] sigmas = { 0.1, 1.0, 100.0 };
@@ -53,11 +53,11 @@ namespace QLNet.Tests
                 for (j = 0; j < sigmas.Length; j++)
                 {
 
-                    NormalDistribution normal = new NormalDistribution(averages[i], sigmas[j]);
-                    CumulativeNormalDistribution cumulative = new CumulativeNormalDistribution(averages[i], sigmas[j]);
-                    InverseCumulativeNormal inverseCum = new InverseCumulativeNormal(averages[i], sigmas[j]);
+                    var normal = new NormalDistribution(averages[i], sigmas[j]);
+                    var cumulative = new CumulativeNormalDistribution(averages[i], sigmas[j]);
+                    var inverseCum = new InverseCumulativeNormal(averages[i], sigmas[j]);
 
-                    SobolRsg rng = new SobolRsg(1);
+                    var rng = new SobolRsg(1);
                     dataMin = double.MaxValue;
                     dataMax = double.MinValue;
                     for (k = 0; k < N; k++)
@@ -289,7 +289,7 @@ namespace QLNet.Tests
                     // potential upside
                     double upper_tail = averages[i] + 2.0 * sigmas[j],
                            lower_tail = averages[i] - 2.0 * sigmas[j];
-                    double twoSigma = cumulative.value(upper_tail);
+                    var twoSigma = cumulative.value(upper_tail);
 
                     expected = System.Math.Max(upper_tail, 0.0);
                     tolerance = expected == 0.0 ? 1.0e-3 :
@@ -322,8 +322,8 @@ namespace QLNet.Tests
 
 
                     // just to check that GaussianStatistics<StatsHolder> does work
-                    StatsHolder h = new StatsHolder(s.mean(), s.standardDeviation());
-                    GenericGaussianStatistics<StatsHolder> test = new GenericGaussianStatistics<StatsHolder>(h);
+                    var h = new StatsHolder(s.mean(), s.standardDeviation());
+                    var test = new GenericGaussianStatistics<StatsHolder>(h);
                     expected = s.gaussianPotentialUpside(twoSigma);
                     calculated = test.gaussianPotentialUpside(twoSigma);
                     if (calculated != expected)

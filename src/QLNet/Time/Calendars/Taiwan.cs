@@ -47,7 +47,7 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    public class Taiwan : Calendar
+    [JetBrains.Annotations.PublicAPI] public class Taiwan : Calendar
     {
         public Taiwan() : base(Impl.Singleton) { }
 
@@ -56,17 +56,16 @@ namespace QLNet.Time.Calendars
             public static readonly Impl Singleton = new Impl();
             private Impl() { }
 
-            public override string name() { return "Taiwan stock exchange"; }
-            public override bool isWeekend(DayOfWeek w)
-            {
-                return w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
-            }
+            public override string name() => "Taiwan stock exchange";
+
+            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
+                var m = (Month)date.Month;
+                var y = date.Year;
 
                 if (isWeekend(w)
                     // New Year's Day

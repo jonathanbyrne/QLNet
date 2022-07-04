@@ -27,11 +27,12 @@ using QLNet.processes;
 namespace QLNet.Models.Shortrate.Onefactormodels
 {
 
-    public class BlackKarasinski : OneFactorModel,
+    [JetBrains.Annotations.PublicAPI] public class BlackKarasinski : OneFactorModel,
        ITermStructureConsistentModel
     {
-        private double a() { return a_.value(0.0); }
-        private double sigma() { return sigma_.value(0.0); }
+        private double a() => a_.value(0.0);
+
+        private double sigma() => sigma_.value(0.0);
 
         Parameter a_;
         Parameter sigma_;
@@ -55,29 +56,29 @@ namespace QLNet.Models.Shortrate.Onefactormodels
 
         public override Lattice tree(TimeGrid grid)
         {
-            TermStructureFittingParameter phi = new TermStructureFittingParameter(termStructure());
+            var phi = new TermStructureFittingParameter(termStructure());
 
             ShortRateDynamics numericDynamics =
                new Dynamics(phi, a(), sigma());
 
-            TrinomialTree trinomial =
+            var trinomial =
                new TrinomialTree(numericDynamics.process(), grid);
-            ShortRateTree numericTree =
+            var numericTree =
                new ShortRateTree(trinomial, numericDynamics, grid);
 
-            TermStructureFittingParameter.NumericalImpl impl =
+            var impl =
                (TermStructureFittingParameter.NumericalImpl)phi.implementation();
             impl.reset();
-            double value = 1.0;
-            double vMin = -50.0;
-            double vMax = 50.0;
-            for (int i = 0; i < grid.size() - 1; i++)
+            var value = 1.0;
+            var vMin = -50.0;
+            var vMax = 50.0;
+            for (var i = 0; i < grid.size() - 1; i++)
             {
-                double discountBond = termStructure().link.discount(grid[i + 1]);
-                double xMin = trinomial.underlying(i, 0);
-                double dx = trinomial.dx(i);
-                Helper finder = new Helper(i, xMin, dx, discountBond, numericTree);
-                Brent s1d = new Brent();
+                var discountBond = termStructure().link.discount(grid[i + 1]);
+                var xMin = trinomial.underlying(i, 0);
+                var dx = trinomial.dx(i);
+                var finder = new Helper(i, xMin, dx, discountBond, numericTree);
+                var s1d = new Brent();
                 s1d.setMaxEvaluations(1000);
                 value = s1d.solve(finder, 1e-7, value, vMin, vMax);
                 impl.setvalue(grid[i], value);
@@ -85,16 +86,10 @@ namespace QLNet.Models.Shortrate.Onefactormodels
             return numericTree;
         }
 
-        public override ShortRateDynamics dynamics()
-        {
-            throw new NotImplementedException("no defined process for Black-Karasinski");
-        }
+        public override ShortRateDynamics dynamics() => throw new NotImplementedException("no defined process for Black-Karasinski");
 
         #region ITermStructureConsistentModel
-        public Handle<YieldTermStructure> termStructure()
-        {
-            return termStructure_;
-        }
+        public Handle<YieldTermStructure> termStructure() => termStructure_;
 
         public Handle<YieldTermStructure> termStructure_ { get; set; }
 
@@ -102,7 +97,7 @@ namespace QLNet.Models.Shortrate.Onefactormodels
     }
 
     //! Short-rate dynamics in the Black-Karasinski model
-    public class Dynamics : OneFactorModel.ShortRateDynamics
+    [JetBrains.Annotations.PublicAPI] public class Dynamics : OneFactorModel.ShortRateDynamics
     {
 
         public Dynamics(Parameter fitting, double alpha, double sigma)
@@ -111,21 +106,15 @@ namespace QLNet.Models.Shortrate.Onefactormodels
             fitting_ = fitting;
         }
 
-        public override double variable(double t, double r)
-        {
-            return System.Math.Log(r) - fitting_.value(t);
-        }
+        public override double variable(double t, double r) => System.Math.Log(r) - fitting_.value(t);
 
-        public override double shortRate(double t, double x)
-        {
-            return System.Math.Exp(x + fitting_.value(t));
-        }
+        public override double shortRate(double t, double x) => System.Math.Exp(x + fitting_.value(t));
 
         private Parameter fitting_;
     }
 
     // Private function used by solver to determine time-dependent parameter
-    public class Helper : ISolver1d
+    [JetBrains.Annotations.PublicAPI] public class Helper : ISolver1d
     {
         private int size_;
         private double dt_;
@@ -147,11 +136,11 @@ namespace QLNet.Models.Shortrate.Onefactormodels
 
         public override double value(double theta)
         {
-            double value = discountBondPrice_;
-            double x = xMin_;
-            for (int j = 0; j < size_; j++)
+            var value = discountBondPrice_;
+            var x = xMin_;
+            for (var j = 0; j < size_; j++)
             {
-                double discount = System.Math.Exp(-System.Math.Exp(theta + x) * dt_);
+                var discount = System.Math.Exp(-System.Math.Exp(theta + x) * dt_);
                 value -= statePrices_[j] * discount;
                 x += dx_;
             }

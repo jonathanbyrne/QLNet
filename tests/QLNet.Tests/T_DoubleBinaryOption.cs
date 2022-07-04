@@ -30,7 +30,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_DoubleBinaryOption
+    [JetBrains.Annotations.PublicAPI] public class T_DoubleBinaryOption
     {
         private void REPORT_FAILURE(string greekName,
                                     StrikedTypePayoff payoff,
@@ -49,7 +49,7 @@ namespace QLNet.Tests
                                     double tolerance)
         {
             QAssert.Fail(payoff.optionType() + " option with "
-                         + barrierType + " barrier type:\n"
+                         + barrierType + " barrier ExerciseType:\n"
                          + "    barrier_lo:          " + barrier_lo + "\n"
                          + "    barrier_hi:          " + barrier_hi + "\n"
                          + payoff + " payoff:\n"
@@ -204,21 +204,21 @@ namespace QLNet.Tests
          };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(100.0);
-            SimpleQuote qRate = new SimpleQuote(0.04);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.01);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol = new SimpleQuote(0.25);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
+            var spot = new SimpleQuote(100.0);
+            var qRate = new SimpleQuote(0.04);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.01);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol = new SimpleQuote(0.25);
+            var volTS = Utilities.flatVol(today, vol, dc);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 StrikedTypePayoff payoff = new CashOrNothingPayoff(QLNet.Option.Type.Call, 0, values[i].cash);
 
-                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                var exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
                 Exercise exercise;
                 if (values[i].barrierType == DoubleBarrier.Type.KIKO ||
                     values[i].barrierType == DoubleBarrier.Type.KOKI)
@@ -231,7 +231,7 @@ namespace QLNet.Tests
                 rRate.setValue(values[i].r);
                 vol.setValue(values[i].v);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(
+                var stochProcess = new BlackScholesMertonProcess(
                    new Handle<Quote>(spot),
                    new Handle<YieldTermStructure>(qTS),
                    new Handle<YieldTermStructure>(rTS),
@@ -239,7 +239,7 @@ namespace QLNet.Tests
 
                 IPricingEngine engine = new AnalyticDoubleBarrierBinaryEngine(stochProcess);
 
-                DoubleBarrierOption opt = new DoubleBarrierOption(values[i].barrierType,
+                var opt = new DoubleBarrierOption(values[i].barrierType,
                                                                   values[i].barrier_lo,
                                                                   values[i].barrier_hi,
                                                                   0,
@@ -248,9 +248,9 @@ namespace QLNet.Tests
 
                 opt.setPricingEngine(engine);
 
-                double calculated = opt.NPV();
-                double expected = values[i].result;
-                double error = System.Math.Abs(calculated - values[i].result);
+                var calculated = opt.NPV();
+                var expected = values[i].result;
+                var error = System.Math.Abs(calculated - values[i].result);
                 if (error > values[i].tol)
                 {
                     REPORT_FAILURE("value", payoff, exercise, values[i].barrierType,
@@ -259,7 +259,7 @@ namespace QLNet.Tests
                                    values[i].result, calculated, error, values[i].tol);
                 }
 
-                int steps = 500;
+                var steps = 500;
                 // checking with binomial engine
                 engine = new BinomialDoubleBarrierEngine(
                    (d, end, step, strike) => new CoxRossRubinstein(d, end, step, strike),
@@ -269,7 +269,7 @@ namespace QLNet.Tests
                 calculated = opt.NPV();
                 expected = values[i].result;
                 error = System.Math.Abs(calculated - expected);
-                double tol = 0.22;
+                var tol = 0.22;
                 if (error > tol)
                 {
                     REPORT_FAILURE("Binomial value", payoff, exercise, values[i].barrierType,

@@ -27,7 +27,7 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Tests
 {
     [Collection("QLNet CI Tests")]
-    public class T_LookbackOption
+    [JetBrains.Annotations.PublicAPI] public class T_LookbackOption
     {
         void REPORT_FAILURE_FLOATING(string greekName,
                                      double minmax,
@@ -142,19 +142,19 @@ namespace QLNet.Tests
          };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            SimpleQuote qRate = new SimpleQuote(0.0);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol = new SimpleQuote(0.0);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
+            var spot = new SimpleQuote(0.0);
+            var qRate = new SimpleQuote(0.0);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.0);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol = new SimpleQuote(0.0);
+            var volTS = Utilities.flatVol(today, vol, dc);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
-                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                var exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
                 Exercise exercise = new EuropeanExercise(exDate);
 
                 spot.setValue(values[i].s);
@@ -162,9 +162,9 @@ namespace QLNet.Tests
                 rRate.setValue(values[i].r);
                 vol.setValue(values[i].v);
 
-                FloatingTypePayoff payoff = new FloatingTypePayoff(values[i].type);
+                var payoff = new FloatingTypePayoff(values[i].type);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(
+                var stochProcess = new BlackScholesMertonProcess(
                    new Handle<Quote>(spot),
                    new Handle<YieldTermStructure>(qTS),
                    new Handle<YieldTermStructure>(rTS),
@@ -172,14 +172,14 @@ namespace QLNet.Tests
 
                 IPricingEngine engine = new AnalyticContinuousFloatingLookbackEngine(stochProcess);
 
-                ContinuousFloatingLookbackOption option = new ContinuousFloatingLookbackOption(values[i].minmax,
+                var option = new ContinuousFloatingLookbackOption(values[i].minmax,
                                                                                                payoff,
                                                                                                exercise);
                 option.setPricingEngine(engine);
 
-                double calculated = option.NPV();
-                double expected = values[i].result;
-                double error = System.Math.Abs(calculated - expected);
+                var calculated = option.NPV();
+                var expected = values[i].result;
+                var error = System.Math.Abs(calculated - expected);
                 if (error > values[i].tol)
                 {
                     REPORT_FAILURE_FLOATING("value", values[i].minmax, payoff,
@@ -198,7 +198,7 @@ namespace QLNet.Tests
             LookbackOptionData[] values =
             {
             // data from "Option Pricing Formulas", Haug, 1998, pg.63-64
-            //type,            strike, minmax,  s,     q,    r,    t,    v,    l, t1, result,  tol
+            //ExerciseType,            strike, minmax,  s,     q,    r,    t,    v,    l, t1, result,  tol
             new LookbackOptionData(QLNet.Option.Type.Call,    95,     100,     100.0, 0.00, 0.10, 0.50, 0.10, 0, 0,  13.2687, 1.0e-4),
             new LookbackOptionData(QLNet.Option.Type.Call,    95,     100,     100.0, 0.00, 0.10, 0.50, 0.20, 0, 0,  18.9263, 1.0e-4),
             new LookbackOptionData(QLNet.Option.Type.Call,    95,     100,     100.0, 0.00, 0.10, 0.50, 0.30, 0, 0,  24.9857, 1.0e-4),
@@ -240,19 +240,19 @@ namespace QLNet.Tests
          };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            SimpleQuote qRate = new SimpleQuote(0.0);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol = new SimpleQuote(0.0);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
+            var spot = new SimpleQuote(0.0);
+            var qRate = new SimpleQuote(0.0);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.0);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol = new SimpleQuote(0.0);
+            var volTS = Utilities.flatVol(today, vol, dc);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
-                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                var exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
                 Exercise exercise = new EuropeanExercise(exDate);
 
                 spot.setValue(values[i].s);
@@ -262,7 +262,7 @@ namespace QLNet.Tests
 
                 StrikedTypePayoff payoff = new PlainVanillaPayoff(values[i].type, values[i].strike);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(
+                var stochProcess = new BlackScholesMertonProcess(
                    new Handle<Quote>(spot),
                    new Handle<YieldTermStructure>(qTS),
                    new Handle<YieldTermStructure>(rTS),
@@ -270,13 +270,13 @@ namespace QLNet.Tests
 
                 IPricingEngine engine = new AnalyticContinuousFixedLookbackEngine(stochProcess);
 
-                ContinuousFixedLookbackOption option = new ContinuousFixedLookbackOption(values[i].minmax,
+                var option = new ContinuousFixedLookbackOption(values[i].minmax,
                                                                                          payoff, exercise);
                 option.setPricingEngine(engine);
 
-                double calculated = option.NPV();
-                double expected = values[i].result;
-                double error = System.Math.Abs(calculated - expected);
+                var calculated = option.NPV();
+                var expected = values[i].result;
+                var error = System.Math.Abs(calculated - expected);
                 if (error > values[i].tol)
                 {
                     REPORT_FAILURE_FIXED("value", values[i].minmax, payoff, exercise,
@@ -296,7 +296,7 @@ namespace QLNet.Tests
             {
             // data from "Option Pricing Formulas, Second Edition", Haug, 2006, pg.146
 
-            //type,         strike, minmax, s,    q,    r,    t,    v,    l,  t1,     result,   tol
+            //ExerciseType,         strike, minmax, s,    q,    r,    t,    v,    l,  t1,     result,   tol
             new LookbackOptionData(QLNet.Option.Type.Call, 0,       90,     90,   0,   0.06, 1,    0.1,  1,  0.25,   8.6524,   1.0e-4),
             new LookbackOptionData(QLNet.Option.Type.Call, 0,       90,     90,   0,   0.06, 1,    0.1,  1,  0.5,    9.2128,   1.0e-4),
             new LookbackOptionData(QLNet.Option.Type.Call, 0,       90,     90,   0,   0.06, 1,    0.1,  1,  0.75,   9.5567,   1.0e-4),
@@ -336,19 +336,19 @@ namespace QLNet.Tests
          };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            SimpleQuote qRate = new SimpleQuote(0.0);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol = new SimpleQuote(0.0);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
+            var spot = new SimpleQuote(0.0);
+            var qRate = new SimpleQuote(0.0);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.0);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol = new SimpleQuote(0.0);
+            var volTS = Utilities.flatVol(today, vol, dc);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
-                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                var exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
                 Exercise exercise = new EuropeanExercise(exDate);
 
                 spot.setValue(values[i].s);
@@ -356,9 +356,9 @@ namespace QLNet.Tests
                 rRate.setValue(values[i].r);
                 vol.setValue(values[i].v);
 
-                FloatingTypePayoff payoff = new FloatingTypePayoff(values[i].type);
+                var payoff = new FloatingTypePayoff(values[i].type);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(
+                var stochProcess = new BlackScholesMertonProcess(
                    new Handle<Quote>(spot),
                    new Handle<YieldTermStructure>(qTS),
                    new Handle<YieldTermStructure>(rTS),
@@ -366,14 +366,14 @@ namespace QLNet.Tests
 
                 IPricingEngine engine = new AnalyticContinuousPartialFloatingLookbackEngine(stochProcess);
 
-                Date lookbackEnd = today + Convert.ToInt32(values[i].t1 * 360 + 0.5);
-                ContinuousPartialFloatingLookbackOption option = new ContinuousPartialFloatingLookbackOption(
+                var lookbackEnd = today + Convert.ToInt32(values[i].t1 * 360 + 0.5);
+                var option = new ContinuousPartialFloatingLookbackOption(
                    values[i].minmax, values[i].l, lookbackEnd, payoff, exercise);
                 option.setPricingEngine(engine);
 
-                double calculated = option.NPV();
-                double expected = values[i].result;
-                double error = System.Math.Abs(calculated - expected);
+                var calculated = option.NPV();
+                var expected = values[i].result;
+                var error = System.Math.Abs(calculated - expected);
                 if (error > values[i].tol)
                 {
                     REPORT_FAILURE_FLOATING("value", values[i].minmax, payoff,
@@ -392,7 +392,7 @@ namespace QLNet.Tests
             LookbackOptionData[] values =
             {
             // data from "Option Pricing Formulas, Second Edition", Haug, 2006, pg.148
-            //type,         strike, minmax, s,    q,    r,    t,    v, l,   t1,  result,   tol
+            //ExerciseType,         strike, minmax, s,    q,    r,    t,    v, l,   t1,  result,   tol
             new LookbackOptionData(QLNet.Option.Type.Call,     90, 0,    100,    0, 0.06,    1,  0.1, 0, 0.25,  20.2845, 1.0e-4),
             new LookbackOptionData(QLNet.Option.Type.Call,     90, 0,    100,    0, 0.06,    1,  0.1, 0, 0.5,   19.6239, 1.0e-4),
             new LookbackOptionData(QLNet.Option.Type.Call,     90, 0,    100,    0, 0.06,    1,  0.1, 0, 0.75,  18.6244, 1.0e-4),
@@ -432,19 +432,19 @@ namespace QLNet.Tests
          };
 
             DayCounter dc = new Actual360();
-            Date today = Date.Today;
+            var today = Date.Today;
 
-            SimpleQuote spot = new SimpleQuote(0.0);
-            SimpleQuote qRate = new SimpleQuote(0.0);
-            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-            SimpleQuote rRate = new SimpleQuote(0.0);
-            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-            SimpleQuote vol = new SimpleQuote(0.0);
-            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
+            var spot = new SimpleQuote(0.0);
+            var qRate = new SimpleQuote(0.0);
+            var qTS = Utilities.flatRate(today, qRate, dc);
+            var rRate = new SimpleQuote(0.0);
+            var rTS = Utilities.flatRate(today, rRate, dc);
+            var vol = new SimpleQuote(0.0);
+            var volTS = Utilities.flatVol(today, vol, dc);
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
-                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                var exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
                 Exercise exercise = new EuropeanExercise(exDate);
 
                 spot.setValue(values[i].s);
@@ -454,7 +454,7 @@ namespace QLNet.Tests
 
                 StrikedTypePayoff payoff = new PlainVanillaPayoff(values[i].type, values[i].strike);
 
-                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(
+                var stochProcess = new BlackScholesMertonProcess(
                    new Handle<Quote>(spot),
                    new Handle<YieldTermStructure>(qTS),
                    new Handle<YieldTermStructure>(rTS),
@@ -462,14 +462,14 @@ namespace QLNet.Tests
 
                 IPricingEngine engine = new AnalyticContinuousPartialFixedLookbackEngine(stochProcess);
 
-                Date lookbackStart = today + Convert.ToInt32(values[i].t1 * 360 + 0.5);
-                ContinuousPartialFixedLookbackOption option = new ContinuousPartialFixedLookbackOption(lookbackStart,
+                var lookbackStart = today + Convert.ToInt32(values[i].t1 * 360 + 0.5);
+                var option = new ContinuousPartialFixedLookbackOption(lookbackStart,
                       payoff, exercise);
                 option.setPricingEngine(engine);
 
-                double calculated = option.NPV();
-                double expected = values[i].result;
-                double error = System.Math.Abs(calculated - expected);
+                var calculated = option.NPV();
+                var expected = values[i].result;
+                var error = System.Math.Abs(calculated - expected);
                 if (error > values[i].tol)
                 {
                     REPORT_FAILURE_FIXED("value", values[i].minmax, payoff, exercise,

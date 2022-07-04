@@ -23,7 +23,7 @@ using QLNet.Patterns;
 namespace QLNet.Pricingengines
 {
 
-    public class GenericModelEngine<ModelType, ArgumentsType, ResultsType>
+    [JetBrains.Annotations.PublicAPI] public class GenericModelEngine<ModelType, ArgumentsType, ResultsType>
       : GenericEngine<ArgumentsType, ResultsType>
         where ArgumentsType : IPricingEngineArguments, new()
         where ResultsType : IPricingEngineResults, new()

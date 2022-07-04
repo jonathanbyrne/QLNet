@@ -29,7 +29,7 @@ namespace QLNet.Termstructures
         inheritance from this class to obtain the relevant data
         members and implement correct copy behavior.
     */
-    public interface InterpolatedCurve : ICloneable
+    [JetBrains.Annotations.PublicAPI] public interface InterpolatedCurve : ICloneable
     {
         List<double> times_ { get; set; }
         List<double> times();

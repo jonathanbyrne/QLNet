@@ -40,18 +40,14 @@ namespace QLNet.Pricingengines.Bond
 
         Prices are always clean, as per market convention.
     */
-    public class BondFunctions
+    [JetBrains.Annotations.PublicAPI] public class BondFunctions
     {
         #region Date inspectors
 
-        public static Date startDate(Instruments.Bond bond)
-        {
-            return CashFlows.startDate(bond.cashflows());
-        }
-        public static Date maturityDate(Instruments.Bond bond)
-        {
-            return CashFlows.maturityDate(bond.cashflows());
-        }
+        public static Date startDate(Instruments.Bond bond) => CashFlows.startDate(bond.cashflows());
+
+        public static Date maturityDate(Instruments.Bond bond) => CashFlows.maturityDate(bond.cashflows());
+
         public static bool isTradable(Instruments.Bond bond, Date settlementDate = null)
         {
             if (settlementDate == null)
@@ -249,7 +245,7 @@ namespace QLNet.Pricingengines.Bond
                              bond.maturityDate() + ")",
                              QLNetExceptionEnum.NotTradableException);
 
-            double dirtyPrice = CashFlows.npv(bond.cashflows(), discountCurve, false, settlementDate) *
+            var dirtyPrice = CashFlows.npv(bond.cashflows(), discountCurve, false, settlementDate) *
                                 100.0 / bond.notional(settlementDate);
             return dirtyPrice - bond.accruedAmount(settlementDate);
         }
@@ -275,9 +271,9 @@ namespace QLNet.Pricingengines.Bond
                              " (maturity being " + bond.maturityDate() + ")",
                              QLNetExceptionEnum.NotTradableException);
 
-            double? dirtyPrice = cleanPrice == null ? null : cleanPrice + bond.accruedAmount(settlementDate);
-            double currentNotional = bond.notional(settlementDate);
-            double? npv = dirtyPrice / 100.0 * currentNotional;
+            var dirtyPrice = cleanPrice == null ? null : cleanPrice + bond.accruedAmount(settlementDate);
+            var currentNotional = bond.notional(settlementDate);
+            var npv = dirtyPrice / 100.0 * currentNotional;
 
             return CashFlows.atmRate(bond.cashflows(), discountCurve, false, settlementDate, settlementDate, npv);
         }
@@ -286,15 +282,12 @@ namespace QLNet.Pricingengines.Bond
 
         #region Yield (a.k.a. Internal Rate of Return, i.e. IRR) functions
 
-        public static double cleanPrice(Instruments.Bond bond, InterestRate yield, Date settlementDate = null)
-        {
-            return dirtyPrice(bond, yield, settlementDate) - bond.accruedAmount(settlementDate);
-        }
+        public static double cleanPrice(Instruments.Bond bond, InterestRate yield, Date settlementDate = null) => dirtyPrice(bond, yield, settlementDate) - bond.accruedAmount(settlementDate);
+
         public static double cleanPrice(Instruments.Bond bond, double yield, DayCounter dayCounter, Compounding compounding, Frequency frequency,
-                                        Date settlementDate = null)
-        {
-            return cleanPrice(bond, new InterestRate(yield, dayCounter, compounding, frequency), settlementDate);
-        }
+                                        Date settlementDate = null) =>
+            cleanPrice(bond, new InterestRate(yield, dayCounter, compounding, frequency), settlementDate);
+
         public static double dirtyPrice(Instruments.Bond bond, InterestRate yield, Date settlementDate = null)
         {
             if (settlementDate == null)
@@ -305,15 +298,14 @@ namespace QLNet.Pricingengines.Bond
                              " (maturity being " + bond.maturityDate() + ")",
                              QLNetExceptionEnum.NotTradableException);
 
-            double dirtyPrice = CashFlows.npv(bond.cashflows(), yield, false, settlementDate) *
+            var dirtyPrice = CashFlows.npv(bond.cashflows(), yield, false, settlementDate) *
                                 100.0 / bond.notional(settlementDate);
             return dirtyPrice;
         }
         public static double dirtyPrice(Instruments.Bond bond, double yield, DayCounter dayCounter, Compounding compounding, Frequency frequency,
-                                        Date settlementDate = null)
-        {
-            return dirtyPrice(bond, new InterestRate(yield, dayCounter, compounding, frequency), settlementDate);
-        }
+                                        Date settlementDate = null) =>
+            dirtyPrice(bond, new InterestRate(yield, dayCounter, compounding, frequency), settlementDate);
+
         public static double bps(Instruments.Bond bond, InterestRate yield, Date settlementDate = null)
         {
             if (settlementDate == null)
@@ -328,10 +320,9 @@ namespace QLNet.Pricingengines.Bond
                    100.0 / bond.notional(settlementDate);
         }
         public static double bps(Instruments.Bond bond, double yield, DayCounter dayCounter, Compounding compounding, Frequency frequency,
-                                 Date settlementDate = null)
-        {
-            return bps(bond, new InterestRate(yield, dayCounter, compounding, frequency), settlementDate);
-        }
+                                 Date settlementDate = null) =>
+            bps(bond, new InterestRate(yield, dayCounter, compounding, frequency), settlementDate);
+
         public static double yield(Instruments.Bond bond, double cleanPrice, DayCounter dayCounter, Compounding compounding, Frequency frequency,
                                    Date settlementDate = null, double accuracy = 1.0e-10, int maxIterations = 100, double guess = 0.05)
         {
@@ -343,7 +334,7 @@ namespace QLNet.Pricingengines.Bond
                              " (maturity being " + bond.maturityDate() + ")",
                              QLNetExceptionEnum.NotTradableException);
 
-            double dirtyPrice = cleanPrice + bond.accruedAmount(settlementDate);
+            var dirtyPrice = cleanPrice + bond.accruedAmount(settlementDate);
             dirtyPrice /= 100.0 / bond.notional(settlementDate);
 
             return CashFlows.yield(bond.cashflows(), dirtyPrice,
@@ -365,10 +356,9 @@ namespace QLNet.Pricingengines.Bond
             return CashFlows.duration(bond.cashflows(), yield, type, false, settlementDate);
         }
         public static double duration(Instruments.Bond bond, double yield, DayCounter dayCounter, Compounding compounding, Frequency frequency,
-                                      Duration.Type type = Duration.Type.Modified, Date settlementDate = null)
-        {
-            return duration(bond, new InterestRate(yield, dayCounter, compounding, frequency), type, settlementDate);
-        }
+                                      Duration.Type type = Duration.Type.Modified, Date settlementDate = null) =>
+            duration(bond, new InterestRate(yield, dayCounter, compounding, frequency), type, settlementDate);
+
         public static double convexity(Instruments.Bond bond, InterestRate yield, Date settlementDate = null)
         {
             if (settlementDate == null)
@@ -382,10 +372,9 @@ namespace QLNet.Pricingengines.Bond
             return CashFlows.convexity(bond.cashflows(), yield, false, settlementDate);
         }
         public static double convexity(Instruments.Bond bond, double yield, DayCounter dayCounter, Compounding compounding, Frequency frequency,
-                                       Date settlementDate = null)
-        {
-            return convexity(bond, new InterestRate(yield, dayCounter, compounding, frequency), settlementDate);
-        }
+                                       Date settlementDate = null) =>
+            convexity(bond, new InterestRate(yield, dayCounter, compounding, frequency), settlementDate);
+
         public static double basisPointValue(Instruments.Bond bond, InterestRate yield, Date settlementDate = null)
         {
             if (settlementDate == null)
@@ -400,10 +389,9 @@ namespace QLNet.Pricingengines.Bond
                                              false, settlementDate);
         }
         public static double basisPointValue(Instruments.Bond bond, double yield, DayCounter dayCounter, Compounding compounding, Frequency frequency,
-                                             Date settlementDate = null)
-        {
-            return CashFlows.basisPointValue(bond.cashflows(), new InterestRate(yield, dayCounter, compounding, frequency), false, settlementDate);
-        }
+                                             Date settlementDate = null) =>
+            CashFlows.basisPointValue(bond.cashflows(), new InterestRate(yield, dayCounter, compounding, frequency), false, settlementDate);
+
         public static double yieldValueBasisPoint(Instruments.Bond bond, InterestRate yield, Date settlementDate = null)
         {
             if (settlementDate == null)
@@ -418,10 +406,9 @@ namespace QLNet.Pricingengines.Bond
                                                   false, settlementDate);
         }
         public static double yieldValueBasisPoint(Instruments.Bond bond, double yield, DayCounter dayCounter, Compounding compounding,
-                                                  Frequency frequency, Date settlementDate = null)
-        {
-            return CashFlows.yieldValueBasisPoint(bond.cashflows(), new InterestRate(yield, dayCounter, compounding, frequency), false, settlementDate);
-        }
+                                                  Frequency frequency, Date settlementDate = null) =>
+            CashFlows.yieldValueBasisPoint(bond.cashflows(), new InterestRate(yield, dayCounter, compounding, frequency), false, settlementDate);
+
         #endregion
 
         #region Z-spread functions
@@ -437,7 +424,7 @@ namespace QLNet.Pricingengines.Bond
                              " (maturity being " + bond.maturityDate() + ")",
                              QLNetExceptionEnum.NotTradableException);
 
-            double dirtyPrice = CashFlows.npv(bond.cashflows(), discount, zSpread, dayCounter, compounding, frequency, false, settlementDate) *
+            var dirtyPrice = CashFlows.npv(bond.cashflows(), discount, zSpread, dayCounter, compounding, frequency, false, settlementDate) *
                                 100.0 / bond.notional(settlementDate);
             return dirtyPrice - bond.accruedAmount(settlementDate);
         }
@@ -453,7 +440,7 @@ namespace QLNet.Pricingengines.Bond
                              " (maturity being " + bond.maturityDate() + ")",
                              QLNetExceptionEnum.NotTradableException);
 
-            double dirtyPrice = cleanPrice + bond.accruedAmount(settlementDate);
+            var dirtyPrice = cleanPrice + bond.accruedAmount(settlementDate);
             dirtyPrice /= 100.0 / bond.notional(settlementDate);
 
             return CashFlows.zSpread(bond.cashflows(),
@@ -471,7 +458,7 @@ namespace QLNet.Pricingengines.Bond
         {
             Utils.QL_REQUIRE(amounts.Count == schedule.Count, () => "Amount list is incompatible with schedule");
 
-            double totAmount = amounts.Where((t, x) => schedule[x] > today).Sum();
+            var totAmount = amounts.Where((t, x) => schedule[x] > today).Sum();
 
             if (totAmount.IsEqual(0))
                 return today;
@@ -479,13 +466,13 @@ namespace QLNet.Pricingengines.Bond
             double wal = 0;
             DayCounter dc = new Actual365Fixed();
 
-            for (int x = 0; x < amounts.Count; x++)
+            for (var x = 0; x < amounts.Count; x++)
             {
                 if (schedule[x] <= today)
                     continue;
-                double per = amounts[x] / totAmount;
-                double years = dc.yearFraction(today, schedule[x]);
-                double yearw = years * per;
+                var per = amounts[x] / totAmount;
+                var years = dc.yearFraction(today, schedule[x]);
+                var yearw = years * per;
                 wal += yearw;
             }
 

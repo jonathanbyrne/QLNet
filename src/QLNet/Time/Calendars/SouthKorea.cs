@@ -62,7 +62,7 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    public class SouthKorea : Calendar
+    [JetBrains.Annotations.PublicAPI] public class SouthKorea : Calendar
     {
         public enum Market
         {
@@ -93,17 +93,16 @@ namespace QLNet.Time.Calendars
         {
             public static readonly Settlement Singleton = new Settlement();
 
-            public override string name() { return "South-Korean settlement"; }
-            public override bool isWeekend(DayOfWeek w)
-            {
-                return w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
-            }
+            public override string name() => "South-Korean settlement";
+
+            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
+
             public override bool isBusinessDay(Date date)
             {
-                DayOfWeek w = date.DayOfWeek;
+                var w = date.DayOfWeek;
                 int d = date.Day, dd = date.DayOfYear;
-                Month m = (Month)date.Month;
-                int y = date.Year;
+                var m = (Month)date.Month;
+                var y = date.Year;
 
                 if (isWeekend(w)
                     // New Year's Day
@@ -252,17 +251,18 @@ namespace QLNet.Time.Calendars
         {
             public new static readonly KRX Singleton = new KRX();
 
-            public override string name() { return "South-Korea exchange"; }
+            public override string name() => "South-Korea exchange";
+
             public override bool isBusinessDay(Date date)
             {
                 // public holidays
                 if (!base.isBusinessDay(date))
                     return false;
 
-                int d = date.Day;
-                DayOfWeek w = date.DayOfWeek;
-                Month m = (Month)date.Month;
-                int y = date.Year;
+                var d = date.Day;
+                var w = date.DayOfWeek;
+                var m = (Month)date.Month;
+                var y = date.Year;
 
                 if ( // Year-end closing
                    ((d == 29 || d == 30) && w == DayOfWeek.Friday || d == 31)

@@ -46,7 +46,7 @@ namespace QLNet.Instruments
           it against a known good value.
     */
 
-    public class YoYInflationCapFloor : Instrument
+    [JetBrains.Annotations.PublicAPI] public class YoYInflationCapFloor : Instrument
     {
         public YoYInflationCapFloor(CapFloorType type, List<CashFlow> yoyLeg, List<double> capRates, List<double> floorRates)
         {
@@ -105,17 +105,17 @@ namespace QLNet.Instruments
         // Instrument interface
         public override bool isExpired()
         {
-            for (int i = yoyLeg_.Count; i > 0; --i)
+            for (var i = yoyLeg_.Count; i > 0; --i)
                 if (!yoyLeg_[i - 1].hasOccurred())
                     return false;
             return true;
         }
         public override void setupArguments(IPricingEngineArguments args)
         {
-            Arguments arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong argument type");
+            var arguments = args as Arguments;
+            Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
 
-            int n = yoyLeg_.Count;
+            var n = yoyLeg_.Count;
 
             arguments.startDates = new List<Date>(n);
             arguments.fixingDates = new List<Date>(n);
@@ -129,9 +129,9 @@ namespace QLNet.Instruments
 
             arguments.type = type_;
 
-            for (int i = 0; i < n; ++i)
+            for (var i = 0; i < n; ++i)
             {
-                YoYInflationCoupon coupon = yoyLeg_[i] as YoYInflationCoupon;
+                var coupon = yoyLeg_[i] as YoYInflationCoupon;
                 Utils.QL_REQUIRE(coupon != null, () => "non-YoYInflationCoupon given");
                 arguments.startDates.Add(coupon.accrualStartDate());
                 arguments.fixingDates.Add(coupon.fixingDate());
@@ -141,8 +141,8 @@ namespace QLNet.Instruments
                 arguments.accrualTimes.Add(coupon.accrualPeriod());
 
                 arguments.nominals.Add(coupon.nominal());
-                double spread = coupon.spread();
-                double gearing = coupon.gearing();
+                var spread = coupon.spread();
+                var gearing = coupon.gearing();
                 arguments.gearings.Add(gearing);
                 arguments.spreads.Add(spread);
 
@@ -160,23 +160,28 @@ namespace QLNet.Instruments
         }
 
         // Inspectors
-        public CapFloorType type() { return type_; }
-        public List<double> capRates() { return capRates_; }
-        public List<double> floorRates() { return floorRates_; }
-        public List<CashFlow> yoyLeg() { return yoyLeg_; }
+        public CapFloorType type() => type_;
 
-        public Date startDate() { return CashFlows.startDate(yoyLeg_); }
-        public Date maturityDate() { return CashFlows.maturityDate(yoyLeg_); }
+        public List<double> capRates() => capRates_;
+
+        public List<double> floorRates() => floorRates_;
+
+        public List<CashFlow> yoyLeg() => yoyLeg_;
+
+        public Date startDate() => CashFlows.startDate(yoyLeg_);
+
+        public Date maturityDate() => CashFlows.maturityDate(yoyLeg_);
+
         public YoYInflationCoupon lastYoYInflationCoupon()
         {
-            YoYInflationCoupon lastYoYInflationCoupon = yoyLeg_.Last() as YoYInflationCoupon;
+            var lastYoYInflationCoupon = yoyLeg_.Last() as YoYInflationCoupon;
             return lastYoYInflationCoupon;
         }
         //! Returns the n-th optionlet as a cap/floor with only one cash flow.
         public YoYInflationCapFloor optionlet(int i)
         {
             Utils.QL_REQUIRE(i < yoyLeg().Count, () => " optionlet does not exist, only " + yoyLeg().Count);
-            List<CashFlow> cf = new List<CashFlow>();
+            var cf = new List<CashFlow>();
             cf.Add(yoyLeg()[i]);
 
             List<double> cap = new List<double>(), floor = new List<double>();
@@ -188,11 +193,9 @@ namespace QLNet.Instruments
             return new YoYInflationCapFloor(type(), cf, cap, floor);
         }
 
-        public virtual double atmRate(YieldTermStructure discountCurve)
-        {
-            return CashFlows.atmRate(yoyLeg_, discountCurve,
-                                     false, discountCurve.referenceDate());
-        }
+        public virtual double atmRate(YieldTermStructure discountCurve) =>
+            CashFlows.atmRate(yoyLeg_, discountCurve,
+                false, discountCurve.referenceDate());
 
         //! implied term volatility
         public virtual double impliedVolatility(
@@ -214,7 +217,7 @@ namespace QLNet.Instruments
         private List<double> floorRates_;
 
         //! %Arguments for YoY Inflation cap/floor calculation
-        public class Arguments : IPricingEngineArguments
+        [JetBrains.Annotations.PublicAPI] public class Arguments : IPricingEngineArguments
         {
             public CapFloorType type { get; set; }
             public YoYInflationIndex index { get; set; }
@@ -264,14 +267,14 @@ namespace QLNet.Instruments
         }
 
         //! base class for cap/floor engines
-        public class Engine : GenericEngine<Arguments, Results>
+        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results>
         { }
 
     }
 
     //! Concrete YoY Inflation cap class
     /*! \ingroup instruments */
-    public class YoYInflationCap : YoYInflationCapFloor
+    [JetBrains.Annotations.PublicAPI] public class YoYInflationCap : YoYInflationCapFloor
     {
         public YoYInflationCap(List<CashFlow> yoyLeg, List<double> exerciseRates)
            : base(CapFloorType.Cap, yoyLeg, exerciseRates, new List<double>())
@@ -280,7 +283,7 @@ namespace QLNet.Instruments
 
     //! Concrete YoY Inflation floor class
     /*! \ingroup instruments */
-    public class YoYInflationFloor : YoYInflationCapFloor
+    [JetBrains.Annotations.PublicAPI] public class YoYInflationFloor : YoYInflationCapFloor
     {
         public YoYInflationFloor(List<CashFlow> yoyLeg, List<double> exerciseRates)
            : base(CapFloorType.Floor, yoyLeg, new List<double>(), exerciseRates)
@@ -289,7 +292,7 @@ namespace QLNet.Instruments
 
     //! Concrete YoY Inflation collar class
     /*! \ingroup instruments */
-    public class YoYInflationCollar : YoYInflationCapFloor
+    [JetBrains.Annotations.PublicAPI] public class YoYInflationCollar : YoYInflationCapFloor
     {
         public YoYInflationCollar(List<CashFlow> yoyLeg, List<double> capRates, List<double> floorRates)
            : base(CapFloorType.Collar, yoyLeg, capRates, floorRates) { }

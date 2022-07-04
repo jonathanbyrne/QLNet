@@ -45,7 +45,7 @@ namespace QLNet.Pricingengines.vanilla
     //        \test the correctness of the returned value is tested by
     //              reproducing results available in literature.
     //
-    public class JuQuadraticApproximationEngine : OneAssetOption.Engine
+    [JetBrains.Annotations.PublicAPI] public class JuQuadraticApproximationEngine : OneAssetOption.Engine
     {
         //     An Approximate Formula for Pricing American Options
         //        Journal of Derivatives Winter 1999
@@ -62,26 +62,26 @@ namespace QLNet.Pricingengines.vanilla
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.American, () => "not an American Option");
+            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.American, () => "not an American Option");
 
-            AmericanExercise ex = arguments_.exercise as AmericanExercise;
+            var ex = arguments_.exercise as AmericanExercise;
 
             Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
 
             Utils.QL_REQUIRE(!ex.payoffAtExpiry(), () => "payoff at expiry not handled");
 
-            StrikedTypePayoff payoff = arguments_.payoff as StrikedTypePayoff;
+            var payoff = arguments_.payoff as StrikedTypePayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
-            double variance = process_.blackVolatility().link.blackVariance(ex.lastDate(), payoff.strike());
-            double dividendDiscount = process_.dividendYield().link.discount(ex.lastDate());
-            double riskFreeDiscount = process_.riskFreeRate().link.discount(ex.lastDate());
-            double spot = process_.stateVariable().link.value();
+            var variance = process_.blackVolatility().link.blackVariance(ex.lastDate(), payoff.strike());
+            var dividendDiscount = process_.dividendYield().link.discount(ex.lastDate());
+            var riskFreeDiscount = process_.riskFreeRate().link.discount(ex.lastDate());
+            var spot = process_.stateVariable().link.value();
 
             Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
 
-            double forwardPrice = spot * dividendDiscount / riskFreeDiscount;
-            BlackCalculator black = new BlackCalculator(payoff, forwardPrice, System.Math.Sqrt(variance), riskFreeDiscount);
+            var forwardPrice = spot * dividendDiscount / riskFreeDiscount;
+            var black = new BlackCalculator(payoff, forwardPrice, System.Math.Sqrt(variance), riskFreeDiscount);
 
             if (dividendDiscount >= 1.0 && payoff.optionType() == QLNet.Option.Type.Call)
             {
@@ -92,10 +92,10 @@ namespace QLNet.Pricingengines.vanilla
                 results_.elasticity = black.elasticity(spot);
                 results_.gamma = black.gamma(spot);
 
-                DayCounter rfdc = process_.riskFreeRate().link.dayCounter();
-                DayCounter divdc = process_.dividendYield().link.dayCounter();
-                DayCounter voldc = process_.blackVolatility().link.dayCounter();
-                double t = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(), arguments_.exercise.lastDate());
+                var rfdc = process_.riskFreeRate().link.dayCounter();
+                var divdc = process_.dividendYield().link.dayCounter();
+                var voldc = process_.blackVolatility().link.dayCounter();
+                var t = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(), arguments_.exercise.lastDate());
                 results_.rho = black.rho(t);
 
                 t = divdc.yearFraction(process_.dividendYield().link.referenceDate(), arguments_.exercise.lastDate());
@@ -112,18 +112,18 @@ namespace QLNet.Pricingengines.vanilla
             else
             {
                 // early exercise can be optimal
-                CumulativeNormalDistribution cumNormalDist = new CumulativeNormalDistribution();
-                NormalDistribution normalDist = new NormalDistribution();
+                var cumNormalDist = new CumulativeNormalDistribution();
+                var normalDist = new NormalDistribution();
 
-                double tolerance = 1e-6;
-                double Sk = BaroneAdesiWhaleyApproximationEngine.criticalPrice(payoff, riskFreeDiscount, dividendDiscount,
+                var tolerance = 1e-6;
+                var Sk = BaroneAdesiWhaleyApproximationEngine.criticalPrice(payoff, riskFreeDiscount, dividendDiscount,
                                                                                variance, tolerance);
 
-                double forwardSk = Sk * dividendDiscount / riskFreeDiscount;
+                var forwardSk = Sk * dividendDiscount / riskFreeDiscount;
 
-                double alpha = -2.0 * System.Math.Log(riskFreeDiscount) / variance;
-                double beta = 2.0 * System.Math.Log(dividendDiscount / riskFreeDiscount) / variance;
-                double h = 1 - riskFreeDiscount;
+                var alpha = -2.0 * System.Math.Log(riskFreeDiscount) / variance;
+                var beta = 2.0 * System.Math.Log(dividendDiscount / riskFreeDiscount) / variance;
+                var h = 1 - riskFreeDiscount;
                 double phi = 0;
                 switch (payoff.optionType())
                 {
@@ -134,32 +134,32 @@ namespace QLNet.Pricingengines.vanilla
                         phi = -1;
                         break;
                     default:
-                        Utils.QL_FAIL("invalid option type");
+                        Utils.QL_FAIL("invalid option ExerciseType");
                         break;
                 }
                 //it can throw: to be fixed
                 // FLOATING_POINT_EXCEPTION
-                double temp_root = System.Math.Sqrt((beta - 1) * (beta - 1) + 4 * alpha / h);
-                double lambda = (-(beta - 1) + phi * temp_root) / 2;
-                double lambda_prime = -phi * alpha / (h * h * temp_root);
+                var temp_root = System.Math.Sqrt((beta - 1) * (beta - 1) + 4 * alpha / h);
+                var lambda = (-(beta - 1) + phi * temp_root) / 2;
+                var lambda_prime = -phi * alpha / (h * h * temp_root);
 
-                double black_Sk = Utils.blackFormula(payoff.optionType(), payoff.strike(), forwardSk, System.Math.Sqrt(variance)) *
-                                  riskFreeDiscount;
-                double hA = phi * (Sk - payoff.strike()) - black_Sk;
+                var black_Sk = Utils.blackFormula(payoff.optionType(), payoff.strike(), forwardSk, System.Math.Sqrt(variance)) *
+                               riskFreeDiscount;
+                var hA = phi * (Sk - payoff.strike()) - black_Sk;
 
-                double d1_Sk = (System.Math.Log(forwardSk / payoff.strike()) + 0.5 * variance) / System.Math.Sqrt(variance);
-                double d2_Sk = d1_Sk - System.Math.Sqrt(variance);
-                double part1 = forwardSk * normalDist.value(d1_Sk) / (alpha * System.Math.Sqrt(variance));
-                double part2 = -phi * forwardSk * cumNormalDist.value(phi * d1_Sk) * System.Math.Log(dividendDiscount) /
-                               System.Math.Log(riskFreeDiscount);
-                double part3 = +phi * payoff.strike() * cumNormalDist.value(phi * d2_Sk);
-                double V_E_h = part1 + part2 + part3;
+                var d1_Sk = (System.Math.Log(forwardSk / payoff.strike()) + 0.5 * variance) / System.Math.Sqrt(variance);
+                var d2_Sk = d1_Sk - System.Math.Sqrt(variance);
+                var part1 = forwardSk * normalDist.value(d1_Sk) / (alpha * System.Math.Sqrt(variance));
+                var part2 = -phi * forwardSk * cumNormalDist.value(phi * d1_Sk) * System.Math.Log(dividendDiscount) /
+                            System.Math.Log(riskFreeDiscount);
+                var part3 = +phi * payoff.strike() * cumNormalDist.value(phi * d2_Sk);
+                var V_E_h = part1 + part2 + part3;
 
-                double b = (1 - h) * alpha * lambda_prime / (2 * (2 * lambda + beta - 1));
-                double c = -((1 - h) * alpha / (2 * lambda + beta - 1)) *
-                           (V_E_h / hA + 1 / h + lambda_prime / (2 * lambda + beta - 1));
-                double temp_spot_ratio = System.Math.Log(spot / Sk);
-                double chi = temp_spot_ratio * (b * temp_spot_ratio + c);
+                var b = (1 - h) * alpha * lambda_prime / (2 * (2 * lambda + beta - 1));
+                var c = -((1 - h) * alpha / (2 * lambda + beta - 1)) *
+                        (V_E_h / hA + 1 / h + lambda_prime / (2 * lambda + beta - 1));
+                var temp_spot_ratio = System.Math.Log(spot / Sk);
+                var chi = temp_spot_ratio * (b * temp_spot_ratio + c);
 
                 if (phi * (Sk - spot) > 0)
                 {
@@ -170,9 +170,9 @@ namespace QLNet.Pricingengines.vanilla
                     results_.value = phi * (spot - payoff.strike());
                 }
 
-                double temp_chi_prime = 2 * b / spot * System.Math.Log(spot / Sk);
-                double chi_prime = temp_chi_prime + c / spot;
-                double chi_double_prime = 2 * b / (spot * spot) - temp_chi_prime / spot - c / (spot * spot);
+                var temp_chi_prime = 2 * b / spot * System.Math.Log(spot / Sk);
+                var chi_prime = temp_chi_prime + c / spot;
+                var chi_double_prime = 2 * b / (spot * spot) - temp_chi_prime / spot - c / (spot * spot);
                 results_.delta = phi * dividendDiscount * cumNormalDist.value(phi * d1_Sk) +
                                  (lambda / (spot * (1 - chi)) + chi_prime / ((1 - chi) * (1 - chi))) *
                                  (phi * (Sk - payoff.strike()) - black_Sk) * System.Math.Pow(spot / Sk, lambda);

@@ -25,7 +25,7 @@ using QLNet.Cashflows;
 
 namespace QLNet.Instruments.Bonds
 {
-    public class AmortizingFixedRateBond : Bond
+    [JetBrains.Annotations.PublicAPI] public class AmortizingFixedRateBond : Bond
     {
         protected Frequency frequency_;
         protected DayCounter dayCounter_;
@@ -116,17 +116,18 @@ namespace QLNet.Instruments.Bonds
 
         }
 
-        public Frequency frequency() { return frequency_; }
-        public DayCounter dayCounter() { return dayCounter_; }
+        public Frequency frequency() => frequency_;
+
+        public DayCounter dayCounter() => dayCounter_;
 
         protected Schedule sinkingSchedule(Date startDate,
                                            Period maturityTenor,
                                            Frequency sinkingFrequency,
                                            Calendar paymentCalendar)
         {
-            Period freqPeriod = new Period(sinkingFrequency);
-            Date maturityDate = new Date(startDate + maturityTenor);
-            Schedule retVal = new Schedule(startDate, maturityDate, freqPeriod,
+            var freqPeriod = new Period(sinkingFrequency);
+            var maturityDate = new Date(startDate + maturityTenor);
+            var retVal = new Schedule(startDate, maturityDate, freqPeriod,
                                            paymentCalendar, BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
                                            DateGeneration.Rule.Backward, false);
             return retVal;
@@ -137,20 +138,20 @@ namespace QLNet.Instruments.Bonds
                                                 double couponRate,
                                                 double initialNotional)
         {
-            Period freqPeriod = new Period(sinkingFrequency);
-            int nPeriods = 0;
+            var freqPeriod = new Period(sinkingFrequency);
+            var nPeriods = 0;
             Utils.QL_REQUIRE(isSubPeriod(freqPeriod, maturityTenor, out nPeriods), () =>
                              "Bond frequency is incompatible with the maturity tenor");
 
             List<double> notionals = new InitializedList<double>(nPeriods + 1);
             notionals[0] = initialNotional;
-            double coupon = couponRate / (double)sinkingFrequency;
-            double compoundedInterest = 1.0;
-            double totalValue = System.Math.Pow(1.0 + coupon, nPeriods);
-            for (int i = 0; i < nPeriods - 1; ++i)
+            var coupon = couponRate / (double)sinkingFrequency;
+            var compoundedInterest = 1.0;
+            var totalValue = System.Math.Pow(1.0 + coupon, nPeriods);
+            for (var i = 0; i < nPeriods - 1; ++i)
             {
                 compoundedInterest *= 1.0 + coupon;
-                double currentNotional = 0.0;
+                var currentNotional = 0.0;
                 if (coupon < 1.0e-12)
                 {
                     currentNotional =
@@ -171,22 +172,22 @@ namespace QLNet.Instruments.Bonds
         {
             numSubPeriods = 0;
 
-            KeyValuePair<int, int> superDays = daysMinMax(superPeriod);
-            KeyValuePair<int, int> subDays = daysMinMax(subPeriod);
+            var superDays = daysMinMax(superPeriod);
+            var subDays = daysMinMax(subPeriod);
 
             //obtain the approximate time ratio
-            double minPeriodRatio =
+            var minPeriodRatio =
                superDays.Key / (double)subDays.Value;
-            double maxPeriodRatio =
+            var maxPeriodRatio =
                superDays.Value / (double)subDays.Key;
-            int lowRatio = (int)System.Math.Floor(minPeriodRatio);
-            int highRatio = (int)System.Math.Ceiling(maxPeriodRatio);
+            var lowRatio = (int)System.Math.Floor(minPeriodRatio);
+            var highRatio = (int)System.Math.Ceiling(maxPeriodRatio);
 
             try
             {
-                for (int i = lowRatio; i <= highRatio; ++i)
+                for (var i = lowRatio; i <= highRatio; ++i)
                 {
-                    Period testPeriod = subPeriod * i;
+                    var testPeriod = subPeriod * i;
                     if (testPeriod == superPeriod)
                     {
                         numSubPeriods = i;

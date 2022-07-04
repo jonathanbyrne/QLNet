@@ -27,7 +27,7 @@ namespace QLNet.Instruments
     /*! This class provides a more comfortable way
         to instantiate standard market cap and floor.
     */
-    public class MakeCapFloor
+    [JetBrains.Annotations.PublicAPI] public class MakeCapFloor
     {
         public MakeCapFloor(CapFloorType capFloorType, Period tenor, IborIndex iborIndex, double? strike = null,
                             Period forwardStart = null)
@@ -39,12 +39,13 @@ namespace QLNet.Instruments
             makeVanillaSwap_ = new MakeVanillaSwap(tenor, iborIndex, 0.0, forwardStart);
         }
 
-        public static implicit operator CapFloor(MakeCapFloor o) { return o.value(); }
+        public static implicit operator CapFloor(MakeCapFloor o) => o.value();
+
         public CapFloor value()
         {
             VanillaSwap swap = makeVanillaSwap_;
 
-            List<CashFlow> leg = swap.floatingLeg();
+            var leg = swap.floatingLeg();
             if (firstCapletExcluded_)
                 leg.RemoveAt(0);
 
@@ -59,9 +60,9 @@ namespace QLNet.Instruments
             {
                 // temporary patch...
                 // should be fixed for every CapFloor::Engine
-                BlackCapFloorEngine temp = engine_ as BlackCapFloorEngine;
+                var temp = engine_ as BlackCapFloorEngine;
                 Utils.QL_REQUIRE(temp != null, () => "cannot calculate ATM without a BlackCapFloorEngine");
-                Handle<YieldTermStructure> discountCurve = temp.termStructure();
+                var discountCurve = temp.termStructure();
                 strikeVector = new InitializedList<double>(1, CashFlows.atmRate(leg, discountCurve, false, discountCurve.link.referenceDate()));
             }
             else
@@ -69,7 +70,7 @@ namespace QLNet.Instruments
                 strikeVector = new InitializedList<double>(1, strike_.Value);
             }
 
-            CapFloor capFloor = new CapFloor(capFloorType_, leg, strikeVector);
+            var capFloor = new CapFloor(capFloorType_, leg, strikeVector);
             capFloor.setPricingEngine(engine_);
             return capFloor;
 

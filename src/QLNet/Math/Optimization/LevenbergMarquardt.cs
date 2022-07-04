@@ -37,7 +37,7 @@ namespace QLNet.Math.Optimization
         evaluations) compared to the forward
         difference implemented here (order 1).
     */
-    public class LevenbergMarquardt : OptimizationMethod
+    [JetBrains.Annotations.PublicAPI] public class LevenbergMarquardt : OptimizationMethod
     {
         private Problem currentProblem_;
         private Vector initCostValues_;
@@ -45,7 +45,7 @@ namespace QLNet.Math.Optimization
         private bool useCostFunctionsJacobian_;
 
         private int info_;
-        public int getInfo() { return info_; }
+        public int getInfo() => info_;
 
         private double epsfcn_, xtol_, gtol_;
 
@@ -61,31 +61,31 @@ namespace QLNet.Math.Optimization
 
         public override EndCriteria.Type minimize(Problem P, EndCriteria endCriteria)
         {
-            EndCriteria.Type ecType = EndCriteria.Type.None;
+            var ecType = EndCriteria.Type.None;
             P.reset();
-            Vector x_ = P.currentValue();
+            var x_ = P.currentValue();
             currentProblem_ = P;
             initCostValues_ = P.costFunction().values(x_);
-            int m = initCostValues_.size();
-            int n = x_.size();
+            var m = initCostValues_.size();
+            var n = x_.size();
             if (useCostFunctionsJacobian_)
             {
                 initJacobian_ = new Matrix(m, n);
                 P.costFunction().jacobian(initJacobian_, x_);
             }
 
-            Vector xx = new Vector(x_);
+            var xx = new Vector(x_);
             Vector fvec = new Vector(m), diag = new Vector(n);
 
-            int mode = 1;
+            var mode = 1;
             double factor = 1;
-            int nprint = 0;
-            int info = 0;
-            int nfev = 0;
+            var nprint = 0;
+            var info = 0;
+            var nfev = 0;
 
-            Matrix fjac = new Matrix(m, n);
+            var fjac = new Matrix(m, n);
 
-            int ldfjac = m;
+            var ldfjac = m;
 
             List<int> ipvt = new InitializedList<int>(n);
             Vector qtf = new Vector(n), wa1 = new Vector(n), wa2 = new Vector(n), wa3 = new Vector(n), wa4 = new Vector(m);
@@ -137,7 +137,7 @@ namespace QLNet.Math.Optimization
 
         public Vector fcn(int m, int n, Vector x, int iflag)
         {
-            Vector xt = new Vector(x);
+            var xt = new Vector(x);
             Vector fvec;
             // constraint handling needs some improvement in the future:
             // starting point should not be close to a constraint violation
@@ -154,20 +154,20 @@ namespace QLNet.Math.Optimization
 
         public Matrix jacFcn(int m, int n, Vector x, int iflag)
         {
-            Vector xt = new Vector(x);
+            var xt = new Vector(x);
             Matrix fjac;
             // constraint handling needs some improvement in the future:
             // starting point should not be close to a constraint violation
             if (currentProblem_.constraint().test(xt))
             {
-                Matrix tmp = new Matrix(m, n);
+                var tmp = new Matrix(m, n);
                 currentProblem_.costFunction().jacobian(tmp, xt);
-                Matrix tmpT = Matrix.transpose(tmp);
+                var tmpT = Matrix.transpose(tmp);
                 fjac = new Matrix(tmpT);
             }
             else
             {
-                Matrix tmpT = Matrix.transpose(initJacobian_);
+                var tmpT = Matrix.transpose(initJacobian_);
                 fjac = new Matrix(tmpT);
             }
             return fjac;

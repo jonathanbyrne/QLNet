@@ -38,10 +38,7 @@ namespace QLNet.Models.Shortrate
         {
             private StochasticProcess1D process_;
             //! Returns the risk-neutral dynamics of the state variable
-            public StochasticProcess1D process()
-            {
-                return process_;
-            }
+            public StochasticProcess1D process() => process_;
 
             protected ShortRateDynamics(StochasticProcess1D process)
             {
@@ -61,17 +58,14 @@ namespace QLNet.Models.Shortrate
         //! Return by default a trinomial recombining tree
         public override Lattice tree(TimeGrid grid)
         {
-            TrinomialTree trinomial = new TrinomialTree(dynamics().process(), grid);
+            var trinomial = new TrinomialTree(dynamics().process(), grid);
             return new ShortRateTree(trinomial, dynamics(), grid);
         }
 
         //! Recombining trinomial tree discretizing the state variable
-        public class ShortRateTree : TreeLattice1D<ShortRateTree>, IGenericLattice
+        [JetBrains.Annotations.PublicAPI] public class ShortRateTree : TreeLattice1D<ShortRateTree>, IGenericLattice
         {
-            protected override ShortRateTree impl()
-            {
-                return this;
-            }
+            protected override ShortRateTree impl() => this;
 
             //! Plain tree build-up from short-rate dynamics
             public ShortRateTree(TrinomialTree tree,
@@ -91,51 +85,39 @@ namespace QLNet.Models.Shortrate
                 tree_ = tree;
                 dynamics_ = dynamics;
                 theta.reset();
-                double value = 1.0;
-                double vMin = -100.0;
-                double vMax = 100.0;
-                for (int i = 0; i < timeGrid.size() - 1; i++)
+                var value = 1.0;
+                var vMin = -100.0;
+                var vMax = 100.0;
+                for (var i = 0; i < timeGrid.size() - 1; i++)
                 {
-                    double discountBond = theta.termStructure().link.discount(t_[i + 1]);
-                    Helper finder = new Helper(i, discountBond, theta, this);
-                    Brent s1d = new Brent();
+                    var discountBond = theta.termStructure().link.discount(t_[i + 1]);
+                    var finder = new Helper(i, discountBond, theta, this);
+                    var s1d = new Brent();
                     s1d.setMaxEvaluations(1000);
                     value = s1d.solve(finder, 1e-7, value, vMin, vMax);
                     theta.change(value);
                 }
             }
 
-            public int size(int i)
-            {
-                return tree_.size(i);
-            }
+            public int size(int i) => tree_.size(i);
 
             public double discount(int i, int index)
             {
-                double x = tree_.underlying(i, index);
-                double r = dynamics_.shortRate(timeGrid()[i], x);
+                var x = tree_.underlying(i, index);
+                var r = dynamics_.shortRate(timeGrid()[i], x);
                 return System.Math.Exp(-r * timeGrid().dt(i));
             }
 
-            public override double underlying(int i, int index)
-            {
-                return tree_.underlying(i, index);
-            }
+            public override double underlying(int i, int index) => tree_.underlying(i, index);
 
-            public int descendant(int i, int index, int branch)
-            {
-                return tree_.descendant(i, index, branch);
-            }
+            public int descendant(int i, int index, int branch) => tree_.descendant(i, index, branch);
 
-            public double probability(int i, int index, int branch)
-            {
-                return tree_.probability(i, index, branch);
-            }
+            public double probability(int i, int index, int branch) => tree_.probability(i, index, branch);
 
             private TrinomialTree tree_;
             private ShortRateDynamics dynamics_;
 
-            public class Helper : ISolver1d
+            [JetBrains.Annotations.PublicAPI] public class Helper : ISolver1d
             {
                 private int size_;
                 private int i_;
@@ -160,9 +142,9 @@ namespace QLNet.Models.Shortrate
 
                 public override double value(double theta)
                 {
-                    double value = discountBondPrice_;
+                    var value = discountBondPrice_;
                     theta_.change(theta);
-                    for (int j = 0; j < size_; j++)
+                    for (var j = 0; j < size_; j++)
                         value -= statePrices_[j] * tree_.discount(i_, j);
                     return value;
                 }
@@ -179,30 +161,23 @@ namespace QLNet.Models.Shortrate
 
         public virtual double discountBond(double now,
                                            double maturity,
-                                           Vector factors)
-        {
-            return discountBond(now, maturity, factors[0]);
-        }
+                                           Vector factors) =>
+            discountBond(now, maturity, factors[0]);
 
-        public double discountBond(double now, double maturity, double rate)
-        {
-            return A(now, maturity) * System.Math.Exp(-B(now, maturity) * rate);
-        }
+        public double discountBond(double now, double maturity, double rate) => A(now, maturity) * System.Math.Exp(-B(now, maturity) * rate);
 
         public double discount(double t)
         {
-            double x0 = dynamics().process().x0();
-            double r0 = dynamics().shortRate(0.0, x0);
+            var x0 = dynamics().process().x0();
+            var r0 = dynamics().shortRate(0.0, x0);
             return discountBond(0.0, t, r0);
         }
 
         public virtual double discountBondOption(Option.Type type,
                                                  double strike,
                                                  double maturity,
-                                                 double bondMaturity)
-        {
+                                                 double bondMaturity) =>
             throw new NotImplementedException();
-        }
 
         protected abstract double A(double t, double T);
         protected abstract double B(double t, double T);

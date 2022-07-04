@@ -2,7 +2,7 @@
 
 namespace QLNet.Exceptions
 {
-    public class RootNotBracketException : Exception
+    [JetBrains.Annotations.PublicAPI] public class RootNotBracketException : Exception
     {
         public RootNotBracketException()
         {

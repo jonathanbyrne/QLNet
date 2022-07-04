@@ -25,7 +25,7 @@ namespace QLNet.Math.Optimization
 
         User has to provide line-search method and optimization end criteria.
     */
-    public class BFGS : LineSearchBasedMethod
+    [JetBrains.Annotations.PublicAPI] public class BFGS : LineSearchBasedMethod
     {
         public BFGS(LineSearch lineSearch = null)
            : base(lineSearch)
@@ -40,23 +40,23 @@ namespace QLNet.Math.Optimization
             {
                 // first time in this update, we create needed structures
                 inverseHessian_ = new Matrix(P.currentValue().size(), P.currentValue().size(), 0.0);
-                for (int i = 0; i < P.currentValue().size(); ++i)
+                for (var i = 0; i < P.currentValue().size(); ++i)
                     inverseHessian_[i, i] = 1.0;
             }
 
-            Vector diffGradient = new Vector();
-            Vector diffGradientWithHessianApplied = new Vector(P.currentValue().size(), 0.0);
+            var diffGradient = new Vector();
+            var diffGradientWithHessianApplied = new Vector(P.currentValue().size(), 0.0);
 
             diffGradient = lineSearch_.lastGradient() - oldGradient;
-            for (int i = 0; i < P.currentValue().size(); ++i)
-                for (int j = 0; j < P.currentValue().size(); ++j)
+            for (var i = 0; i < P.currentValue().size(); ++i)
+                for (var j = 0; j < P.currentValue().size(); ++j)
                     diffGradientWithHessianApplied[i] += inverseHessian_[i, j] * diffGradient[j];
 
             double fac, fae, fad;
             double sumdg, sumxi;
 
             fac = fae = sumdg = sumxi = 0.0;
-            for (int i = 0; i < P.currentValue().size(); ++i)
+            for (var i = 0; i < P.currentValue().size(); ++i)
             {
                 fac += diffGradient[i] * lineSearch_.searchDirection[i];
                 fae += diffGradient[i] * diffGradientWithHessianApplied[i];
@@ -69,11 +69,11 @@ namespace QLNet.Math.Optimization
                 fac = 1.0 / fac;
                 fad = 1.0 / fae;
 
-                for (int i = 0; i < P.currentValue().size(); ++i)
+                for (var i = 0; i < P.currentValue().size(); ++i)
                     diffGradient[i] = fac * lineSearch_.searchDirection[i] - fad * diffGradientWithHessianApplied[i];
 
-                for (int i = 0; i < P.currentValue().size(); ++i)
-                    for (int j = 0; j < P.currentValue().size(); ++j)
+                for (var i = 0; i < P.currentValue().size(); ++i)
+                    for (var j = 0; j < P.currentValue().size(); ++j)
                     {
                         inverseHessian_[i, j] += fac * lineSearch_.searchDirection[i] * lineSearch_.searchDirection[j];
                         inverseHessian_[i, j] -= fad * diffGradientWithHessianApplied[i] * diffGradientWithHessianApplied[j];
@@ -81,11 +81,11 @@ namespace QLNet.Math.Optimization
                     }
             }
 
-            Vector direction = new Vector(P.currentValue().size());
-            for (int i = 0; i < P.currentValue().size(); ++i)
+            var direction = new Vector(P.currentValue().size());
+            for (var i = 0; i < P.currentValue().size(); ++i)
             {
                 direction[i] = 0.0;
-                for (int j = 0; j < P.currentValue().size(); ++j)
+                for (var j = 0; j < P.currentValue().size(); ++j)
                     direction[i] -= inverseHessian_[i, j] * lineSearch_.lastGradient()[j];
             }
 
