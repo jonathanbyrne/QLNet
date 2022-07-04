@@ -16,58 +16,62 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Indexes;
+using QLNet.Instruments;
+using QLNet.Time;
 using System.Collections.Generic;
+using QLNet.Cashflows;
 
-namespace QLNet
+namespace QLNet.Instruments.Bonds
 {
-   //! amortizing CMS-rate bond
-   public class AmortizingCmsRateBond : Bond
-   {
-      public AmortizingCmsRateBond(int settlementDays,
-                                   List<double> notionals,
-                                   Schedule schedule,
-                                   SwapIndex index,
-                                   DayCounter paymentDayCounter,
-                                   BusinessDayConvention paymentConvention = BusinessDayConvention.Following,
-                                   int fixingDays = 0,
-                                   List<double> gearings = null,
-                                   List<double> spreads = null,
-                                   List < double? > caps = null,
-                                   List < double? > floors = null,
-                                   bool inArrears = false,
-                                   Date issueDate = null)
-      : base(settlementDays, schedule.calendar(), issueDate)
-      {
-         // Optional value check
-         if (gearings == null)
-            gearings = new List<double>() {1.0};
-         if (spreads == null)
-            spreads = new List<double>() {0};
-         if (caps == null)
-            caps = new List < double? >();
-         if (floors == null)
-            floors = new List < double? >();
+    //! amortizing CMS-rate bond
+    public class AmortizingCmsRateBond : Bond
+    {
+        public AmortizingCmsRateBond(int settlementDays,
+                                     List<double> notionals,
+                                     Schedule schedule,
+                                     SwapIndex index,
+                                     DayCounter paymentDayCounter,
+                                     BusinessDayConvention paymentConvention = BusinessDayConvention.Following,
+                                     int fixingDays = 0,
+                                     List<double> gearings = null,
+                                     List<double> spreads = null,
+                                     List<double?> caps = null,
+                                     List<double?> floors = null,
+                                     bool inArrears = false,
+                                     Date issueDate = null)
+        : base(settlementDays, schedule.calendar(), issueDate)
+        {
+            // Optional value check
+            if (gearings == null)
+                gearings = new List<double>() { 1.0 };
+            if (spreads == null)
+                spreads = new List<double>() { 0 };
+            if (caps == null)
+                caps = new List<double?>();
+            if (floors == null)
+                floors = new List<double?>();
 
-         maturityDate_ = schedule.endDate();
+            maturityDate_ = schedule.endDate();
 
-         cashflows_ = new CmsLeg(schedule, index)
-         .withPaymentDayCounter(paymentDayCounter)
-         .withFixingDays(fixingDays)
-         .withGearings(gearings)
-         .withSpreads(spreads)
-         .withCaps(caps)
-         .withFloors(floors)
-         .inArrears(inArrears)
-         .withNotionals(notionals)
-         .withPaymentAdjustment(paymentConvention);
+            cashflows_ = new CmsLeg(schedule, index)
+            .withPaymentDayCounter(paymentDayCounter)
+            .withFixingDays(fixingDays)
+            .withGearings(gearings)
+            .withSpreads(spreads)
+            .withCaps(caps)
+            .withFloors(floors)
+            .inArrears(inArrears)
+            .withNotionals(notionals)
+            .withPaymentAdjustment(paymentConvention);
 
-         addRedemptionsToCashflows();
+            addRedemptionsToCashflows();
 
-         Utils.QL_REQUIRE(!cashflows().empty(), () => "bond with no cashflows!");
+            Utils.QL_REQUIRE(!cashflows().empty(), () => "bond with no cashflows!");
 
-         index.registerWith(update);
+            index.registerWith(update);
 
-      }
+        }
 
-   }
+    }
 }

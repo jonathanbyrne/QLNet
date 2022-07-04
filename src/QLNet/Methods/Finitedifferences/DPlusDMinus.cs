@@ -17,25 +17,25 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences
 {
-   //! \f$ D_{+}D_{-} \f$ matricial representation
-   /*! The differential operator \f$  D_{+}D_{-} \f$ discretizes the
-       second derivative with the second-order formula
+    //! \f$ D_{+}D_{-} \f$ matricial representation
+    /*! The differential operator \f$  D_{+}D_{-} \f$ discretizes the
+        second derivative with the second-order formula
 
-       \ingroup findiff
+        \ingroup findiff
 
-       \test the correctness of the returned values is tested by
-             checking them against numerical calculations.
-   */
-   public class DPlusDMinus : TridiagonalOperator
-   {
-      public DPlusDMinus(int gridPoints, double h)
-         : base(gridPoints)
-      {
-         setFirstRow(0.0, 0.0);                  // linear extrapolation
-         setMidRows(1 / (h * h), -2 / (h * h), 1 / (h * h));
-         setLastRow(0.0, 0.0);                   // linear extrapolation
-      }
-   }
+        \test the correctness of the returned values is tested by
+              checking them against numerical calculations.
+    */
+    public class DPlusDMinus : TridiagonalOperator
+    {
+        public DPlusDMinus(int gridPoints, double h)
+           : base(gridPoints)
+        {
+            setFirstRow(0.0, 0.0);                  // linear extrapolation
+            setMidRows(1 / (h * h), -2 / (h * h), 1 / (h * h));
+            setLastRow(0.0, 0.0);                   // linear extrapolation
+        }
+    }
 }

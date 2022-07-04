@@ -18,31 +18,32 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Termstructures.Volatility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace QLNet
 {
-   public partial class Utils
+    public partial class Utils
    {
       public static void checkSviParameters(double a, double b, double sigma, double rho, double m)
       {
          Utils.QL_REQUIRE(b >= 0.0, () => "b (" + b + ") must be non negative");
-         Utils.QL_REQUIRE(Math.Abs(rho) < 1.0, () => "rho (" + rho + ") must be in (-1,1)");
+         Utils.QL_REQUIRE(System.Math.Abs(rho) < 1.0, () => "rho (" + rho + ") must be in (-1,1)");
          Utils.QL_REQUIRE(sigma > 0.0, () => "sigma (" + sigma + ") must be positive");
-         Utils.QL_REQUIRE(a + b * sigma * Math.Sqrt(1.0 - rho * rho) >= 0.0,
+         Utils.QL_REQUIRE(a + b * sigma * System.Math.Sqrt(1.0 - rho * rho) >= 0.0,
                           () => "a + b sigma sqrt(1-rho^2) (a=" + a + ", b=" + b + ", sigma="
                           + sigma + ", rho=" + rho
                           + ") must be non negative");
-         Utils.QL_REQUIRE(b * (1.0 + Math.Abs(rho)) < 4.0,
+         Utils.QL_REQUIRE(b * (1.0 + System.Math.Abs(rho)) < 4.0,
                           () => "b(1+|rho|) must be less than 4");
          return;
       }
 
       public static double sviTotalVariance(double a, double b, double sigma, double rho, double m, double k)
       {
-         return a + b * (rho * (k - m) + Math.Sqrt((k - m) * (k - m) + sigma* sigma));
+         return a + b * (rho * (k - m) + System.Math.Sqrt((k - m) * (k - m) + sigma* sigma));
       }
 
       public static double sviVolatility(double strike, double forward, double expiryTime, List<double? > param)

@@ -17,13 +17,13 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Methods.montecarlo
 {
-   // path generation and pricing traits
+    // path generation and pricing traits
 
-   //! default Monte Carlo traits for single-variate models
-   public struct SingleVariate {}
+    //! default Monte Carlo traits for single-variate models
+    public struct SingleVariate { }
 
-   //! default Monte Carlo traits for multi-variate models
-   public struct MultiVariate {}
+    //! default Monte Carlo traits for multi-variate models
+    public struct MultiVariate { }
 }

@@ -17,43 +17,49 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Currencies;
+using QLNet.Termstructures;
+using QLNet.Time;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
+
+namespace QLNet.Indexes.Ibor
 {
-   //! %USD %LIBOR rate
-   /*! US Dollar LIBOR fixed by ICE.
+    //! %USD %LIBOR rate
+    /*! US Dollar LIBOR fixed by ICE.
 
-       See <https://www.theice.com/marketdata/reports/170>.
-   */
-   public class USDLibor : Libor
-   {
-      public USDLibor(Period tenor) : this(tenor, new Handle<YieldTermStructure>())
-      {}
+        See <https://www.theice.com/marketdata/reports/170>.
+    */
+    public class USDLibor : Libor
+    {
+        public USDLibor(Period tenor) : this(tenor, new Handle<YieldTermStructure>())
+        { }
 
-      public USDLibor(Period tenor, Handle<YieldTermStructure> h)
-         : base("USDLibor", tenor, 2, new USDCurrency(), new UnitedStates(UnitedStates.Market.Settlement), new Actual360(), h)
-      {}
+        public USDLibor(Period tenor, Handle<YieldTermStructure> h)
+           : base("USDLibor", tenor, 2, new USDCurrency(), new UnitedStates(UnitedStates.Market.Settlement), new Actual360(), h)
+        { }
 
-   }
+    }
 
-   //! base class for the one day deposit ICE %USD %LIBOR indexes
-   public class DailyTenorUSDLibor : DailyTenorLibor
-   {
-      public DailyTenorUSDLibor(int settlementDays) : this(settlementDays, new Handle<YieldTermStructure>())
-      {}
-      public DailyTenorUSDLibor(int settlementDays, Handle<YieldTermStructure> h)
-         : base("USDLibor", settlementDays, new USDCurrency(), new UnitedStates(UnitedStates.Market.Settlement), new Actual360(), h)
-      {}
+    //! base class for the one day deposit ICE %USD %LIBOR indexes
+    public class DailyTenorUSDLibor : DailyTenorLibor
+    {
+        public DailyTenorUSDLibor(int settlementDays) : this(settlementDays, new Handle<YieldTermStructure>())
+        { }
+        public DailyTenorUSDLibor(int settlementDays, Handle<YieldTermStructure> h)
+           : base("USDLibor", settlementDays, new USDCurrency(), new UnitedStates(UnitedStates.Market.Settlement), new Actual360(), h)
+        { }
 
-   }
+    }
 
-   //! Overnight %USD %Libor index
-   public class USDLiborON : DailyTenorUSDLibor
-   {
-      public USDLiborON() : this(new Handle<YieldTermStructure>())
-      {}
+    //! Overnight %USD %Libor index
+    public class USDLiborON : DailyTenorUSDLibor
+    {
+        public USDLiborON() : this(new Handle<YieldTermStructure>())
+        { }
 
-      public USDLiborON(Handle<YieldTermStructure> h) : base(0, h)
-      {}
+        public USDLiborON(Handle<YieldTermStructure> h) : base(0, h)
+        { }
 
-   }
+    }
 }

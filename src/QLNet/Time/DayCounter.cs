@@ -18,67 +18,67 @@
 */
 using System;
 
-namespace QLNet
+namespace QLNet.Time
 {
-   // This class provides methods for determining the length of a time period according to given market convention,
-   // both as a number of days and as a year fraction.
-   public class DayCounter
-   {
-      // this is a placeholder for actual day counters for Singleton pattern use
-      protected DayCounter dayCounter_;
-      public DayCounter dayCounter
-      {
-         get
-         {
-            return dayCounter_;
-         }
-         set
-         {
-            dayCounter_ = value;
-         }
-      }
+    // This class provides methods for determining the length of a time period according to given market convention,
+    // both as a number of days and as a year fraction.
+    public class DayCounter
+    {
+        // this is a placeholder for actual day counters for Singleton pattern use
+        protected DayCounter dayCounter_;
+        public DayCounter dayCounter
+        {
+            get
+            {
+                return dayCounter_;
+            }
+            set
+            {
+                dayCounter_ = value;
+            }
+        }
 
-      // constructors
-      /*! The default constructor returns a day counter with a null implementation, which is therefore unusable except as a
-          placeholder. */
-      public DayCounter() { }
-      public DayCounter(DayCounter d) { dayCounter_ = d; }
+        // constructors
+        /*! The default constructor returns a day counter with a null implementation, which is therefore unusable except as a
+            placeholder. */
+        public DayCounter() { }
+        public DayCounter(DayCounter d) { dayCounter_ = d; }
 
-      // comparison based on name
-      // Returns <tt>true</tt> iff the two day counters belong to the same derived class.
-      public static bool operator ==(DayCounter d1, DayCounter d2)
-      {
-         return ((Object)d1 == null || (Object)d2 == null) ?
-                ((Object)d1 == null && (Object)d2 == null) :
-                (d1.empty() && d2.empty()) || (!d1.empty() && !d2.empty() && d1.name() == d2.name());
-      }
-      public static bool operator !=(DayCounter d1, DayCounter d2) { return !(d1 == d2); }
+        // comparison based on name
+        // Returns <tt>true</tt> iff the two day counters belong to the same derived class.
+        public static bool operator ==(DayCounter d1, DayCounter d2)
+        {
+            return (object)d1 == null || (object)d2 == null ?
+                   (object)d1 == null && (object)d2 == null :
+                   d1.empty() && d2.empty() || !d1.empty() && !d2.empty() && d1.name() == d2.name();
+        }
+        public static bool operator !=(DayCounter d1, DayCounter d2) { return !(d1 == d2); }
 
 
-      public bool empty() { return dayCounter_ == null; }
+        public bool empty() { return dayCounter_ == null; }
 
-      public virtual string name()
-      {
-         if (empty())
-            return "No implementation provided";
-         return dayCounter_.name();
-      }
+        public virtual string name()
+        {
+            if (empty())
+                return "No implementation provided";
+            return dayCounter_.name();
+        }
 
-      public virtual int dayCount(Date d1, Date d2)
-      {
-         Utils.QL_REQUIRE(!empty(), () => "No implementation provided");
-         return dayCounter_.dayCount(d1, d2);
-      }
+        public virtual int dayCount(Date d1, Date d2)
+        {
+            Utils.QL_REQUIRE(!empty(), () => "No implementation provided");
+            return dayCounter_.dayCount(d1, d2);
+        }
 
-      public double yearFraction(Date d1, Date d2) { return yearFraction(d1, d2, d1, d2); }
-      public virtual double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd)
-      {
-         Utils.QL_REQUIRE(!empty(), () => "No implementation provided");
-         return dayCounter_.yearFraction(d1, d2, refPeriodStart, refPeriodEnd);
-      }
+        public double yearFraction(Date d1, Date d2) { return yearFraction(d1, d2, d1, d2); }
+        public virtual double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd)
+        {
+            Utils.QL_REQUIRE(!empty(), () => "No implementation provided");
+            return dayCounter_.yearFraction(d1, d2, refPeriodStart, refPeriodEnd);
+        }
 
-      public override bool Equals(object o) { return this == (DayCounter)o; }
-      public override int GetHashCode() { return 0; }
-      public override string ToString() { return this.name(); }
-   }
+        public override bool Equals(object o) { return this == (DayCounter)o; }
+        public override int GetHashCode() { return 0; }
+        public override string ToString() { return name(); }
+    }
 }

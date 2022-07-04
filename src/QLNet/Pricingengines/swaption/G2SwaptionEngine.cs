@@ -18,54 +18,58 @@
 */
 
 
+using QLNet.Instruments;
+using QLNet.Models.Shortrate.Twofactorsmodels;
+using QLNet.Pricingengines;
 using System;
+using QLNet.Pricingengines.Swap;
 
-namespace QLNet
+namespace QLNet.Pricingengines.swaption
 {
-   // Swaption pricing engine for two-factor additive Gaussian Model G2 + +
-   //! %Swaption priced by means of the Black formula
-   /*! \ingroup swaptionengines
+    // Swaption pricing engine for two-factor additive Gaussian Model G2 + +
+    //! %Swaption priced by means of the Black formula
+    /*! \ingroup swaptionengines
 
-       \warning The engine assumes that the exercise date equals the
-                start date of the passed swap.
-   */
-   public class G2SwaptionEngine : GenericModelEngine<G2, Swaption.Arguments,
-      Swaption.Results>
-   {
-      double range_;
-      int intervals_;
+        \warning The engine assumes that the exercise date equals the
+                 start date of the passed swap.
+    */
+    public class G2SwaptionEngine : GenericModelEngine<G2, Swaption.Arguments,
+      Instrument.Results>
+    {
+        double range_;
+        int intervals_;
 
-      // range is the number of standard deviations to use in the
-      // exponential term of the integral for the european swaption.
-      // intervals is the number of intervals to use in the integration.
-      public G2SwaptionEngine(G2 model,
-                              double range,
-                              int intervals)
-         : base(model)
-      {
+        // range is the number of standard deviations to use in the
+        // exponential term of the integral for the european swaption.
+        // intervals is the number of intervals to use in the integration.
+        public G2SwaptionEngine(G2 model,
+                                double range,
+                                int intervals)
+           : base(model)
+        {
 
-         range_ = range;
-         intervals_ = intervals;
-      }
+            range_ = range;
+            intervals_ = intervals;
+        }
 
-      public override void calculate()
-      {
-         Utils.QL_REQUIRE(arguments_.settlementType == Settlement.Type.Physical, () =>
-                          "cash-settled swaptions not priced with G2 engine");
+        public override void calculate()
+        {
+            Utils.QL_REQUIRE(arguments_.settlementType == Settlement.Type.Physical, () =>
+                             "cash-settled swaptions not priced with G2 engine");
 
-         // adjust the fixed rate of the swap for the spread on the
-         // floating leg (which is not taken into account by the
-         // model)
-         VanillaSwap swap = arguments_.swap;
-         swap.setPricingEngine(new DiscountingSwapEngine(model_.link.termStructure()));
-         double correction = swap.spread *
-                             Math.Abs(swap.floatingLegBPS() / swap.fixedLegBPS());
-         double fixedRate = swap.fixedRate - correction;
+            // adjust the fixed rate of the swap for the spread on the
+            // floating leg (which is not taken into account by the
+            // model)
+            VanillaSwap swap = arguments_.swap;
+            swap.setPricingEngine(new DiscountingSwapEngine(model_.link.termStructure()));
+            double correction = swap.spread *
+                                System.Math.Abs(swap.floatingLegBPS() / swap.fixedLegBPS());
+            double fixedRate = swap.fixedRate - correction;
 
-         results_.value =  model_.link.swaption(arguments_, fixedRate,
-                                                range_, intervals_);
-      }
+            results_.value = model_.link.swaption(arguments_, fixedRate,
+                                                   range_, intervals_);
+        }
 
-   }
+    }
 
 }

@@ -16,68 +16,68 @@
 
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Math
 {
-   //! B-spline basis functions
-   /*! Follows treatment and notation from:
+    //! B-spline basis functions
+    /*! Follows treatment and notation from:
 
-       Weisstein, Eric W. "B-Spline." From MathWorld--A Wolfram Web
-       Resource.  <http://mathworld.wolfram.com/B-Spline.html>
+        Weisstein, Eric W. "B-Spline." From MathWorld--A Wolfram Web
+        Resource.  <http://mathworld.wolfram.com/B-Spline.html>
 
-       \f$ (p+1) \f$-th order B-spline (or p degree polynomial) basis
-       functions \f$ N_{i,p}(x), i = 0,1,2 \ldots n \f$, with \f$ n+1 \f$
-       control points, or equivalently, an associated knot vector
-       of size \f$ p+n+2 \f$ defined at the increasingly sorted points
-       \f$ (x_0, x_1 \ldots x_{n+p+1}) \f$. A linear B-spline has
-       \f$ p=1 \f$, quadratic B-spline has \f$ p=2 \f$, a cubic
-       B-spline has \f$ p=3 \f$, etc.
+        \f$ (p+1) \f$-th order B-spline (or p degree polynomial) basis
+        functions \f$ N_{i,p}(x), i = 0,1,2 \ldots n \f$, with \f$ n+1 \f$
+        control points, or equivalently, an associated knot vector
+        of size \f$ p+n+2 \f$ defined at the increasingly sorted points
+        \f$ (x_0, x_1 \ldots x_{n+p+1}) \f$. A linear B-spline has
+        \f$ p=1 \f$, quadratic B-spline has \f$ p=2 \f$, a cubic
+        B-spline has \f$ p=3 \f$, etc.
 
-   */
-   public class BSpline
-   {
-      public BSpline(int p, int n, List<double> knots)
-      {
-         p_ = p;
-         n_ = n;
-         knots_ = knots;
+    */
+    public class BSpline
+    {
+        public BSpline(int p, int n, List<double> knots)
+        {
+            p_ = p;
+            n_ = n;
+            knots_ = knots;
 
-         Utils.QL_REQUIRE(p >= 1, () => "lowest degree B-spline has p = 1");
-         Utils.QL_REQUIRE(n >= 1, () => "number of control points n+1 >= 2");
-         Utils.QL_REQUIRE(p <= n, () => "must have p <= n");
+            Utils.QL_REQUIRE(p >= 1, () => "lowest degree B-spline has p = 1");
+            Utils.QL_REQUIRE(n >= 1, () => "number of control points n+1 >= 2");
+            Utils.QL_REQUIRE(p <= n, () => "must have p <= n");
 
-         Utils.QL_REQUIRE(knots.Count == p + n + 2, () => "number of knots must equal p+n+2");
+            Utils.QL_REQUIRE(knots.Count == p + n + 2, () => "number of knots must equal p+n+2");
 
-         for (int i = 0; i < knots.Count - 1; ++i)
-         {
-            Utils.QL_REQUIRE(knots[i] <= knots[i + 1], () => "knots points must be nondecreasing");
-         }
-      }
+            for (int i = 0; i < knots.Count - 1; ++i)
+            {
+                Utils.QL_REQUIRE(knots[i] <= knots[i + 1], () => "knots points must be nondecreasing");
+            }
+        }
 
-      public double value(int i, double x)
-      {
-         Utils.QL_REQUIRE(i <= n_, () => "i must not be greater than n");
-         return N(i, p_, x);
-      }
+        public double value(int i, double x)
+        {
+            Utils.QL_REQUIRE(i <= n_, () => "i must not be greater than n");
+            return N(i, p_, x);
+        }
 
-      // recursive definition of N, the B-spline basis function
-      private double N(int i, int p, double x)
-      {
-         if (p == 0)
-         {
-            return (knots_[i] <= x && x < knots_[i + 1]) ? 1.0 : 0.0;
-         }
-         else
-         {
-            return ((x - knots_[i]) / (knots_[i + p] - knots_[i])) * N(i, p - 1, x) +
-                   ((knots_[i + p + 1] - x) / (knots_[i + p + 1] - knots_[i + 1])) * N(i + 1, p - 1, x);
-         }
+        // recursive definition of N, the B-spline basis function
+        private double N(int i, int p, double x)
+        {
+            if (p == 0)
+            {
+                return knots_[i] <= x && x < knots_[i + 1] ? 1.0 : 0.0;
+            }
+            else
+            {
+                return (x - knots_[i]) / (knots_[i + p] - knots_[i]) * N(i, p - 1, x) +
+                       (knots_[i + p + 1] - x) / (knots_[i + p + 1] - knots_[i + 1]) * N(i + 1, p - 1, x);
+            }
 
-      }
+        }
 
-      // e.g. p_=2 is a quadratic B-spline, p_=3 is a cubic B-Spline, etc.
-      private int p_;
-      // n_ + 1 =  "control points" = max number of basis functions
-      private int n_;
-      private List<double> knots_;
-   }
+        // e.g. p_=2 is a quadratic B-spline, p_=3 is a cubic B-Spline, etc.
+        private int p_;
+        // n_ + 1 =  "control points" = max number of basis functions
+        private int n_;
+        private List<double> knots_;
+    }
 }

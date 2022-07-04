@@ -16,12 +16,15 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Math;
+using QLNet.Patterns;
+using QLNet.Time;
 using System;
 
 namespace QLNet
 {
-   //! discretization of a stochastic process over a given time interval
-   public interface IDiscretization
+    //! discretization of a stochastic process over a given time interval
+    public interface IDiscretization
    {
       Vector drift(StochasticProcess sp, double t0, Vector x0, double dt);
       Matrix diffusion(StochasticProcess sp, double t0, Vector x0, double dt);

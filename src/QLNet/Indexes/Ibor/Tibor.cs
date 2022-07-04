@@ -17,27 +17,33 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Currencies;
+using QLNet.Termstructures;
+using QLNet.Time;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
+
+namespace QLNet.Indexes.Ibor
 {
 
-   //! %JPY %TIBOR index
-//    ! Tokyo Interbank Offered Rate.
-//
-//        \warning This is the rate fixed in Tokio by JBA. Use JPYLibor
-//                 if you're interested in the London fixing by BBA.
-//
-//        \todo check settlement days and end-of-month adjustment.
-//
-   public class Tibor : IborIndex
-   {
-      public Tibor(Period tenor)
-         : base("Tibor", tenor, 2, new JPYCurrency(), new Japan(), BusinessDayConvention.ModifiedFollowing, false, new Actual365Fixed(), new Handle<YieldTermStructure>())
-      {
-      }
-      public Tibor(Period tenor, Handle<YieldTermStructure> h)
-         : base("Tibor", tenor, 2, new JPYCurrency(), new Japan(), BusinessDayConvention.ModifiedFollowing, false, new Actual365Fixed(), h)
-      {
-      }
-   }
+    //! %JPY %TIBOR index
+    //    ! Tokyo Interbank Offered Rate.
+    //
+    //        \warning This is the rate fixed in Tokio by JBA. Use JPYLibor
+    //                 if you're interested in the London fixing by BBA.
+    //
+    //        \todo check settlement days and end-of-month adjustment.
+    //
+    public class Tibor : IborIndex
+    {
+        public Tibor(Period tenor)
+           : base("Tibor", tenor, 2, new JPYCurrency(), new Japan(), BusinessDayConvention.ModifiedFollowing, false, new Actual365Fixed(), new Handle<YieldTermStructure>())
+        {
+        }
+        public Tibor(Period tenor, Handle<YieldTermStructure> h)
+           : base("Tibor", tenor, 2, new JPYCurrency(), new Japan(), BusinessDayConvention.ModifiedFollowing, false, new Actual365Fixed(), h)
+        {
+        }
+    }
 
 }

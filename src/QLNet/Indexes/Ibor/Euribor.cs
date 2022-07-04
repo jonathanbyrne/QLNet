@@ -16,11 +16,17 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Indexes;
+using QLNet.Termstructures;
+using QLNet.Time;
 using System;
+using QLNet.Currencies;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
 
 namespace QLNet
 {
-   public static partial class Utils
+    public static partial class Utils
    {
       public static BusinessDayConvention euriborConvention(Period p)
       {

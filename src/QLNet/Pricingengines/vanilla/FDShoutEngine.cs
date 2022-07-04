@@ -18,27 +18,30 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Instruments;
+using QLNet.processes;
+
+namespace QLNet.Pricingengines.vanilla
 {
-   //! Finite-differences pricing engine for shout vanilla options
-   /*! \ingroup vanillaengines
+    //! Finite-differences pricing engine for shout vanilla options
+    /*! \ingroup vanillaengines
 
-       \test the correctness of the returned greeks is tested by
-             reproducing numerical derivatives.
-   */
-   public class FDShoutEngine : FDEngineAdapter<FDShoutCondition<FDStepConditionEngine>, VanillaOption.Engine>,
+        \test the correctness of the returned greeks is tested by
+              reproducing numerical derivatives.
+    */
+    public class FDShoutEngine : FDEngineAdapter<FDShoutCondition<FDStepConditionEngine>, OneAssetOption.Engine>,
       IFDEngine
-   {
-      // required for generics
-      public FDShoutEngine() { }
+    {
+        // required for generics
+        public FDShoutEngine() { }
 
-      public FDShoutEngine(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints,
-                           bool timeDependent = false)
-         : base(process, timeSteps, gridPoints, timeDependent) { }
+        public FDShoutEngine(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints,
+                             bool timeDependent = false)
+           : base(process, timeSteps, gridPoints, timeDependent) { }
 
-      public IFDEngine factory(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100)
-      {
-         return new FDShoutEngine(process, timeSteps, gridPoints);
-      }
-   }
+        public IFDEngine factory(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100)
+        {
+            return new FDShoutEngine(process, timeSteps, gridPoints);
+        }
+    }
 }

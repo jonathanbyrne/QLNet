@@ -16,42 +16,43 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Math.Distributions;
 using System;
 
-namespace QLNet
+namespace QLNet.Math
 {
-   //! %Factorial numbers calculator
-   /*! \test the correctness of the returned value is tested by
-             checking it against numerical calculations.
-   */
-   public static class Factorial
-   {
-      public static double get(uint i)
-      {
-         if (i <= tabulated)
-         {
-            return firstFactorials[i];
-         }
-         else
-         {
-            return Math.Exp(GammaFunction.logValue(i + 1));
-         }
-      }
+    //! %Factorial numbers calculator
+    /*! \test the correctness of the returned value is tested by
+              checking it against numerical calculations.
+    */
+    public static class Factorial
+    {
+        public static double get(uint i)
+        {
+            if (i <= tabulated)
+            {
+                return firstFactorials[i];
+            }
+            else
+            {
+                return System.Math.Exp(GammaFunction.logValue(i + 1));
+            }
+        }
 
-      public static double ln(int i)
-      {
-         if (i <= tabulated)
-         {
-            return Math.Log(firstFactorials[i]);
-         }
-         else
-         {
-            return GammaFunction.logValue(i + 1);
-         }
-      }
+        public static double ln(int i)
+        {
+            if (i <= tabulated)
+            {
+                return System.Math.Log(firstFactorials[i]);
+            }
+            else
+            {
+                return GammaFunction.logValue(i + 1);
+            }
+        }
 
-      static double[] firstFactorials =
-      {
+        static double[] firstFactorials =
+        {
          1.0,                                   1.0,
          2.0,                                   6.0,
          24.0,                                 120.0,
@@ -68,6 +69,6 @@ namespace QLNet
          403291461126605635584000000.0,       10888869450418352160768000000.0
       };
 
-      static int tabulated = firstFactorials.Length - 1;
-   }
+        static int tabulated = firstFactorials.Length - 1;
+    }
 }

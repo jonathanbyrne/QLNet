@@ -16,84 +16,87 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Math.integrals;
+using QLNet.Quotes;
+using QLNet.Time;
 using System;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Termstructures.Credit
 {
-   //! Hazard-rate term structure
-   /*! This abstract class acts as an adapter to
-      DefaultProbabilityTermStructure allowing the programmer to implement
-      only the <tt>hazardRateImpl(Time)</tt> method in derived classes.
+    //! Hazard-rate term structure
+    /*! This abstract class acts as an adapter to
+       DefaultProbabilityTermStructure allowing the programmer to implement
+       only the <tt>hazardRateImpl(Time)</tt> method in derived classes.
 
-      Survival/default probabilities and default densities are calculated
-      from hazard rates.
+       Survival/default probabilities and default densities are calculated
+       from hazard rates.
 
-      Hazard rates are defined with annual frequency and continuous
-      compounding.
+       Hazard rates are defined with annual frequency and continuous
+       compounding.
 
-      \ingroup defaultprobabilitytermstructures
-   */
-   public abstract class HazardRateStructure : DefaultProbabilityTermStructure
-   {
-      #region Constructors
+       \ingroup defaultprobabilitytermstructures
+    */
+    public abstract class HazardRateStructure : DefaultProbabilityTermStructure
+    {
+        #region Constructors
 
-      protected HazardRateStructure(DayCounter dc = null, List<Handle<Quote> > jumps = null, List<Date> jumpDates = null)
-         : base(dc, jumps, jumpDates) {}
+        protected HazardRateStructure(DayCounter dc = null, List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
+           : base(dc, jumps, jumpDates) { }
 
-      protected HazardRateStructure(Date referenceDate, Calendar cal = null, DayCounter dc = null,
-                                    List<Handle<Quote> > jumps = null, List<Date> jumpDates = null)
-         : base(referenceDate, cal, dc, jumps, jumpDates) { }
+        protected HazardRateStructure(Date referenceDate, Calendar cal = null, DayCounter dc = null,
+                                      List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
+           : base(referenceDate, cal, dc, jumps, jumpDates) { }
 
-      protected HazardRateStructure(int settlementDays, Calendar cal, DayCounter dc = null,
-                                    List<Handle<Quote> > jumps = null, List<Date> jumpDates = null)
-         : base(settlementDays, cal, dc, jumps, jumpDates) { }
+        protected HazardRateStructure(int settlementDays, Calendar cal, DayCounter dc = null,
+                                      List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
+           : base(settlementDays, cal, dc, jumps, jumpDates) { }
 
-      #endregion
+        #endregion
 
-      #region Calculations
+        #region Calculations
 
-      // This method must be implemented in derived classes to
-      // perform the actual calculations. When it is called,
-      // range check has already been performed; therefore, it
-      // must assume that extrapolation is required.
+        // This method must be implemented in derived classes to
+        // perform the actual calculations. When it is called,
+        // range check has already been performed; therefore, it
+        // must assume that extrapolation is required.
 
-      //! hazard rate calculation
-      protected abstract double hazardRateImpl(double t);
+        //! hazard rate calculation
+        protected abstract double hazardRateImpl(double t);
 
-      #endregion
+        #endregion
 
-      #region DefaultProbabilityTermStructure implementation
+        #region DefaultProbabilityTermStructure implementation
 
-      /*! survival probability calculation
-         implemented in terms of the hazard rate \f$ h(t) \f$ as
-         \f[
-         S(t) = \exp\left( - \int_0^t h(\tau) d\tau \right).
-         \f]
+        /*! survival probability calculation
+           implemented in terms of the hazard rate \f$ h(t) \f$ as
+           \f[
+           S(t) = \exp\left( - \int_0^t h(\tau) d\tau \right).
+           \f]
 
-         \warning This default implementation uses numerical integration,
-                  which might be inefficient and inaccurate.
-                  Derived classes should override it if a more efficient
-                  implementation is available.
-      */
-      protected override double survivalProbabilityImpl(double t)
-      {
-         GaussChebyshevIntegration integral = new GaussChebyshevIntegration(48);
-         // this stores the address of the method to integrate (so that
-         // we don't have to insert its full expression inside the
-         // integral below--it's long enough already)
+           \warning This default implementation uses numerical integration,
+                    which might be inefficient and inaccurate.
+                    Derived classes should override it if a more efficient
+                    implementation is available.
+        */
+        protected override double survivalProbabilityImpl(double t)
+        {
+            GaussChebyshevIntegration integral = new GaussChebyshevIntegration(48);
+            // this stores the address of the method to integrate (so that
+            // we don't have to insert its full expression inside the
+            // integral below--it's long enough already)
 
-         // the Gauss-Chebyshev quadratures integrate over [-1,1],
-         // hence the remapping (and the Jacobian term t/2)
-         return Math.Exp(-integral.value(hazardRateImpl) * t / 2.0);
-      }
+            // the Gauss-Chebyshev quadratures integrate over [-1,1],
+            // hence the remapping (and the Jacobian term t/2)
+            return System.Math.Exp(-integral.value(hazardRateImpl) * t / 2.0);
+        }
 
-      //! default density calculation
-      protected override double defaultDensityImpl(double t)
-      {
-         return hazardRateImpl(t) * survivalProbabilityImpl(t);
-      }
+        //! default density calculation
+        protected override double defaultDensityImpl(double t)
+        {
+            return hazardRateImpl(t) * survivalProbabilityImpl(t);
+        }
 
-      #endregion
-   }
+        #endregion
+    }
 }

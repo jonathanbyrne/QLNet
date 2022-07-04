@@ -18,37 +18,43 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Currencies;
+using QLNet.Termstructures;
+using QLNet.Time;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
+
+namespace QLNet.Indexes.Ibor
 {
 
-   //! %JPY %LIBOR rate
-   /*! Japanese Yen LIBOR fixed by ICE.
+    //! %JPY %LIBOR rate
+    /*! Japanese Yen LIBOR fixed by ICE.
 
-       See <https://www.theice.com/marketdata/reports/170>.
+        See <https://www.theice.com/marketdata/reports/170>.
 
-       \warning This is the rate fixed in London by ICE. Use TIBOR if
-                you're interested in the Tokio fixing.
-   */
-   public class JPYLibor : Libor
-   {
-      public JPYLibor(Period tenor)
-         : base("JPYLibor", tenor, 2, new JPYCurrency(), new Japan(), new Actual360(), new Handle<YieldTermStructure>())
-      {}
+        \warning This is the rate fixed in London by ICE. Use TIBOR if
+                 you're interested in the Tokio fixing.
+    */
+    public class JPYLibor : Libor
+    {
+        public JPYLibor(Period tenor)
+           : base("JPYLibor", tenor, 2, new JPYCurrency(), new Japan(), new Actual360(), new Handle<YieldTermStructure>())
+        { }
 
-      public JPYLibor(Period tenor, Handle<YieldTermStructure> h)
-         : base("JPYLibor", tenor, 2, new JPYCurrency(), new Japan(), new Actual360(), h)
-      {}
+        public JPYLibor(Period tenor, Handle<YieldTermStructure> h)
+           : base("JPYLibor", tenor, 2, new JPYCurrency(), new Japan(), new Actual360(), h)
+        { }
 
-   }
+    }
 
-   //! base class for the one day deposit ICE %JPY %LIBOR indexes
-   public class DailyTenorJPYLibor : DailyTenorLibor
-   {
-      public DailyTenorJPYLibor(int settlementDays) : this(settlementDays, new Handle<YieldTermStructure>())
-      {}
+    //! base class for the one day deposit ICE %JPY %LIBOR indexes
+    public class DailyTenorJPYLibor : DailyTenorLibor
+    {
+        public DailyTenorJPYLibor(int settlementDays) : this(settlementDays, new Handle<YieldTermStructure>())
+        { }
 
-      public DailyTenorJPYLibor(int settlementDays, Handle<YieldTermStructure> h)
-         : base("JPYLibor", settlementDays, new JPYCurrency(), new Japan(), new Actual360(), h)
-      {}
-   }
+        public DailyTenorJPYLibor(int settlementDays, Handle<YieldTermStructure> h)
+           : base("JPYLibor", settlementDays, new JPYCurrency(), new Japan(), new Actual360(), h)
+        { }
+    }
 }

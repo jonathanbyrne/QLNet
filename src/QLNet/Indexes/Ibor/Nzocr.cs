@@ -14,19 +14,25 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-namespace QLNet
-{
-   //! %Nzocr index
-   /*! %Nzocr (New Zealand official cash rate) rate fixed by the RBNZ.
+using QLNet.Currencies;
+using QLNet.Indexes;
+using QLNet.Termstructures;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
 
-       See <http://www.rbnz.govt.nz/monetary-policy/official-cash-rate-decisions>.
-   */
-   public class Nzocr : OvernightIndex
-   {
-      public Nzocr(Handle<YieldTermStructure> h = null)
-         : base("Nzocr", 0, new NZDCurrency(),
-                new NewZealand(),
-                new Actual365Fixed(), h ?? new Handle<YieldTermStructure>())
-      {}
-   }
+namespace QLNet.Indexes.Ibor
+{
+    //! %Nzocr index
+    /*! %Nzocr (New Zealand official cash rate) rate fixed by the RBNZ.
+
+        See <http://www.rbnz.govt.nz/monetary-policy/official-cash-rate-decisions>.
+    */
+    public class Nzocr : OvernightIndex
+    {
+        public Nzocr(Handle<YieldTermStructure> h = null)
+           : base("Nzocr", 0, new NZDCurrency(),
+                  new NewZealand(),
+                  new Actual365Fixed(), h ?? new Handle<YieldTermStructure>())
+        { }
+    }
 }

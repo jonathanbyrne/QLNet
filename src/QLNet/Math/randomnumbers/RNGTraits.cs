@@ -17,99 +17,103 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Math.Distributions;
+using QLNet.Methods.montecarlo;
+using QLNet.Patterns;
+
+namespace QLNet.Math.randomnumbers
 {
-   public interface IRNGTraits
-   {
-      ulong nextInt32();
-      Sample<double> next();
+    public interface IRNGTraits
+    {
+        ulong nextInt32();
+        Sample<double> next();
 
-      IRNGTraits factory(ulong seed);
-   }
+        IRNGTraits factory(ulong seed);
+    }
 
-   public interface IRSG
-   {
-      int allowsErrorEstimate { get; }
-      IRNG make_sequence_generator(int dimension, ulong seed);
-   }
+    public interface IRSG
+    {
+        int allowsErrorEstimate { get; }
+        IRNG make_sequence_generator(int dimension, ulong seed);
+    }
 
-   // random number traits
-   public class GenericPseudoRandom<URNG, IC> : IRSG where URNG : IRNGTraits, new () where IC : IValue, new ()
-   {
-      // data
-      private static IC icInstance_ = FastActivator<IC>.Create();
+    // random number traits
+    public class GenericPseudoRandom<URNG, IC> : IRSG where URNG : IRNGTraits, new() where IC : IValue, new()
+    {
+        // data
+        private static IC icInstance_ = FastActivator<IC>.Create();
 
-      // more traits
-      public int allowsErrorEstimate
-      {
-         get
-         {
-            return 1;
-         }
-      }
+        // more traits
+        public int allowsErrorEstimate
+        {
+            get
+            {
+                return 1;
+            }
+        }
 
-      public static IC icInstance
-      {
-         get
-         {
-            return icInstance_;
-         }
-         set
-         {
-            icInstance_ = value;
-         }
-      }
+        public static IC icInstance
+        {
+            get
+            {
+                return icInstance_;
+            }
+            set
+            {
+                icInstance_ = value;
+            }
+        }
 
-      // factory
-      public IRNG make_sequence_generator(int dimension, ulong seed)
-      {
-         RandomSequenceGenerator<URNG> g = new RandomSequenceGenerator<URNG>(dimension, seed);
-         return (icInstance_ != null
-                 ? new InverseCumulativeRsg<RandomSequenceGenerator<URNG>, IC>(g, icInstance_)
-                 : new InverseCumulativeRsg<RandomSequenceGenerator<URNG>, IC>(g));
-      }
-   }
+        // factory
+        public IRNG make_sequence_generator(int dimension, ulong seed)
+        {
+            RandomSequenceGenerator<URNG> g = new RandomSequenceGenerator<URNG>(dimension, seed);
+            return icInstance_ != null
+                    ? new InverseCumulativeRsg<RandomSequenceGenerator<URNG>, IC>(g, icInstance_)
+                    : new InverseCumulativeRsg<RandomSequenceGenerator<URNG>, IC>(g);
+        }
+    }
 
-   //! default traits for pseudo-random number generation
-   /*! \test a sequence generator is generated and tested by comparing samples against known good values. */
-   public class PseudoRandom : GenericPseudoRandom<MersenneTwisterUniformRng, InverseCumulativeNormal> { }
+    //! default traits for pseudo-random number generation
+    /*! \test a sequence generator is generated and tested by comparing samples against known good values. */
+    public class PseudoRandom : GenericPseudoRandom<MersenneTwisterUniformRng, InverseCumulativeNormal> { }
 
-   //! traits for Poisson-distributed pseudo-random number generation
-   /*! \test sequence generators are generated and tested by comparing
-             samples against known good values.
-   */
-   public class PoissonPseudoRandom : GenericPseudoRandom<MersenneTwisterUniformRng, InverseCumulativePoisson> { }
-
-
-   public class GenericLowDiscrepancy<URSG, IC> : IRSG where URSG : IRNG, new () where IC : IValue, new ()
-   {
-      // data
-      private static IC icInstance_ = FastActivator<IC>.Create();
-      public static IC icInstance
-      {
-         get
-         {
-            return icInstance_;
-         }
-         set
-         {
-            icInstance_ = value;
-         }
-      }
+    //! traits for Poisson-distributed pseudo-random number generation
+    /*! \test sequence generators are generated and tested by comparing
+              samples against known good values.
+    */
+    public class PoissonPseudoRandom : GenericPseudoRandom<MersenneTwisterUniformRng, InverseCumulativePoisson> { }
 
 
-      // more traits
-      public int allowsErrorEstimate { get { return 0; } }
+    public class GenericLowDiscrepancy<URSG, IC> : IRSG where URSG : IRNG, new() where IC : IValue, new()
+    {
+        // data
+        private static IC icInstance_ = FastActivator<IC>.Create();
+        public static IC icInstance
+        {
+            get
+            {
+                return icInstance_;
+            }
+            set
+            {
+                icInstance_ = value;
+            }
+        }
 
-      // factory
-      public IRNG make_sequence_generator(int dimension, ulong seed)
-      {
-         URSG g = (URSG)FastActivator<URSG>.Create().factory(dimension, seed);
-         return (icInstance != null ? new InverseCumulativeRsg<URSG, IC>(g, icInstance)
-                 : new InverseCumulativeRsg<URSG, IC>(g));
-      }
-   }
 
-   //! default traits for low-discrepancy sequence generation
-   public class LowDiscrepancy : GenericLowDiscrepancy<SobolRsg, InverseCumulativeNormal> { }
+        // more traits
+        public int allowsErrorEstimate { get { return 0; } }
+
+        // factory
+        public IRNG make_sequence_generator(int dimension, ulong seed)
+        {
+            URSG g = (URSG)FastActivator<URSG>.Create().factory(dimension, seed);
+            return icInstance != null ? new InverseCumulativeRsg<URSG, IC>(g, icInstance)
+                    : new InverseCumulativeRsg<URSG, IC>(g);
+        }
+    }
+
+    //! default traits for low-discrepancy sequence generation
+    public class LowDiscrepancy : GenericLowDiscrepancy<SobolRsg, InverseCumulativeNormal> { }
 }

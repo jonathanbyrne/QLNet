@@ -17,60 +17,62 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Time;
+
+namespace QLNet.Termstructures.Volatility.CapFloor
 {
-   //! Cap/floor term-volatility structure
-   /*! This class is purely abstract and defines the interface of concrete
-       structures which will be derived from this one.
-   */
-   public abstract class CapFloorTermVolatilityStructure : VolatilityTermStructure
-   {
-      #region Constructors
-      /*! \warning term structures initialized by means of this
-                   constructor must manage their own reference date
-                   by overriding the referenceDate() method.
-      */
+    //! Cap/floor term-volatility structure
+    /*! This class is purely abstract and defines the interface of concrete
+        structures which will be derived from this one.
+    */
+    public abstract class CapFloorTermVolatilityStructure : VolatilityTermStructure
+    {
+        #region Constructors
+        /*! \warning term structures initialized by means of this
+                     constructor must manage their own reference date
+                     by overriding the referenceDate() method.
+        */
 
-      protected CapFloorTermVolatilityStructure(BusinessDayConvention bdc, DayCounter dc = null)
-         : base(bdc, dc) {}
+        protected CapFloorTermVolatilityStructure(BusinessDayConvention bdc, DayCounter dc = null)
+           : base(bdc, dc) { }
 
-      //! initialize with a fixed reference date
-      protected CapFloorTermVolatilityStructure(Date referenceDate, Calendar cal, BusinessDayConvention bdc, DayCounter dc = null)
-         : base(referenceDate, cal, bdc, dc) {}
+        //! initialize with a fixed reference date
+        protected CapFloorTermVolatilityStructure(Date referenceDate, Calendar cal, BusinessDayConvention bdc, DayCounter dc = null)
+           : base(referenceDate, cal, bdc, dc) { }
 
-      //! calculate the reference date based on the global evaluation date
-      protected CapFloorTermVolatilityStructure(int settlementDays, Calendar cal, BusinessDayConvention bdc, DayCounter dc = null)
-         : base(settlementDays, cal, bdc, dc) {}
+        //! calculate the reference date based on the global evaluation date
+        protected CapFloorTermVolatilityStructure(int settlementDays, Calendar cal, BusinessDayConvention bdc, DayCounter dc = null)
+           : base(settlementDays, cal, bdc, dc) { }
 
-      #endregion
+        #endregion
 
-      #region Volatility
+        #region Volatility
 
-      //! returns the volatility for a given cap/floor length and strike rate
-      public double volatility(Period length, double strike, bool extrapolate = false)
-      {
-         Date d = optionDateFromTenor(length);
-         return volatility(d, strike, extrapolate);
-      }
+        //! returns the volatility for a given cap/floor length and strike rate
+        public double volatility(Period length, double strike, bool extrapolate = false)
+        {
+            Date d = optionDateFromTenor(length);
+            return volatility(d, strike, extrapolate);
+        }
 
-      public double volatility(Date end, double strike, bool extrapolate = false)
-      {
-         checkRange(end, extrapolate);
-         double t = timeFromReference(end);
-         return volatility(t, strike, extrapolate);
-      }
+        public double volatility(Date end, double strike, bool extrapolate = false)
+        {
+            checkRange(end, extrapolate);
+            double t = timeFromReference(end);
+            return volatility(t, strike, extrapolate);
+        }
 
-      //! returns the volatility for a given end time and strike rate
-      public double volatility(double t, double strike, bool extrapolate = false)
-      {
-         checkRange(t, extrapolate);
-         checkStrike(strike, extrapolate);
-         return volatilityImpl(t, strike);
-      }
+        //! returns the volatility for a given end time and strike rate
+        public double volatility(double t, double strike, bool extrapolate = false)
+        {
+            checkRange(t, extrapolate);
+            checkStrike(strike, extrapolate);
+            return volatilityImpl(t, strike);
+        }
 
-      #endregion
+        #endregion
 
-      //! implements the actual volatility calculation in derived classes
-      protected abstract double volatilityImpl(double length, double strike);
-   }
+        //! implements the actual volatility calculation in derived classes
+        protected abstract double volatilityImpl(double length, double strike);
+    }
 }

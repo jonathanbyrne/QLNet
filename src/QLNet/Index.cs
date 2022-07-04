@@ -17,16 +17,19 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Indexes;
+using QLNet.Patterns;
+using QLNet.Time;
 using System;
 using System.Collections.Generic;
 
 namespace QLNet
 {
-   // purely virtual base class for indexes
-   // this class performs no check that the provided/requested fixings are for dates in the past,
-   // i.e. for dates less than or equal to the evaluation date. It is up to the client code to take care of
-   // possible inconsistencies due to "seeing in the future"
-   public abstract class Index : IObservable
+    // purely virtual base class for indexes
+    // this class performs no check that the provided/requested fixings are for dates in the past,
+    // i.e. for dates less than or equal to the evaluation date. It is up to the client code to take care of
+    // possible inconsistencies due to "seeing in the future"
+    public abstract class Index : IObservable
    {
       // Returns the name of the index.
       // This method is used for output and comparison between indexes.

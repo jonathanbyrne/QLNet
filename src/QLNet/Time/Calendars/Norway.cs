@@ -19,74 +19,75 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Time;
 using System;
 
-namespace QLNet
+namespace QLNet.Time.Calendars
 {
-   //! Norwegian calendar
-   /*! Holidays:
-       <ul>
-       <li>Saturdays</li>
-       <li>Sundays</li>
-       <li>Holy Thursday</li>
-       <li>Good Friday</li>
-       <li>Easter Monday</li>
-       <li>Ascension</li>
-       <li>Whit(Pentecost) Monday </li>
-       <li>New Year's Day, January 1st</li>
-       <li>May Day, May 1st</li>
-       <li>National Independence Day, May 17st</li>
-       <li>Christmas, December 25th</li>
-       <li>Boxing Day, December 26th</li>
-       </ul>
+    //! Norwegian calendar
+    /*! Holidays:
+        <ul>
+        <li>Saturdays</li>
+        <li>Sundays</li>
+        <li>Holy Thursday</li>
+        <li>Good Friday</li>
+        <li>Easter Monday</li>
+        <li>Ascension</li>
+        <li>Whit(Pentecost) Monday </li>
+        <li>New Year's Day, January 1st</li>
+        <li>May Day, May 1st</li>
+        <li>National Independence Day, May 17st</li>
+        <li>Christmas, December 25th</li>
+        <li>Boxing Day, December 26th</li>
+        </ul>
 
-       \ingroup calendars
-   */
-   public class Norway : Calendar
-   {
-      public Norway() : base(Impl.Singleton) { }
+        \ingroup calendars
+    */
+    public class Norway : Calendar
+    {
+        public Norway() : base(Impl.Singleton) { }
 
-      class Impl : Calendar.WesternImpl
-      {
-         public static readonly Impl Singleton = new Impl();
-         private Impl() { }
+        class Impl : WesternImpl
+        {
+            public static readonly Impl Singleton = new Impl();
+            private Impl() { }
 
-         public override string name() { return "Norway"; }
-         public override bool isBusinessDay(Date date)
-         {
-            DayOfWeek w = date.DayOfWeek;
-            int d = date.Day, dd = date.DayOfYear;
-            Month m = (Month)date.Month;
-            int y = date.Year;
-            int em = easterMonday(y);
+            public override string name() { return "Norway"; }
+            public override bool isBusinessDay(Date date)
+            {
+                DayOfWeek w = date.DayOfWeek;
+                int d = date.Day, dd = date.DayOfYear;
+                Month m = (Month)date.Month;
+                int y = date.Year;
+                int em = easterMonday(y);
 
-            if (isWeekend(w)
-                // Holy Thursday
-                || (dd == em - 4)
-                // Good Friday
-                || (dd == em - 3)
-                // Easter Monday
-                || (dd == em)
-                // Ascension Thursday
-                || (dd == em + 38)
-                // Whit Monday
-                || (dd == em + 49)
-                // New Year's Day
-                || (d == 1  && m == Month.January)
-                // May Day
-                || (d == 1 && m == Month.May)
-                // National Independence Day
-                || (d == 17 && m == Month.May)
-                // Christmas Eve
-                || (d == 24 && m == Month.December && y >= 2002)
-                // Christmas
-                || (d == 25 && m == Month.December)
-                // Boxing Day
-                || (d == 26 && m == Month.December))
-               return false;
-            return true;
-         }
-      }
-   }
+                if (isWeekend(w)
+                    // Holy Thursday
+                    || dd == em - 4
+                    // Good Friday
+                    || dd == em - 3
+                    // Easter Monday
+                    || dd == em
+                    // Ascension Thursday
+                    || dd == em + 38
+                    // Whit Monday
+                    || dd == em + 49
+                    // New Year's Day
+                    || d == 1 && m == Month.January
+                    // May Day
+                    || d == 1 && m == Month.May
+                    // National Independence Day
+                    || d == 17 && m == Month.May
+                    // Christmas Eve
+                    || d == 24 && m == Month.December && y >= 2002
+                    // Christmas
+                    || d == 25 && m == Month.December
+                    // Boxing Day
+                    || d == 26 && m == Month.December)
+                    return false;
+                return true;
+            }
+        }
+    }
 }
 

@@ -18,22 +18,24 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Time.Calendars;
+
+namespace QLNet.Time.DayCounters
 {
-   //! Business/252 day count convention
-   public class Business252 : DayCounter
-   {
-      public Business252(Calendar c = null)
-      {
-         calendar_ = c ?? new Brazil();
-         dayCounter_ = this;
-      }
+    //! Business/252 day count convention
+    public class Business252 : DayCounter
+    {
+        public Business252(Calendar c = null)
+        {
+            calendar_ = c ?? new Brazil();
+            dayCounter_ = this;
+        }
 
-      public override string name() { return "Business/252(" + calendar_.name() + ")"; }
-      public override int dayCount(Date d1, Date d2) { return calendar_.businessDaysBetween(d1, d2); }
-      public override double yearFraction(Date d1, Date d2, Date d3, Date d4) { return dayCount(d1, d2) / 252.0; }
+        public override string name() { return "Business/252(" + calendar_.name() + ")"; }
+        public override int dayCount(Date d1, Date d2) { return calendar_.businessDaysBetween(d1, d2); }
+        public override double yearFraction(Date d1, Date d2, Date d3, Date d4) { return dayCount(d1, d2) / 252.0; }
 
-      private Calendar calendar_;
+        private Calendar calendar_;
 
-   }
+    }
 }

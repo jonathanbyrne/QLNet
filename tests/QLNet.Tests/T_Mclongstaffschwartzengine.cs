@@ -20,72 +20,74 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using QLNet;
+using QLNet.Math;
+using QLNet.Methods.montecarlo;
 
-namespace TestSuite
+namespace QLNet.Tests
 {
-   class T_Mclongstaffschwartzengine
-   {
+    class T_Mclongstaffschwartzengine
+    {
 
-      class AmericanMaxPathPricer : IEarlyExercisePathPricer<MultiPath, Vector>
-      {
-         protected Payoff payoff_;
+        class AmericanMaxPathPricer : IEarlyExercisePathPricer<MultiPath, Vector>
+        {
+            protected Payoff payoff_;
 
-         public AmericanMaxPathPricer(Payoff payoff)
-         {
-            payoff_ = payoff;
-         }
-
-         public Vector state(MultiPath path, int t)
-         {
-            Vector tmp = new Vector(path.assetNumber());
-            for (int i = 0; i < path.assetNumber(); ++i)
+            public AmericanMaxPathPricer(Payoff payoff)
             {
-               tmp[i] = path[i][t];
+                payoff_ = payoff;
             }
-            return tmp;
-         }
 
-         public double value(MultiPath path, int t)
-         {
-            Vector tmp = (Vector)state(path, t);
-            return payoff_.value(tmp.Max());
-         }
+            public Vector state(MultiPath path, int t)
+            {
+                Vector tmp = new Vector(path.assetNumber());
+                for (int i = 0; i < path.assetNumber(); ++i)
+                {
+                    tmp[i] = path[i][t];
+                }
+                return tmp;
+            }
 
-         public List<Func<Vector, double>> basisSystem()
-         {
-            return LsmBasisSystem.multiPathBasisSystem(2, 2, LsmBasisSystem.PolynomType.Monomial);
-         }
-      }
+            public double value(MultiPath path, int t)
+            {
+                Vector tmp = state(path, t);
+                return payoff_.value(tmp.Max());
+            }
 
-      //class MCAmericanMaxEngine<RNG> : MCLongstaffSchwartzEngine<VanillaOption.Engine, MultiVariate, RNG>
-      //    where RNG : IRSG, new() {
+            public List<Func<Vector, double>> basisSystem()
+            {
+                return LsmBasisSystem.multiPathBasisSystem(2, 2, LsmBasisSystem.PolynomType.Monomial);
+            }
+        }
 
-      //    //public MCAmericanMaxEngine(StochasticProcessArray processes, int timeSteps, int timeStepsPerYear,
-      //    //                           bool brownianbridge, bool antitheticVariate, bool controlVariate,
-      //    //                           int requiredSamples, double requiredTolerance, int maxSamples,
-      //    //                           ulong seed, int nCalibrationSamples = Null<Size>())
-      //    public MCAmericanMaxEngine(StochasticProcessArray processes, int timeSteps, int timeStepsPerYear,
-      //                               bool brownianbridge, bool antitheticVariate, bool controlVariate,
-      //                               int requiredSamples, double requiredTolerance, int maxSamples,
-      //                               ulong seed, int nCalibrationSamples)
-      //        : base(processes, timeSteps, timeStepsPerYear, brownianbridge, antitheticVariate, controlVariate,
-      //               requiredSamples, requiredTolerance, maxSamples, seed, nCalibrationSamples)
-      //    { }
+        //class MCAmericanMaxEngine<RNG> : MCLongstaffSchwartzEngine<VanillaOption.Engine, MultiVariate, RNG>
+        //    where RNG : IRSG, new() {
 
-      //    protected override LongstaffSchwartzPathPricer<IPath> lsmPathPricer() {
-      //        StochasticProcessArray processArray = process_ as StochasticProcessArray;
-      //        if (processArray == null || processArray.size() == 0)
-      //            throw new Exception("Stochastic process array required");
+        //    //public MCAmericanMaxEngine(StochasticProcessArray processes, int timeSteps, int timeStepsPerYear,
+        //    //                           bool brownianbridge, bool antitheticVariate, bool controlVariate,
+        //    //                           int requiredSamples, double requiredTolerance, int maxSamples,
+        //    //                           ulong seed, int nCalibrationSamples = Null<Size>())
+        //    public MCAmericanMaxEngine(StochasticProcessArray processes, int timeSteps, int timeStepsPerYear,
+        //                               bool brownianbridge, bool antitheticVariate, bool controlVariate,
+        //                               int requiredSamples, double requiredTolerance, int maxSamples,
+        //                               ulong seed, int nCalibrationSamples)
+        //        : base(processes, timeSteps, timeStepsPerYear, brownianbridge, antitheticVariate, controlVariate,
+        //               requiredSamples, requiredTolerance, maxSamples, seed, nCalibrationSamples)
+        //    { }
 
-      //        GeneralizedBlackScholesProcess process = processArray.process(0) as GeneralizedBlackScholesProcess;
-      //        if (process == null)
-      //            throw new Exception("generalized Black-Scholes proces required");
+        //    protected override LongstaffSchwartzPathPricer<IPath> lsmPathPricer() {
+        //        StochasticProcessArray processArray = process_ as StochasticProcessArray;
+        //        if (processArray == null || processArray.size() == 0)
+        //            throw new Exception("Stochastic process array required");
 
-      //        AmericanMaxPathPricer earlyExercisePathPricer = new AmericanMaxPathPricer(arguments_.payoff);
+        //        GeneralizedBlackScholesProcess process = processArray.process(0) as GeneralizedBlackScholesProcess;
+        //        if (process == null)
+        //            throw new Exception("generalized Black-Scholes proces required");
 
-      //        return new LongstaffSchwartzPathPricer<IPath>(timeGrid(), earlyExercisePathPricer,
-      //                                                         process.riskFreeRate().currentLink());
-      //    }
-      //}
-   }
+        //        AmericanMaxPathPricer earlyExercisePathPricer = new AmericanMaxPathPricer(arguments_.payoff);
+
+        //        return new LongstaffSchwartzPathPricer<IPath>(timeGrid(), earlyExercisePathPricer,
+        //                                                         process.riskFreeRate().currentLink());
+        //    }
+        //}
+    }
 }

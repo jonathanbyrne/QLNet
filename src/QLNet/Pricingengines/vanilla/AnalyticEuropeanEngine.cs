@@ -16,95 +16,99 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Instruments;
+using QLNet.Pricingengines;
+using QLNet.processes;
+using QLNet.Time;
 using System;
 
-namespace QLNet
+namespace QLNet.Pricingengines.vanilla
 {
-   //! Pricing engine for European vanilla options using analytical formulae
-   /*! \ingroup vanillaengines
+    //! Pricing engine for European vanilla options using analytical formulae
+    /*! \ingroup vanillaengines
 
-       \test
-       - the correctness of the returned value is tested by
-         reproducing results available in literature.
-       - the correctness of the returned greeks is tested by
-         reproducing results available in literature.
-       - the correctness of the returned greeks is tested by
-         reproducing numerical derivatives.
-       - the correctness of the returned implied volatility is tested
-         by using it for reproducing the target value.
-       - the implied-volatility calculation is tested by checking
-         that it does not modify the option.
-       - the correctness of the returned value in case of
-         cash-or-nothing digital payoff is tested by reproducing
-         results available in literature.
-       - the correctness of the returned value in case of
-         asset-or-nothing digital payoff is tested by reproducing
-         results available in literature.
-       - the correctness of the returned value in case of gap digital
-         payoff is tested by reproducing results available in
-         literature.
-       - the correctness of the returned greeks in case of
-         cash-or-nothing digital payoff is tested by reproducing
-         numerical derivatives.
-   */
-   public class AnalyticEuropeanEngine : VanillaOption.Engine
-   {
-      private GeneralizedBlackScholesProcess process_;
+        \test
+        - the correctness of the returned value is tested by
+          reproducing results available in literature.
+        - the correctness of the returned greeks is tested by
+          reproducing results available in literature.
+        - the correctness of the returned greeks is tested by
+          reproducing numerical derivatives.
+        - the correctness of the returned implied volatility is tested
+          by using it for reproducing the target value.
+        - the implied-volatility calculation is tested by checking
+          that it does not modify the option.
+        - the correctness of the returned value in case of
+          cash-or-nothing digital payoff is tested by reproducing
+          results available in literature.
+        - the correctness of the returned value in case of
+          asset-or-nothing digital payoff is tested by reproducing
+          results available in literature.
+        - the correctness of the returned value in case of gap digital
+          payoff is tested by reproducing results available in
+          literature.
+        - the correctness of the returned greeks in case of
+          cash-or-nothing digital payoff is tested by reproducing
+          numerical derivatives.
+    */
+    public class AnalyticEuropeanEngine : OneAssetOption.Engine
+    {
+        private GeneralizedBlackScholesProcess process_;
 
-      public AnalyticEuropeanEngine(GeneralizedBlackScholesProcess process)
-      {
-         process_ = process;
+        public AnalyticEuropeanEngine(GeneralizedBlackScholesProcess process)
+        {
+            process_ = process;
 
-         process_.registerWith(update);
-      }
+            process_.registerWith(update);
+        }
 
-      public override void calculate()
-      {
+        public override void calculate()
+        {
 
-         Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European, () => "not an European option");
+            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European, () => "not an European option");
 
-         StrikedTypePayoff payoff = arguments_.payoff as StrikedTypePayoff;
-         Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
+            StrikedTypePayoff payoff = arguments_.payoff as StrikedTypePayoff;
+            Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
-         double variance = process_.blackVolatility().link.blackVariance(arguments_.exercise.lastDate(), payoff.strike());
-         double dividendDiscount = process_.dividendYield().link.discount(arguments_.exercise.lastDate());
-         double riskFreeDiscount = process_.riskFreeRate().link.discount(arguments_.exercise.lastDate());
-         double spot = process_.stateVariable().link.value();
-         Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
-         double forwardPrice = spot * dividendDiscount / riskFreeDiscount;
+            double variance = process_.blackVolatility().link.blackVariance(arguments_.exercise.lastDate(), payoff.strike());
+            double dividendDiscount = process_.dividendYield().link.discount(arguments_.exercise.lastDate());
+            double riskFreeDiscount = process_.riskFreeRate().link.discount(arguments_.exercise.lastDate());
+            double spot = process_.stateVariable().link.value();
+            Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
+            double forwardPrice = spot * dividendDiscount / riskFreeDiscount;
 
-         BlackCalculator black = new BlackCalculator(payoff, forwardPrice, Math.Sqrt(variance), riskFreeDiscount);
+            BlackCalculator black = new BlackCalculator(payoff, forwardPrice, System.Math.Sqrt(variance), riskFreeDiscount);
 
-         results_.value = black.value();
-         results_.delta = black.delta(spot);
-         results_.deltaForward = black.deltaForward();
-         results_.elasticity = black.elasticity(spot);
-         results_.gamma = black.gamma(spot);
+            results_.value = black.value();
+            results_.delta = black.delta(spot);
+            results_.deltaForward = black.deltaForward();
+            results_.elasticity = black.elasticity(spot);
+            results_.gamma = black.gamma(spot);
 
-         DayCounter rfdc  = process_.riskFreeRate().link.dayCounter();
-         DayCounter divdc = process_.dividendYield().link.dayCounter();
-         DayCounter voldc = process_.blackVolatility().link.dayCounter();
-         double t = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(), arguments_.exercise.lastDate());
-         results_.rho = black.rho(t);
+            DayCounter rfdc = process_.riskFreeRate().link.dayCounter();
+            DayCounter divdc = process_.dividendYield().link.dayCounter();
+            DayCounter voldc = process_.blackVolatility().link.dayCounter();
+            double t = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(), arguments_.exercise.lastDate());
+            results_.rho = black.rho(t);
 
-         t = divdc.yearFraction(process_.dividendYield().link.referenceDate(), arguments_.exercise.lastDate());
-         results_.dividendRho = black.dividendRho(t);
+            t = divdc.yearFraction(process_.dividendYield().link.referenceDate(), arguments_.exercise.lastDate());
+            results_.dividendRho = black.dividendRho(t);
 
-         t = voldc.yearFraction(process_.blackVolatility().link.referenceDate(), arguments_.exercise.lastDate());
-         results_.vega = black.vega(t);
-         try
-         {
-            results_.theta = black.theta(spot, t);
-            results_.thetaPerDay = black.thetaPerDay(spot, t);
-         }
-         catch
-         {
-            results_.theta = null;
-            results_.thetaPerDay = null;
-         }
+            t = voldc.yearFraction(process_.blackVolatility().link.referenceDate(), arguments_.exercise.lastDate());
+            results_.vega = black.vega(t);
+            try
+            {
+                results_.theta = black.theta(spot, t);
+                results_.thetaPerDay = black.thetaPerDay(spot, t);
+            }
+            catch
+            {
+                results_.theta = null;
+                results_.thetaPerDay = null;
+            }
 
-         results_.strikeSensitivity  = black.strikeSensitivity();
-         results_.itmCashProbability = black.itmCashProbability();
-      }
-   }
+            results_.strikeSensitivity = black.strikeSensitivity();
+            results_.itmCashProbability = black.itmCashProbability();
+        }
+    }
 }

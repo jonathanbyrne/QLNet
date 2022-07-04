@@ -17,33 +17,36 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Methods.montecarlo;
+using QLNet.Patterns;
+
+namespace QLNet.Math.randomnumbers
 {
-   //! Inverse cumulative random number generator
-   /*! It uses a uniform deviate in (0, 1) as the source of cumulative
-       distribution values.
-       Then an inverse cumulative distribution is used to calculate
-       the distribution deviate.
+    //! Inverse cumulative random number generator
+    /*! It uses a uniform deviate in (0, 1) as the source of cumulative
+        distribution values.
+        Then an inverse cumulative distribution is used to calculate
+        the distribution deviate.
 
-       The uniform deviate is supplied by RNG.
-       The inverse cumulative distribution is supplied by IC.
-   */
+        The uniform deviate is supplied by RNG.
+        The inverse cumulative distribution is supplied by IC.
+    */
 
-   public class InverseCumulativeRng<RNG, IC> where RNG : IRNGTraits where IC : IValue, new ()
-   {
-      private RNG uniformGenerator_;
-      private IC ICND_ = FastActivator<IC>.Create();
+    public class InverseCumulativeRng<RNG, IC> where RNG : IRNGTraits where IC : IValue, new()
+    {
+        private RNG uniformGenerator_;
+        private IC ICND_ = FastActivator<IC>.Create();
 
-      public InverseCumulativeRng(RNG uniformGenerator)
-      {
-         uniformGenerator_ = uniformGenerator;
-      }
+        public InverseCumulativeRng(RNG uniformGenerator)
+        {
+            uniformGenerator_ = uniformGenerator;
+        }
 
-      //! returns a sample from a Gaussian distribution
-      public Sample<double> next()
-      {
-         Sample<double> sample = uniformGenerator_.next();
-         return new Sample<double>(ICND_.value(sample.value), sample.weight);
-      }
-   }
+        //! returns a sample from a Gaussian distribution
+        public Sample<double> next()
+        {
+            Sample<double> sample = uniformGenerator_.next();
+            return new Sample<double>(ICND_.value(sample.value), sample.weight);
+        }
+    }
 }

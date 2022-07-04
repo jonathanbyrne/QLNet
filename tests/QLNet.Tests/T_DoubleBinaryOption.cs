@@ -17,87 +17,95 @@
 using System;
 using System.Collections.Generic;
 using Xunit;
-using QLNet;
+using QLNet.Time;
+using QLNet.Instruments;
+using QLNet.Methods.lattices;
+using QLNet.Pricingengines.barrier;
+using QLNet.Termstructures;
+using QLNet.processes;
+using QLNet.Termstructures.Volatility.equityfx;
+using QLNet.Quotes;
+using QLNet.Time.DayCounters;
 
-namespace TestSuite
+namespace QLNet.Tests
 {
-   [Collection("QLNet CI Tests")]
-   public class T_DoubleBinaryOption
-   {
-      private void REPORT_FAILURE(string greekName,
-                                  StrikedTypePayoff payoff,
-                                  Exercise exercise,
-                                  DoubleBarrier.Type barrierType,
-                                  double barrier_lo,
-                                  double barrier_hi,
-                                  double s,
-                                  double q,
-                                  double r,
-                                  Date today,
-                                  double v,
-                                  double expected,
-                                  double calculated,
-                                  double error,
-                                  double tolerance)
-      {
-         QAssert.Fail(payoff.optionType() + " option with "
-                      + barrierType + " barrier type:\n"
-                      + "    barrier_lo:          " + barrier_lo + "\n"
-                      + "    barrier_hi:          " + barrier_hi + "\n"
-                      + payoff + " payoff:\n"
-                      + exercise + " "
-                      + payoff.optionType()
-                      + "    spot value: " + s + "\n"
-                      + "    strike:           " + payoff.strike() + "\n"
-                      + "    dividend yield:   " + q + "\n"
-                      + "    risk-free rate:   " + r + "\n"
-                      + "    reference date:   " + today + "\n"
-                      + "    maturity:         " + exercise.lastDate() + "\n"
-                      + "    volatility:       " + v + "\n\n"
-                      + "    expected " + greekName + ":   " + expected + "\n"
-                      + "    calculated " + greekName + ": " + calculated + "\n"
-                      + "    error:            " + error + "\n"
-                      + "    tolerance:        " + tolerance);
-      }
+    [Collection("QLNet CI Tests")]
+    public class T_DoubleBinaryOption
+    {
+        private void REPORT_FAILURE(string greekName,
+                                    StrikedTypePayoff payoff,
+                                    Exercise exercise,
+                                    DoubleBarrier.Type barrierType,
+                                    double barrier_lo,
+                                    double barrier_hi,
+                                    double s,
+                                    double q,
+                                    double r,
+                                    Date today,
+                                    double v,
+                                    double expected,
+                                    double calculated,
+                                    double error,
+                                    double tolerance)
+        {
+            QAssert.Fail(payoff.optionType() + " option with "
+                         + barrierType + " barrier type:\n"
+                         + "    barrier_lo:          " + barrier_lo + "\n"
+                         + "    barrier_hi:          " + barrier_hi + "\n"
+                         + payoff + " payoff:\n"
+                         + exercise + " "
+                         + payoff.optionType()
+                         + "    spot value: " + s + "\n"
+                         + "    strike:           " + payoff.strike() + "\n"
+                         + "    dividend yield:   " + q + "\n"
+                         + "    risk-free rate:   " + r + "\n"
+                         + "    reference date:   " + today + "\n"
+                         + "    maturity:         " + exercise.lastDate() + "\n"
+                         + "    volatility:       " + v + "\n\n"
+                         + "    expected " + greekName + ":   " + expected + "\n"
+                         + "    calculated " + greekName + ": " + calculated + "\n"
+                         + "    error:            " + error + "\n"
+                         + "    tolerance:        " + tolerance);
+        }
 
-      private struct DoubleBinaryOptionData
-      {
-         public DoubleBarrier.Type barrierType;
-         public double barrier_lo;
-         public double barrier_hi;
-         public double cash;     // cash payoff for cash-or-nothing
-         public double s;        // spot
-         public double q;        // dividend
-         public double r;        // risk-free rate
-         public double t;        // time to maturity
-         public double v;        // volatility
-         public double result;   // expected result
-         public double tol;      // tolerance
+        private struct DoubleBinaryOptionData
+        {
+            public DoubleBarrier.Type barrierType;
+            public double barrier_lo;
+            public double barrier_hi;
+            public double cash;     // cash payoff for cash-or-nothing
+            public double s;        // spot
+            public double q;        // dividend
+            public double r;        // risk-free rate
+            public double t;        // time to maturity
+            public double v;        // volatility
+            public double result;   // expected result
+            public double tol;      // tolerance
 
-         public DoubleBinaryOptionData(DoubleBarrier.Type barrierType, double barrier_lo, double barrier_hi, double cash,
-                                       double s, double q, double r, double t, double v, double result, double tol) : this()
-         {
-            this.barrierType = barrierType;
-            this.barrier_lo = barrier_lo;
-            this.barrier_hi = barrier_hi;
-            this.cash = cash;
-            this.s = s;
-            this.q = q;
-            this.r = r;
-            this.t = t;
-            this.v = v;
-            this.result = result;
-            this.tol = tol;
-         }
-      }
+            public DoubleBinaryOptionData(DoubleBarrier.Type barrierType, double barrier_lo, double barrier_hi, double cash,
+                                          double s, double q, double r, double t, double v, double result, double tol) : this()
+            {
+                this.barrierType = barrierType;
+                this.barrier_lo = barrier_lo;
+                this.barrier_hi = barrier_hi;
+                this.cash = cash;
+                this.s = s;
+                this.q = q;
+                this.r = r;
+                this.t = t;
+                this.v = v;
+                this.result = result;
+                this.tol = tol;
+            }
+        }
 
-      [Fact]
-      public void testHaugValues()
-      {
-         // Testing cash-or-nothing double barrier options against Haug's values
+        [Fact]
+        public void testHaugValues()
+        {
+            // Testing cash-or-nothing double barrier options against Haug's values
 
-         DoubleBinaryOptionData[] values =
-         {
+            DoubleBinaryOptionData[] values =
+            {
             /* The data below are from
                 "Option pricing formulas 2nd Ed.", E.G. Haug, McGraw-Hill 2007 pag. 181
                 Note: book uses cost of carry b, instead of dividend rate q
@@ -195,81 +203,81 @@ namespace TestSuite
             new DoubleBinaryOptionData(DoubleBarrier.Type.KOKI,       95.00, 105.00, 10.00, 110.00, 0.02, 0.05, 0.25, 0.10, 10.0000, 1e-4),
          };
 
-         DayCounter dc = new Actual360();
-         Date today = Date.Today;
+            DayCounter dc = new Actual360();
+            Date today = Date.Today;
 
-         SimpleQuote spot = new SimpleQuote(100.0);
-         SimpleQuote qRate = new SimpleQuote(0.04);
-         YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
-         SimpleQuote rRate = new SimpleQuote(0.01);
-         YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
-         SimpleQuote vol = new SimpleQuote(0.25);
-         BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
+            SimpleQuote spot = new SimpleQuote(100.0);
+            SimpleQuote qRate = new SimpleQuote(0.04);
+            YieldTermStructure qTS = Utilities.flatRate(today, qRate, dc);
+            SimpleQuote rRate = new SimpleQuote(0.01);
+            YieldTermStructure rTS = Utilities.flatRate(today, rRate, dc);
+            SimpleQuote vol = new SimpleQuote(0.25);
+            BlackVolTermStructure volTS = Utilities.flatVol(today, vol, dc);
 
-         for (int i = 0; i < values.Length; i++)
-         {
-            StrikedTypePayoff payoff = new CashOrNothingPayoff(Option.Type.Call, 0, values[i].cash);
-
-            Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
-            Exercise exercise;
-            if (values[i].barrierType == DoubleBarrier.Type.KIKO ||
-                values[i].barrierType == DoubleBarrier.Type.KOKI)
-               exercise = new AmericanExercise(today, exDate, true);
-            else
-               exercise = new EuropeanExercise(exDate);
-
-            spot .setValue(values[i].s);
-            qRate.setValue(values[i].q);
-            rRate.setValue(values[i].r);
-            vol  .setValue(values[i].v);
-
-            BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(
-               new Handle<Quote>(spot),
-               new Handle<YieldTermStructure>(qTS),
-               new Handle<YieldTermStructure>(rTS),
-               new Handle<BlackVolTermStructure>(volTS));
-
-            IPricingEngine engine = new AnalyticDoubleBarrierBinaryEngine(stochProcess);
-
-            DoubleBarrierOption opt = new DoubleBarrierOption(values[i].barrierType,
-                                                              values[i].barrier_lo,
-                                                              values[i].barrier_hi,
-                                                              0,
-                                                              payoff,
-                                                              exercise);
-
-            opt.setPricingEngine(engine);
-
-            double calculated = opt.NPV();
-            double expected = values[i].result;
-            double error = Math.Abs(calculated - values[i].result);
-            if (error > values[i].tol)
+            for (int i = 0; i < values.Length; i++)
             {
-               REPORT_FAILURE("value", payoff, exercise, values[i].barrierType,
-                              values[i].barrier_lo, values[i].barrier_hi, values[i].s,
-                              values[i].q, values[i].r, today, values[i].v,
-                              values[i].result, calculated, error, values[i].tol);
-            }
+                StrikedTypePayoff payoff = new CashOrNothingPayoff(QLNet.Option.Type.Call, 0, values[i].cash);
 
-            int steps = 500;
-            // checking with binomial engine
-            engine = new BinomialDoubleBarrierEngine(
-               (d, end, step, strike) => new CoxRossRubinstein(d, end, step, strike),
-            (args, process, grid) => new DiscretizedDoubleBarrierOption(args, process, grid),
-            stochProcess, steps);
-            opt.setPricingEngine(engine);
-            calculated = opt.NPV();
-            expected = values[i].result;
-            error = Math.Abs(calculated - expected);
-            double tol = 0.22;
-            if (error > tol)
-            {
-               REPORT_FAILURE("Binomial value", payoff, exercise, values[i].barrierType,
-                              values[i].barrier_lo, values[i].barrier_hi, values[i].s,
-                              values[i].q, values[i].r, today, values[i].v,
-                              values[i].result, calculated, error, tol);
+                Date exDate = today + Convert.ToInt32(values[i].t * 360 + 0.5);
+                Exercise exercise;
+                if (values[i].barrierType == DoubleBarrier.Type.KIKO ||
+                    values[i].barrierType == DoubleBarrier.Type.KOKI)
+                    exercise = new AmericanExercise(today, exDate, true);
+                else
+                    exercise = new EuropeanExercise(exDate);
+
+                spot.setValue(values[i].s);
+                qRate.setValue(values[i].q);
+                rRate.setValue(values[i].r);
+                vol.setValue(values[i].v);
+
+                BlackScholesMertonProcess stochProcess = new BlackScholesMertonProcess(
+                   new Handle<Quote>(spot),
+                   new Handle<YieldTermStructure>(qTS),
+                   new Handle<YieldTermStructure>(rTS),
+                   new Handle<BlackVolTermStructure>(volTS));
+
+                IPricingEngine engine = new AnalyticDoubleBarrierBinaryEngine(stochProcess);
+
+                DoubleBarrierOption opt = new DoubleBarrierOption(values[i].barrierType,
+                                                                  values[i].barrier_lo,
+                                                                  values[i].barrier_hi,
+                                                                  0,
+                                                                  payoff,
+                                                                  exercise);
+
+                opt.setPricingEngine(engine);
+
+                double calculated = opt.NPV();
+                double expected = values[i].result;
+                double error = System.Math.Abs(calculated - values[i].result);
+                if (error > values[i].tol)
+                {
+                    REPORT_FAILURE("value", payoff, exercise, values[i].barrierType,
+                                   values[i].barrier_lo, values[i].barrier_hi, values[i].s,
+                                   values[i].q, values[i].r, today, values[i].v,
+                                   values[i].result, calculated, error, values[i].tol);
+                }
+
+                int steps = 500;
+                // checking with binomial engine
+                engine = new BinomialDoubleBarrierEngine(
+                   (d, end, step, strike) => new CoxRossRubinstein(d, end, step, strike),
+                (args, process, grid) => new DiscretizedDoubleBarrierOption(args, process, grid),
+                stochProcess, steps);
+                opt.setPricingEngine(engine);
+                calculated = opt.NPV();
+                expected = values[i].result;
+                error = System.Math.Abs(calculated - expected);
+                double tol = 0.22;
+                if (error > tol)
+                {
+                    REPORT_FAILURE("Binomial value", payoff, exercise, values[i].barrierType,
+                                   values[i].barrier_lo, values[i].barrier_hi, values[i].s,
+                                   values[i].q, values[i].r, today, values[i].v,
+                                   values[i].result, calculated, error, tol);
+                }
             }
-         }
-      }
-   }
+        }
+    }
 }

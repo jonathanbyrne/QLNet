@@ -16,42 +16,42 @@
 
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Math
 {
-   //! Pascal triangle coefficients calculator
-   public class PascalTriangle
-   {
-      //! Get and store one vector of coefficients after another.
-      public static List<ulong> get(int order)
-      {
-         if (coefficients_.empty())
-         {
-            // order zero mandatory for bootstrap
-            coefficients_.Add(new InitializedList<ulong>(1, 1));
+    //! Pascal triangle coefficients calculator
+    public class PascalTriangle
+    {
+        //! Get and store one vector of coefficients after another.
+        public static List<ulong> get(int order)
+        {
+            if (coefficients_.empty())
+            {
+                // order zero mandatory for bootstrap
+                coefficients_.Add(new InitializedList<ulong>(1, 1));
 
-            coefficients_.Add(new InitializedList<ulong>(2, 1));
-            coefficients_.Add(new InitializedList<ulong>(3, 1));
-            coefficients_[2][1] = 2;
-            coefficients_.Add(new InitializedList<ulong>(4, 1));
-            coefficients_[3][1] = coefficients_[3][2] = 3;
-         }
-         while (coefficients_.Count <= order)
-            nextOrder();
-         return coefficients_[order];
-      }
+                coefficients_.Add(new InitializedList<ulong>(2, 1));
+                coefficients_.Add(new InitializedList<ulong>(3, 1));
+                coefficients_[2][1] = 2;
+                coefficients_.Add(new InitializedList<ulong>(4, 1));
+                coefficients_[3][1] = coefficients_[3][2] = 3;
+            }
+            while (coefficients_.Count <= order)
+                nextOrder();
+            return coefficients_[order];
+        }
 
-      private PascalTriangle() {}
-      private static void nextOrder()
-      {
-         int order = coefficients_.Count;
-         coefficients_.Add(new InitializedList<ulong>(order + 1));
-         coefficients_[order][0] = coefficients_[order][order] = 1;
-         for (int i = 1; i < order / 2 + 1; ++i)
-         {
-            coefficients_[order][i] = coefficients_[order][order - i] = coefficients_[order - 1][i - 1] + coefficients_[order - 1][i];
-         }
-      }
+        private PascalTriangle() { }
+        private static void nextOrder()
+        {
+            int order = coefficients_.Count;
+            coefficients_.Add(new InitializedList<ulong>(order + 1));
+            coefficients_[order][0] = coefficients_[order][order] = 1;
+            for (int i = 1; i < order / 2 + 1; ++i)
+            {
+                coefficients_[order][i] = coefficients_[order][order - i] = coefficients_[order - 1][i - 1] + coefficients_[order - 1][i];
+            }
+        }
 
-      private static List<List<ulong> > coefficients_ = new List<List<ulong>>();
-   }
+        private static List<List<ulong>> coefficients_ = new List<List<ulong>>();
+    }
 }

@@ -17,14 +17,20 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Currencies;
+using QLNet.Indexes;
+using QLNet.Termstructures;
+using QLNet.Time;
+using QLNet.Time.Calendars;
+
 namespace QLNet
 {
-   //! base class for all ICE LIBOR indexes but the EUR, O/N, and S/N ones
-   /*! LIBOR fixed by ICE.
+    //! base class for all ICE LIBOR indexes but the EUR, O/N, and S/N ones
+    /*! LIBOR fixed by ICE.
 
-       See <https://www.theice.com/marketdata/reports/170>.
-   */
-   public class Libor : IborIndex
+        See <https://www.theice.com/marketdata/reports/170>.
+    */
+    public class Libor : IborIndex
    {
       private Calendar financialCenterCalendar_;
       private Calendar jointCalendar_;

@@ -17,25 +17,25 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Methods.lattices
 {
-   //! %Tree approximating a single-factor diffusion
-   public class Tree<T>
-   {
-      private int columns_;
+    //! %Tree approximating a single-factor diffusion
+    public class Tree<T>
+    {
+        private int columns_;
 
-      public int columns()
-      {
-         return columns_;
-      }
+        public int columns()
+        {
+            return columns_;
+        }
 
-      // parameterless constructor is requried for generics
-      public Tree()
-      {}
+        // parameterless constructor is requried for generics
+        public Tree()
+        { }
 
-      public Tree(int columns)
-      {
-         columns_ = columns;
-      }
-   }
+        public Tree(int columns)
+        {
+            columns_ = columns;
+        }
+    }
 }

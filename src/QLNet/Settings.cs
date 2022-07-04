@@ -18,13 +18,15 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Patterns;
+using QLNet.Time;
 using System;
 
 namespace QLNet
 {
-   // we need only one instance of the class
-   // we can not derive it from IObservable because the class is static
-   public static class Settings
+    // we need only one instance of the class
+    // we can not derive it from IObservable because the class is static
+    public static class Settings
    {
 
       [ThreadStatic]

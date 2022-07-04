@@ -19,72 +19,74 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Indexes;
+using QLNet.Time;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Cashflows
 {
-   //! CMS coupon class
-   //    ! \warning This class does not perform any date adjustment,
-   //                 i.e., the start and end date passed upon construction
-   //                 should be already rolled to a business day.
-   //
-   public class CmsCoupon : FloatingRateCoupon
-   {
-      // need by CashFlowVectors
-      public CmsCoupon() { }
+    //! CMS coupon class
+    //    ! \warning This class does not perform any date adjustment,
+    //                 i.e., the start and end date passed upon construction
+    //                 should be already rolled to a business day.
+    //
+    public class CmsCoupon : FloatingRateCoupon
+    {
+        // need by CashFlowVectors
+        public CmsCoupon() { }
 
-      public CmsCoupon(double nominal,
-                       Date paymentDate,
-                       Date startDate,
-                       Date endDate,
-                       int fixingDays,
-                       SwapIndex swapIndex,
-                       double gearing = 1.0,
-                       double spread = 0.0,
-                       Date refPeriodStart = null,
-                       Date refPeriodEnd = null,
-                       DayCounter dayCounter = null,
-                       bool isInArrears = false)
-         : base(paymentDate, nominal, startDate, endDate, fixingDays, swapIndex, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears)
-      {
-         swapIndex_ = swapIndex;
-      }
-      // Inspectors
-      public SwapIndex swapIndex()
-      {
-         return swapIndex_;
-      }
+        public CmsCoupon(double nominal,
+                         Date paymentDate,
+                         Date startDate,
+                         Date endDate,
+                         int fixingDays,
+                         SwapIndex swapIndex,
+                         double gearing = 1.0,
+                         double spread = 0.0,
+                         Date refPeriodStart = null,
+                         Date refPeriodEnd = null,
+                         DayCounter dayCounter = null,
+                         bool isInArrears = false)
+           : base(paymentDate, nominal, startDate, endDate, fixingDays, swapIndex, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears)
+        {
+            swapIndex_ = swapIndex;
+        }
+        // Inspectors
+        public SwapIndex swapIndex()
+        {
+            return swapIndex_;
+        }
 
-      private SwapIndex swapIndex_;
+        private SwapIndex swapIndex_;
 
-      // Factory - for Leg generators
-      public override CashFlow factory(double nominal, Date paymentDate, Date startDate, Date endDate, int fixingDays,
-                                       InterestRateIndex index, double gearing, double spread,
-                                       Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears)
-      {
-         return new CmsCoupon(nominal, paymentDate, startDate, endDate, fixingDays,
-                              (SwapIndex)index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears);
-      }
+        // Factory - for Leg generators
+        public override CashFlow factory(double nominal, Date paymentDate, Date startDate, Date endDate, int fixingDays,
+                                         InterestRateIndex index, double gearing, double spread,
+                                         Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears)
+        {
+            return new CmsCoupon(nominal, paymentDate, startDate, endDate, fixingDays,
+                                 (SwapIndex)index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears);
+        }
 
-   }
+    }
 
 
-   //! helper class building a sequence of capped/floored cms-rate coupons
-   public class CmsLeg : FloatingLegBase
-   {
-      public CmsLeg(Schedule schedule, SwapIndex swapIndex)
-      {
-         schedule_ = schedule;
-         index_ = swapIndex;
-         paymentAdjustment_ = BusinessDayConvention.Following;
-         inArrears_ = false;
-         zeroPayments_ = false;
-      }
+    //! helper class building a sequence of capped/floored cms-rate coupons
+    public class CmsLeg : FloatingLegBase
+    {
+        public CmsLeg(Schedule schedule, SwapIndex swapIndex)
+        {
+            schedule_ = schedule;
+            index_ = swapIndex;
+            paymentAdjustment_ = BusinessDayConvention.Following;
+            inArrears_ = false;
+            zeroPayments_ = false;
+        }
 
-      public override List<CashFlow> value()
-      {
-         return CashFlowVectors.FloatingLeg<SwapIndex, CmsCoupon, CappedFlooredCmsCoupon>(
-                   notionals_, schedule_, index_ as SwapIndex, paymentDayCounter_, paymentAdjustment_, fixingDays_, gearings_, spreads_, caps_, floors_, inArrears_, zeroPayments_);
-      }
-   }
+        public override List<CashFlow> value()
+        {
+            return CashFlowVectors.FloatingLeg<SwapIndex, CmsCoupon, CappedFlooredCmsCoupon>(
+                      notionals_, schedule_, index_ as SwapIndex, paymentDayCounter_, paymentAdjustment_, fixingDays_, gearings_, spreads_, caps_, floors_, inArrears_, zeroPayments_);
+        }
+    }
 }

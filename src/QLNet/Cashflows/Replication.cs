@@ -19,35 +19,35 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Cashflows
 {
 
-   //! Digital option replication strategy
-//    ! Specification of replication strategies used to price
-//        the embedded digital option in a digital coupon.
-//
-   public struct Replication
-   {
-      public enum Type
-      {
-         Sub,
-         Central,
-         Super
-      }
-   }
+    //! Digital option replication strategy
+    //    ! Specification of replication strategies used to price
+    //        the embedded digital option in a digital coupon.
+    //
+    public struct Replication
+    {
+        public enum Type
+        {
+            Sub,
+            Central,
+            Super
+        }
+    }
 
-   public class DigitalReplication
-   {
-      private double gap_;
-      private Replication.Type replicationType_;
+    public class DigitalReplication
+    {
+        private double gap_;
+        private Replication.Type replicationType_;
 
-      public DigitalReplication(Replication.Type t = Replication.Type.Central, double gap = 1e-4)
-      {
-         gap_ = gap;
-         replicationType_ = t;
-      }
+        public DigitalReplication(Replication.Type t = Replication.Type.Central, double gap = 1e-4)
+        {
+            gap_ = gap;
+            replicationType_ = t;
+        }
 
-      public Replication.Type replicationType() { return replicationType_; }
-      public double gap() { return gap_; }
-   }
+        public Replication.Type replicationType() { return replicationType_; }
+        public double gap() { return gap_; }
+    }
 }

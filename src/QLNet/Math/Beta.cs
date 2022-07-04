@@ -16,15 +16,17 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Extensions;
+using QLNet.Math.Distributions;
 using System;
 
 namespace QLNet
 {
-   public partial class Utils
+    public partial class Utils
    {
       public static double betaFunction(double z, double w)
       {
-         return Math.Exp(GammaFunction.logValue(z) +
+         return System.Math.Exp(GammaFunction.logValue(z) +
                          GammaFunction.logValue(w) -
                          GammaFunction.logValue(z + w));
       }
@@ -41,7 +43,7 @@ namespace QLNet
          double qam = a - 1.0;
          double c = 1.0;
          double d = 1.0 - qab * x / qap;
-         if (Math.Abs(d) < Const.QL_EPSILON)
+         if (System.Math.Abs(d) < Const.QL_EPSILON)
             d = Const.QL_EPSILON;
          d = 1.0 / d;
          double result = d;
@@ -52,24 +54,24 @@ namespace QLNet
             m2 = 2 * m;
             aa = m * (b - m) * x / ((qam + m2) * (a + m2));
             d = 1.0 + aa * d;
-            if (Math.Abs(d) < Const.QL_EPSILON)
+            if (System.Math.Abs(d) < Const.QL_EPSILON)
                d = Const.QL_EPSILON;
             c = 1.0 + aa / c;
-            if (Math.Abs(c) < Const.QL_EPSILON)
+            if (System.Math.Abs(c) < Const.QL_EPSILON)
                c = Const.QL_EPSILON;
             d = 1.0 / d;
             result *= d * c;
             aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
             d = 1.0 + aa * d;
-            if (Math.Abs(d) < Const.QL_EPSILON)
+            if (System.Math.Abs(d) < Const.QL_EPSILON)
                d = Const.QL_EPSILON;
             c = 1.0 + aa / c;
-            if (Math.Abs(c) < Const.QL_EPSILON)
+            if (System.Math.Abs(c) < Const.QL_EPSILON)
                c = Const.QL_EPSILON;
             d = 1.0 / d;
             del = d * c;
             result *= del;
-            if (Math.Abs(del - 1.0) < accuracy)
+            if (System.Math.Abs(del - 1.0) < accuracy)
                return result;
          }
          Utils.QL_FAIL("a or b too big, or maxIteration too small in betacf");
@@ -98,9 +100,9 @@ namespace QLNet
             return 1.0;
          QL_REQUIRE(x > 0.0 && x<1.0, () => "x must be in [0,1]");
 
-         double result = Math.Exp(GammaFunction.logValue(a + b) -
+         double result = System.Math.Exp(GammaFunction.logValue(a + b) -
                                   GammaFunction.logValue(a) - GammaFunction.logValue(b) +
-                                  a* Math.Log(x) + b* Math.Log(1.0 - x));
+                                  a* System.Math.Log(x) + b* System.Math.Log(1.0 - x));
 
          if (x < (a + 1.0) / (a + b + 2.0))
             return result*

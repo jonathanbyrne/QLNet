@@ -17,51 +17,53 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Exceptions;
+using QLNet.Math;
 using System;
 
-namespace QLNet
+namespace QLNet.Math.Solvers1d
 {
-   public class Bisection : Solver1D
-   {
-      protected override double solveImpl(ISolver1d f, double xAccuracy)
-      {
+    public class Bisection : Solver1D
+    {
+        protected override double solveImpl(ISolver1d f, double xAccuracy)
+        {
 
-         /* The implementation of the algorithm was inspired by
-            Press, Teukolsky, Vetterling, and Flannery,
-            "Numerical Recipes in C", 2nd edition, Cambridge
-            University Press
-         */
+            /* The implementation of the algorithm was inspired by
+               Press, Teukolsky, Vetterling, and Flannery,
+               "Numerical Recipes in C", 2nd edition, Cambridge
+               University Press
+            */
 
-         double dx, xMid, fMid;
+            double dx, xMid, fMid;
 
-         // Orient the search so that f>0 lies at root_+dx
-         if (fxMin_ < 0.0)
-         {
-            dx = xMax_ - xMin_;
-            root_ = xMin_;
-         }
-         else
-         {
-            dx = xMin_ - xMax_;
-            root_ = xMax_;
-         }
-
-         while (evaluationNumber_ <= maxEvaluations_)
-         {
-            dx /= 2.0;
-            xMid = root_ + dx;
-            fMid = f.value(xMid);
-            evaluationNumber_++;
-            if (fMid <= 0.0)
-               root_ = xMid;
-            if (Math.Abs(dx) < xAccuracy || Utils.close(fMid, 0.0))
+            // Orient the search so that f>0 lies at root_+dx
+            if (fxMin_ < 0.0)
             {
-               return root_;
+                dx = xMax_ - xMin_;
+                root_ = xMin_;
             }
-         }
-         Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
-                       QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
-         return 0;
-      }
-   }
+            else
+            {
+                dx = xMin_ - xMax_;
+                root_ = xMax_;
+            }
+
+            while (evaluationNumber_ <= maxEvaluations_)
+            {
+                dx /= 2.0;
+                xMid = root_ + dx;
+                fMid = f.value(xMid);
+                evaluationNumber_++;
+                if (fMid <= 0.0)
+                    root_ = xMid;
+                if (System.Math.Abs(dx) < xAccuracy || Utils.close(fMid, 0.0))
+                {
+                    return root_;
+                }
+            }
+            Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
+                          QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
+            return 0;
+        }
+    }
 }

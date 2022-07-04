@@ -17,12 +17,15 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Extensions;
+using QLNet.Math;
+using QLNet.Math.Optimization;
 using System;
 using System.Collections.Generic;
 
 namespace QLNet
 {
-   public static partial class MatrixUtilities
+    public static partial class MatrixUtilities
    {
       //! QR decompoisition
       /*! This implementation is based on MINPACK
@@ -76,7 +79,7 @@ namespace QLNet
             w.Erase();
             w[k] = 1.0;
 
-            for (int j = 0; j < Math.Min(n, m); ++j)
+            for (int j = 0; j < System.Math.Min(n, m); ++j)
             {
                double t3 = mT[j, j];
                if (t3.IsNotEqual(0.0))

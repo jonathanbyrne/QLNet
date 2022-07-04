@@ -16,514 +16,522 @@
 using System;
 using System.Collections.Generic;
 using Xunit;
-using QLNet;
-using Calendar = QLNet.Calendar;
+using Calendar = QLNet.Time.Calendar;
+using QLNet.Instruments.Bonds;
+using QLNet.Indexes;
+using QLNet.Indexes.Ibor;
+using QLNet.Pricingengines.Bond;
+using QLNet.Time.Calendars;
+using QLNet.Time;
+using QLNet.Termstructures.Volatility.Optionlet;
+using QLNet.Termstructures;
+using QLNet.Time.DayCounters;
 
-namespace TestSuite
+namespace QLNet.Tests
 {
-   [Collection("QLNet CI Tests")]
-   public class T_CatBonds
-   {
-      static KeyValuePair<Date, double>[] data =
-      {
+    [Collection("QLNet CI Tests")]
+    public class T_CatBonds
+    {
+        static KeyValuePair<Date, double>[] data =
+        {
          new KeyValuePair<Date, double>(new Date(1, Month.February, 2012), 100),
          new KeyValuePair<Date, double>(new Date(1, Month.July, 2013), 150),
          new KeyValuePair<Date, double>(new Date(5, Month.January, 2014), 50)
       };
 
-      List<KeyValuePair<Date, double>> sampleEvents = new List<KeyValuePair<Date, double>>(data);
+        List<KeyValuePair<Date, double>> sampleEvents = new List<KeyValuePair<Date, double>>(data);
 
-      Date eventsStart = new Date(1, Month.January, 2011);
-      Date eventsEnd = new Date(31, Month.December, 2014);
+        Date eventsStart = new Date(1, Month.January, 2011);
+        Date eventsEnd = new Date(31, Month.December, 2014);
 
-      private class CommonVars
-      {
-         // common data
-         public Calendar calendar;
-         public Date today;
-         public double faceAmount;
+        private class CommonVars
+        {
+            // common data
+            public Calendar calendar;
+            public Date today;
+            public double faceAmount;
 
-         // setup
-         public CommonVars()
-         {
-            calendar = new TARGET();
-            today = calendar.adjust(Date.Today);
+            // setup
+            public CommonVars()
+            {
+                calendar = new TARGET();
+                today = calendar.adjust(Date.Today);
+                Settings.setEvaluationDate(today);
+                faceAmount = 1000000.0;
+            }
+        }
+
+        [Fact]
+        public void testEventSetForWholeYears()
+        {
+            // Testing that catastrophe events are split correctly for periods of whole years
+
+            EventSet catRisk = new EventSet(sampleEvents, eventsStart, eventsEnd);
+            CatSimulation simulation = catRisk.newSimulation(new Date(1, Month.January, 2015), new Date(31, Month.December, 2015));
+
+            QAssert.Require(simulation);
+
+            List<KeyValuePair<Date, double>> path = new List<KeyValuePair<Date, double>>();
+
+            QAssert.Require(simulation.nextPath(path));
+            QAssert.AreEqual(0, path.Count);
+
+            QAssert.Require(simulation.nextPath(path));
+            QAssert.AreEqual(1, path.Count);
+            QAssert.AreEqual(new Date(1, Month.February, 2015), path[0].Key);
+            QAssert.AreEqual(100, path[0].Value);
+
+            QAssert.Require(simulation.nextPath(path));
+            QAssert.AreEqual(1, path.Count);
+            QAssert.AreEqual(new Date(1, Month.July, 2015), path[0].Key);
+            QAssert.AreEqual(150, path[0].Value);
+
+            QAssert.Require(simulation.nextPath(path));
+            QAssert.AreEqual(1, path.Count);
+            QAssert.AreEqual(new Date(5, Month.January, 2015), path[0].Key);
+            QAssert.AreEqual(50, path[0].Value);
+
+            QAssert.Require(!simulation.nextPath(path));
+        }
+
+        [Fact]
+        public void testEventSetForIrregularPeriods()
+        {
+            // Testing that catastrophe events are split correctly for irregular periods
+
+            EventSet catRisk = new EventSet(sampleEvents, eventsStart, eventsEnd);
+            CatSimulation simulation = catRisk.newSimulation(new Date(2, Month.January, 2015), new Date(5, Month.January, 2016));
+
+            QAssert.Require(simulation);
+
+            List<KeyValuePair<Date, double>> path = new List<KeyValuePair<Date, double>>();
+
+            QAssert.Require(simulation.nextPath(path));
+            QAssert.AreEqual(0, path.Count);
+
+            QAssert.Require(simulation.nextPath(path));
+            QAssert.AreEqual(2, path.Count);
+            QAssert.AreEqual(new Date(1, Month.July, 2015), path[0].Key);
+            QAssert.AreEqual(150, path[0].Value);
+            QAssert.AreEqual(new Date(5, Month.January, 2016), path[1].Key);
+            QAssert.AreEqual(50, path[1].Value);
+
+            QAssert.Require(!simulation.nextPath(path));
+        }
+
+        [Fact]
+        public void testEventSetForNoEvents()
+        {
+            // Testing that catastrophe events are split correctly when there are no simulated events
+
+            List<KeyValuePair<Date, double>> emptyEvents = new List<KeyValuePair<Date, double>>();
+            EventSet catRisk = new EventSet(emptyEvents, eventsStart, eventsEnd);
+            CatSimulation simulation = catRisk.newSimulation(new Date(2, Month.January, 2015), new Date(5, Month.January, 2016));
+
+            QAssert.Require(simulation);
+
+            List<KeyValuePair<Date, double>> path = new List<KeyValuePair<Date, double>>();
+
+            QAssert.Require(simulation.nextPath(path));
+            QAssert.AreEqual(0, path.Count);
+
+            QAssert.Require(simulation.nextPath(path));
+            QAssert.AreEqual(0, path.Count);
+
+            QAssert.Require(!simulation.nextPath(path));
+        }
+
+        [Fact]
+        public void testRiskFreeAgainstFloatingRateBond()
+        {
+            // Testing floating-rate cat bond against risk-free floating-rate bond
+
+            CommonVars vars = new CommonVars();
+
+            Date today = new Date(22, Month.November, 2004);
             Settings.setEvaluationDate(today);
-            faceAmount = 1000000.0;
-         }
-      }
 
-      [Fact]
-      public void testEventSetForWholeYears()
-      {
-         // Testing that catastrophe events are split correctly for periods of whole years
+            int settlementDays = 1;
 
-         EventSet catRisk = new EventSet(sampleEvents, eventsStart, eventsEnd);
-         CatSimulation simulation = catRisk.newSimulation(new Date(1, Month.January, 2015), new Date(31, Month.December, 2015));
+            Handle<YieldTermStructure> riskFreeRate = new Handle<YieldTermStructure>(Utilities.flatRate(today, 0.025, new Actual360()));
+            Handle<YieldTermStructure> discountCurve = new Handle<YieldTermStructure>(Utilities.flatRate(today, 0.03, new Actual360()));
 
-         QAssert.Require(simulation);
+            IborIndex index = new USDLibor(new Period(6, TimeUnit.Months), riskFreeRate);
+            int fixingDays = 1;
 
-         List<KeyValuePair<Date, double> > path = new List<KeyValuePair<Date, double>>();
+            double tolerance = 1.0e-6;
 
-         QAssert.Require(simulation.nextPath(path));
-         QAssert.AreEqual(0, path.Count);
+            IborCouponPricer pricer = new BlackIborCouponPricer(new Handle<OptionletVolatilityStructure>());
 
-         QAssert.Require(simulation.nextPath(path));
-         QAssert.AreEqual(1, path.Count);
-         QAssert.AreEqual(new Date(1, Month.February, 2015), path[0].Key);
-         QAssert.AreEqual(100, path[0].Value);
+            // plain
 
-         QAssert.Require(simulation.nextPath(path));
-         QAssert.AreEqual(1, path.Count);
-         QAssert.AreEqual(new Date(1, Month.July, 2015), path[0].Key);
-         QAssert.AreEqual(150, path[0].Value);
+            Schedule sch = new Schedule(new Date(30, Month.November, 2004),
+                                        new Date(30, Month.November, 2008),
+                                        new Period(Frequency.Semiannual),
+                                        new UnitedStates(UnitedStates.Market.GovernmentBond),
+                                        BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
+                                        DateGeneration.Rule.Backward, false);
 
-         QAssert.Require(simulation.nextPath(path));
-         QAssert.AreEqual(1, path.Count);
-         QAssert.AreEqual(new Date(5, Month.January, 2015), path[0].Key);
-         QAssert.AreEqual(50, path[0].Value);
+            CatRisk noCatRisk = new EventSet(new List<KeyValuePair<Date, double>>(), new Date(1, Month.Jan, 2000), new Date(31, Month.Dec, 2010));
 
-         QAssert.Require(!simulation.nextPath(path));
-      }
+            EventPaymentOffset paymentOffset = new NoOffset();
+            NotionalRisk notionalRisk = new DigitalNotionalRisk(paymentOffset, 100);
 
-      [Fact]
-      public void testEventSetForIrregularPeriods()
-      {
-         // Testing that catastrophe events are split correctly for irregular periods
+            FloatingRateBond bond1 = new FloatingRateBond(settlementDays, vars.faceAmount, sch,
+                                                          index, new ActualActual(ActualActual.Convention.ISMA),
+                                                          BusinessDayConvention.ModifiedFollowing, fixingDays,
+                                                          new List<double>(), new List<double>(),
+                                                          new List<double?>(), new List<double?>(),
+                                                          false,
+                                                          100.0, new Date(30, Month.November, 2004));
 
-         EventSet catRisk = new EventSet(sampleEvents, eventsStart, eventsEnd);
-         CatSimulation simulation = catRisk.newSimulation(new Date(2, Month.January, 2015), new Date(5, Month.January, 2016));
+            FloatingCatBond catBond1 = new FloatingCatBond(settlementDays, vars.faceAmount, sch,
+                                                           index, new ActualActual(ActualActual.Convention.ISMA),
+                                                           notionalRisk,
+                                                           BusinessDayConvention.ModifiedFollowing, fixingDays,
+                                                           new List<double>(), new List<double>(),
+                                                           new List<double?>(), new List<double?>(),
+                                                           false,
+                                                           100.0, new Date(30, Month.November, 2004));
 
-         QAssert.Require(simulation);
+            IPricingEngine bondEngine = new DiscountingBondEngine(riskFreeRate);
+            bond1.setPricingEngine(bondEngine);
+            Utils.setCouponPricer(bond1.cashflows(), pricer);
 
-         List<KeyValuePair<Date, double> > path = new List<KeyValuePair<Date, double>>();
-
-         QAssert.Require(simulation.nextPath(path));
-         QAssert.AreEqual(0, path.Count);
-
-         QAssert.Require(simulation.nextPath(path));
-         QAssert.AreEqual(2, path.Count);
-         QAssert.AreEqual(new Date(1, Month.July, 2015), path[0].Key);
-         QAssert.AreEqual(150, path[0].Value);
-         QAssert.AreEqual(new Date(5, Month.January, 2016), path[1].Key);
-         QAssert.AreEqual(50, path[1].Value);
-
-         QAssert.Require(!simulation.nextPath(path));
-      }
-
-      [Fact]
-      public void testEventSetForNoEvents()
-      {
-         // Testing that catastrophe events are split correctly when there are no simulated events
-
-         List<KeyValuePair<Date, double> >  emptyEvents = new List<KeyValuePair<Date, double>>();
-         EventSet catRisk = new EventSet(emptyEvents, eventsStart, eventsEnd);
-         CatSimulation simulation = catRisk.newSimulation(new Date(2, Month.January, 2015), new Date(5, Month.January, 2016));
-
-         QAssert.Require(simulation);
-
-         List<KeyValuePair<Date, double> > path = new List<KeyValuePair<Date, double>>();
-
-         QAssert.Require(simulation.nextPath(path));
-         QAssert.AreEqual(0, path.Count);
-
-         QAssert.Require(simulation.nextPath(path));
-         QAssert.AreEqual(0, path.Count);
-
-         QAssert.Require(!simulation.nextPath(path));
-      }
-
-      [Fact]
-      public void testRiskFreeAgainstFloatingRateBond()
-      {
-         // Testing floating-rate cat bond against risk-free floating-rate bond
-
-         CommonVars vars = new CommonVars();
-
-         Date today = new Date(22, Month.November, 2004);
-         Settings.setEvaluationDate(today);
-
-         int settlementDays = 1;
-
-         Handle<YieldTermStructure> riskFreeRate = new Handle<YieldTermStructure>(Utilities.flatRate(today, 0.025, new Actual360()));
-         Handle<YieldTermStructure> discountCurve = new Handle<YieldTermStructure>(Utilities.flatRate(today, 0.03, new Actual360()));
-
-         IborIndex index = new USDLibor(new Period(6, TimeUnit.Months), riskFreeRate);
-         int fixingDays = 1;
-
-         double tolerance = 1.0e-6;
-
-         IborCouponPricer pricer = new BlackIborCouponPricer(new Handle<OptionletVolatilityStructure>());
-
-         // plain
-
-         Schedule sch = new Schedule(new Date(30, Month.November, 2004),
-                                     new Date(30, Month.November, 2008),
-                                     new Period(Frequency.Semiannual),
-                                     new UnitedStates(UnitedStates.Market.GovernmentBond),
-                                     BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
-                                     DateGeneration.Rule.Backward, false);
-
-         CatRisk noCatRisk = new EventSet(new List<KeyValuePair<Date, double>>(),  new Date(1, Month.Jan, 2000), new Date(31, Month.Dec, 2010));
-
-         EventPaymentOffset paymentOffset = new NoOffset();
-         NotionalRisk notionalRisk = new DigitalNotionalRisk(paymentOffset, 100);
-
-         FloatingRateBond bond1 = new FloatingRateBond(settlementDays, vars.faceAmount, sch,
-                                                       index, new ActualActual(ActualActual.Convention.ISMA),
-                                                       BusinessDayConvention.ModifiedFollowing, fixingDays,
-                                                       new List<double>(), new List<double>(),
-                                                       new List < double? >(), new List < double? >(),
-                                                       false,
-                                                       100.0, new Date(30, Month.November, 2004));
-
-         FloatingCatBond catBond1 = new FloatingCatBond(settlementDays, vars.faceAmount, sch,
-                                                        index, new ActualActual(ActualActual.Convention.ISMA),
-                                                        notionalRisk,
-                                                        BusinessDayConvention.ModifiedFollowing, fixingDays,
-                                                        new List<double>(), new List<double>(),
-                                                        new List < double? >(), new List < double? >(),
-                                                        false,
-                                                        100.0, new Date(30, Month.November, 2004));
-
-         IPricingEngine bondEngine = new DiscountingBondEngine(riskFreeRate);
-         bond1.setPricingEngine(bondEngine);
-         Utils.setCouponPricer(bond1.cashflows(), pricer);
-
-         IPricingEngine catBondEngine = new MonteCarloCatBondEngine(noCatRisk, riskFreeRate);
-         catBond1.setPricingEngine(catBondEngine);
-         Utils.setCouponPricer(catBond1.cashflows(), pricer);
+            IPricingEngine catBondEngine = new MonteCarloCatBondEngine(noCatRisk, riskFreeRate);
+            catBond1.setPricingEngine(catBondEngine);
+            Utils.setCouponPricer(catBond1.cashflows(), pricer);
 
 #if QL_USE_INDEXED_COUPON
          double cachedPrice1 = 99.874645;
 #else
-         double cachedPrice1 = 99.874646;
+            double cachedPrice1 = 99.874646;
 #endif
 
 
-         double price = bond1.cleanPrice();
-         double catPrice = catBond1.cleanPrice();
-         if (Math.Abs(price - cachedPrice1) > tolerance || Math.Abs(catPrice - price) > tolerance)
-         {
-            QAssert.Fail("failed to reproduce floating rate bond price:\n"
-                         + "    floating bond: " + price + "\n"
-                         + "    catBond bond: " + catPrice + "\n"
-                         + "    expected:   " + cachedPrice1 + "\n"
-                         + "    error:      " + (catPrice - price));
-         }
+            double price = bond1.cleanPrice();
+            double catPrice = catBond1.cleanPrice();
+            if (System.Math.Abs(price - cachedPrice1) > tolerance || System.Math.Abs(catPrice - price) > tolerance)
+            {
+                QAssert.Fail("failed to reproduce floating rate bond price:\n"
+                             + "    floating bond: " + price + "\n"
+                             + "    catBond bond: " + catPrice + "\n"
+                             + "    expected:   " + cachedPrice1 + "\n"
+                             + "    error:      " + (catPrice - price));
+            }
 
 
 
-         // different risk-free and discount curve
+            // different risk-free and discount curve
 
-         FloatingRateBond bond2 = new FloatingRateBond(settlementDays, vars.faceAmount, sch,
-                                                       index, new ActualActual(ActualActual.Convention.ISMA),
-                                                       BusinessDayConvention.ModifiedFollowing, fixingDays,
-                                                       new List<double>(), new List<double>(),
-                                                       new List < double? >(), new List < double? >(),
-                                                       false,
-                                                       100.0, new Date(30, Month.November, 2004));
+            FloatingRateBond bond2 = new FloatingRateBond(settlementDays, vars.faceAmount, sch,
+                                                          index, new ActualActual(ActualActual.Convention.ISMA),
+                                                          BusinessDayConvention.ModifiedFollowing, fixingDays,
+                                                          new List<double>(), new List<double>(),
+                                                          new List<double?>(), new List<double?>(),
+                                                          false,
+                                                          100.0, new Date(30, Month.November, 2004));
 
-         FloatingCatBond catBond2 = new FloatingCatBond(settlementDays, vars.faceAmount, sch,
-                                                        index, new ActualActual(ActualActual.Convention.ISMA),
-                                                        notionalRisk,
-                                                        BusinessDayConvention.ModifiedFollowing, fixingDays,
-                                                        new List<double>(), new List<double>(),
-                                                        new List < double? >(), new List < double? >(),
-                                                        false,
-                                                        100.0, new Date(30, Month.November, 2004));
+            FloatingCatBond catBond2 = new FloatingCatBond(settlementDays, vars.faceAmount, sch,
+                                                           index, new ActualActual(ActualActual.Convention.ISMA),
+                                                           notionalRisk,
+                                                           BusinessDayConvention.ModifiedFollowing, fixingDays,
+                                                           new List<double>(), new List<double>(),
+                                                           new List<double?>(), new List<double?>(),
+                                                           false,
+                                                           100.0, new Date(30, Month.November, 2004));
 
-         IPricingEngine bondEngine2 = new DiscountingBondEngine(discountCurve);
-         bond2.setPricingEngine(bondEngine2);
-         Utils.setCouponPricer(bond2.cashflows(), pricer);
+            IPricingEngine bondEngine2 = new DiscountingBondEngine(discountCurve);
+            bond2.setPricingEngine(bondEngine2);
+            Utils.setCouponPricer(bond2.cashflows(), pricer);
 
-         IPricingEngine catBondEngine2 = new MonteCarloCatBondEngine(noCatRisk, discountCurve);
-         catBond2.setPricingEngine(catBondEngine2);
-         Utils.setCouponPricer(catBond2.cashflows(), pricer);
+            IPricingEngine catBondEngine2 = new MonteCarloCatBondEngine(noCatRisk, discountCurve);
+            catBond2.setPricingEngine(catBondEngine2);
+            Utils.setCouponPricer(catBond2.cashflows(), pricer);
 
 #if QL_USE_INDEXED_COUPON
          double cachedPrice2 = 97.955904;
 #else
-         double cachedPrice2 = 97.955904;
+            double cachedPrice2 = 97.955904;
 #endif
 
-         price = bond2.cleanPrice();
-         catPrice = catBond2.cleanPrice();
-         if (Math.Abs(price - cachedPrice2) > tolerance || Math.Abs(catPrice - price) > tolerance)
-         {
-            QAssert.Fail("failed to reproduce floating rate bond price:\n"
-                         + "    floating bond: " + price + "\n"
-                         + "    catBond bond: " + catPrice + "\n"
-                         + "    expected:   " + cachedPrice2 + "\n"
-                         + "    error:      " + (catPrice - price));
-         }
+            price = bond2.cleanPrice();
+            catPrice = catBond2.cleanPrice();
+            if (System.Math.Abs(price - cachedPrice2) > tolerance || System.Math.Abs(catPrice - price) > tolerance)
+            {
+                QAssert.Fail("failed to reproduce floating rate bond price:\n"
+                             + "    floating bond: " + price + "\n"
+                             + "    catBond bond: " + catPrice + "\n"
+                             + "    expected:   " + cachedPrice2 + "\n"
+                             + "    error:      " + (catPrice - price));
+            }
 
-         // varying spread
+            // varying spread
 
-         List<double> spreads = new InitializedList<double>(4);
-         spreads[0] = 0.001;
-         spreads[1] = 0.0012;
-         spreads[2] = 0.0014;
-         spreads[3] = 0.0016;
+            List<double> spreads = new InitializedList<double>(4);
+            spreads[0] = 0.001;
+            spreads[1] = 0.0012;
+            spreads[2] = 0.0014;
+            spreads[3] = 0.0016;
 
-         FloatingRateBond bond3 = new FloatingRateBond(settlementDays, vars.faceAmount, sch,
-                                                       index, new ActualActual(ActualActual.Convention.ISMA),
-                                                       BusinessDayConvention.ModifiedFollowing, fixingDays,
-                                                       new List<double>(), spreads,
-                                                       new List < double? >(), new List < double? >(),
-                                                       false,
-                                                       100.0, new Date(30, Month.November, 2004));
+            FloatingRateBond bond3 = new FloatingRateBond(settlementDays, vars.faceAmount, sch,
+                                                          index, new ActualActual(ActualActual.Convention.ISMA),
+                                                          BusinessDayConvention.ModifiedFollowing, fixingDays,
+                                                          new List<double>(), spreads,
+                                                          new List<double?>(), new List<double?>(),
+                                                          false,
+                                                          100.0, new Date(30, Month.November, 2004));
 
-         FloatingCatBond catBond3 = new FloatingCatBond(settlementDays, vars.faceAmount, sch,
-                                                        index, new ActualActual(ActualActual.Convention.ISMA),
-                                                        notionalRisk,
-                                                        BusinessDayConvention.ModifiedFollowing, fixingDays,
-                                                        new List<double>(), spreads,
-                                                        new List < double? >(), new List < double? >(),
-                                                        false,
-                                                        100.0, new Date(30, Month.November, 2004));
+            FloatingCatBond catBond3 = new FloatingCatBond(settlementDays, vars.faceAmount, sch,
+                                                           index, new ActualActual(ActualActual.Convention.ISMA),
+                                                           notionalRisk,
+                                                           BusinessDayConvention.ModifiedFollowing, fixingDays,
+                                                           new List<double>(), spreads,
+                                                           new List<double?>(), new List<double?>(),
+                                                           false,
+                                                           100.0, new Date(30, Month.November, 2004));
 
-         bond3.setPricingEngine(bondEngine2);
-         Utils.setCouponPricer(bond3.cashflows(), pricer);
+            bond3.setPricingEngine(bondEngine2);
+            Utils.setCouponPricer(bond3.cashflows(), pricer);
 
-         catBond3.setPricingEngine(catBondEngine2);
-         Utils.setCouponPricer(catBond3.cashflows(), pricer);
+            catBond3.setPricingEngine(catBondEngine2);
+            Utils.setCouponPricer(catBond3.cashflows(), pricer);
 
 #if QL_USE_INDEXED_COUPON
          double cachedPrice3 = 98.495458;
 #else
-         double cachedPrice3 = 98.495459;
+            double cachedPrice3 = 98.495459;
 #endif
 
-         price = bond3.cleanPrice();
-         catPrice = catBond3.cleanPrice();
-         if (Math.Abs(price - cachedPrice3) > tolerance || Math.Abs(catPrice - price) > tolerance)
-         {
-            QAssert.Fail("failed to reproduce floating rate bond price:\n"
-                         + "    floating bond: " + price + "\n"
-                         + "    catBond bond: " + catPrice + "\n"
-                         + "    expected:   " + cachedPrice2 + "\n"
-                         + "    error:      " + (catPrice - price));
-         }
-      }
+            price = bond3.cleanPrice();
+            catPrice = catBond3.cleanPrice();
+            if (System.Math.Abs(price - cachedPrice3) > tolerance || System.Math.Abs(catPrice - price) > tolerance)
+            {
+                QAssert.Fail("failed to reproduce floating rate bond price:\n"
+                             + "    floating bond: " + price + "\n"
+                             + "    catBond bond: " + catPrice + "\n"
+                             + "    expected:   " + cachedPrice2 + "\n"
+                             + "    error:      " + (catPrice - price));
+            }
+        }
 
-      [Fact]
-      public void testCatBondInDoomScenario()
-      {
-         // Testing floating-rate cat bond in a doom scenario (certain default)
+        [Fact]
+        public void testCatBondInDoomScenario()
+        {
+            // Testing floating-rate cat bond in a doom scenario (certain default)
 
-         CommonVars vars = new CommonVars();
+            CommonVars vars = new CommonVars();
 
-         Date today = new Date(22, Month.November, 2004);
-         Settings.setEvaluationDate(today);
+            Date today = new Date(22, Month.November, 2004);
+            Settings.setEvaluationDate(today);
 
-         int settlementDays = 1;
+            int settlementDays = 1;
 
-         Handle<YieldTermStructure> riskFreeRate = new Handle<YieldTermStructure>(Utilities.flatRate(today, 0.025, new Actual360()));
-         Handle<YieldTermStructure> discountCurve = new Handle<YieldTermStructure>(Utilities.flatRate(today, 0.03, new Actual360()));
+            Handle<YieldTermStructure> riskFreeRate = new Handle<YieldTermStructure>(Utilities.flatRate(today, 0.025, new Actual360()));
+            Handle<YieldTermStructure> discountCurve = new Handle<YieldTermStructure>(Utilities.flatRate(today, 0.03, new Actual360()));
 
-         IborIndex index = new USDLibor(new Period(6, TimeUnit.Months), riskFreeRate);
-         int fixingDays = 1;
+            IborIndex index = new USDLibor(new Period(6, TimeUnit.Months), riskFreeRate);
+            int fixingDays = 1;
 
-         double tolerance = 1.0e-6;
+            double tolerance = 1.0e-6;
 
-         IborCouponPricer pricer = new BlackIborCouponPricer(new Handle<OptionletVolatilityStructure>());
+            IborCouponPricer pricer = new BlackIborCouponPricer(new Handle<OptionletVolatilityStructure>());
 
-         Schedule sch = new Schedule(new Date(30, Month.November, 2004),
-                                     new Date(30, Month.November, 2008),
-                                     new Period(Frequency.Semiannual),
-                                     new UnitedStates(UnitedStates.Market.GovernmentBond),
-                                     BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
-                                     DateGeneration.Rule.Backward, false);
+            Schedule sch = new Schedule(new Date(30, Month.November, 2004),
+                                        new Date(30, Month.November, 2008),
+                                        new Period(Frequency.Semiannual),
+                                        new UnitedStates(UnitedStates.Market.GovernmentBond),
+                                        BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
+                                        DateGeneration.Rule.Backward, false);
 
-         List<KeyValuePair<Date, double> > events = new List<KeyValuePair<Date, double>>();
-         events.Add(new KeyValuePair<Date, double>(new Date(30, Month.November, 2004), 1000));
-         CatRisk doomCatRisk = new EventSet(events,
-                                            new Date(30, Month.November, 2004), new Date(30, Month.November, 2008));
+            List<KeyValuePair<Date, double>> events = new List<KeyValuePair<Date, double>>();
+            events.Add(new KeyValuePair<Date, double>(new Date(30, Month.November, 2004), 1000));
+            CatRisk doomCatRisk = new EventSet(events,
+                                               new Date(30, Month.November, 2004), new Date(30, Month.November, 2008));
 
-         EventPaymentOffset paymentOffset = new NoOffset();
-         NotionalRisk notionalRisk = new DigitalNotionalRisk(paymentOffset, 100);
+            EventPaymentOffset paymentOffset = new NoOffset();
+            NotionalRisk notionalRisk = new DigitalNotionalRisk(paymentOffset, 100);
 
-         FloatingCatBond catBond = new FloatingCatBond(settlementDays, vars.faceAmount, sch,
-                                                       index, new ActualActual(ActualActual.Convention.ISMA),
-                                                       notionalRisk,
-                                                       BusinessDayConvention.ModifiedFollowing, fixingDays,
-                                                       new List<double>(), new List<double>(),
-                                                       new List < double? >(), new List < double? >(),
-                                                       false,
-                                                       100.0, new Date(30, Month.November, 2004));
+            FloatingCatBond catBond = new FloatingCatBond(settlementDays, vars.faceAmount, sch,
+                                                          index, new ActualActual(ActualActual.Convention.ISMA),
+                                                          notionalRisk,
+                                                          BusinessDayConvention.ModifiedFollowing, fixingDays,
+                                                          new List<double>(), new List<double>(),
+                                                          new List<double?>(), new List<double?>(),
+                                                          false,
+                                                          100.0, new Date(30, Month.November, 2004));
 
-         IPricingEngine catBondEngine = new MonteCarloCatBondEngine(doomCatRisk, discountCurve);
-         catBond.setPricingEngine(catBondEngine);
-         Utils.setCouponPricer(catBond.cashflows(), pricer);
+            IPricingEngine catBondEngine = new MonteCarloCatBondEngine(doomCatRisk, discountCurve);
+            catBond.setPricingEngine(catBondEngine);
+            Utils.setCouponPricer(catBond.cashflows(), pricer);
 
-         double price = catBond.cleanPrice();
-         QAssert.AreEqual(0, price);
+            double price = catBond.cleanPrice();
+            QAssert.AreEqual(0, price);
 
-         double lossProbability = catBond.lossProbability();
-         double exhaustionProbability = catBond.exhaustionProbability();
-         double expectedLoss = catBond.expectedLoss();
+            double lossProbability = catBond.lossProbability();
+            double exhaustionProbability = catBond.exhaustionProbability();
+            double expectedLoss = catBond.expectedLoss();
 
-         QAssert.AreEqual(1.0, lossProbability, tolerance);
-         QAssert.AreEqual(1.0, exhaustionProbability, tolerance);
-         QAssert.AreEqual(1.0, expectedLoss, tolerance);
-      }
+            QAssert.AreEqual(1.0, lossProbability, tolerance);
+            QAssert.AreEqual(1.0, exhaustionProbability, tolerance);
+            QAssert.AreEqual(1.0, expectedLoss, tolerance);
+        }
 
-      [Fact]
-      public void testCatBondWithDoomOnceInTenYears()
-      {
-         // Testing floating-rate cat bond in a doom once in 10 years scenario
-         CommonVars vars = new CommonVars();
+        [Fact]
+        public void testCatBondWithDoomOnceInTenYears()
+        {
+            // Testing floating-rate cat bond in a doom once in 10 years scenario
+            CommonVars vars = new CommonVars();
 
-         Date today = new Date(22, Month.November, 2004);
-         Settings.setEvaluationDate(today);
+            Date today = new Date(22, Month.November, 2004);
+            Settings.setEvaluationDate(today);
 
-         int settlementDays = 1;
+            int settlementDays = 1;
 
-         Handle<YieldTermStructure> riskFreeRate = new Handle<YieldTermStructure>(Utilities.flatRate(today, 0.025, new Actual360()));
-         Handle<YieldTermStructure> discountCurve = new Handle<YieldTermStructure>(Utilities.flatRate(today, 0.03, new Actual360()));
+            Handle<YieldTermStructure> riskFreeRate = new Handle<YieldTermStructure>(Utilities.flatRate(today, 0.025, new Actual360()));
+            Handle<YieldTermStructure> discountCurve = new Handle<YieldTermStructure>(Utilities.flatRate(today, 0.03, new Actual360()));
 
-         IborIndex index = new USDLibor(new Period(6, TimeUnit.Months), riskFreeRate);
-         int fixingDays = 1;
+            IborIndex index = new USDLibor(new Period(6, TimeUnit.Months), riskFreeRate);
+            int fixingDays = 1;
 
-         double tolerance = 1.0e-6;
+            double tolerance = 1.0e-6;
 
-         IborCouponPricer pricer = new BlackIborCouponPricer(new Handle<OptionletVolatilityStructure>());
+            IborCouponPricer pricer = new BlackIborCouponPricer(new Handle<OptionletVolatilityStructure>());
 
-         Schedule sch = new Schedule(new Date(30, Month.November, 2004),
-                                     new Date(30, Month.November, 2008),
-                                     new Period(Frequency.Semiannual),
-                                     new UnitedStates(UnitedStates.Market.GovernmentBond),
-                                     BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
-                                     DateGeneration.Rule.Backward, false);
+            Schedule sch = new Schedule(new Date(30, Month.November, 2004),
+                                        new Date(30, Month.November, 2008),
+                                        new Period(Frequency.Semiannual),
+                                        new UnitedStates(UnitedStates.Market.GovernmentBond),
+                                        BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
+                                        DateGeneration.Rule.Backward, false);
 
-         List<KeyValuePair<Date, double> >  events = new List<KeyValuePair<Date, double>>();
-         events.Add(new KeyValuePair<Date, double>(new Date(30, Month.November, 2008), 1000));
-         CatRisk doomCatRisk = new EventSet(events, new Date(30, Month.November, 2004), new Date(30, Month.November, 2044));
+            List<KeyValuePair<Date, double>> events = new List<KeyValuePair<Date, double>>();
+            events.Add(new KeyValuePair<Date, double>(new Date(30, Month.November, 2008), 1000));
+            CatRisk doomCatRisk = new EventSet(events, new Date(30, Month.November, 2004), new Date(30, Month.November, 2044));
 
-         CatRisk noCatRisk = new EventSet(new List<KeyValuePair<Date, double>>(),
-                                          new Date(1, Month.Jan, 2000), new Date(31, Month.Dec, 2010));
+            CatRisk noCatRisk = new EventSet(new List<KeyValuePair<Date, double>>(),
+                                             new Date(1, Month.Jan, 2000), new Date(31, Month.Dec, 2010));
 
-         EventPaymentOffset paymentOffset = new NoOffset();
-         NotionalRisk notionalRisk = new DigitalNotionalRisk(paymentOffset, 100);
+            EventPaymentOffset paymentOffset = new NoOffset();
+            NotionalRisk notionalRisk = new DigitalNotionalRisk(paymentOffset, 100);
 
-         FloatingCatBond catBond = new FloatingCatBond(settlementDays, vars.faceAmount, sch,
-                                                       index, new ActualActual(ActualActual.Convention.ISMA),
-                                                       notionalRisk,
-                                                       BusinessDayConvention.ModifiedFollowing, fixingDays,
-                                                       new List<double>(), new List<double>(),
-                                                       new List < double? >(), new List < double? >(),
-                                                       false,
-                                                       100.0, new Date(30, Month.November, 2004));
+            FloatingCatBond catBond = new FloatingCatBond(settlementDays, vars.faceAmount, sch,
+                                                          index, new ActualActual(ActualActual.Convention.ISMA),
+                                                          notionalRisk,
+                                                          BusinessDayConvention.ModifiedFollowing, fixingDays,
+                                                          new List<double>(), new List<double>(),
+                                                          new List<double?>(), new List<double?>(),
+                                                          false,
+                                                          100.0, new Date(30, Month.November, 2004));
 
-         IPricingEngine catBondEngine = new MonteCarloCatBondEngine(doomCatRisk, discountCurve);
-         catBond.setPricingEngine(catBondEngine);
-         Utils.setCouponPricer(catBond.cashflows(), pricer);
+            IPricingEngine catBondEngine = new MonteCarloCatBondEngine(doomCatRisk, discountCurve);
+            catBond.setPricingEngine(catBondEngine);
+            Utils.setCouponPricer(catBond.cashflows(), pricer);
 
-         double price = catBond.cleanPrice();
-         double yield = catBond.yield(new ActualActual(ActualActual.Convention.ISMA), Compounding.Simple, Frequency.Annual);
-         double lossProbability = catBond.lossProbability();
-         double exhaustionProbability = catBond.exhaustionProbability();
-         double expectedLoss = catBond.expectedLoss();
+            double price = catBond.cleanPrice();
+            double yield = catBond.yield(new ActualActual(ActualActual.Convention.ISMA), Compounding.Simple, Frequency.Annual);
+            double lossProbability = catBond.lossProbability();
+            double exhaustionProbability = catBond.exhaustionProbability();
+            double expectedLoss = catBond.expectedLoss();
 
-         QAssert.AreEqual(0.1, lossProbability, tolerance);
-         QAssert.AreEqual(0.1, exhaustionProbability, tolerance);
-         QAssert.AreEqual(0.1, expectedLoss, tolerance);
+            QAssert.AreEqual(0.1, lossProbability, tolerance);
+            QAssert.AreEqual(0.1, exhaustionProbability, tolerance);
+            QAssert.AreEqual(0.1, expectedLoss, tolerance);
 
-         IPricingEngine catBondEngineRF = new MonteCarloCatBondEngine(noCatRisk, discountCurve);
-         catBond.setPricingEngine(catBondEngineRF);
+            IPricingEngine catBondEngineRF = new MonteCarloCatBondEngine(noCatRisk, discountCurve);
+            catBond.setPricingEngine(catBondEngineRF);
 
-         double riskFreePrice = catBond.cleanPrice();
-         double riskFreeYield = catBond.yield(new ActualActual(ActualActual.Convention.ISMA), Compounding.Simple, Frequency.Annual);
-         double riskFreeLossProbability = catBond.lossProbability();
-         double riskFreeExhaustionProbability = catBond.exhaustionProbability();
-         double riskFreeExpectedLoss = catBond.expectedLoss();
+            double riskFreePrice = catBond.cleanPrice();
+            double riskFreeYield = catBond.yield(new ActualActual(ActualActual.Convention.ISMA), Compounding.Simple, Frequency.Annual);
+            double riskFreeLossProbability = catBond.lossProbability();
+            double riskFreeExhaustionProbability = catBond.exhaustionProbability();
+            double riskFreeExpectedLoss = catBond.expectedLoss();
 
-         QAssert.AreEqual(0.0, riskFreeLossProbability, tolerance);
-         QAssert.AreEqual(0.0, riskFreeExhaustionProbability, tolerance);
-         QAssert.IsTrue(Math.Abs(riskFreeExpectedLoss) < tolerance);
+            QAssert.AreEqual(0.0, riskFreeLossProbability, tolerance);
+            QAssert.AreEqual(0.0, riskFreeExhaustionProbability, tolerance);
+            QAssert.IsTrue(System.Math.Abs(riskFreeExpectedLoss) < tolerance);
 
-         QAssert.AreEqual(riskFreePrice * 0.9, price, tolerance);
-         QAssert.IsTrue(riskFreeYield < yield);
-      }
+            QAssert.AreEqual(riskFreePrice * 0.9, price, tolerance);
+            QAssert.IsTrue(riskFreeYield < yield);
+        }
 
-      [Fact]
-      public void testCatBondWithDoomOnceInTenYearsProportional()
-      {
-         // Testing floating-rate cat bond in a doom once in 10 years scenario with proportional notional reduction
+        [Fact]
+        public void testCatBondWithDoomOnceInTenYearsProportional()
+        {
+            // Testing floating-rate cat bond in a doom once in 10 years scenario with proportional notional reduction
 
-         CommonVars vars = new CommonVars();
+            CommonVars vars = new CommonVars();
 
-         Date today = new Date(22, Month.November, 2004);
-         Settings.setEvaluationDate(today);
+            Date today = new Date(22, Month.November, 2004);
+            Settings.setEvaluationDate(today);
 
-         int settlementDays = 1;
+            int settlementDays = 1;
 
-         Handle<YieldTermStructure> riskFreeRate = new Handle<YieldTermStructure>(Utilities.flatRate(today, 0.025, new Actual360()));
-         Handle<YieldTermStructure> discountCurve = new Handle<YieldTermStructure>(Utilities.flatRate(today, 0.03, new Actual360()));
+            Handle<YieldTermStructure> riskFreeRate = new Handle<YieldTermStructure>(Utilities.flatRate(today, 0.025, new Actual360()));
+            Handle<YieldTermStructure> discountCurve = new Handle<YieldTermStructure>(Utilities.flatRate(today, 0.03, new Actual360()));
 
-         IborIndex index = new USDLibor(new Period(6, TimeUnit.Months), riskFreeRate);
-         int fixingDays = 1;
+            IborIndex index = new USDLibor(new Period(6, TimeUnit.Months), riskFreeRate);
+            int fixingDays = 1;
 
-         double tolerance = 1.0e-6;
+            double tolerance = 1.0e-6;
 
-         IborCouponPricer pricer = new BlackIborCouponPricer(new Handle<OptionletVolatilityStructure>());
+            IborCouponPricer pricer = new BlackIborCouponPricer(new Handle<OptionletVolatilityStructure>());
 
-         Schedule sch =
-            new Schedule(new Date(30, Month.November, 2004),
-                         new Date(30, Month.November, 2008),
-                         new Period(Frequency.Semiannual),
-                         new UnitedStates(UnitedStates.Market.GovernmentBond),
-                         BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
-                         DateGeneration.Rule.Backward, false);
+            Schedule sch =
+               new Schedule(new Date(30, Month.November, 2004),
+                            new Date(30, Month.November, 2008),
+                            new Period(Frequency.Semiannual),
+                            new UnitedStates(UnitedStates.Market.GovernmentBond),
+                            BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
+                            DateGeneration.Rule.Backward, false);
 
-         List<KeyValuePair<Date, double> > events = new List<KeyValuePair<Date, double>>();
-         events.Add(new KeyValuePair<Date, double>(new Date(30, Month.November, 2008), 1000));
-         CatRisk doomCatRisk = new EventSet(events, new Date(30, Month.November, 2004), new Date(30, Month.November, 2044));
+            List<KeyValuePair<Date, double>> events = new List<KeyValuePair<Date, double>>();
+            events.Add(new KeyValuePair<Date, double>(new Date(30, Month.November, 2008), 1000));
+            CatRisk doomCatRisk = new EventSet(events, new Date(30, Month.November, 2004), new Date(30, Month.November, 2044));
 
-         CatRisk noCatRisk = new EventSet(new List<KeyValuePair<Date, double> > (),
-                                          new Date(1, Month.Jan, 2000), new Date(31, Month.Dec, 2010));
+            CatRisk noCatRisk = new EventSet(new List<KeyValuePair<Date, double>>(),
+                                             new Date(1, Month.Jan, 2000), new Date(31, Month.Dec, 2010));
 
-         EventPaymentOffset paymentOffset = new NoOffset();
-         NotionalRisk notionalRisk = new ProportionalNotionalRisk(paymentOffset, 500, 1500);
+            EventPaymentOffset paymentOffset = new NoOffset();
+            NotionalRisk notionalRisk = new ProportionalNotionalRisk(paymentOffset, 500, 1500);
 
-         FloatingCatBond catBond =
-            new FloatingCatBond(settlementDays, vars.faceAmount, sch,
-                                index, new ActualActual(ActualActual.Convention.ISMA),
-                                notionalRisk,
-                                BusinessDayConvention.ModifiedFollowing, fixingDays,
-                                new List<double>(), new List<double>(),
-                                new List < double? >(), new List < double? >(),
-                                false,
-                                100.0, new Date(30, Month.November, 2004));
+            FloatingCatBond catBond =
+               new FloatingCatBond(settlementDays, vars.faceAmount, sch,
+                                   index, new ActualActual(ActualActual.Convention.ISMA),
+                                   notionalRisk,
+                                   BusinessDayConvention.ModifiedFollowing, fixingDays,
+                                   new List<double>(), new List<double>(),
+                                   new List<double?>(), new List<double?>(),
+                                   false,
+                                   100.0, new Date(30, Month.November, 2004));
 
-         IPricingEngine catBondEngine = new MonteCarloCatBondEngine(doomCatRisk, discountCurve);
-         catBond.setPricingEngine(catBondEngine);
-         Utils.setCouponPricer(catBond.cashflows(), pricer);
+            IPricingEngine catBondEngine = new MonteCarloCatBondEngine(doomCatRisk, discountCurve);
+            catBond.setPricingEngine(catBondEngine);
+            Utils.setCouponPricer(catBond.cashflows(), pricer);
 
-         double price = catBond.cleanPrice();
-         double yield = catBond.yield(new ActualActual(ActualActual.Convention.ISMA), Compounding.Simple, Frequency.Annual);
-         double lossProbability = catBond.lossProbability();
-         double exhaustionProbability = catBond.exhaustionProbability();
-         double expectedLoss = catBond.expectedLoss();
+            double price = catBond.cleanPrice();
+            double yield = catBond.yield(new ActualActual(ActualActual.Convention.ISMA), Compounding.Simple, Frequency.Annual);
+            double lossProbability = catBond.lossProbability();
+            double exhaustionProbability = catBond.exhaustionProbability();
+            double expectedLoss = catBond.expectedLoss();
 
-         QAssert.AreEqual(0.1, lossProbability, tolerance);
-         QAssert.AreEqual(0.0, exhaustionProbability, tolerance);
-         QAssert.AreEqual(0.05, expectedLoss, tolerance);
+            QAssert.AreEqual(0.1, lossProbability, tolerance);
+            QAssert.AreEqual(0.0, exhaustionProbability, tolerance);
+            QAssert.AreEqual(0.05, expectedLoss, tolerance);
 
-         IPricingEngine catBondEngineRF = new MonteCarloCatBondEngine(noCatRisk, discountCurve);
-         catBond.setPricingEngine(catBondEngineRF);
+            IPricingEngine catBondEngineRF = new MonteCarloCatBondEngine(noCatRisk, discountCurve);
+            catBond.setPricingEngine(catBondEngineRF);
 
-         double riskFreePrice = catBond.cleanPrice();
-         double riskFreeYield = catBond.yield(new ActualActual(ActualActual.Convention.ISMA), Compounding.Simple, Frequency.Annual);
-         double riskFreeLossProbability = catBond.lossProbability();
-         double riskFreeExpectedLoss = catBond.expectedLoss();
+            double riskFreePrice = catBond.cleanPrice();
+            double riskFreeYield = catBond.yield(new ActualActual(ActualActual.Convention.ISMA), Compounding.Simple, Frequency.Annual);
+            double riskFreeLossProbability = catBond.lossProbability();
+            double riskFreeExpectedLoss = catBond.expectedLoss();
 
-         QAssert.AreEqual(0.0, riskFreeLossProbability, tolerance);
-         QAssert.IsTrue(Math.Abs(riskFreeExpectedLoss) < tolerance);
+            QAssert.AreEqual(0.0, riskFreeLossProbability, tolerance);
+            QAssert.IsTrue(System.Math.Abs(riskFreeExpectedLoss) < tolerance);
 
-         QAssert.AreEqual(riskFreePrice * 0.95, price, tolerance);
-         QAssert.IsTrue(riskFreeYield < yield);
-      }
-   }
+            QAssert.AreEqual(riskFreePrice * 0.95, price, tolerance);
+            QAssert.IsTrue(riskFreeYield < yield);
+        }
+    }
 }

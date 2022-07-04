@@ -14,22 +14,22 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-namespace QLNet
+namespace QLNet.Instruments
 {
-   /// <summary>
-   /// Spread option on two assets
-   /// </summary>
-   public class SpreadOption : MultiAssetOption
-   {
-      public SpreadOption(PlainVanillaPayoff payoff, Exercise exercise)
-         : base(payoff, exercise)
-      {}
+    /// <summary>
+    /// Spread option on two assets
+    /// </summary>
+    public class SpreadOption : MultiAssetOption
+    {
+        public SpreadOption(PlainVanillaPayoff payoff, Exercise exercise)
+           : base(payoff, exercise)
+        { }
 
-      /// <summary>
-      /// Spread option engine base class
-      /// </summary>
-      public new class Engine :
-         GenericEngine<SpreadOption.Arguments, SpreadOption.Results>
-      {}
-   }
+        /// <summary>
+        /// Spread option engine base class
+        /// </summary>
+        public new class Engine :
+           GenericEngine<Arguments, Results>
+        { }
+    }
 }

@@ -1,21 +1,21 @@
 ﻿using System;
 
-namespace QLNet
+namespace QLNet.Exceptions
 {
-   public class NullEffectiveDateException : Exception
-   {
-      public NullEffectiveDateException()
-      {
-      }
+    public class NullEffectiveDateException : Exception
+    {
+        public NullEffectiveDateException()
+        {
+        }
 
-      public NullEffectiveDateException(string message)
-         : base(message)
-      {
-      }
+        public NullEffectiveDateException(string message)
+           : base(message)
+        {
+        }
 
-      public NullEffectiveDateException(string message, Exception inner)
-         : base(message, inner)
-      {
-      }
-   }
+        public NullEffectiveDateException(string message, Exception inner)
+           : base(message, inner)
+        {
+        }
+    }
 }

@@ -14,207 +14,211 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using QLNet.Indexes;
+using QLNet.Instruments;
+using QLNet.Time;
 using System.Collections.Generic;
+using QLNet.Cashflows;
 
-namespace QLNet
+namespace QLNet.Instruments.Bonds
 {
-   /// <summary>
-   /// Catastrophe Bond - CAT
-   /// <remarks>
-   /// A catastrophe bond (CAT) is a high-yield debt instrument that is usually
-   /// insurance-linked and meant to raise money in case of a catastrophe such
-   /// as a hurricane or earthquake.
-   /// </remarks>
-   /// </summary>
-   public class CatBond : Bond
-   {
-      public CatBond(int settlementDays,
-                     Calendar calendar,
-                     Date issueDate,
-                     NotionalRisk notionalRisk)
-         : base(settlementDays, calendar, issueDate)
-      {
-         notionalRisk_ = notionalRisk;
-      }
+    /// <summary>
+    /// Catastrophe Bond - CAT
+    /// <remarks>
+    /// A catastrophe bond (CAT) is a high-yield debt instrument that is usually
+    /// insurance-linked and meant to raise money in case of a catastrophe such
+    /// as a hurricane or earthquake.
+    /// </remarks>
+    /// </summary>
+    public class CatBond : Bond
+    {
+        public CatBond(int settlementDays,
+                       Calendar calendar,
+                       Date issueDate,
+                       NotionalRisk notionalRisk)
+           : base(settlementDays, calendar, issueDate)
+        {
+            notionalRisk_ = notionalRisk;
+        }
 
-      public override void setupArguments(IPricingEngineArguments args)
-      {
-         CatBond.Arguments arguments = args as CatBond.Arguments;
-         Utils.QL_REQUIRE(arguments != null, () => "wrong arguments type");
+        public override void setupArguments(IPricingEngineArguments args)
+        {
+            Arguments arguments = args as Arguments;
+            Utils.QL_REQUIRE(arguments != null, () => "wrong arguments type");
 
-         base.setupArguments(args);
+            base.setupArguments(args);
 
-         arguments.notionalRisk = notionalRisk_;
-         arguments.startDate = issueDate();
-      }
+            arguments.notionalRisk = notionalRisk_;
+            arguments.startDate = issueDate();
+        }
 
-      public override void fetchResults(IPricingEngineResults r)
-      {
-         base.fetchResults(r);
-         CatBond.Results results = r as CatBond.Results;
-         Utils.QL_REQUIRE(results != null, () => "wrong result type");
+        public override void fetchResults(IPricingEngineResults r)
+        {
+            base.fetchResults(r);
+            Results results = r as Results;
+            Utils.QL_REQUIRE(results != null, () => "wrong result type");
 
-         lossProbability_ = results.lossProbability;
-         expectedLoss_ = results.expectedLoss;
-         exhaustionProbability_ = results.exhaustionProbability;
-      }
+            lossProbability_ = results.lossProbability;
+            expectedLoss_ = results.expectedLoss;
+            exhaustionProbability_ = results.exhaustionProbability;
+        }
 
-      public double lossProbability()
-      {
-         return lossProbability_;
-      }
+        public double lossProbability()
+        {
+            return lossProbability_;
+        }
 
-      public double expectedLoss()
-      {
-         return expectedLoss_;
-      }
+        public double expectedLoss()
+        {
+            return expectedLoss_;
+        }
 
-      public double exhaustionProbability()
-      {
-         return exhaustionProbability_;
-      }
+        public double exhaustionProbability()
+        {
+            return exhaustionProbability_;
+        }
 
-      protected NotionalRisk notionalRisk_;
-      protected double lossProbability_;
-      protected double exhaustionProbability_;
-      protected double expectedLoss_;
+        protected NotionalRisk notionalRisk_;
+        protected double lossProbability_;
+        protected double exhaustionProbability_;
+        protected double expectedLoss_;
 
-      public new class Arguments : Bond.Arguments
-      {
-         public Date startDate;
-         public NotionalRisk notionalRisk;
+        public new class Arguments : Bond.Arguments
+        {
+            public Date startDate;
+            public NotionalRisk notionalRisk;
 
-         public override void validate()
-         {
-            base.validate();
-            Utils.QL_REQUIRE(notionalRisk != null, () => "null notionalRisk");
-         }
-      }
+            public override void validate()
+            {
+                base.validate();
+                Utils.QL_REQUIRE(notionalRisk != null, () => "null notionalRisk");
+            }
+        }
 
-      public new class Results : Bond.Results
-      {
-         public double lossProbability;
-         public double exhaustionProbability;
-         public double expectedLoss;
-      }
+        public new class Results : Bond.Results
+        {
+            public double lossProbability;
+            public double exhaustionProbability;
+            public double expectedLoss;
+        }
 
-      public new class Engine : GenericEngine<CatBond.Arguments, CatBond.Results>
-      { }
-   }
+        public new class Engine : GenericEngine<Arguments, Results>
+        { }
+    }
 
-   /// <summary>
-   /// floating-rate cat bond (possibly capped and/or floored)
-   /// </summary>
-   public class FloatingCatBond : CatBond
-   {
-      public FloatingCatBond(int settlementDays,
-                             double faceAmount,
-                             Schedule schedule,
-                             IborIndex iborIndex,
-                             DayCounter paymentDayCounter,
-                             NotionalRisk notionalRisk,
-                             BusinessDayConvention paymentConvention = QLNet.BusinessDayConvention.Following,
-                             int fixingDays = 0,
-                             List<double> gearings = null,
-                             List<double> spreads = null,
-                             List < double? > caps = null,
-                             List < double? > floors = null,
-                             bool inArrears = false,
-                             double redemption = 100.0,
-                             Date issueDate = null)
-      : base(settlementDays, schedule.calendar(), issueDate, notionalRisk)
-      {
-         maturityDate_ = schedule.endDate();
+    /// <summary>
+    /// floating-rate cat bond (possibly capped and/or floored)
+    /// </summary>
+    public class FloatingCatBond : CatBond
+    {
+        public FloatingCatBond(int settlementDays,
+                               double faceAmount,
+                               Schedule schedule,
+                               IborIndex iborIndex,
+                               DayCounter paymentDayCounter,
+                               NotionalRisk notionalRisk,
+                               BusinessDayConvention paymentConvention = BusinessDayConvention.Following,
+                               int fixingDays = 0,
+                               List<double> gearings = null,
+                               List<double> spreads = null,
+                               List<double?> caps = null,
+                               List<double?> floors = null,
+                               bool inArrears = false,
+                               double redemption = 100.0,
+                               Date issueDate = null)
+        : base(settlementDays, schedule.calendar(), issueDate, notionalRisk)
+        {
+            maturityDate_ = schedule.endDate();
 
-         cashflows_ = new IborLeg(schedule, iborIndex)
-         .withFixingDays(fixingDays)
-         .withGearings(gearings)
-         .withSpreads(spreads)
-         .withCaps(caps)
-         .withFloors(floors)
-         .inArrears(inArrears)
-         .withPaymentDayCounter(paymentDayCounter)
-         .withNotionals(faceAmount)
-         .withPaymentAdjustment(paymentConvention);
+            cashflows_ = new IborLeg(schedule, iborIndex)
+            .withFixingDays(fixingDays)
+            .withGearings(gearings)
+            .withSpreads(spreads)
+            .withCaps(caps)
+            .withFloors(floors)
+            .inArrears(inArrears)
+            .withPaymentDayCounter(paymentDayCounter)
+            .withNotionals(faceAmount)
+            .withPaymentAdjustment(paymentConvention);
 
-         addRedemptionsToCashflows(new InitializedList<double>(1, redemption));
+            addRedemptionsToCashflows(new InitializedList<double>(1, redemption));
 
-         Utils.QL_REQUIRE(!cashflows().empty(), () => "bond with no cashflows!");
-         Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
+            Utils.QL_REQUIRE(!cashflows().empty(), () => "bond with no cashflows!");
+            Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
 
-         iborIndex.registerWith(update);
-      }
+            iborIndex.registerWith(update);
+        }
 
-      public FloatingCatBond(int settlementDays,
-                             double faceAmount,
-                             Date startDate,
-                             Date maturityDate,
-                             Frequency couponFrequency,
-                             Calendar calendar,
-                             IborIndex iborIndex,
-                             DayCounter accrualDayCounter,
-                             NotionalRisk notionalRisk,
-                             BusinessDayConvention accrualConvention = BusinessDayConvention.Following,
-                             BusinessDayConvention paymentConvention = BusinessDayConvention.Following,
-                             int fixingDays = 0,
-                             List<double> gearings = null,
-                             List<double> spreads = null,
-                             List < double? > caps = null,
-                             List < double? > floors = null,
-                             bool inArrears = false,
-                             double redemption = 100.0,
-                             Date issueDate = null,
-                             Date stubDate = null,
-                             DateGeneration.Rule rule = DateGeneration.Rule.Backward,
-                             bool endOfMonth = false)
-      : base(settlementDays, calendar, issueDate, notionalRisk)
-      {
-         maturityDate_ = maturityDate;
+        public FloatingCatBond(int settlementDays,
+                               double faceAmount,
+                               Date startDate,
+                               Date maturityDate,
+                               Frequency couponFrequency,
+                               Calendar calendar,
+                               IborIndex iborIndex,
+                               DayCounter accrualDayCounter,
+                               NotionalRisk notionalRisk,
+                               BusinessDayConvention accrualConvention = BusinessDayConvention.Following,
+                               BusinessDayConvention paymentConvention = BusinessDayConvention.Following,
+                               int fixingDays = 0,
+                               List<double> gearings = null,
+                               List<double> spreads = null,
+                               List<double?> caps = null,
+                               List<double?> floors = null,
+                               bool inArrears = false,
+                               double redemption = 100.0,
+                               Date issueDate = null,
+                               Date stubDate = null,
+                               DateGeneration.Rule rule = DateGeneration.Rule.Backward,
+                               bool endOfMonth = false)
+        : base(settlementDays, calendar, issueDate, notionalRisk)
+        {
+            maturityDate_ = maturityDate;
 
-         Date firstDate = null, nextToLastDate = null;
-         switch (rule)
-         {
-            case DateGeneration.Rule.Backward:
-               firstDate = new Date();
-               nextToLastDate = stubDate;
-               break;
-            case DateGeneration.Rule.Forward:
-               firstDate = stubDate;
-               nextToLastDate = new Date();
-               break;
-            case DateGeneration.Rule.Zero:
-            case DateGeneration.Rule.ThirdWednesday:
-            case DateGeneration.Rule.Twentieth:
-            case DateGeneration.Rule.TwentiethIMM:
-               Utils.QL_FAIL("stub date (" + stubDate + ") not allowed with " +
-                             rule + " DateGeneration.Rule");
-               break;
-            default:
-               Utils.QL_FAIL("unknown DateGeneration::Rule (" + rule + ")");
-               break;
-         }
+            Date firstDate = null, nextToLastDate = null;
+            switch (rule)
+            {
+                case DateGeneration.Rule.Backward:
+                    firstDate = new Date();
+                    nextToLastDate = stubDate;
+                    break;
+                case DateGeneration.Rule.Forward:
+                    firstDate = stubDate;
+                    nextToLastDate = new Date();
+                    break;
+                case DateGeneration.Rule.Zero:
+                case DateGeneration.Rule.ThirdWednesday:
+                case DateGeneration.Rule.Twentieth:
+                case DateGeneration.Rule.TwentiethIMM:
+                    Utils.QL_FAIL("stub date (" + stubDate + ") not allowed with " +
+                                  rule + " DateGeneration.Rule");
+                    break;
+                default:
+                    Utils.QL_FAIL("unknown DateGeneration::Rule (" + rule + ")");
+                    break;
+            }
 
-         Schedule schedule = new Schedule(startDate, maturityDate_, new Period(couponFrequency),
-                                          calendar_, accrualConvention, accrualConvention,
-                                          rule, endOfMonth, firstDate, nextToLastDate);
+            Schedule schedule = new Schedule(startDate, maturityDate_, new Period(couponFrequency),
+                                             calendar_, accrualConvention, accrualConvention,
+                                             rule, endOfMonth, firstDate, nextToLastDate);
 
-         cashflows_ = new IborLeg(schedule, iborIndex)
-         .withFixingDays(fixingDays)
-         .withGearings(gearings)
-         .withSpreads(spreads)
-         .withCaps(caps)
-         .withFloors(floors)
-         .inArrears(inArrears)
-         .withPaymentDayCounter(accrualDayCounter)
-         .withPaymentAdjustment(paymentConvention)
-         .withNotionals(faceAmount);
+            cashflows_ = new IborLeg(schedule, iborIndex)
+            .withFixingDays(fixingDays)
+            .withGearings(gearings)
+            .withSpreads(spreads)
+            .withCaps(caps)
+            .withFloors(floors)
+            .inArrears(inArrears)
+            .withPaymentDayCounter(accrualDayCounter)
+            .withPaymentAdjustment(paymentConvention)
+            .withNotionals(faceAmount);
 
-         addRedemptionsToCashflows(new InitializedList<double>(1, redemption));
+            addRedemptionsToCashflows(new InitializedList<double>(1, redemption));
 
-         Utils.QL_REQUIRE(!cashflows().empty(), () => "bond with no cashflows!");
-         Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
+            Utils.QL_REQUIRE(!cashflows().empty(), () => "bond with no cashflows!");
+            Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
 
-         iborIndex.registerWith(update);
-      }
-   }
+            iborIndex.registerWith(update);
+        }
+    }
 }

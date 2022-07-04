@@ -17,44 +17,46 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Patterns;
+using QLNet.Time;
 using System;
 using System.Linq;
 
-namespace QLNet
+namespace QLNet.Quotes
 {
-   //! Quote adapter for the last fixing available of a given Index
-   class LastFixingQuote : Quote, IObserver
-   {
-      protected Index index_;
+    //! Quote adapter for the last fixing available of a given Index
+    class LastFixingQuote : Quote, IObserver
+    {
+        protected Index index_;
 
-      public LastFixingQuote(Index index)
-      {
-         index_ = index;
-         index_.registerWith(update);
-      }
+        public LastFixingQuote(Index index)
+        {
+            index_ = index;
+            index_.registerWith(update);
+        }
 
-      //! Quote interface
-      public override double value()
-      {
-         if (!isValid())
-            throw new ArgumentException(index_.name() + " has no fixing");
-         return index_.fixing(referenceDate());
-      }
+        //! Quote interface
+        public override double value()
+        {
+            if (!isValid())
+                throw new ArgumentException(index_.name() + " has no fixing");
+            return index_.fixing(referenceDate());
+        }
 
-      public override bool isValid()
-      {
-         return index_.timeSeries().Count > 0;
-      }
+        public override bool isValid()
+        {
+            return index_.timeSeries().Count > 0;
+        }
 
-      public Date referenceDate()
-      {
-         return index_.timeSeries().Keys.Last(); // must be tested
-      }
+        public Date referenceDate()
+        {
+            return index_.timeSeries().Keys.Last(); // must be tested
+        }
 
-      public void update()
-      {
-         notifyObservers();
-      }
+        public void update()
+        {
+            notifyObservers();
+        }
 
-   }
+    }
 }

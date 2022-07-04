@@ -30,15 +30,15 @@ namespace QLNet
                                                       double nu, double rho)
       {
          double oneMinusBeta = 1.0 - beta;
-         double Fmid = forward * strike < 0.0 ? (forward + strike) * 0.5 : Math.Sqrt(forward * strike);
+         double Fmid = forward * strike < 0.0 ? (forward + strike) * 0.5 : System.Math.Sqrt(forward * strike);
          double gamma1 = beta / Fmid;
          double gamma2 = -beta * oneMinusBeta / (Fmid * Fmid);
-         double zeta = alpha / (nu * oneMinusBeta) * (Math.Pow(forward, oneMinusBeta) - Math.Pow(strike, oneMinusBeta));
-         double D = Math.Log((Math.Sqrt(1.0 - 2.0 * rho * zeta + zeta * zeta) + zeta - rho) / (1.0 - rho));
+         double zeta = alpha / (nu * oneMinusBeta) * (System.Math.Pow(forward, oneMinusBeta) - System.Math.Pow(strike, oneMinusBeta));
+         double D = System.Math.Log((System.Math.Sqrt(1.0 - 2.0 * rho * zeta + zeta * zeta) + zeta - rho) / (1.0 - rho));
          double epsilon = alpha * alpha * expiryTime;
          double M = forward - strike;
-         double a = nu * Math.Pow(Fmid, beta) / alpha;
-         double b = Math.Pow(a, 2.0);
+         double a = nu * System.Math.Pow(Fmid, beta) / alpha;
+         double b = System.Math.Pow(a, 2.0);
          double d = 1.0 + ((2.0 * gamma2 - gamma1 * gamma1) / 24.0 * b
                            + rho * gamma1 / 4.0 * a
                            + (2.0 - 3.0 * rho * rho) / 24.0) * epsilon;
@@ -52,12 +52,12 @@ namespace QLNet
          if (approximationModel == SabrApproximationModel.Hagan2002)
          {
             double oneMinusBeta = 1.0 - beta;
-            double A = Math.Pow(forward * strike, oneMinusBeta);
-            double sqrtA = Math.Sqrt(A);
+            double A = System.Math.Pow(forward * strike, oneMinusBeta);
+            double sqrtA = System.Math.Sqrt(A);
             double logM;
 
             if (!close(forward, strike))
-               logM = Math.Log(forward / strike);
+               logM = System.Math.Log(forward / strike);
             else
             {
                double epsilon = (forward - strike) / strike;
@@ -66,8 +66,8 @@ namespace QLNet
             double z = (nu / alpha) * sqrtA * logM;
             double B = 1.0 - 2.0 * rho * z + z * z;
             double C = oneMinusBeta * oneMinusBeta * logM * logM;
-            double tmp = (Math.Sqrt(B) + z - rho) / (1.0 - rho);
-            double xx = Math.Log(tmp);
+            double tmp = (System.Math.Sqrt(B) + z - rho) / (1.0 - rho);
+            double xx = System.Math.Log(tmp);
             double D = sqrtA * (1.0 + C / 24.0 + C * C / 1920.0);
             double d = 1.0 + expiryTime *
                        (oneMinusBeta * oneMinusBeta * alpha * alpha / (24.0 * A)
@@ -78,7 +78,7 @@ namespace QLNet
             // computations become precise enough if the square of z worth slightly more than the precision machine (hence the m)
             const double m = 10;
 
-            if (Math.Abs(z * z) > Const.QL_EPSILON * m)
+            if (System.Math.Abs(z * z) > Const.QL_EPSILON * m)
                multiplier = z / xx;
             else
             {
@@ -89,25 +89,25 @@ namespace QLNet
          else if (approximationModel == SabrApproximationModel.Obloj2008)
          {
             double oneMinusBeta = 1.0 - beta;
-            double Fmid = Math.Sqrt(forward * strike);
+            double Fmid = System.Math.Sqrt(forward * strike);
             double gamma1 = beta / Fmid;
             double gamma2 = -beta * oneMinusBeta / (Fmid * Fmid);
-            double zeta = alpha / (nu * oneMinusBeta) * (Math.Pow(forward, oneMinusBeta) - Math.Pow(strike, oneMinusBeta));
-            double D = Math.Log((Math.Sqrt(1.0 - 2.0 * rho * zeta + zeta * zeta) + zeta - rho) / (1.0 - rho));
+            double zeta = alpha / (nu * oneMinusBeta) * (System.Math.Pow(forward, oneMinusBeta) - System.Math.Pow(strike, oneMinusBeta));
+            double D = System.Math.Log((System.Math.Sqrt(1.0 - 2.0 * rho * zeta + zeta * zeta) + zeta - rho) / (1.0 - rho));
             double epsilon = alpha * alpha * expiryTime;
 
             double logM;
 
             if (!close(forward, strike))
-               logM = Math.Log(forward / strike);
+               logM = System.Math.Log(forward / strike);
             else
             {
                double eps = (forward - strike) / strike;
                logM = eps - .5 * eps * eps;
             }
 
-            double a = nu * Math.Pow(Fmid, beta) / alpha;
-            double b = Math.Pow(a, 2.0);
+            double a = nu * System.Math.Pow(Fmid, beta) / alpha;
+            double b = System.Math.Pow(a, 2.0);
             double d = 1.0 + ((2.0 * gamma2 - gamma1 * gamma1 + 1 / (Fmid * Fmid)) / 24.0 * b
                               + rho * gamma1 / 4.0 * a
                               + (2.0 - 3.0 * rho * rho) / 24.0) * epsilon;

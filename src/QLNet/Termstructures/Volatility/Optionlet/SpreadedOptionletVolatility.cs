@@ -13,55 +13,58 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+using QLNet.Quotes;
+using QLNet.Termstructures.Volatility;
+using QLNet.Time;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace QLNet
+namespace QLNet.Termstructures.Volatility.Optionlet
 {
-   public class SpreadedOptionletVolatility : OptionletVolatilityStructure
-   {
-      public SpreadedOptionletVolatility(Handle<OptionletVolatilityStructure> baseVol, Handle<Quote> spread)
-      {
-         baseVol_ = baseVol;
-         spread_ = spread;
-         enableExtrapolation(baseVol.link.allowsExtrapolation()) ;
-         baseVol_.registerWith(update);
-         spread_.registerWith(update);
-      }
-      // All virtual methods of base classes must be forwarded
-      // VolatilityTermStructure interface
-      public override BusinessDayConvention businessDayConvention() { return baseVol_.link.businessDayConvention(); }
-      public override double minStrike() { return baseVol_.link.minStrike(); }
-      public override double maxStrike() { return baseVol_.link.maxStrike(); }
-      // TermStructure interface
-      public override DayCounter dayCounter() { return baseVol_.link.dayCounter(); }
-      public override Date maxDate() { return baseVol_.link.maxDate(); }
-      public override double maxTime() { return baseVol_.link.maxTime(); }
-      public override Date referenceDate() { return baseVol_.link.referenceDate(); }
-      public override Calendar calendar() { return baseVol_.link.calendar(); }
-      public override int settlementDays() { return baseVol_.link.settlementDays(); }
+    public class SpreadedOptionletVolatility : OptionletVolatilityStructure
+    {
+        public SpreadedOptionletVolatility(Handle<OptionletVolatilityStructure> baseVol, Handle<Quote> spread)
+        {
+            baseVol_ = baseVol;
+            spread_ = spread;
+            enableExtrapolation(baseVol.link.allowsExtrapolation());
+            baseVol_.registerWith(update);
+            spread_.registerWith(update);
+        }
+        // All virtual methods of base classes must be forwarded
+        // VolatilityTermStructure interface
+        public override BusinessDayConvention businessDayConvention() { return baseVol_.link.businessDayConvention(); }
+        public override double minStrike() { return baseVol_.link.minStrike(); }
+        public override double maxStrike() { return baseVol_.link.maxStrike(); }
+        // TermStructure interface
+        public override DayCounter dayCounter() { return baseVol_.link.dayCounter(); }
+        public override Date maxDate() { return baseVol_.link.maxDate(); }
+        public override double maxTime() { return baseVol_.link.maxTime(); }
+        public override Date referenceDate() { return baseVol_.link.referenceDate(); }
+        public override Calendar calendar() { return baseVol_.link.calendar(); }
+        public override int settlementDays() { return baseVol_.link.settlementDays(); }
 
-      // All virtual methods of base classes must be forwarded
-      // OptionletVolatilityStructure interface
-      protected override SmileSection smileSectionImpl(Date d)
-      {
-         SmileSection baseSmile = baseVol_.link.smileSection(d, true);
-         return new SpreadedSmileSection(baseSmile, spread_);
-      }
-      protected override SmileSection smileSectionImpl(double optionTime)
-      {
-         SmileSection baseSmile = baseVol_.link.smileSection(optionTime, true);
-         return new SpreadedSmileSection(baseSmile, spread_);
-      }
-      protected override double volatilityImpl(double t, double s)
-      {
-         return baseVol_.link.volatility(t, s, true) + spread_.link.value();
-      }
+        // All virtual methods of base classes must be forwarded
+        // OptionletVolatilityStructure interface
+        protected override SmileSection smileSectionImpl(Date d)
+        {
+            SmileSection baseSmile = baseVol_.link.smileSection(d, true);
+            return new SpreadedSmileSection(baseSmile, spread_);
+        }
+        protected override SmileSection smileSectionImpl(double optionTime)
+        {
+            SmileSection baseSmile = baseVol_.link.smileSection(optionTime, true);
+            return new SpreadedSmileSection(baseSmile, spread_);
+        }
+        protected override double volatilityImpl(double t, double s)
+        {
+            return baseVol_.link.volatility(t, s, true) + spread_.link.value();
+        }
 
-      private Handle<OptionletVolatilityStructure> baseVol_;
-      private Handle<Quote> spread_;
+        private Handle<OptionletVolatilityStructure> baseVol_;
+        private Handle<Quote> spread_;
 
-   }
+    }
 }

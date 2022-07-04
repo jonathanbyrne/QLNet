@@ -17,104 +17,103 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 using Xunit;
-
-using QLNet;
 using System.Numerics;
 using System.Collections.Generic;
 using System;
+using QLNet.Math;
 
-namespace TestSuite
+namespace QLNet.Tests
 {
-   [Collection("QLNet CI Tests")]
-   public class T_FastFourierTransform
-   {
+    [Collection("QLNet CI Tests")]
+    public class T_FastFourierTransform
+    {
 
-      [Fact]
-      public void testFFTSimple()
-      {
-         List<Complex> a = new List<Complex>();
-         a.Add(new Complex(0, 0));
-         a.Add(new Complex(1, 1));
-         a.Add(new Complex(3, 3));
-         a.Add(new Complex(4, 4));
-         a.Add(new Complex(4, 4));
-         a.Add(new Complex(3, 3));
-         a.Add(new Complex(1, 1));
-         a.Add(new Complex(0, 0));
+        [Fact]
+        public void testFFTSimple()
+        {
+            List<Complex> a = new List<Complex>();
+            a.Add(new Complex(0, 0));
+            a.Add(new Complex(1, 1));
+            a.Add(new Complex(3, 3));
+            a.Add(new Complex(4, 4));
+            a.Add(new Complex(4, 4));
+            a.Add(new Complex(3, 3));
+            a.Add(new Complex(1, 1));
+            a.Add(new Complex(0, 0));
 
-         List<Complex> b = new InitializedList<Complex>(8);
+            List<Complex> b = new InitializedList<Complex>(8);
 
-         FastFourierTransform fft = new FastFourierTransform(3);
-         fft.transform(a, 0, 8, b);
-         List<Complex> expected = new List<Complex>();
-         expected.Add(new Complex(16, 16));
-         expected.Add(new Complex(-4.8284, -11.6569));
-         expected.Add(new Complex(0, 0));
-         expected.Add(new Complex(-0.3431, 0.8284));
-         expected.Add(new Complex(0, 0));
-         expected.Add(new Complex(0.8284, -0.3431));
-         expected.Add(new Complex(0, 0));
-         expected.Add(new Complex(-11.6569, -4.8284));
+            FastFourierTransform fft = new FastFourierTransform(3);
+            fft.transform(a, 0, 8, b);
+            List<Complex> expected = new List<Complex>();
+            expected.Add(new Complex(16, 16));
+            expected.Add(new Complex(-4.8284, -11.6569));
+            expected.Add(new Complex(0, 0));
+            expected.Add(new Complex(-0.3431, 0.8284));
+            expected.Add(new Complex(0, 0));
+            expected.Add(new Complex(0.8284, -0.3431));
+            expected.Add(new Complex(0, 0));
+            expected.Add(new Complex(-11.6569, -4.8284));
 
-         for (int i = 0; i < 8; i++)
-         {
-            if ((Math.Abs(b[i].Real - expected[i].Real) > 1.0e-2) ||
-                (Math.Abs(b[i].Imaginary - expected[i].Imaginary) > 1.0e-2))
-               QAssert.Fail("Convolution(" + i + ")\n"
-                            + "    calculated: " + b[i] + "\n"
-                            + "    expected:   " + expected[i]);
-         }
-      }
+            for (int i = 0; i < 8; i++)
+            {
+                if (System.Math.Abs(b[i].Real - expected[i].Real) > 1.0e-2 ||
+                    System.Math.Abs(b[i].Imaginary - expected[i].Imaginary) > 1.0e-2)
+                    QAssert.Fail("Convolution(" + i + ")\n"
+                                 + "    calculated: " + b[i] + "\n"
+                                 + "    expected:   " + expected[i]);
+            }
+        }
 
-      [Fact]
-      public void testFFTInverse()
-      {
-         List<Complex> x = new InitializedList<Complex>(3);
-         x[0] = 1;
-         x[1] = 2;
-         x[2] = 3;
+        [Fact]
+        public void testFFTInverse()
+        {
+            List<Complex> x = new InitializedList<Complex>(3);
+            x[0] = 1;
+            x[1] = 2;
+            x[2] = 3;
 
-         int order = FastFourierTransform.min_order(x.Count) + 1;
-         FastFourierTransform fft = new FastFourierTransform(order);
+            int order = FastFourierTransform.min_order(x.Count) + 1;
+            FastFourierTransform fft = new FastFourierTransform(order);
 
-         int nFrq = fft.output_size();
-         List<Complex> ft = new InitializedList<Complex>(nFrq);
-         List<Complex> tmp = new InitializedList<Complex>(nFrq);
-         Complex z = new Complex();
+            int nFrq = fft.output_size();
+            List<Complex> ft = new InitializedList<Complex>(nFrq);
+            List<Complex> tmp = new InitializedList<Complex>(nFrq);
+            Complex z = new Complex();
 
-         fft.inverse_transform(x, 0, 3, ft);
-         for (int i = 0; i < nFrq; ++i)
-         {
-            tmp[i] = Math.Pow(ft[i].Magnitude, 2.0);
-            ft[i] = z;
-         }
+            fft.inverse_transform(x, 0, 3, ft);
+            for (int i = 0; i < nFrq; ++i)
+            {
+                tmp[i] = System.Math.Pow(ft[i].Magnitude, 2.0);
+                ft[i] = z;
+            }
 
-         fft.inverse_transform(tmp, 0, tmp.Count, ft);
+            fft.inverse_transform(tmp, 0, tmp.Count, ft);
 
-         // 0
-         double calculated = ft[0].Real / nFrq;
-         double expected = (x[0] * x[0] + x[1] * x[1] + x[2] * x[2]).Real;
-         if (Math.Abs(calculated - expected) > 1.0e-10)
-            QAssert.Fail("Convolution(0)\n"
-                         + "    calculated: " + calculated + "\n"
-                         + "    expected:   " + expected);
+            // 0
+            double calculated = ft[0].Real / nFrq;
+            double expected = (x[0] * x[0] + x[1] * x[1] + x[2] * x[2]).Real;
+            if (System.Math.Abs(calculated - expected) > 1.0e-10)
+                QAssert.Fail("Convolution(0)\n"
+                             + "    calculated: " + calculated + "\n"
+                             + "    expected:   " + expected);
 
-         // 1
-         calculated = ft[1].Real / nFrq;
-         expected = (x[0] * x[1] + x[1] * x[2]).Real;
-         if (Math.Abs(calculated - expected) > 1.0e-10)
-            QAssert.Fail("Convolution(1)\n"
-                         + "    calculated: " + calculated + "\n"
-                         + "    expected:   " + expected);
+            // 1
+            calculated = ft[1].Real / nFrq;
+            expected = (x[0] * x[1] + x[1] * x[2]).Real;
+            if (System.Math.Abs(calculated - expected) > 1.0e-10)
+                QAssert.Fail("Convolution(1)\n"
+                             + "    calculated: " + calculated + "\n"
+                             + "    expected:   " + expected);
 
-         // 2
-         calculated = ft[2].Real / nFrq;
-         expected = (x[0] * x[2]).Real;
-         if (Math.Abs(calculated - expected) > 1.0e-10)
-            QAssert.Fail("Convolution(1)\n"
-                         + "    calculated: " + calculated + "\n"
-                         + "    expected:   " + expected);
+            // 2
+            calculated = ft[2].Real / nFrq;
+            expected = (x[0] * x[2]).Real;
+            if (System.Math.Abs(calculated - expected) > 1.0e-10)
+                QAssert.Fail("Convolution(1)\n"
+                             + "    calculated: " + calculated + "\n"
+                             + "    expected:   " + expected);
 
-      }
-   }
+        }
+    }
 }

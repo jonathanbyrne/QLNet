@@ -1,21 +1,21 @@
 ﻿using System;
 
-namespace QLNet
+namespace QLNet.Exceptions
 {
-   public class InvalidPriceSignException : Exception
-   {
-      public InvalidPriceSignException()
-      {
-      }
+    public class InvalidPriceSignException : Exception
+    {
+        public InvalidPriceSignException()
+        {
+        }
 
-      public InvalidPriceSignException(string message)
-         : base(message)
-      {
-      }
+        public InvalidPriceSignException(string message)
+           : base(message)
+        {
+        }
 
-      public InvalidPriceSignException(string message, Exception inner)
-         : base(message, inner)
-      {
-      }
-   }
+        public InvalidPriceSignException(string message, Exception inner)
+           : base(message, inner)
+        {
+        }
+    }
 }

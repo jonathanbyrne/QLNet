@@ -18,111 +18,115 @@
 */
 using System;
 using Xunit;
-using QLNet;
+using QLNet.Time;
+using QLNet.Quotes;
+using QLNet.Termstructures.Credit;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
 
-namespace TestSuite
+namespace QLNet.Tests
 {
-   [Collection("QLNet CI Tests")]
-   public class T_DefaultProbabilityCurves
-   {
-      [Fact]
-      public void testDefaultProbability()
-      {
-         // Testing default-probability structure...
+    [Collection("QLNet CI Tests")]
+    public class T_DefaultProbabilityCurves
+    {
+        [Fact]
+        public void testDefaultProbability()
+        {
+            // Testing default-probability structure...
 
-         double hazardRate = 0.0100;
-         Handle<Quote> hazardRateQuote = new Handle<Quote>(new SimpleQuote(hazardRate));
-         DayCounter dayCounter = new Actual360();
-         Calendar calendar = new TARGET();
-         int n = 20;
+            double hazardRate = 0.0100;
+            Handle<Quote> hazardRateQuote = new Handle<Quote>(new SimpleQuote(hazardRate));
+            DayCounter dayCounter = new Actual360();
+            Calendar calendar = new TARGET();
+            int n = 20;
 
-         double tolerance = 1.0e-10;
-         Date today = Settings.evaluationDate();
-         Date startDate = today;
-         Date endDate = startDate;
+            double tolerance = 1.0e-10;
+            Date today = Settings.evaluationDate();
+            Date startDate = today;
+            Date endDate = startDate;
 
-         FlatHazardRate flatHazardRate = new FlatHazardRate(startDate, hazardRateQuote, dayCounter);
+            FlatHazardRate flatHazardRate = new FlatHazardRate(startDate, hazardRateQuote, dayCounter);
 
-         for (int i = 0; i < n; i++)
-         {
-            startDate = endDate;
-            endDate = calendar.advance(endDate, 1, TimeUnit.Years);
+            for (int i = 0; i < n; i++)
+            {
+                startDate = endDate;
+                endDate = calendar.advance(endDate, 1, TimeUnit.Years);
 
-            double pStart = flatHazardRate.defaultProbability(startDate);
-            double pEnd = flatHazardRate.defaultProbability(endDate);
+                double pStart = flatHazardRate.defaultProbability(startDate);
+                double pEnd = flatHazardRate.defaultProbability(endDate);
 
-            double pBetweenComputed =
-               flatHazardRate.defaultProbability(startDate, endDate);
+                double pBetweenComputed =
+                   flatHazardRate.defaultProbability(startDate, endDate);
 
-            double pBetween = pEnd - pStart;
+                double pBetween = pEnd - pStart;
 
-            if (Math.Abs(pBetween - pBetweenComputed) > tolerance)
-               QAssert.Fail("Failed to reproduce probability(d1, d2) "
-                            + "for default probability structure\n"
-                            + "    calculated probability: " + pBetweenComputed + "\n"
-                            + "    expected probability:   " + pBetween);
+                if (System.Math.Abs(pBetween - pBetweenComputed) > tolerance)
+                    QAssert.Fail("Failed to reproduce probability(d1, d2) "
+                                 + "for default probability structure\n"
+                                 + "    calculated probability: " + pBetweenComputed + "\n"
+                                 + "    expected probability:   " + pBetween);
 
-            double t2 = dayCounter.yearFraction(today, endDate);
-            double timeProbability = flatHazardRate.defaultProbability(t2);
-            double dateProbability =
-               flatHazardRate.defaultProbability(endDate);
+                double t2 = dayCounter.yearFraction(today, endDate);
+                double timeProbability = flatHazardRate.defaultProbability(t2);
+                double dateProbability =
+                   flatHazardRate.defaultProbability(endDate);
 
-            if (Math.Abs(timeProbability - dateProbability) > tolerance)
-               QAssert.Fail("single-time probability and single-date probability do not match\n"
-                            + "    time probability: " + timeProbability + "\n"
-                            + "    date probability: " + dateProbability);
+                if (System.Math.Abs(timeProbability - dateProbability) > tolerance)
+                    QAssert.Fail("single-time probability and single-date probability do not match\n"
+                                 + "    time probability: " + timeProbability + "\n"
+                                 + "    date probability: " + dateProbability);
 
-            double t1 = dayCounter.yearFraction(today, startDate);
-            timeProbability = flatHazardRate.defaultProbability(t1, t2);
-            dateProbability = flatHazardRate.defaultProbability(startDate, endDate);
+                double t1 = dayCounter.yearFraction(today, startDate);
+                timeProbability = flatHazardRate.defaultProbability(t1, t2);
+                dateProbability = flatHazardRate.defaultProbability(startDate, endDate);
 
-            if (Math.Abs(timeProbability - dateProbability) > tolerance)
-               QAssert.Fail("double-time probability and double-date probability do not match\n"
-                            + "    time probability: " + timeProbability + "\n"
-                            + "    date probability: " + dateProbability);
+                if (System.Math.Abs(timeProbability - dateProbability) > tolerance)
+                    QAssert.Fail("double-time probability and double-date probability do not match\n"
+                                 + "    time probability: " + timeProbability + "\n"
+                                 + "    date probability: " + dateProbability);
 
-         }
-      }
+            }
+        }
 
-      [Fact]
-      public void testFlatHazardRate()
-      {
+        [Fact]
+        public void testFlatHazardRate()
+        {
 
-         // Testing flat hazard rate...
+            // Testing flat hazard rate...
 
-         double hazardRate = 0.0100;
-         Handle<Quote> hazardRateQuote = new Handle<Quote>(new SimpleQuote(hazardRate));
-         DayCounter dayCounter = new Actual360();
-         Calendar calendar = new TARGET();
-         int n = 20;
+            double hazardRate = 0.0100;
+            Handle<Quote> hazardRateQuote = new Handle<Quote>(new SimpleQuote(hazardRate));
+            DayCounter dayCounter = new Actual360();
+            Calendar calendar = new TARGET();
+            int n = 20;
 
-         double tolerance = 1.0e-10;
-         Date today = Settings.evaluationDate();
-         Date startDate = today;
-         Date endDate = startDate;
+            double tolerance = 1.0e-10;
+            Date today = Settings.evaluationDate();
+            Date startDate = today;
+            Date endDate = startDate;
 
-         FlatHazardRate flatHazardRate = new FlatHazardRate(today, hazardRateQuote, dayCounter);
+            FlatHazardRate flatHazardRate = new FlatHazardRate(today, hazardRateQuote, dayCounter);
 
-         for (int i = 0; i < n; i++)
-         {
-            endDate = calendar.advance(endDate, 1, TimeUnit.Years);
-            double t = dayCounter.yearFraction(startDate, endDate);
-            double probability = 1.0 - Math.Exp(-hazardRate * t);
-            double computedProbability = flatHazardRate.defaultProbability(t);
+            for (int i = 0; i < n; i++)
+            {
+                endDate = calendar.advance(endDate, 1, TimeUnit.Years);
+                double t = dayCounter.yearFraction(startDate, endDate);
+                double probability = 1.0 - System.Math.Exp(-hazardRate * t);
+                double computedProbability = flatHazardRate.defaultProbability(t);
 
-            if (Math.Abs(probability - computedProbability) > tolerance)
-               QAssert.Fail("Failed to reproduce probability for flat hazard rate\n"
-                            + "    calculated probability: " + computedProbability + "\n"
-                            + "    expected probability:   " + probability);
-         }
-      }
+                if (System.Math.Abs(probability - computedProbability) > tolerance)
+                    QAssert.Fail("Failed to reproduce probability for flat hazard rate\n"
+                                 + "    calculated probability: " + computedProbability + "\n"
+                                 + "    expected probability:   " + probability);
+            }
+        }
 
-      [Fact]
-      public void testFlatHazardConsistency()
-      {
-         // Testing piecewise-flat hazard-rate consistency...
-         //testBootstrapFromSpread<HazardRate,BackwardFlat>();
-         //testBootstrapFromUpfront<HazardRate,BackwardFlat>();
-      }
-   }
+        [Fact]
+        public void testFlatHazardConsistency()
+        {
+            // Testing piecewise-flat hazard-rate consistency...
+            //testBootstrapFromSpread<HazardRate,BackwardFlat>();
+            //testBootstrapFromUpfront<HazardRate,BackwardFlat>();
+        }
+    }
 }

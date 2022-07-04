@@ -17,815 +17,817 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Extensions;
+using QLNet.Methods.Finitedifferences;
 using System;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Math.Interpolations
 {
-   //! %Cubic interpolation between discrete points.
-   /*! Cubic interpolation is fully defined when the ${f_i}$ function values
-       at points ${x_i}$ are supplemented with ${f_i}$ function derivative
-       values.
+    //! %Cubic interpolation between discrete points.
+    /*! Cubic interpolation is fully defined when the ${f_i}$ function values
+        at points ${x_i}$ are supplemented with ${f_i}$ function derivative
+        values.
 
-       Different type of first derivative approximations are implemented, both
-       local and non-local. Local schemes (Fourth-order, Parabolic,
-       Modified Parabolic, Fritsch-Butland, Akima, Kruger) use only $f$ values
-       near $x_i$ to calculate $f_i$. Non-local schemes (Spline with different
-       boundary conditions) use all ${f_i}$ values and obtain ${f_i}$ by
-       solving a linear system of equations. Local schemes produce $C^1$
-       interpolants, while the spline scheme generates $C^2$ interpolants.
+        Different type of first derivative approximations are implemented, both
+        local and non-local. Local schemes (Fourth-order, Parabolic,
+        Modified Parabolic, Fritsch-Butland, Akima, Kruger) use only $f$ values
+        near $x_i$ to calculate $f_i$. Non-local schemes (Spline with different
+        boundary conditions) use all ${f_i}$ values and obtain ${f_i}$ by
+        solving a linear system of equations. Local schemes produce $C^1$
+        interpolants, while the spline scheme generates $C^2$ interpolants.
 
-       Hyman's monotonicity constraint filter is also implemented: it can be
-       applied to all schemes to ensure that in the regions of local
-       monotoniticity of the input (three successive increasing or decreasing
-       values) the interpolating cubic remains monotonic. If the interpolating
-       cubic is already monotonic, the Hyman filter leaves it unchanged
-       preserving all its original features.
+        Hyman's monotonicity constraint filter is also implemented: it can be
+        applied to all schemes to ensure that in the regions of local
+        monotoniticity of the input (three successive increasing or decreasing
+        values) the interpolating cubic remains monotonic. If the interpolating
+        cubic is already monotonic, the Hyman filter leaves it unchanged
+        preserving all its original features.
 
-       In the case of $C^2$ interpolants the Hyman filter ensures local
-       monotonicity at the expense of the second derivative of the interpolant
-       which will no longer be continuous in the points where the filter has
-       been applied.
+        In the case of $C^2$ interpolants the Hyman filter ensures local
+        monotonicity at the expense of the second derivative of the interpolant
+        which will no longer be continuous in the points where the filter has
+        been applied.
 
-       While some non-linear schemes (Modified Parabolic, Fritsch-Butland,
-       Kruger) are guaranteed to be locally monotone in their original
-       approximation, all other schemes must be filtered according to the
-       Hyman criteria at the expense of their linearity.
+        While some non-linear schemes (Modified Parabolic, Fritsch-Butland,
+        Kruger) are guaranteed to be locally monotone in their original
+        approximation, all other schemes must be filtered according to the
+        Hyman criteria at the expense of their linearity.
 
-       See R. L. Dougherty, A. Edelman, and J. M. Hyman,
-       "Nonnegativity-, Monotonicity-, or Convexity-Preserving CubicSpline and
-       Quintic Hermite Interpolation"
-       Mathematics Of Computation, v. 52, n. 186, April 1989, pp. 471-494.
+        See R. L. Dougherty, A. Edelman, and J. M. Hyman,
+        "Nonnegativity-, Monotonicity-, or Convexity-Preserving CubicSpline and
+        Quintic Hermite Interpolation"
+        Mathematics Of Computation, v. 52, n. 186, April 1989, pp. 471-494.
 
-       \todo implement missing schemes (FourthOrder and ModifiedParabolic) and
-             missing boundary conditions (Periodic and Lagrange).
+        \todo implement missing schemes (FourthOrder and ModifiedParabolic) and
+              missing boundary conditions (Periodic and Lagrange).
 
-       \test to be adapted from old ones.
-   */
+        \test to be adapted from old ones.
+    */
 
-   public class CubicInterpolation : Interpolation
-   {
-      #region enums
+    public class CubicInterpolation : Interpolation
+    {
+        #region enums
 
-      public enum DerivativeApprox
-      {
-         /*! Spline approximation (non-local, non-monotone, linear[?]).
-             Different boundary conditions can be used on the left and right
-             boundaries: see BoundaryCondition.
-         */
-         Spline,
+        public enum DerivativeApprox
+        {
+            /*! Spline approximation (non-local, non-monotone, linear[?]).
+                Different boundary conditions can be used on the left and right
+                boundaries: see BoundaryCondition.
+            */
+            Spline,
 
-         //! Overshooting minimization 1st derivative
-         SplineOM1,
+            //! Overshooting minimization 1st derivative
+            SplineOM1,
 
-         //! Overshooting minimization 2nd derivative
-         SplineOM2,
+            //! Overshooting minimization 2nd derivative
+            SplineOM2,
 
-         //! Fourth-order approximation (local, non-monotone, linear)
-         FourthOrder,
+            //! Fourth-order approximation (local, non-monotone, linear)
+            FourthOrder,
 
-         //! Parabolic approximation (local, non-monotone, linear)
-         Parabolic,
+            //! Parabolic approximation (local, non-monotone, linear)
+            Parabolic,
 
-         //! Fritsch-Butland approximation (local, monotone, non-linear)
-         FritschButland,
+            //! Fritsch-Butland approximation (local, monotone, non-linear)
+            FritschButland,
 
-         //! Akima approximation (local, non-monotone, non-linear)
-         Akima,
+            //! Akima approximation (local, non-monotone, non-linear)
+            Akima,
 
-         //! Kruger approximation (local, monotone, non-linear)
-         Kruger,
+            //! Kruger approximation (local, monotone, non-linear)
+            Kruger,
 
-         //! Weighted harmonic mean approximation (local, monotonic, non-linear)
-         Harmonic
-      }
+            //! Weighted harmonic mean approximation (local, monotonic, non-linear)
+            Harmonic
+        }
 
-      public enum BoundaryCondition
-      {
-         //! Make second(-last) point an inactive knot
-         NotAKnot,
+        public enum BoundaryCondition
+        {
+            //! Make second(-last) point an inactive knot
+            NotAKnot,
 
-         //! Match value of end-slope
-         FirstDerivative,
+            //! Match value of end-slope
+            FirstDerivative,
 
-         //! Match value of second derivative at end
-         SecondDerivative,
+            //! Match value of second derivative at end
+            SecondDerivative,
 
-         //! Match first and second derivative at either end
-         Periodic,
+            //! Match first and second derivative at either end
+            Periodic,
 
-         /*! Match end-slope to the slope of the cubic that matches
-             the first four data at the respective end
-         */
-         Lagrange
-      }
+            /*! Match end-slope to the slope of the cubic that matches
+                the first four data at the respective end
+            */
+            Lagrange
+        }
 
-      #endregion
+        #endregion
 
-      public CubicInterpolation(List<double> xBegin, int size, List<double> yBegin,
-                                CubicInterpolation.DerivativeApprox da,
-                                bool monotonic,
-                                CubicInterpolation.BoundaryCondition leftCond,
-                                double leftConditionValue,
-                                CubicInterpolation.BoundaryCondition rightCond,
-                                double rightConditionValue)
-      {
-         impl_ = new CubicInterpolationImpl(xBegin, size, yBegin, da, monotonic, leftCond, leftConditionValue, rightCond,
-                                            rightConditionValue);
-         impl_.update();
-      }
+        public CubicInterpolation(List<double> xBegin, int size, List<double> yBegin,
+                                  DerivativeApprox da,
+                                  bool monotonic,
+                                  BoundaryCondition leftCond,
+                                  double leftConditionValue,
+                                  BoundaryCondition rightCond,
+                                  double rightConditionValue)
+        {
+            impl_ = new CubicInterpolationImpl(xBegin, size, yBegin, da, monotonic, leftCond, leftConditionValue, rightCond,
+                                               rightConditionValue);
+            impl_.update();
+        }
 
-      public List<double> aCoefficients()
-      {
-         return ((CubicInterpolationImpl) impl_).a_;
-      }
+        public List<double> aCoefficients()
+        {
+            return ((CubicInterpolationImpl)impl_).a_;
+        }
 
-      public List<double> bCoefficients()
-      {
-         return ((CubicInterpolationImpl) impl_).b_;
-      }
+        public List<double> bCoefficients()
+        {
+            return ((CubicInterpolationImpl)impl_).b_;
+        }
 
-      public List<double> cCoefficients()
-      {
-         return ((CubicInterpolationImpl) impl_).c_;
-      }
-   }
+        public List<double> cCoefficients()
+        {
+            return ((CubicInterpolationImpl)impl_).c_;
+        }
+    }
 
-// convenience classes
+    // convenience classes
 
-   public class CubicNaturalSpline : CubicInterpolation
-   {
-      /*! \pre the \f$ x \f$ values must be sorted. */
-      public CubicNaturalSpline(List<double> xBegin, int size, List<double> yBegin)
-         : base(xBegin, size, yBegin,
-                CubicInterpolation.DerivativeApprox.Spline, false,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0)
-      {}
-   }
+    public class CubicNaturalSpline : CubicInterpolation
+    {
+        /*! \pre the \f$ x \f$ values must be sorted. */
+        public CubicNaturalSpline(List<double> xBegin, int size, List<double> yBegin)
+           : base(xBegin, size, yBegin,
+                  DerivativeApprox.Spline, false,
+                  BoundaryCondition.SecondDerivative, 0.0,
+                  BoundaryCondition.SecondDerivative, 0.0)
+        { }
+    }
 
-   public class MonotonicCubicNaturalSpline : CubicInterpolation
-   {
-      /*! \pre the \f$ x \f$ values must be sorted. */
-      public MonotonicCubicNaturalSpline(List<double> xBegin, int size, List<double> yBegin)
-         : base(xBegin, size, yBegin,
-                CubicInterpolation.DerivativeApprox.Spline, true,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0)
-      {}
-   }
+    public class MonotonicCubicNaturalSpline : CubicInterpolation
+    {
+        /*! \pre the \f$ x \f$ values must be sorted. */
+        public MonotonicCubicNaturalSpline(List<double> xBegin, int size, List<double> yBegin)
+           : base(xBegin, size, yBegin,
+                  DerivativeApprox.Spline, true,
+                  BoundaryCondition.SecondDerivative, 0.0,
+                  BoundaryCondition.SecondDerivative, 0.0)
+        { }
+    }
 
-   public class CubicSplineOvershootingMinimization1 : CubicInterpolation
-   {
-      /*! \pre the \f$ x \f$ values must be sorted. */
-      public CubicSplineOvershootingMinimization1(List<double> xBegin, int size, List<double> yBegin)
-         : base(xBegin, size, yBegin,
-                CubicInterpolation.DerivativeApprox.SplineOM1, false,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0)
-      {}
-   }
+    public class CubicSplineOvershootingMinimization1 : CubicInterpolation
+    {
+        /*! \pre the \f$ x \f$ values must be sorted. */
+        public CubicSplineOvershootingMinimization1(List<double> xBegin, int size, List<double> yBegin)
+           : base(xBegin, size, yBegin,
+                  DerivativeApprox.SplineOM1, false,
+                  BoundaryCondition.SecondDerivative, 0.0,
+                  BoundaryCondition.SecondDerivative, 0.0)
+        { }
+    }
 
-   public class CubicSplineOvershootingMinimization2 : CubicInterpolation
-   {
-      /*! \pre the \f$ x \f$ values must be sorted. */
-      public CubicSplineOvershootingMinimization2(List<double> xBegin, int size, List<double> yBegin)
-         : base(xBegin, size, yBegin,
-                CubicInterpolation.DerivativeApprox.SplineOM2, false,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0)
-      {}
-   }
+    public class CubicSplineOvershootingMinimization2 : CubicInterpolation
+    {
+        /*! \pre the \f$ x \f$ values must be sorted. */
+        public CubicSplineOvershootingMinimization2(List<double> xBegin, int size, List<double> yBegin)
+           : base(xBegin, size, yBegin,
+                  DerivativeApprox.SplineOM2, false,
+                  BoundaryCondition.SecondDerivative, 0.0,
+                  BoundaryCondition.SecondDerivative, 0.0)
+        { }
+    }
 
-   public class AkimaCubicInterpolation : CubicInterpolation
-   {
-      /*! \pre the \f$ x \f$ values must be sorted. */
-      public AkimaCubicInterpolation(List<double> xBegin, int size, List<double> yBegin)
-         : base(xBegin, size, yBegin,
-                CubicInterpolation.DerivativeApprox.Akima, false,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0)
-      {}
-   }
+    public class AkimaCubicInterpolation : CubicInterpolation
+    {
+        /*! \pre the \f$ x \f$ values must be sorted. */
+        public AkimaCubicInterpolation(List<double> xBegin, int size, List<double> yBegin)
+           : base(xBegin, size, yBegin,
+                  DerivativeApprox.Akima, false,
+                  BoundaryCondition.SecondDerivative, 0.0,
+                  BoundaryCondition.SecondDerivative, 0.0)
+        { }
+    }
 
-   public class KrugerCubic : CubicInterpolation
-   {
-      /*! \pre the \f$ x \f$ values must be sorted. */
-      public KrugerCubic(List<double> xBegin, int size, List<double> yBegin)
-         : base(xBegin, size, yBegin,
-                CubicInterpolation.DerivativeApprox.Kruger, false,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0)
-      {}
-   }
+    public class KrugerCubic : CubicInterpolation
+    {
+        /*! \pre the \f$ x \f$ values must be sorted. */
+        public KrugerCubic(List<double> xBegin, int size, List<double> yBegin)
+           : base(xBegin, size, yBegin,
+                  DerivativeApprox.Kruger, false,
+                  BoundaryCondition.SecondDerivative, 0.0,
+                  BoundaryCondition.SecondDerivative, 0.0)
+        { }
+    }
 
-   public class HarmonicCubic : CubicInterpolation
-   {
-      /*! \pre the \f$ x \f$ values must be sorted. */
-      public HarmonicCubic(List<double> xBegin, int size, List<double> yBegin)
-         : base(xBegin, size, yBegin,
-                CubicInterpolation.DerivativeApprox.Harmonic, false,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0)
-      {}
-   }
+    public class HarmonicCubic : CubicInterpolation
+    {
+        /*! \pre the \f$ x \f$ values must be sorted. */
+        public HarmonicCubic(List<double> xBegin, int size, List<double> yBegin)
+           : base(xBegin, size, yBegin,
+                  DerivativeApprox.Harmonic, false,
+                  BoundaryCondition.SecondDerivative, 0.0,
+                  BoundaryCondition.SecondDerivative, 0.0)
+        { }
+    }
 
-   public class FritschButlandCubic : CubicInterpolation
-   {
-      /*! \pre the \f$ x \f$ values must be sorted. */
-      public FritschButlandCubic(List<double> xBegin, int size, List<double> yBegin)
-         : base(xBegin, size, yBegin,
-                CubicInterpolation.DerivativeApprox.FritschButland, false,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0)
-      {}
-   }
+    public class FritschButlandCubic : CubicInterpolation
+    {
+        /*! \pre the \f$ x \f$ values must be sorted. */
+        public FritschButlandCubic(List<double> xBegin, int size, List<double> yBegin)
+           : base(xBegin, size, yBegin,
+                  DerivativeApprox.FritschButland, false,
+                  BoundaryCondition.SecondDerivative, 0.0,
+                  BoundaryCondition.SecondDerivative, 0.0)
+        { }
+    }
 
-   public class Parabolic : CubicInterpolation
-   {
-      /*! \pre the \f$ x \f$ values must be sorted. */
-      public Parabolic(List<double> xBegin, int size, List<double> yBegin)
-         : base(xBegin, size, yBegin,
-                CubicInterpolation.DerivativeApprox.Parabolic, false,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0)
-      {}
-   }
+    public class Parabolic : CubicInterpolation
+    {
+        /*! \pre the \f$ x \f$ values must be sorted. */
+        public Parabolic(List<double> xBegin, int size, List<double> yBegin)
+           : base(xBegin, size, yBegin,
+                  DerivativeApprox.Parabolic, false,
+                  BoundaryCondition.SecondDerivative, 0.0,
+                  BoundaryCondition.SecondDerivative, 0.0)
+        { }
+    }
 
-   public class MonotonicParabolic : CubicInterpolation
-   {
-      /*! \pre the \f$ x \f$ values must be sorted. */
-      public MonotonicParabolic(List<double> xBegin, int size, List<double> yBegin)
-         : base(xBegin, size, yBegin,
-                CubicInterpolation.DerivativeApprox.Parabolic, true,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
-                CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0)
-      {}
-   }
+    public class MonotonicParabolic : CubicInterpolation
+    {
+        /*! \pre the \f$ x \f$ values must be sorted. */
+        public MonotonicParabolic(List<double> xBegin, int size, List<double> yBegin)
+           : base(xBegin, size, yBegin,
+                  DerivativeApprox.Parabolic, true,
+                  BoundaryCondition.SecondDerivative, 0.0,
+                  BoundaryCondition.SecondDerivative, 0.0)
+        { }
+    }
 
-   //! %Cubic interpolation factory and traits
-   public class Cubic : IInterpolationFactory
-   {
-      private CubicInterpolation.DerivativeApprox da_;
-      private bool monotonic_;
-      private CubicInterpolation.BoundaryCondition leftType_, rightType_;
-      private double leftValue_, rightValue_;
+    //! %Cubic interpolation factory and traits
+    public class Cubic : IInterpolationFactory
+    {
+        private CubicInterpolation.DerivativeApprox da_;
+        private bool monotonic_;
+        private CubicInterpolation.BoundaryCondition leftType_, rightType_;
+        private double leftValue_, rightValue_;
 
-      public Cubic() : this(CubicInterpolation.DerivativeApprox.Kruger, false,
-                               CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
-                               CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0)
-      {}
+        public Cubic() : this(CubicInterpolation.DerivativeApprox.Kruger, false,
+                                 CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
+                                 CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0)
+        { }
 
-      public Cubic(CubicInterpolation.DerivativeApprox da, bool monotonic,
-                   CubicInterpolation.BoundaryCondition leftCondition, double leftConditionValue,
-                   CubicInterpolation.BoundaryCondition rightCondition, double rightConditionValue)
-      {
-         da_ = da;
-         monotonic_ = monotonic;
-         leftType_ = leftCondition;
-         rightType_ = rightCondition;
-         leftValue_ = leftConditionValue;
-         rightValue_ = rightConditionValue;
-      }
+        public Cubic(CubicInterpolation.DerivativeApprox da, bool monotonic,
+                     CubicInterpolation.BoundaryCondition leftCondition, double leftConditionValue,
+                     CubicInterpolation.BoundaryCondition rightCondition, double rightConditionValue)
+        {
+            da_ = da;
+            monotonic_ = monotonic;
+            leftType_ = leftCondition;
+            rightType_ = rightCondition;
+            leftValue_ = leftConditionValue;
+            rightValue_ = rightConditionValue;
+        }
 
-      public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin)
-      {
-         return new CubicInterpolation(xBegin, size, yBegin, da_, monotonic_, leftType_, leftValue_, rightType_,
-                                       rightValue_);
-      }
+        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin)
+        {
+            return new CubicInterpolation(xBegin, size, yBegin, da_, monotonic_, leftType_, leftValue_, rightType_,
+                                          rightValue_);
+        }
 
-      public bool global
-      {
-         get
-         {
-            return true;
-         }
-      }
-
-      public int requiredPoints
-      {
-         get
-         {
-            return 2;
-         }
-      }
-   }
-
-   public class CubicInterpolationImpl : Interpolation.templateImpl
-   {
-      private CubicInterpolation.DerivativeApprox da_;
-      private bool monotonic_;
-      private CubicInterpolation.BoundaryCondition leftType_, rightType_;
-      private double leftValue_, rightValue_;
-      public List<double> primitiveConst_ { get; set; }
-      public List<double> a_ { get; set; }
-      public List<double> b_ { get; set; }
-      public List<double> c_ { get; set; }
-      private List<bool> monotonicityAdjustments_;
-
-      public CubicInterpolationImpl(List<double> xBegin, int size, List<double> yBegin,
-                                    CubicInterpolation.DerivativeApprox da,
-                                    bool monotonic,
-                                    CubicInterpolation.BoundaryCondition leftCondition,
-                                    double leftConditionValue,
-                                    CubicInterpolation.BoundaryCondition rightCondition,
-                                    double rightConditionValue)
-         : base(xBegin, size, yBegin)
-      {
-         da_ = da;
-         monotonic_ = monotonic;
-         leftType_ = leftCondition;
-         rightType_ = rightCondition;
-         leftValue_ = leftConditionValue;
-         rightValue_ = rightConditionValue;
-
-         // coefficients
-         primitiveConst_ = new InitializedList<double>(size - 1);
-         a_ = new InitializedList<double>(size - 1);
-         b_ = new InitializedList<double>(size - 1);
-         c_ = new InitializedList<double>(size - 1);
-         monotonicityAdjustments_ = new InitializedList<bool>(size);
-
-         if (leftType_ == CubicInterpolation.BoundaryCondition.Lagrange
-             || rightType_ == CubicInterpolation.BoundaryCondition.Lagrange)
-         {
-            Utils.QL_REQUIRE(size >= 4, () =>
-                             "Lagrange boundary condition requires at least " +
-                             "4 points (" + size.ToString() + " are given)");
-         }
-      }
-
-      public override void update()
-      {
-         Vector tmp = new Vector(size_);
-         List<double> dx = new InitializedList<double>(size_ - 1),
-         S = new InitializedList<double>(size_ - 1);
-
-         for (int i = 0; i < size_ - 1; ++i)
-         {
-            dx[i] = xBegin_[i + 1] - xBegin_[i];
-            S[i] = (yBegin_[i + 1] - yBegin_[i]) / dx[i];
-         }
-
-         // first derivative approximation
-         if (da_ == CubicInterpolation.DerivativeApprox.Spline)
-         {
-            TridiagonalOperator L = new TridiagonalOperator(size_);
-            for (int i = 1; i < size_ - 1; ++i)
+        public bool global
+        {
+            get
             {
-               L.setMidRow(i, dx[i], 2.0 * (dx[i] + dx[i - 1]), dx[i - 1]);
-               tmp[i] = 3.0 * (dx[i] * S[i - 1] + dx[i - 1] * S[i]);
+                return true;
             }
+        }
 
-            // left boundary condition
-            switch (leftType_)
+        public int requiredPoints
+        {
+            get
             {
-               case CubicInterpolation.BoundaryCondition.NotAKnot:
-                  // ignoring end condition value
-                  L.setFirstRow(dx[1] * (dx[1] + dx[0]), (dx[0] + dx[1]) * (dx[0] + dx[1]));
-                  tmp[0] = S[0] * dx[1] * (2.0 * dx[1] + 3.0 * dx[0]) + S[1] * dx[0] * dx[0];
-                  break;
-               case CubicInterpolation.BoundaryCondition.FirstDerivative:
-                  L.setFirstRow(1.0, 0.0);
-                  tmp[0] = leftValue_;
-                  break;
-               case CubicInterpolation.BoundaryCondition.SecondDerivative:
-                  L.setFirstRow(2.0, 1.0);
-                  tmp[0] = 3.0 * S[0] - leftValue_ * dx[0] / 2.0;
-                  break;
-               case CubicInterpolation.BoundaryCondition.Periodic:
-                  // ignoring end condition value
-                  throw new NotImplementedException("this end condition is not implemented yet");
-               case CubicInterpolation.BoundaryCondition.Lagrange:
-                  L.setFirstRow(1.0, 0.0);
-                  tmp[0] = cubicInterpolatingPolynomialDerivative(
-                              this.xBegin_[0], this.xBegin_[1],
-                              this.xBegin_[2], this.xBegin_[3],
-                              this.yBegin_[0], this.yBegin_[1],
-                              this.yBegin_[2], this.yBegin_[3],
-                              this.xBegin_[0]);
-                  break;
-               default:
-                  throw new ArgumentException("unknown end condition");
+                return 2;
             }
+        }
+    }
 
-            // right boundary condition
-            switch (rightType_)
-            {
-               case CubicInterpolation.BoundaryCondition.NotAKnot:
-                  // ignoring end condition value
-                  L.setLastRow(-(dx[size_ - 2] + dx[size_ - 3]) * (dx[size_ - 2] + dx[size_ - 3]),
-                               -dx[size_ - 3] * (dx[size_ - 3] + dx[size_ - 2]));
-                  tmp[size_ - 1] = -S[size_ - 3] * dx[size_ - 2] * dx[size_ - 2] -
-                                   S[size_ - 2] * dx[size_ - 3] * (3.0 * dx[size_ - 2] + 2.0 * dx[size_ - 3]);
-                  break;
-               case CubicInterpolation.BoundaryCondition.FirstDerivative:
-                  L.setLastRow(0.0, 1.0);
-                  tmp[size_ - 1] = rightValue_;
-                  break;
-               case CubicInterpolation.BoundaryCondition.SecondDerivative:
-                  L.setLastRow(1.0, 2.0);
-                  tmp[size_ - 1] = 3.0 * S[size_ - 2] + rightValue_ * dx[size_ - 2] / 2.0;
-                  break;
-               case CubicInterpolation.BoundaryCondition.Periodic:
-                  // ignoring end condition value
-                  throw new NotImplementedException("this end condition is not implemented yet");
-               case CubicInterpolation.BoundaryCondition.Lagrange:
-                  L.setLastRow(0.0, 1.0);
-                  tmp[size_ - 1] = cubicInterpolatingPolynomialDerivative(
-                                      this.xBegin_[size_ - 4], this.xBegin_[size_ - 3],
-                                      this.xBegin_[size_ - 2], this.xBegin_[size_ - 1],
-                                      this.yBegin_[size_ - 4], this.yBegin_[size_ - 3],
-                                      this.yBegin_[size_ - 2], this.yBegin_[size_ - 1],
-                                      this.xBegin_[size_ - 1]);
-                  break;
-               default:
-                  throw new ArgumentException("unknown end condition");
-            }
+    public class CubicInterpolationImpl : Interpolation.templateImpl
+    {
+        private CubicInterpolation.DerivativeApprox da_;
+        private bool monotonic_;
+        private CubicInterpolation.BoundaryCondition leftType_, rightType_;
+        private double leftValue_, rightValue_;
+        public List<double> primitiveConst_ { get; set; }
+        public List<double> a_ { get; set; }
+        public List<double> b_ { get; set; }
+        public List<double> c_ { get; set; }
+        private List<bool> monotonicityAdjustments_;
 
-            // solve the system
-            tmp = L.solveFor(tmp);
-         }
-         else if (da_ == CubicInterpolation.DerivativeApprox.SplineOM1)
-         {
-            Matrix T_ = new Matrix(size_ - 2, size_, 0.0);
-            for (int i = 0; i < size_ - 2; ++i)
+        public CubicInterpolationImpl(List<double> xBegin, int size, List<double> yBegin,
+                                      CubicInterpolation.DerivativeApprox da,
+                                      bool monotonic,
+                                      CubicInterpolation.BoundaryCondition leftCondition,
+                                      double leftConditionValue,
+                                      CubicInterpolation.BoundaryCondition rightCondition,
+                                      double rightConditionValue)
+           : base(xBegin, size, yBegin)
+        {
+            da_ = da;
+            monotonic_ = monotonic;
+            leftType_ = leftCondition;
+            rightType_ = rightCondition;
+            leftValue_ = leftConditionValue;
+            rightValue_ = rightConditionValue;
+
+            // coefficients
+            primitiveConst_ = new InitializedList<double>(size - 1);
+            a_ = new InitializedList<double>(size - 1);
+            b_ = new InitializedList<double>(size - 1);
+            c_ = new InitializedList<double>(size - 1);
+            monotonicityAdjustments_ = new InitializedList<bool>(size);
+
+            if (leftType_ == CubicInterpolation.BoundaryCondition.Lagrange
+                || rightType_ == CubicInterpolation.BoundaryCondition.Lagrange)
             {
-               T_[i, i] = dx[i] / 6.0;
-               T_[i, i + 1] = (dx[i + 1] + dx[i]) / 3.0;
-               T_[i, i + 2] = dx[i + 1] / 6.0;
+                Utils.QL_REQUIRE(size >= 4, () =>
+                                 "Lagrange boundary condition requires at least " +
+                                 "4 points (" + size.ToString() + " are given)");
             }
-            Matrix S_ = new Matrix(size_ - 2, size_, 0.0);
-            for (int i = 0; i < size_ - 2; ++i)
-            {
-               S_[i, i] = 1.0 / dx[i];
-               S_[i, i + 1] = -(1.0 / dx[i + 1] + 1.0 / dx[i]);
-               S_[i, i + 2] = 1.0 / dx[i + 1];
-            }
-            Matrix Up_ = new Matrix(size_, 2, 0.0);
-            Up_[0, 0] = 1;
-            Up_[size_ - 1, 1] = 1;
-            Matrix Us_ = new Matrix(size_, size_ - 2, 0.0);
-            for (int i = 0; i < size_ - 2; ++i)
-               Us_[i + 1, i] = 1;
-            Matrix Z_ = Us_ * Matrix.inverse(T_ * Us_);
-            Matrix I_ = new Matrix(size_, size_, 0.0);
-            for (int i = 0; i < size_; ++i)
-               I_[i, i] = 1;
-            Matrix V_ = (I_ - Z_ * T_) * Up_;
-            Matrix W_ = Z_ * S_;
-            Matrix Q_ = new Matrix(size_, size_, 0.0);
-            Q_[0, 0] = 1.0 / (size_ - 1) * dx[0] * dx[0] * dx[0];
-            Q_[0, 1] = 7.0 / 8 * 1.0 / (size_ - 1) * dx[0] * dx[0] * dx[0];
-            for (int i = 1; i < size_ - 1; ++i)
-            {
-               Q_[i, i - 1] = 7.0 / 8 * 1.0 / (size_ - 1) * dx[i - 1] * dx[i - 1] * dx[i - 1];
-               Q_[i, i] = 1.0 / (size_ - 1) * dx[i] * dx[i] * dx[i] + 1.0 / (size_ - 1) * dx[i - 1] * dx[i - 1] * dx[i - 1];
-               Q_[i, i + 1] = 7.0 / 8 * 1.0 / (size_ - 1) * dx[i] * dx[i] * dx[i];
-            }
-            Q_[size_ - 1, size_ - 2] = 7.0 / 8 * 1.0 / (size_ - 1) * dx[size_ - 2] * dx[size_ - 2] * dx[size_ - 2];
-            Q_[size_ - 1, size_ - 1] = 1.0 / (size_ - 1) * dx[size_ - 2] * dx[size_ - 2] * dx[size_ - 2];
-            Matrix J_ = (I_ - V_ * Matrix.inverse(Matrix.transpose(V_) * Q_ * V_) * Matrix.transpose(V_) * Q_) * W_;
-            Vector Y_ = new Vector(size_);
-            for (int i = 0; i < size_; ++i)
-               Y_[i] = this.yBegin_[i];
-            Vector D_ = J_ * Y_;
+        }
+
+        public override void update()
+        {
+            Vector tmp = new Vector(size_);
+            List<double> dx = new InitializedList<double>(size_ - 1),
+            S = new InitializedList<double>(size_ - 1);
+
             for (int i = 0; i < size_ - 1; ++i)
-               tmp[i] = (Y_[i + 1] - Y_[i]) / dx[i] - (2.0 * D_[i] + D_[i + 1]) * dx[i] / 6.0;
-            tmp[size_ - 1] = tmp[size_ - 2] + D_[size_ - 2] * dx[size_ - 2] + (D_[size_ - 1] - D_[size_ - 2]) * dx[size_ - 2] / 2.0;
+            {
+                dx[i] = xBegin_[i + 1] - xBegin_[i];
+                S[i] = (yBegin_[i + 1] - yBegin_[i]) / dx[i];
+            }
 
-         }
-         else if (da_ == CubicInterpolation.DerivativeApprox.SplineOM2)
-         {
-            Matrix T_ = new Matrix(size_ - 2, size_, 0.0);
-            for (int i = 0; i < size_ - 2; ++i)
+            // first derivative approximation
+            if (da_ == CubicInterpolation.DerivativeApprox.Spline)
             {
-               T_[i, i] = dx[i] / 6.0;
-               T_[i, i + 1] = (dx[i] + dx[i + 1]) / 3.0;
-               T_[i, i + 2] = dx[i + 1] / 6.0;
+                TridiagonalOperator L = new TridiagonalOperator(size_);
+                for (int i = 1; i < size_ - 1; ++i)
+                {
+                    L.setMidRow(i, dx[i], 2.0 * (dx[i] + dx[i - 1]), dx[i - 1]);
+                    tmp[i] = 3.0 * (dx[i] * S[i - 1] + dx[i - 1] * S[i]);
+                }
+
+                // left boundary condition
+                switch (leftType_)
+                {
+                    case CubicInterpolation.BoundaryCondition.NotAKnot:
+                        // ignoring end condition value
+                        L.setFirstRow(dx[1] * (dx[1] + dx[0]), (dx[0] + dx[1]) * (dx[0] + dx[1]));
+                        tmp[0] = S[0] * dx[1] * (2.0 * dx[1] + 3.0 * dx[0]) + S[1] * dx[0] * dx[0];
+                        break;
+                    case CubicInterpolation.BoundaryCondition.FirstDerivative:
+                        L.setFirstRow(1.0, 0.0);
+                        tmp[0] = leftValue_;
+                        break;
+                    case CubicInterpolation.BoundaryCondition.SecondDerivative:
+                        L.setFirstRow(2.0, 1.0);
+                        tmp[0] = 3.0 * S[0] - leftValue_ * dx[0] / 2.0;
+                        break;
+                    case CubicInterpolation.BoundaryCondition.Periodic:
+                        // ignoring end condition value
+                        throw new NotImplementedException("this end condition is not implemented yet");
+                    case CubicInterpolation.BoundaryCondition.Lagrange:
+                        L.setFirstRow(1.0, 0.0);
+                        tmp[0] = cubicInterpolatingPolynomialDerivative(
+                                    xBegin_[0], xBegin_[1],
+                                    xBegin_[2], xBegin_[3],
+                                    yBegin_[0], yBegin_[1],
+                                    yBegin_[2], yBegin_[3],
+                                    xBegin_[0]);
+                        break;
+                    default:
+                        throw new ArgumentException("unknown end condition");
+                }
+
+                // right boundary condition
+                switch (rightType_)
+                {
+                    case CubicInterpolation.BoundaryCondition.NotAKnot:
+                        // ignoring end condition value
+                        L.setLastRow(-(dx[size_ - 2] + dx[size_ - 3]) * (dx[size_ - 2] + dx[size_ - 3]),
+                                     -dx[size_ - 3] * (dx[size_ - 3] + dx[size_ - 2]));
+                        tmp[size_ - 1] = -S[size_ - 3] * dx[size_ - 2] * dx[size_ - 2] -
+                                         S[size_ - 2] * dx[size_ - 3] * (3.0 * dx[size_ - 2] + 2.0 * dx[size_ - 3]);
+                        break;
+                    case CubicInterpolation.BoundaryCondition.FirstDerivative:
+                        L.setLastRow(0.0, 1.0);
+                        tmp[size_ - 1] = rightValue_;
+                        break;
+                    case CubicInterpolation.BoundaryCondition.SecondDerivative:
+                        L.setLastRow(1.0, 2.0);
+                        tmp[size_ - 1] = 3.0 * S[size_ - 2] + rightValue_ * dx[size_ - 2] / 2.0;
+                        break;
+                    case CubicInterpolation.BoundaryCondition.Periodic:
+                        // ignoring end condition value
+                        throw new NotImplementedException("this end condition is not implemented yet");
+                    case CubicInterpolation.BoundaryCondition.Lagrange:
+                        L.setLastRow(0.0, 1.0);
+                        tmp[size_ - 1] = cubicInterpolatingPolynomialDerivative(
+                                            xBegin_[size_ - 4], xBegin_[size_ - 3],
+                                            xBegin_[size_ - 2], xBegin_[size_ - 1],
+                                            yBegin_[size_ - 4], yBegin_[size_ - 3],
+                                            yBegin_[size_ - 2], yBegin_[size_ - 1],
+                                            xBegin_[size_ - 1]);
+                        break;
+                    default:
+                        throw new ArgumentException("unknown end condition");
+                }
+
+                // solve the system
+                tmp = L.solveFor(tmp);
             }
-            Matrix S_ = new Matrix(size_ - 2, size_, 0.0);
-            for (int i = 0; i < size_ - 2; ++i)
+            else if (da_ == CubicInterpolation.DerivativeApprox.SplineOM1)
             {
-               S_[i, i] = 1.0 / dx[i];
-               S_[i, i + 1] = -(1.0 / dx[i + 1] + 1.0 / dx[i]);
-               S_[i, i + 2] = 1.0 / dx[i + 1];
+                Matrix T_ = new Matrix(size_ - 2, size_, 0.0);
+                for (int i = 0; i < size_ - 2; ++i)
+                {
+                    T_[i, i] = dx[i] / 6.0;
+                    T_[i, i + 1] = (dx[i + 1] + dx[i]) / 3.0;
+                    T_[i, i + 2] = dx[i + 1] / 6.0;
+                }
+                Matrix S_ = new Matrix(size_ - 2, size_, 0.0);
+                for (int i = 0; i < size_ - 2; ++i)
+                {
+                    S_[i, i] = 1.0 / dx[i];
+                    S_[i, i + 1] = -(1.0 / dx[i + 1] + 1.0 / dx[i]);
+                    S_[i, i + 2] = 1.0 / dx[i + 1];
+                }
+                Matrix Up_ = new Matrix(size_, 2, 0.0);
+                Up_[0, 0] = 1;
+                Up_[size_ - 1, 1] = 1;
+                Matrix Us_ = new Matrix(size_, size_ - 2, 0.0);
+                for (int i = 0; i < size_ - 2; ++i)
+                    Us_[i + 1, i] = 1;
+                Matrix Z_ = Us_ * Matrix.inverse(T_ * Us_);
+                Matrix I_ = new Matrix(size_, size_, 0.0);
+                for (int i = 0; i < size_; ++i)
+                    I_[i, i] = 1;
+                Matrix V_ = (I_ - Z_ * T_) * Up_;
+                Matrix W_ = Z_ * S_;
+                Matrix Q_ = new Matrix(size_, size_, 0.0);
+                Q_[0, 0] = 1.0 / (size_ - 1) * dx[0] * dx[0] * dx[0];
+                Q_[0, 1] = 7.0 / 8 * 1.0 / (size_ - 1) * dx[0] * dx[0] * dx[0];
+                for (int i = 1; i < size_ - 1; ++i)
+                {
+                    Q_[i, i - 1] = 7.0 / 8 * 1.0 / (size_ - 1) * dx[i - 1] * dx[i - 1] * dx[i - 1];
+                    Q_[i, i] = 1.0 / (size_ - 1) * dx[i] * dx[i] * dx[i] + 1.0 / (size_ - 1) * dx[i - 1] * dx[i - 1] * dx[i - 1];
+                    Q_[i, i + 1] = 7.0 / 8 * 1.0 / (size_ - 1) * dx[i] * dx[i] * dx[i];
+                }
+                Q_[size_ - 1, size_ - 2] = 7.0 / 8 * 1.0 / (size_ - 1) * dx[size_ - 2] * dx[size_ - 2] * dx[size_ - 2];
+                Q_[size_ - 1, size_ - 1] = 1.0 / (size_ - 1) * dx[size_ - 2] * dx[size_ - 2] * dx[size_ - 2];
+                Matrix J_ = (I_ - V_ * Matrix.inverse(Matrix.transpose(V_) * Q_ * V_) * Matrix.transpose(V_) * Q_) * W_;
+                Vector Y_ = new Vector(size_);
+                for (int i = 0; i < size_; ++i)
+                    Y_[i] = yBegin_[i];
+                Vector D_ = J_ * Y_;
+                for (int i = 0; i < size_ - 1; ++i)
+                    tmp[i] = (Y_[i + 1] - Y_[i]) / dx[i] - (2.0 * D_[i] + D_[i + 1]) * dx[i] / 6.0;
+                tmp[size_ - 1] = tmp[size_ - 2] + D_[size_ - 2] * dx[size_ - 2] + (D_[size_ - 1] - D_[size_ - 2]) * dx[size_ - 2] / 2.0;
+
             }
-            Matrix Up_ = new Matrix(size_, 2, 0.0);
-            Up_[0, 0] = 1;
-            Up_[size_ - 1, 1] = 1;
-            Matrix Us_ = new Matrix(size_, size_ - 2, 0.0);
-            for (int i = 0; i < size_ - 2; ++i)
-               Us_[i + 1, i] = 1;
-            Matrix Z_ = Us_ * Matrix.inverse(T_ * Us_);
-            Matrix I_ = new Matrix(size_, size_, 0.0);
-            for (int i = 0; i < size_; ++i)
-               I_[i, i] = 1;
-            Matrix V_ = (I_ - Z_ * T_) * Up_;
-            Matrix W_ = Z_ * S_;
-            Matrix Q_ = new Matrix(size_, size_, 0.0);
-            Q_[0, 0] = 1.0 / (size_ - 1) * dx[0];
-            Q_[0, 1] = 1.0 / 2 * 1.0 / (size_ - 1) * dx[0];
-            for (int i = 1; i < size_ - 1; ++i)
+            else if (da_ == CubicInterpolation.DerivativeApprox.SplineOM2)
             {
-               Q_[i, i - 1] = 1.0 / 2 * 1.0 / (size_ - 1) * dx[i - 1];
-               Q_[i, i] = 1.0 / (size_ - 1) * dx[i] + 1.0 / (size_ - 1) * dx[i - 1];
-               Q_[i, i + 1] = 1.0 / 2 * 1.0 / (size_ - 1) * dx[i];
+                Matrix T_ = new Matrix(size_ - 2, size_, 0.0);
+                for (int i = 0; i < size_ - 2; ++i)
+                {
+                    T_[i, i] = dx[i] / 6.0;
+                    T_[i, i + 1] = (dx[i] + dx[i + 1]) / 3.0;
+                    T_[i, i + 2] = dx[i + 1] / 6.0;
+                }
+                Matrix S_ = new Matrix(size_ - 2, size_, 0.0);
+                for (int i = 0; i < size_ - 2; ++i)
+                {
+                    S_[i, i] = 1.0 / dx[i];
+                    S_[i, i + 1] = -(1.0 / dx[i + 1] + 1.0 / dx[i]);
+                    S_[i, i + 2] = 1.0 / dx[i + 1];
+                }
+                Matrix Up_ = new Matrix(size_, 2, 0.0);
+                Up_[0, 0] = 1;
+                Up_[size_ - 1, 1] = 1;
+                Matrix Us_ = new Matrix(size_, size_ - 2, 0.0);
+                for (int i = 0; i < size_ - 2; ++i)
+                    Us_[i + 1, i] = 1;
+                Matrix Z_ = Us_ * Matrix.inverse(T_ * Us_);
+                Matrix I_ = new Matrix(size_, size_, 0.0);
+                for (int i = 0; i < size_; ++i)
+                    I_[i, i] = 1;
+                Matrix V_ = (I_ - Z_ * T_) * Up_;
+                Matrix W_ = Z_ * S_;
+                Matrix Q_ = new Matrix(size_, size_, 0.0);
+                Q_[0, 0] = 1.0 / (size_ - 1) * dx[0];
+                Q_[0, 1] = 1.0 / 2 * 1.0 / (size_ - 1) * dx[0];
+                for (int i = 1; i < size_ - 1; ++i)
+                {
+                    Q_[i, i - 1] = 1.0 / 2 * 1.0 / (size_ - 1) * dx[i - 1];
+                    Q_[i, i] = 1.0 / (size_ - 1) * dx[i] + 1.0 / (size_ - 1) * dx[i - 1];
+                    Q_[i, i + 1] = 1.0 / 2 * 1.0 / (size_ - 1) * dx[i];
+                }
+                Q_[size_ - 1, size_ - 2] = 1.0 / 2 * 1.0 / (size_ - 1) * dx[size_ - 2];
+                Q_[size_ - 1, size_ - 1] = 1.0 / (size_ - 1) * dx[size_ - 2];
+                Matrix J_ = (I_ - V_ * Matrix.inverse(Matrix.transpose(V_) * Q_ * V_) * Matrix.transpose(V_) * Q_) * W_;
+                Vector Y_ = new Vector(size_);
+                for (int i = 0; i < size_; ++i)
+                    Y_[i] = yBegin_[i];
+                Vector D_ = J_ * Y_;
+                for (int i = 0; i < size_ - 1; ++i)
+                    tmp[i] = (Y_[i + 1] - Y_[i]) / dx[i] - (2.0 * D_[i] + D_[i + 1]) * dx[i] / 6.0;
+                tmp[size_ - 1] = tmp[size_ - 2] + D_[size_ - 2] * dx[size_ - 2] + (D_[size_ - 1] - D_[size_ - 2]) * dx[size_ - 2] / 2.0;
             }
-            Q_[size_ - 1, size_ - 2] = 1.0 / 2 * 1.0 / (size_ - 1) * dx[size_ - 2];
-            Q_[size_ - 1, size_ - 1] = 1.0 / (size_ - 1) * dx[size_ - 2];
-            Matrix J_ = (I_ - V_ * Matrix.inverse(Matrix.transpose(V_) * Q_ * V_) * Matrix.transpose(V_) * Q_) * W_;
-            Vector Y_ = new Vector(size_);
-            for (int i = 0; i < size_; ++i)
-               Y_[i] = this.yBegin_[i];
-            Vector D_ = J_ * Y_;
-            for (int i = 0; i < size_ - 1; ++i)
-               tmp[i] = (Y_[i + 1] - Y_[i]) / dx[i] - (2.0 * D_[i] + D_[i + 1]) * dx[i] / 6.0;
-            tmp[size_ - 1] = tmp[size_ - 2] + D_[size_ - 2] * dx[size_ - 2] + (D_[size_ - 1] - D_[size_ - 2]) * dx[size_ - 2] / 2.0;
-         }
-         else
-         {
-            // local schemes
-            if (size_ == 2)
-               tmp[0] = tmp[1] = S[0];
             else
             {
-               switch (da_)
-               {
-                  case CubicInterpolation.DerivativeApprox.FourthOrder:
-                     throw new NotImplementedException("FourthOrder not implemented yet");
-                  case CubicInterpolation.DerivativeApprox.Parabolic:
-                     // intermediate points
-                     for (int i = 1; i < size_ - 1; ++i)
-                     {
-                        tmp[i] = (dx[i - 1] * S[i] + dx[i] * S[i - 1]) / (dx[i] + dx[i - 1]);
-                     }
-                     // end points
-                     tmp[0] = ((2.0 * dx[0] + dx[1]) * S[0] - dx[0] * S[1]) / (dx[0] + dx[1]);
-                     tmp[size_ - 1] = ((2.0 * dx[size_ - 2] + dx[size_ - 3]) * S[size_ - 2] -
-                                       dx[size_ - 2] * S[size_ - 3]) / (dx[size_ - 2] + dx[size_ - 3]);
-                     break;
-                  case CubicInterpolation.DerivativeApprox.FritschButland:
-                     // intermediate points
-                     for (int i = 1; i < size_ - 1; ++i)
-                     {
-                        double Smin = Math.Min(S[i - 1], S[i]);
-                        double Smax = Math.Max(S[i - 1], S[i]);
-                        tmp[i] = 3.0 * Smin * Smax / (Smax + 2.0 * Smin);
-                     }
-                     // end points
-                     tmp[0] = ((2.0 * dx[0] + dx[1]) * S[0] - dx[0] * S[1]) / (dx[0] + dx[1]);
-                     tmp[size_ - 1] = ((2.0 * dx[size_ - 2] + dx[size_ - 3]) * S[size_ - 2] -
-                                       dx[size_ - 2] * S[size_ - 3]) / (dx[size_ - 2] + dx[size_ - 3]);
-                     break;
-                  case CubicInterpolation.DerivativeApprox.Akima:
-                     tmp[0] = (Math.Abs(S[1] - S[0]) * 2 * S[0] * S[1] +
-                               Math.Abs(2 * S[0] * S[1] - 4 * S[0] * S[0] * S[1]) * S[0]) /
-                              (Math.Abs(S[1] - S[0]) + Math.Abs(2 * S[0] * S[1] - 4 * S[0] * S[0] * S[1]));
-                     tmp[1] = (Math.Abs(S[2] - S[1]) * S[0] + Math.Abs(S[0] - 2 * S[0] * S[1]) * S[1]) /
-                              (Math.Abs(S[2] - S[1]) + Math.Abs(S[0] - 2 * S[0] * S[1]));
-                     for (int i = 2; i < size_ - 2; ++i)
-                     {
-                        if ((S[i - 2].IsEqual(S[i - 1])) && (S[i].IsNotEqual(S[i + 1])))
-                           tmp[i] = S[i - 1];
-                        else if ((S[i - 2].IsNotEqual(S[i - 1])) && (S[i].IsEqual(S[i + 1])))
-                           tmp[i] = S[i];
-                        else if (S[i].IsEqual(S[i - 1]))
-                           tmp[i] = S[i];
-                        else if ((S[i - 2].IsEqual(S[i - 1])) && (S[i - 1].IsNotEqual(S[i])) && (S[i].IsEqual(S[i + 1])))
-                           tmp[i] = (S[i - 1] + S[i]) / 2.0;
-                        else
-                           tmp[i] = (Math.Abs(S[i + 1] - S[i]) * S[i - 1] + Math.Abs(S[i - 1] - S[i - 2]) * S[i]) /
-                                    (Math.Abs(S[i + 1] - S[i]) + Math.Abs(S[i - 1] - S[i - 2]));
-                     }
-                     tmp[size_ - 2] = (Math.Abs(2 * S[size_ - 2] * S[size_ - 3] - S[size_ - 2]) * S[size_ - 3] +
-                                       Math.Abs(S[size_ - 3] - S[size_ - 4]) * S[size_ - 2]) /
-                                      (Math.Abs(2 * S[size_ - 2] * S[size_ - 3] - S[size_ - 2]) +
-                                       Math.Abs(S[size_ - 3] - S[size_ - 4]));
-                     tmp[size_ - 1] =
-                        (Math.Abs(4 * S[size_ - 2] * S[size_ - 2] * S[size_ - 3] - 2 * S[size_ - 2] * S[size_ - 3]) *
-                         S[size_ - 2] + Math.Abs(S[size_ - 2] - S[size_ - 3]) * 2 * S[size_ - 2] * S[size_ - 3]) /
-                        (Math.Abs(4 * S[size_ - 2] * S[size_ - 2] * S[size_ - 3] - 2 * S[size_ - 2] * S[size_ - 3]) +
-                         Math.Abs(S[size_ - 2] - S[size_ - 3]));
-                     break;
-                  case CubicInterpolation.DerivativeApprox.Kruger:
-                     // intermediate points
-                     for (int i = 1; i < size_ - 1; ++i)
-                     {
-                        if (S[i - 1] * S[i] < 0.0)
-                           // slope changes sign at point
-                           tmp[i] = 0.0;
-                        else
-                           // slope will be between the slopes of the adjacent
-                           // straight lines and should approach zero if the
-                           // slope of either line approaches zero
-                           tmp[i] = 2.0 / (1.0 / S[i - 1] + 1.0 / S[i]);
-                     }
-                     // end points
-                     tmp[0] = (3.0 * S[0] - tmp[1]) / 2.0;
-                     tmp[size_ - 1] = (3.0 * S[size_ - 2] - tmp[size_ - 2]) / 2.0;
-                     break;
-                  case CubicInterpolation.DerivativeApprox.Harmonic:
-                     // intermediate points
-                     for (int i = 1; i < size_ - 1; ++i)
-                     {
-                        double w1 = 2 * dx[i] + dx[i - 1];
-                        double w2 = dx[i] + 2 * dx[i - 1];
-                        if (S[i - 1]*S[i] <= 0.0)
-                           // slope changes sign at point
-                           tmp[i] = 0.0;
-                        else
-                           // weighted harmonic mean of S[i] and S[i-1] if they
-                           // have the same sign; otherwise 0
-                           tmp[i] = (w1 + w2) / (w1 / S[i - 1] + w2 / S[i]);
-                     }
-                     // end points [0]
-                     tmp[0] = ((2 * dx[0] + dx[1]) * S[0] - dx[0] * S[1]) / (dx[1] + dx[0]);
-                     if (tmp[0]*S[0] < 0.0)
-                     {
-                        tmp[0] = 0;
-                     }
-                     else if (S[0]*S[1] < 0)
-                     {
-                        if (Math.Abs(tmp[0]) > Math.Abs(3 * S[0]))
-                        {
-                           tmp[0] = 3 * S[0];
-                        }
-                     }
-                     // end points [n-1]
-                     tmp[size_ - 1] = ((2 * dx[size_ - 2] + dx[size_ - 3]) * S[size_ - 2] - dx[size_ - 2] * S[size_ - 3]) / (dx[size_ - 3] + dx[size_ - 2]);
-                     if (tmp[size_ - 1]*S[size_ - 2] < 0.0)
-                     {
-                        tmp[size_ - 1] = 0;
-                     }
-                     else if (S[size_ - 2]*S[size_ - 3] < 0)
-                     {
-                        if (Math.Abs(tmp[size_ - 1]) > Math.Abs(3 * S[size_ - 2]))
-                        {
-                           tmp[size_ - 1] = 3 * S[size_ - 2];
-                        }
-                     }
-                     break;
-                  default:
-                     throw new ArgumentException("unknown scheme");
-               }
+                // local schemes
+                if (size_ == 2)
+                    tmp[0] = tmp[1] = S[0];
+                else
+                {
+                    switch (da_)
+                    {
+                        case CubicInterpolation.DerivativeApprox.FourthOrder:
+                            throw new NotImplementedException("FourthOrder not implemented yet");
+                        case CubicInterpolation.DerivativeApprox.Parabolic:
+                            // intermediate points
+                            for (int i = 1; i < size_ - 1; ++i)
+                            {
+                                tmp[i] = (dx[i - 1] * S[i] + dx[i] * S[i - 1]) / (dx[i] + dx[i - 1]);
+                            }
+                            // end points
+                            tmp[0] = ((2.0 * dx[0] + dx[1]) * S[0] - dx[0] * S[1]) / (dx[0] + dx[1]);
+                            tmp[size_ - 1] = ((2.0 * dx[size_ - 2] + dx[size_ - 3]) * S[size_ - 2] -
+                                              dx[size_ - 2] * S[size_ - 3]) / (dx[size_ - 2] + dx[size_ - 3]);
+                            break;
+                        case CubicInterpolation.DerivativeApprox.FritschButland:
+                            // intermediate points
+                            for (int i = 1; i < size_ - 1; ++i)
+                            {
+                                double Smin = System.Math.Min(S[i - 1], S[i]);
+                                double Smax = System.Math.Max(S[i - 1], S[i]);
+                                tmp[i] = 3.0 * Smin * Smax / (Smax + 2.0 * Smin);
+                            }
+                            // end points
+                            tmp[0] = ((2.0 * dx[0] + dx[1]) * S[0] - dx[0] * S[1]) / (dx[0] + dx[1]);
+                            tmp[size_ - 1] = ((2.0 * dx[size_ - 2] + dx[size_ - 3]) * S[size_ - 2] -
+                                              dx[size_ - 2] * S[size_ - 3]) / (dx[size_ - 2] + dx[size_ - 3]);
+                            break;
+                        case CubicInterpolation.DerivativeApprox.Akima:
+                            tmp[0] = (System.Math.Abs(S[1] - S[0]) * 2 * S[0] * S[1] +
+                                      System.Math.Abs(2 * S[0] * S[1] - 4 * S[0] * S[0] * S[1]) * S[0]) /
+                                     (System.Math.Abs(S[1] - S[0]) + System.Math.Abs(2 * S[0] * S[1] - 4 * S[0] * S[0] * S[1]));
+                            tmp[1] = (System.Math.Abs(S[2] - S[1]) * S[0] + System.Math.Abs(S[0] - 2 * S[0] * S[1]) * S[1]) /
+                                     (System.Math.Abs(S[2] - S[1]) + System.Math.Abs(S[0] - 2 * S[0] * S[1]));
+                            for (int i = 2; i < size_ - 2; ++i)
+                            {
+                                if (S[i - 2].IsEqual(S[i - 1]) && S[i].IsNotEqual(S[i + 1]))
+                                    tmp[i] = S[i - 1];
+                                else if (S[i - 2].IsNotEqual(S[i - 1]) && S[i].IsEqual(S[i + 1]))
+                                    tmp[i] = S[i];
+                                else if (S[i].IsEqual(S[i - 1]))
+                                    tmp[i] = S[i];
+                                else if (S[i - 2].IsEqual(S[i - 1]) && S[i - 1].IsNotEqual(S[i]) && S[i].IsEqual(S[i + 1]))
+                                    tmp[i] = (S[i - 1] + S[i]) / 2.0;
+                                else
+                                    tmp[i] = (System.Math.Abs(S[i + 1] - S[i]) * S[i - 1] + System.Math.Abs(S[i - 1] - S[i - 2]) * S[i]) /
+                                             (System.Math.Abs(S[i + 1] - S[i]) + System.Math.Abs(S[i - 1] - S[i - 2]));
+                            }
+                            tmp[size_ - 2] = (System.Math.Abs(2 * S[size_ - 2] * S[size_ - 3] - S[size_ - 2]) * S[size_ - 3] +
+                                              System.Math.Abs(S[size_ - 3] - S[size_ - 4]) * S[size_ - 2]) /
+                                             (System.Math.Abs(2 * S[size_ - 2] * S[size_ - 3] - S[size_ - 2]) +
+                                              System.Math.Abs(S[size_ - 3] - S[size_ - 4]));
+                            tmp[size_ - 1] =
+                               (System.Math.Abs(4 * S[size_ - 2] * S[size_ - 2] * S[size_ - 3] - 2 * S[size_ - 2] * S[size_ - 3]) *
+                                S[size_ - 2] + System.Math.Abs(S[size_ - 2] - S[size_ - 3]) * 2 * S[size_ - 2] * S[size_ - 3]) /
+                               (System.Math.Abs(4 * S[size_ - 2] * S[size_ - 2] * S[size_ - 3] - 2 * S[size_ - 2] * S[size_ - 3]) +
+                                System.Math.Abs(S[size_ - 2] - S[size_ - 3]));
+                            break;
+                        case CubicInterpolation.DerivativeApprox.Kruger:
+                            // intermediate points
+                            for (int i = 1; i < size_ - 1; ++i)
+                            {
+                                if (S[i - 1] * S[i] < 0.0)
+                                    // slope changes sign at point
+                                    tmp[i] = 0.0;
+                                else
+                                    // slope will be between the slopes of the adjacent
+                                    // straight lines and should approach zero if the
+                                    // slope of either line approaches zero
+                                    tmp[i] = 2.0 / (1.0 / S[i - 1] + 1.0 / S[i]);
+                            }
+                            // end points
+                            tmp[0] = (3.0 * S[0] - tmp[1]) / 2.0;
+                            tmp[size_ - 1] = (3.0 * S[size_ - 2] - tmp[size_ - 2]) / 2.0;
+                            break;
+                        case CubicInterpolation.DerivativeApprox.Harmonic:
+                            // intermediate points
+                            for (int i = 1; i < size_ - 1; ++i)
+                            {
+                                double w1 = 2 * dx[i] + dx[i - 1];
+                                double w2 = dx[i] + 2 * dx[i - 1];
+                                if (S[i - 1] * S[i] <= 0.0)
+                                    // slope changes sign at point
+                                    tmp[i] = 0.0;
+                                else
+                                    // weighted harmonic mean of S[i] and S[i-1] if they
+                                    // have the same sign; otherwise 0
+                                    tmp[i] = (w1 + w2) / (w1 / S[i - 1] + w2 / S[i]);
+                            }
+                            // end points [0]
+                            tmp[0] = ((2 * dx[0] + dx[1]) * S[0] - dx[0] * S[1]) / (dx[1] + dx[0]);
+                            if (tmp[0] * S[0] < 0.0)
+                            {
+                                tmp[0] = 0;
+                            }
+                            else if (S[0] * S[1] < 0)
+                            {
+                                if (System.Math.Abs(tmp[0]) > System.Math.Abs(3 * S[0]))
+                                {
+                                    tmp[0] = 3 * S[0];
+                                }
+                            }
+                            // end points [n-1]
+                            tmp[size_ - 1] = ((2 * dx[size_ - 2] + dx[size_ - 3]) * S[size_ - 2] - dx[size_ - 2] * S[size_ - 3]) / (dx[size_ - 3] + dx[size_ - 2]);
+                            if (tmp[size_ - 1] * S[size_ - 2] < 0.0)
+                            {
+                                tmp[size_ - 1] = 0;
+                            }
+                            else if (S[size_ - 2] * S[size_ - 3] < 0)
+                            {
+                                if (System.Math.Abs(tmp[size_ - 1]) > System.Math.Abs(3 * S[size_ - 2]))
+                                {
+                                    tmp[size_ - 1] = 3 * S[size_ - 2];
+                                }
+                            }
+                            break;
+                        default:
+                            throw new ArgumentException("unknown scheme");
+                    }
+                }
             }
-         }
 
-         monotonicityAdjustments_.Erase();
+            monotonicityAdjustments_.Erase();
 
-         // Hyman monotonicity constrained filter
-         if (monotonic_)
-         {
-            double correction;
-            double pm, pu, pd, M;
-            for (int i = 0; i < size_; ++i)
+            // Hyman monotonicity constrained filter
+            if (monotonic_)
             {
-               if (i == 0)
-               {
-                  if (tmp[i] * S[0] > 0.0)
-                  {
-                     correction = tmp[i] / Math.Abs(tmp[i]) *
-                                  Math.Min(Math.Abs(tmp[i]),
-                                           Math.Abs(3.0 * S[0]));
-                  }
-                  else
-                  {
-                     correction = 0.0;
-                  }
-                  if (correction.IsNotEqual(tmp[i]))
-                  {
-                     tmp[i] = correction;
-                     monotonicityAdjustments_[i] = true;
-                  }
-               }
-               else if (i == size_ - 1)
-               {
-                  if (tmp[i] * S[size_ - 2] > 0.0)
-                  {
-                     correction = tmp[i] / Math.Abs(tmp[i]) *
-                                  Math.Min(Math.Abs(tmp[i]), Math.Abs(3.0 * S[size_ - 2]));
-                  }
-                  else
-                  {
-                     correction = 0.0;
-                  }
-                  if (correction.IsNotEqual(tmp[i]))
-                  {
-                     tmp[i] = correction;
-                     monotonicityAdjustments_[i] = true;
-                  }
-               }
-               else
-               {
-                  pm = (S[i - 1] * dx[i] + S[i] * dx[i - 1]) /
-                       (dx[i - 1] + dx[i]);
-                  M = 3.0 * Math.Min(Math.Min(Math.Abs(S[i - 1]), Math.Abs(S[i])),
-                                     Math.Abs(pm));
-                  if (i > 1)
-                  {
-                     if ((S[i - 1] - S[i - 2]) * (S[i] - S[i - 1]) > 0.0)
-                     {
-                        pd = (S[i - 1] * (2.0 * dx[i - 1] + dx[i - 2])
-                              - S[i - 2] * dx[i - 1]) /
-                             (dx[i - 2] + dx[i - 1]);
-                        if (pm * pd > 0.0 && pm * (S[i - 1] - S[i - 2]) > 0.0)
+                double correction;
+                double pm, pu, pd, M;
+                for (int i = 0; i < size_; ++i)
+                {
+                    if (i == 0)
+                    {
+                        if (tmp[i] * S[0] > 0.0)
                         {
-                           M = Math.Max(M, 1.5 * Math.Min(
-                                           Math.Abs(pm), Math.Abs(pd)));
+                            correction = tmp[i] / System.Math.Abs(tmp[i]) *
+                                         System.Math.Min(System.Math.Abs(tmp[i]),
+                                                  System.Math.Abs(3.0 * S[0]));
                         }
-                     }
-                  }
-                  if (i < size_ - 2)
-                  {
-                     if ((S[i] - S[i - 1]) * (S[i + 1] - S[i]) > 0.0)
-                     {
-                        pu = (S[i] * (2.0 * dx[i] + dx[i + 1]) - S[i + 1] * dx[i]) /
-                             (dx[i] + dx[i + 1]);
-                        if (pm * pu > 0.0 && -pm * (S[i] - S[i - 1]) > 0.0)
+                        else
                         {
-                           M = Math.Max(M, 1.5 * Math.Min(
-                                           Math.Abs(pm), Math.Abs(pu)));
+                            correction = 0.0;
                         }
-                     }
-                  }
-                  if (tmp[i] * pm > 0.0)
-                  {
-                     correction = tmp[i] / Math.Abs(tmp[i]) *
-                                  Math.Min(Math.Abs(tmp[i]), M);
-                  }
-                  else
-                  {
-                     correction = 0.0;
-                  }
-                  if (correction.IsNotEqual(tmp[i]))
-                  {
-                     tmp[i] = correction;
-                     monotonicityAdjustments_[i] = true;
-                  }
-               }
+                        if (correction.IsNotEqual(tmp[i]))
+                        {
+                            tmp[i] = correction;
+                            monotonicityAdjustments_[i] = true;
+                        }
+                    }
+                    else if (i == size_ - 1)
+                    {
+                        if (tmp[i] * S[size_ - 2] > 0.0)
+                        {
+                            correction = tmp[i] / System.Math.Abs(tmp[i]) *
+                                         System.Math.Min(System.Math.Abs(tmp[i]), System.Math.Abs(3.0 * S[size_ - 2]));
+                        }
+                        else
+                        {
+                            correction = 0.0;
+                        }
+                        if (correction.IsNotEqual(tmp[i]))
+                        {
+                            tmp[i] = correction;
+                            monotonicityAdjustments_[i] = true;
+                        }
+                    }
+                    else
+                    {
+                        pm = (S[i - 1] * dx[i] + S[i] * dx[i - 1]) /
+                             (dx[i - 1] + dx[i]);
+                        M = 3.0 * System.Math.Min(System.Math.Min(System.Math.Abs(S[i - 1]), System.Math.Abs(S[i])),
+                                           System.Math.Abs(pm));
+                        if (i > 1)
+                        {
+                            if ((S[i - 1] - S[i - 2]) * (S[i] - S[i - 1]) > 0.0)
+                            {
+                                pd = (S[i - 1] * (2.0 * dx[i - 1] + dx[i - 2])
+                                      - S[i - 2] * dx[i - 1]) /
+                                     (dx[i - 2] + dx[i - 1]);
+                                if (pm * pd > 0.0 && pm * (S[i - 1] - S[i - 2]) > 0.0)
+                                {
+                                    M = System.Math.Max(M, 1.5 * System.Math.Min(
+                                                    System.Math.Abs(pm), System.Math.Abs(pd)));
+                                }
+                            }
+                        }
+                        if (i < size_ - 2)
+                        {
+                            if ((S[i] - S[i - 1]) * (S[i + 1] - S[i]) > 0.0)
+                            {
+                                pu = (S[i] * (2.0 * dx[i] + dx[i + 1]) - S[i + 1] * dx[i]) /
+                                     (dx[i] + dx[i + 1]);
+                                if (pm * pu > 0.0 && -pm * (S[i] - S[i - 1]) > 0.0)
+                                {
+                                    M = System.Math.Max(M, 1.5 * System.Math.Min(
+                                                    System.Math.Abs(pm), System.Math.Abs(pu)));
+                                }
+                            }
+                        }
+                        if (tmp[i] * pm > 0.0)
+                        {
+                            correction = tmp[i] / System.Math.Abs(tmp[i]) *
+                                         System.Math.Min(System.Math.Abs(tmp[i]), M);
+                        }
+                        else
+                        {
+                            correction = 0.0;
+                        }
+                        if (correction.IsNotEqual(tmp[i]))
+                        {
+                            tmp[i] = correction;
+                            monotonicityAdjustments_[i] = true;
+                        }
+                    }
+                }
             }
-         }
 
-         // cubic coefficients
-         for (int i = 0; i < size_ - 1; ++i)
-         {
-            a_[i] = tmp[i];
-            b_[i] = (3.0 * S[i] - tmp[i + 1] - 2.0 * tmp[i]) / dx[i];
-            c_[i] = (tmp[i + 1] + tmp[i] - 2.0 * S[i]) / (dx[i] * dx[i]);
-         }
+            // cubic coefficients
+            for (int i = 0; i < size_ - 1; ++i)
+            {
+                a_[i] = tmp[i];
+                b_[i] = (3.0 * S[i] - tmp[i + 1] - 2.0 * tmp[i]) / dx[i];
+                c_[i] = (tmp[i + 1] + tmp[i] - 2.0 * S[i]) / (dx[i] * dx[i]);
+            }
 
-         primitiveConst_[0] = 0.0;
-         for (int i = 1; i < size_ - 1; ++i)
-         {
-            primitiveConst_[i] = primitiveConst_[i - 1]
-                                 + dx[i - 1] *
-                                 (yBegin_[i - 1] + dx[i - 1] *
-                                  (a_[i - 1] / 2.0 + dx[i - 1] *
-                                   (b_[i - 1] / 3.0 + dx[i - 1] * c_[i - 1] / 4.0)));
-         }
-      }
+            primitiveConst_[0] = 0.0;
+            for (int i = 1; i < size_ - 1; ++i)
+            {
+                primitiveConst_[i] = primitiveConst_[i - 1]
+                                     + dx[i - 1] *
+                                     (yBegin_[i - 1] + dx[i - 1] *
+                                      (a_[i - 1] / 2.0 + dx[i - 1] *
+                                       (b_[i - 1] / 3.0 + dx[i - 1] * c_[i - 1] / 4.0)));
+            }
+        }
 
-      public override double value(double x)
-      {
-         int j = locate(x);
-         double dx = x - xBegin_[j];
-         return yBegin_[j] + dx * (a_[j] + dx * (b_[j] + dx * c_[j]));
-      }
+        public override double value(double x)
+        {
+            int j = locate(x);
+            double dx = x - xBegin_[j];
+            return yBegin_[j] + dx * (a_[j] + dx * (b_[j] + dx * c_[j]));
+        }
 
-      public override double primitive(double x)
-      {
-         int j = locate(x);
-         double dx = x - xBegin_[j];
-         return primitiveConst_[j]
-                + dx * (yBegin_[j] + dx * (a_[j] / 2.0
-                                           + dx * (b_[j] / 3.0 + dx * c_[j] / 4.0)));
-      }
+        public override double primitive(double x)
+        {
+            int j = locate(x);
+            double dx = x - xBegin_[j];
+            return primitiveConst_[j]
+                   + dx * (yBegin_[j] + dx * (a_[j] / 2.0
+                                              + dx * (b_[j] / 3.0 + dx * c_[j] / 4.0)));
+        }
 
-      public override double derivative(double x)
-      {
-         int j = locate(x);
-         double dx = x - xBegin_[j];
-         return a_[j] + (2.0 * b_[j] + 3.0 * c_[j] * dx) * dx;
-      }
+        public override double derivative(double x)
+        {
+            int j = locate(x);
+            double dx = x - xBegin_[j];
+            return a_[j] + (2.0 * b_[j] + 3.0 * c_[j] * dx) * dx;
+        }
 
-      public override double secondDerivative(double x)
-      {
-         int j = locate(x);
-         double dx = x - xBegin_[j];
-         return 2.0 * b_[j] + 6.0 * c_[j] * dx;
-      }
+        public override double secondDerivative(double x)
+        {
+            int j = locate(x);
+            double dx = x - xBegin_[j];
+            return 2.0 * b_[j] + 6.0 * c_[j] * dx;
+        }
 
-      private double cubicInterpolatingPolynomialDerivative(
-         double a, double b, double c, double d,
-         double u, double v, double w, double z, double x)
-      {
-         return (-((((a - c) * (b - c) * (c - x) * z - (a - d) * (b - d) * (d - x) * w) * (a - x + b - x)
-                    + ((a - c) * (b - c) * z - (a - d) * (b - d) * w) * (a - x) * (b - x)) * (a - b) +
-                   ((a - c) * (a - d) * v - (b - c) * (b - d) * u) * (c - d) * (c - x) * (d - x)
-                   + ((a - c) * (a - d) * (a - x) * v - (b - c) * (b - d) * (b - x) * u)
-                   * (c - x + d - x) * (c - d))) /
-                ((a - b) * (a - c) * (a - d) * (b - c) * (b - d) * (c - d));
-      }
-   }
+        private double cubicInterpolatingPolynomialDerivative(
+           double a, double b, double c, double d,
+           double u, double v, double w, double z, double x)
+        {
+            return -((((a - c) * (b - c) * (c - x) * z - (a - d) * (b - d) * (d - x) * w) * (a - x + b - x)
+                       + ((a - c) * (b - c) * z - (a - d) * (b - d) * w) * (a - x) * (b - x)) * (a - b) +
+                      ((a - c) * (a - d) * v - (b - c) * (b - d) * u) * (c - d) * (c - x) * (d - x)
+                      + ((a - c) * (a - d) * (a - x) * v - (b - c) * (b - d) * (b - x) * u)
+                      * (c - x + d - x) * (c - d)) /
+                   ((a - b) * (a - c) * (a - d) * (b - c) * (b - d) * (c - d));
+        }
+    }
 }

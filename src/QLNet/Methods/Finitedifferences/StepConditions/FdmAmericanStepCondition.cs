@@ -17,38 +17,43 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Math;
+using QLNet.Methods.Finitedifferences;
+using QLNet.Methods.Finitedifferences.Meshers;
+using QLNet.Methods.Finitedifferences.Operators;
+using QLNet.Methods.Finitedifferences.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences.StepConditions
 {
-   public class FdmAmericanStepCondition : IStepCondition<Vector>
-   {
-      public FdmAmericanStepCondition(FdmMesher mesher, FdmInnerValueCalculator calculator)
-      {
-         mesher_ = mesher;
-         calculator_ = calculator;
-      }
+    public class FdmAmericanStepCondition : IStepCondition<Vector>
+    {
+        public FdmAmericanStepCondition(FdmMesher mesher, FdmInnerValueCalculator calculator)
+        {
+            mesher_ = mesher;
+            calculator_ = calculator;
+        }
 
-      public void applyTo(object o, double t)
-      {
-         Vector a = (Vector)o;
-         FdmLinearOpLayout layout = mesher_.layout();
-         FdmLinearOpIterator endIter = layout.end();
+        public void applyTo(object o, double t)
+        {
+            Vector a = (Vector)o;
+            FdmLinearOpLayout layout = mesher_.layout();
+            FdmLinearOpIterator endIter = layout.end();
 
-         for (FdmLinearOpIterator iter = layout.begin(); iter != endIter;
-              ++iter)
-         {
-            double innerValue = calculator_.innerValue(iter, t);
-            if (innerValue > a[iter.index()])
+            for (FdmLinearOpIterator iter = layout.begin(); iter != endIter;
+                 ++iter)
             {
-               a[iter.index()] = innerValue;
+                double innerValue = calculator_.innerValue(iter, t);
+                if (innerValue > a[iter.index()])
+                {
+                    a[iter.index()] = innerValue;
+                }
             }
-         }
-      }
+        }
 
-      protected FdmMesher mesher_;
-      protected FdmInnerValueCalculator calculator_;
-   }
+        protected FdmMesher mesher_;
+        protected FdmInnerValueCalculator calculator_;
+    }
 }

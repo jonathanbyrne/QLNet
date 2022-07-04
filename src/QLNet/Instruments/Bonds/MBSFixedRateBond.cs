@@ -16,12 +16,17 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Instruments.Bonds;
+using QLNet.Math;
+using QLNet.Math.Solvers1d;
+using QLNet.Time;
 using System;
 using System.Collections.Generic;
+using QLNet.Cashflows;
 
 namespace QLNet
 {
-   public class MBSFixedRateBond : AmortizingFixedRateBond
+    public class MBSFixedRateBond : AmortizingFixedRateBond
    {
       public MBSFixedRateBond(int settlementDays,
                               Calendar calendar,
@@ -99,7 +104,7 @@ namespace QLNet
 
       public double BondEquivalentYield()
       {
-         return 2 * (Math.Pow(1 + MonthlyYield(), 6) - 1);
+         return 2 * (System.Math.Pow(1 + MonthlyYield(), 6) - 1);
       }
 
       protected void calcBondFactor()
@@ -165,7 +170,7 @@ namespace QLNet
                cashflowindex++;
             }
             double amount = cashflows[i].amount();
-            price += amount / Math.Pow((1 + yield / 100), cashflowindex);
+            price += amount / System.Math.Pow((1 + yield / 100), cashflowindex);
          }
 
          return price - faceAmount;

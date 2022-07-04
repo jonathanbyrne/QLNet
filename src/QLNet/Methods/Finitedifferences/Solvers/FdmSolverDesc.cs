@@ -17,100 +17,104 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Methods.Finitedifferences.Meshers;
+using QLNet.Methods.Finitedifferences.StepConditions;
+using QLNet.Methods.Finitedifferences.Utilities;
+
+namespace QLNet.Methods.Finitedifferences.Solvers
 {
-   public struct FdmSolverDesc
-   {
-      private FdmMesher _mesher;
-      private FdmBoundaryConditionSet _bcSet;
-      private FdmStepConditionComposite _condition;
-      private FdmInnerValueCalculator _calculator;
-      private double _maturity;
-      private int _timeSteps;
-      private int _dampingSteps;
+    public struct FdmSolverDesc
+    {
+        private FdmMesher _mesher;
+        private FdmBoundaryConditionSet _bcSet;
+        private FdmStepConditionComposite _condition;
+        private FdmInnerValueCalculator _calculator;
+        private double _maturity;
+        private int _timeSteps;
+        private int _dampingSteps;
 
-      public FdmMesher mesher
-      {
-         get
-         {
-            return _mesher;
-         }
-         set
-         {
-            _mesher = value;
-         }
-      }
+        public FdmMesher mesher
+        {
+            get
+            {
+                return _mesher;
+            }
+            set
+            {
+                _mesher = value;
+            }
+        }
 
-      public FdmBoundaryConditionSet bcSet
-      {
-         get
-         {
-            return _bcSet;
-         }
-         set
-         {
-            _bcSet = value;
-         }
-      }
+        public FdmBoundaryConditionSet bcSet
+        {
+            get
+            {
+                return _bcSet;
+            }
+            set
+            {
+                _bcSet = value;
+            }
+        }
 
-      public FdmStepConditionComposite condition
-      {
-         get
-         {
-            return _condition;
-         }
-         set
-         {
-            _condition = value;
-         }
-      }
+        public FdmStepConditionComposite condition
+        {
+            get
+            {
+                return _condition;
+            }
+            set
+            {
+                _condition = value;
+            }
+        }
 
-      public FdmInnerValueCalculator calculator
-      {
-         get
-         {
-            return _calculator;
-         }
-         set
-         {
-            _calculator = value;
-         }
-      }
+        public FdmInnerValueCalculator calculator
+        {
+            get
+            {
+                return _calculator;
+            }
+            set
+            {
+                _calculator = value;
+            }
+        }
 
-      public double maturity
-      {
-         get
-         {
-            return _maturity;
-         }
-         set
-         {
-            _maturity = value;
-         }
-      }
+        public double maturity
+        {
+            get
+            {
+                return _maturity;
+            }
+            set
+            {
+                _maturity = value;
+            }
+        }
 
-      public int timeSteps
-      {
-         get
-         {
-            return _timeSteps;
-         }
-         set
-         {
-            _timeSteps = value;
-         }
-      }
+        public int timeSteps
+        {
+            get
+            {
+                return _timeSteps;
+            }
+            set
+            {
+                _timeSteps = value;
+            }
+        }
 
-      public int dampingSteps
-      {
-         get
-         {
-            return _dampingSteps;
-         }
-         set
-         {
-            _dampingSteps = value;
-         }
-      }
-   }
+        public int dampingSteps
+        {
+            get
+            {
+                return _dampingSteps;
+            }
+            set
+            {
+                _dampingSteps = value;
+            }
+        }
+    }
 }

@@ -21,79 +21,79 @@
 
 using System;
 
-namespace QLNet
+namespace QLNet.Time.Calendars
 {
-   //! Swedish calendar
-   /*! Holidays:
-       <ul>
-       <li>Saturdays</li>
-       <li>Sundays</li>
-       <li>New Year's Day, January 1st</li>
-       <li>Epiphany, January 6th</li>
-       <li>Good Friday</li>
-       <li>Easter Monday</li>
-       <li>Ascension</li>
-       <li>Whit(Pentecost) Monday </li>
-       <li>May Day, May 1st</li>
-       <li>National Day, June 6th</li>
-       <li>Midsummer Eve (Friday between June 19-25)</li>
-       <li>Christmas Eve, December 24th</li>
-       <li>Christmas Day, December 25th</li>
-       <li>Boxing Day, December 26th</li>
-       <li>New Year's Eve, December 31th</li>
-       </ul>
+    //! Swedish calendar
+    /*! Holidays:
+        <ul>
+        <li>Saturdays</li>
+        <li>Sundays</li>
+        <li>New Year's Day, January 1st</li>
+        <li>Epiphany, January 6th</li>
+        <li>Good Friday</li>
+        <li>Easter Monday</li>
+        <li>Ascension</li>
+        <li>Whit(Pentecost) Monday </li>
+        <li>May Day, May 1st</li>
+        <li>National Day, June 6th</li>
+        <li>Midsummer Eve (Friday between June 19-25)</li>
+        <li>Christmas Eve, December 24th</li>
+        <li>Christmas Day, December 25th</li>
+        <li>Boxing Day, December 26th</li>
+        <li>New Year's Eve, December 31th</li>
+        </ul>
 
-       \ingroup calendars
-   */
-   public class Sweden :  Calendar
-   {
-      public Sweden() : base(Impl.Singleton) { }
+        \ingroup calendars
+    */
+    public class Sweden : Calendar
+    {
+        public Sweden() : base(Impl.Singleton) { }
 
-      class Impl : Calendar.WesternImpl
-      {
-         public static readonly Impl Singleton = new Impl();
-         private Impl() { }
+        class Impl : WesternImpl
+        {
+            public static readonly Impl Singleton = new Impl();
+            private Impl() { }
 
-         public override string name() { return "Sweden"; }
-         public override bool isBusinessDay(Date date)
-         {
-            DayOfWeek w = date.DayOfWeek;
-            int d = date.Day, dd = date.DayOfYear;
-            Month m = (Month)date.Month;
-            int y = date.Year;
-            int em = easterMonday(y);
-            if (isWeekend(w)
-                // Good Friday
-                || (dd == em - 3)
-                // Easter Monday
-                || (dd == em)
-                // Ascension Thursday
-                || (dd == em + 38)
-                // Whit Monday
-                || (dd == em + 49)
-                // New Year's Day
-                || (d == 1  && m == Month.January)
-                // Epiphany
-                || (d == 6  && m == Month.January)
-                // May Day
-                || (d == 1  && m == Month.May)
-                // June 6 id National Day but is not a holiday.
-                // holiday since 2005
-                || (d == 6 && m == Month.June && y >= 2005)
-                // Midsummer Eve (Friday between June 19-25)
-                || (w == DayOfWeek.Friday && (d >= 19 && d <= 25) && m == Month.June)
-                // Christmas Eve
-                || (d == 24 && m == Month.December)
-                // Christmas Day
-                || (d == 25 && m == Month.December)
-                // Boxing Day
-                || (d == 26 && m == Month.December)
-                // New Year's Eve
-                || (d == 31 && m == Month.December))
-               return false;
-            return true;
-         }
-      }
-   }
+            public override string name() { return "Sweden"; }
+            public override bool isBusinessDay(Date date)
+            {
+                DayOfWeek w = date.DayOfWeek;
+                int d = date.Day, dd = date.DayOfYear;
+                Month m = (Month)date.Month;
+                int y = date.Year;
+                int em = easterMonday(y);
+                if (isWeekend(w)
+                    // Good Friday
+                    || dd == em - 3
+                    // Easter Monday
+                    || dd == em
+                    // Ascension Thursday
+                    || dd == em + 38
+                    // Whit Monday
+                    || dd == em + 49
+                    // New Year's Day
+                    || d == 1 && m == Month.January
+                    // Epiphany
+                    || d == 6 && m == Month.January
+                    // May Day
+                    || d == 1 && m == Month.May
+                    // June 6 id National Day but is not a holiday.
+                    // holiday since 2005
+                    || d == 6 && m == Month.June && y >= 2005
+                    // Midsummer Eve (Friday between June 19-25)
+                    || w == DayOfWeek.Friday && d >= 19 && d <= 25 && m == Month.June
+                    // Christmas Eve
+                    || d == 24 && m == Month.December
+                    // Christmas Day
+                    || d == 25 && m == Month.December
+                    // Boxing Day
+                    || d == 26 && m == Month.December
+                    // New Year's Eve
+                    || d == 31 && m == Month.December)
+                    return false;
+                return true;
+            }
+        }
+    }
 }
 

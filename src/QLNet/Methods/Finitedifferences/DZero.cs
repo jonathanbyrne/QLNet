@@ -17,25 +17,25 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences
 {
-   //! \f$ D_{0} \f$ matricial representation
-   /*! The differential operator \f$ D_{0} \f$ discretizes the
-       first derivative with the second-order formula
+    //! \f$ D_{0} \f$ matricial representation
+    /*! The differential operator \f$ D_{0} \f$ discretizes the
+        first derivative with the second-order formula
 
-       \ingroup findiff
+        \ingroup findiff
 
-       \test the correctness of the returned values is tested by
-             checking them against numerical calculations.
-   */
-   public class DZero : TridiagonalOperator
-   {
-      public DZero(int gridPoints, double h)
-         : base(gridPoints)
-      {
-         setFirstRow(-1 / h, 1 / h);                  // linear extrapolation
-         setMidRows(-1 / (2 * h), 0.0, 1 / (2 * h));
-         setLastRow(-1 / h, 1 / h);                   // linear extrapolation
-      }
-   }
+        \test the correctness of the returned values is tested by
+              checking them against numerical calculations.
+    */
+    public class DZero : TridiagonalOperator
+    {
+        public DZero(int gridPoints, double h)
+           : base(gridPoints)
+        {
+            setFirstRow(-1 / h, 1 / h);                  // linear extrapolation
+            setMidRows(-1 / (2 * h), 0.0, 1 / (2 * h));
+            setLastRow(-1 / h, 1 / h);                   // linear extrapolation
+        }
+    }
 }

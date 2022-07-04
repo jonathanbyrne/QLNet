@@ -16,36 +16,38 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Time;
+using QLNet.Time.DayCounters;
 using System;
 
-namespace QLNet
+namespace QLNet.Instruments.Bonds
 {
-   public class PSACurve : IPrepayModel
-   {
+    public class PSACurve : IPrepayModel
+    {
 
-      public PSACurve(Date startdate)
-         : this(startdate, 1) {}
+        public PSACurve(Date startdate)
+           : this(startdate, 1) { }
 
-      public PSACurve(Date startdate, double multiplier)
-      {
-         _startDate = startdate;
-         _multi = multiplier;
-      }
+        public PSACurve(Date startdate, double multiplier)
+        {
+            _startDate = startdate;
+            _multi = multiplier;
+        }
 
-      public double getCPR(Date valDate)
-      {
-         Thirty360 dayCounter = new Thirty360();
-         int d = dayCounter.dayCount(_startDate, valDate) / 30 + 1;
+        public double getCPR(Date valDate)
+        {
+            Thirty360 dayCounter = new Thirty360();
+            int d = dayCounter.dayCount(_startDate, valDate) / 30 + 1;
 
-         return (d <= 30 ? 0.06 * (d / 30d) : 0.06) * _multi;
-      }
+            return (d <= 30 ? 0.06 * (d / 30d) : 0.06) * _multi;
+        }
 
-      public double getSMM(Date valDate)
-      {
-         return 1 - Math.Pow((1 - getCPR(valDate)), (1 / 12d));
-      }
+        public double getSMM(Date valDate)
+        {
+            return 1 - System.Math.Pow(1 - getCPR(valDate), 1 / 12d);
+        }
 
-      private Date _startDate;
-      private double _multi;
-   }
+        private Date _startDate;
+        private double _multi;
+    }
 }

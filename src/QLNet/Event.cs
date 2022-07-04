@@ -18,11 +18,14 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Patterns;
+using QLNet.Time;
+
 namespace QLNet
 {
-   //! Base class for event
-   //! This class acts as a base class for the actual event implementations.
-   public abstract class Event : IObservable
+    //! Base class for event
+    //! This class acts as a base class for the actual event implementations.
+    public abstract class Event : IObservable
    {
       #region Event interface
 

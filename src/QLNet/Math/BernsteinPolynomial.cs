@@ -18,16 +18,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace QLNet
+namespace QLNet.Math
 {
-   public class BernsteinPolynomial
-   {
-      public static double get(uint i, uint n, double x)
-      {
-         double coeff = Factorial.get(n) /
-                        (Factorial.get(n - i) * Factorial.get(i));
+    public class BernsteinPolynomial
+    {
+        public static double get(uint i, uint n, double x)
+        {
+            double coeff = Factorial.get(n) /
+                           (Factorial.get(n - i) * Factorial.get(i));
 
-         return coeff * Math.Pow(x, i) * Math.Pow(1.0 - x, n - i);
-      }
-   }
+            return coeff * System.Math.Pow(x, i) * System.Math.Pow(1.0 - x, n - i);
+        }
+    }
 }

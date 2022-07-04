@@ -19,45 +19,45 @@
 */
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences
 {
-   //! %Forward Euler scheme for finite difference methods
-   /*! See sect. \ref findiff for details on the method.
+    //! %Forward Euler scheme for finite difference methods
+    /*! See sect. \ref findiff for details on the method.
 
-       In this implementation, the passed operator must be derived
-       from either TimeConstantOperator or TimeDependentOperator.
-       Also, it must implement at least the following interface:
+        In this implementation, the passed operator must be derived
+        from either TimeConstantOperator or TimeDependentOperator.
+        Also, it must implement at least the following interface:
 
-       // copy constructor/assignment
-       // (these will be provided by the compiler if none is defined)
-       Operator(const Operator&);
-       Operator& operator=(const Operator&);
+        // copy constructor/assignment
+        // (these will be provided by the compiler if none is defined)
+        Operator(const Operator&);
+        Operator& operator=(const Operator&);
 
-       // inspectors
-       Size size();
+        // inspectors
+        Size size();
 
-       // modifiers
-       void setTime(Time t);
+        // modifiers
+        void setTime(Time t);
 
-       // operator interface
-       array_type applyTo(const array_type&);
-       static Operator identity(Size size);
+        // operator interface
+        array_type applyTo(const array_type&);
+        static Operator identity(Size size);
 
-       // operator algebra
-       Operator operator*(Real, const Operator&);
-       Operator operator-(const Operator&, const Operator&);
-       \endcode
+        // operator algebra
+        Operator operator*(Real, const Operator&);
+        Operator operator-(const Operator&, const Operator&);
+        \endcode
 
-       \todo add Richardson extrapolation
+        \todo add Richardson extrapolation
 
-       \ingroup findiff
-   */
-   public class ExplicitEuler<Operator> : MixedScheme<Operator> where Operator : IOperator
-   {
-      // constructors
-      public ExplicitEuler() { }  // required for generics
-      public ExplicitEuler(Operator L, List<BoundaryCondition<IOperator>> bcs)
-         : base(L, 0.0, bcs)
-      { }
-   }
+        \ingroup findiff
+    */
+    public class ExplicitEuler<Operator> : MixedScheme<Operator> where Operator : IOperator
+    {
+        // constructors
+        public ExplicitEuler() { }  // required for generics
+        public ExplicitEuler(Operator L, List<BoundaryCondition<IOperator>> bcs)
+           : base(L, 0.0, bcs)
+        { }
+    }
 }

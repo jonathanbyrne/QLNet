@@ -17,13 +17,20 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Currencies;
+using QLNet.Indexes;
+using QLNet.Termstructures;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
+
+namespace QLNet.Indexes.Ibor
 {
-   public class Sonia : OvernightIndex
-   {
-      //! %Sonia (Sterling Overnight Index Average) rate.
-      public Sonia(Handle<YieldTermStructure> h = null)
-         : base("Sonia", 0, new GBPCurrency(), new UnitedKingdom(UnitedKingdom.Market.Exchange),
-                new Actual365Fixed(), h ?? new Handle<YieldTermStructure>()) {}
-   }
+    public class Sonia : OvernightIndex
+    {
+        //! %Sonia (Sterling Overnight Index Average) rate.
+        public Sonia(Handle<YieldTermStructure> h = null)
+           : base("Sonia", 0, new GBPCurrency(), new UnitedKingdom(UnitedKingdom.Market.Exchange),
+                  new Actual365Fixed(), h ?? new Handle<YieldTermStructure>())
+        { }
+    }
 }

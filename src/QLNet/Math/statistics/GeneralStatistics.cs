@@ -20,265 +20,266 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QLNet
+namespace QLNet.Math.statistics
 {
-   public interface IGeneralStatistics
-   {
-      int samples();
-      double mean();
-      double min();
-      double max();
-      double standardDeviation();
-      double variance();
-      double skewness();
-      double kurtosis();
-      double percentile(double percent);
-      double weightSum();
-      double errorEstimate();
+    public interface IGeneralStatistics
+    {
+        int samples();
+        double mean();
+        double min();
+        double max();
+        double standardDeviation();
+        double variance();
+        double skewness();
+        double kurtosis();
+        double percentile(double percent);
+        double weightSum();
+        double errorEstimate();
 
-      void reset();
-      void add
-         (double value, double weight);
-      void addSequence(List<double> data, List<double> weight);
+        void reset();
+        void add
+           (double value, double weight);
+        void addSequence(List<double> data, List<double> weight);
 
-      KeyValuePair<double, int> expectationValue(Func<KeyValuePair<double, double>, double> f,
-                                                 Func<KeyValuePair<double, double>, bool> inRange);
-   }
+        KeyValuePair<double, int> expectationValue(Func<KeyValuePair<double, double>, double> f,
+                                                   Func<KeyValuePair<double, double>, bool> inRange);
+    }
 
-   //! Statistics tool
-   /*! This class accumulates a set of data and returns their
-       statistics (e.g: mean, variance, skewness, kurtosis,
-       error estimation, percentile, etc.) based on the empirical
-       distribution (no gaussian assumption)
+    //! Statistics tool
+    /*! This class accumulates a set of data and returns their
+        statistics (e.g: mean, variance, skewness, kurtosis,
+        error estimation, percentile, etc.) based on the empirical
+        distribution (no gaussian assumption)
 
-       It doesn't suffer the numerical instability problem of
-       IncrementalStatistics. The downside is that it stores all
-       samples, thus increasing the memory requirements.
-   */
-   public class GeneralStatistics : IGeneralStatistics
-   {
-      private List<KeyValuePair<double, double>> samples_;
-      //! number of samples collected
-      public int samples() { return samples_.Count; }
-      //! collected data
-      public List<KeyValuePair<double, double>> data() { return samples_; }
+        It doesn't suffer the numerical instability problem of
+        IncrementalStatistics. The downside is that it stores all
+        samples, thus increasing the memory requirements.
+    */
+    public class GeneralStatistics : IGeneralStatistics
+    {
+        private List<KeyValuePair<double, double>> samples_;
+        //! number of samples collected
+        public int samples() { return samples_.Count; }
+        //! collected data
+        public List<KeyValuePair<double, double>> data() { return samples_; }
 
-      private bool sorted_;
-      private double? mean_ = null, weightSum_ = null, variance_ = null, skewness_ = null, kurtosis_ = null;
-
-
-      public GeneralStatistics() { reset(); }
+        private bool sorted_;
+        private double? mean_ = null, weightSum_ = null, variance_ = null, skewness_ = null, kurtosis_ = null;
 
 
-      /*! returns the error estimate on the mean value, defined as
-          \f$ \epsilon = \sigma/\sqrt{N}. \f$ */
-      public double errorEstimate() { return Math.Sqrt(variance() / samples()); }
-
-      /*! returns the minimum sample value */
-      public double min()
-      {
-         Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
-         return samples_.Min(x => x.Key);
-      }
-
-      /*! returns the maximum sample value */
-      public double max()
-      {
-         Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
-         return samples_.Max(x => x.Key);
-      }
+        public GeneralStatistics() { reset(); }
 
 
-      //! adds a datum to the set, possibly with a weight
-      public void add
-         (double value) { add(value, 1); }
-      public void add
-         (double value, double weight)
-      {
-         Utils.QL_REQUIRE(weight >= 0.0, () => "negative weight not allowed");
-         samples_.Add(new KeyValuePair<double, double>(value, weight));
+        /*! returns the error estimate on the mean value, defined as
+            \f$ \epsilon = \sigma/\sqrt{N}. \f$ */
+        public double errorEstimate() { return System.Math.Sqrt(variance() / samples()); }
 
-         sorted_ = false;
-         mean_ = weightSum_ = variance_ = skewness_ = kurtosis_ = null;
-      }
-
-      //! resets the data to a null set
-      public void reset()
-      {
-         samples_ = new List<KeyValuePair<double, double>>();
-
-         sorted_ = true;
-         mean_ = weightSum_ = variance_ = skewness_ = kurtosis_ = null;
-      }
-
-      //! sort the data set in increasing order
-      public void sort()
-      {
-         if (!sorted_)
-         {
-            samples_.Sort((x, y) => x.Key.CompareTo(y.Key));
-            sorted_ = true;
-         }
-      }
-
-
-      //! sum of data weights
-      public double weightSum()
-      {
-         if (weightSum_ == null)
-            weightSum_ = samples_.Sum<KeyValuePair<double, double>>(x => x.Value);
-         return weightSum_.GetValueOrDefault();
-      }
-
-      /*! returns the mean, defined as
-          \f[ \langle x \rangle = \frac{\sum w_i x_i}{\sum w_i}. \f] */
-      public double mean()
-      {
-         if (mean_ == null)
-         {
-            int N = samples();
+        /*! returns the minimum sample value */
+        public double min()
+        {
             Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
-            // eat our own dog food
-            mean_ = expectationValue(x => x.Key * x.Value, x => true).Key;
-         }
-         return mean_.GetValueOrDefault();
-      }
+            return samples_.Min(x => x.Key);
+        }
 
-      /*! returns the standard deviation \f$ \sigma \f$, defined as the
-      square root of the variance. */
-      public double standardDeviation() { return Math.Sqrt(variance()); }
+        /*! returns the maximum sample value */
+        public double max()
+        {
+            Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
+            return samples_.Max(x => x.Key);
+        }
 
-      /*! returns the variance, defined as
-          \f[ \sigma^2 = \frac{N}{N-1} \left\langle \left(
-              x-\langle x \rangle \right)^2 \right\rangle. \f] */
-      public double variance()
-      {
-         if (variance_ == null)
-         {
-            int N = samples();
-            Utils.QL_REQUIRE(N > 1, () => "sample number <=1, unsufficient");
-            // Subtract the mean and square. Repeat on the whole range.
-            // Hopefully, the whole thing will be inlined in a single loop.
-            double s2 = expectationValue(x => Math.Pow(x.Key * x.Value - mean(), 2), x => true).Key;
-            variance_ = s2 * N / (N - 1.0);
-         }
-         return variance_.GetValueOrDefault();
-      }
 
-      /*! returns the skewness, defined as
-          \f[ \frac{N^2}{(N-1)(N-2)} \frac{\left\langle \left(
-              x-\langle x \rangle \right)^3 \right\rangle}{\sigma^3}. \f]
-          The above evaluates to 0 for a Gaussian distribution.
-      */
-      public double skewness()
-      {
-         if (skewness_ == null)
-         {
-            int N = samples();
-            Utils.QL_REQUIRE(N > 2, () => "sample number <=2, unsufficient");
+        //! adds a datum to the set, possibly with a weight
+        public void add
+           (double value)
+        { add(value, 1); }
+        public void add
+           (double value, double weight)
+        {
+            Utils.QL_REQUIRE(weight >= 0.0, () => "negative weight not allowed");
+            samples_.Add(new KeyValuePair<double, double>(value, weight));
 
-            double x = expectationValue(y => Math.Pow(y.Key * y.Value - mean(), 3), y => true).Key;
-            double sigma = standardDeviation();
+            sorted_ = false;
+            mean_ = weightSum_ = variance_ = skewness_ = kurtosis_ = null;
+        }
 
-            skewness_ = (x / Math.Pow(sigma, 3)) * (N / (N - 1.0)) * (N / (N - 2.0));
-         }
-         return skewness_.GetValueOrDefault();
-      }
+        //! resets the data to a null set
+        public void reset()
+        {
+            samples_ = new List<KeyValuePair<double, double>>();
 
-      /*! returns the excess kurtosis
-          The above evaluates to 0 for a Gaussian distribution.
-      */
-      public double kurtosis()
-      {
-         if (kurtosis_ == null)
-         {
-            int N = samples();
-            Utils.QL_REQUIRE(N > 3, () => "sample number <=3, unsufficient");
+            sorted_ = true;
+            mean_ = weightSum_ = variance_ = skewness_ = kurtosis_ = null;
+        }
 
-            double x = expectationValue(y => Math.Pow(y.Key * y.Value - mean(), 4), y => true).Key;
-            double sigma2 = variance();
+        //! sort the data set in increasing order
+        public void sort()
+        {
+            if (!sorted_)
+            {
+                samples_.Sort((x, y) => x.Key.CompareTo(y.Key));
+                sorted_ = true;
+            }
+        }
 
-            double c1 = (N / (N - 1.0)) * (N / (N - 2.0)) * ((N + 1.0) / (N - 3.0));
-            double c2 = 3.0 * ((N - 1.0) / (N - 2.0)) * ((N - 1.0) / (N - 3.0));
 
-            kurtosis_ = c1 * (x / (sigma2 * sigma2)) - c2;
-         }
-         return kurtosis_.GetValueOrDefault();
-      }
+        //! sum of data weights
+        public double weightSum()
+        {
+            if (weightSum_ == null)
+                weightSum_ = samples_.Sum(x => x.Value);
+            return weightSum_.GetValueOrDefault();
+        }
 
-      /*! Expectation value of a function \f$ f \f$ on a given range \f$ \mathcal{R} \f$, i.e.,
+        /*! returns the mean, defined as
+            \f[ \langle x \rangle = \frac{\sum w_i x_i}{\sum w_i}. \f] */
+        public double mean()
+        {
+            if (mean_ == null)
+            {
+                int N = samples();
+                Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
+                // eat our own dog food
+                mean_ = expectationValue(x => x.Key * x.Value, x => true).Key;
+            }
+            return mean_.GetValueOrDefault();
+        }
 
-          The range is passed as a boolean function returning
-          <tt>true</tt> if the argument belongs to the range
-          or <tt>false</tt> otherwise.
+        /*! returns the standard deviation \f$ \sigma \f$, defined as the
+        square root of the variance. */
+        public double standardDeviation() { return System.Math.Sqrt(variance()); }
 
-          The function returns a pair made of the result and the number of observations in the given range. */
-      public KeyValuePair<double, int> expectationValue(Func<KeyValuePair<double, double>, double> f,
-                                                        Func<KeyValuePair<double, double>, bool> inRange)
-      {
-         double num = 0.0, den = 0.0;
-         int N = 0;
+        /*! returns the variance, defined as
+            \f[ \sigma^2 = \frac{N}{N-1} \left\langle \left(
+                x-\langle x \rangle \right)^2 \right\rangle. \f] */
+        public double variance()
+        {
+            if (variance_ == null)
+            {
+                int N = samples();
+                Utils.QL_REQUIRE(N > 1, () => "sample number <=1, unsufficient");
+                // Subtract the mean and square. Repeat on the whole range.
+                // Hopefully, the whole thing will be inlined in a single loop.
+                double s2 = expectationValue(x => System.Math.Pow(x.Key * x.Value - mean(), 2), x => true).Key;
+                variance_ = s2 * N / (N - 1.0);
+            }
+            return variance_.GetValueOrDefault();
+        }
 
-         foreach (KeyValuePair<double, double> x in samples_.Where<KeyValuePair<double, double>>(x => inRange(x)))
-         {
-            num += f(x) * x.Value;
-            den += x.Value;
-            N += 1;
-         }
+        /*! returns the skewness, defined as
+            \f[ \frac{N^2}{(N-1)(N-2)} \frac{\left\langle \left(
+                x-\langle x \rangle \right)^3 \right\rangle}{\sigma^3}. \f]
+            The above evaluates to 0 for a Gaussian distribution.
+        */
+        public double skewness()
+        {
+            if (skewness_ == null)
+            {
+                int N = samples();
+                Utils.QL_REQUIRE(N > 2, () => "sample number <=2, unsufficient");
 
-         if (N == 0)
-            return new KeyValuePair<double, int>(0, 0);
-         return new KeyValuePair<double, int>(num / den, N);
-      }
+                double x = expectationValue(y => System.Math.Pow(y.Key * y.Value - mean(), 3), y => true).Key;
+                double sigma = standardDeviation();
 
-      /*! \f$ y \f$-th percentile, defined as the value \f$ \bar{x} \f$
-          \pre \f$ y \f$ must be in the range \f$ (0-1]. \f$
-      */
-      public double percentile(double percent)
-      {
+                skewness_ = x / System.Math.Pow(sigma, 3) * (N / (N - 1.0)) * (N / (N - 2.0));
+            }
+            return skewness_.GetValueOrDefault();
+        }
 
-         Utils.QL_REQUIRE(percent > 0.0 && percent <= 1.0, () => "percentile (" + percent + ") must be in (0.0, 1.0]");
+        /*! returns the excess kurtosis
+            The above evaluates to 0 for a Gaussian distribution.
+        */
+        public double kurtosis()
+        {
+            if (kurtosis_ == null)
+            {
+                int N = samples();
+                Utils.QL_REQUIRE(N > 3, () => "sample number <=3, unsufficient");
 
-         double sampleWeight = weightSum();
-         Utils.QL_REQUIRE(sampleWeight > 0, () => "empty sample set");
+                double x = expectationValue(y => System.Math.Pow(y.Key * y.Value - mean(), 4), y => true).Key;
+                double sigma2 = variance();
 
-         sort();
+                double c1 = N / (N - 1.0) * (N / (N - 2.0)) * ((N + 1.0) / (N - 3.0));
+                double c2 = 3.0 * ((N - 1.0) / (N - 2.0)) * ((N - 1.0) / (N - 3.0));
 
-         double integral = 0, target = percent * sampleWeight;
-         int pos = samples_.Count(x => { integral += x.Value; return integral < target; });
-         return samples_[pos].Key;
-      }
+                kurtosis_ = c1 * (x / (sigma2 * sigma2)) - c2;
+            }
+            return kurtosis_.GetValueOrDefault();
+        }
 
-      /*! \f$ y \f$-th top percentile, defined as the value
-          \pre \f$ y \f$ must be in the range \f$ (0-1]. \f$
-      */
-      public double topPercentile(double percent)
-      {
-         Utils.QL_REQUIRE(percent > 0.0 && percent <= 1.0, () => "percentile (" + percent + ") must be in (0.0, 1.0]");
+        /*! Expectation value of a function \f$ f \f$ on a given range \f$ \mathcal{R} \f$, i.e.,
 
-         double sampleWeight = weightSum();
-         Utils.QL_REQUIRE(sampleWeight > 0, () => "empty sample set");
+            The range is passed as a boolean function returning
+            <tt>true</tt> if the argument belongs to the range
+            or <tt>false</tt> otherwise.
 
-         sort();
+            The function returns a pair made of the result and the number of observations in the given range. */
+        public KeyValuePair<double, int> expectationValue(Func<KeyValuePair<double, double>, double> f,
+                                                          Func<KeyValuePair<double, double>, bool> inRange)
+        {
+            double num = 0.0, den = 0.0;
+            int N = 0;
 
-         double integral = 0, target = 1 - percent * sampleWeight;
-         int pos = samples_.Count(x => { integral += x.Value; return integral < target; });
-         return samples_[pos].Key;
-      }
+            foreach (KeyValuePair<double, double> x in samples_.Where(x => inRange(x)))
+            {
+                num += f(x) * x.Value;
+                den += x.Value;
+                N += 1;
+            }
 
-      //! adds a sequence of data to the set, with default weight
-      public void addSequence(List<double> list)
-      {
-         foreach (double v in list)
-            add
-               (v, 1);
-      }
-      //! adds a sequence of data to the set, each with its weight
-      public void addSequence(List<double> data, List<double> weight)
-      {
-         for (int i = 0; i < data.Count; i++)
-            add
-               (data[i], weight[i]);
-      }
-   }
+            if (N == 0)
+                return new KeyValuePair<double, int>(0, 0);
+            return new KeyValuePair<double, int>(num / den, N);
+        }
+
+        /*! \f$ y \f$-th percentile, defined as the value \f$ \bar{x} \f$
+            \pre \f$ y \f$ must be in the range \f$ (0-1]. \f$
+        */
+        public double percentile(double percent)
+        {
+
+            Utils.QL_REQUIRE(percent > 0.0 && percent <= 1.0, () => "percentile (" + percent + ") must be in (0.0, 1.0]");
+
+            double sampleWeight = weightSum();
+            Utils.QL_REQUIRE(sampleWeight > 0, () => "empty sample set");
+
+            sort();
+
+            double integral = 0, target = percent * sampleWeight;
+            int pos = samples_.Count(x => { integral += x.Value; return integral < target; });
+            return samples_[pos].Key;
+        }
+
+        /*! \f$ y \f$-th top percentile, defined as the value
+            \pre \f$ y \f$ must be in the range \f$ (0-1]. \f$
+        */
+        public double topPercentile(double percent)
+        {
+            Utils.QL_REQUIRE(percent > 0.0 && percent <= 1.0, () => "percentile (" + percent + ") must be in (0.0, 1.0]");
+
+            double sampleWeight = weightSum();
+            Utils.QL_REQUIRE(sampleWeight > 0, () => "empty sample set");
+
+            sort();
+
+            double integral = 0, target = 1 - percent * sampleWeight;
+            int pos = samples_.Count(x => { integral += x.Value; return integral < target; });
+            return samples_[pos].Key;
+        }
+
+        //! adds a sequence of data to the set, with default weight
+        public void addSequence(List<double> list)
+        {
+            foreach (double v in list)
+                add
+                   (v, 1);
+        }
+        //! adds a sequence of data to the set, each with its weight
+        public void addSequence(List<double> data, List<double> weight)
+        {
+            for (int i = 0; i < data.Count; i++)
+                add
+                   (data[i], weight[i]);
+        }
+    }
 }

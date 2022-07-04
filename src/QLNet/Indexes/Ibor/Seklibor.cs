@@ -17,22 +17,28 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Currencies;
+using QLNet.Termstructures;
+using QLNet.Time;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
+
+namespace QLNet.Indexes.Ibor
 {
 
-   //! %SEK %LIBOR rate
-   /*! Sweden Krone LIBOR discontinued as of 2013.
-   */
-   public class SEKLibor : Libor
-   {
-      public SEKLibor(Period tenor)
-         : base("SEKLibor", tenor, 2, new SEKCurrency(), new Sweden(), new Actual360(), new Handle<YieldTermStructure>())
-      {}
+    //! %SEK %LIBOR rate
+    /*! Sweden Krone LIBOR discontinued as of 2013.
+    */
+    public class SEKLibor : Libor
+    {
+        public SEKLibor(Period tenor)
+           : base("SEKLibor", tenor, 2, new SEKCurrency(), new Sweden(), new Actual360(), new Handle<YieldTermStructure>())
+        { }
 
-      public SEKLibor(Period tenor, Handle<YieldTermStructure> h)
-         : base("SEKLibor", tenor, 2, new SEKCurrency(), new Sweden(), new Actual360(), h)
-      {}
+        public SEKLibor(Period tenor, Handle<YieldTermStructure> h)
+           : base("SEKLibor", tenor, 2, new SEKCurrency(), new Sweden(), new Actual360(), h)
+        { }
 
-   }
+    }
 
 }

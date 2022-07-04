@@ -17,46 +17,49 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Math;
+using QLNet.Methods.Finitedifferences;
+using QLNet.Methods.Finitedifferences.Operators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences.Schemes
 {
-   public class BoundaryConditionSchemeHelper
-   {
-      public BoundaryConditionSchemeHelper(List<BoundaryCondition<FdmLinearOp>> bcSet)
-      {
-         bcSet_ = bcSet;
-      }
+    public class BoundaryConditionSchemeHelper
+    {
+        public BoundaryConditionSchemeHelper(List<BoundaryCondition<FdmLinearOp>> bcSet)
+        {
+            bcSet_ = bcSet;
+        }
 
-      //BoundaryCondition inheritance
-      public void applyBeforeApplying(IOperator op)
-      {
-         for (int i = 0; i < bcSet_.Count; ++i)
-            bcSet_[i].applyBeforeApplying(op);
-      }
-      public void applyBeforeSolving(IOperator op, Vector a)
-      {
-         for (int i = 0; i < bcSet_.Count; ++i)
-            bcSet_[i].applyBeforeSolving(op, a);
-      }
-      public void applyAfterApplying(Vector a)
-      {
-         for (int i = 0; i < bcSet_.Count; ++i)
-            bcSet_[i].applyAfterApplying(a);
-      }
-      public void applyAfterSolving(Vector a)
-      {
-         for (int i = 0; i < bcSet_.Count; ++i)
-            bcSet_[i].applyAfterSolving(a);
-      }
-      public void setTime(double t)
-      {
-         for (int i = 0; i < bcSet_.Count; ++i)
-            bcSet_[i].setTime(t);
-      }
+        //BoundaryCondition inheritance
+        public void applyBeforeApplying(IOperator op)
+        {
+            for (int i = 0; i < bcSet_.Count; ++i)
+                bcSet_[i].applyBeforeApplying(op);
+        }
+        public void applyBeforeSolving(IOperator op, Vector a)
+        {
+            for (int i = 0; i < bcSet_.Count; ++i)
+                bcSet_[i].applyBeforeSolving(op, a);
+        }
+        public void applyAfterApplying(Vector a)
+        {
+            for (int i = 0; i < bcSet_.Count; ++i)
+                bcSet_[i].applyAfterApplying(a);
+        }
+        public void applyAfterSolving(Vector a)
+        {
+            for (int i = 0; i < bcSet_.Count; ++i)
+                bcSet_[i].applyAfterSolving(a);
+        }
+        public void setTime(double t)
+        {
+            for (int i = 0; i < bcSet_.Count; ++i)
+                bcSet_[i].setTime(t);
+        }
 
-      protected List<BoundaryCondition<FdmLinearOp>> bcSet_;
-   }
+        protected List<BoundaryCondition<FdmLinearOp>> bcSet_;
+    }
 }

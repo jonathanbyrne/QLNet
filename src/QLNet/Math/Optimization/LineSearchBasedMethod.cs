@@ -20,104 +20,104 @@
 
 using System;
 
-namespace QLNet
+namespace QLNet.Math.Optimization
 {
-   public class LineSearchBasedMethod : OptimizationMethod
-   {
-      public LineSearchBasedMethod(LineSearch lineSearch = null)
-      {
-         lineSearch_ = lineSearch ?? new ArmijoLineSearch();
-      }
+    public class LineSearchBasedMethod : OptimizationMethod
+    {
+        public LineSearchBasedMethod(LineSearch lineSearch = null)
+        {
+            lineSearch_ = lineSearch ?? new ArmijoLineSearch();
+        }
 
-      public override EndCriteria.Type minimize(Problem P, EndCriteria endCriteria)
-      {
-         // Initializations
-         double ftol = endCriteria.functionEpsilon();
-         int maxStationaryStateIterations_ = endCriteria.maxStationaryStateIterations();
-         EndCriteria.Type ecType = EndCriteria.Type.None;   // reset end criteria
-         P.reset();                                      // reset problem
-         Vector x_ = P.currentValue();              // store the starting point
-         int iterationNumber_ = 0;
-         // dimension line search
-         lineSearch_.searchDirection = new Vector(x_.size());
-         bool done = false;
+        public override EndCriteria.Type minimize(Problem P, EndCriteria endCriteria)
+        {
+            // Initializations
+            double ftol = endCriteria.functionEpsilon();
+            int maxStationaryStateIterations_ = endCriteria.maxStationaryStateIterations();
+            EndCriteria.Type ecType = EndCriteria.Type.None;   // reset end criteria
+            P.reset();                                      // reset problem
+            Vector x_ = P.currentValue();              // store the starting point
+            int iterationNumber_ = 0;
+            // dimension line search
+            lineSearch_.searchDirection = new Vector(x_.size());
+            bool done = false;
 
-         // function and squared norm of gradient values
-         double fnew, fold, gold2;
-         double fdiff;
-         // classical initial value for line-search step
-         double t = 1.0;
-         // Set gradient g at the size of the optimization problem
-         // search direction
-         int sz = lineSearch_.searchDirection.size();
-         Vector prevGradient = new Vector(sz), d = new Vector(sz), sddiff = new Vector(sz), direction = new Vector(sz);
-         // Initialize cost function, gradient prevGradient and search direction
-         P.setFunctionValue(P.valueAndGradient(ref prevGradient, x_));
-         P.setGradientNormValue(Vector.DotProduct(prevGradient, prevGradient));
-         lineSearch_.searchDirection = prevGradient * -1;
+            // function and squared norm of gradient values
+            double fnew, fold, gold2;
+            double fdiff;
+            // classical initial value for line-search step
+            double t = 1.0;
+            // Set gradient g at the size of the optimization problem
+            // search direction
+            int sz = lineSearch_.searchDirection.size();
+            Vector prevGradient = new Vector(sz), d = new Vector(sz), sddiff = new Vector(sz), direction = new Vector(sz);
+            // Initialize cost function, gradient prevGradient and search direction
+            P.setFunctionValue(P.valueAndGradient(ref prevGradient, x_));
+            P.setGradientNormValue(Vector.DotProduct(prevGradient, prevGradient));
+            lineSearch_.searchDirection = prevGradient * -1;
 
-         bool first_time = true;
-         // Loop over iterations
-         do
-         {
-            // Linesearch
-            if (!first_time)
-               prevGradient = lineSearch_.lastGradient();
-            t = (lineSearch_.value(P, ref ecType, endCriteria, t));
-            // don't throw: it can fail just because maxIterations exceeded
-            if (lineSearch_.succeed())
+            bool first_time = true;
+            // Loop over iterations
+            do
             {
-               // Updates
+                // Linesearch
+                if (!first_time)
+                    prevGradient = lineSearch_.lastGradient();
+                t = lineSearch_.value(P, ref ecType, endCriteria, t);
+                // don't throw: it can fail just because maxIterations exceeded
+                if (lineSearch_.succeed())
+                {
+                    // Updates
 
-               // New point
-               x_ = lineSearch_.lastX();
-               // New function value
-               fold = P.functionValue();
-               P.setFunctionValue(lineSearch_.lastFunctionValue());
-               // New gradient and search direction vectors
+                    // New point
+                    x_ = lineSearch_.lastX();
+                    // New function value
+                    fold = P.functionValue();
+                    P.setFunctionValue(lineSearch_.lastFunctionValue());
+                    // New gradient and search direction vectors
 
-               // orthogonalization coef
-               gold2 = P.gradientNormValue();
-               P.setGradientNormValue(lineSearch_.lastGradientNorm2());
+                    // orthogonalization coef
+                    gold2 = P.gradientNormValue();
+                    P.setGradientNormValue(lineSearch_.lastGradientNorm2());
 
-               // conjugate gradient search direction
-               direction = getUpdatedDirection(P, gold2, prevGradient);
+                    // conjugate gradient search direction
+                    direction = getUpdatedDirection(P, gold2, prevGradient);
 
-               sddiff = direction - lineSearch_.searchDirection;
-               lineSearch_.searchDirection = direction;
-               // Now compute accuracy and check end criteria
-               // Numerical Recipes exit strategy on fx (see NR in C++, p.423)
-               fnew = P.functionValue();
-               fdiff = 2.0 * Math.Abs(fnew - fold) /
-                       (Math.Abs(fnew) + Math.Abs(fold) + Const.QL_EPSILON);
-               P.setCurrentValue(x_);        // update problem current value
-               if (fdiff < ftol ||
-                   endCriteria.checkMaxIterations(iterationNumber_, ref ecType))
-               {
-                  endCriteria.checkStationaryFunctionValue(0.0, 0.0, ref maxStationaryStateIterations_, ref ecType);
-                  endCriteria.checkMaxIterations(iterationNumber_, ref ecType);
-                  return ecType;
-               }
-               ++iterationNumber_;         // Increase iteration number
-               first_time = false;
+                    sddiff = direction - lineSearch_.searchDirection;
+                    lineSearch_.searchDirection = direction;
+                    // Now compute accuracy and check end criteria
+                    // Numerical Recipes exit strategy on fx (see NR in C++, p.423)
+                    fnew = P.functionValue();
+                    fdiff = 2.0 * System.Math.Abs(fnew - fold) /
+                            (System.Math.Abs(fnew) + System.Math.Abs(fold) + Const.QL_EPSILON);
+                    P.setCurrentValue(x_);        // update problem current value
+                    if (fdiff < ftol ||
+                        endCriteria.checkMaxIterations(iterationNumber_, ref ecType))
+                    {
+                        endCriteria.checkStationaryFunctionValue(0.0, 0.0, ref maxStationaryStateIterations_, ref ecType);
+                        endCriteria.checkMaxIterations(iterationNumber_, ref ecType);
+                        return ecType;
+                    }
+                    ++iterationNumber_;         // Increase iteration number
+                    first_time = false;
+                }
+                else
+                {
+                    done = true;
+                }
             }
-            else
-            {
-               done = true;
-            }
-         }
-         while (!done);
-         P.setCurrentValue(x_);
-         return ecType;
-      }
-      //! computes the new search direction
-      protected virtual Vector getUpdatedDirection(Problem P, double gold2, Vector gradient)
-      {
-         throw new NotImplementedException();
-      }
+            while (!done);
+            P.setCurrentValue(x_);
+            return ecType;
+        }
+        //! computes the new search direction
+        protected virtual Vector getUpdatedDirection(Problem P, double gold2, Vector gradient)
+        {
+            throw new NotImplementedException();
+        }
 
-      //! line search
-      protected LineSearch lineSearch_;
+        //! line search
+        protected LineSearch lineSearch_;
 
-   }
+    }
 }

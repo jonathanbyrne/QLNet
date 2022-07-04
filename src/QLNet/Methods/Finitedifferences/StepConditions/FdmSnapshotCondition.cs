@@ -17,29 +17,30 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Math;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences.StepConditions
 {
-   public class FdmSnapshotCondition : IStepCondition<Vector>
-   {
-      public FdmSnapshotCondition(double t)
-      {
-         t_ = t;
-      }
+    public class FdmSnapshotCondition : IStepCondition<Vector>
+    {
+        public FdmSnapshotCondition(double t)
+        {
+            t_ = t;
+        }
 
-      public void applyTo(object o, double t)
-      {
-         if (t == t_)
-            values_ = (Vector)o;
-      }
+        public void applyTo(object o, double t)
+        {
+            if (t == t_)
+                values_ = (Vector)o;
+        }
 
-      public double getTime() { return t_; }
-      public Vector getValues() { return values_; }
+        public double getTime() { return t_; }
+        public Vector getValues() { return values_; }
 
-      protected double t_;
-      protected Vector values_;
-   }
+        protected double t_;
+        protected Vector values_;
+    }
 }

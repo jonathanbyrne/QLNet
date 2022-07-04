@@ -18,46 +18,49 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Termstructures.Volatility.Optionlet;
+using QLNet.Time;
+
+namespace QLNet.Termstructures.Volatility
 {
-   public class FlatSmileSection : SmileSection
-   {
-      private double vol_;
-      private double? atmLevel_;
-      public override double? atmLevel()
-      {
-         return atmLevel_;
-      }
+    public class FlatSmileSection : SmileSection
+    {
+        private double vol_;
+        private double? atmLevel_;
+        public override double? atmLevel()
+        {
+            return atmLevel_;
+        }
 
-      public FlatSmileSection(Date d, double vol, DayCounter dc, Date referenceDate = null, double? atmLevel = null,
-                              VolatilityType type = VolatilityType.ShiftedLognormal, double shift = 0.0)
-      : base(d, dc, referenceDate, type, shift)
-      {
-         vol_ = vol;
-         atmLevel_ = atmLevel;
-      }
+        public FlatSmileSection(Date d, double vol, DayCounter dc, Date referenceDate = null, double? atmLevel = null,
+                                VolatilityType type = VolatilityType.ShiftedLognormal, double shift = 0.0)
+        : base(d, dc, referenceDate, type, shift)
+        {
+            vol_ = vol;
+            atmLevel_ = atmLevel;
+        }
 
-      public FlatSmileSection(double exerciseTime, double vol, DayCounter dc, double? atmLevel = null,
-                              VolatilityType type = VolatilityType.ShiftedLognormal, double shift = 0.0)
-      : base(exerciseTime, dc, type, shift)
-      {
-         vol_ = vol;
-         atmLevel_ = atmLevel;
-      }
+        public FlatSmileSection(double exerciseTime, double vol, DayCounter dc, double? atmLevel = null,
+                                VolatilityType type = VolatilityType.ShiftedLognormal, double shift = 0.0)
+        : base(exerciseTime, dc, type, shift)
+        {
+            vol_ = vol;
+            atmLevel_ = atmLevel;
+        }
 
-      public override double minStrike()
-      {
-         return double.MinValue - shift();
-      }
+        public override double minStrike()
+        {
+            return double.MinValue - shift();
+        }
 
-      public override double maxStrike()
-      {
-         return double.MaxValue;
-      }
+        public override double maxStrike()
+        {
+            return double.MaxValue;
+        }
 
-      protected override double volatilityImpl(double d)
-      {
-         return vol_;
-      }
-   }
+        protected override double volatilityImpl(double d)
+        {
+            return vol_;
+        }
+    }
 }

@@ -17,212 +17,213 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Math.Interpolations;
 using System;
 
-namespace QLNet
+namespace QLNet.Math
 {
-   //! This class contains a sampled curve.
-   /*! Initially the class will contain one indexed curve */
+    //! This class contains a sampled curve.
+    /*! Initially the class will contain one indexed curve */
 
-   public class SampledCurve : ICloneable
-   {
-      private Vector grid_;
+    public class SampledCurve : ICloneable
+    {
+        private Vector grid_;
 
-      public Vector grid()
-      {
-         return grid_;
-      }
+        public Vector grid()
+        {
+            return grid_;
+        }
 
-      private Vector values_;
+        private Vector values_;
 
-      public Vector values()
-      {
-         return values_;
-      }
+        public Vector values()
+        {
+            return values_;
+        }
 
-      public SampledCurve(int gridSize)
-      {
-         grid_ = new Vector(gridSize);
-         values_ = new Vector(gridSize);
-      }
+        public SampledCurve(int gridSize)
+        {
+            grid_ = new Vector(gridSize);
+            values_ = new Vector(gridSize);
+        }
 
-      public SampledCurve(Vector grid)
-      {
-         grid_ = grid.Clone();
-         values_ = new Vector(grid.Count);
-      }
+        public SampledCurve(Vector grid)
+        {
+            grid_ = grid.Clone();
+            values_ = new Vector(grid.Count);
+        }
 
-      // instead of "=" overload
-      public object Clone()
-      {
-         return MemberwiseClone();
-      }
+        // instead of "=" overload
+        public object Clone()
+        {
+            return MemberwiseClone();
+        }
 
-      public double gridValue(int i)
-      {
-         return grid_[i];
-      }
+        public double gridValue(int i)
+        {
+            return grid_[i];
+        }
 
-      public double value(int i)
-      {
-         return values_[i];
-      }
+        public double value(int i)
+        {
+            return values_[i];
+        }
 
-      public void setValue(int i, double v)
-      {
-         values_[i] = v;
-      }
+        public void setValue(int i, double v)
+        {
+            values_[i] = v;
+        }
 
-      public int size()
-      {
-         return grid_.Count;
-      }
+        public int size()
+        {
+            return grid_.Count;
+        }
 
-      public bool empty()
-      {
-         return grid_.Count == 0;
-      }
+        public bool empty()
+        {
+            return grid_.Count == 0;
+        }
 
-      // modifiers
-      public void setGrid(Vector g)
-      {
-         grid_ = g.Clone();
-      }
+        // modifiers
+        public void setGrid(Vector g)
+        {
+            grid_ = g.Clone();
+        }
 
-      public void setValues(Vector g)
-      {
-         values_ = g.Clone();
-      }
+        public void setValues(Vector g)
+        {
+            values_ = g.Clone();
+        }
 
-      public void sample(Func<double, double> f)
-      {
-         for (int i = 0; i < grid_.Count; i++)
-            values_[i] = f(grid_[i]);
-      }
+        public void sample(Func<double, double> f)
+        {
+            for (int i = 0; i < grid_.Count; i++)
+                values_[i] = f(grid_[i]);
+        }
 
-      // calculations
-      /*! \todo replace or complement with a more general function valueAt(spot) */
+        // calculations
+        /*! \todo replace or complement with a more general function valueAt(spot) */
 
-      public double valueAtCenter()
-      {
-         Utils.QL_REQUIRE(!empty(), () => "empty sampled curve");
+        public double valueAtCenter()
+        {
+            Utils.QL_REQUIRE(!empty(), () => "empty sampled curve");
 
-         int jmid = size() / 2;
-         if (size() % 2 == 1)
-            return values_[jmid];
+            int jmid = size() / 2;
+            if (size() % 2 == 1)
+                return values_[jmid];
 
-         return (values_[jmid] + values_[jmid - 1]) / 2.0;
-      }
+            return (values_[jmid] + values_[jmid - 1]) / 2.0;
+        }
 
-      /*! \todo replace or complement with a more general function firstDerivativeAt(spot) */
+        /*! \todo replace or complement with a more general function firstDerivativeAt(spot) */
 
-      public double firstDerivativeAtCenter()
-      {
-         Utils.QL_REQUIRE(size() >= 3, () => "the size of the curve must be at least 3");
+        public double firstDerivativeAtCenter()
+        {
+            Utils.QL_REQUIRE(size() >= 3, () => "the size of the curve must be at least 3");
 
-         int jmid = size() / 2;
-         if (size() % 2 == 1)
-         {
-            return (values_[jmid + 1] - values_[jmid - 1]) / (grid_[jmid + 1] - grid_[jmid - 1]);
-         }
-         return (values_[jmid] - values_[jmid - 1]) / (grid_[jmid] - grid_[jmid - 1]);
-      }
+            int jmid = size() / 2;
+            if (size() % 2 == 1)
+            {
+                return (values_[jmid + 1] - values_[jmid - 1]) / (grid_[jmid + 1] - grid_[jmid - 1]);
+            }
+            return (values_[jmid] - values_[jmid - 1]) / (grid_[jmid] - grid_[jmid - 1]);
+        }
 
-      /*! \todo replace or complement with a more general function secondDerivativeAt(spot) */
+        /*! \todo replace or complement with a more general function secondDerivativeAt(spot) */
 
-      public double secondDerivativeAtCenter()
-      {
-         Utils.QL_REQUIRE(size() >= 4, () => "the size of the curve must be at least 4");
-         int jmid = size() / 2;
-         if (size() % 2 == 1)
-         {
-            double deltaPlus = (values_[jmid + 1] - values_[jmid]) / (grid_[jmid + 1] - grid_[jmid]);
-            double deltaMinus = (values_[jmid] - values_[jmid - 1]) / (grid_[jmid] - grid_[jmid - 1]);
-            double dS = (grid_[jmid + 1] - grid_[jmid - 1]) / 2.0;
-            return (deltaPlus - deltaMinus) / dS;
-         }
-         else
-         {
-            double deltaPlus = (values_[jmid + 1] - values_[jmid - 1]) / (grid_[jmid + 1] - grid_[jmid - 1]);
-            double deltaMinus = (values_[jmid] - values_[jmid - 2]) / (grid_[jmid] - grid_[jmid - 2]);
-            return (deltaPlus - deltaMinus) / (grid_[jmid] - grid_[jmid - 1]);
-         }
-      }
+        public double secondDerivativeAtCenter()
+        {
+            Utils.QL_REQUIRE(size() >= 4, () => "the size of the curve must be at least 4");
+            int jmid = size() / 2;
+            if (size() % 2 == 1)
+            {
+                double deltaPlus = (values_[jmid + 1] - values_[jmid]) / (grid_[jmid + 1] - grid_[jmid]);
+                double deltaMinus = (values_[jmid] - values_[jmid - 1]) / (grid_[jmid] - grid_[jmid - 1]);
+                double dS = (grid_[jmid + 1] - grid_[jmid - 1]) / 2.0;
+                return (deltaPlus - deltaMinus) / dS;
+            }
+            else
+            {
+                double deltaPlus = (values_[jmid + 1] - values_[jmid - 1]) / (grid_[jmid + 1] - grid_[jmid - 1]);
+                double deltaMinus = (values_[jmid] - values_[jmid - 2]) / (grid_[jmid] - grid_[jmid - 2]);
+                return (deltaPlus - deltaMinus) / (grid_[jmid] - grid_[jmid - 1]);
+            }
+        }
 
-      // utilities
-      public void setLogGrid(double min, double max)
-      {
-         setGrid(Utils.BoundedLogGrid(min, max, size() - 1));
-      }
+        // utilities
+        public void setLogGrid(double min, double max)
+        {
+            setGrid(Utils.BoundedLogGrid(min, max, size() - 1));
+        }
 
-      public void regridLogGrid(double min, double max)
-      {
-         regrid(Utils.BoundedLogGrid(min, max, size() - 1), Math.Log);
-      }
+        public void regridLogGrid(double min, double max)
+        {
+            regrid(Utils.BoundedLogGrid(min, max, size() - 1), System.Math.Log);
+        }
 
-      public void shiftGrid(double s)
-      {
-         grid_ += s;
-      }
+        public void shiftGrid(double s)
+        {
+            grid_ += s;
+        }
 
-      public void scaleGrid(double s)
-      {
-         grid_ *= s;
-      }
+        public void scaleGrid(double s)
+        {
+            grid_ *= s;
+        }
 
-      public void regrid(Vector new_grid)
-      {
-         CubicInterpolation priceSpline = new CubicInterpolation(grid_, grid_.Count, values_,
-                                                                 CubicInterpolation.DerivativeApprox.Spline, false,
-                                                                 CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
-                                                                 CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0);
-         priceSpline.update();
-         Vector newValues = new Vector(new_grid.Count);
+        public void regrid(Vector new_grid)
+        {
+            CubicInterpolation priceSpline = new CubicInterpolation(grid_, grid_.Count, values_,
+                                                                    CubicInterpolation.DerivativeApprox.Spline, false,
+                                                                    CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
+                                                                    CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0);
+            priceSpline.update();
+            Vector newValues = new Vector(new_grid.Count);
 
-         for (int i = 0; i < new_grid.Count; i++)
-            newValues[i] = priceSpline.value(new_grid[i], true);
+            for (int i = 0; i < new_grid.Count; i++)
+                newValues[i] = priceSpline.value(new_grid[i], true);
 
-         values_ = newValues;
-         grid_ = new_grid.Clone();
-      }
+            values_ = newValues;
+            grid_ = new_grid.Clone();
+        }
 
-      public void regrid(Vector new_grid, Func<double, double> func)
-      {
-         Vector transformed_grid = new Vector(grid_.Count);
+        public void regrid(Vector new_grid, Func<double, double> func)
+        {
+            Vector transformed_grid = new Vector(grid_.Count);
 
-         for (int i = 0; i < grid_.Count; i++)
-            transformed_grid[i] = func(grid_[i]);
+            for (int i = 0; i < grid_.Count; i++)
+                transformed_grid[i] = func(grid_[i]);
 
-         CubicInterpolation priceSpline = new CubicInterpolation(transformed_grid, transformed_grid.Count, values_,
-                                                                 CubicInterpolation.DerivativeApprox.Spline, false,
-                                                                 CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
-                                                                 CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0);
-         priceSpline.update();
+            CubicInterpolation priceSpline = new CubicInterpolation(transformed_grid, transformed_grid.Count, values_,
+                                                                    CubicInterpolation.DerivativeApprox.Spline, false,
+                                                                    CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0,
+                                                                    CubicInterpolation.BoundaryCondition.SecondDerivative, 0.0);
+            priceSpline.update();
 
-         Vector newValues = new_grid.Clone();
+            Vector newValues = new_grid.Clone();
 
-         for (int i = 0; i < grid_.Count; i++)
-            newValues[i] = func(newValues[i]);
+            for (int i = 0; i < grid_.Count; i++)
+                newValues[i] = func(newValues[i]);
 
-         for (int j = 0; j < grid_.Count; j++)
-            newValues[j] = priceSpline.value(newValues[j], true);
+            for (int j = 0; j < grid_.Count; j++)
+                newValues[j] = priceSpline.value(newValues[j], true);
 
-         values_ = newValues;
-         grid_ = new_grid.Clone();
-      }
+            values_ = newValues;
+            grid_ = new_grid.Clone();
+        }
 
-      public SampledCurve transform(Func<double, double> x)
-      {
-         for (int i = 0; i < values_.Count; i++)
-            values_[i] = x(values_[i]);
-         return this;
-      }
+        public SampledCurve transform(Func<double, double> x)
+        {
+            for (int i = 0; i < values_.Count; i++)
+                values_[i] = x(values_[i]);
+            return this;
+        }
 
-      public SampledCurve transformGrid(Func<double, double> x)
-      {
-         for (int i = 0; i < grid_.Count; i++)
-            grid_[i] = x(grid_[i]);
-         return this;
-      }
-   }
+        public SampledCurve transformGrid(Func<double, double> x)
+        {
+            for (int i = 0; i < grid_.Count; i++)
+                grid_[i] = x(grid_[i]);
+            return this;
+        }
+    }
 }

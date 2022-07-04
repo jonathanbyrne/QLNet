@@ -17,20 +17,20 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Time.Calendars
 {
-   public class WeekendsOnly : Calendar
-   {
-      public WeekendsOnly() : base(Impl.Singleton) { }
+    public class WeekendsOnly : Calendar
+    {
+        public WeekendsOnly() : base(Impl.Singleton) { }
 
-      class Impl : Calendar.WesternImpl
-      {
-         public static readonly Impl Singleton = new Impl();
-         private Impl() { }
+        class Impl : WesternImpl
+        {
+            public static readonly Impl Singleton = new Impl();
+            private Impl() { }
 
-         public override string name() { return "weekends only"; }
-         public override bool isBusinessDay(Date date) { return ! isWeekend(date.DayOfWeek); }
+            public override string name() { return "weekends only"; }
+            public override bool isBusinessDay(Date date) { return !isWeekend(date.DayOfWeek); }
 
-      }
-   }
+        }
+    }
 }

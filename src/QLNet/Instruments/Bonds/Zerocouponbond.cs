@@ -17,22 +17,25 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
-{
-   //! zero-coupon bond
-   /*! \ingroup instruments
+using QLNet.Instruments;
+using QLNet.Time;
 
-       \test calculations are tested by checking results against cached values.
-   */
-   public class ZeroCouponBond : Bond
-   {
-      public ZeroCouponBond(int settlementDays, Calendar calendar, double faceAmount, Date maturityDate,
-                            BusinessDayConvention paymentConvention, double redemption, Date issueDate)
-         : base(settlementDays, calendar, issueDate)
-      {
-         maturityDate_ = maturityDate;
-         Date redemptionDate = calendar_.adjust(maturityDate, paymentConvention);
-         setSingleRedemption(faceAmount, redemption, redemptionDate);
-      }
-   }
+namespace QLNet.Instruments.Bonds
+{
+    //! zero-coupon bond
+    /*! \ingroup instruments
+
+        \test calculations are tested by checking results against cached values.
+    */
+    public class ZeroCouponBond : Bond
+    {
+        public ZeroCouponBond(int settlementDays, Calendar calendar, double faceAmount, Date maturityDate,
+                              BusinessDayConvention paymentConvention, double redemption, Date issueDate)
+           : base(settlementDays, calendar, issueDate)
+        {
+            maturityDate_ = maturityDate;
+            Date redemptionDate = calendar_.adjust(maturityDate, paymentConvention);
+            setSingleRedemption(faceAmount, redemption, redemptionDate);
+        }
+    }
 }

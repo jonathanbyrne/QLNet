@@ -16,76 +16,78 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Instruments;
+using QLNet.Math;
 using System;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Pricingengines.vanilla
 {
-   public class DiscretizedVanillaOption : DiscretizedAsset
-   {
-      private VanillaOption.Arguments arguments_;
-      private List<double> stoppingTimes_;
+    public class DiscretizedVanillaOption : DiscretizedAsset
+    {
+        private QLNet.Option.Arguments arguments_;
+        private List<double> stoppingTimes_;
 
-      public DiscretizedVanillaOption(VanillaOption.Arguments args, StochasticProcess process, TimeGrid grid)
-      {
-         arguments_ = args;
+        public DiscretizedVanillaOption(QLNet.Option.Arguments args, StochasticProcess process, TimeGrid grid)
+        {
+            arguments_ = args;
 
-         stoppingTimes_ = new InitializedList<double>(args.exercise.dates().Count);
-         for (int i = 0; i < stoppingTimes_.Count; ++i)
-         {
-            stoppingTimes_[i] = process.time(args.exercise.date(i));
-            if (!grid.empty())
+            stoppingTimes_ = new InitializedList<double>(args.exercise.dates().Count);
+            for (int i = 0; i < stoppingTimes_.Count; ++i)
             {
-               // adjust to the given grid
-               stoppingTimes_[i] = grid.closestTime(stoppingTimes_[i]);
+                stoppingTimes_[i] = process.time(args.exercise.date(i));
+                if (!grid.empty())
+                {
+                    // adjust to the given grid
+                    stoppingTimes_[i] = grid.closestTime(stoppingTimes_[i]);
+                }
             }
-         }
-      }
+        }
 
-      public override void reset(int size)
-      {
-         values_ = new Vector(size, 0.0);
-         adjustValues();
-      }
+        public override void reset(int size)
+        {
+            values_ = new Vector(size, 0.0);
+            adjustValues();
+        }
 
-      public override List<double> mandatoryTimes()
-      {
-         return stoppingTimes_;
-      }
+        public override List<double> mandatoryTimes()
+        {
+            return stoppingTimes_;
+        }
 
-      protected override void postAdjustValuesImpl()
-      {
-         double now = time();
-         switch (arguments_.exercise.type())
-         {
-            case Exercise.Type.American:
-               if (now <= stoppingTimes_[1] && now >= stoppingTimes_[0])
-                  applySpecificCondition();
-               break;
-            case Exercise.Type.European:
-               if (isOnTime(stoppingTimes_[0]))
-                  applySpecificCondition();
-               break;
-            case Exercise.Type.Bermudan:
-               for (int i = 0; i < stoppingTimes_.Count; i++)
-               {
-                  if (isOnTime(stoppingTimes_[i]))
-                     applySpecificCondition();
-               }
-               break;
-            default:
-               Utils.QL_FAIL("invalid option type");
-               break;
-         }
-      }
+        protected override void postAdjustValuesImpl()
+        {
+            double now = time();
+            switch (arguments_.exercise.type())
+            {
+                case Exercise.Type.American:
+                    if (now <= stoppingTimes_[1] && now >= stoppingTimes_[0])
+                        applySpecificCondition();
+                    break;
+                case Exercise.Type.European:
+                    if (isOnTime(stoppingTimes_[0]))
+                        applySpecificCondition();
+                    break;
+                case Exercise.Type.Bermudan:
+                    for (int i = 0; i < stoppingTimes_.Count; i++)
+                    {
+                        if (isOnTime(stoppingTimes_[i]))
+                            applySpecificCondition();
+                    }
+                    break;
+                default:
+                    Utils.QL_FAIL("invalid option type");
+                    break;
+            }
+        }
 
-      private void applySpecificCondition()
-      {
-         Vector grid = method().grid(time());
-         for (int j = 0; j < values_.size(); j++)
-         {
-            values_[j] = Math.Max(values_[j], arguments_.payoff.value(grid[j]));
-         }
-      }
-   }
+        private void applySpecificCondition()
+        {
+            Vector grid = method().grid(time());
+            for (int j = 0; j < values_.size(); j++)
+            {
+                values_[j] = System.Math.Max(values_[j], arguments_.payoff.value(grid[j]));
+            }
+        }
+    }
 }

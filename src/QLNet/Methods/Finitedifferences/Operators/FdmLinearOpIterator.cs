@@ -19,94 +19,94 @@
 
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences.Operators
 {
-   public class FdmLinearOpIterator
-   {
-      public FdmLinearOpIterator(int index = 0)
-      {
-         index_ = index;
-         dim_ = new List<int>();
-         coordinates_ = new List<int>();
-      }
+    public class FdmLinearOpIterator
+    {
+        public FdmLinearOpIterator(int index = 0)
+        {
+            index_ = index;
+            dim_ = new List<int>();
+            coordinates_ = new List<int>();
+        }
 
-      public FdmLinearOpIterator(List<int> dim)
-      {
-         index_ = 0;
-         dim_ = dim;
-         coordinates_ = new InitializedList<int>(dim.Count, 0);
-      }
+        public FdmLinearOpIterator(List<int> dim)
+        {
+            index_ = 0;
+            dim_ = dim;
+            coordinates_ = new InitializedList<int>(dim.Count, 0);
+        }
 
-      public FdmLinearOpIterator(List<int> dim, List<int> coordinates, int index)
-      {
-         index_ = index;
-         dim_ = dim;
-         coordinates_ = coordinates;
-      }
+        public FdmLinearOpIterator(List<int> dim, List<int> coordinates, int index)
+        {
+            index_ = index;
+            dim_ = dim;
+            coordinates_ = coordinates;
+        }
 
-      public FdmLinearOpIterator(FdmLinearOpIterator iter)
-      {
-         swap(iter);
-      }
+        public FdmLinearOpIterator(FdmLinearOpIterator iter)
+        {
+            swap(iter);
+        }
 
-      public static FdmLinearOpIterator operator ++(FdmLinearOpIterator a)
-      {
-         ++a.index_;
-         for (int i = 0; i < a.dim_.Count; ++i)
-         {
-            if (++a.coordinates_[i] == a.dim_[i])
-               a.coordinates_[i] = 0;
-            else
-               break;
-         }
-         return a;
-      }
+        public static FdmLinearOpIterator operator ++(FdmLinearOpIterator a)
+        {
+            ++a.index_;
+            for (int i = 0; i < a.dim_.Count; ++i)
+            {
+                if (++a.coordinates_[i] == a.dim_[i])
+                    a.coordinates_[i] = 0;
+                else
+                    break;
+            }
+            return a;
+        }
 
-      public static bool operator !=(FdmLinearOpIterator a, FdmLinearOpIterator b)
-      {
-         return a.index_ != b.index_;
-      }
+        public static bool operator !=(FdmLinearOpIterator a, FdmLinearOpIterator b)
+        {
+            return a.index_ != b.index_;
+        }
 
-      public static bool operator ==(FdmLinearOpIterator a, FdmLinearOpIterator b)
-      {
-         return a.index_ == b.index_;
-      }
+        public static bool operator ==(FdmLinearOpIterator a, FdmLinearOpIterator b)
+        {
+            return a.index_ == b.index_;
+        }
 
-      public override int GetHashCode()
-      {
-         return 0;
-      }
+        public override int GetHashCode()
+        {
+            return 0;
+        }
 
-      public override bool Equals(object obj)
-      {
-         if (obj == null)
-            return false;
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
 
-         FdmLinearOpIterator iter = obj as FdmLinearOpIterator;
-         if (iter == null)
-            return false;
+            FdmLinearOpIterator iter = obj as FdmLinearOpIterator;
+            if (iter == null)
+                return false;
 
-         return iter.index_ == index_;
-      }
+            return iter.index_ == index_;
+        }
 
-      public int index()
-      {
-         return index_;
-      }
+        public int index()
+        {
+            return index_;
+        }
 
-      public List<int> coordinates()
-      {
-         return coordinates_;
-      }
+        public List<int> coordinates()
+        {
+            return coordinates_;
+        }
 
-      public void swap(FdmLinearOpIterator iter)
-      {
-         Utils.swap(ref iter.index_, ref index_);
-         Utils.swap(ref iter.dim_, ref dim_);
-         Utils.swap(ref iter.coordinates_, ref coordinates_);
-      }
+        public void swap(FdmLinearOpIterator iter)
+        {
+            Utils.swap(ref iter.index_, ref index_);
+            Utils.swap(ref iter.dim_, ref dim_);
+            Utils.swap(ref iter.coordinates_, ref coordinates_);
+        }
 
-      protected List<int> dim_, coordinates_;
-      protected int index_;
-   }
+        protected List<int> dim_, coordinates_;
+        protected int index_;
+    }
 }

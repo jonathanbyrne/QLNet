@@ -13,16 +13,17 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
-namespace QLNet
+
+namespace QLNet.Pricingengines.Basket
 {
-   //! Pricing engine for European basket options using Monte Carlo simulation
-   /*! \ingroup basketengines
+    //! Pricing engine for European basket options using Monte Carlo simulation
+    /*! \ingroup basketengines
 
-       \test the correctness of the returned value is tested by
-              reproducing results available in literature.
+        \test the correctness of the returned value is tested by
+               reproducing results available in literature.
 
-   */
-   class MCEuropeanBasketEngine
-   {
-   }
+    */
+    class MCEuropeanBasketEngine
+    {
+    }
 }

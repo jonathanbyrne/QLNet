@@ -18,14 +18,15 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Time;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace QLNet
 {
-   // interface for all value methods
-   public interface IValue
+    // interface for all value methods
+    public interface IValue
    {
       double value(double v);
    }

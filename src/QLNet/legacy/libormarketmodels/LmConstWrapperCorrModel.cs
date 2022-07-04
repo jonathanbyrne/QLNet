@@ -18,44 +18,46 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Math;
+
+namespace QLNet.legacy.libormarketmodels
 {
-   public class LmConstWrapperCorrelationModel : LmCorrelationModel
-   {
-      public LmConstWrapperCorrelationModel(LmCorrelationModel corrModel)
-         : base(corrModel.size(), 0)
-      {
-         corrModel_ = corrModel;
-      }
+    public class LmConstWrapperCorrelationModel : LmCorrelationModel
+    {
+        public LmConstWrapperCorrelationModel(LmCorrelationModel corrModel)
+           : base(corrModel.size(), 0)
+        {
+            corrModel_ = corrModel;
+        }
 
-      public override int factors()
-      {
-         return corrModel_.factors();
-      }
+        public override int factors()
+        {
+            return corrModel_.factors();
+        }
 
-      public override Matrix correlation(double t, Vector x = null)
-      {
-         return corrModel_.correlation(t, x);
-      }
+        public override Matrix correlation(double t, Vector x = null)
+        {
+            return corrModel_.correlation(t, x);
+        }
 
-      public override Matrix pseudoSqrt(double t, Vector x = null)
-      {
-         return corrModel_.pseudoSqrt(t, x);
-      }
+        public override Matrix pseudoSqrt(double t, Vector x = null)
+        {
+            return corrModel_.pseudoSqrt(t, x);
+        }
 
-      public override double correlation(int i, int j, double t, Vector x = null)
-      {
-         return corrModel_.correlation(i, j, t, x);
-      }
+        public override double correlation(int i, int j, double t, Vector x = null)
+        {
+            return corrModel_.correlation(i, j, t, x);
+        }
 
-      public new bool isTimeIndependent()
-      {
-         return corrModel_.isTimeIndependent();
-      }
+        public new bool isTimeIndependent()
+        {
+            return corrModel_.isTimeIndependent();
+        }
 
-      protected override void generateArguments()
-      {}
+        protected override void generateArguments()
+        { }
 
-      protected LmCorrelationModel corrModel_;
-   }
+        protected LmCorrelationModel corrModel_;
+    }
 }

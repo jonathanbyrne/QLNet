@@ -17,13 +17,18 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Math;
+using QLNet.Math.Interpolations;
+using QLNet.Patterns;
+using QLNet.Termstructures.Volatility.equityfx;
+using QLNet.Time;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace QLNet
 {
-   public partial class Utils
+    public partial class Utils
    {
       public static Date time2Date(Date referenceDate, DayCounter dc, double t)
       {
@@ -152,7 +157,7 @@ namespace QLNet
 
       protected override double localVolImpl(double t, double strike)
       {
-         t = Math.Min(times_.Last(), Math.Max(t, times_.First()));
+         t = System.Math.Min(times_.Last(), System.Math.Max(t, times_.First()));
 
          int idx = times_.BinarySearch(t);
          if (idx < 0)

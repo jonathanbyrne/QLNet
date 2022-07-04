@@ -17,43 +17,47 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Math;
+using QLNet.Models;
+using QLNet.Termstructures;
+using QLNet.Time;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences.Utilities
 {
-   public class FdmAffineModelTermStructure : YieldTermStructure
-   {
-      public FdmAffineModelTermStructure(
-         Vector r,
-         Calendar cal,
-         DayCounter dayCounter,
-         Date referenceDate,
-         Date modelReferenceDate,
-         IAffineModel model)
-         : base(referenceDate, cal, dayCounter)
-      {
-         r_ = r;
-         t_ = dayCounter.yearFraction(modelReferenceDate, referenceDate);
-         model_ = model;
-         model_.registerWith(update);
-      }
+    public class FdmAffineModelTermStructure : YieldTermStructure
+    {
+        public FdmAffineModelTermStructure(
+           Vector r,
+           Calendar cal,
+           DayCounter dayCounter,
+           Date referenceDate,
+           Date modelReferenceDate,
+           IAffineModel model)
+           : base(referenceDate, cal, dayCounter)
+        {
+            r_ = r;
+            t_ = dayCounter.yearFraction(modelReferenceDate, referenceDate);
+            model_ = model;
+            model_.registerWith(update);
+        }
 
-      public override Date maxDate() { return Date.maxDate(); }
-      public void setVariable(Vector r)
-      {
-         r_ = r;
-         notifyObservers();
-      }
+        public override Date maxDate() { return Date.maxDate(); }
+        public void setVariable(Vector r)
+        {
+            r_ = r;
+            notifyObservers();
+        }
 
-      protected override double discountImpl(double d)
-      {
-         return model_.discountBond(t_, d + t_, r_);
-      }
+        protected override double discountImpl(double d)
+        {
+            return model_.discountBond(t_, d + t_, r_);
+        }
 
-      protected Vector r_;
-      protected double t_;
-      protected IAffineModel model_;
-   }
+        protected Vector r_;
+        protected double t_;
+        protected IAffineModel model_;
+    }
 }

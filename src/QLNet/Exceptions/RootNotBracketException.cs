@@ -1,21 +1,21 @@
 ﻿using System;
 
-namespace QLNet
+namespace QLNet.Exceptions
 {
-   public class RootNotBracketException : Exception
-   {
-      public RootNotBracketException()
-      {
-      }
+    public class RootNotBracketException : Exception
+    {
+        public RootNotBracketException()
+        {
+        }
 
-      public RootNotBracketException(string message)
-         : base(message)
-      {
-      }
+        public RootNotBracketException(string message)
+           : base(message)
+        {
+        }
 
-      public RootNotBracketException(string message, Exception inner)
-         : base(message, inner)
-      {
-      }
-   }
+        public RootNotBracketException(string message, Exception inner)
+           : base(message, inner)
+        {
+        }
+    }
 }

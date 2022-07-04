@@ -17,10 +17,12 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Instruments;
+
 namespace QLNet
 {
-   //! base option class
-   public class Option : Instrument
+    //! base option class
+    public class Option : Instrument
    {
       public enum Type
       {

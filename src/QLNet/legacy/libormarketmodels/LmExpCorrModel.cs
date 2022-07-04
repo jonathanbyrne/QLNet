@@ -17,69 +17,73 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Math;
+using QLNet.Math.matrixutilities;
 using System;
+using QLNet.Math.Optimization;
+using QLNet.Models;
 
-namespace QLNet
+namespace QLNet.legacy.libormarketmodels
 {
-   //! exponential correlation model
-   /*! This class describes a exponential correlation model
+    //! exponential correlation model
+    /*! This class describes a exponential correlation model
 
-       References:
+        References:
 
-       Damiano Brigo, Fabio Mercurio, Massimo Morini, 2003,
-       Different Covariance Parameterizations of Libor Market Model and Joint
-       Caps/Swaptions Calibration,
-       (<http://www.business.uts.edu.au/qfrc/conferences/qmf2001/Brigo_D.pdf>)
-   */
+        Damiano Brigo, Fabio Mercurio, Massimo Morini, 2003,
+        Different Covariance Parameterizations of Libor Market Model and Joint
+        Caps/Swaptions Calibration,
+        (<http://www.business.uts.edu.au/qfrc/conferences/qmf2001/Brigo_D.pdf>)
+    */
 
-   public class LmExponentialCorrelationModel : LmCorrelationModel
-   {
-      public LmExponentialCorrelationModel(int size, double rho)
-         : base(size, 1)
-      {
-         corrMatrix_ = new Matrix(size, size);
-         pseudoSqrt_ = new Matrix(size, size);
-         arguments_[0] = new ConstantParameter(rho, new PositiveConstraint());
-         generateArguments();
-      }
+    public class LmExponentialCorrelationModel : LmCorrelationModel
+    {
+        public LmExponentialCorrelationModel(int size, double rho)
+           : base(size, 1)
+        {
+            corrMatrix_ = new Matrix(size, size);
+            pseudoSqrt_ = new Matrix(size, size);
+            arguments_[0] = new ConstantParameter(rho, new PositiveConstraint());
+            generateArguments();
+        }
 
-      public override Matrix correlation(double t, Vector x = null)
-      {
-         Matrix tmp = new Matrix(corrMatrix_);
-         return tmp;
-      }
+        public override Matrix correlation(double t, Vector x = null)
+        {
+            Matrix tmp = new Matrix(corrMatrix_);
+            return tmp;
+        }
 
-      public override Matrix pseudoSqrt(double t, Vector x = null)
-      {
-         Matrix tmp = new Matrix(pseudoSqrt_);
-         return tmp;
-      }
+        public override Matrix pseudoSqrt(double t, Vector x = null)
+        {
+            Matrix tmp = new Matrix(pseudoSqrt_);
+            return tmp;
+        }
 
 
-      public override double correlation(int i, int j, double t, Vector x = null)
-      {
-         return corrMatrix_[i, j];
-      }
+        public override double correlation(int i, int j, double t, Vector x = null)
+        {
+            return corrMatrix_[i, j];
+        }
 
-      public override bool isTimeIndependent()
-      {
-         return true;
-      }
+        public override bool isTimeIndependent()
+        {
+            return true;
+        }
 
-      protected override void generateArguments()
-      {
-         double rho = arguments_[0].value(0.0);
+        protected override void generateArguments()
+        {
+            double rho = arguments_[0].value(0.0);
 
-         for (int i = 0; i < size_; ++i)
-         {
-            for (int j = i; j < size_; ++j)
+            for (int i = 0; i < size_; ++i)
             {
-               corrMatrix_[i, j] = corrMatrix_[j, i] = Math.Exp(-rho * Math.Abs((double) i - (double) j));
+                for (int j = i; j < size_; ++j)
+                {
+                    corrMatrix_[i, j] = corrMatrix_[j, i] = System.Math.Exp(-rho * System.Math.Abs(i - (double)j));
+                }
             }
-         }
-         pseudoSqrt_ = MatrixUtilitites.pseudoSqrt(corrMatrix_, MatrixUtilitites.SalvagingAlgorithm.Spectral);
-      }
+            pseudoSqrt_ = MatrixUtilitites.pseudoSqrt(corrMatrix_, MatrixUtilitites.SalvagingAlgorithm.Spectral);
+        }
 
-      private Matrix corrMatrix_, pseudoSqrt_;
-   }
+        private Matrix corrMatrix_, pseudoSqrt_;
+    }
 }

@@ -16,66 +16,67 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Time;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Instruments
 {
-   //! %instrument callability
-   public class Callability : Event
-   {
-      //! amount to be paid upon callability
-      public class Price
-      {
-         public enum Type { Dirty, Clean }
+    //! %instrument callability
+    public class Callability : Event
+    {
+        //! amount to be paid upon callability
+        public class Price
+        {
+            public enum Type { Dirty, Clean }
 
-         public Price()
-         {
-            amount_ = null;
-         }
+            public Price()
+            {
+                amount_ = null;
+            }
 
-         public Price(double amount, Type type)
-         {
-            amount_ = amount;
+            public Price(double amount, Type type)
+            {
+                amount_ = amount;
+                type_ = type;
+            }
+
+            public double amount()
+            {
+                Utils.QL_REQUIRE(amount_ != null, () => "no amount given");
+                return amount_.Value;
+            }
+
+            public Type type() { return type_; }
+
+            private double? amount_;
+            private Type type_;
+        }
+
+        //! type of the callability
+        public enum Type { Call, Put }
+
+        public Callability(Price price, Type type, Date date)
+        {
+            price_ = price;
             type_ = type;
-         }
+            date_ = date;
+        }
+        public Price price()
+        {
+            Utils.QL_REQUIRE(price_ != null, () => "no price given");
+            return price_;
+        }
+        public Type type() { return type_; }
+        // Event interface
+        public override Date date() { return date_; }
 
-         public double amount()
-         {
-            Utils.QL_REQUIRE(amount_ != null, () => "no amount given");
-            return amount_.Value;
-         }
+        private Price price_;
+        private Type type_;
+        private Date date_;
 
-         public Type type()  { return type_; }
+    }
 
-         private double? amount_;
-         private Type type_;
-      }
-
-      //! type of the callability
-      public enum Type { Call, Put }
-
-      public Callability(Price price, Type type, Date date)
-      {
-         price_ = price;
-         type_ = type;
-         date_ = date;
-      }
-      public Price price()
-      {
-         Utils.QL_REQUIRE(price_ != null, () => "no price given");
-         return price_;
-      }
-      public Type type() { return type_; }
-      // Event interface
-      public override Date date() { return date_; }
-
-      private Price price_;
-      private Type type_;
-      private Date date_;
-
-   }
-
-   public class CallabilitySchedule : List<Callability> {}
+    public class CallabilitySchedule : List<Callability> { }
 
 
 }

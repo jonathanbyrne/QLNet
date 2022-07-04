@@ -17,76 +17,76 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Patterns
 {
-   //! %observable and assignable proxy to concrete value
-   /*! Observers can be registered with instances of this class so
-       that they are notified when a different value is assigned to
-       such instances. Client code can copy the contained value or
-       pass it to functions via implicit conversion.
-       \note it is not possible to call non-const method on the
-             returned value. This is by design, as this possibility
-             would necessarily bypass the notification code; client
-             code should modify the value via re-assignment instead.
-   */
-   public class ObservableValue<T> : IObservable where T : new ()
-   {
-      private T value_;
+    //! %observable and assignable proxy to concrete value
+    /*! Observers can be registered with instances of this class so
+        that they are notified when a different value is assigned to
+        such instances. Client code can copy the contained value or
+        pass it to functions via implicit conversion.
+        \note it is not possible to call non-const method on the
+              returned value. This is by design, as this possibility
+              would necessarily bypass the notification code; client
+              code should modify the value via re-assignment instead.
+    */
+    public class ObservableValue<T> : IObservable where T : new()
+    {
+        private T value_;
 
-      public ObservableValue()
-      {
-         value_ = FastActivator<T>.Create();
-      }
+        public ObservableValue()
+        {
+            value_ = FastActivator<T>.Create();
+        }
 
-      public ObservableValue(T t)
-      {
-         value_ = t;
-      }
+        public ObservableValue(T t)
+        {
+            value_ = t;
+        }
 
-      public ObservableValue(ObservableValue<T> t)
-      {
-         value_ = t.value_;
-      }
-
-
-      // controlled assignment
-      public ObservableValue<T> Assign(T t)
-      {
-         value_ = t;
-         notifyObservers();
-         return this;
-      }
-
-      public ObservableValue<T> Assign(ObservableValue<T> t)
-      {
-         value_ = t.value_;
-         notifyObservers();
-         return this;
-      }
-
-      //! explicit inspector
-      public T value() { return value_; }
+        public ObservableValue(ObservableValue<T> t)
+        {
+            value_ = t.value_;
+        }
 
 
-      // Subjects, i.e. observables, should define interface internally like follows.
-      private readonly WeakEventSource eventSource = new WeakEventSource();
-      public event Callback notifyObserversEvent
-      {
-         add
-         {
-            eventSource.Subscribe(value);
-         }
-         remove
-         {
-            eventSource.Unsubscribe(value);
-         }
-      }
+        // controlled assignment
+        public ObservableValue<T> Assign(T t)
+        {
+            value_ = t;
+            notifyObservers();
+            return this;
+        }
 
-      public void registerWith(Callback handler) { notifyObserversEvent += handler; }
-      public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
-      protected void notifyObservers()
-      {
-         eventSource.Raise();
-      }
-   }
+        public ObservableValue<T> Assign(ObservableValue<T> t)
+        {
+            value_ = t.value_;
+            notifyObservers();
+            return this;
+        }
+
+        //! explicit inspector
+        public T value() { return value_; }
+
+
+        // Subjects, i.e. observables, should define interface internally like follows.
+        private readonly WeakEventSource eventSource = new WeakEventSource();
+        public event Callback notifyObserversEvent
+        {
+            add
+            {
+                eventSource.Subscribe(value);
+            }
+            remove
+            {
+                eventSource.Unsubscribe(value);
+            }
+        }
+
+        public void registerWith(Callback handler) { notifyObserversEvent += handler; }
+        public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
+        protected void notifyObservers()
+        {
+            eventSource.Raise();
+        }
+    }
 }

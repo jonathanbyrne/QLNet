@@ -47,7 +47,7 @@
 //                  double strike = volCube.atmStrike(atm.tenors.options[i], atm.tenors.swaps[j]);
 //                  double expVol = atmVolMatrix.link.volatility(atm.tenors.options[i], atm.tenors.swaps[j], strike, true);
 //                  double actVol = volCube.volatility(atm.tenors.options[i], atm.tenors.swaps[j], strike, true);
-//                  double error = Math.Abs(expVol - actVol);
+//                  double error = System.Math.Abs(expVol - actVol);
 //                  if (error > tolerance)
 //                     QAssert.Fail("recovery of atm vols failed:" +
 //                                  "\nexpiry time = " + atm.tenors.options[i] +
@@ -75,7 +75,7 @@
 //                                                     atmStrike + cube.strikeSpreads[k], true);
 //                     double spread = vol - atmVol;
 //                     double expVolSpread = cube.volSpreads[i * cube.tenors.swaps.Count + j, k];
-//                     double error = Math.Abs(expVolSpread - spread);
+//                     double error = System.Math.Abs(expVolSpread - spread);
 //                     if (error > tolerance)
 //                        QAssert.Fail("\nrecovery of smile vol spreads failed:" +
 //                                     "\n    option tenor = " + cube.tenors.options[i] +
@@ -235,7 +235,7 @@
 //                  double strike = strikes[k];
 //                  double diff = spreadedVolCube.volatility(vars.cube.tenors.options[i], vars.cube.tenors.swaps[j], strike)
 //                                - volCube.link.volatility(vars.cube.tenors.options[i], vars.cube.tenors.swaps[j], strike);
-//                  if (Math.Abs(diff - spread.value()) > 1e-16)
+//                  if (System.Math.Abs(diff - spread.value()) > 1e-16)
 //                     QAssert.Fail("\ndiff!=spread in volatility method:" +
 //                                  "\nexpiry time = " + vars.cube.tenors.options[i] +
 //                                  "\nswap length = " + vars.cube.tenors.swaps[j] +
@@ -244,7 +244,7 @@
 //                                  "\nspread = " + spread.value());
 
 //                  diff = smileSectionBySpreadedCube.volatility(strike) - smileSectionByCube.volatility(strike);
-//                  if (Math.Abs(diff - spread.value()) > 1e-16)
+//                  if (System.Math.Abs(diff - spread.value()) > 1e-16)
 //                     QAssert.Fail("\ndiff!=spread in smile section method:" +
 //                                  "\nexpiry time = " + vars.cube.tenors.options[i] +
 //                                  "\nswap length = " + vars.cube.tenors.swaps[j] +
@@ -331,13 +331,13 @@
 //                                                    vars.cube.tenors.swaps[j],
 //                                                    dummyStrike + vars.cube.strikeSpreads[k],
 //                                                    false);
-//                  if (Math.Abs(v0 - v1) > 1e-14)
+//                  if (System.Math.Abs(v0 - v1) > 1e-14)
 //                     QAssert.Fail(" option tenor = " + vars.cube.tenors.options[i] +
 //                                  " swap tenor = " + vars.cube.tenors.swaps[j] +
 //                                  " strike = " + (dummyStrike + vars.cube.strikeSpreads[k]) +
 //                                  "  v0 = " + (v0) +
 //                                  "  v1 = " + (v1) +
-//                                  "  error = " + Math.Abs(v1 - v0));
+//                                  "  error = " + System.Math.Abs(v1 - v0));
 //               }
 //            }
 //         }
@@ -381,13 +381,13 @@
 //                                                    vars.cube.tenors.swaps[j],
 //                                                    dummyStrike + vars.cube.strikeSpreads[k],
 //                                                    false);
-//                  if (Math.Abs(v0 - v1) > 1e-14)
+//                  if (System.Math.Abs(v0 - v1) > 1e-14)
 //                     QAssert.Fail(" option tenor = " + vars.cube.tenors.options[i] +
 //                                  " swap tenor = " + vars.cube.tenors.swaps[j] +
 //                                  " strike = " + (dummyStrike + vars.cube.strikeSpreads[k]) +
 //                                  "  v0 = " + (v0) +
 //                                  "  v1 = " + (v1) +
-//                                  "  error = " + Math.Abs(v1 - v0));
+//                                  "  error = " + System.Math.Abs(v1 - v0));
 //               }
 //            }
 //         }

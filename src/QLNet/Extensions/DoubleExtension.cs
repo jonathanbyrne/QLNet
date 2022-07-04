@@ -15,59 +15,59 @@
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 using System;
 
-namespace QLNet
+namespace QLNet.Extensions
 {
-   public static class DoubleExtension
-   {
-      // Fix double comparison
-      public static bool IsEqual(this double d1, double d2)
-      {
-         if (Math.Abs(d1 - d2) <= double.Epsilon)
-            return true;
-         return false;
-      }
-
-      public static bool IsNotEqual(this double d1, double d2)
-      {
-         return ! IsEqual(d1, d2);
-      }
-
-      // Fix double? comparison
-      public static bool IsEqual(this double? d1, double d2)
-      {
-         if (!d1.HasValue)
+    public static class DoubleExtension
+    {
+        // Fix double comparison
+        public static bool IsEqual(this double d1, double d2)
+        {
+            if (System.Math.Abs(d1 - d2) <= double.Epsilon)
+                return true;
             return false;
-         return d1.Value.IsEqual(d2);
-      }
+        }
 
-      public static bool IsNotEqual(this double? d1, double d2)
-      {
-         if (!d1.HasValue)
-            return true;
-         return d1.Value.IsNotEqual(d2);
-      }
+        public static bool IsNotEqual(this double d1, double d2)
+        {
+            return !d1.IsEqual(d2);
+        }
 
-      public static bool IsEqual(this double? d1, double? d2)
-      {
-         if (!d1.HasValue && !d2.HasValue)
-            return true;
-         if (!d1.HasValue)
-            return false;
-         if (!d2.HasValue)
-            return false;
+        // Fix double? comparison
+        public static bool IsEqual(this double? d1, double d2)
+        {
+            if (!d1.HasValue)
+                return false;
+            return d1.Value.IsEqual(d2);
+        }
 
-         return d1.Value.IsEqual(d2.Value);
-      }
+        public static bool IsNotEqual(this double? d1, double d2)
+        {
+            if (!d1.HasValue)
+                return true;
+            return d1.Value.IsNotEqual(d2);
+        }
 
-      public static bool IsNotEqual(this double? d1, double? d2)
-      {
-         if (!d1.HasValue && !d2.HasValue)
-            return false;
-         if (!d1.HasValue)
-            return true;
-         if (!d2.HasValue)
-            return true;
-         return d1.Value.IsNotEqual(d2.Value);
-      }
-   }
+        public static bool IsEqual(this double? d1, double? d2)
+        {
+            if (!d1.HasValue && !d2.HasValue)
+                return true;
+            if (!d1.HasValue)
+                return false;
+            if (!d2.HasValue)
+                return false;
+
+            return d1.Value.IsEqual(d2.Value);
+        }
+
+        public static bool IsNotEqual(this double? d1, double? d2)
+        {
+            if (!d1.HasValue && !d2.HasValue)
+                return false;
+            if (!d1.HasValue)
+                return true;
+            if (!d2.HasValue)
+                return true;
+            return d1.Value.IsNotEqual(d2.Value);
+        }
+    }
 }

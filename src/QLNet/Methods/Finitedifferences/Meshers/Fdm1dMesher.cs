@@ -19,46 +19,46 @@
 
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences.Meshers
 {
-   /// <summary>
-   /// One-dimensional simple FDM mesher object working on an index
-   /// </summary>
-   public class Fdm1dMesher
-   {
-      public Fdm1dMesher(int size)
-      {
-         locations_ = new InitializedList<double>(size);
-         dplus_ = new InitializedList < double? >(size);
-         dminus_ = new InitializedList < double? >(size);
-      }
+    /// <summary>
+    /// One-dimensional simple FDM mesher object working on an index
+    /// </summary>
+    public class Fdm1dMesher
+    {
+        public Fdm1dMesher(int size)
+        {
+            locations_ = new InitializedList<double>(size);
+            dplus_ = new InitializedList<double?>(size);
+            dminus_ = new InitializedList<double?>(size);
+        }
 
-      public int size()
-      {
-         return locations_.Count;
-      }
+        public int size()
+        {
+            return locations_.Count;
+        }
 
-      public double? dplus(int index)
-      {
-         return dplus_[index];
-      }
+        public double? dplus(int index)
+        {
+            return dplus_[index];
+        }
 
-      public double? dminus(int index)
-      {
-         return dminus_[index];
-      }
+        public double? dminus(int index)
+        {
+            return dminus_[index];
+        }
 
-      public double location(int index)
-      {
-         return locations_[index];
-      }
+        public double location(int index)
+        {
+            return locations_[index];
+        }
 
-      public List<double> locations()
-      {
-         return locations_;
-      }
+        public List<double> locations()
+        {
+            return locations_;
+        }
 
-      protected List<double> locations_;
-      protected List < double? > dplus_, dminus_;
-   }
+        protected List<double> locations_;
+        protected List<double?> dplus_, dminus_;
+    }
 }

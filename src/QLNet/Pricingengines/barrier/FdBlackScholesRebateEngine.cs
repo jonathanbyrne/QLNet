@@ -17,6 +17,12 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Instruments;
+using QLNet.Methods.Finitedifferences.Meshers;
+using QLNet.Methods.Finitedifferences.Solvers;
+using QLNet.Methods.Finitedifferences.StepConditions;
+using QLNet.Methods.Finitedifferences.Utilities;
+using QLNet.processes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,117 +33,117 @@ using System.Linq;
     \ingroup barrierengines
 */
 
-namespace QLNet
+namespace QLNet.Pricingengines.barrier
 {
-   public class FdBlackScholesRebateEngine : DividendBarrierOption.Engine
-   {
-      // Constructor
-      public FdBlackScholesRebateEngine(
-         GeneralizedBlackScholesProcess process,
-         int tGrid = 100, int xGrid = 100, int dampingSteps = 0,
-         FdmSchemeDesc schemeDesc = null,
-         bool localVol = false,
-         double? illegalLocalVolOverwrite = null)
-      {
-         process_ = process;
-         tGrid_ = tGrid;
-         xGrid_ = xGrid;
-         dampingSteps_ = dampingSteps;
-         schemeDesc_ = schemeDesc == null ? new FdmSchemeDesc().Douglas() : schemeDesc;
-         localVol_ = localVol;
-         illegalLocalVolOverwrite_ = illegalLocalVolOverwrite;
+    public class FdBlackScholesRebateEngine : DividendBarrierOption.Engine
+    {
+        // Constructor
+        public FdBlackScholesRebateEngine(
+           GeneralizedBlackScholesProcess process,
+           int tGrid = 100, int xGrid = 100, int dampingSteps = 0,
+           FdmSchemeDesc schemeDesc = null,
+           bool localVol = false,
+           double? illegalLocalVolOverwrite = null)
+        {
+            process_ = process;
+            tGrid_ = tGrid;
+            xGrid_ = xGrid;
+            dampingSteps_ = dampingSteps;
+            schemeDesc_ = schemeDesc == null ? new FdmSchemeDesc().Douglas() : schemeDesc;
+            localVol_ = localVol;
+            illegalLocalVolOverwrite_ = illegalLocalVolOverwrite;
 
-         process_.registerWith(update);
-      }
+            process_.registerWith(update);
+        }
 
-      public override void calculate()
-      {
-         // 1. Mesher
-         StrikedTypePayoff payoff = arguments_.payoff as StrikedTypePayoff;
-         double maturity = process_.time(arguments_.exercise.lastDate());
+        public override void calculate()
+        {
+            // 1. Mesher
+            StrikedTypePayoff payoff = arguments_.payoff as StrikedTypePayoff;
+            double maturity = process_.time(arguments_.exercise.lastDate());
 
-         double? xMin = null;
-         double? xMax = null;
-         if (arguments_.barrierType == Barrier.Type.DownIn
-             || arguments_.barrierType == Barrier.Type.DownOut)
-         {
-            xMin = Math.Log(arguments_.barrier.Value);
-         }
-         if (arguments_.barrierType == Barrier.Type.UpIn
-             || arguments_.barrierType == Barrier.Type.UpOut)
-         {
-            xMax = Math.Log(arguments_.barrier.Value);
-         }
+            double? xMin = null;
+            double? xMax = null;
+            if (arguments_.barrierType == Barrier.Type.DownIn
+                || arguments_.barrierType == Barrier.Type.DownOut)
+            {
+                xMin = System.Math.Log(arguments_.barrier.Value);
+            }
+            if (arguments_.barrierType == Barrier.Type.UpIn
+                || arguments_.barrierType == Barrier.Type.UpOut)
+            {
+                xMax = System.Math.Log(arguments_.barrier.Value);
+            }
 
-         Fdm1dMesher equityMesher =
-            new FdmBlackScholesMesher(xGrid_, process_, maturity,
-                                      payoff.strike(), xMin, xMax, 0.0001, 1.5,
-                                      new Pair < double?, double? >(),
-                                      arguments_.cashFlow);
+            Fdm1dMesher equityMesher =
+               new FdmBlackScholesMesher(xGrid_, process_, maturity,
+                                         payoff.strike(), xMin, xMax, 0.0001, 1.5,
+                                         new Pair<double?, double?>(),
+                                         arguments_.cashFlow);
 
-         FdmMesher mesher =
-            new FdmMesherComposite(equityMesher);
+            FdmMesher mesher =
+               new FdmMesherComposite(equityMesher);
 
-         // 2. Calculator
-         StrikedTypePayoff rebatePayoff =
-            new CashOrNothingPayoff(Option.Type.Call, 0.0, arguments_.rebate.Value);
-         FdmInnerValueCalculator calculator =
-            new FdmLogInnerValue(rebatePayoff, mesher, 0);
+            // 2. Calculator
+            StrikedTypePayoff rebatePayoff =
+               new CashOrNothingPayoff(QLNet.Option.Type.Call, 0.0, arguments_.rebate.Value);
+            FdmInnerValueCalculator calculator =
+               new FdmLogInnerValue(rebatePayoff, mesher, 0);
 
-         // 3. Step conditions
-         Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European,
-                          () => "only european style option are supported");
+            // 3. Step conditions
+            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European,
+                             () => "only european style option are supported");
 
-         FdmStepConditionComposite conditions =
-            FdmStepConditionComposite.vanillaComposite(
-               arguments_.cashFlow, arguments_.exercise,
-               mesher, calculator,
-               process_.riskFreeRate().currentLink().referenceDate(),
-               process_.riskFreeRate().currentLink().dayCounter());
+            FdmStepConditionComposite conditions =
+               FdmStepConditionComposite.vanillaComposite(
+                  arguments_.cashFlow, arguments_.exercise,
+                  mesher, calculator,
+                  process_.riskFreeRate().currentLink().referenceDate(),
+                  process_.riskFreeRate().currentLink().dayCounter());
 
-         // 4. Boundary conditions
-         FdmBoundaryConditionSet  boundaries = new FdmBoundaryConditionSet();
-         if (arguments_.barrierType == Barrier.Type.DownIn
-             || arguments_.barrierType == Barrier.Type.DownOut)
-         {
-            boundaries.Add(new FdmDirichletBoundary(mesher, arguments_.rebate.Value, 0,
-                                                    FdmDirichletBoundary.Side.Lower));
+            // 4. Boundary conditions
+            FdmBoundaryConditionSet boundaries = new FdmBoundaryConditionSet();
+            if (arguments_.barrierType == Barrier.Type.DownIn
+                || arguments_.barrierType == Barrier.Type.DownOut)
+            {
+                boundaries.Add(new FdmDirichletBoundary(mesher, arguments_.rebate.Value, 0,
+                                                        FdmDirichletBoundary.Side.Lower));
 
-         }
-         if (arguments_.barrierType == Barrier.Type.UpIn
-             || arguments_.barrierType == Barrier.Type.UpOut)
-         {
-            boundaries.Add(new FdmDirichletBoundary(mesher, arguments_.rebate.Value, 0,
-                                                    FdmDirichletBoundary.Side.Upper));
-         }
+            }
+            if (arguments_.barrierType == Barrier.Type.UpIn
+                || arguments_.barrierType == Barrier.Type.UpOut)
+            {
+                boundaries.Add(new FdmDirichletBoundary(mesher, arguments_.rebate.Value, 0,
+                                                        FdmDirichletBoundary.Side.Upper));
+            }
 
-         // 5. Solver
-         FdmSolverDesc solverDesc = new FdmSolverDesc();
-         solverDesc.mesher = mesher;
-         solverDesc.bcSet = boundaries;
-         solverDesc.condition = conditions;
-         solverDesc.calculator = calculator;
-         solverDesc.maturity = maturity;
-         solverDesc.dampingSteps = dampingSteps_;
-         solverDesc.timeSteps = tGrid_;
+            // 5. Solver
+            FdmSolverDesc solverDesc = new FdmSolverDesc();
+            solverDesc.mesher = mesher;
+            solverDesc.bcSet = boundaries;
+            solverDesc.condition = conditions;
+            solverDesc.calculator = calculator;
+            solverDesc.maturity = maturity;
+            solverDesc.dampingSteps = dampingSteps_;
+            solverDesc.timeSteps = tGrid_;
 
-         FdmBlackScholesSolver solver =
-            new FdmBlackScholesSolver(
-            new Handle<GeneralizedBlackScholesProcess>(process_),
-            payoff.strike(), solverDesc, schemeDesc_,
-            localVol_, illegalLocalVolOverwrite_);
+            FdmBlackScholesSolver solver =
+               new FdmBlackScholesSolver(
+               new Handle<GeneralizedBlackScholesProcess>(process_),
+               payoff.strike(), solverDesc, schemeDesc_,
+               localVol_, illegalLocalVolOverwrite_);
 
-         double spot = process_.x0();
-         results_.value = solver.valueAt(spot);
-         results_.delta = solver.deltaAt(spot);
-         results_.gamma = solver.gammaAt(spot);
-         results_.theta = solver.thetaAt(spot);
-      }
+            double spot = process_.x0();
+            results_.value = solver.valueAt(spot);
+            results_.delta = solver.deltaAt(spot);
+            results_.gamma = solver.gammaAt(spot);
+            results_.theta = solver.thetaAt(spot);
+        }
 
-      protected GeneralizedBlackScholesProcess process_;
-      protected int tGrid_, xGrid_, dampingSteps_;
-      protected FdmSchemeDesc schemeDesc_;
-      protected bool localVol_;
-      protected double? illegalLocalVolOverwrite_;
-   }
+        protected GeneralizedBlackScholesProcess process_;
+        protected int tGrid_, xGrid_, dampingSteps_;
+        protected FdmSchemeDesc schemeDesc_;
+        protected bool localVol_;
+        protected double? illegalLocalVolOverwrite_;
+    }
 }

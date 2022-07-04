@@ -18,28 +18,31 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Instruments;
+using QLNet.processes;
+
+namespace QLNet.Pricingengines.vanilla
 {
-   //! Finite-differences pricing engine for American one asset options
-   /*! \ingroup vanillaengines
+    //! Finite-differences pricing engine for American one asset options
+    /*! \ingroup vanillaengines
 
-       \test
-       - the correctness of the returned value is tested by reproducing results available in literature.
-       - the correctness of the returned greeks is tested by reproducing numerical derivatives.
-   */
-   public class FDAmericanEngine : FDEngineAdapter<FDAmericanCondition<FDStepConditionEngine>, OneAssetOption.Engine>,
+        \test
+        - the correctness of the returned value is tested by reproducing results available in literature.
+        - the correctness of the returned greeks is tested by reproducing numerical derivatives.
+    */
+    public class FDAmericanEngine : FDEngineAdapter<FDAmericanCondition<FDStepConditionEngine>, OneAssetOption.Engine>,
       IFDEngine
-   {
-      // required for generics
-      public FDAmericanEngine() { }
+    {
+        // required for generics
+        public FDAmericanEngine() { }
 
-      public FDAmericanEngine(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100,
-                              bool timeDependent = false)
-         : base(process, timeSteps, gridPoints, timeDependent) { }
+        public FDAmericanEngine(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100,
+                                bool timeDependent = false)
+           : base(process, timeSteps, gridPoints, timeDependent) { }
 
-      public IFDEngine factory(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100)
-      {
-         return new FDAmericanEngine(process, timeSteps, gridPoints);
-      }
-   }
+        public IFDEngine factory(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100)
+        {
+            return new FDAmericanEngine(process, timeSteps, gridPoints);
+        }
+    }
 }

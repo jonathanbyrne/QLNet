@@ -16,51 +16,52 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Time;
 using System;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Time.Calendars
 {
-   //! Bespoke calendar
-   /*! This calendar has no predefined set of business days. Holidays
-       and weekdays can be defined by means of the provided
-       interface. Instances constructed by copying remain linked to
-       the original one; adding a new holiday or weekday will affect
-       all linked instances.
+    //! Bespoke calendar
+    /*! This calendar has no predefined set of business days. Holidays
+        and weekdays can be defined by means of the provided
+        interface. Instances constructed by copying remain linked to
+        the original one; adding a new holiday or weekday will affect
+        all linked instances.
 
-       \ingroup calendars
-   */
-   public class BespokeCalendar : Calendar
-   {
-      private string name_;
-      public override string name() { return name_; }
+        \ingroup calendars
+    */
+    public class BespokeCalendar : Calendar
+    {
+        private string name_;
+        public override string name() { return name_; }
 
-      /*! \warning different bespoke calendars created with the same
-                   name (or different bespoke calendars created with
-                   no name) will compare as equal.
-      */
-      public BespokeCalendar() : this("") { }
-      public BespokeCalendar(string name) : base(new Impl())
-      {
-         name_ = name;
-      }
+        /*! \warning different bespoke calendars created with the same
+                     name (or different bespoke calendars created with
+                     no name) will compare as equal.
+        */
+        public BespokeCalendar() : this("") { }
+        public BespokeCalendar(string name) : base(new Impl())
+        {
+            name_ = name;
+        }
 
-      //! marks the passed day as part of the weekend
-      public void addWeekend(DayOfWeek w)
-      {
-         Impl impl = calendar_ as Impl;
-         if (impl != null)
-            impl.addWeekend(w);
-      }
+        //! marks the passed day as part of the weekend
+        public void addWeekend(DayOfWeek w)
+        {
+            Impl impl = calendar_ as Impl;
+            if (impl != null)
+                impl.addWeekend(w);
+        }
 
-      // here implementation does not follow a singleton pattern
-      class Impl : Calendar.WesternImpl
-      {
-         public override bool isWeekend(DayOfWeek w) { return (weekend_.Contains(w)); }
-         public override bool isBusinessDay(Date date) { return !isWeekend(date.DayOfWeek); }
-         public void addWeekend(DayOfWeek w) { weekend_.Add(w); }
+        // here implementation does not follow a singleton pattern
+        class Impl : WesternImpl
+        {
+            public override bool isWeekend(DayOfWeek w) { return weekend_.Contains(w); }
+            public override bool isBusinessDay(Date date) { return !isWeekend(date.DayOfWeek); }
+            public void addWeekend(DayOfWeek w) { weekend_.Add(w); }
 
-         private List<DayOfWeek> weekend_ = new List<DayOfWeek>();
-      }
-   }
+            private List<DayOfWeek> weekend_ = new List<DayOfWeek>();
+        }
+    }
 }

@@ -18,143 +18,146 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Currencies;
+using QLNet.Patterns;
+using QLNet.Time;
 using System;
 
-namespace QLNet
+namespace QLNet.Indexes
 {
-   //! base class for interest rate indexes
-   /*! \todo add methods returning InterestRate */
-   public abstract class InterestRateIndex : Index, IObserver
-   {
-      protected InterestRateIndex(string familyName,
-                                  Period tenor,
-                                  int fixingDays,
-                                  Currency currency,
-                                  Calendar fixingCalendar,
-                                  DayCounter dayCounter)
-      {
-         familyName_ = familyName;
-         tenor_ = tenor;
-         fixingDays_ = fixingDays;
-         currency_ = currency;
-         dayCounter_ = dayCounter;
-         fixingCalendar_ = fixingCalendar;
+    //! base class for interest rate indexes
+    /*! \todo add methods returning InterestRate */
+    public abstract class InterestRateIndex : Index, IObserver
+    {
+        protected InterestRateIndex(string familyName,
+                                    Period tenor,
+                                    int fixingDays,
+                                    Currency currency,
+                                    Calendar fixingCalendar,
+                                    DayCounter dayCounter)
+        {
+            familyName_ = familyName;
+            tenor_ = tenor;
+            fixingDays_ = fixingDays;
+            currency_ = currency;
+            dayCounter_ = dayCounter;
+            fixingCalendar_ = fixingCalendar;
 
 
-         tenor_.normalize();
+            tenor_.normalize();
 
-         string res = familyName_;
-         if (tenor_ == new Period(1, TimeUnit.Days))
-         {
-            if (fixingDays_ == 0)
-               res += "ON";
-            else if (fixingDays_ == 1)
-               res += "TN";
-            else if (fixingDays_ == 2)
-               res += "SN";
+            string res = familyName_;
+            if (tenor_ == new Period(1, TimeUnit.Days))
+            {
+                if (fixingDays_ == 0)
+                    res += "ON";
+                else if (fixingDays_ == 1)
+                    res += "TN";
+                else if (fixingDays_ == 2)
+                    res += "SN";
+                else
+                    res += tenor_.ToShortString();
+            }
             else
-               res += tenor_.ToShortString();
-         }
-         else
-            res += tenor_.ToShortString();
-         res = res + " " + dayCounter_.name();
-         name_ =  res;
+                res += tenor_.ToShortString();
+            res = res + " " + dayCounter_.name();
+            name_ = res;
 
-         Settings.registerWith(update);
-         // recheck
-         IndexManager.instance().notifier(name()).registerWith(update);
-      }
+            Settings.registerWith(update);
+            // recheck
+            IndexManager.instance().notifier(name()).registerWith(update);
+        }
 
-      // Index interface
-      public override string name()
-      {
-         return name_;
-      }
-      public override Calendar fixingCalendar() { return fixingCalendar_; }
-      public override bool isValidFixingDate(Date fixingDate) { return fixingCalendar().isBusinessDay(fixingDate); }
-      public override double fixing(Date fixingDate, bool forecastTodaysFixing = false)
-      {
-         Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => "Fixing date " + fixingDate + " is not valid");
+        // Index interface
+        public override string name()
+        {
+            return name_;
+        }
+        public override Calendar fixingCalendar() { return fixingCalendar_; }
+        public override bool isValidFixingDate(Date fixingDate) { return fixingCalendar().isBusinessDay(fixingDate); }
+        public override double fixing(Date fixingDate, bool forecastTodaysFixing = false)
+        {
+            Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => "Fixing date " + fixingDate + " is not valid");
 
-         Date today = Settings.evaluationDate();
+            Date today = Settings.evaluationDate();
 
-         if (fixingDate > today ||
-             (fixingDate == today && forecastTodaysFixing))
+            if (fixingDate > today ||
+                fixingDate == today && forecastTodaysFixing)
+                return forecastFixing(fixingDate);
+
+            if (fixingDate < today || Settings.enforcesTodaysHistoricFixings)
+            {
+                // must have been fixed
+                // do not catch exceptions
+                double? result = pastFixing(fixingDate);
+                Utils.QL_REQUIRE(result != null, () => "Missing " + name() + " fixing for " + fixingDate);
+                return result.Value;
+            }
+
+            try
+            {
+                // might have been fixed
+                double? result = pastFixing(fixingDate);
+                if (result != null)
+                    return result.Value;
+
+            }
+            catch (Exception)
+            {
+
+            }
             return forecastFixing(fixingDate);
+        }
 
-         if (fixingDate < today || Settings.enforcesTodaysHistoricFixings)
-         {
-            // must have been fixed
-            // do not catch exceptions
-            double? result = pastFixing(fixingDate);
-            Utils.QL_REQUIRE(result != null, () => "Missing " + name() + " fixing for " + fixingDate);
-            return result.Value;
-         }
+        // Observer interface
+        public void update() { notifyObservers(); }
 
-         try
-         {
-            // might have been fixed
-            double? result = pastFixing(fixingDate);
-            if (result != null)
-               return result.Value;
+        // Inspectors
+        public string familyName() { return familyName_; }
+        public Period tenor() { return tenor_; }
+        public int fixingDays() { return fixingDays_; }
+        public Date fixingDate(Date valueDate)
+        {
+            Date fixingDate = fixingCalendar().advance(valueDate, -fixingDays_, TimeUnit.Days);
+            return fixingDate;
+        }
+        public Currency currency() { return currency_; }
+        public DayCounter dayCounter() { return dayCounter_; }
 
-         }
-         catch (Exception)
-         {
+        // Date calculations
+        // These methods can be overridden to implement particular conventions (e.g. EurLibor) */
+        public virtual Date valueDate(Date fixingDate)
+        {
+            Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => fixingDate + " is not a valid fixing date");
+            return fixingCalendar().advance(fixingDate, fixingDays_, TimeUnit.Days);
+        }
+        public abstract Date maturityDate(Date valueDate);
 
-         }
-         return forecastFixing(fixingDate);
-      }
-
-      // Observer interface
-      public void update() { notifyObservers(); }
-
-      // Inspectors
-      public string familyName() { return familyName_; }
-      public Period tenor() { return tenor_; }
-      public int fixingDays() { return fixingDays_; }
-      public Date fixingDate(Date valueDate)
-      {
-         Date fixingDate = fixingCalendar().advance(valueDate, -fixingDays_, TimeUnit.Days);
-         return fixingDate;
-      }
-      public Currency currency() { return currency_; }
-      public DayCounter dayCounter() { return dayCounter_; }
-
-      // Date calculations
-      // These methods can be overridden to implement particular conventions (e.g. EurLibor) */
-      public virtual Date valueDate(Date fixingDate)
-      {
-         Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => fixingDate + " is not a valid fixing date");
-         return fixingCalendar().advance(fixingDate, fixingDays_, TimeUnit.Days);
-      }
-      public abstract Date maturityDate(Date valueDate);
-
-      // Fixing calculations
-      //! It can be overridden to implement particular conventions
-      public abstract double forecastFixing(Date fixingDate);
-      public virtual double? pastFixing(Date fixingDate)
-      {
-         Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => fixingDate + " is not a valid fixing date");
-         if (timeSeries().ContainsKey(fixingDate))
-            return timeSeries()[fixingDate];
-         else
-            return null;
-      }
+        // Fixing calculations
+        //! It can be overridden to implement particular conventions
+        public abstract double forecastFixing(Date fixingDate);
+        public virtual double? pastFixing(Date fixingDate)
+        {
+            Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => fixingDate + " is not a valid fixing date");
+            if (timeSeries().ContainsKey(fixingDate))
+                return timeSeries()[fixingDate];
+            else
+                return null;
+        }
 
 
-      protected string familyName_;
-      protected Period tenor_;
-      protected int fixingDays_;
-      protected Currency currency_;
-      protected DayCounter dayCounter_;
-      protected string name_;
+        protected string familyName_;
+        protected Period tenor_;
+        protected int fixingDays_;
+        protected Currency currency_;
+        protected DayCounter dayCounter_;
+        protected string name_;
 
-      private Calendar fixingCalendar_;
+        private Calendar fixingCalendar_;
 
 
-      // need by CashFlowVectors
-      protected InterestRateIndex() { }
-   }
+        // need by CashFlowVectors
+        protected InterestRateIndex() { }
+    }
 
 }

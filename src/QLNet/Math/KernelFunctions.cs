@@ -17,50 +17,52 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Math.Distributions;
+
+namespace QLNet.Math
 {
-   /*! Kernel function in the statistical sense, e.g. a nonnegative,
-       real-valued function which integrates to one and is symmetric.
+    /*! Kernel function in the statistical sense, e.g. a nonnegative,
+        real-valued function which integrates to one and is symmetric.
 
-       Derived classes will serve as functors.
-   */
+        Derived classes will serve as functors.
+    */
 
-   public interface IKernelFunction
-   {
-      double value(double x) ;
-   }
+    public interface IKernelFunction
+    {
+        double value(double x);
+    }
 
 
-   //! Gaussian kernel function
-   public class GaussianKernel : IKernelFunction
-   {
-      public GaussianKernel(double average, double sigma)
-      {
-         nd_ = new NormalDistribution(average, sigma);
-         cnd_ = new CumulativeNormalDistribution(average, sigma);
-         // normFact is \sqrt{2*\pi}.
-         normFact_ = Const.M_SQRT2 * Const.M_SQRTPI;
-      }
+    //! Gaussian kernel function
+    public class GaussianKernel : IKernelFunction
+    {
+        public GaussianKernel(double average, double sigma)
+        {
+            nd_ = new NormalDistribution(average, sigma);
+            cnd_ = new CumulativeNormalDistribution(average, sigma);
+            // normFact is \sqrt{2*\pi}.
+            normFact_ = Const.M_SQRT2 * Const.M_SQRTPI;
+        }
 
-      public double value(double x)
-      {
-         return nd_.value(x) * normFact_;
-      }
+        public double value(double x)
+        {
+            return nd_.value(x) * normFact_;
+        }
 
-      public double derivative(double x)
-      {
-         return nd_.derivative(x) * normFact_;
-      }
+        public double derivative(double x)
+        {
+            return nd_.derivative(x) * normFact_;
+        }
 
-      public double primitive(double x)
-      {
-         return cnd_.value(x) * normFact_;
-      }
+        public double primitive(double x)
+        {
+            return cnd_.value(x) * normFact_;
+        }
 
-      private NormalDistribution nd_;
-      private CumulativeNormalDistribution cnd_;
-      private double normFact_;
+        private NormalDistribution nd_;
+        private CumulativeNormalDistribution cnd_;
+        private double normFact_;
 
-   }
+    }
 
 }

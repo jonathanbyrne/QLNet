@@ -16,88 +16,90 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Quotes;
+using QLNet.Time;
 using System;
 
-namespace QLNet
+namespace QLNet.Termstructures.Volatility.CapFloor
 {
-   public class ConstantCapFloorTermVolatility : CapFloorTermVolatilityStructure
-   {
-      private Handle<Quote> volatility_;
+    public class ConstantCapFloorTermVolatility : CapFloorTermVolatilityStructure
+    {
+        private Handle<Quote> volatility_;
 
-      //! floating reference date, floating market data
-      public ConstantCapFloorTermVolatility(int settlementDays,
-                                            Calendar cal,
-                                            BusinessDayConvention bdc,
-                                            Handle<Quote> volatility,
-                                            DayCounter dc)
-         : base(settlementDays, cal, bdc, dc)
-      {
-         volatility_ = volatility;
-         volatility_.registerWith(update);
-      }
+        //! floating reference date, floating market data
+        public ConstantCapFloorTermVolatility(int settlementDays,
+                                              Calendar cal,
+                                              BusinessDayConvention bdc,
+                                              Handle<Quote> volatility,
+                                              DayCounter dc)
+           : base(settlementDays, cal, bdc, dc)
+        {
+            volatility_ = volatility;
+            volatility_.registerWith(update);
+        }
 
-      //! fixed reference date, floating market data
-      public ConstantCapFloorTermVolatility(Date referenceDate,
-                                            Calendar cal,
-                                            BusinessDayConvention bdc,
-                                            Handle<Quote> volatility,
-                                            DayCounter dc)
-         : base(referenceDate, cal, bdc, dc)
-      {
-         volatility_ = volatility;
-         volatility_.registerWith(update);
-      }
+        //! fixed reference date, floating market data
+        public ConstantCapFloorTermVolatility(Date referenceDate,
+                                              Calendar cal,
+                                              BusinessDayConvention bdc,
+                                              Handle<Quote> volatility,
+                                              DayCounter dc)
+           : base(referenceDate, cal, bdc, dc)
+        {
+            volatility_ = volatility;
+            volatility_.registerWith(update);
+        }
 
-      //! floating reference date, fixed market data
-      public ConstantCapFloorTermVolatility(int settlementDays,
-                                            Calendar cal,
-                                            BusinessDayConvention bdc,
-                                            double volatility,
-                                            DayCounter dc)
-         : base(settlementDays, cal, bdc, dc)
-      {
-         volatility_ = new Handle<Quote>(new SimpleQuote(volatility));
-      }
+        //! floating reference date, fixed market data
+        public ConstantCapFloorTermVolatility(int settlementDays,
+                                              Calendar cal,
+                                              BusinessDayConvention bdc,
+                                              double volatility,
+                                              DayCounter dc)
+           : base(settlementDays, cal, bdc, dc)
+        {
+            volatility_ = new Handle<Quote>(new SimpleQuote(volatility));
+        }
 
-      // fixed reference date, fixed market data
-      public ConstantCapFloorTermVolatility(Date referenceDate,
-                                            Calendar cal,
-                                            BusinessDayConvention bdc,
-                                            double volatility,
-                                            DayCounter dc)
-         : base(referenceDate, cal, bdc, dc)
-      {
-         volatility_ = new Handle<Quote>(new SimpleQuote(volatility));
-      }
+        // fixed reference date, fixed market data
+        public ConstantCapFloorTermVolatility(Date referenceDate,
+                                              Calendar cal,
+                                              BusinessDayConvention bdc,
+                                              double volatility,
+                                              DayCounter dc)
+           : base(referenceDate, cal, bdc, dc)
+        {
+            volatility_ = new Handle<Quote>(new SimpleQuote(volatility));
+        }
 
-      #region TermStructure interface
+        #region TermStructure interface
 
-      public override Date maxDate()
-      {
-         return Date.maxDate();
-      }
+        public override Date maxDate()
+        {
+            return Date.maxDate();
+        }
 
-      #endregion
-
-
-      #region VolatilityTermStructure interface
-      public override double minStrike()
-      {
-         return Double.MinValue;
-      }
-
-      public override double maxStrike()
-      {
-         return Double.MaxValue;
-      }
-
-      #endregion
+        #endregion
 
 
-      protected override double volatilityImpl(double t, double rate)
-      {
-         return volatility_.link.value();
-      }
+        #region VolatilityTermStructure interface
+        public override double minStrike()
+        {
+            return double.MinValue;
+        }
 
-   }
+        public override double maxStrike()
+        {
+            return double.MaxValue;
+        }
+
+        #endregion
+
+
+        protected override double volatilityImpl(double t, double rate)
+        {
+            return volatility_.link.value();
+        }
+
+    }
 }

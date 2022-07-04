@@ -22,222 +22,222 @@
 using System;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Time.Calendars
 {
-   //! Chinese calendar
-   /*! Holidays:
-       <ul>
-       <li>Saturdays</li>
-       <li>Sundays</li>
-       <li>New Year's day, January 1st (possibly followed by one or
-           two more holidays)</li>
-       <li>Labour Day, first week in May</li>
-       <li>National Day, one week from October 1st</li>
-       </ul>
+    //! Chinese calendar
+    /*! Holidays:
+        <ul>
+        <li>Saturdays</li>
+        <li>Sundays</li>
+        <li>New Year's day, January 1st (possibly followed by one or
+            two more holidays)</li>
+        <li>Labour Day, first week in May</li>
+        <li>National Day, one week from October 1st</li>
+        </ul>
 
-       Other holidays for which no rule is given (data available for
-       2004-2019 only):
-       <ul>
-       <li>Chinese New Year</li>
-       <li>Ching Ming Festival</li>
-       <li>Tuen Ng Festival</li>
-       <li>Mid-Autumn Festival</li>
-       <li>70th anniversary of the victory of anti-Japaneses war</li>
-       </ul>
+        Other holidays for which no rule is given (data available for
+        2004-2019 only):
+        <ul>
+        <li>Chinese New Year</li>
+        <li>Ching Ming Festival</li>
+        <li>Tuen Ng Festival</li>
+        <li>Mid-Autumn Festival</li>
+        <li>70th anniversary of the victory of anti-Japaneses war</li>
+        </ul>
 
-       SSE data from <http://www.sse.com.cn/>
-       IB data from <http://www.chinamoney.com.cn/>
+        SSE data from <http://www.sse.com.cn/>
+        IB data from <http://www.chinamoney.com.cn/>
 
-       \ingroup calendars
-   */
-   public class China : Calendar
-   {
-      public enum Market
-      {
-         SSE,    //!< Shanghai stock exchange
-         IB      //!< Interbank calendar
-      }
+        \ingroup calendars
+    */
+    public class China : Calendar
+    {
+        public enum Market
+        {
+            SSE,    //!< Shanghai stock exchange
+            IB      //!< Interbank calendar
+        }
 
-      public China(Market market = Market.SSE)
-      {
+        public China(Market market = Market.SSE)
+        {
 
-         // all calendar instances on the same market share the same implementation instance
-         switch (market)
-         {
-            case Market.SSE:
-               calendar_ = SseImpl.Singleton;
-               break;
-            case Market.IB:
-               calendar_ = IbImpl.Singleton;
-               break;
-            default:
-               Utils.QL_FAIL("unknown market");
-               break;
-         }
-      }
+            // all calendar instances on the same market share the same implementation instance
+            switch (market)
+            {
+                case Market.SSE:
+                    calendar_ = SseImpl.Singleton;
+                    break;
+                case Market.IB:
+                    calendar_ = IbImpl.Singleton;
+                    break;
+                default:
+                    Utils.QL_FAIL("unknown market");
+                    break;
+            }
+        }
 
-      private class SseImpl : Calendar
-      {
-         public static readonly SseImpl Singleton = new SseImpl();
-         private SseImpl() { }
-         public override string name() { return "Shanghai stock exchange"; }
+        private class SseImpl : Calendar
+        {
+            public static readonly SseImpl Singleton = new SseImpl();
+            private SseImpl() { }
+            public override string name() { return "Shanghai stock exchange"; }
 
-         public override bool isWeekend(DayOfWeek w)
-         {
-            return w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
-         }
+            public override bool isWeekend(DayOfWeek w)
+            {
+                return w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
+            }
 
-         public override bool isBusinessDay(Date date)
-         {
-            DayOfWeek w = date.DayOfWeek;
-            int d = date.Day;
-            Month m = (Month)date.Month;
-            int y = date.Year;
+            public override bool isBusinessDay(Date date)
+            {
+                DayOfWeek w = date.DayOfWeek;
+                int d = date.Day;
+                Month m = (Month)date.Month;
+                int y = date.Year;
 
-            if (isWeekend(w)
-                // New Year's Day
-                || (d == 1 && m == Month.January)
-                || (y == 2005 && d == 3 && m == Month.January)
-                || (y == 2006 && (d == 2 || d == 3) && m == Month.January)
-                || (y == 2007 && d <= 3 && m == Month.January)
-                || (y == 2007 && d == 31 && m == Month.December)
-                || (y == 2009 && d == 2 && m == Month.January)
-                || (y == 2011 && d == 3 && m == Month.January)
-                || (y == 2012 && (d == 2 || d == 3) && m == Month.January)
-                || (y == 2013 && d <= 3 && m == Month.January)
-                || (y == 2014 && d == 1 && m == Month.January)
-                || (y == 2015 && d <= 3 && m == Month.January)
-                || (y == 2017 && d == 2 && m == Month.January)
-                || (y == 2018 && d == 1 && m == Month.January)
-                || (y == 2018 && d == 31 && m == Month.December)
-                || (y == 2019 && d == 1 && m == Month.January)
-                || (y == 2020 && d == 1 && m == Month.January)
-                || (y == 2021 && d == 1 && m == Month.January)
-                // Chinese New Year
-                || (y == 2004 && d >= 19 && d <= 28 && m == Month.January)
-                || (y == 2005 && d >= 7 && d <= 15 && m == Month.February)
-                || (y == 2006 && ((d >= 26 && m == Month.January) ||
-                                  (d <= 3 && m == Month.February)))
-                || (y == 2007 && d >= 17 && d <= 25 && m == Month.February)
-                || (y == 2008 && d >= 6 && d <= 12 && m == Month.February)
-                || (y == 2009 && d >= 26 && d <= 30 && m == Month.January)
-                || (y == 2010 && d >= 15 && d <= 19 && m == Month.February)
-                || (y == 2011 && d >= 2 && d <= 8 && m == Month.February)
-                || (y == 2012 && d >= 23 && d <= 28 && m == Month.January)
-                || (y == 2013 && d >= 11 && d <= 15 && m == Month.February)
-                || (y == 2014 && d >= 31 && m == Month.January)
-                || (y == 2014 && d <= 6 && m == Month.February)
-                || (y == 2015 && d >= 18 && d <= 24 && m == Month.February)
-                || (y == 2016 && d >= 8 && d <= 12 && m == Month.February)
-                || (y == 2017 && ((d >= 27 && m == Month.January) ||
-                                  (d <= 2 && m == Month.February)))
-                || (y == 2018 && (d >= 15 && d <= 21 && m == Month.February))
-                || (y == 2019 && d >= 4 && d <= 8 && m == Month.February)
-                || (y == 2020 && (d == 24 || (d >= 27 && d <= 31)) && m == Month.January)
-                || (y == 2021 && (d == 11 || d == 12 || d == 15 || d == 16 || d == 17) && m == Month.February)
-                // Ching Ming Festival
-                || (y <= 2008 && d == 4 && m == Month.April)
-                || (y == 2009 && d == 6 && m == Month.April)
-                || (y == 2010 && d == 5 && m == Month.April)
-                || (y == 2011 && d >= 3 && d <= 5 && m == Month.April)
-                || (y == 2012 && d >= 2 && d <= 4 && m == Month.April)
-                || (y == 2013 && d >= 4 && d <= 5 && m == Month.April)
-                || (y == 2014 && d == 7 && m == Month.April)
-                || (y == 2015 && d >= 5 && d <= 6 && m == Month.April)
-                || (y == 2016 && d == 4 && m == Month.April)
-                || (y == 2017 && d >= 3 && d <= 4 && m == Month.April)
-                || (y == 2018 && d >= 5 && d <= 6 && m == Month.April)
-                || (y == 2019 && d == 5 && m == Month.April)
-                || (y == 2020 && d == 6 && m == Month.April)
-                || (y == 2021 && d == 5 && m == Month.April)
-                // Labor Day
-                || (y <= 2007 && d >= 1 && d <= 7 && m == Month.May)
-                || (y == 2008 && d >= 1 && d <= 2 && m == Month.May)
-                || (y == 2009 && d == 1 && m == Month.May)
-                || (y == 2010 && d == 3 && m == Month.May)
-                || (y == 2011 && d == 2 && m == Month.May)
-                || (y == 2012 && ((d == 30 && m == Month.April) ||
-                                  (d == 1 && m == Month.May)))
-                || (y == 2013 && ((d >= 29 && m == Month.April) ||
-                                  (d == 1 && m == Month.May)))
-                || (y == 2014 && d >= 1 && d <= 3 && m == Month.May)
-                || (y == 2015 && d == 1 && m == Month.May)
-                || (y == 2016 && d >= 1 && d <= 2 && m == Month.May)
-                || (y == 2017 && d == 1 && m == Month.May)
-                || (y == 2018 && ((d == 30 && m == Month.April) || (d == 1 && m == Month.May)))
-                || (y == 2019 && d >= 1 && d <= 3 && m == Month.May)
-                || (y == 2020 && (d == 1 || d == 4 || d == 5) && m == Month.May)
-                || (y == 2021 && (d == 3 || d == 4 || d == 5) && m == Month.May)
-                // Tuen Ng Festival
-                || (y <= 2008 && d == 9 && m == Month.June)
-                || (y == 2009 && (d == 28 || d == 29) && m == Month.May)
-                || (y == 2010 && d >= 14 && d <= 16 && m == Month.June)
-                || (y == 2011 && d >= 4 && d <= 6 && m == Month.June)
-                || (y == 2012 && d >= 22 && d <= 24 && m == Month.June)
-                || (y == 2013 && d >= 10 && d <= 12 && m == Month.June)
-                || (y == 2014 && d == 2 && m == Month.June)
-                || (y == 2015 && d == 22 && m == Month.June)
-                || (y == 2016 && d >= 9 && d <= 10 && m == Month.June)
-                || (y == 2017 && d >= 29 && d <= 30 && m == Month.May)
-                || (y == 2018 && d == 18 && m == Month.June)
-                || (y == 2019 && d == 7 && m == Month.June)
-                || (y == 2020 && d >= 25 && d <= 26 && m == Month.June)
-                || (y == 2021 && d == 14 && m == Month.June)
-                // Mid-Autumn Festival
-                || (y <= 2008 && d == 15 && m == Month.September)
-                || (y == 2010 && d >= 22 && d <= 24 && m == Month.September)
-                || (y == 2011 && d >= 10 && d <= 12 && m == Month.September)
-                || (y == 2012 && d == 30 && m == Month.September)
-                || (y == 2013 && d >= 19 && d <= 20 && m == Month.September)
-                || (y == 2014 && d == 8 && m == Month.September)
-                || (y == 2015 && d == 27 && m == Month.September)
-                || (y == 2016 && d >= 15 && d <= 16 && m == Month.September)
-                || (y == 2018 && d == 24 && m == Month.September)
-                || (y == 2019 && d == 13 && m == Month.September)
-                || (y == 2021 && (d == 20 || d == 21) && m == Month.September)
-                // National Day
-                || (y <= 2007 && d >= 1 && d <= 7 && m == Month.October)
-                || (y == 2008 && ((d >= 29 && m == Month.September) ||
-                                  (d <= 3 && m == Month.October)))
-                || (y == 2009 && d >= 1 && d <= 8 && m == Month.October)
-                || (y == 2010 && d >= 1 && d <= 7 && m == Month.October)
-                || (y == 2011 && d >= 1 && d <= 7 && m == Month.October)
-                || (y == 2012 && d >= 1 && d <= 7 && m == Month.October)
-                || (y == 2013 && d >= 1 && d <= 7 && m == Month.October)
-                || (y == 2014 && d >= 1 && d <= 7 && m == Month.October)
-                || (y == 2015 && d >= 1 && d <= 7 && m == Month.October)
-                || (y == 2016 && d >= 3 && d <= 7 && m == Month.October)
-                || (y == 2017 && d >= 2 && d <= 6 && m == Month.October)
-                || (y == 2018 && d >= 1 && d <= 5 && m == Month.October)
-                || (y == 2019 && d >= 1 && d <= 7 && m == Month.October)
-                || (y == 2020 && d >= 1 && d <= 2 && m == Month.October)
-                || (y == 2020 && d >= 5 && d <= 8 && m == Month.October)
-                || (y == 2021 && (d == 1 || d == 4 || d == 5 || d == 6 || d == 7) && m == Month.October)
-                // 70th anniversary of the victory of anti-Japaneses war
-                || (y == 2015 && d >= 3 && d <= 4 && m == Month.September)
-               )
-               return false;
-            return true;
+                if (isWeekend(w)
+                    // New Year's Day
+                    || d == 1 && m == Month.January
+                    || y == 2005 && d == 3 && m == Month.January
+                    || y == 2006 && (d == 2 || d == 3) && m == Month.January
+                    || y == 2007 && d <= 3 && m == Month.January
+                    || y == 2007 && d == 31 && m == Month.December
+                    || y == 2009 && d == 2 && m == Month.January
+                    || y == 2011 && d == 3 && m == Month.January
+                    || y == 2012 && (d == 2 || d == 3) && m == Month.January
+                    || y == 2013 && d <= 3 && m == Month.January
+                    || y == 2014 && d == 1 && m == Month.January
+                    || y == 2015 && d <= 3 && m == Month.January
+                    || y == 2017 && d == 2 && m == Month.January
+                    || y == 2018 && d == 1 && m == Month.January
+                    || y == 2018 && d == 31 && m == Month.December
+                    || y == 2019 && d == 1 && m == Month.January
+                    || y == 2020 && d == 1 && m == Month.January
+                    || y == 2021 && d == 1 && m == Month.January
+                    // Chinese New Year
+                    || y == 2004 && d >= 19 && d <= 28 && m == Month.January
+                    || y == 2005 && d >= 7 && d <= 15 && m == Month.February
+                    || y == 2006 && (d >= 26 && m == Month.January ||
+                                      d <= 3 && m == Month.February)
+                    || y == 2007 && d >= 17 && d <= 25 && m == Month.February
+                    || y == 2008 && d >= 6 && d <= 12 && m == Month.February
+                    || y == 2009 && d >= 26 && d <= 30 && m == Month.January
+                    || y == 2010 && d >= 15 && d <= 19 && m == Month.February
+                    || y == 2011 && d >= 2 && d <= 8 && m == Month.February
+                    || y == 2012 && d >= 23 && d <= 28 && m == Month.January
+                    || y == 2013 && d >= 11 && d <= 15 && m == Month.February
+                    || y == 2014 && d >= 31 && m == Month.January
+                    || y == 2014 && d <= 6 && m == Month.February
+                    || y == 2015 && d >= 18 && d <= 24 && m == Month.February
+                    || y == 2016 && d >= 8 && d <= 12 && m == Month.February
+                    || y == 2017 && (d >= 27 && m == Month.January ||
+                                      d <= 2 && m == Month.February)
+                    || y == 2018 && d >= 15 && d <= 21 && m == Month.February
+                    || y == 2019 && d >= 4 && d <= 8 && m == Month.February
+                    || y == 2020 && (d == 24 || d >= 27 && d <= 31) && m == Month.January
+                    || y == 2021 && (d == 11 || d == 12 || d == 15 || d == 16 || d == 17) && m == Month.February
+                    // Ching Ming Festival
+                    || y <= 2008 && d == 4 && m == Month.April
+                    || y == 2009 && d == 6 && m == Month.April
+                    || y == 2010 && d == 5 && m == Month.April
+                    || y == 2011 && d >= 3 && d <= 5 && m == Month.April
+                    || y == 2012 && d >= 2 && d <= 4 && m == Month.April
+                    || y == 2013 && d >= 4 && d <= 5 && m == Month.April
+                    || y == 2014 && d == 7 && m == Month.April
+                    || y == 2015 && d >= 5 && d <= 6 && m == Month.April
+                    || y == 2016 && d == 4 && m == Month.April
+                    || y == 2017 && d >= 3 && d <= 4 && m == Month.April
+                    || y == 2018 && d >= 5 && d <= 6 && m == Month.April
+                    || y == 2019 && d == 5 && m == Month.April
+                    || y == 2020 && d == 6 && m == Month.April
+                    || y == 2021 && d == 5 && m == Month.April
+                    // Labor Day
+                    || y <= 2007 && d >= 1 && d <= 7 && m == Month.May
+                    || y == 2008 && d >= 1 && d <= 2 && m == Month.May
+                    || y == 2009 && d == 1 && m == Month.May
+                    || y == 2010 && d == 3 && m == Month.May
+                    || y == 2011 && d == 2 && m == Month.May
+                    || y == 2012 && (d == 30 && m == Month.April ||
+                                      d == 1 && m == Month.May)
+                    || y == 2013 && (d >= 29 && m == Month.April ||
+                                      d == 1 && m == Month.May)
+                    || y == 2014 && d >= 1 && d <= 3 && m == Month.May
+                    || y == 2015 && d == 1 && m == Month.May
+                    || y == 2016 && d >= 1 && d <= 2 && m == Month.May
+                    || y == 2017 && d == 1 && m == Month.May
+                    || y == 2018 && (d == 30 && m == Month.April || d == 1 && m == Month.May)
+                    || y == 2019 && d >= 1 && d <= 3 && m == Month.May
+                    || y == 2020 && (d == 1 || d == 4 || d == 5) && m == Month.May
+                    || y == 2021 && (d == 3 || d == 4 || d == 5) && m == Month.May
+                    // Tuen Ng Festival
+                    || y <= 2008 && d == 9 && m == Month.June
+                    || y == 2009 && (d == 28 || d == 29) && m == Month.May
+                    || y == 2010 && d >= 14 && d <= 16 && m == Month.June
+                    || y == 2011 && d >= 4 && d <= 6 && m == Month.June
+                    || y == 2012 && d >= 22 && d <= 24 && m == Month.June
+                    || y == 2013 && d >= 10 && d <= 12 && m == Month.June
+                    || y == 2014 && d == 2 && m == Month.June
+                    || y == 2015 && d == 22 && m == Month.June
+                    || y == 2016 && d >= 9 && d <= 10 && m == Month.June
+                    || y == 2017 && d >= 29 && d <= 30 && m == Month.May
+                    || y == 2018 && d == 18 && m == Month.June
+                    || y == 2019 && d == 7 && m == Month.June
+                    || y == 2020 && d >= 25 && d <= 26 && m == Month.June
+                    || y == 2021 && d == 14 && m == Month.June
+                    // Mid-Autumn Festival
+                    || y <= 2008 && d == 15 && m == Month.September
+                    || y == 2010 && d >= 22 && d <= 24 && m == Month.September
+                    || y == 2011 && d >= 10 && d <= 12 && m == Month.September
+                    || y == 2012 && d == 30 && m == Month.September
+                    || y == 2013 && d >= 19 && d <= 20 && m == Month.September
+                    || y == 2014 && d == 8 && m == Month.September
+                    || y == 2015 && d == 27 && m == Month.September
+                    || y == 2016 && d >= 15 && d <= 16 && m == Month.September
+                    || y == 2018 && d == 24 && m == Month.September
+                    || y == 2019 && d == 13 && m == Month.September
+                    || y == 2021 && (d == 20 || d == 21) && m == Month.September
+                    // National Day
+                    || y <= 2007 && d >= 1 && d <= 7 && m == Month.October
+                    || y == 2008 && (d >= 29 && m == Month.September ||
+                                      d <= 3 && m == Month.October)
+                    || y == 2009 && d >= 1 && d <= 8 && m == Month.October
+                    || y == 2010 && d >= 1 && d <= 7 && m == Month.October
+                    || y == 2011 && d >= 1 && d <= 7 && m == Month.October
+                    || y == 2012 && d >= 1 && d <= 7 && m == Month.October
+                    || y == 2013 && d >= 1 && d <= 7 && m == Month.October
+                    || y == 2014 && d >= 1 && d <= 7 && m == Month.October
+                    || y == 2015 && d >= 1 && d <= 7 && m == Month.October
+                    || y == 2016 && d >= 3 && d <= 7 && m == Month.October
+                    || y == 2017 && d >= 2 && d <= 6 && m == Month.October
+                    || y == 2018 && d >= 1 && d <= 5 && m == Month.October
+                    || y == 2019 && d >= 1 && d <= 7 && m == Month.October
+                    || y == 2020 && d >= 1 && d <= 2 && m == Month.October
+                    || y == 2020 && d >= 5 && d <= 8 && m == Month.October
+                    || y == 2021 && (d == 1 || d == 4 || d == 5 || d == 6 || d == 7) && m == Month.October
+                    // 70th anniversary of the victory of anti-Japaneses war
+                    || y == 2015 && d >= 3 && d <= 4 && m == Month.September
+                   )
+                    return false;
+                return true;
 
-         }
-      }
+            }
+        }
 
-      private class IbImpl : Calendar
-      {
-         public static readonly IbImpl Singleton = new IbImpl();
+        private class IbImpl : Calendar
+        {
+            public static readonly IbImpl Singleton = new IbImpl();
 
-         public IbImpl()
-         {
-            sseImpl = new China(Market.SSE);
-         }
+            public IbImpl()
+            {
+                sseImpl = new China(Market.SSE);
+            }
 
-         public override string name() { return "China inter bank market"; }
+            public override string name() { return "China inter bank market"; }
 
-         public override bool isWeekend(DayOfWeek w) { return w == DayOfWeek.Saturday || w == DayOfWeek.Sunday; }
-         public override bool isBusinessDay(Date date)
-         {
+            public override bool isWeekend(DayOfWeek w) { return w == DayOfWeek.Saturday || w == DayOfWeek.Sunday; }
+            public override bool isBusinessDay(Date date)
+            {
 
-            List<Date> working_weekends = new List<Date>
+                List<Date> working_weekends = new List<Date>
             {
                // 2005
                new Date(5, Month.February, 2005),
@@ -368,15 +368,15 @@ namespace QLNet
                new Date(9, Month.October, 2021)
             };
 
-            // If it is already a SSE business day, it must be a IB business day
-            return sseImpl.isBusinessDay(date) || working_weekends.Contains(date);
+                // If it is already a SSE business day, it must be a IB business day
+                return sseImpl.isBusinessDay(date) || working_weekends.Contains(date);
 
-         }
+            }
 
-         private Calendar sseImpl;
+            private Calendar sseImpl;
 
-      }
+        }
 
-   }
+    }
 }
 

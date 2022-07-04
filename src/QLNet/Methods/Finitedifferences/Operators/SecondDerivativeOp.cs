@@ -16,49 +16,50 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Methods.Finitedifferences.Meshers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences.Operators
 {
-   public class SecondDerivativeOp : TripleBandLinearOp
-   {
-      public SecondDerivativeOp(SecondDerivativeOp rhs)
-         : base(rhs.direction_, rhs.mesher_)
-      {
-         lower_ = rhs.lower_;
-         diag_ = rhs.diag_;
-         upper_ = rhs.upper_;
-      }
-      public SecondDerivativeOp(int direction, FdmMesher mesher)
-         : base(direction, mesher)
-      {
-         FdmLinearOpLayout layout = mesher.layout();
-         FdmLinearOpIterator endIter = layout.end();
+    public class SecondDerivativeOp : TripleBandLinearOp
+    {
+        public SecondDerivativeOp(SecondDerivativeOp rhs)
+           : base(rhs.direction_, rhs.mesher_)
+        {
+            lower_ = rhs.lower_;
+            diag_ = rhs.diag_;
+            upper_ = rhs.upper_;
+        }
+        public SecondDerivativeOp(int direction, FdmMesher mesher)
+           : base(direction, mesher)
+        {
+            FdmLinearOpLayout layout = mesher.layout();
+            FdmLinearOpIterator endIter = layout.end();
 
-         for (FdmLinearOpIterator iter = layout.begin(); iter != endIter; ++iter)
-         {
-            int i = iter.index();
-            double? hm = mesher.dminus(iter, direction_);
-            double? hp = mesher.dplus(iter, direction_);
-
-            double? zetam1 = hm * (hm + hp);
-            double? zeta0 = hm * hp;
-            double? zetap1 = hp * (hm + hp);
-
-            int co = iter.coordinates()[direction_];
-            if (co == 0 || co == layout.dim()[direction] - 1)
+            for (FdmLinearOpIterator iter = layout.begin(); iter != endIter; ++iter)
             {
-               lower_[i] = diag_[i] = upper_[i] = 0.0;
+                int i = iter.index();
+                double? hm = mesher.dminus(iter, direction_);
+                double? hp = mesher.dplus(iter, direction_);
+
+                double? zetam1 = hm * (hm + hp);
+                double? zeta0 = hm * hp;
+                double? zetap1 = hp * (hm + hp);
+
+                int co = iter.coordinates()[direction_];
+                if (co == 0 || co == layout.dim()[direction] - 1)
+                {
+                    lower_[i] = diag_[i] = upper_[i] = 0.0;
+                }
+                else
+                {
+                    lower_[i] = 2.0 / zetam1.Value;
+                    diag_[i] = -2.0 / zeta0.Value;
+                    upper_[i] = 2.0 / zetap1.Value;
+                }
             }
-            else
-            {
-               lower_[i] = 2.0 / zetam1.Value;
-               diag_[i] = -2.0 / zeta0.Value;
-               upper_[i] = 2.0 / zetap1.Value;
-            }
-         }
-      }
-   }
+        }
+    }
 }

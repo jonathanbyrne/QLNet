@@ -18,173 +18,177 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Extensions;
+using QLNet.Math;
+using QLNet.Math.Optimization;
+using QLNet.Termstructures;
 using System;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Models
 {
-   //! Base class for model arguments
-   public class Parameter
-   {
-      protected Impl impl_;
-      public Impl implementation() { return impl_; }
+    //! Base class for model arguments
+    public class Parameter
+    {
+        protected Impl impl_;
+        public Impl implementation() { return impl_; }
 
-      protected Vector params_;
-      public Vector parameters() { return params_; }
+        protected Vector params_;
+        public Vector parameters() { return params_; }
 
-      protected Constraint constraint_;
+        protected Constraint constraint_;
 
-      public Parameter()
-      {
-         constraint_ = new NoConstraint();
-      }
+        public Parameter()
+        {
+            constraint_ = new NoConstraint();
+        }
 
-      protected Parameter(int size, Impl impl, Constraint constraint)
-      {
-         impl_ = impl;
-         params_ = new Vector(size);
-         constraint_ = constraint;
-      }
+        protected Parameter(int size, Impl impl, Constraint constraint)
+        {
+            impl_ = impl;
+            params_ = new Vector(size);
+            constraint_ = constraint;
+        }
 
-      public void setParam(int i, double x) { params_[i] = x; }
-      public bool testParams(Vector p) { return constraint_.test(p); }
+        public void setParam(int i, double x) { params_[i] = x; }
+        public bool testParams(Vector p) { return constraint_.test(p); }
 
-      public int size() { return params_.size(); }
-      public double value(double t) { return impl_.value(params_, t); }
-      public Constraint constraint() { return constraint_; }
+        public int size() { return params_.size(); }
+        public double value(double t) { return impl_.value(params_, t); }
+        public Constraint constraint() { return constraint_; }
 
-      //! Base class for model parameter implementation
-      public abstract class Impl
-      {
-         public abstract double value(Vector p, double t);
-      }
-   }
+        //! Base class for model parameter implementation
+        public abstract class Impl
+        {
+            public abstract double value(Vector p, double t);
+        }
+    }
 
-   //! Standard constant parameter \f$ a(t) = a \f$
-   public class ConstantParameter : Parameter
-   {
-      private new class Impl : Parameter.Impl
-      {
-         public override double value(Vector parameters, double UnnamedParameter1)
-         {
-            return parameters[0];
-         }
-      }
-      public ConstantParameter(Constraint constraint)
-         : base(1, new ConstantParameter.Impl(), constraint)
-      {
-      }
-
-      public ConstantParameter(double value, Constraint constraint)
-         : base(1, new ConstantParameter.Impl(), constraint)
-      {
-         params_[0] = value;
-
-         Utils.QL_REQUIRE(testParams(params_), () => ": invalid value");
-      }
-
-   }
-
-   //! %Parameter which is always zero \f$ a(t) = 0 \f$
-   public class NullParameter : Parameter
-   {
-      private new class Impl : Parameter.Impl
-      {
-         public override double value(Vector UnnamedParameter1, double UnnamedParameter2)
-         {
-            return 0.0;
-         }
-      }
-      public NullParameter()
-         : base(0, new NullParameter.Impl(), new NoConstraint())
-      {
-      }
-   }
-
-   //! Piecewise-constant parameter
-   //    ! \f$ a(t) = a_i if t_{i-1} \geq t < t_i \f$.
-   //        This kind of parameter is usually used to enhance the fitting of a
-   //        model
-   //
-   public class PiecewiseConstantParameter : Parameter
-   {
-      private new class Impl : Parameter.Impl
-      {
-         public Impl(List<double> times)
-         {
-            times_ = times;
-         }
-
-         public override double value(Vector parameters, double t)
-         {
-            int size = times_.Count;
-            for (int i = 0; i < size; i++)
+    //! Standard constant parameter \f$ a(t) = a \f$
+    public class ConstantParameter : Parameter
+    {
+        private new class Impl : Parameter.Impl
+        {
+            public override double value(Vector parameters, double UnnamedParameter1)
             {
-               if (t < times_[i])
-                  return parameters[i];
+                return parameters[0];
             }
-            return parameters[size];
-         }
-         private List<double> times_;
-      }
-      public PiecewiseConstantParameter(List<double> times, Constraint constraint = null)
-         : base(times.Count + 1, new PiecewiseConstantParameter.Impl(times), constraint ?? new NoConstraint())
-      {
-      }
-   }
+        }
+        public ConstantParameter(Constraint constraint)
+           : base(1, new Impl(), constraint)
+        {
+        }
 
-   //! Deterministic time-dependent parameter used for yield-curve fitting
-   public class TermStructureFittingParameter : Parameter
-   {
-      public class NumericalImpl : Parameter.Impl
-      {
-         private List<double> times_;
-         private List<double> values_;
-         private Handle<YieldTermStructure> termStructure_;
+        public ConstantParameter(double value, Constraint constraint)
+           : base(1, new Impl(), constraint)
+        {
+            params_[0] = value;
 
-         public NumericalImpl(Handle<YieldTermStructure> termStructure)
-         {
-            times_ = new List<double>();
-            values_ = new List<double>();
-            termStructure_ = termStructure;
-         }
+            Utils.QL_REQUIRE(testParams(params_), () => ": invalid value");
+        }
 
-         public void setvalue(double t, double x)
-         {
-            times_.Add(t);
-            values_.Add(x);
-         }
+    }
 
-         public void change(double x)
-         {
-            values_[values_.Count - 1] = x;
-         }
+    //! %Parameter which is always zero \f$ a(t) = 0 \f$
+    public class NullParameter : Parameter
+    {
+        private new class Impl : Parameter.Impl
+        {
+            public override double value(Vector UnnamedParameter1, double UnnamedParameter2)
+            {
+                return 0.0;
+            }
+        }
+        public NullParameter()
+           : base(0, new Impl(), new NoConstraint())
+        {
+        }
+    }
 
-         public void reset()
-         {
-            times_.Clear();
-            values_.Clear();
-         }
-         public override double value(Vector UnnamedParameter1, double t)
-         {
-            int nIndex = times_.FindIndex(val => val.IsEqual(t));
-            Utils.QL_REQUIRE(nIndex != -1, () => "fitting parameter not set!");
+    //! Piecewise-constant parameter
+    //    ! \f$ a(t) = a_i if t_{i-1} \geq t < t_i \f$.
+    //        This kind of parameter is usually used to enhance the fitting of a
+    //        model
+    //
+    public class PiecewiseConstantParameter : Parameter
+    {
+        private new class Impl : Parameter.Impl
+        {
+            public Impl(List<double> times)
+            {
+                times_ = times;
+            }
 
-            return values_[nIndex];
-         }
+            public override double value(Vector parameters, double t)
+            {
+                int size = times_.Count;
+                for (int i = 0; i < size; i++)
+                {
+                    if (t < times_[i])
+                        return parameters[i];
+                }
+                return parameters[size];
+            }
+            private List<double> times_;
+        }
+        public PiecewiseConstantParameter(List<double> times, Constraint constraint = null)
+           : base(times.Count + 1, new Impl(times), constraint ?? new NoConstraint())
+        {
+        }
+    }
 
-         public Handle<YieldTermStructure> termStructure() { return termStructure_; }
-      }
+    //! Deterministic time-dependent parameter used for yield-curve fitting
+    public class TermStructureFittingParameter : Parameter
+    {
+        public class NumericalImpl : Impl
+        {
+            private List<double> times_;
+            private List<double> values_;
+            private Handle<YieldTermStructure> termStructure_;
 
-      public TermStructureFittingParameter(Parameter.Impl impl)
-         : base(0, impl, new NoConstraint())
-      {
-      }
+            public NumericalImpl(Handle<YieldTermStructure> termStructure)
+            {
+                times_ = new List<double>();
+                values_ = new List<double>();
+                termStructure_ = termStructure;
+            }
 
-      public TermStructureFittingParameter(Handle<YieldTermStructure> term)
-         : base(0, new NumericalImpl(term), new NoConstraint())
-      {
-      }
-   }
+            public void setvalue(double t, double x)
+            {
+                times_.Add(t);
+                values_.Add(x);
+            }
+
+            public void change(double x)
+            {
+                values_[values_.Count - 1] = x;
+            }
+
+            public void reset()
+            {
+                times_.Clear();
+                values_.Clear();
+            }
+            public override double value(Vector UnnamedParameter1, double t)
+            {
+                int nIndex = times_.FindIndex(val => val.IsEqual(t));
+                Utils.QL_REQUIRE(nIndex != -1, () => "fitting parameter not set!");
+
+                return values_[nIndex];
+            }
+
+            public Handle<YieldTermStructure> termStructure() { return termStructure_; }
+        }
+
+        public TermStructureFittingParameter(Impl impl)
+           : base(0, impl, new NoConstraint())
+        {
+        }
+
+        public TermStructureFittingParameter(Handle<YieldTermStructure> term)
+           : base(0, new NumericalImpl(term), new NoConstraint())
+        {
+        }
+    }
 
 }

@@ -17,12 +17,13 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Math;
 using System;
 
 namespace QLNet
 {
-   //! %Lattice (tree, finite-differences) base class
-   public abstract class Lattice
+    //! %Lattice (tree, finite-differences) base class
+    public abstract class Lattice
    {
       protected TimeGrid t_;
 

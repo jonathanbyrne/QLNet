@@ -16,43 +16,44 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Extensions;
 using System;
 
-namespace QLNet
+namespace QLNet.Quotes
 {
-   // simple quote class
-   //! market element returning a stored value
-   public class SimpleQuote : Quote
-   {
-      private double? value_;
+    // simple quote class
+    //! market element returning a stored value
+    public class SimpleQuote : Quote
+    {
+        private double? value_;
 
-      public SimpleQuote() { }
-      public SimpleQuote(double? value) { value_ = value; }
+        public SimpleQuote() { }
+        public SimpleQuote(double? value) { value_ = value; }
 
-      //! Quote interface
-      public override double value()
-      {
-         if (!isValid())
-            throw new ArgumentException("invalid SimpleQuote");
-         return value_.GetValueOrDefault();
-      }
-      public override bool isValid() { return value_ != null; }
+        //! Quote interface
+        public override double value()
+        {
+            if (!isValid())
+                throw new ArgumentException("invalid SimpleQuote");
+            return value_.GetValueOrDefault();
+        }
+        public override bool isValid() { return value_ != null; }
 
-      //! returns the difference between the new value and the old value
-      public double setValue(double? value)
-      {
-         double? diff = value - value_;
-         if (diff.IsNotEqual(0.0))
-         {
-            value_ = value;
-            notifyObservers();
-         }
-         return diff.GetValueOrDefault();
-      }
+        //! returns the difference between the new value and the old value
+        public double setValue(double? value)
+        {
+            double? diff = value - value_;
+            if (diff.IsNotEqual(0.0))
+            {
+                value_ = value;
+                notifyObservers();
+            }
+            return diff.GetValueOrDefault();
+        }
 
-      public void reset()
-      {
-         setValue(null);
-      }
-   }
+        public void reset()
+        {
+            setValue(null);
+        }
+    }
 }

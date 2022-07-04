@@ -13,12 +13,13 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+using QLNet.Time;
 using System;
 using System.Collections.Generic;
 
 namespace QLNet
 {
-   public class CouponConversion
+    public class CouponConversion
    {
       public CouponConversion(DateTime date, double rate)
       {

@@ -17,11 +17,12 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Extensions;
 using System;
 
 namespace QLNet
 {
-   public static partial class Utils
+    public static partial class Utils
    {
       // Follows somewhat the advice of Knuth on checking for floating-point equality.
       public static bool close(double x, double y) { return close(x, y, 42); }
@@ -30,13 +31,13 @@ namespace QLNet
          if (x.IsEqual(y))
             return true;
 
-         double diff = Math.Abs(x - y), tolerance = n * Const.QL_EPSILON;
+         double diff = System.Math.Abs(x - y), tolerance = n * Const.QL_EPSILON;
 
          if ((x * y).IsEqual(0.0)) // x or y = 0.0
             return diff < (tolerance * tolerance);
 
-         return diff <= tolerance * Math.Abs(x) &&
-                diff <= tolerance * Math.Abs(y);
+         return diff <= tolerance * System.Math.Abs(x) &&
+                diff <= tolerance * System.Math.Abs(y);
       }
 
       public static bool close(Money m1, Money m2)
@@ -55,13 +56,13 @@ namespace QLNet
          if (x.IsEqual(y))
             return true;
 
-         double diff = Math.Abs(x - y), tolerance = n * Const.QL_EPSILON;
+         double diff = System.Math.Abs(x - y), tolerance = n * Const.QL_EPSILON;
 
          if ((x * y).IsEqual(0.0)) // x or y = 0.0
             return diff < (tolerance * tolerance);
 
-         return diff <= tolerance * Math.Abs(x) ||
-                diff <= tolerance * Math.Abs(y);
+         return diff <= tolerance * System.Math.Abs(x) ||
+                diff <= tolerance * System.Math.Abs(y);
       }
 
       public static bool close(Money m1, Money m2, int n)

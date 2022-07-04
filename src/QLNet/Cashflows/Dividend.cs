@@ -16,13 +16,15 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Instruments;
+using QLNet.Time;
 using System.Collections.Generic;
 
 namespace QLNet
 {
-   //! Predetermined cash flow
-   /*! This cash flow pays a predetermined amount at a given date. */
-   public abstract class Dividend : CashFlow
+    //! Predetermined cash flow
+    /*! This cash flow pays a predetermined amount at a given date. */
+    public abstract class Dividend : CashFlow
    {
       protected Date date_;
       // Event interface

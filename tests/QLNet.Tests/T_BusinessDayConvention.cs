@@ -18,43 +18,45 @@
 */
 using Xunit;
 using QLNet;
+using QLNet.Time;
+using QLNet.Time.Calendars;
 
-namespace TestSuite
+namespace QLNet.Tests
 {
-   [Collection("QLNet CI Tests")]
-   public class T_BusinessDayConvention
-   {
-      struct SingleCase
-      {
-         public SingleCase(Calendar calendar_,
-                           BusinessDayConvention convention_,
-                           Date start_,
-                           Period period_,
-                           bool endOfMonth_,
-                           Date result_)
-         {
-            calendar = calendar_;
-            convention = convention_;
-            start = start_;
-            period = period_;
-            endOfMonth = endOfMonth_;
-            result = result_;
-         }
-         public Calendar calendar;
-         public BusinessDayConvention convention;
-         public Date start;
-         public Period period;
-         public bool endOfMonth;
-         public Date result;
-      }
+    [Collection("QLNet CI Tests")]
+    public class T_BusinessDayConvention
+    {
+        struct SingleCase
+        {
+            public SingleCase(Calendar calendar_,
+                              BusinessDayConvention convention_,
+                              Date start_,
+                              Period period_,
+                              bool endOfMonth_,
+                              Date result_)
+            {
+                calendar = calendar_;
+                convention = convention_;
+                start = start_;
+                period = period_;
+                endOfMonth = endOfMonth_;
+                result = result_;
+            }
+            public Calendar calendar;
+            public BusinessDayConvention convention;
+            public Date start;
+            public Period period;
+            public bool endOfMonth;
+            public Date result;
+        }
 
-      [Fact]
-      public void testConventions()
-      {
-         // Testing business day conventions...
+        [Fact]
+        public void testConventions()
+        {
+            // Testing business day conventions...
 
-         SingleCase[] testCases =
-         {
+            SingleCase[] testCases =
+            {
             // Following
             new SingleCase(new SouthAfrica(), BusinessDayConvention.Following, new Date(3, Month.February, 2015), new Period(1, TimeUnit.Months), false, new Date(3, Month.March, 2015)),
             new SingleCase(new SouthAfrica(), BusinessDayConvention.Following, new Date(3, Month.February, 2015), new Period(4, TimeUnit.Days), false,   new Date(9, Month.February, 2015)),
@@ -105,21 +107,21 @@ namespace TestSuite
             new SingleCase(new SouthAfrica(), BusinessDayConvention.Nearest, new Date(2, Month.April, 2015),    new Period(1, TimeUnit.Months), false, new Date(4, Month.May, 2015))
          };
 
-         int n = testCases.Length;
-         for (int i = 0; i < n; i++)
-         {
-            Calendar calendar = new Calendar(testCases[i].calendar);
-            Date result = calendar.advance(testCases[i].start, testCases[i].period, testCases[i].convention, testCases[i].endOfMonth);
+            int n = testCases.Length;
+            for (int i = 0; i < n; i++)
+            {
+                Calendar calendar = new Calendar(testCases[i].calendar);
+                Date result = calendar.advance(testCases[i].start, testCases[i].period, testCases[i].convention, testCases[i].endOfMonth);
 
-            QAssert.IsTrue(result == testCases[i].result,
-                           "\ncase " + i + ":\n" //<< j << " ("<< desc << "): "
-                           + "start date: " + testCases[i].start + "\n"
-                           + "calendar: " + calendar + "\n"
-                           + "period: " + testCases[i].period + ", end of month: " + testCases[i].endOfMonth + "\n"
-                           + "convention: " + testCases[i].convention + "\n"
-                           + "expected: " + testCases[i].result + " vs. actual: " + result);
+                QAssert.IsTrue(result == testCases[i].result,
+                               "\ncase " + i + ":\n" //<< j << " ("<< desc << "): "
+                               + "start date: " + testCases[i].start + "\n"
+                               + "calendar: " + calendar + "\n"
+                               + "period: " + testCases[i].period + ", end of month: " + testCases[i].endOfMonth + "\n"
+                               + "convention: " + testCases[i].convention + "\n"
+                               + "expected: " + testCases[i].result + " vs. actual: " + result);
 
-         }
-      }
-   }
+            }
+        }
+    }
 }

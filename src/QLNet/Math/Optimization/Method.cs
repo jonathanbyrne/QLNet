@@ -18,12 +18,12 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Math.Optimization
 {
-   //! Abstract class for constrained optimization method
-   public abstract class OptimizationMethod
-   {
-      //! minimize the optimization problem P
-      public abstract EndCriteria.Type minimize(Problem P, EndCriteria endCriteria);
-   }
+    //! Abstract class for constrained optimization method
+    public abstract class OptimizationMethod
+    {
+        //! minimize the optimization problem P
+        public abstract EndCriteria.Type minimize(Problem P, EndCriteria endCriteria);
+    }
 }

@@ -14,65 +14,66 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using QLNet.Time;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Instruments
 {
-   //! Single-asset barrier option with discrete dividends
-   /*! \ingroup instruments */
-   public class DividendBarrierOption : BarrierOption
-   {
-      public DividendBarrierOption(Barrier.Type barrierType,
-                                   double barrier,
-                                   double rebate,
-                                   StrikedTypePayoff payoff,
-                                   Exercise exercise,
-                                   List<Date> dividendDates,
-                                   List<double> dividends)
-         : base(barrierType, barrier, rebate, payoff, exercise)
-      {
-         cashFlow_ = Utils.DividendVector(dividendDates, dividends);
-      }
+    //! Single-asset barrier option with discrete dividends
+    /*! \ingroup instruments */
+    public class DividendBarrierOption : BarrierOption
+    {
+        public DividendBarrierOption(Barrier.Type barrierType,
+                                     double barrier,
+                                     double rebate,
+                                     StrikedTypePayoff payoff,
+                                     Exercise exercise,
+                                     List<Date> dividendDates,
+                                     List<double> dividends)
+           : base(barrierType, barrier, rebate, payoff, exercise)
+        {
+            cashFlow_ = Utils.DividendVector(dividendDates, dividends);
+        }
 
-      public override void setupArguments(IPricingEngineArguments args)
-      {
-         base.setupArguments(args);
+        public override void setupArguments(IPricingEngineArguments args)
+        {
+            base.setupArguments(args);
 
-         DividendBarrierOption.Arguments arguments = args as DividendBarrierOption.Arguments;
-         Utils.QL_REQUIRE(arguments != null, () => "wrong engine type");
+            Arguments arguments = args as Arguments;
+            Utils.QL_REQUIRE(arguments != null, () => "wrong engine type");
 
-         arguments.cashFlow = cashFlow_;
-      }
+            arguments.cashFlow = cashFlow_;
+        }
 
-      private DividendSchedule cashFlow_;
+        private DividendSchedule cashFlow_;
 
 
-      //! %Arguments for dividend barrier option calculation
-      public new class Arguments : BarrierOption.Arguments
-      {
-         public DividendSchedule cashFlow { get; set; }
-         public Arguments()
-         {
-            cashFlow = new DividendSchedule();
-         }
-         public override void validate()
-         {
-            base.validate();
-
-            Date exerciseDate = exercise.lastDate();
-
-            for (int i = 0; i < cashFlow.Count; i++)
+        //! %Arguments for dividend barrier option calculation
+        public new class Arguments : BarrierOption.Arguments
+        {
+            public DividendSchedule cashFlow { get; set; }
+            public Arguments()
             {
-               Utils.QL_REQUIRE(cashFlow[i].date() <= exerciseDate, () =>
-                                "the " + (i + 1) + " dividend date (" + cashFlow[i].date() + ") is later than the exercise date ("
-                                + exerciseDate + ")");
+                cashFlow = new DividendSchedule();
             }
-         }
-      }
-      //! %Dividend-barrier-option %engine base class
-      public new class Engine :  GenericEngine<DividendBarrierOption.Arguments, DividendBarrierOption.Results> {}
+            public override void validate()
+            {
+                base.validate();
 
-   }
+                Date exerciseDate = exercise.lastDate();
+
+                for (int i = 0; i < cashFlow.Count; i++)
+                {
+                    Utils.QL_REQUIRE(cashFlow[i].date() <= exerciseDate, () =>
+                                     "the " + (i + 1) + " dividend date (" + cashFlow[i].date() + ") is later than the exercise date ("
+                                     + exerciseDate + ")");
+                }
+            }
+        }
+        //! %Dividend-barrier-option %engine base class
+        public new class Engine : GenericEngine<Arguments, Results> { }
+
+    }
 
 }
 

@@ -18,28 +18,28 @@
 */
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences
 {
-   //! Crank-Nicolson scheme for finite difference methods
-   /*! In this implementation, the passed operator must be derived
-       from either TimeConstantOperator or TimeDependentOperator.
-       Also, it must implement at least the following interface:
+    //! Crank-Nicolson scheme for finite difference methods
+    /*! In this implementation, the passed operator must be derived
+        from either TimeConstantOperator or TimeDependentOperator.
+        Also, it must implement at least the following interface:
 
-       \warning The differential operator must be linear for
-                this evolver to work.
+        \warning The differential operator must be linear for
+                 this evolver to work.
 
-       \ingroup findiff
-   */
-   public class CrankNicolson<Operator> : MixedScheme<Operator>, ISchemeFactory where Operator : IOperator
-   {
-      // constructors
-      public CrankNicolson() { }  // required for generics
-      public CrankNicolson(Operator L, List<BoundaryCondition<IOperator>> bcs)
-         : base(L, 0.5, bcs) { }
+        \ingroup findiff
+    */
+    public class CrankNicolson<Operator> : MixedScheme<Operator>, ISchemeFactory where Operator : IOperator
+    {
+        // constructors
+        public CrankNicolson() { }  // required for generics
+        public CrankNicolson(Operator L, List<BoundaryCondition<IOperator>> bcs)
+           : base(L, 0.5, bcs) { }
 
-      public IMixedScheme factory(object L, object bcs, object[] additionalFields = null)
-      {
-         return new CrankNicolson<Operator>((Operator)L, (List<BoundaryCondition<IOperator>>)bcs);
-      }
-   }
+        public IMixedScheme factory(object L, object bcs, object[] additionalFields = null)
+        {
+            return new CrankNicolson<Operator>((Operator)L, (List<BoundaryCondition<IOperator>>)bcs);
+        }
+    }
 }

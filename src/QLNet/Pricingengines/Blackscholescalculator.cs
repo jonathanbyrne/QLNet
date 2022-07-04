@@ -16,57 +16,58 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Instruments;
 using System;
 
-namespace QLNet
+namespace QLNet.Pricingengines
 {
 
-   //! Black-Scholes 1973 calculator class
-   public class BlackScholesCalculator : BlackCalculator
-   {
-      protected double spot_;
-      protected double growth_;
+    //! Black-Scholes 1973 calculator class
+    public class BlackScholesCalculator : BlackCalculator
+    {
+        protected double spot_;
+        protected double growth_;
 
-      public BlackScholesCalculator(StrikedTypePayoff payoff, double spot, double growth, double stdDev, double discount)
-         : base(payoff, spot* growth / discount, stdDev, discount)
-      {
-         spot_ = spot;
-         growth_ = growth;
+        public BlackScholesCalculator(StrikedTypePayoff payoff, double spot, double growth, double stdDev, double discount)
+           : base(payoff, spot * growth / discount, stdDev, discount)
+        {
+            spot_ = spot;
+            growth_ = growth;
 
-         Utils.QL_REQUIRE(spot_ >= 0.0, () => "positive spot value required: " + spot_ + " not allowed");
-         Utils.QL_REQUIRE(growth_ >= 0.0, () => "positive growth value required: " + growth_ + " not allowed");
-      }
+            Utils.QL_REQUIRE(spot_ >= 0.0, () => "positive spot value required: " + spot_ + " not allowed");
+            Utils.QL_REQUIRE(growth_ >= 0.0, () => "positive growth value required: " + growth_ + " not allowed");
+        }
 
-      //! Sensitivity to change in the underlying spot price.
+        //! Sensitivity to change in the underlying spot price.
 
-      public double delta()
-      {
-         return base.delta(spot_);
-      }
+        public double delta()
+        {
+            return base.delta(spot_);
+        }
 
-//        ! Sensitivity in percent to a percent change in the
-//            underlying spot price.
-      public double elasticity()
-      {
-         return base.elasticity(spot_);
-      }
+        //        ! Sensitivity in percent to a percent change in the
+        //            underlying spot price.
+        public double elasticity()
+        {
+            return base.elasticity(spot_);
+        }
 
-//        ! Second order derivative with respect to change in the
-//            underlying spot price.
-      public double gamma()
-      {
-         return base.gamma(spot_);
-      }
-      //! Sensitivity to time to maturity.
-      public double theta(double maturity)
-      {
-         return base.theta(spot_, maturity);
-      }
-//        ! Sensitivity to time to maturity per day
-//            (assuming 365 day in a year).
-      public double thetaPerDay(double maturity)
-      {
-         return base.thetaPerDay(spot_, maturity);
-      }
-   }
+        //        ! Second order derivative with respect to change in the
+        //            underlying spot price.
+        public double gamma()
+        {
+            return base.gamma(spot_);
+        }
+        //! Sensitivity to time to maturity.
+        public double theta(double maturity)
+        {
+            return base.theta(spot_, maturity);
+        }
+        //        ! Sensitivity to time to maturity per day
+        //            (assuming 365 day in a year).
+        public double thetaPerDay(double maturity)
+        {
+            return base.thetaPerDay(spot_, maturity);
+        }
+    }
 }

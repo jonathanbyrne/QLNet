@@ -17,12 +17,13 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Time;
 using System;
 
 namespace QLNet
 {
-   //! Base class for cash flows. This class is purely virtual and acts as a base class for the actual cash flow implementations.
-   public abstract class CashFlow : Event, IComparable<CashFlow>
+    //! Base class for cash flows. This class is purely virtual and acts as a base class for the actual cash flow implementations.
+    public abstract class CashFlow : Event, IComparable<CashFlow>
    {
       #region Event interface
 

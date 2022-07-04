@@ -18,32 +18,35 @@
 */
 
 
-namespace QLNet
+using QLNet.Instruments;
+using QLNet.processes;
+
+namespace QLNet.Pricingengines.vanilla
 {
-   //! Finite-differences pricing engine for dividend American options
-   /*! \ingroup vanillaengines
+    //! Finite-differences pricing engine for dividend American options
+    /*! \ingroup vanillaengines
 
-       \test
-       - the correctness of the returned greeks is tested by
-         reproducing numerical derivatives.
-       - the invariance of the results upon addition of null
-         dividends is tested.
-   */
-   public class FDDividendAmericanEngine: FDEngineAdapter<FDAmericanCondition<FDDividendEngine>, DividendVanillaOption.Engine>,
+        \test
+        - the correctness of the returned greeks is tested by
+          reproducing numerical derivatives.
+        - the invariance of the results upon addition of null
+          dividends is tested.
+    */
+    public class FDDividendAmericanEngine : FDEngineAdapter<FDAmericanCondition<FDDividendEngine>, DividendVanillaOption.Engine>,
       IFDEngine
-   {
-      public FDDividendAmericanEngine()
-      {}
+    {
+        public FDDividendAmericanEngine()
+        { }
 
-      public FDDividendAmericanEngine(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100,
-                                      bool timeDependent = false)
-         : base(process, timeSteps, gridPoints, timeDependent)
-      {}
+        public FDDividendAmericanEngine(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100,
+                                        bool timeDependent = false)
+           : base(process, timeSteps, gridPoints, timeDependent)
+        { }
 
-      public IFDEngine factory(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100)
-      {
-         return new FDDividendAmericanEngine(process, timeSteps, gridPoints);
-      }
+        public IFDEngine factory(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100)
+        {
+            return new FDDividendAmericanEngine(process, timeSteps, gridPoints);
+        }
 
-   }
+    }
 }

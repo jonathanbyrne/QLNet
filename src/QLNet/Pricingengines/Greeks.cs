@@ -18,9 +18,11 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.processes;
+
 namespace QLNet
 {
-   public static partial class Utils
+    public static partial class Utils
    {
       //! default theta calculation for Black-Scholes options
       public static double blackScholesTheta(GeneralizedBlackScholesProcess p, double value, double delta, double gamma)

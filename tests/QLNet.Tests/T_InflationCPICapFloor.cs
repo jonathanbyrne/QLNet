@@ -16,123 +16,136 @@
 using System;
 using System.Collections.Generic;
 using Xunit;
-using QLNet;
+using QLNet.Time;
+using QLNet.Termstructures.Inflation;
+using QLNet.Math.Interpolations;
+using QLNet.Termstructures;
+using QLNet.Indexes;
+using QLNet.Instruments;
+using QLNet.Math;
+using QLNet.Quotes;
+using QLNet.Cashflows;
+using QLNet.Indexes.Inflation;
+using QLNet.Pricingengines.inflation;
+using QLNet.Termstructures.Yield;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
 
-namespace TestSuite
+namespace QLNet.Tests
 {
-   [Collection("QLNet CI Tests")]
-   public class T_InflationCPICapFloor
-   {
-      internal struct Datum
-      {
-         public Date date;
-         public double rate;
+    [Collection("QLNet CI Tests")]
+    public class T_InflationCPICapFloor
+    {
+        internal struct Datum
+        {
+            public Date date;
+            public double rate;
 
-         public Datum(Date d, double r)
-         {
-            date = d;
-            rate = r;
-         }
-      }
-
-      private class CommonVars
-      {
-         private List<BootstrapHelper<ZeroInflationTermStructure>> makeHelpers(Datum[] iiData, int N,
-                                                                               ZeroInflationIndex ii, Period observationLag,
-                                                                               Calendar calendar,
-                                                                               BusinessDayConvention bdc,
-                                                                               DayCounter dc)
-         {
-            List<BootstrapHelper<ZeroInflationTermStructure>> instruments = new List<BootstrapHelper<ZeroInflationTermStructure>>();
-            for (int i = 0; i < N; i++)
+            public Datum(Date d, double r)
             {
-               Date maturity = iiData[i].date;
-               Handle<Quote> quote = new Handle<Quote>(new SimpleQuote(iiData[i].rate / 100.0));
-               BootstrapHelper<ZeroInflationTermStructure> anInstrument = new ZeroCouponInflationSwapHelper(quote, observationLag, maturity,
-                     calendar, bdc, dc, ii);
-               instruments.Add(anInstrument);
+                date = d;
+                rate = r;
             }
-            return instruments;
-         }
+        }
 
-         // common data
-         public int length;
-         public Date startDate;
-         public double baseZeroRate;
-         public double volatility;
-
-         public Frequency frequency;
-         public List<double> nominals;
-         public Calendar calendar;
-         public BusinessDayConvention convention;
-         public int fixingDays;
-         public Date evaluationDate;
-         public int settlementDays;
-         public Date settlement;
-         public Period observationLag, contractObservationLag;
-         public InterpolationType contractObservationInterpolation;
-         public DayCounter dcZCIIS, dcNominal;
-         public List<Date> zciisD;
-         public List<double> zciisR;
-         public UKRPI ii;
-         public RelinkableHandle<ZeroInflationIndex> hii;
-         public int zciisDataLength;
-
-         public RelinkableHandle<YieldTermStructure> nominalUK;
-         public RelinkableHandle<ZeroInflationTermStructure> cpiUK;
-         public RelinkableHandle<ZeroInflationTermStructure> hcpi;
-
-         public List<double> cStrikesUK;
-         public List<double> fStrikesUK;
-         public List<Period> cfMaturitiesUK;
-         public Matrix cPriceUK;
-         public Matrix fPriceUK;
-
-         public CPICapFloorTermPriceSurface cpiCFsurfUK;
-
-         // cleanup
-
-         public SavedSettings backup;
-
-         // setup
-         public CommonVars()
-         {
-            backup = new SavedSettings();
-            nominalUK = new RelinkableHandle<YieldTermStructure>();
-            cpiUK = new RelinkableHandle<ZeroInflationTermStructure>();
-            hcpi = new RelinkableHandle<ZeroInflationTermStructure>();
-            zciisD = new List<Date>();
-            zciisR = new List<double>();
-            hii = new RelinkableHandle<ZeroInflationIndex>();
-
-            nominals = new InitializedList<double>(1, 1000000);
-            // option variables
-            frequency = Frequency.Annual;
-            // usual setup
-            volatility = 0.01;
-            length = 7;
-            calendar = new UnitedKingdom();
-            convention = BusinessDayConvention.ModifiedFollowing;
-            Date today = new Date(1, Month.June, 2010);
-            evaluationDate = calendar.adjust(today);
-            Settings.setEvaluationDate(evaluationDate);
-            settlementDays = 0;
-            fixingDays = 0;
-            settlement = calendar.advance(today, settlementDays, TimeUnit.Days);
-            startDate = settlement;
-            dcZCIIS = new ActualActual();
-            dcNominal = new ActualActual();
-
-            // uk rpi index
-            //      fixing data
-            Date from = new Date(1, Month.July, 2007);
-            Date to = new Date(1, Month.June, 2010);
-            Schedule rpiSchedule = new MakeSchedule().from(from).to(to)
-            .withTenor(new Period(1, TimeUnit.Months))
-            .withCalendar(new UnitedKingdom())
-            .withConvention(BusinessDayConvention.ModifiedFollowing).value();
-            double[] fixData =
+        private class CommonVars
+        {
+            private List<BootstrapHelper<ZeroInflationTermStructure>> makeHelpers(Datum[] iiData, int N,
+                                                                                  ZeroInflationIndex ii, Period observationLag,
+                                                                                  Calendar calendar,
+                                                                                  BusinessDayConvention bdc,
+                                                                                  DayCounter dc)
             {
+                List<BootstrapHelper<ZeroInflationTermStructure>> instruments = new List<BootstrapHelper<ZeroInflationTermStructure>>();
+                for (int i = 0; i < N; i++)
+                {
+                    Date maturity = iiData[i].date;
+                    Handle<Quote> quote = new Handle<Quote>(new SimpleQuote(iiData[i].rate / 100.0));
+                    BootstrapHelper<ZeroInflationTermStructure> anInstrument = new ZeroCouponInflationSwapHelper(quote, observationLag, maturity,
+                          calendar, bdc, dc, ii);
+                    instruments.Add(anInstrument);
+                }
+                return instruments;
+            }
+
+            // common data
+            public int length;
+            public Date startDate;
+            public double baseZeroRate;
+            public double volatility;
+
+            public Frequency frequency;
+            public List<double> nominals;
+            public Calendar calendar;
+            public BusinessDayConvention convention;
+            public int fixingDays;
+            public Date evaluationDate;
+            public int settlementDays;
+            public Date settlement;
+            public Period observationLag, contractObservationLag;
+            public InterpolationType contractObservationInterpolation;
+            public DayCounter dcZCIIS, dcNominal;
+            public List<Date> zciisD;
+            public List<double> zciisR;
+            public UKRPI ii;
+            public RelinkableHandle<ZeroInflationIndex> hii;
+            public int zciisDataLength;
+
+            public RelinkableHandle<YieldTermStructure> nominalUK;
+            public RelinkableHandle<ZeroInflationTermStructure> cpiUK;
+            public RelinkableHandle<ZeroInflationTermStructure> hcpi;
+
+            public List<double> cStrikesUK;
+            public List<double> fStrikesUK;
+            public List<Period> cfMaturitiesUK;
+            public Matrix cPriceUK;
+            public Matrix fPriceUK;
+
+            public CPICapFloorTermPriceSurface cpiCFsurfUK;
+
+            // cleanup
+
+            public SavedSettings backup;
+
+            // setup
+            public CommonVars()
+            {
+                backup = new SavedSettings();
+                nominalUK = new RelinkableHandle<YieldTermStructure>();
+                cpiUK = new RelinkableHandle<ZeroInflationTermStructure>();
+                hcpi = new RelinkableHandle<ZeroInflationTermStructure>();
+                zciisD = new List<Date>();
+                zciisR = new List<double>();
+                hii = new RelinkableHandle<ZeroInflationIndex>();
+
+                nominals = new InitializedList<double>(1, 1000000);
+                // option variables
+                frequency = Frequency.Annual;
+                // usual setup
+                volatility = 0.01;
+                length = 7;
+                calendar = new UnitedKingdom();
+                convention = BusinessDayConvention.ModifiedFollowing;
+                Date today = new Date(1, Month.June, 2010);
+                evaluationDate = calendar.adjust(today);
+                Settings.setEvaluationDate(evaluationDate);
+                settlementDays = 0;
+                fixingDays = 0;
+                settlement = calendar.advance(today, settlementDays, TimeUnit.Days);
+                startDate = settlement;
+                dcZCIIS = new ActualActual();
+                dcNominal = new ActualActual();
+
+                // uk rpi index
+                //      fixing data
+                Date from = new Date(1, Month.July, 2007);
+                Date to = new Date(1, Month.June, 2010);
+                Schedule rpiSchedule = new MakeSchedule().from(from).to(to)
+                .withTenor(new Period(1, TimeUnit.Months))
+                .withCalendar(new UnitedKingdom())
+                .withConvention(BusinessDayConvention.ModifiedFollowing).value();
+                double[] fixData =
+                {
                206.1, 207.3, 208.0, 208.9, 209.7, 210.9,
                209.8, 211.4, 212.1, 214.0, 215.1, 216.8,   //  2008
                216.5, 217.2, 218.4, 217.7, 216.0, 212.9,
@@ -142,17 +155,17 @@ namespace TestSuite
                -999
             };
 
-            // link from cpi index to cpi TS
-            bool interp = false;// this MUST be false because the observation lag is only 2 months
-            // for ZCIIS; but not for contract if the contract uses a bigger lag.
-            ii = new UKRPI(interp, hcpi);
-            for (int i = 0; i < rpiSchedule.Count; i++)
-            {
-               ii.addFixing(rpiSchedule[i], fixData[i], true);// force overwrite in case multiple use
-            }
+                // link from cpi index to cpi TS
+                bool interp = false;// this MUST be false because the observation lag is only 2 months
+                                    // for ZCIIS; but not for contract if the contract uses a bigger lag.
+                ii = new UKRPI(interp, hcpi);
+                for (int i = 0; i < rpiSchedule.Count; i++)
+                {
+                    ii.addFixing(rpiSchedule[i], fixData[i], true);// force overwrite in case multiple use
+                }
 
-            Datum[] nominalData =
-            {
+                Datum[] nominalData =
+                {
                new Datum(new Date(2, Month.June, 2010), 0.499997),
                new Datum(new Date(3, Month.June, 2010), 0.524992),
                new Datum(new Date(8, Month.June, 2010), 0.524974),
@@ -187,25 +200,25 @@ namespace TestSuite
                new Datum(new Date(2, Month.June, 2070), 3.757542),
                new Datum(new Date(3, Month.June, 2080), 3.651379)
             };
-            int nominalDataLength = 33 - 1;
+                int nominalDataLength = 33 - 1;
 
-            List<Date> nomD = new List<Date>();
-            List<double> nomR = new List<double>();
-            for (int i = 0; i < nominalDataLength; i++)
-            {
-               nomD.Add(nominalData[i].date);
-               nomR.Add(nominalData[i].rate / 100.0);
-            }
-            YieldTermStructure nominalTS = new InterpolatedZeroCurve<Linear>(nomD, nomR, dcNominal);
-            nominalUK.linkTo(nominalTS);
+                List<Date> nomD = new List<Date>();
+                List<double> nomR = new List<double>();
+                for (int i = 0; i < nominalDataLength; i++)
+                {
+                    nomD.Add(nominalData[i].date);
+                    nomR.Add(nominalData[i].rate / 100.0);
+                }
+                YieldTermStructure nominalTS = new InterpolatedZeroCurve<Linear>(nomD, nomR, dcNominal);
+                nominalUK.linkTo(nominalTS);
 
-            // now build the zero inflation curve
-            observationLag = new Period(2, TimeUnit.Months);
-            contractObservationLag = new Period(3, TimeUnit.Months);
-            contractObservationInterpolation = InterpolationType.Flat;
+                // now build the zero inflation curve
+                observationLag = new Period(2, TimeUnit.Months);
+                contractObservationLag = new Period(3, TimeUnit.Months);
+                contractObservationInterpolation = InterpolationType.Flat;
 
-            Datum[] zciisData =
-            {
+                Datum[] zciisData =
+                {
                new Datum(new Date(1, Month.June, 2011), 3.087),
                new Datum(new Date(1, Month.June, 2012), 3.12),
                new Datum(new Date(1, Month.June, 2013), 3.059),
@@ -224,32 +237,32 @@ namespace TestSuite
                new Datum(new Date(1, Month.June, 2050), 3.634),
                new Datum(new Date(1, Month.June, 2060), 3.629),
             };
-            zciisDataLength = 17;
-            for (int i = 0; i < zciisDataLength; i++)
-            {
-               zciisD.Add(zciisData[i].date);
-               zciisR.Add(zciisData[i].rate);
-            }
+                zciisDataLength = 17;
+                for (int i = 0; i < zciisDataLength; i++)
+                {
+                    zciisD.Add(zciisData[i].date);
+                    zciisR.Add(zciisData[i].rate);
+                }
 
-            // now build the helpers ...
-            List<BootstrapHelper<ZeroInflationTermStructure> >  helpers = makeHelpers(zciisData, zciisDataLength, ii,
-                                                                                      observationLag, calendar, convention, dcZCIIS);
+                // now build the helpers ...
+                List<BootstrapHelper<ZeroInflationTermStructure>> helpers = makeHelpers(zciisData, zciisDataLength, ii,
+                                                                                          observationLag, calendar, convention, dcZCIIS);
 
-            // we can use historical or first ZCIIS for this
-            // we know historical is WAY off market-implied, so use market implied flat.
-            baseZeroRate = zciisData[0].rate / 100.0;
-            PiecewiseZeroInflationCurve<Linear> pCPIts = new PiecewiseZeroInflationCurve<Linear>(
-               evaluationDate, calendar, dcZCIIS, observationLag, ii.frequency(), ii.interpolated(), baseZeroRate,
-               new Handle<YieldTermStructure>(nominalTS), helpers);
-            pCPIts.recalculate();
-            cpiUK.linkTo(pCPIts);
-            hii.linkTo(ii);
+                // we can use historical or first ZCIIS for this
+                // we know historical is WAY off market-implied, so use market implied flat.
+                baseZeroRate = zciisData[0].rate / 100.0;
+                PiecewiseZeroInflationCurve<Linear> pCPIts = new PiecewiseZeroInflationCurve<Linear>(
+                   evaluationDate, calendar, dcZCIIS, observationLag, ii.frequency(), ii.interpolated(), baseZeroRate,
+                   new Handle<YieldTermStructure>(nominalTS), helpers);
+                pCPIts.recalculate();
+                cpiUK.linkTo(pCPIts);
+                hii.linkTo(ii);
 
-            // make sure that the index has the latest zero inflation term structure
-            hcpi.linkTo(pCPIts);
+                // make sure that the index has the latest zero inflation term structure
+                hcpi.linkTo(pCPIts);
 
-            // cpi CF price surf data
-            Period[] cfMat = {new Period(3, TimeUnit.Years),
+                // cpi CF price surf data
+                Period[] cfMat = {new Period(3, TimeUnit.Years),
                       new Period(5, TimeUnit.Years),
                       new Period(7, TimeUnit.Years),
                       new Period(10, TimeUnit.Years),
@@ -257,12 +270,12 @@ namespace TestSuite
                       new Period(20, TimeUnit.Years),
                       new Period(30, TimeUnit.Years)
             };
-            double[] cStrike = {3, 4, 5, 6};
-            double[] fStrike = {-1, 0, 1, 2};
-            int ncStrikes = 4, nfStrikes = 4, ncfMaturities = 7;
+                double[] cStrike = { 3, 4, 5, 6 };
+                double[] fStrike = { -1, 0, 1, 2 };
+                int ncStrikes = 4, nfStrikes = 4, ncfMaturities = 7;
 
-            double[][] cPrice =
-            {
+                double[][] cPrice =
+                {
                new double[4] {227.6, 100.27, 38.8, 14.94},
                new double[4] {345.32, 127.9, 40.59, 14.11},
                new double[4] {477.95, 170.19, 50.62, 16.88},
@@ -272,8 +285,8 @@ namespace TestSuite
                new double[4] {2211.67, 839.24, 184.75, 45.03}
             };
 
-            double[][] fPrice =
-            {
+                double[][] fPrice =
+                {
                new double[4] {15.62, 28.38, 53.61, 104.6},
                new double[4] {21.45, 36.73, 66.66, 129.6},
                new double[4] {24.45, 42.08, 77.04, 152.24},
@@ -283,154 +296,154 @@ namespace TestSuite
                new double[4] {41.48, 73.9, 139.75, 286.75}
             };
 
-            // now load the data into vector and Matrix classes
-            cStrikesUK = new List<double>();
-            fStrikesUK = new List<double>();
-            cfMaturitiesUK = new List<Period>();
-            for (int i = 0; i < ncStrikes; i++)
-               cStrikesUK.Add(cStrike[i]);
-            for (int i = 0; i < nfStrikes; i++)
-               fStrikesUK.Add(fStrike[i]);
-            for (int i = 0; i < ncfMaturities; i++)
-               cfMaturitiesUK.Add(cfMat[i]);
-            cPriceUK = new Matrix(ncStrikes, ncfMaturities);
-            fPriceUK = new Matrix(nfStrikes, ncfMaturities);
-            for (int i = 0; i < ncStrikes; i++)
-            {
-               for (int j = 0; j < ncfMaturities; j++)
-               {
-                  (cPriceUK)[i, j] = cPrice[j][i] / 10000.0;
-               }
+                // now load the data into vector and Matrix classes
+                cStrikesUK = new List<double>();
+                fStrikesUK = new List<double>();
+                cfMaturitiesUK = new List<Period>();
+                for (int i = 0; i < ncStrikes; i++)
+                    cStrikesUK.Add(cStrike[i]);
+                for (int i = 0; i < nfStrikes; i++)
+                    fStrikesUK.Add(fStrike[i]);
+                for (int i = 0; i < ncfMaturities; i++)
+                    cfMaturitiesUK.Add(cfMat[i]);
+                cPriceUK = new Matrix(ncStrikes, ncfMaturities);
+                fPriceUK = new Matrix(nfStrikes, ncfMaturities);
+                for (int i = 0; i < ncStrikes; i++)
+                {
+                    for (int j = 0; j < ncfMaturities; j++)
+                    {
+                        cPriceUK[i, j] = cPrice[j][i] / 10000.0;
+                    }
+                }
+                for (int i = 0; i < nfStrikes; i++)
+                {
+                    for (int j = 0; j < ncfMaturities; j++)
+                    {
+                        fPriceUK[i, j] = fPrice[j][i] / 10000.0;
+                    }
+                }
             }
-            for (int i = 0; i < nfStrikes; i++)
+        }
+
+        [Fact]
+        public void cpicapfloorpricesurface()
+        {
+            // check inflation leg vs calculation directly from inflation TS
+            CommonVars common = new CommonVars();
+
+            double nominal = 1.0;
+            InterpolatedCPICapFloorTermPriceSurface<Bilinear> cpiSurf = new InterpolatedCPICapFloorTermPriceSurface<Bilinear>(
+               nominal,
+               common.baseZeroRate,
+               common.observationLag,
+               common.calendar,
+               common.convention,
+               common.dcZCIIS,
+               common.hii,
+               common.nominalUK,
+               common.cStrikesUK,
+               common.fStrikesUK,
+               common.cfMaturitiesUK,
+               common.cPriceUK,
+               common.fPriceUK);
+
+            // test code - note order of indices
+            for (int i = 0; i < common.fStrikesUK.Count; i++)
             {
-               for (int j = 0; j < ncfMaturities; j++)
-               {
-                  (fPriceUK)[i, j] = fPrice[j][i] / 10000.0;
-               }
-            }
-         }
-      }
+                double qK = common.fStrikesUK[i];
+                int nMat = common.cfMaturitiesUK.Count;
+                for (int j = 0; j < nMat; j++)
+                {
+                    Period t = common.cfMaturitiesUK[j];
+                    double a = common.fPriceUK[i, j];
+                    double b = cpiSurf.floorPrice(t, qK);
 
-      [Fact]
-      public void cpicapfloorpricesurface()
-      {
-         // check inflation leg vs calculation directly from inflation TS
-         CommonVars common = new CommonVars();
+                    Utils.QL_REQUIRE(System.Math.Abs(a - b) < 1e-7, () => "cannot reproduce cpi floor data from surface: "
+                                     + a + " vs constructed = " + b);
+                }
 
-         double nominal = 1.0;
-         InterpolatedCPICapFloorTermPriceSurface<Bilinear> cpiSurf = new InterpolatedCPICapFloorTermPriceSurface<Bilinear>(
-            nominal,
-            common.baseZeroRate,
-            common.observationLag,
-            common.calendar,
-            common.convention,
-            common.dcZCIIS,
-            common.hii,
-            common.nominalUK,
-            common.cStrikesUK,
-            common.fStrikesUK,
-            common.cfMaturitiesUK,
-            common.cPriceUK,
-            common.fPriceUK);
-
-         // test code - note order of indices
-         for (int i = 0; i < common.fStrikesUK.Count; i++)
-         {
-            double qK = common.fStrikesUK[i];
-            int nMat = common.cfMaturitiesUK.Count;
-            for (int j = 0; j < nMat; j++)
-            {
-               Period t = common.cfMaturitiesUK[j];
-               double a = common.fPriceUK[i, j];
-               double b = cpiSurf.floorPrice(t, qK);
-
-               Utils.QL_REQUIRE(Math.Abs(a - b) < 1e-7, () => "cannot reproduce cpi floor data from surface: "
-                                + a + " vs constructed = " + b);
             }
 
-         }
-
-         for (int i = 0; i < common.cStrikesUK.Count; i++)
-         {
-            double qK = common.cStrikesUK[i];
-            int nMat = common.cfMaturitiesUK.Count;
-            for (int j = 0; j < nMat; j++)
+            for (int i = 0; i < common.cStrikesUK.Count; i++)
             {
-               Period t = common.cfMaturitiesUK[j];
-               double a = common.cPriceUK[i, j];
-               double b = cpiSurf.capPrice(t, qK);
+                double qK = common.cStrikesUK[i];
+                int nMat = common.cfMaturitiesUK.Count;
+                for (int j = 0; j < nMat; j++)
+                {
+                    Period t = common.cfMaturitiesUK[j];
+                    double a = common.cPriceUK[i, j];
+                    double b = cpiSurf.capPrice(t, qK);
 
-               QAssert.IsTrue(Math.Abs(a - b) < 1e-7, "cannot reproduce cpi cap data from surface: "
-                              + a + " vs constructed = " + b);
+                    QAssert.IsTrue(System.Math.Abs(a - b) < 1e-7, "cannot reproduce cpi cap data from surface: "
+                                   + a + " vs constructed = " + b);
+                }
             }
-         }
 
-         // remove circular refernce
-         common.hcpi.linkTo(null);
-      }
+            // remove circular refernce
+            common.hcpi.linkTo(null);
+        }
 
-      [Fact]
-      public void cpicapfloorpricer()
-      {
-         CommonVars common = new CommonVars();
-         double nominal = 1.0;
-         CPICapFloorTermPriceSurface cpiCFpriceSurf = new InterpolatedCPICapFloorTermPriceSurface
-         <Bilinear>(nominal,
-                    common.baseZeroRate,
-                    common.observationLag,
-                    common.calendar,
-                    common.convention,
-                    common.dcZCIIS,
-                    common.hii,
-                    common.nominalUK,
-                    common.cStrikesUK,
-                    common.fStrikesUK,
-                    common.cfMaturitiesUK,
-                    common.cPriceUK,
-                    common.fPriceUK);
+        [Fact]
+        public void cpicapfloorpricer()
+        {
+            CommonVars common = new CommonVars();
+            double nominal = 1.0;
+            CPICapFloorTermPriceSurface cpiCFpriceSurf = new InterpolatedCPICapFloorTermPriceSurface
+            <Bilinear>(nominal,
+                       common.baseZeroRate,
+                       common.observationLag,
+                       common.calendar,
+                       common.convention,
+                       common.dcZCIIS,
+                       common.hii,
+                       common.nominalUK,
+                       common.cStrikesUK,
+                       common.fStrikesUK,
+                       common.cfMaturitiesUK,
+                       common.cPriceUK,
+                       common.fPriceUK);
 
-         common.cpiCFsurfUK = cpiCFpriceSurf;
+            common.cpiCFsurfUK = cpiCFpriceSurf;
 
-         // interpolation pricer first
-         // N.B. no new instrument required but we do need a new pricer
+            // interpolation pricer first
+            // N.B. no new instrument required but we do need a new pricer
 
-         Date startDate = Settings.evaluationDate();
-         Date maturity = (startDate + new Period(3, TimeUnit.Years));
-         Calendar fixCalendar = new UnitedKingdom(), payCalendar = new UnitedKingdom();
-         BusinessDayConvention fixConvention = BusinessDayConvention.Unadjusted,
-                               payConvention = BusinessDayConvention.ModifiedFollowing;
-         double strike = 0.03;
-         double baseCPI = common.hii.link.fixing(fixCalendar.adjust(startDate - common.observationLag, fixConvention));
-         InterpolationType observationInterpolation = InterpolationType.AsIndex;
-         CPICapFloor aCap = new CPICapFloor(Option.Type.Call,
-                                            nominal,
-                                            startDate,   // start date of contract (only)
-                                            baseCPI,
-                                            maturity,    // this is pre-adjustment!
-                                            fixCalendar,
-                                            fixConvention,
-                                            payCalendar,
-                                            payConvention,
-                                            strike,
-                                            common.hii,
-                                            common.observationLag,
-                                            observationInterpolation);
+            Date startDate = Settings.evaluationDate();
+            Date maturity = startDate + new Period(3, TimeUnit.Years);
+            Calendar fixCalendar = new UnitedKingdom(), payCalendar = new UnitedKingdom();
+            BusinessDayConvention fixConvention = BusinessDayConvention.Unadjusted,
+                                  payConvention = BusinessDayConvention.ModifiedFollowing;
+            double strike = 0.03;
+            double baseCPI = common.hii.link.fixing(fixCalendar.adjust(startDate - common.observationLag, fixConvention));
+            InterpolationType observationInterpolation = InterpolationType.AsIndex;
+            CPICapFloor aCap = new CPICapFloor(QLNet.Option.Type.Call,
+                                               nominal,
+                                               startDate,   // start date of contract (only)
+                                               baseCPI,
+                                               maturity,    // this is pre-adjustment!
+                                               fixCalendar,
+                                               fixConvention,
+                                               payCalendar,
+                                               payConvention,
+                                               strike,
+                                               common.hii,
+                                               common.observationLag,
+                                               observationInterpolation);
 
-         Handle<CPICapFloorTermPriceSurface> cpiCFsurfUKh = new Handle<CPICapFloorTermPriceSurface>(common.cpiCFsurfUK);
-         IPricingEngine engine = new InterpolatingCPICapFloorEngine(cpiCFsurfUKh);
+            Handle<CPICapFloorTermPriceSurface> cpiCFsurfUKh = new Handle<CPICapFloorTermPriceSurface>(common.cpiCFsurfUK);
+            IPricingEngine engine = new InterpolatingCPICapFloorEngine(cpiCFsurfUKh);
 
-         aCap.setPricingEngine(engine);
+            aCap.setPricingEngine(engine);
 
-         Date d = common.cpiCFsurfUK.cpiOptionDateFromTenor(new Period(3, TimeUnit.Years));
+            Date d = common.cpiCFsurfUK.cpiOptionDateFromTenor(new Period(3, TimeUnit.Years));
 
 
-         double cached = cpiCFsurfUKh.link.capPrice(d, strike);
-         QAssert.IsTrue(Math.Abs(cached - aCap.NPV()) < 1e-10, "InterpolatingCPICapFloorEngine does not reproduce cached price: "
-                        + cached + " vs " + aCap.NPV());
+            double cached = cpiCFsurfUKh.link.capPrice(d, strike);
+            QAssert.IsTrue(System.Math.Abs(cached - aCap.NPV()) < 1e-10, "InterpolatingCPICapFloorEngine does not reproduce cached price: "
+                           + cached + " vs " + aCap.NPV());
 
-         // remove circular refernce
-         common.hcpi.linkTo(null);
-      }
-   }
+            // remove circular refernce
+            common.hcpi.linkTo(null);
+        }
+    }
 }

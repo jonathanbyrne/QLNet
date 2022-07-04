@@ -17,39 +17,48 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Currencies;
+using QLNet.Indexes.Ibor;
+using QLNet.Termstructures;
+using QLNet.Time;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
+
+namespace QLNet.Indexes.swap
 {
-   public class UsdLiborSwapIsdaFixAm : SwapIndex
-   {
-      public UsdLiborSwapIsdaFixAm(Period tenor)
-         : this(tenor, new Handle<YieldTermStructure>()) { }
+    public class UsdLiborSwapIsdaFixAm : SwapIndex
+    {
+        public UsdLiborSwapIsdaFixAm(Period tenor)
+           : this(tenor, new Handle<YieldTermStructure>()) { }
 
-      public UsdLiborSwapIsdaFixAm(Period tenor, Handle<YieldTermStructure> h)
-         : base("UsdLiborSwapIsdaFixAm", // familyName
-                tenor,
-                2, // settlementDays
-                new USDCurrency(),
-                new TARGET(),
-                new Period(6, TimeUnit.Months), // fixedLegTenor
-                BusinessDayConvention.ModifiedFollowing, // fixedLegConvention
-                new Thirty360(Thirty360.Thirty360Convention.BondBasis), // fixedLegDaycounter
-                new USDLibor(new Period(3, TimeUnit.Months), h)) { }
-   }
+        public UsdLiborSwapIsdaFixAm(Period tenor, Handle<YieldTermStructure> h)
+           : base("UsdLiborSwapIsdaFixAm", // familyName
+                  tenor,
+                  2, // settlementDays
+                  new USDCurrency(),
+                  new TARGET(),
+                  new Period(6, TimeUnit.Months), // fixedLegTenor
+                  BusinessDayConvention.ModifiedFollowing, // fixedLegConvention
+                  new Thirty360(Thirty360.Thirty360Convention.BondBasis), // fixedLegDaycounter
+                  new USDLibor(new Period(3, TimeUnit.Months), h))
+        { }
+    }
 
-   public class UsdLiborSwapIsdaFixPm : SwapIndex
-   {
-      public UsdLiborSwapIsdaFixPm(Period tenor)
-         : this(tenor, new Handle<YieldTermStructure>()) { }
+    public class UsdLiborSwapIsdaFixPm : SwapIndex
+    {
+        public UsdLiborSwapIsdaFixPm(Period tenor)
+           : this(tenor, new Handle<YieldTermStructure>()) { }
 
-      public UsdLiborSwapIsdaFixPm(Period tenor, Handle<YieldTermStructure> h)
-         : base("UsdLiborSwapIsdaFixPm", // familyName
-                tenor,
-                2, // settlementDays
-                new USDCurrency(),
-                new TARGET(),
-                new Period(6, TimeUnit.Months), // fixedLegTenor
-                BusinessDayConvention.ModifiedFollowing, // fixedLegConvention
-                new Thirty360(Thirty360.Thirty360Convention.BondBasis), // fixedLegDaycounter
-                new USDLibor(new Period(3, TimeUnit.Months), h)) { }
-   }
+        public UsdLiborSwapIsdaFixPm(Period tenor, Handle<YieldTermStructure> h)
+           : base("UsdLiborSwapIsdaFixPm", // familyName
+                  tenor,
+                  2, // settlementDays
+                  new USDCurrency(),
+                  new TARGET(),
+                  new Period(6, TimeUnit.Months), // fixedLegTenor
+                  BusinessDayConvention.ModifiedFollowing, // fixedLegConvention
+                  new Thirty360(Thirty360.Thirty360Convention.BondBasis), // fixedLegDaycounter
+                  new USDLibor(new Period(3, TimeUnit.Months), h))
+        { }
+    }
 }

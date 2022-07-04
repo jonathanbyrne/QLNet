@@ -17,75 +17,81 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Currencies;
+using QLNet.Time;
+
+namespace QLNet.Indexes.Inflation
 {
-   //! AU CPI index (either quarterly or annual)
-   public class AUCPI : ZeroInflationIndex
-   {
-      public AUCPI(Frequency frequency,
-                   bool revised,
-                   bool interpolated)
-         : this(frequency, revised, interpolated, new Handle<ZeroInflationTermStructure>()) {}
-
-      public AUCPI(Frequency frequency,
-                   bool revised,
-                   bool interpolated,
-                   Handle<ZeroInflationTermStructure> ts)
-         : base("CPI",
-                new AustraliaRegion(),
-                revised,
-                interpolated,
-                frequency,
-                new Period(2, TimeUnit.Months),
-                new AUDCurrency(),
-                ts) {}
-
-   }
-
-   //! Genuine year-on-year AU CPI (i.e. not a ratio)
-   public class YYAUCPI : YoYInflationIndex
-   {
-      public YYAUCPI(Frequency frequency,
+    //! AU CPI index (either quarterly or annual)
+    public class AUCPI : ZeroInflationIndex
+    {
+        public AUCPI(Frequency frequency,
                      bool revised,
                      bool interpolated)
-         : this(frequency, revised, interpolated, new Handle<YoYInflationTermStructure>()) {}
+           : this(frequency, revised, interpolated, new Handle<ZeroInflationTermStructure>()) { }
 
-      public YYAUCPI(Frequency frequency,
+        public AUCPI(Frequency frequency,
                      bool revised,
                      bool interpolated,
-                     Handle<YoYInflationTermStructure> ts)
-         : base("YY_CPI",
-                new AustraliaRegion(),
-                revised,
-                interpolated,
-                false,
-                frequency,
-                new Period(2, TimeUnit.Months),
-                new AUDCurrency(),
-                ts) {}
-   }
+                     Handle<ZeroInflationTermStructure> ts)
+           : base("CPI",
+                  new AustraliaRegion(),
+                  revised,
+                  interpolated,
+                  frequency,
+                  new Period(2, TimeUnit.Months),
+                  new AUDCurrency(),
+                  ts)
+        { }
+
+    }
+
+    //! Genuine year-on-year AU CPI (i.e. not a ratio)
+    public class YYAUCPI : YoYInflationIndex
+    {
+        public YYAUCPI(Frequency frequency,
+                       bool revised,
+                       bool interpolated)
+           : this(frequency, revised, interpolated, new Handle<YoYInflationTermStructure>()) { }
+
+        public YYAUCPI(Frequency frequency,
+                       bool revised,
+                       bool interpolated,
+                       Handle<YoYInflationTermStructure> ts)
+           : base("YY_CPI",
+                  new AustraliaRegion(),
+                  revised,
+                  interpolated,
+                  false,
+                  frequency,
+                  new Period(2, TimeUnit.Months),
+                  new AUDCurrency(),
+                  ts)
+        { }
+    }
 
 
-   //! Fake year-on-year AUCPI (i.e. a ratio)
-   public class YYAUCPIr : YoYInflationIndex
-   {
-      public YYAUCPIr(Frequency frequency,
-                      bool revised,
-                      bool interpolated)
-         : this(frequency, revised, interpolated, new Handle<YoYInflationTermStructure>()) { }
+    //! Fake year-on-year AUCPI (i.e. a ratio)
+    public class YYAUCPIr : YoYInflationIndex
+    {
+        public YYAUCPIr(Frequency frequency,
+                        bool revised,
+                        bool interpolated)
+           : this(frequency, revised, interpolated, new Handle<YoYInflationTermStructure>()) { }
 
-      public YYAUCPIr(Frequency frequency,
-                      bool revised,
-                      bool interpolated,
-                      Handle<YoYInflationTermStructure> ts)
-         : base("YYR_CPI",
-                new AustraliaRegion(),
-                revised,
-                interpolated,
-                true,
-                frequency,
-                new Period(2, TimeUnit.Months),
-                new AUDCurrency(),
-                ts) {}
-   }
+        public YYAUCPIr(Frequency frequency,
+                        bool revised,
+                        bool interpolated,
+                        Handle<YoYInflationTermStructure> ts)
+           : base("YYR_CPI",
+                  new AustraliaRegion(),
+                  revised,
+                  interpolated,
+                  true,
+                  frequency,
+                  new Period(2, TimeUnit.Months),
+                  new AUDCurrency(),
+                  ts)
+        { }
+    }
 }

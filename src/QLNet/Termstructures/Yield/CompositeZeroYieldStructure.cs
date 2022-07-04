@@ -17,92 +17,93 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Time;
 using System;
 
-namespace QLNet
+namespace QLNet.Termstructures.Yield
 {
-   public class CompositeZeroYieldStructure : ZeroYieldStructure
-   {
-      private readonly Handle<YieldTermStructure> curve1_;
-      private readonly Handle<YieldTermStructure> curve2_;
-      private readonly Compounding comp_;
-      private readonly Frequency freq_;
-      private readonly Func<double, double, double> f_;
+    public class CompositeZeroYieldStructure : ZeroYieldStructure
+    {
+        private readonly Handle<YieldTermStructure> curve1_;
+        private readonly Handle<YieldTermStructure> curve2_;
+        private readonly Compounding comp_;
+        private readonly Frequency freq_;
+        private readonly Func<double, double, double> f_;
 
-      public CompositeZeroYieldStructure(Handle<YieldTermStructure> h1,
-                                         Handle<YieldTermStructure> h2,
-                                         Func<double, double, double> f,
-                                         Compounding comp = Compounding.Continuous,
-                                         Frequency freq = Frequency.NoFrequency)
+        public CompositeZeroYieldStructure(Handle<YieldTermStructure> h1,
+                                           Handle<YieldTermStructure> h2,
+                                           Func<double, double, double> f,
+                                           Compounding comp = Compounding.Continuous,
+                                           Frequency freq = Frequency.NoFrequency)
 
-      {
-         curve1_ = h1;
-         curve2_ = h2;
-         f_ = f;
-         comp_ = comp;
-         freq_ = freq;
+        {
+            curve1_ = h1;
+            curve2_ = h2;
+            f_ = f;
+            comp_ = comp;
+            freq_ = freq;
 
-         if (!curve1_.empty() && !curve2_.empty())
-            enableExtrapolation(curve1_.link.allowsExtrapolation() && curve2_.link.allowsExtrapolation());
+            if (!curve1_.empty() && !curve2_.empty())
+                enableExtrapolation(curve1_.link.allowsExtrapolation() && curve2_.link.allowsExtrapolation());
 
-         curve1_.registerWith(update);
-         curve2_.registerWith(update);
-      }
+            curve1_.registerWith(update);
+            curve2_.registerWith(update);
+        }
 
-      public override DayCounter dayCounter()
-      {
-         return curve1_.link.dayCounter();
-      }
+        public override DayCounter dayCounter()
+        {
+            return curve1_.link.dayCounter();
+        }
 
-      public override Calendar calendar()
-      {
-         return curve1_.link.calendar();
-      }
+        public override Calendar calendar()
+        {
+            return curve1_.link.calendar();
+        }
 
-      public override int settlementDays()
-      {
-         return curve1_.link.settlementDays();
-      }
+        public override int settlementDays()
+        {
+            return curve1_.link.settlementDays();
+        }
 
-      public override Date referenceDate()
-      {
-         return curve1_.link.referenceDate();
-      }
+        public override Date referenceDate()
+        {
+            return curve1_.link.referenceDate();
+        }
 
-      public override Date maxDate()
-      {
-         return curve1_.link.maxDate();
-      }
+        public override Date maxDate()
+        {
+            return curve1_.link.maxDate();
+        }
 
-      public override double maxTime()
-      {
-         return curve1_.link.maxTime();
-      }
+        public override double maxTime()
+        {
+            return curve1_.link.maxTime();
+        }
 
-      public override void update()
-      {
-         if (!curve1_.empty() && !curve2_.empty())
-         {
-            base.update();
-            enableExtrapolation(curve1_.link.allowsExtrapolation() && curve2_.link.allowsExtrapolation());
-         }
-         else
-         {
-            /* The implementation inherited from YieldTermStructure
-            asks for our reference date, which we don't have since
-            the original curve is still not set. Therefore, we skip
-            over that and just call the base-class behavior. */
-            base.update();
-         }
-      }
+        public override void update()
+        {
+            if (!curve1_.empty() && !curve2_.empty())
+            {
+                base.update();
+                enableExtrapolation(curve1_.link.allowsExtrapolation() && curve2_.link.allowsExtrapolation());
+            }
+            else
+            {
+                /* The implementation inherited from YieldTermStructure
+                asks for our reference date, which we don't have since
+                the original curve is still not set. Therefore, we skip
+                over that and just call the base-class behavior. */
+                base.update();
+            }
+        }
 
-      protected override double zeroYieldImpl(double t)
-      {
-         double zeroRate1 = curve1_.link.zeroRate(t, comp_, freq_, true).rate();
-         double zeroRate2 = curve2_.link.zeroRate(t, comp_, freq_, true).rate();
+        protected override double zeroYieldImpl(double t)
+        {
+            double zeroRate1 = curve1_.link.zeroRate(t, comp_, freq_, true).rate();
+            double zeroRate2 = curve2_.link.zeroRate(t, comp_, freq_, true).rate();
 
-         InterestRate compositeRate = new InterestRate(f_(zeroRate1, zeroRate2), dayCounter(), comp_, freq_);
-         return compositeRate.equivalentRate(Compounding.Continuous, Frequency.NoFrequency, t).value();
-      }
-   }
+            InterestRate compositeRate = new InterestRate(f_(zeroRate1, zeroRate2), dayCounter(), comp_, freq_);
+            return compositeRate.equivalentRate(Compounding.Continuous, Frequency.NoFrequency, t).value();
+        }
+    }
 }

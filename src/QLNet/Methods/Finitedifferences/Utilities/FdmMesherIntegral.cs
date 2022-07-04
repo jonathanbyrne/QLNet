@@ -17,52 +17,54 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Math;
+using QLNet.Methods.Finitedifferences.Meshers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences.Utilities
 {
-   public class FdmMesherIntegral
-   {
-      public FdmMesherIntegral(
-         FdmMesherComposite mesher,
-         Func<Vector, Vector, double> integrator1d)
-      {
-         meshers_ = new List<Fdm1dMesher>(mesher.getFdm1dMeshers());
-         integrator1d_ = integrator1d;
-      }
+    public class FdmMesherIntegral
+    {
+        public FdmMesherIntegral(
+           FdmMesherComposite mesher,
+           Func<Vector, Vector, double> integrator1d)
+        {
+            meshers_ = new List<Fdm1dMesher>(mesher.getFdm1dMeshers());
+            integrator1d_ = integrator1d;
+        }
 
-      public double integrate(Vector f)
-      {
-         Vector x = new Vector(meshers_.Last().locations());
+        public double integrate(Vector f)
+        {
+            Vector x = new Vector(meshers_.Last().locations());
 
-         if (meshers_.Count == 1)
-         {
-            return integrator1d_(x, f);
-         }
+            if (meshers_.Count == 1)
+            {
+                return integrator1d_(x, f);
+            }
 
-         FdmMesherComposite subMesher =
-            new FdmMesherComposite(
-            new List<Fdm1dMesher>(meshers_.GetRange(0, meshers_.Count - 1)));
+            FdmMesherComposite subMesher =
+               new FdmMesherComposite(
+               new List<Fdm1dMesher>(meshers_.GetRange(0, meshers_.Count - 1)));
 
-         FdmMesherIntegral subMesherIntegral = new FdmMesherIntegral(subMesher, integrator1d_);
-         int subSize = subMesher.layout().size();
+            FdmMesherIntegral subMesherIntegral = new FdmMesherIntegral(subMesher, integrator1d_);
+            int subSize = subMesher.layout().size();
 
-         Vector g = new Vector(x.size()), fSub = new Vector(subSize);
+            Vector g = new Vector(x.size()), fSub = new Vector(subSize);
 
-         for (int i = 0; i < x.size(); ++i)
-         {
-            f.copy(i    * subSize,
-                   (i + 1)*subSize, 0, fSub);
+            for (int i = 0; i < x.size(); ++i)
+            {
+                f.copy(i * subSize,
+                       (i + 1) * subSize, 0, fSub);
 
-            g[i] = subMesherIntegral.integrate(fSub);
-         }
+                g[i] = subMesherIntegral.integrate(fSub);
+            }
 
-         return integrator1d_(x, g);
-      }
+            return integrator1d_(x, g);
+        }
 
-      protected List<Fdm1dMesher> meshers_;
-      protected Func<Vector, Vector, double> integrator1d_;
-   }
+        protected List<Fdm1dMesher> meshers_;
+        protected Func<Vector, Vector, double> integrator1d_;
+    }
 }

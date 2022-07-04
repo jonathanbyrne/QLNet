@@ -16,55 +16,55 @@
 
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Math.Optimization
 {
-   public class ProjectedConstraint : Constraint
-   {
-      private class Impl : IConstraint
-      {
-         public Impl(Constraint constraint,
-                     Vector parameterValues,
-                     List<bool>fixParameters)
+    public class ProjectedConstraint : Constraint
+    {
+        private class Impl : IConstraint
+        {
+            public Impl(Constraint constraint,
+                        Vector parameterValues,
+                        List<bool> fixParameters)
 
-         {
-            constraint_ = constraint;
-            projection_ = new Projection(parameterValues, fixParameters);
-         }
+            {
+                constraint_ = constraint;
+                projection_ = new Projection(parameterValues, fixParameters);
+            }
 
-         public Impl(Constraint constraint, Projection projection)
-         {
-            constraint_ = constraint;
-            projection_ = projection;
-         }
+            public Impl(Constraint constraint, Projection projection)
+            {
+                constraint_ = constraint;
+                projection_ = projection;
+            }
 
-         public bool test(Vector parameters)
-         {
-            return constraint_.test(projection_.include(parameters));
-         }
+            public bool test(Vector parameters)
+            {
+                return constraint_.test(projection_.include(parameters));
+            }
 
-         public Vector upperBound(Vector parameters)
-         {
-            return projection_.project(constraint_.upperBound(projection_.include(parameters)));
-         }
+            public Vector upperBound(Vector parameters)
+            {
+                return projection_.project(constraint_.upperBound(projection_.include(parameters)));
+            }
 
-         public Vector lowerBound(Vector parameters)
-         {
-            return projection_.project(constraint_.lowerBound(projection_.include(parameters)));
-         }
+            public Vector lowerBound(Vector parameters)
+            {
+                return projection_.project(constraint_.lowerBound(projection_.include(parameters)));
+            }
 
-         private Constraint constraint_;
-         private Projection projection_;
-      }
+            private Constraint constraint_;
+            private Projection projection_;
+        }
 
-      public ProjectedConstraint(Constraint constraint,
-                                 Vector parameterValues,
-                                 List<bool> fixParameters)
-         : base(new Impl(constraint, parameterValues, fixParameters))
-      {}
+        public ProjectedConstraint(Constraint constraint,
+                                   Vector parameterValues,
+                                   List<bool> fixParameters)
+           : base(new Impl(constraint, parameterValues, fixParameters))
+        { }
 
-      public ProjectedConstraint(Constraint constraint, Projection projection)
-         : base(new Impl(constraint, projection))
-      {}
+        public ProjectedConstraint(Constraint constraint, Projection projection)
+           : base(new Impl(constraint, projection))
+        { }
 
-   }
+    }
 }

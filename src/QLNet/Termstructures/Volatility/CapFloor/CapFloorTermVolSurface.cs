@@ -14,253 +14,258 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using QLNet.Math;
+using QLNet.Math.Interpolations;
+using QLNet.Quotes;
+using QLNet.Time;
 using System.Collections.Generic;
 using System.Linq;
+using QLNet.Time.DayCounters;
 
-namespace QLNet
+namespace QLNet.Termstructures.Volatility.CapFloor
 {
-   public class CapFloorTermVolSurface : CapFloorTermVolatilityStructure
-   {
-      //! floating reference date, floating market data
-      public CapFloorTermVolSurface(int settlementDays,
-                                    Calendar calendar,
-                                    BusinessDayConvention bdc,
-                                    List<Period> optionTenors,
-                                    List<double> strikes,
-                                    List<List<Handle<Quote> > > vols,
-                                    DayCounter dc = null)
-         : base(settlementDays, calendar, bdc, dc ?? new Actual365Fixed())
-      {
-         nOptionTenors_ = optionTenors.Count;
-         optionTenors_ = optionTenors;
-         optionDates_ = new InitializedList<Date>(nOptionTenors_);
-         optionTimes_ = new InitializedList<double>(nOptionTenors_);
-         nStrikes_ = strikes.Count;
-         strikes_ = strikes;
-         volHandles_ = vols;
-         vols_ = new Matrix(vols.Count, vols[0].Count);
+    public class CapFloorTermVolSurface : CapFloorTermVolatilityStructure
+    {
+        //! floating reference date, floating market data
+        public CapFloorTermVolSurface(int settlementDays,
+                                      Calendar calendar,
+                                      BusinessDayConvention bdc,
+                                      List<Period> optionTenors,
+                                      List<double> strikes,
+                                      List<List<Handle<Quote>>> vols,
+                                      DayCounter dc = null)
+           : base(settlementDays, calendar, bdc, dc ?? new Actual365Fixed())
+        {
+            nOptionTenors_ = optionTenors.Count;
+            optionTenors_ = optionTenors;
+            optionDates_ = new InitializedList<Date>(nOptionTenors_);
+            optionTimes_ = new InitializedList<double>(nOptionTenors_);
+            nStrikes_ = strikes.Count;
+            strikes_ = strikes;
+            volHandles_ = vols;
+            vols_ = new Matrix(vols.Count, vols[0].Count);
 
 
-         checkInputs();
-         initializeOptionDatesAndTimes();
-         for (int i = 0; i < nOptionTenors_; ++i)
-            Utils.QL_REQUIRE(volHandles_[i].Count == nStrikes_, () =>
-                             (i + 1) + " row of vol handles has size " +
-                             volHandles_[i].Count + " instead of " + nStrikes_);
-         registerWithMarketData();
-         for (int i = 0; i < vols_.rows(); ++i)
-            for (int j = 0; j < vols_.columns(); ++j)
-               vols_[i, j] = volHandles_[i][j].link.value();
-         interpolate();
-      }
+            checkInputs();
+            initializeOptionDatesAndTimes();
+            for (int i = 0; i < nOptionTenors_; ++i)
+                Utils.QL_REQUIRE(volHandles_[i].Count == nStrikes_, () =>
+                                 i + 1 + " row of vol handles has size " +
+                                 volHandles_[i].Count + " instead of " + nStrikes_);
+            registerWithMarketData();
+            for (int i = 0; i < vols_.rows(); ++i)
+                for (int j = 0; j < vols_.columns(); ++j)
+                    vols_[i, j] = volHandles_[i][j].link.value();
+            interpolate();
+        }
 
-      //! fixed reference date, floating market data
-      public CapFloorTermVolSurface(Date settlementDate,
-                                    Calendar calendar,
-                                    BusinessDayConvention bdc,
-                                    List<Period> optionTenors,
-                                    List<double> strikes,
-                                    List<List<Handle<Quote> > > vols,
-                                    DayCounter dc = null)
-         : base(settlementDate, calendar, bdc, dc ?? new Actual365Fixed())
-      {
-         nOptionTenors_ = optionTenors.Count;
-         optionTenors_ = optionTenors;
-         optionDates_ = new InitializedList<Date>(nOptionTenors_);
-         optionTimes_ = new InitializedList<double>(nOptionTenors_);
-         nStrikes_ = strikes.Count;
-         strikes_ = strikes;
-         volHandles_ = vols;
-         vols_ = new Matrix(vols.Count, vols[0].Count);
+        //! fixed reference date, floating market data
+        public CapFloorTermVolSurface(Date settlementDate,
+                                      Calendar calendar,
+                                      BusinessDayConvention bdc,
+                                      List<Period> optionTenors,
+                                      List<double> strikes,
+                                      List<List<Handle<Quote>>> vols,
+                                      DayCounter dc = null)
+           : base(settlementDate, calendar, bdc, dc ?? new Actual365Fixed())
+        {
+            nOptionTenors_ = optionTenors.Count;
+            optionTenors_ = optionTenors;
+            optionDates_ = new InitializedList<Date>(nOptionTenors_);
+            optionTimes_ = new InitializedList<double>(nOptionTenors_);
+            nStrikes_ = strikes.Count;
+            strikes_ = strikes;
+            volHandles_ = vols;
+            vols_ = new Matrix(vols.Count, vols[0].Count);
 
-         checkInputs();
-         initializeOptionDatesAndTimes();
-         for (int i = 0; i < nOptionTenors_; ++i)
-            Utils.QL_REQUIRE(volHandles_[i].Count == nStrikes_, () =>
-                             (i + 1) + " row of vol handles has size " + volHandles_[i].Count + " instead of " + nStrikes_);
-         registerWithMarketData();
-         for (int i = 0; i < vols_.rows(); ++i)
-            for (int j = 0; j < vols_.columns(); ++j)
-               vols_[i, j] = volHandles_[i][j].link.value();
-         interpolate();
-      }
+            checkInputs();
+            initializeOptionDatesAndTimes();
+            for (int i = 0; i < nOptionTenors_; ++i)
+                Utils.QL_REQUIRE(volHandles_[i].Count == nStrikes_, () =>
+                                 i + 1 + " row of vol handles has size " + volHandles_[i].Count + " instead of " + nStrikes_);
+            registerWithMarketData();
+            for (int i = 0; i < vols_.rows(); ++i)
+                for (int j = 0; j < vols_.columns(); ++j)
+                    vols_[i, j] = volHandles_[i][j].link.value();
+            interpolate();
+        }
 
-      //! fixed reference date, fixed market data
-      public CapFloorTermVolSurface(Date settlementDate,
-                                    Calendar calendar,
-                                    BusinessDayConvention bdc,
-                                    List<Period> optionTenors,
-                                    List<double> strikes,
-                                    Matrix vols,
-                                    DayCounter dc = null)
-         : base(settlementDate, calendar, bdc, dc ?? new Actual365Fixed())
-      {
-         nOptionTenors_ = optionTenors.Count;
-         optionTenors_ = optionTenors;
-         optionDates_ = new InitializedList<Date>(nOptionTenors_);
-         optionTimes_ = new InitializedList<double>(nOptionTenors_);
-         nStrikes_ = strikes.Count;
-         strikes_ = strikes;
-         volHandles_ = new InitializedList<List<Handle<Quote>>>(vols.rows());
-         vols_ = vols;
+        //! fixed reference date, fixed market data
+        public CapFloorTermVolSurface(Date settlementDate,
+                                      Calendar calendar,
+                                      BusinessDayConvention bdc,
+                                      List<Period> optionTenors,
+                                      List<double> strikes,
+                                      Matrix vols,
+                                      DayCounter dc = null)
+           : base(settlementDate, calendar, bdc, dc ?? new Actual365Fixed())
+        {
+            nOptionTenors_ = optionTenors.Count;
+            optionTenors_ = optionTenors;
+            optionDates_ = new InitializedList<Date>(nOptionTenors_);
+            optionTimes_ = new InitializedList<double>(nOptionTenors_);
+            nStrikes_ = strikes.Count;
+            strikes_ = strikes;
+            volHandles_ = new InitializedList<List<Handle<Quote>>>(vols.rows());
+            vols_ = vols;
 
-         checkInputs();
-         initializeOptionDatesAndTimes();
-         // fill dummy handles to allow generic handle-based computations later
-         for (int i = 0; i < nOptionTenors_; ++i)
-         {
-            volHandles_[i] = new InitializedList<Handle<Quote>>(nStrikes_);
-            for (int j = 0; j < nStrikes_; ++j)
-               volHandles_[i][j] = new Handle<Quote>(new SimpleQuote(vols_[i, j]));
-         }
-         interpolate();
-      }
-
-      //! floating reference date, fixed market data
-      public CapFloorTermVolSurface(int settlementDays,
-                                    Calendar calendar,
-                                    BusinessDayConvention bdc,
-                                    List<Period> optionTenors,
-                                    List<double> strikes,
-                                    Matrix vols,
-                                    DayCounter dc = null)
-         : base(settlementDays, calendar, bdc, dc ?? new Actual365Fixed())
-      {
-         nOptionTenors_ = optionTenors.Count;
-         optionTenors_ = optionTenors;
-         optionDates_ = new InitializedList<Date>(nOptionTenors_);
-         optionTimes_ = new InitializedList<double>(nOptionTenors_);
-         nStrikes_ = strikes.Count;
-         strikes_ = strikes;
-         volHandles_ = new InitializedList<List<Handle<Quote>>>(vols.rows());
-         vols_ = vols;
-
-         checkInputs();
-         initializeOptionDatesAndTimes();
-         // fill dummy handles to allow generic handle-based computations later
-         for (int i = 0; i < nOptionTenors_; ++i)
-         {
-            volHandles_[i] = new InitializedList<Handle<Quote>>(nStrikes_);
-            for (int j = 0; j < nStrikes_; ++j)
-               volHandles_[i][j] = new Handle<Quote>(new SimpleQuote(vols_[i, j]));
-         }
-         interpolate();
-      }
-      // TermStructure interface
-      public override Date maxDate()
-      {
-         calculate();
-         return optionDateFromTenor(optionTenors_.Last());
-      }
-      // VolatilityTermStructure interface
-      public override double minStrike() { return strikes_.First(); }
-      public override double maxStrike() { return strikes_.Last(); }
-      // LazyObject interface
-      public override void update()
-      {
-         // recalculate dates if necessary...
-         if (moving_)
-         {
-            Date d = Settings.evaluationDate() ;
-            if (evaluationDate_ != d)
+            checkInputs();
+            initializeOptionDatesAndTimes();
+            // fill dummy handles to allow generic handle-based computations later
+            for (int i = 0; i < nOptionTenors_; ++i)
             {
-               evaluationDate_ = d;
-               initializeOptionDatesAndTimes();
+                volHandles_[i] = new InitializedList<Handle<Quote>>(nStrikes_);
+                for (int j = 0; j < nStrikes_; ++j)
+                    volHandles_[i][j] = new Handle<Quote>(new SimpleQuote(vols_[i, j]));
             }
-         }
-         base.update();
-      }
+            interpolate();
+        }
 
-      protected override void performCalculations()
-      {
-         // check if date recalculation must be called here
+        //! floating reference date, fixed market data
+        public CapFloorTermVolSurface(int settlementDays,
+                                      Calendar calendar,
+                                      BusinessDayConvention bdc,
+                                      List<Period> optionTenors,
+                                      List<double> strikes,
+                                      Matrix vols,
+                                      DayCounter dc = null)
+           : base(settlementDays, calendar, bdc, dc ?? new Actual365Fixed())
+        {
+            nOptionTenors_ = optionTenors.Count;
+            optionTenors_ = optionTenors;
+            optionDates_ = new InitializedList<Date>(nOptionTenors_);
+            optionTimes_ = new InitializedList<double>(nOptionTenors_);
+            nStrikes_ = strikes.Count;
+            strikes_ = strikes;
+            volHandles_ = new InitializedList<List<Handle<Quote>>>(vols.rows());
+            vols_ = vols;
 
-         for (int i = 0; i < nOptionTenors_; ++i)
-            for (int j = 0; j < nStrikes_; ++j)
-               vols_[i, j] = volHandles_[i][j].link.value();
+            checkInputs();
+            initializeOptionDatesAndTimes();
+            // fill dummy handles to allow generic handle-based computations later
+            for (int i = 0; i < nOptionTenors_; ++i)
+            {
+                volHandles_[i] = new InitializedList<Handle<Quote>>(nStrikes_);
+                for (int j = 0; j < nStrikes_; ++j)
+                    volHandles_[i][j] = new Handle<Quote>(new SimpleQuote(vols_[i, j]));
+            }
+            interpolate();
+        }
+        // TermStructure interface
+        public override Date maxDate()
+        {
+            calculate();
+            return optionDateFromTenor(optionTenors_.Last());
+        }
+        // VolatilityTermStructure interface
+        public override double minStrike() { return strikes_.First(); }
+        public override double maxStrike() { return strikes_.Last(); }
+        // LazyObject interface
+        public override void update()
+        {
+            // recalculate dates if necessary...
+            if (moving_)
+            {
+                Date d = Settings.evaluationDate();
+                if (evaluationDate_ != d)
+                {
+                    evaluationDate_ = d;
+                    initializeOptionDatesAndTimes();
+                }
+            }
+            base.update();
+        }
 
-         interpolation_.update();
-      }
+        protected override void performCalculations()
+        {
+            // check if date recalculation must be called here
 
-      // some inspectors
-      public List<Period> optionTenors() { return optionTenors_; }
-      public List<Date> optionDates()
-      {
-         // what if quotes are not available?
-         calculate();
-         return optionDates_;
-      }
-      public List<double> optionTimes()
-      {
-         // what if quotes are not available?
-         calculate();
-         return optionTimes_;
-      }
-      public List<double> strikes() {return strikes_;}
-      protected override double volatilityImpl(double t, double strike)
-      {
-         calculate();
-         return interpolation_.value(strike, t, true);
-      }
+            for (int i = 0; i < nOptionTenors_; ++i)
+                for (int j = 0; j < nStrikes_; ++j)
+                    vols_[i, j] = volHandles_[i][j].link.value();
 
-      private void checkInputs()
-      {
-         Utils.QL_REQUIRE(!optionTenors_.empty(), () => "empty option tenor vector");
-         Utils.QL_REQUIRE(nOptionTenors_ == vols_.rows(), () =>
-                          "mismatch between number of option tenors (" +
-                          nOptionTenors_ + ") and number of volatility rows (" +
-                          vols_.rows() + ")");
-         Utils.QL_REQUIRE(optionTenors_[0] > new Period(0, TimeUnit.Days), () =>
-                          "negative first option tenor: " + optionTenors_[0]);
-         for (int i = 1; i < nOptionTenors_; ++i)
-            Utils.QL_REQUIRE(optionTenors_[i] > optionTenors_[i - 1], () =>
-                             "non increasing option tenor: " + i +
-                             " is " + optionTenors_[i - 1] + ", " +
-                             (i + 1) + " is " + optionTenors_[i]);
+            interpolation_.update();
+        }
 
-         Utils.QL_REQUIRE(nStrikes_ == vols_.columns(), () =>
-                          "mismatch between strikes(" + strikes_.Count +
-                          ") and vol columns (" + vols_.columns() + ")");
-         for (int j = 1; j < nStrikes_; ++j)
-            Utils.QL_REQUIRE(strikes_[j - 1]<strikes_[j], () =>
-                             "non increasing strikes: " + j +
-                             " is " + strikes_[j - 1] + ", " +
-                             (j + 1) + " is " + strikes_[j]);
-      }
-      private void initializeOptionDatesAndTimes()
-      {
-         for (int i = 0; i < nOptionTenors_; ++i)
-         {
-            optionDates_[i] = optionDateFromTenor(optionTenors_[i]);
-            optionTimes_[i] = timeFromReference(optionDates_[i]);
-         }
-      }
+        // some inspectors
+        public List<Period> optionTenors() { return optionTenors_; }
+        public List<Date> optionDates()
+        {
+            // what if quotes are not available?
+            calculate();
+            return optionDates_;
+        }
+        public List<double> optionTimes()
+        {
+            // what if quotes are not available?
+            calculate();
+            return optionTimes_;
+        }
+        public List<double> strikes() { return strikes_; }
+        protected override double volatilityImpl(double t, double strike)
+        {
+            calculate();
+            return interpolation_.value(strike, t, true);
+        }
 
-      private void registerWithMarketData()
-      {
-         for (int i = 0; i < nOptionTenors_; ++i)
-            for (int j = 0; j < nStrikes_; ++j)
-               volHandles_[i][j] .registerWith(update);
-      }
-      private void interpolate()
-      {
-         interpolation_ = new BicubicSpline(strikes_, strikes_.Count, optionTimes_, optionTimes_.Count, vols_);
-      }
+        private void checkInputs()
+        {
+            Utils.QL_REQUIRE(!optionTenors_.empty(), () => "empty option tenor vector");
+            Utils.QL_REQUIRE(nOptionTenors_ == vols_.rows(), () =>
+                             "mismatch between number of option tenors (" +
+                             nOptionTenors_ + ") and number of volatility rows (" +
+                             vols_.rows() + ")");
+            Utils.QL_REQUIRE(optionTenors_[0] > new Period(0, TimeUnit.Days), () =>
+                             "negative first option tenor: " + optionTenors_[0]);
+            for (int i = 1; i < nOptionTenors_; ++i)
+                Utils.QL_REQUIRE(optionTenors_[i] > optionTenors_[i - 1], () =>
+                                 "non increasing option tenor: " + i +
+                                 " is " + optionTenors_[i - 1] + ", " +
+                                 (i + 1) + " is " + optionTenors_[i]);
 
-      private int nOptionTenors_;
-      private List<Period> optionTenors_;
-      private List<Date> optionDates_;
-      private List<double> optionTimes_;
-      private Date evaluationDate_;
+            Utils.QL_REQUIRE(nStrikes_ == vols_.columns(), () =>
+                             "mismatch between strikes(" + strikes_.Count +
+                             ") and vol columns (" + vols_.columns() + ")");
+            for (int j = 1; j < nStrikes_; ++j)
+                Utils.QL_REQUIRE(strikes_[j - 1] < strikes_[j], () =>
+                                 "non increasing strikes: " + j +
+                                 " is " + strikes_[j - 1] + ", " +
+                                 (j + 1) + " is " + strikes_[j]);
+        }
+        private void initializeOptionDatesAndTimes()
+        {
+            for (int i = 0; i < nOptionTenors_; ++i)
+            {
+                optionDates_[i] = optionDateFromTenor(optionTenors_[i]);
+                optionTimes_[i] = timeFromReference(optionDates_[i]);
+            }
+        }
 
-      private int nStrikes_;
-      private List<double> strikes_;
+        private void registerWithMarketData()
+        {
+            for (int i = 0; i < nOptionTenors_; ++i)
+                for (int j = 0; j < nStrikes_; ++j)
+                    volHandles_[i][j].registerWith(update);
+        }
+        private void interpolate()
+        {
+            interpolation_ = new BicubicSpline(strikes_, strikes_.Count, optionTimes_, optionTimes_.Count, vols_);
+        }
 
-      private List<List<Handle<Quote> > > volHandles_;
-      private Matrix vols_;
+        private int nOptionTenors_;
+        private List<Period> optionTenors_;
+        private List<Date> optionDates_;
+        private List<double> optionTimes_;
+        private Date evaluationDate_;
 
-      // make it not mutable if possible
-      private Interpolation2D interpolation_;
+        private int nStrikes_;
+        private List<double> strikes_;
 
-   }
+        private List<List<Handle<Quote>>> volHandles_;
+        private Matrix vols_;
+
+        // make it not mutable if possible
+        private Interpolation2D interpolation_;
+
+    }
 }

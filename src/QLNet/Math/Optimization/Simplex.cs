@@ -16,12 +16,15 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Extensions;
+using QLNet.Math;
+using QLNet.Math.Optimization;
 using System;
 using System.Collections.Generic;
 
 namespace QLNet
 {
-   public static partial class Utils
+    public static partial class Utils
    {
       // Computes the size of the simplex
       public static double computeSimplexSize(List<Vector> vertices)
@@ -134,14 +137,14 @@ namespace QLNet
                factor = 2.0;
                extrapolate(ref P, iHighest, ref factor);
             }
-            else if (Math.Abs(factor) > Const.QL_EPSILON)
+            else if (System.Math.Abs(factor) > Const.QL_EPSILON)
             {
                if (vTry >= values_[iNextHighest])
                {
                   double vSave = values_[iHighest];
                   factor = 0.5;
                   vTry = extrapolate(ref P, iHighest, ref factor);
-                  if (vTry >= vSave && Math.Abs(factor) > Const.QL_EPSILON)
+                  if (vTry >= vSave && System.Math.Abs(factor) > Const.QL_EPSILON)
                   {
                      for (int i = 0; i <= n; i++)
                      {
@@ -160,7 +163,7 @@ namespace QLNet
                }
             }
             // If can't extrapolate given the constraints, exit
-            if (Math.Abs(factor) <= Const.QL_EPSILON)
+            if (System.Math.Abs(factor) <= Const.QL_EPSILON)
             {
                x_ = vertices_[iLowest];
                double low = values_[iLowest];
@@ -186,8 +189,8 @@ namespace QLNet
             pTry = sum_ * factor1 - vertices_[iHighest] * factor2;
             factor *= 0.5;
          }
-         while (!P.constraint().test(pTry) && Math.Abs(factor) > Const.QL_EPSILON);
-         if (Math.Abs(factor) <= Const.QL_EPSILON)
+         while (!P.constraint().test(pTry) && System.Math.Abs(factor) > Const.QL_EPSILON);
+         if (System.Math.Abs(factor) <= Const.QL_EPSILON)
          {
             return values_[iHighest];
          }

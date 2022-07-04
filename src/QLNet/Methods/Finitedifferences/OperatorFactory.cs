@@ -17,34 +17,37 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Math;
+using QLNet.Models.Shortrate;
+using QLNet.processes;
 using System;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences
 {
-   //! Black-Scholes-Merton differential operator
-   /*! \ingroup findiff
+    //! Black-Scholes-Merton differential operator
+    /*! \ingroup findiff
 
-       \test coefficients are tested against constant BSM operator
-   */
+        \test coefficients are tested against constant BSM operator
+    */
 
-   public static class OperatorFactory
-   {
-      public static TridiagonalOperator getOperator(GeneralizedBlackScholesProcess process, Vector grid,
-                                                    double residualTime, bool timeDependent)
-      {
-         if (timeDependent)
-            //! Black-Scholes-Merton differential operator
-            /*! \ingroup findiff
+    public static class OperatorFactory
+    {
+        public static TridiagonalOperator getOperator(GeneralizedBlackScholesProcess process, Vector grid,
+                                                      double residualTime, bool timeDependent)
+        {
+            if (timeDependent)
+                //! Black-Scholes-Merton differential operator
+                /*! \ingroup findiff
 
-                \test coefficients are tested against constant BSM operator
-            */
-            return new PdeOperator<PdeBSM>(grid, process, residualTime);
-         return new BSMOperator(grid, process, residualTime);
-      }
+                    \test coefficients are tested against constant BSM operator
+                */
+                return new PdeOperator<PdeBSM>(grid, process, residualTime);
+            return new BSMOperator(grid, process, residualTime);
+        }
 
-      public static TridiagonalOperator getOperator(OneFactorModel.ShortRateDynamics process, Vector grid)
-      {
-         throw new NotImplementedException();
-      }
-   }
+        public static TridiagonalOperator getOperator(OneFactorModel.ShortRateDynamics process, Vector grid)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

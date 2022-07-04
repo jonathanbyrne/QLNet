@@ -16,19 +16,21 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Extensions;
+using QLNet.Time;
 using System;
 
 namespace QLNet
 {
-   //! Concrete interest rate class
-   /*! This class encapsulate the interest rate compounding algebra.
-       It manages day-counting conventions, compounding conventions,
-       conversion between different conventions, discount/compound factor
-       calculations, and implied/equivalent rate calculations.
+    //! Concrete interest rate class
+    /*! This class encapsulate the interest rate compounding algebra.
+        It manages day-counting conventions, compounding conventions,
+        conversion between different conventions, discount/compound factor
+        calculations, and implied/equivalent rate calculations.
 
-       \test Converted rates are checked against known good results
-   */
-   public class InterestRate
+        \test Converted rates are checked against known good results
+    */
+    public class InterestRate
    {
       #region Constructors
 
@@ -104,14 +106,14 @@ namespace QLNet
             case Compounding.Simple:
                return 1.0 + r_.Value * t;
             case Compounding.Compounded:
-               return Math.Pow(1.0 + r_.Value / freq_, freq_ * t);
+               return System.Math.Pow(1.0 + r_.Value / freq_, freq_ * t);
             case Compounding.Continuous:
-               return Math.Exp(r_.Value * t);
+               return System.Math.Exp(r_.Value * t);
             case Compounding.SimpleThenCompounded:
                if (t <= 1.0 / freq_)
                   return 1.0 + r_.Value * t;
                else
-                  return Math.Pow(1.0 + r_.Value / freq_, freq_ * t);
+                  return System.Math.Pow(1.0 + r_.Value / freq_, freq_ * t);
             default:
                Utils.QL_FAIL("unknown compounding convention");
                return 0;
@@ -159,16 +161,16 @@ namespace QLNet
                   r = (compound - 1.0) / t;
                   break;
                case Compounding.Compounded:
-                  r = (Math.Pow(compound, 1.0 / (((double)freq) * t)) - 1.0) * ((double)freq);
+                  r = (System.Math.Pow(compound, 1.0 / (((double)freq) * t)) - 1.0) * ((double)freq);
                   break;
                case Compounding.Continuous:
-                  r = Math.Log(compound) / t;
+                  r = System.Math.Log(compound) / t;
                   break;
                case Compounding.SimpleThenCompounded:
                   if (t <= 1.0 / ((double)freq))
                      r = (compound - 1.0) / t;
                   else
-                     r = (Math.Pow(compound, 1.0 / (((double)freq) * t)) - 1.0) * ((double)freq);
+                     r = (System.Math.Pow(compound, 1.0 / (((double)freq) * t)) - 1.0) * ((double)freq);
                   break;
                default:
                   Utils.QL_FAIL("unknown compounding convention (" + comp + ")");

@@ -14,155 +14,162 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-namespace QLNet
+using QLNet.Instruments;
+using QLNet.Math.randomnumbers;
+using QLNet.Math.statistics;
+using QLNet.Methods.montecarlo;
+using QLNet.Patterns;
+using QLNet.processes;
+
+namespace QLNet.Pricingengines.vanilla
 {
-   //! Monte Carlo Heston-model engine for European options
-   /*! \ingroup vanillaengines
+    //! Monte Carlo Heston-model engine for European options
+    /*! \ingroup vanillaengines
 
-       \test the correctness of the returned value is tested by
-             reproducing results available in web/literature
-   */
-   public class MCEuropeanHestonEngine<RNG, S> : MCVanillaEngine<MultiVariate, RNG, S>
-      where RNG : IRSG, new ()
-      where S : IGeneralStatistics, new ()
-   {
-      public MCEuropeanHestonEngine(HestonProcess process,
-                                    int? timeSteps,
-                                    int? timeStepsPerYear,
-                                    bool antitheticVariate,
-                                    int? requiredSamples,
-                                    double? requiredTolerance,
-                                    int? maxSamples,
-                                    ulong seed)
-      : base(process, timeSteps, timeStepsPerYear, false, antitheticVariate, false, requiredSamples, requiredTolerance,
-             maxSamples, seed)
-      {}
+        \test the correctness of the returned value is tested by
+              reproducing results available in web/literature
+    */
+    public class MCEuropeanHestonEngine<RNG, S> : MCVanillaEngine<MultiVariate, RNG, S>
+      where RNG : IRSG, new()
+      where S : IGeneralStatistics, new()
+    {
+        public MCEuropeanHestonEngine(HestonProcess process,
+                                      int? timeSteps,
+                                      int? timeStepsPerYear,
+                                      bool antitheticVariate,
+                                      int? requiredSamples,
+                                      double? requiredTolerance,
+                                      int? maxSamples,
+                                      ulong seed)
+        : base(process, timeSteps, timeStepsPerYear, false, antitheticVariate, false, requiredSamples, requiredTolerance,
+               maxSamples, seed)
+        { }
 
-      protected override PathPricer<IPath> pathPricer()
-      {
-         PlainVanillaPayoff payoff = this.arguments_.payoff as PlainVanillaPayoff;
-         Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+        protected override PathPricer<IPath> pathPricer()
+        {
+            PlainVanillaPayoff payoff = arguments_.payoff as PlainVanillaPayoff;
+            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
-         HestonProcess process = this.process_ as HestonProcess;
-         Utils.QL_REQUIRE(process != null, () => "Heston process required");
+            HestonProcess process = process_ as HestonProcess;
+            Utils.QL_REQUIRE(process != null, () => "Heston process required");
 
-         return new EuropeanHestonPathPricer(payoff.optionType(),
-                                             payoff.strike(),
-                                             process.riskFreeRate().link.discount(this.timeGrid().Last()));
-      }
+            return new EuropeanHestonPathPricer(payoff.optionType(),
+                                                payoff.strike(),
+                                                process.riskFreeRate().link.discount(timeGrid().Last()));
+        }
 
-   }
+    }
 
-   //! Monte Carlo Heston European engine factory
-   public class MakeMCEuropeanHestonEngine<RNG, S>
-      where RNG : IRSG, new ()
-      where S : IGeneralStatistics, new ()
-   {
-      public MakeMCEuropeanHestonEngine(HestonProcess process)
-      {
-         process_ = process;
-         antithetic_ = false;
-         steps_ = null;
-         stepsPerYear_ = null;
-         samples_ = null;
-         maxSamples_ = null;
-         tolerance_ = null;
-         seed_ = 0;
-
-
-      }
-      // named parameters
-      public MakeMCEuropeanHestonEngine<RNG, S> withSteps(int steps)
-      {
-         Utils.QL_REQUIRE(stepsPerYear_ == null, () => "number of steps per year already set");
-         steps_ = steps;
-         return this;
-      }
-
-      public MakeMCEuropeanHestonEngine<RNG, S> withStepsPerYear(int steps)
-      {
-         Utils.QL_REQUIRE(steps_ == null, () => "number of steps already set");
-         stepsPerYear_ = steps;
-         return this;
-      }
-
-      public MakeMCEuropeanHestonEngine<RNG, S> withSamples(int samples)
-      {
-         Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
-         samples_ = samples;
-         return this;
-      }
-
-      public MakeMCEuropeanHestonEngine<RNG, S> withAbsoluteTolerance(double tolerance)
-      {
-         Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
-         Utils.QL_REQUIRE(FastActivator<RNG>.Create().allowsErrorEstimate != 0, () => "chosen random generator policy does not allow an error estimate");
-         tolerance_ = tolerance;
-         return this;
-      }
-
-      public MakeMCEuropeanHestonEngine<RNG, S> withMaxSamples(int samples)
-      {
-         maxSamples_ = samples;
-         return this;
-      }
-
-      public MakeMCEuropeanHestonEngine<RNG, S> withSeed(ulong seed)
-      {
-         seed_ = seed;
-         return this;
-      }
-
-      public MakeMCEuropeanHestonEngine<RNG, S> withAntitheticVariate(bool b = true)
-      {
-         antithetic_ = b;
-         return this;
-      }
-
-      // conversion to pricing engine
-      public IPricingEngine getAsPricingEngine()
-      {
-         Utils.QL_REQUIRE(steps_ != null || stepsPerYear_ != null, () => "number of steps not given");
-         return new MCEuropeanHestonEngine<RNG, S>(process_,
-                                                   steps_,
-                                                   stepsPerYear_,
-                                                   antithetic_,
-                                                   samples_, tolerance_,
-                                                   maxSamples_,
-                                                   seed_);
-      }
+    //! Monte Carlo Heston European engine factory
+    public class MakeMCEuropeanHestonEngine<RNG, S>
+       where RNG : IRSG, new()
+       where S : IGeneralStatistics, new()
+    {
+        public MakeMCEuropeanHestonEngine(HestonProcess process)
+        {
+            process_ = process;
+            antithetic_ = false;
+            steps_ = null;
+            stepsPerYear_ = null;
+            samples_ = null;
+            maxSamples_ = null;
+            tolerance_ = null;
+            seed_ = 0;
 
 
-      private HestonProcess process_;
-      private bool antithetic_;
-      private int? steps_, stepsPerYear_, samples_, maxSamples_;
-      private double? tolerance_;
-      private ulong seed_;
-   }
+        }
+        // named parameters
+        public MakeMCEuropeanHestonEngine<RNG, S> withSteps(int steps)
+        {
+            Utils.QL_REQUIRE(stepsPerYear_ == null, () => "number of steps per year already set");
+            steps_ = steps;
+            return this;
+        }
+
+        public MakeMCEuropeanHestonEngine<RNG, S> withStepsPerYear(int steps)
+        {
+            Utils.QL_REQUIRE(steps_ == null, () => "number of steps already set");
+            stepsPerYear_ = steps;
+            return this;
+        }
+
+        public MakeMCEuropeanHestonEngine<RNG, S> withSamples(int samples)
+        {
+            Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
+            samples_ = samples;
+            return this;
+        }
+
+        public MakeMCEuropeanHestonEngine<RNG, S> withAbsoluteTolerance(double tolerance)
+        {
+            Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
+            Utils.QL_REQUIRE(FastActivator<RNG>.Create().allowsErrorEstimate != 0, () => "chosen random generator policy does not allow an error estimate");
+            tolerance_ = tolerance;
+            return this;
+        }
+
+        public MakeMCEuropeanHestonEngine<RNG, S> withMaxSamples(int samples)
+        {
+            maxSamples_ = samples;
+            return this;
+        }
+
+        public MakeMCEuropeanHestonEngine<RNG, S> withSeed(ulong seed)
+        {
+            seed_ = seed;
+            return this;
+        }
+
+        public MakeMCEuropeanHestonEngine<RNG, S> withAntitheticVariate(bool b = true)
+        {
+            antithetic_ = b;
+            return this;
+        }
+
+        // conversion to pricing engine
+        public IPricingEngine getAsPricingEngine()
+        {
+            Utils.QL_REQUIRE(steps_ != null || stepsPerYear_ != null, () => "number of steps not given");
+            return new MCEuropeanHestonEngine<RNG, S>(process_,
+                                                      steps_,
+                                                      stepsPerYear_,
+                                                      antithetic_,
+                                                      samples_, tolerance_,
+                                                      maxSamples_,
+                                                      seed_);
+        }
 
 
-   public class EuropeanHestonPathPricer : PathPricer<IPath>
-   {
-      public EuropeanHestonPathPricer(Option.Type type, double strike, double discount)
-      {
-         payoff_ = new PlainVanillaPayoff(type, strike);
-         discount_ = discount;
+        private HestonProcess process_;
+        private bool antithetic_;
+        private int? steps_, stepsPerYear_, samples_, maxSamples_;
+        private double? tolerance_;
+        private ulong seed_;
+    }
 
-         Utils.QL_REQUIRE(strike >= 0.0, () => "strike less than zero not allowed");
-      }
 
-      public double value(IPath multiPath)
-      {
-         MultiPath m = multiPath as MultiPath;
-         Utils.QL_REQUIRE(m != null, () => "the path is invalid");
-         Path path = m[0];
-         int n = m.pathSize();
-         Utils.QL_REQUIRE(n > 0, () => "the path cannot be empty");
+    public class EuropeanHestonPathPricer : PathPricer<IPath>
+    {
+        public EuropeanHestonPathPricer(QLNet.Option.Type type, double strike, double discount)
+        {
+            payoff_ = new PlainVanillaPayoff(type, strike);
+            discount_ = discount;
 
-         return payoff_.value(path.back()) * discount_;
-      }
+            Utils.QL_REQUIRE(strike >= 0.0, () => "strike less than zero not allowed");
+        }
 
-      private PlainVanillaPayoff payoff_;
-      private double discount_;
-   }
+        public double value(IPath multiPath)
+        {
+            MultiPath m = multiPath as MultiPath;
+            Utils.QL_REQUIRE(m != null, () => "the path is invalid");
+            Path path = m[0];
+            int n = m.pathSize();
+            Utils.QL_REQUIRE(n > 0, () => "the path cannot be empty");
+
+            return payoff_.value(path.back()) * discount_;
+        }
+
+        private PlainVanillaPayoff payoff_;
+        private double discount_;
+    }
 }

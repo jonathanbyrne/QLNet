@@ -16,37 +16,38 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.processes;
 using System;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences
 {
-   public class PdeBSM : PdeSecondOrderParabolic
-   {
-      private GeneralizedBlackScholesProcess process_;
+    public class PdeBSM : PdeSecondOrderParabolic
+    {
+        private GeneralizedBlackScholesProcess process_;
 
-      public PdeBSM() { }     // required for generics
-      public PdeBSM(GeneralizedBlackScholesProcess process)
-      {
-         process_ = process;
-      }
+        public PdeBSM() { }     // required for generics
+        public PdeBSM(GeneralizedBlackScholesProcess process)
+        {
+            process_ = process;
+        }
 
-      public override double diffusion(double t, double x)
-      {
-         return process_.diffusion(t, x);
-      }
+        public override double diffusion(double t, double x)
+        {
+            return process_.diffusion(t, x);
+        }
 
-      public override double drift(double t, double x)
-      {
-         return process_.drift(t, x);
-      }
+        public override double drift(double t, double x)
+        {
+            return process_.drift(t, x);
+        }
 
-      public override double discount(double t, double x)
-      {
-         if (Math.Abs(t) < 1e-8)
-            t = 0;
-         return process_.riskFreeRate().link.forwardRate(t, t, Compounding.Continuous, Frequency.NoFrequency, true).rate();
-      }
+        public override double discount(double t, double x)
+        {
+            if (System.Math.Abs(t) < 1e-8)
+                t = 0;
+            return process_.riskFreeRate().link.forwardRate(t, t, Compounding.Continuous, Frequency.NoFrequency, true).rate();
+        }
 
-      public override PdeSecondOrderParabolic factory(GeneralizedBlackScholesProcess process) { return new PdeBSM(process); }
-   }
+        public override PdeSecondOrderParabolic factory(GeneralizedBlackScholesProcess process) { return new PdeBSM(process); }
+    }
 }

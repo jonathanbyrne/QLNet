@@ -17,12 +17,12 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Instruments
 {
-   //! European option on a single asset
-   /*! \ingroup instruments */
-   public class EuropeanOption : VanillaOption
-   {
-      public EuropeanOption(StrikedTypePayoff payoff, Exercise exercise) : base(payoff, exercise) {}
-   }
+    //! European option on a single asset
+    /*! \ingroup instruments */
+    public class EuropeanOption : VanillaOption
+    {
+        public EuropeanOption(StrikedTypePayoff payoff, Exercise exercise) : base(payoff, exercise) { }
+    }
 }

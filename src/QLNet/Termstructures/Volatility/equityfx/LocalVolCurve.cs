@@ -18,62 +18,63 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Time;
 using System;
 
-namespace QLNet
+namespace QLNet.Termstructures.Volatility.equityfx
 {
-   //! Local volatility curve derived from a Black curve
-   public class LocalVolCurve : LocalVolTermStructure
-   {
-      public LocalVolCurve(Handle<BlackVarianceCurve> curve)
-         : base(curve.link.businessDayConvention(), curve.link.dayCounter())
-      {
-         blackVarianceCurve_ = curve;
-         blackVarianceCurve_.registerWith(update);
-      }
+    //! Local volatility curve derived from a Black curve
+    public class LocalVolCurve : LocalVolTermStructure
+    {
+        public LocalVolCurve(Handle<BlackVarianceCurve> curve)
+           : base(curve.link.businessDayConvention(), curve.link.dayCounter())
+        {
+            blackVarianceCurve_ = curve;
+            blackVarianceCurve_.registerWith(update);
+        }
 
-      // TermStructure interface
-      public override Date referenceDate()
-      {
-         return blackVarianceCurve_.link.referenceDate();
-      }
+        // TermStructure interface
+        public override Date referenceDate()
+        {
+            return blackVarianceCurve_.link.referenceDate();
+        }
 
-      public override Calendar calendar()
-      {
-         return blackVarianceCurve_.link.calendar();
-      }
+        public override Calendar calendar()
+        {
+            return blackVarianceCurve_.link.calendar();
+        }
 
-      public override DayCounter dayCounter()
-      {
-         return blackVarianceCurve_.link.dayCounter();
-      }
+        public override DayCounter dayCounter()
+        {
+            return blackVarianceCurve_.link.dayCounter();
+        }
 
-      public override Date maxDate()
-      {
-         return blackVarianceCurve_.link.maxDate();
-      }
+        public override Date maxDate()
+        {
+            return blackVarianceCurve_.link.maxDate();
+        }
 
-      // VolatilityTermStructure interface
-      public override double minStrike()
-      {
-         return double.MinValue;
-      }
+        // VolatilityTermStructure interface
+        public override double minStrike()
+        {
+            return double.MinValue;
+        }
 
-      public override double maxStrike()
-      {
-         return double.MaxValue;
-      }
+        public override double maxStrike()
+        {
+            return double.MaxValue;
+        }
 
-      protected override double localVolImpl(double t, double dummy)
-      {
-         double dt = (1.0 / 365.0);
-         double var1 = blackVarianceCurve_.link.blackVariance(t, dummy, true);
-         double var2 = blackVarianceCurve_.link.blackVariance(t + dt, dummy, true);
-         double derivative = (var2 - var1) / dt;
-         return Math.Sqrt(derivative);
-      }
+        protected override double localVolImpl(double t, double dummy)
+        {
+            double dt = 1.0 / 365.0;
+            double var1 = blackVarianceCurve_.link.blackVariance(t, dummy, true);
+            double var2 = blackVarianceCurve_.link.blackVariance(t + dt, dummy, true);
+            double derivative = (var2 - var1) / dt;
+            return System.Math.Sqrt(derivative);
+        }
 
-      private Handle<BlackVarianceCurve> blackVarianceCurve_;
+        private Handle<BlackVarianceCurve> blackVarianceCurve_;
 
-   }
+    }
 }

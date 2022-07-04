@@ -17,91 +17,95 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.processes;
+using QLNet.Quotes;
+using QLNet.Time;
 using System;
 using System.Collections.Generic;
+using QLNet.Pricingengines.vanilla;
 
-namespace QLNet
+namespace QLNet.Instruments
 {
-   //! Single-asset vanilla option (no barriers) with discrete dividends
-   /*! \ingroup instruments */
-   public class DividendVanillaOption : OneAssetOption
-   {
-      private DividendSchedule cashFlow_;
+    //! Single-asset vanilla option (no barriers) with discrete dividends
+    /*! \ingroup instruments */
+    public class DividendVanillaOption : OneAssetOption
+    {
+        private DividendSchedule cashFlow_;
 
-      public DividendVanillaOption(StrikedTypePayoff payoff, Exercise exercise,
-                                   List<Date> dividendDates, List<double> dividends)
-         : base(payoff, exercise)
-      {
-         cashFlow_ = Utils.DividendVector(dividendDates, dividends);
-      }
-
-
-      /*! \warning see VanillaOption for notes on implied-volatility
-                   calculation.
-      */
-      public double impliedVolatility(double targetValue, GeneralizedBlackScholesProcess process,
-                                      double accuracy = 1.0e-4, int maxEvaluations = 100, double minVol = 1.0e-7, double maxVol = 4.0)
-      {
-         Utils.QL_REQUIRE(!isExpired(), () => "option expired");
-
-         SimpleQuote volQuote = new SimpleQuote();
-
-         GeneralizedBlackScholesProcess newProcess = ImpliedVolatilityHelper.clone(process, volQuote);
-
-         // engines are built-in for the time being
-         IPricingEngine engine = null;
-         switch (exercise_.type())
-         {
-            case Exercise.Type.European:
-               engine = new AnalyticDividendEuropeanEngine(newProcess);
-               break;
-            case Exercise.Type.American:
-               engine = new FDDividendAmericanEngine(newProcess);
-               break;
-            case Exercise.Type.Bermudan:
-               Utils.QL_FAIL("engine not available for Bermudan option with dividends");
-               break;
-            default:
-               Utils.QL_FAIL("unknown exercise type");
-               break;
-         }
-
-         return ImpliedVolatilityHelper.calculate(this, engine, volQuote, targetValue, accuracy,
-                                                  maxEvaluations, minVol, maxVol);
-      }
+        public DividendVanillaOption(StrikedTypePayoff payoff, Exercise exercise,
+                                     List<Date> dividendDates, List<double> dividends)
+           : base(payoff, exercise)
+        {
+            cashFlow_ = Utils.DividendVector(dividendDates, dividends);
+        }
 
 
-      public override void setupArguments(IPricingEngineArguments args)
-      {
-         base.setupArguments(args);
+        /*! \warning see VanillaOption for notes on implied-volatility
+                     calculation.
+        */
+        public double impliedVolatility(double targetValue, GeneralizedBlackScholesProcess process,
+                                        double accuracy = 1.0e-4, int maxEvaluations = 100, double minVol = 1.0e-7, double maxVol = 4.0)
+        {
+            Utils.QL_REQUIRE(!isExpired(), () => "option expired");
 
-         Arguments arguments = args as Arguments;
-         Utils.QL_REQUIRE(arguments != null, () => "wrong engine type");
+            SimpleQuote volQuote = new SimpleQuote();
 
-         arguments.cashFlow = cashFlow_;
-      }
+            GeneralizedBlackScholesProcess newProcess = ImpliedVolatilityHelper.clone(process, volQuote);
 
-      //! %Arguments for dividend vanilla option calculation
-      public new class Arguments : OneAssetOption.Arguments
-      {
-         public DividendSchedule cashFlow { get; set; }
-
-         public override void validate()
-         {
-            base.validate();
-
-            Date exerciseDate = exercise.lastDate();
-
-            for (int i = 0; i < cashFlow.Count; i++)
+            // engines are built-in for the time being
+            IPricingEngine engine = null;
+            switch (exercise_.type())
             {
-               Utils.QL_REQUIRE(cashFlow[i].date() <= exerciseDate, () =>
-                                " dividend date (" + cashFlow[i].date() + ") is later than the exercise date (" + exerciseDate +
-                                ")");
+                case Exercise.Type.European:
+                    engine = new AnalyticDividendEuropeanEngine(newProcess);
+                    break;
+                case Exercise.Type.American:
+                    engine = new FDDividendAmericanEngine(newProcess);
+                    break;
+                case Exercise.Type.Bermudan:
+                    Utils.QL_FAIL("engine not available for Bermudan option with dividends");
+                    break;
+                default:
+                    Utils.QL_FAIL("unknown exercise type");
+                    break;
             }
-         }
-      }
 
-      //! %Dividend-vanilla-option %engine base class
-      public new class Engine : GenericEngine<Arguments, Results> { }
-   }
+            return ImpliedVolatilityHelper.calculate(this, engine, volQuote, targetValue, accuracy,
+                                                     maxEvaluations, minVol, maxVol);
+        }
+
+
+        public override void setupArguments(IPricingEngineArguments args)
+        {
+            base.setupArguments(args);
+
+            Arguments arguments = args as Arguments;
+            Utils.QL_REQUIRE(arguments != null, () => "wrong engine type");
+
+            arguments.cashFlow = cashFlow_;
+        }
+
+        //! %Arguments for dividend vanilla option calculation
+        public new class Arguments : Option.Arguments
+        {
+            public DividendSchedule cashFlow { get; set; }
+
+            public override void validate()
+            {
+                base.validate();
+
+                Date exerciseDate = exercise.lastDate();
+
+                for (int i = 0; i < cashFlow.Count; i++)
+                {
+                    Utils.QL_REQUIRE(cashFlow[i].date() <= exerciseDate, () =>
+                                     " dividend date (" + cashFlow[i].date() + ") is later than the exercise date (" + exerciseDate +
+                                     ")");
+                }
+            }
+        }
+
+        //! %Dividend-vanilla-option %engine base class
+        public new class Engine : GenericEngine<Arguments, Results> { }
+    }
 }

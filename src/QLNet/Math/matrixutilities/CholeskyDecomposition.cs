@@ -16,11 +16,13 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Extensions;
+using QLNet.Math;
 using System;
 
 namespace QLNet
 {
-   public static partial class MatrixUtilities
+    public static partial class MatrixUtilities
    {
       public static Matrix CholeskyDecomposition(Matrix S, bool flexible)
       {
@@ -50,7 +52,7 @@ namespace QLNet
                   Utils.QL_REQUIRE(flexible || sum > 0.0, () => "input matrix is not positive definite");
                   // To handle positive semi-definite matrices take the
                   // square root of sum if positive, else zero.
-                  result[i, i] = Math.Sqrt(Math.Max(sum, 0.0));
+                  result[i, i] = System.Math.Sqrt(System.Math.Max(sum, 0.0));
                }
                else
                {

@@ -17,15 +17,17 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Currencies;
+using QLNet.Extensions;
 using System;
 
 namespace QLNet
 {
-   /// <summary>
-   /// Amount of cash
-   /// Money arithmetic is tested with and without currency conversions.
-   /// </summary>
-   public class Money
+    /// <summary>
+    /// Amount of cash
+    /// Money arithmetic is tested with and without currency conversions.
+    /// </summary>
+    public class Money
    {
       #region Define
 

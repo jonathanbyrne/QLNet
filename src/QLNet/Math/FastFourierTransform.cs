@@ -21,101 +21,101 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 
-namespace QLNet
+namespace QLNet.Math
 {
-   // FFT implementation
-   public class FastFourierTransform
-   {
-      // the minimum order required for the given input size
-      public static int min_order(int inputSize)
-      {
-         return (int)(Math.Ceiling(Math.Log(Convert.ToDouble(inputSize)) / Math.Log(2.0)));
-      }
+    // FFT implementation
+    public class FastFourierTransform
+    {
+        // the minimum order required for the given input size
+        public static int min_order(int inputSize)
+        {
+            return (int)System.Math.Ceiling(System.Math.Log(Convert.ToDouble(inputSize)) / System.Math.Log(2.0));
+        }
 
-      public FastFourierTransform(int order)
-      {
-         int m = 1 << order;
-         cs_ = new Vector(order);
-         sn_ = new Vector(order);
-         cs_[order - 1] = Math.Cos(2.0 * Math.PI / m);
-         sn_[order - 1] = Math.Sin(2.0 * Math.PI / m);
+        public FastFourierTransform(int order)
+        {
+            int m = 1 << order;
+            cs_ = new Vector(order);
+            sn_ = new Vector(order);
+            cs_[order - 1] = System.Math.Cos(2.0 * System.Math.PI / m);
+            sn_[order - 1] = System.Math.Sin(2.0 * System.Math.PI / m);
 
-         for (int i = order - 1; i > 0; --i)
-         {
-            cs_[i - 1] = cs_[i] * cs_[i] - sn_[i] * sn_[i];
-            sn_[i - 1] = 2.0 * sn_[i] * cs_[i];
-         }
-      }
-
-      // The required size for the output vector
-      public int output_size() { return 1 << cs_.size(); }
-
-      // FFT transform.
-      /* The output sequence must be allocated by the user */
-      public void transform(List<Complex> input,
-                            int inputBeg,
-                            int inputEnd,
-                            List<Complex> output)
-      {
-         transform_impl(input, inputBeg, inputEnd, output, false);
-      }
-
-      // Inverse FFT transform.
-      /* The output sequence must be allocated by the user. */
-      public void inverse_transform(List<Complex> input,
-                                    int inputBeg,
-                                    int inputEnd,
-                                    List<Complex> output)
-      {
-         transform_impl(input, inputBeg, inputEnd, output, true);
-      }
-
-      protected void transform_impl(List<Complex> input,
-                                    int inputBeg,
-                                    int inputEnd,
-                                    List<Complex> output,
-                                    bool inverse)
-      {
-         int order = cs_.size();
-         int N = 1 << order;
-
-         int i;
-         for (i = inputBeg; i < inputEnd; ++i)
-         {
-            output[bit_reverse(i, order)] = new Complex(input[i].Real, input[i].Imaginary);
-         }
-         Utils.QL_REQUIRE(i <= N, () => "FFT order is too small");
-         for (int s = 1; s <= order; ++s)
-         {
-            int m = 1 << s;
-            Complex w = new Complex(1.0, 0.0);
-            Complex wm = new Complex(cs_[s - 1], inverse ? sn_[s - 1] : -sn_[s - 1]);
-            for (int j = 0; j < m / 2; ++j)
+            for (int i = order - 1; i > 0; --i)
             {
-               for (int k = j; k < N; k += m)
-               {
-                  Complex t = w * (output[k + m / 2]);
-                  Complex u = new Complex(output[k].Real, output[k].Imaginary);
-                  output[k] = u + t;
-                  output[k + m / 2] = u - t;
-               }
-               w *= wm;
+                cs_[i - 1] = cs_[i] * cs_[i] - sn_[i] * sn_[i];
+                sn_[i - 1] = 2.0 * sn_[i] * cs_[i];
             }
-         }
-      }
+        }
 
-      public static int bit_reverse(int x, int order)
-      {
-         int n = 0;
-         for (int i = 0; i < order; ++i)
-         {
-            n <<= 1;
-            n |= (x & 1);
-            x >>= 1;
-         }
-         return n;
-      }
+        // The required size for the output vector
+        public int output_size() { return 1 << cs_.size(); }
 
-      protected Vector cs_, sn_;
-   }
+        // FFT transform.
+        /* The output sequence must be allocated by the user */
+        public void transform(List<Complex> input,
+                              int inputBeg,
+                              int inputEnd,
+                              List<Complex> output)
+        {
+            transform_impl(input, inputBeg, inputEnd, output, false);
+        }
+
+        // Inverse FFT transform.
+        /* The output sequence must be allocated by the user. */
+        public void inverse_transform(List<Complex> input,
+                                      int inputBeg,
+                                      int inputEnd,
+                                      List<Complex> output)
+        {
+            transform_impl(input, inputBeg, inputEnd, output, true);
+        }
+
+        protected void transform_impl(List<Complex> input,
+                                      int inputBeg,
+                                      int inputEnd,
+                                      List<Complex> output,
+                                      bool inverse)
+        {
+            int order = cs_.size();
+            int N = 1 << order;
+
+            int i;
+            for (i = inputBeg; i < inputEnd; ++i)
+            {
+                output[bit_reverse(i, order)] = new Complex(input[i].Real, input[i].Imaginary);
+            }
+            Utils.QL_REQUIRE(i <= N, () => "FFT order is too small");
+            for (int s = 1; s <= order; ++s)
+            {
+                int m = 1 << s;
+                Complex w = new Complex(1.0, 0.0);
+                Complex wm = new Complex(cs_[s - 1], inverse ? sn_[s - 1] : -sn_[s - 1]);
+                for (int j = 0; j < m / 2; ++j)
+                {
+                    for (int k = j; k < N; k += m)
+                    {
+                        Complex t = w * output[k + m / 2];
+                        Complex u = new Complex(output[k].Real, output[k].Imaginary);
+                        output[k] = u + t;
+                        output[k + m / 2] = u - t;
+                    }
+                    w *= wm;
+                }
+            }
+        }
+
+        public static int bit_reverse(int x, int order)
+        {
+            int n = 0;
+            for (int i = 0; i < order; ++i)
+            {
+                n <<= 1;
+                n |= x & 1;
+                x >>= 1;
+            }
+            return n;
+        }
+
+        protected Vector cs_, sn_;
+    }
 }

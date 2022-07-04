@@ -19,24 +19,24 @@
 using System;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Methods.montecarlo
 {
-   //! base class for early exercise path pricers
-   // Returns the value of an option on a given path and given time.
+    //! base class for early exercise path pricers
+    // Returns the value of an option on a given path and given time.
 
-   public static class EarlyExerciseTraits<PathType> where PathType : IPath
-   {
-      public static int pathLength(PathType path)
-      {
-         return path.length();
-      }
-   }
+    public static class EarlyExerciseTraits<PathType> where PathType : IPath
+    {
+        public static int pathLength(PathType path)
+        {
+            return path.length();
+        }
+    }
 
-   public interface IEarlyExercisePathPricer<PathType, StateType> where PathType : IPath
-   {
-      double value(PathType path, int t);
+    public interface IEarlyExercisePathPricer<PathType, StateType> where PathType : IPath
+    {
+        double value(PathType path, int t);
 
-      StateType state(PathType path, int t);
-      List<Func<StateType, double>> basisSystem();
-   }
+        StateType state(PathType path, int t);
+        List<Func<StateType, double>> basisSystem();
+    }
 }

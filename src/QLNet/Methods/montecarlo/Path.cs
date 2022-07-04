@@ -16,74 +16,75 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Math;
 using System;
 using System.Linq;
 
-namespace QLNet
+namespace QLNet.Methods.montecarlo
 {
-   //! single-factor random walk
-   /*! \ingroup mcarlo
+    //! single-factor random walk
+    /*! \ingroup mcarlo
 
-       \note the path includes the initial asset value as its first point.
-   */
+        \note the path includes the initial asset value as its first point.
+    */
 
-   public interface IPath : ICloneable
-   {
-      int length();
-   }
+    public interface IPath : ICloneable
+    {
+        int length();
+    }
 
-   public interface IPathGenerator<GSG>
-   {
-      Sample<IPath> next();
-      Sample<IPath> antithetic();
-   }
+    public interface IPathGenerator<GSG>
+    {
+        Sample<IPath> next();
+        Sample<IPath> antithetic();
+    }
 
-   public class Path : IPath
-   {
-      private TimeGrid timeGrid_;
-      private Vector values_;
+    public class Path : IPath
+    {
+        private TimeGrid timeGrid_;
+        private Vector values_;
 
-      // required for generics
-      public Path() { }
+        // required for generics
+        public Path() { }
 
-      public Path(TimeGrid timeGrid) : this(timeGrid, new Vector()) { }
-      public Path(TimeGrid timeGrid, Vector values)
-      {
-         timeGrid_ = timeGrid;
-         values_ = values.Clone();
-         if (values_.empty())
-            values_ = new Vector(timeGrid_.size());
+        public Path(TimeGrid timeGrid) : this(timeGrid, new Vector()) { }
+        public Path(TimeGrid timeGrid, Vector values)
+        {
+            timeGrid_ = timeGrid;
+            values_ = values.Clone();
+            if (values_.empty())
+                values_ = new Vector(timeGrid_.size());
 
-         Utils.QL_REQUIRE(values_.size() == timeGrid_.size(), () => "different number of times and asset values");
-      }
+            Utils.QL_REQUIRE(values_.size() == timeGrid_.size(), () => "different number of times and asset values");
+        }
 
-      // inspectors
-      public bool empty() { return timeGrid_.empty(); }
-      public int length() { return timeGrid_.size(); }
+        // inspectors
+        public bool empty() { return timeGrid_.empty(); }
+        public int length() { return timeGrid_.size(); }
 
-      //! asset value at the \f$ i \f$-th point
-      public double this[int i] { get { return values_[i]; } set { values_[i] = value; } }
-      public double value(int i) { return values_[i]; }
+        //! asset value at the \f$ i \f$-th point
+        public double this[int i] { get { return values_[i]; } set { values_[i] = value; } }
+        public double value(int i) { return values_[i]; }
 
-      //! time at the \f$ i \f$-th point
-      public double time(int i) { return timeGrid_[i]; }
+        //! time at the \f$ i \f$-th point
+        public double time(int i) { return timeGrid_[i]; }
 
-      //! initial asset value
-      public double front() { return values_.First(); }
-      public void setFront(double value) { values_[0] = value; }
+        //! initial asset value
+        public double front() { return values_.First(); }
+        public void setFront(double value) { values_[0] = value; }
 
-      //! final asset value
-      public double back() { return values_.Last(); }
+        //! final asset value
+        public double back() { return values_.Last(); }
 
-      //! time grid
-      public TimeGrid timeGrid() { return timeGrid_; }
+        //! time grid
+        public TimeGrid timeGrid() { return timeGrid_; }
 
-      // ICloneable interface
-      public object Clone()
-      {
-         Path temp = (Path)this.MemberwiseClone();
-         temp.values_ = new Vector(this.values_);
-         return temp;
-      }
-   }
+        // ICloneable interface
+        public object Clone()
+        {
+            Path temp = (Path)MemberwiseClone();
+            temp.values_ = new Vector(values_);
+            return temp;
+        }
+    }
 }

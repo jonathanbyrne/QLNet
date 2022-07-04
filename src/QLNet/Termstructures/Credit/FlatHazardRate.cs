@@ -16,68 +16,70 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Quotes;
+using QLNet.Time;
 using System;
 
-namespace QLNet
+namespace QLNet.Termstructures.Credit
 {
-   //! Flat hazard-rate curve
-   /*! \ingroup defaultprobabilitytermstructures */
-   public class FlatHazardRate : HazardRateStructure
-   {
-      #region Constructors
+    //! Flat hazard-rate curve
+    /*! \ingroup defaultprobabilitytermstructures */
+    public class FlatHazardRate : HazardRateStructure
+    {
+        #region Constructors
 
-      public FlatHazardRate(Date referenceDate, Handle<Quote> hazardRate, DayCounter dc)
-         : base(referenceDate, new Calendar(), dc)
-      {
-         hazardRate_ = hazardRate;
-         hazardRate_.registerWith(update);
-      }
+        public FlatHazardRate(Date referenceDate, Handle<Quote> hazardRate, DayCounter dc)
+           : base(referenceDate, new Calendar(), dc)
+        {
+            hazardRate_ = hazardRate;
+            hazardRate_.registerWith(update);
+        }
 
-      public FlatHazardRate(Date referenceDate, double hazardRate, DayCounter dc)
-         : base(referenceDate, new Calendar(), dc)
-      {
-         hazardRate_ = new Handle<Quote>(new SimpleQuote(hazardRate));
-      }
+        public FlatHazardRate(Date referenceDate, double hazardRate, DayCounter dc)
+           : base(referenceDate, new Calendar(), dc)
+        {
+            hazardRate_ = new Handle<Quote>(new SimpleQuote(hazardRate));
+        }
 
-      public FlatHazardRate(int settlementDays, Calendar calendar, Handle<Quote> hazardRate, DayCounter dc)
-         : base(settlementDays, calendar, dc)
-      {
-         hazardRate_ = hazardRate;
-         hazardRate_.registerWith(update);
-      }
+        public FlatHazardRate(int settlementDays, Calendar calendar, Handle<Quote> hazardRate, DayCounter dc)
+           : base(settlementDays, calendar, dc)
+        {
+            hazardRate_ = hazardRate;
+            hazardRate_.registerWith(update);
+        }
 
-      public FlatHazardRate(int settlementDays, Calendar calendar, double hazardRate, DayCounter dc)
-         : base(settlementDays, calendar, dc)
-      {
-         hazardRate_ = new Handle<Quote>(new SimpleQuote(hazardRate));
-      }
+        public FlatHazardRate(int settlementDays, Calendar calendar, double hazardRate, DayCounter dc)
+           : base(settlementDays, calendar, dc)
+        {
+            hazardRate_ = new Handle<Quote>(new SimpleQuote(hazardRate));
+        }
 
-      #endregion
-
-
-      #region TermStructure interface
-
-      public override Date maxDate()  { return Date.maxDate(); }
-
-      #endregion
+        #endregion
 
 
-      #region HazardRateStructure interface
+        #region TermStructure interface
 
-      protected override double hazardRateImpl(double t) { return hazardRate_.link.value(); }
+        public override Date maxDate() { return Date.maxDate(); }
 
-      #endregion
+        #endregion
 
-      #region DefaultProbabilityTermStructure interface
 
-      protected override double survivalProbabilityImpl(double t)
-      {
-         return Math.Exp(-hazardRate_.link.value() * t);
-      }
+        #region HazardRateStructure interface
 
-      #endregion
+        protected override double hazardRateImpl(double t) { return hazardRate_.link.value(); }
 
-      private Handle<Quote> hazardRate_;
+        #endregion
 
-   }
+        #region DefaultProbabilityTermStructure interface
+
+        protected override double survivalProbabilityImpl(double t)
+        {
+            return System.Math.Exp(-hazardRate_.link.value() * t);
+        }
+
+        #endregion
+
+        private Handle<Quote> hazardRate_;
+
+    }
 }

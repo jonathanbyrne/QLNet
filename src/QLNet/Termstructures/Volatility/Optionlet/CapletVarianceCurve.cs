@@ -16,54 +16,57 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Termstructures.Volatility;
+using QLNet.Termstructures.Volatility.equityfx;
+using QLNet.Time;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Termstructures.Volatility.Optionlet
 {
-   public class CapletVarianceCurve :  OptionletVolatilityStructure
-   {
+    public class CapletVarianceCurve : OptionletVolatilityStructure
+    {
 
-      private BlackVarianceCurve blackCurve_;
+        private BlackVarianceCurve blackCurve_;
 
-      public CapletVarianceCurve(Date referenceDate,
-                                 List<Date> dates,
-                                 List<double> capletVolCurve,
-                                 DayCounter dayCounter)
-         : base(referenceDate, new Calendar(), BusinessDayConvention.Following, new DayCounter())
-      {
-         blackCurve_ = new BlackVarianceCurve(referenceDate, dates, capletVolCurve, dayCounter, false);
-      }
+        public CapletVarianceCurve(Date referenceDate,
+                                   List<Date> dates,
+                                   List<double> capletVolCurve,
+                                   DayCounter dayCounter)
+           : base(referenceDate, new Calendar(), BusinessDayConvention.Following, new DayCounter())
+        {
+            blackCurve_ = new BlackVarianceCurve(referenceDate, dates, capletVolCurve, dayCounter, false);
+        }
 
-      public override DayCounter dayCounter()
-      {
-         return blackCurve_.dayCounter();
-      }
+        public override DayCounter dayCounter()
+        {
+            return blackCurve_.dayCounter();
+        }
 
-      public override Date maxDate()
-      {
-         return blackCurve_.maxDate();
-      }
+        public override Date maxDate()
+        {
+            return blackCurve_.maxDate();
+        }
 
-      public override double minStrike()
-      {
-         return blackCurve_.minStrike();
-      }
+        public override double minStrike()
+        {
+            return blackCurve_.minStrike();
+        }
 
-      public override double  maxStrike()
-      {
-         return blackCurve_.maxStrike();
-      }
+        public override double maxStrike()
+        {
+            return blackCurve_.maxStrike();
+        }
 
-      protected override SmileSection smileSectionImpl(double t)
-      {
-         // dummy strike
-         double atmVol = blackCurve_.blackVol(t, 0.05, true);
-         return new FlatSmileSection(t, atmVol, dayCounter());
-      }
+        protected override SmileSection smileSectionImpl(double t)
+        {
+            // dummy strike
+            double atmVol = blackCurve_.blackVol(t, 0.05, true);
+            return new FlatSmileSection(t, atmVol, dayCounter());
+        }
 
-      protected override double volatilityImpl(double t, double r)
-      {
-         return blackCurve_.blackVol(t, r, true);
-      }
-   }
+        protected override double volatilityImpl(double t, double r)
+        {
+            return blackCurve_.blackVol(t, r, true);
+        }
+    }
 }

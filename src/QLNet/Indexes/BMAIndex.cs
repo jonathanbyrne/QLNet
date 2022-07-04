@@ -17,18 +17,24 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Indexes;
+using QLNet.Termstructures;
+using QLNet.Time;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
 using System;
+using QLNet.Currencies;
 
 namespace QLNet
 {
-   //! Bond Market Association index
-   /*! The BMA index is the short-term tax-exempt reference index of
-       the Bond Market Association.  It has tenor one week, is fixed
-       weekly on Wednesdays and is applied with a one-day's fixing
-       gap from Thursdays on for one week.  It is the tax-exempt
-       correspondent of the 1M USD-Libor.
-   */
-   public class BMAIndex : InterestRateIndex
+    //! Bond Market Association index
+    /*! The BMA index is the short-term tax-exempt reference index of
+        the Bond Market Association.  It has tenor one week, is fixed
+        weekly on Wednesdays and is applied with a one-day's fixing
+        gap from Thursdays on for one week.  It is the tax-exempt
+        correspondent of the 1M USD-Libor.
+    */
+    public class BMAIndex : InterestRateIndex
    {
       public BMAIndex(Handle<YieldTermStructure> h = null)
          : base("BMA", new Period(1, TimeUnit.Weeks), 1, new USDCurrency(),

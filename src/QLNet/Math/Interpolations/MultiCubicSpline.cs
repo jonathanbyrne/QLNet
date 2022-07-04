@@ -18,11 +18,11 @@
 */
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Math.Interpolations
 {
 
-   // data structures
+    // data structures
 
-   // Multi-cubic spline
-   public class SplineGrid : InitializedList<List<double>> { }
+    // Multi-cubic spline
+    public class SplineGrid : InitializedList<List<double>> { }
 }

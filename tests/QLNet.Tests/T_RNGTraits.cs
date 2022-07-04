@@ -19,74 +19,75 @@
 using System;
 using System.Collections.Generic;
 using Xunit;
-using QLNet;
+using QLNet.Math.randomnumbers;
+using QLNet.Math.Distributions;
 
-namespace TestSuite
+namespace QLNet.Tests
 {
-   [Collection("QLNet CI Tests")]
-   public class T_RNGTraits
-   {
-      [Fact]
-      public void testGaussian()
-      {
-         //("Testing Gaussian pseudo-random number generation...");
+    [Collection("QLNet CI Tests")]
+    public class T_RNGTraits
+    {
+        [Fact]
+        public void testGaussian()
+        {
+            //("Testing Gaussian pseudo-random number generation...");
 
-         var rsg = (InverseCumulativeRsg<RandomSequenceGenerator<MersenneTwisterUniformRng>, InverseCumulativeNormal>)
-                   new PseudoRandom().make_sequence_generator(100, 1234);
+            var rsg = (InverseCumulativeRsg<RandomSequenceGenerator<MersenneTwisterUniformRng>, InverseCumulativeNormal>)
+                      new PseudoRandom().make_sequence_generator(100, 1234);
 
-         List<double> values = rsg.nextSequence().value;
-         double sum = 0.0;
-         for (int i = 0; i < values.Count; i++)
-            sum += values[i];
+            List<double> values = rsg.nextSequence().value;
+            double sum = 0.0;
+            for (int i = 0; i < values.Count; i++)
+                sum += values[i];
 
-         double stored = 4.09916;
-         double tolerance = 1.0e-5;
-         if (Math.Abs(sum - stored) > tolerance)
-            QAssert.Fail("the sum of the samples does not match the stored value\n"
-                         + "    calculated: " + sum + "\n"
-                         + "    expected:   " + stored);
-      }
+            double stored = 4.09916;
+            double tolerance = 1.0e-5;
+            if (System.Math.Abs(sum - stored) > tolerance)
+                QAssert.Fail("the sum of the samples does not match the stored value\n"
+                             + "    calculated: " + sum + "\n"
+                             + "    expected:   " + stored);
+        }
 
-      [Fact]
-      public void testDefaultPoisson()
-      {
+        [Fact]
+        public void testDefaultPoisson()
+        {
 
-         //("Testing Poisson pseudo-random number generation...");
+            //("Testing Poisson pseudo-random number generation...");
 
-         PoissonPseudoRandom.icInstance = new InverseCumulativePoisson();
-         IRNG rsg = (IRNG)new PoissonPseudoRandom().make_sequence_generator(100, 1234);
+            PoissonPseudoRandom.icInstance = new InverseCumulativePoisson();
+            IRNG rsg = new PoissonPseudoRandom().make_sequence_generator(100, 1234);
 
-         List<double> values = rsg.nextSequence().value;
-         double sum = 0.0;
-         for (int i = 0; i < values.Count; i++)
-            sum += values[i];
+            List<double> values = rsg.nextSequence().value;
+            double sum = 0.0;
+            for (int i = 0; i < values.Count; i++)
+                sum += values[i];
 
-         double stored = 108.0;
-         if (!Utils.close(sum, stored))
-            QAssert.Fail("the sum of the samples does not match the stored value\n"
-                         + "    calculated: " + sum + "\n"
-                         + "    expected:   " + stored);
-      }
+            double stored = 108.0;
+            if (!Utils.close(sum, stored))
+                QAssert.Fail("the sum of the samples does not match the stored value\n"
+                             + "    calculated: " + sum + "\n"
+                             + "    expected:   " + stored);
+        }
 
-      [Fact]
-      public void testCustomPoisson()
-      {
+        [Fact]
+        public void testCustomPoisson()
+        {
 
-         //("Testing custom Poisson pseudo-random number generation...");
+            //("Testing custom Poisson pseudo-random number generation...");
 
-         PoissonPseudoRandom.icInstance = new InverseCumulativePoisson(4.0);
-         IRNG rsg = (IRNG)new PoissonPseudoRandom().make_sequence_generator(100, 1234);
+            PoissonPseudoRandom.icInstance = new InverseCumulativePoisson(4.0);
+            IRNG rsg = new PoissonPseudoRandom().make_sequence_generator(100, 1234);
 
-         List<double> values = rsg.nextSequence().value;
-         double sum = 0.0;
-         for (int i = 0; i < values.Count; i++)
-            sum += values[i];
+            List<double> values = rsg.nextSequence().value;
+            double sum = 0.0;
+            for (int i = 0; i < values.Count; i++)
+                sum += values[i];
 
-         double stored = 409.0;
-         if (!Utils.close(sum, stored))
-            QAssert.Fail("the sum of the samples does not match the stored value\n"
-                         + "    calculated: " + sum + "\n"
-                         + "    expected:   " + stored);
-      }
-   }
+            double stored = 409.0;
+            if (!Utils.close(sum, stored))
+                QAssert.Fail("the sum of the samples does not match the stored value\n"
+                             + "    calculated: " + sum + "\n"
+                             + "    expected:   " + stored);
+        }
+    }
 }

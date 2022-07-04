@@ -16,78 +16,78 @@
 using System;
 using System.Collections.Generic;
 using Xunit;
-using QLNet;
+using QLNet.Math;
 
-namespace TestSuite
+namespace QLNet.Tests
 {
-   [Collection("QLNet CI Tests")]
-   public class T_Vector
-   {
-      /// <summary>
-      /// Sample values.
-      /// </summary>
-      protected readonly List<double> Data = new List<double>() { 1, 2, 3, 4, 5 };
+    [Collection("QLNet CI Tests")]
+    public class T_Vector
+    {
+        /// <summary>
+        /// Sample values.
+        /// </summary>
+        protected readonly List<double> Data = new List<double>() { 1, 2, 3, 4, 5 };
 
-      /// <summary>
-      /// Test vector clone
-      /// </summary>
-      [Fact]
-      public void testClone()
-      {
-         Vector vector = new Vector(Data);
-         Vector clone = vector.Clone();
+        /// <summary>
+        /// Test vector clone
+        /// </summary>
+        [Fact]
+        public void testClone()
+        {
+            Vector vector = new Vector(Data);
+            Vector clone = vector.Clone();
 
-         QAssert.AreNotSame(vector, clone);
-         QAssert.AreEqual(vector.Count, clone.Count);
-         QAssert.CollectionAreEqual(vector, clone);
-         vector[0] = 100;
-         QAssert.CollectionAreNotEqual(vector, clone);
+            QAssert.AreNotSame(vector, clone);
+            QAssert.AreEqual(vector.Count, clone.Count);
+            QAssert.CollectionAreEqual(vector, clone);
+            vector[0] = 100;
+            QAssert.CollectionAreNotEqual(vector, clone);
 
-      }
+        }
 
-      /// <summary>
-      /// Test clone a vector using <c>IClonable</c> interface method.
-      /// </summary>
-      [Fact]
-      public void testCloneICloneable()
-      {
-         Vector vector = new Vector(Data);
-         Vector clone = (Vector)((QLNet.ICloneable)vector).Clone();
+        /// <summary>
+        /// Test clone a vector using <c>IClonable</c> interface method.
+        /// </summary>
+        [Fact]
+        public void testCloneICloneable()
+        {
+            Vector vector = new Vector(Data);
+            Vector clone = (Vector)((ICloneable)vector).Clone();
 
-         QAssert.AreNotSame(vector, clone);
-         QAssert.AreEqual(vector.Count, clone.Count);
-         QAssert.CollectionAreEqual(vector, clone);
-         vector[0] = 100;
-         QAssert.CollectionAreNotEqual(vector, clone);
-      }
+            QAssert.AreNotSame(vector, clone);
+            QAssert.AreEqual(vector.Count, clone.Count);
+            QAssert.CollectionAreEqual(vector, clone);
+            vector[0] = 100;
+            QAssert.CollectionAreNotEqual(vector, clone);
+        }
 
-      /// <summary>
-      /// Test vectors equality.
-      /// </summary>
-      [Fact]
-      public void testEquals()
-      {
-         Vector vector1 = new Vector(Data);
-         Vector vector2 = new Vector(Data);
-         Vector vector3 = new Vector(4);
-         QAssert.IsTrue(vector1.Equals(vector1));
-         QAssert.IsTrue(vector1.Equals(vector2));
-         QAssert.IsFalse(vector1.Equals(vector3));
-         QAssert.IsFalse(vector1.Equals(null));
-         QAssert.IsFalse(vector1.Equals(2));
-      }
+        /// <summary>
+        /// Test vectors equality.
+        /// </summary>
+        [Fact]
+        public void testEquals()
+        {
+            Vector vector1 = new Vector(Data);
+            Vector vector2 = new Vector(Data);
+            Vector vector3 = new Vector(4);
+            QAssert.IsTrue(vector1.Equals(vector1));
+            QAssert.IsTrue(vector1.Equals(vector2));
+            QAssert.IsFalse(vector1.Equals(vector3));
+            QAssert.IsFalse(vector1.Equals(null));
+            QAssert.IsFalse(vector1.Equals(2));
+        }
 
-      /// <summary>
-      /// Test Vector hash code.
-      /// </summary>
-      [Fact]
-      public void testHashCode()
-      {
-         Vector vector = new Vector(Data);
-         QAssert.AreEqual(vector.GetHashCode(), vector.GetHashCode());
-         QAssert.AreEqual(vector.GetHashCode(),
-         new Vector(new List<double>() { 1, 2, 3, 4, 5  }).GetHashCode());
-         QAssert.AreNotEqual(vector.GetHashCode(), new Vector(new List<double>() { 1 }).GetHashCode());
-      }
-   }
+        /// <summary>
+        /// Test Vector hash code.
+        /// </summary>
+        [Fact]
+        public void testHashCode()
+        {
+            Vector vector = new Vector(Data);
+            QAssert.AreEqual(vector.GetHashCode(), vector.GetHashCode());
+            QAssert.AreEqual(vector.GetHashCode(),
+            new Vector(new List<double>() { 1, 2, 3, 4, 5 }).GetHashCode());
+            QAssert.AreNotEqual(vector.GetHashCode(), new Vector(new List<double>() { 1 }).GetHashCode());
+        }
+    }
 }

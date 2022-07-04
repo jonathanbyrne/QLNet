@@ -16,70 +16,72 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Methods.Finitedifferences;
+using QLNet.Methods.Finitedifferences.Operators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences.Schemes
 {
-   /*! In one dimension the Crank-Nicolson scheme is equivalent to the
-       Douglas scheme and in higher dimensions it is usually inferior to
-       operator splitting methods like Craig-Sneyd or Hundsdorfer-Verwer.
-   */
-   public class CrankNicolsonScheme : IMixedScheme, ISchemeFactory
-   {
-      public CrankNicolsonScheme()
-      { }
+    /*! In one dimension the Crank-Nicolson scheme is equivalent to the
+        Douglas scheme and in higher dimensions it is usually inferior to
+        operator splitting methods like Craig-Sneyd or Hundsdorfer-Verwer.
+    */
+    public class CrankNicolsonScheme : IMixedScheme, ISchemeFactory
+    {
+        public CrankNicolsonScheme()
+        { }
 
-      public CrankNicolsonScheme(double theta,
-                                 FdmLinearOpComposite map,
-                                 List<BoundaryCondition<FdmLinearOp>> bcSet = null,
-                                 double relTol = 1E-8,
-                                 ImplicitEulerScheme.SolverType solverType = ImplicitEulerScheme.SolverType.BiCGstab)
-      {
-         dt_ = null;
-         theta_ = theta;
-         explicit_ = new ExplicitEulerScheme(map, bcSet);
-         implicit_ = new ImplicitEulerScheme(map, bcSet, relTol, solverType);
-      }
+        public CrankNicolsonScheme(double theta,
+                                   FdmLinearOpComposite map,
+                                   List<BoundaryCondition<FdmLinearOp>> bcSet = null,
+                                   double relTol = 1E-8,
+                                   ImplicitEulerScheme.SolverType solverType = ImplicitEulerScheme.SolverType.BiCGstab)
+        {
+            dt_ = null;
+            theta_ = theta;
+            explicit_ = new ExplicitEulerScheme(map, bcSet);
+            implicit_ = new ImplicitEulerScheme(map, bcSet, relTol, solverType);
+        }
 
-      #region ISchemeFactory
+        #region ISchemeFactory
 
-      public IMixedScheme factory(object L, object bcs, object[] additionalInputs = null)
-      {
-         double? theta = additionalInputs[0] as double?;
-         double? relTol = additionalInputs[1] as double?;
-         ImplicitEulerScheme.SolverType? solverType = additionalInputs[2] as ImplicitEulerScheme.SolverType?;
-         return new CrankNicolsonScheme(theta.Value, L as FdmLinearOpComposite,
-                                        bcs as List<BoundaryCondition<FdmLinearOp>>, relTol.Value, solverType.Value);
-      }
+        public IMixedScheme factory(object L, object bcs, object[] additionalInputs = null)
+        {
+            double? theta = additionalInputs[0] as double?;
+            double? relTol = additionalInputs[1] as double?;
+            ImplicitEulerScheme.SolverType? solverType = additionalInputs[2] as ImplicitEulerScheme.SolverType?;
+            return new CrankNicolsonScheme(theta.Value, L as FdmLinearOpComposite,
+                                           bcs as List<BoundaryCondition<FdmLinearOp>>, relTol.Value, solverType.Value);
+        }
 
-      #endregion
+        #endregion
 
-      public void step(ref object a, double t, double theta = 1.0)
-      {
-         Utils.QL_REQUIRE(t - dt_ > -1e-8, () => "a step towards negative time given");
-         if (theta_ != 1.0)
-            explicit_.step(ref a, t, 1.0 - theta_);
+        public void step(ref object a, double t, double theta = 1.0)
+        {
+            Utils.QL_REQUIRE(t - dt_ > -1e-8, () => "a step towards negative time given");
+            if (theta_ != 1.0)
+                explicit_.step(ref a, t, 1.0 - theta_);
 
-         if (theta_ != 0.0)
-            implicit_.step(ref a, t, theta_);
-      }
+            if (theta_ != 0.0)
+                implicit_.step(ref a, t, theta_);
+        }
 
-      public void setStep(double dt)
-      {
-         dt_ = dt;
-         explicit_.setStep(dt_.Value);
-         implicit_.setStep(dt_.Value);
-      }
+        public void setStep(double dt)
+        {
+            dt_ = dt;
+            explicit_.setStep(dt_.Value);
+            implicit_.setStep(dt_.Value);
+        }
 
-      public int numberOfIterations()
-      {
-         return implicit_.numberOfIterations();
-      }
-      protected double? dt_;
-      protected double theta_;
-      protected ExplicitEulerScheme explicit_;
-      protected ImplicitEulerScheme implicit_;
-   }
+        public int numberOfIterations()
+        {
+            return implicit_.numberOfIterations();
+        }
+        protected double? dt_;
+        protected double theta_;
+        protected ExplicitEulerScheme explicit_;
+        protected ImplicitEulerScheme implicit_;
+    }
 }

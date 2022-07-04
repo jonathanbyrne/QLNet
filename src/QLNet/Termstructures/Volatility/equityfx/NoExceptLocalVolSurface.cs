@@ -17,49 +17,51 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Quotes;
+
+namespace QLNet.Termstructures.Volatility.equityfx
 {
-   /// <summary>
-   /// wrapper around Dupire local volatility surface,
-   /// which does not throw exception if local volatility becomes negative
-   /// </summary>
-   public class NoExceptLocalVolSurface : LocalVolSurface
-   {
-      public NoExceptLocalVolSurface(Handle<BlackVolTermStructure> blackTS,
-                                     Handle<YieldTermStructure> riskFreeTS,
-                                     Handle<YieldTermStructure> dividendTS,
-                                     Handle<Quote> underlying,
-                                     double illegalLocalVolOverwrite)
-         : base(blackTS, riskFreeTS, dividendTS, underlying)
-      {
-         illegalLocalVolOverwrite_ = illegalLocalVolOverwrite;
-      }
+    /// <summary>
+    /// wrapper around Dupire local volatility surface,
+    /// which does not throw exception if local volatility becomes negative
+    /// </summary>
+    public class NoExceptLocalVolSurface : LocalVolSurface
+    {
+        public NoExceptLocalVolSurface(Handle<BlackVolTermStructure> blackTS,
+                                       Handle<YieldTermStructure> riskFreeTS,
+                                       Handle<YieldTermStructure> dividendTS,
+                                       Handle<Quote> underlying,
+                                       double illegalLocalVolOverwrite)
+           : base(blackTS, riskFreeTS, dividendTS, underlying)
+        {
+            illegalLocalVolOverwrite_ = illegalLocalVolOverwrite;
+        }
 
-      public NoExceptLocalVolSurface(Handle<BlackVolTermStructure> blackTS,
-                                     Handle<YieldTermStructure> riskFreeTS,
-                                     Handle<YieldTermStructure> dividendTS,
-                                     double underlying,
-                                     double illegalLocalVolOverwrite)
-         : base(blackTS, riskFreeTS, dividendTS, underlying)
-      {
-         illegalLocalVolOverwrite_ = illegalLocalVolOverwrite;
-      }
+        public NoExceptLocalVolSurface(Handle<BlackVolTermStructure> blackTS,
+                                       Handle<YieldTermStructure> riskFreeTS,
+                                       Handle<YieldTermStructure> dividendTS,
+                                       double underlying,
+                                       double illegalLocalVolOverwrite)
+           : base(blackTS, riskFreeTS, dividendTS, underlying)
+        {
+            illegalLocalVolOverwrite_ = illegalLocalVolOverwrite;
+        }
 
-      protected override double localVolImpl(double t, double underlyingLevel)
-      {
-         double vol;
-         try
-         {
-            vol = base.localVolImpl(t, underlyingLevel);
-         }
-         catch
-         {
-            vol = illegalLocalVolOverwrite_;
-         }
+        protected override double localVolImpl(double t, double underlyingLevel)
+        {
+            double vol;
+            try
+            {
+                vol = base.localVolImpl(t, underlyingLevel);
+            }
+            catch
+            {
+                vol = illegalLocalVolOverwrite_;
+            }
 
-         return vol;
-      }
+            return vol;
+        }
 
-      protected double illegalLocalVolOverwrite_;
-   }
+        protected double illegalLocalVolOverwrite_;
+    }
 }

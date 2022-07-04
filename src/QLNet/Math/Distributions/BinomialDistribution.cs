@@ -17,17 +17,19 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Extensions;
+using QLNet.Math;
 using System;
 
 namespace QLNet
 {
-   //! Binomial probability distribution function
-   /*! formula here ...
-       Given an integer k it returns its probability in a Binomial
-       distribution with parameters p and n.
-   */
+    //! Binomial probability distribution function
+    /*! formula here ...
+        Given an integer k it returns its probability in a Binomial
+        distribution with parameters p and n.
+    */
 
-   public class BinomialDistribution
+    public class BinomialDistribution
    {
       private int n_;
       private double logP_, logOneMinusP_;
@@ -49,8 +51,8 @@ namespace QLNet
             Utils.QL_REQUIRE(p > 0, () => "negative p not allowed");
             Utils.QL_REQUIRE(p < 1.0, () => "p>1.0 not allowed");
 
-            logP_ = Math.Log(p);
-            logOneMinusP_ = Math.Log(1.0 - p);
+            logP_ = System.Math.Log(p);
+            logOneMinusP_ = System.Math.Log(1.0 - p);
          }
       }
 
@@ -65,7 +67,7 @@ namespace QLNet
          // p==0.0
          if (logOneMinusP_.IsEqual(0.0))
             return (k == 0 ? 1.0 : 0.0);
-         return Math.Exp(Utils.binomialCoefficientLn(n_, k) + k * logP_ + (n_ - k) * logOneMinusP_);
+         return System.Math.Exp(Utils.binomialCoefficientLn(n_, k) + k * logP_ + (n_ - k) * logOneMinusP_);
       }
    }
 
@@ -113,8 +115,8 @@ namespace QLNet
 
          double result = (z / (n + 1.0 / 3.0 + 0.1 / (n + 1.0)));
          result *= result;
-         result = Math.Exp(-result * (n + 1.0 / 6.0));
-         result = 0.5 + (z > 0 ? 1 : -1) * Math.Sqrt((0.25 * (1.0 - result)));
+         result = System.Math.Exp(-result * (n + 1.0 / 6.0));
+         result = 0.5 + (z > 0 ? 1 : -1) * System.Math.Sqrt((0.25 * (1.0 - result)));
          return result;
       }
 
@@ -126,7 +128,7 @@ namespace QLNet
 
       public static double binomialCoefficient(int n, int k)
       {
-         return Math.Floor(0.5 + Math.Exp(Utils.binomialCoefficientLn(n, k)));
+         return System.Math.Floor(0.5 + System.Math.Exp(Utils.binomialCoefficientLn(n, k)));
       }
    }
 }

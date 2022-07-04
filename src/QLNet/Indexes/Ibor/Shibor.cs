@@ -17,32 +17,40 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Currencies;
+using QLNet.Indexes;
+using QLNet.Termstructures;
+using QLNet.Time;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
+
+namespace QLNet.Indexes.Ibor
 {
-   public class Shibor : IborIndex
-   {
-      private static BusinessDayConvention shiborConvention(Period p)
-      {
-         switch (p.units())
-         {
-            case TimeUnit.Days:
-            case TimeUnit.Weeks:
-               return BusinessDayConvention.Following;
-            case TimeUnit.Months:
-            case TimeUnit.Years:
-               return BusinessDayConvention.ModifiedFollowing;
-            default:
-               Utils.QL_FAIL("invalid time units");
-               return BusinessDayConvention.Unadjusted;
-         }
-      }
+    public class Shibor : IborIndex
+    {
+        private static BusinessDayConvention shiborConvention(Period p)
+        {
+            switch (p.units())
+            {
+                case TimeUnit.Days:
+                case TimeUnit.Weeks:
+                    return BusinessDayConvention.Following;
+                case TimeUnit.Months:
+                case TimeUnit.Years:
+                    return BusinessDayConvention.ModifiedFollowing;
+                default:
+                    Utils.QL_FAIL("invalid time units");
+                    return BusinessDayConvention.Unadjusted;
+            }
+        }
 
-      public Shibor(Period tenor)
-         : this(tenor, new Handle<YieldTermStructure>()) {}
+        public Shibor(Period tenor)
+           : this(tenor, new Handle<YieldTermStructure>()) { }
 
-      public Shibor(Period tenor, Handle<YieldTermStructure> h)
-         : base("Shibor", tenor, (tenor == new Period(1, TimeUnit.Days) ? 0 : 1), new CNYCurrency(),
-                new China(China.Market.IB), shiborConvention(tenor), false,
-                new Actual360(), h) {}
-   }
+        public Shibor(Period tenor, Handle<YieldTermStructure> h)
+           : base("Shibor", tenor, tenor == new Period(1, TimeUnit.Days) ? 0 : 1, new CNYCurrency(),
+                  new China(China.Market.IB), shiborConvention(tenor), false,
+                  new Actual360(), h)
+        { }
+    }
 }

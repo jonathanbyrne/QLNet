@@ -17,83 +17,85 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Exceptions;
+using QLNet.Extensions;
 using System;
 
-namespace QLNet
+namespace QLNet.Math.Solvers1d
 {
-   public class NewtonSafe : Solver1D
-   {
-      //! safe %Newton 1-D solver
-      /*! \note This solver requires that the passed function object
-                implement a method <tt>Real derivative(Real)</tt>.
-      */
-      protected override double solveImpl(ISolver1d f, double xAccuracy)
-      {
-         /* The implementation of the algorithm was inspired by Press, Teukolsky, Vetterling, and Flannery,
-            "Numerical Recipes in C", 2nd edition, Cambridge University Press */
+    public class NewtonSafe : Solver1D
+    {
+        //! safe %Newton 1-D solver
+        /*! \note This solver requires that the passed function object
+                  implement a method <tt>Real derivative(Real)</tt>.
+        */
+        protected override double solveImpl(ISolver1d f, double xAccuracy)
+        {
+            /* The implementation of the algorithm was inspired by Press, Teukolsky, Vetterling, and Flannery,
+               "Numerical Recipes in C", 2nd edition, Cambridge University Press */
 
-         double froot, dfroot, dx, dxold;
-         double xh, xl;
+            double froot, dfroot, dx, dxold;
+            double xh, xl;
 
-         // Orient the search so that f(xl) < 0
-         if (fxMin_ < 0.0)
-         {
-            xl = xMin_;
-            xh = xMax_;
-         }
-         else
-         {
-            xh = xMin_;
-            xl = xMax_;
-         }
-
-         // the "stepsize before last"
-         dxold = xMax_ - xMin_;
-         // it was dxold=std::fabs(xMax_-xMin_); in Numerical Recipes
-         // here (xMax_-xMin_ > 0) is verified in the constructor
-
-         // and the last step
-         dx = dxold;
-
-         froot = f.value(root_);
-         dfroot = f.derivative(root_);
-         if (dfroot.IsEqual(default(double)))
-            throw new ArgumentException("Newton requires function's derivative");
-         ++evaluationNumber_;
-
-         while (evaluationNumber_ <= maxEvaluations_)
-         {
-            // Bisect if (out of range || not decreasing fast enough)
-            if ((((root_ - xh)*dfroot - froot)*
-                 ((root_ - xl)*dfroot - froot) > 0.0)
-                || (Math.Abs(2.0 * froot) > Math.Abs(dxold * dfroot)))
+            // Orient the search so that f(xl) < 0
+            if (fxMin_ < 0.0)
             {
-
-               dxold = dx;
-               dx = (xh - xl) / 2.0;
-               root_ = xl + dx;
+                xl = xMin_;
+                xh = xMax_;
             }
             else
             {
-               dxold = dx;
-               dx = froot / dfroot;
-               root_ -= dx;
+                xh = xMin_;
+                xl = xMax_;
             }
-            // Convergence criterion
-            if (Math.Abs(dx) < xAccuracy)
-               return root_;
+
+            // the "stepsize before last"
+            dxold = xMax_ - xMin_;
+            // it was dxold=std::fabs(xMax_-xMin_); in Numerical Recipes
+            // here (xMax_-xMin_ > 0) is verified in the constructor
+
+            // and the last step
+            dx = dxold;
+
             froot = f.value(root_);
             dfroot = f.derivative(root_);
-            evaluationNumber_++;
-            if (froot < 0.0)
-               xl = root_;
-            else
-               xh = root_;
-         }
+            if (dfroot.IsEqual(default))
+                throw new ArgumentException("Newton requires function's derivative");
+            ++evaluationNumber_;
 
-         Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
-                       QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
-         return 0;
-      }
-   }
+            while (evaluationNumber_ <= maxEvaluations_)
+            {
+                // Bisect if (out of range || not decreasing fast enough)
+                if (((root_ - xh) * dfroot - froot) *
+                     ((root_ - xl) * dfroot - froot) > 0.0
+                    || System.Math.Abs(2.0 * froot) > System.Math.Abs(dxold * dfroot))
+                {
+
+                    dxold = dx;
+                    dx = (xh - xl) / 2.0;
+                    root_ = xl + dx;
+                }
+                else
+                {
+                    dxold = dx;
+                    dx = froot / dfroot;
+                    root_ -= dx;
+                }
+                // Convergence criterion
+                if (System.Math.Abs(dx) < xAccuracy)
+                    return root_;
+                froot = f.value(root_);
+                dfroot = f.derivative(root_);
+                evaluationNumber_++;
+                if (froot < 0.0)
+                    xl = root_;
+                else
+                    xh = root_;
+            }
+
+            Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
+                          QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
+            return 0;
+        }
+    }
 }

@@ -18,43 +18,43 @@
 */
 using System;
 
-namespace QLNet
+namespace QLNet.Math.integrals
 {
-   //! Integral of a one-dimensional function
-   /*! \test the correctness of the result is tested by checking it
-             against known good values.
-   */
-   public class SimpsonIntegral : TrapezoidIntegral<Default>
-   {
-      public SimpsonIntegral(double accuracy, int maxIterations) : base(accuracy, maxIterations) { }
+    //! Integral of a one-dimensional function
+    /*! \test the correctness of the result is tested by checking it
+              against known good values.
+    */
+    public class SimpsonIntegral : TrapezoidIntegral<Default>
+    {
+        public SimpsonIntegral(double accuracy, int maxIterations) : base(accuracy, maxIterations) { }
 
-      protected override double integrate(Func<double, double> f, double a, double b)
-      {
-         // start from the coarsest trapezoid...
-         int N = 1;
-         double I = (f(a) + f(b)) * (b - a) / 2.0, newI;
-         double adjI = I, newAdjI;
-         // ...and refine it
-         int i = 1;
+        protected override double integrate(Func<double, double> f, double a, double b)
+        {
+            // start from the coarsest trapezoid...
+            int N = 1;
+            double I = (f(a) + f(b)) * (b - a) / 2.0, newI;
+            double adjI = I, newAdjI;
+            // ...and refine it
+            int i = 1;
 
-         IIntegrationPolicy ip = new Default();
-         do
-         {
-            newI = ip.integrate(f, a, b, I, N);
-            N *= 2;
-            newAdjI = (4.0 * newI - I) / 3.0;
-            // good enough? Also, don't run away immediately
-            if (Math.Abs(adjI - newAdjI) <= absoluteAccuracy() && i > 5)
-               // ok, exit
-               return newAdjI;
-            // oh well. Another step.
-            I = newI;
-            adjI = newAdjI;
-            i++;
-         }
-         while (i < maxEvaluations());
-         Utils.QL_FAIL("max number of iterations reached");
-         return 0;
-      }
-   }
+            IIntegrationPolicy ip = new Default();
+            do
+            {
+                newI = ip.integrate(f, a, b, I, N);
+                N *= 2;
+                newAdjI = (4.0 * newI - I) / 3.0;
+                // good enough? Also, don't run away immediately
+                if (System.Math.Abs(adjI - newAdjI) <= absoluteAccuracy() && i > 5)
+                    // ok, exit
+                    return newAdjI;
+                // oh well. Another step.
+                I = newI;
+                adjI = newAdjI;
+                i++;
+            }
+            while (i < maxEvaluations());
+            Utils.QL_FAIL("max number of iterations reached");
+            return 0;
+        }
+    }
 }

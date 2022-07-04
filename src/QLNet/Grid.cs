@@ -16,11 +16,12 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Math;
 using System;
 
 namespace QLNet
 {
-   public partial class Utils
+    public partial class Utils
    {
 
       public static Vector CenteredGrid(double center, double dx, int steps)
@@ -39,9 +40,9 @@ namespace QLNet
       public static Vector BoundedLogGrid(double xMin, double xMax, int steps)
       {
          Vector result = new Vector(steps + 1);
-         double gridLogSpacing = (Math.Log(xMax) - Math.Log(xMin)) /
+         double gridLogSpacing = (System.Math.Log(xMax) - System.Math.Log(xMin)) /
                                  (steps);
-         double edx = Math.Exp(gridLogSpacing);
+         double edx = System.Math.Exp(gridLogSpacing);
          result[0] = xMin;
          for (int j = 1; j < steps + 1; j++)
          {

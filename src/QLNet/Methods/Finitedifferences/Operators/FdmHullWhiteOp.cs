@@ -16,96 +16,102 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Math;
+using QLNet.Math.matrixutilities;
+using QLNet.Methods.Finitedifferences.Meshers;
+using QLNet.Models.Shortrate;
+using QLNet.Models.Shortrate.Onefactormodels;
 using System;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences.Operators
 {
-   public class FdmHullWhiteOp : FdmLinearOpComposite
-   {
-      public FdmHullWhiteOp(FdmMesher mesher,
-                            HullWhite model,
-                            int direction)
-      {
-         x_      = mesher.locations(direction);
-         dzMap_ = new TripleBandLinearOp(new FirstDerivativeOp(direction, mesher).mult(-1.0 * x_ * model.a()).add(
-                                            new SecondDerivativeOp(direction, mesher).mult(0.5 * model.sigma() * model.sigma()
-                                                  * new Vector(mesher.layout().size(), 1.0))));
-         mapT_  = new TripleBandLinearOp(direction, mesher);
-         direction_ = direction;
-         model_ = model;
-      }
-      public override int size() { return 1; }
+    public class FdmHullWhiteOp : FdmLinearOpComposite
+    {
+        public FdmHullWhiteOp(FdmMesher mesher,
+                              HullWhite model,
+                              int direction)
+        {
+            x_ = mesher.locations(direction);
+            dzMap_ = new TripleBandLinearOp(new FirstDerivativeOp(direction, mesher).mult(-1.0 * x_ * model.a()).add(
+                                               new SecondDerivativeOp(direction, mesher).mult(0.5 * model.sigma() * model.sigma()
+                                                     * new Vector(mesher.layout().size(), 1.0))));
+            mapT_ = new TripleBandLinearOp(direction, mesher);
+            direction_ = direction;
+            model_ = model;
+        }
+        public override int size() { return 1; }
 
-      //! Time \f$t1 <= t2\f$ is required
-      public override void setTime(double t1, double t2)
-      {
-         OneFactorModel.ShortRateDynamics dynamics = model_.dynamics();
+        //! Time \f$t1 <= t2\f$ is required
+        public override void setTime(double t1, double t2)
+        {
+            OneFactorModel.ShortRateDynamics dynamics = model_.dynamics();
 
-         double phi = 0.5 * (dynamics.shortRate(t1, 0.0)
-                             + dynamics.shortRate(t2, 0.0));
+            double phi = 0.5 * (dynamics.shortRate(t1, 0.0)
+                                + dynamics.shortRate(t2, 0.0));
 
-         mapT_.axpyb(new Vector(), dzMap_, dzMap_, -1.0 * (x_ + phi));
-      }
+            mapT_.axpyb(new Vector(), dzMap_, dzMap_, -1.0 * (x_ + phi));
+        }
 
-      public override Vector apply(Vector r)
-      {
-         return mapT_.apply(r);
-      }
-
-      public override Vector apply_mixed(Vector r)
-      {
-         Vector retVal = new Vector(r.size(), 0.0);
-         return retVal;
-      }
-
-      public override Vector apply_direction(int direction, Vector r)
-      {
-         if (direction == direction_)
+        public override Vector apply(Vector r)
+        {
             return mapT_.apply(r);
-         else
-         {
+        }
+
+        public override Vector apply_mixed(Vector r)
+        {
             Vector retVal = new Vector(r.size(), 0.0);
             return retVal;
-         }
-      }
-      public override Vector solve_splitting(int direction, Vector r, double s)
-      {
-         if (direction == direction_)
-            return mapT_.solve_splitting(r, s, 1.0);
-         else
-         {
-            Vector retVal = new Vector(r.size(), 0.0);
+        }
+
+        public override Vector apply_direction(int direction, Vector r)
+        {
+            if (direction == direction_)
+                return mapT_.apply(r);
+            else
+            {
+                Vector retVal = new Vector(r.size(), 0.0);
+                return retVal;
+            }
+        }
+        public override Vector solve_splitting(int direction, Vector r, double s)
+        {
+            if (direction == direction_)
+                return mapT_.solve_splitting(r, s, 1.0);
+            else
+            {
+                Vector retVal = new Vector(r.size(), 0.0);
+                return retVal;
+            }
+        }
+        public override Vector preconditioner(Vector r, double s) { return solve_splitting(direction_, r, s); }
+
+        public override List<SparseMatrix> toMatrixDecomp()
+        {
+            List<SparseMatrix> retVal = new InitializedList<SparseMatrix>(1, mapT_.toMatrix());
             return retVal;
-         }
-      }
-      public override Vector preconditioner(Vector r, double s) { return solve_splitting(direction_, r, s); }
+        }
 
-      public override List<SparseMatrix> toMatrixDecomp()
-      {
-         List<SparseMatrix> retVal = new InitializedList<SparseMatrix>(1, mapT_.toMatrix());
-         return retVal;
-      }
+        #region IOperator interface
+        public override IOperator identity(int size) { return null; }
+        public override Vector applyTo(Vector v) { return new Vector(); }
+        public override Vector solveFor(Vector rhs) { return new Vector(); }
 
-      #region IOperator interface
-      public override IOperator identity(int size) { return null; }
-      public override Vector applyTo(Vector v) { return new Vector(); }
-      public override Vector solveFor(Vector rhs) { return new Vector(); }
+        public override IOperator multiply(double a, IOperator D) { return null; }
+        public override IOperator add
+           (IOperator A, IOperator B)
+        { return null; }
+        public override IOperator subtract(IOperator A, IOperator B) { return null; }
 
-      public override IOperator multiply(double a, IOperator D) { return null; }
-      public override IOperator add
-         (IOperator A, IOperator B) { return null; }
-      public override IOperator subtract(IOperator A, IOperator B) { return null; }
+        public override bool isTimeDependent() { return false; }
+        public override void setTime(double t) { }
+        public override object Clone() { return MemberwiseClone(); }
+        #endregion
 
-      public override bool isTimeDependent() { return false; }
-      public override void setTime(double t) { }
-      public override object Clone() { return this.MemberwiseClone(); }
-      #endregion
-
-      protected HullWhite model_;
-      protected Vector x_;
-      protected TripleBandLinearOp dzMap_;
-      protected TripleBandLinearOp mapT_;
-      protected int direction_;
-   }
+        protected HullWhite model_;
+        protected Vector x_;
+        protected TripleBandLinearOp dzMap_;
+        protected TripleBandLinearOp mapT_;
+        protected int direction_;
+    }
 }

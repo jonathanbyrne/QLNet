@@ -16,45 +16,46 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Math;
 using System;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences
 {
-   //! Shout option condition
-   /*! A shout option is an option where the holder has the right to
-       lock in a minimum value for the payoff at one (shout) time
-       during the option's life. The minimum value is the option's
-       intrinsic value at the shout time.
-   */
-   public class ShoutCondition : CurveDependentStepCondition<Vector>
-   {
-      double resTime_;
-      double rate_;
-      double disc_;
+    //! Shout option condition
+    /*! A shout option is an option where the holder has the right to
+        lock in a minimum value for the payoff at one (shout) time
+        during the option's life. The minimum value is the option's
+        intrinsic value at the shout time.
+    */
+    public class ShoutCondition : CurveDependentStepCondition<Vector>
+    {
+        double resTime_;
+        double rate_;
+        double disc_;
 
-      public ShoutCondition(Option.Type type, double strike, double resTime, double rate)
-         : base(type, strike)
-      {
-         resTime_ = resTime;
-         rate_ = rate;
-      }
+        public ShoutCondition(Option.Type type, double strike, double resTime, double rate)
+           : base(type, strike)
+        {
+            resTime_ = resTime;
+            rate_ = rate;
+        }
 
-      public ShoutCondition(Vector intrinsicValues, double resTime, double rate)
-         : base(intrinsicValues)
-      {
-         resTime_ = resTime;
-         rate_ = rate;
-      }
+        public ShoutCondition(Vector intrinsicValues, double resTime, double rate)
+           : base(intrinsicValues)
+        {
+            resTime_ = resTime;
+            rate_ = rate;
+        }
 
-      public void applyTo(Vector a, double t)
-      {
-         disc_ = Math.Exp(-rate_ * (t - resTime_));
-         base.applyTo(a, t);
-      }
+        public void applyTo(Vector a, double t)
+        {
+            disc_ = System.Math.Exp(-rate_ * (t - resTime_));
+            base.applyTo(a, t);
+        }
 
-      protected override double applyToValue(double current, double intrinsic)
-      {
-         return Math.Max(current, disc_ * intrinsic);
-      }
-   }
+        protected override double applyToValue(double current, double intrinsic)
+        {
+            return System.Math.Max(current, disc_ * intrinsic);
+        }
+    }
 }

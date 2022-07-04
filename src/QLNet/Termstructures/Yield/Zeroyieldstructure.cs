@@ -17,65 +17,68 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Extensions;
+using QLNet.Quotes;
+using QLNet.Time;
 using System;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Termstructures.Yield
 {
-   //! Zero-yield term structure
-   /*! This abstract class acts as an adapter to YieldTermStructure
-      allowing the programmer to implement only the
-      <tt>zeroYieldImpl(Time)</tt> method in derived classes.
+    //! Zero-yield term structure
+    /*! This abstract class acts as an adapter to YieldTermStructure
+       allowing the programmer to implement only the
+       <tt>zeroYieldImpl(Time)</tt> method in derived classes.
 
-      Discount and forward are calculated from zero yields.
+       Discount and forward are calculated from zero yields.
 
-      Zero rates are assumed to be annual continuous compounding.
+       Zero rates are assumed to be annual continuous compounding.
 
-      \ingroup yieldtermstructures
-   */
-   public abstract class ZeroYieldStructure : YieldTermStructure
-   {
-      #region Constructors
+       \ingroup yieldtermstructures
+    */
+    public abstract class ZeroYieldStructure : YieldTermStructure
+    {
+        #region Constructors
 
-      protected ZeroYieldStructure(DayCounter dc = null, List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
-         : base(dc, jumps, jumpDates) {}
+        protected ZeroYieldStructure(DayCounter dc = null, List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
+           : base(dc, jumps, jumpDates) { }
 
-      protected ZeroYieldStructure(Date referenceDate, Calendar calendar = null, DayCounter dc = null,
-                                   List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
-         : base(referenceDate, calendar, dc, jumps, jumpDates) { }
+        protected ZeroYieldStructure(Date referenceDate, Calendar calendar = null, DayCounter dc = null,
+                                     List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
+           : base(referenceDate, calendar, dc, jumps, jumpDates) { }
 
-      protected ZeroYieldStructure(int settlementDays, Calendar calendar, DayCounter dc = null,
-                                   List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
-         : base(settlementDays, calendar, dc, jumps, jumpDates) { }
+        protected ZeroYieldStructure(int settlementDays, Calendar calendar, DayCounter dc = null,
+                                     List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
+           : base(settlementDays, calendar, dc, jumps, jumpDates) { }
 
-      #endregion
+        #endregion
 
-      #region Calculations
+        #region Calculations
 
-      // This method must be implemented in derived classes to
-      // perform the actual calculations. When it is called,
-      // range check has already been performed; therefore, it
-      // must assume that extrapolation is required.
+        // This method must be implemented in derived classes to
+        // perform the actual calculations. When it is called,
+        // range check has already been performed; therefore, it
+        // must assume that extrapolation is required.
 
-      //! zero-yield calculation
-      protected abstract double zeroYieldImpl(double t);
+        //! zero-yield calculation
+        protected abstract double zeroYieldImpl(double t);
 
-      #endregion
+        #endregion
 
-      #region YieldTermStructure implementation
+        #region YieldTermStructure implementation
 
-      /*! Returns the discount factor for the given date calculating it
-          from the zero yield.
-      */
-      protected override double discountImpl(double t)
-      {
-         if (t.IsEqual(0.0))     // this acts as a safe guard in cases where
-            return 1.0;   // zeroYieldImpl(0.0) would throw.
+        /*! Returns the discount factor for the given date calculating it
+            from the zero yield.
+        */
+        protected override double discountImpl(double t)
+        {
+            if (t.IsEqual(0.0))     // this acts as a safe guard in cases where
+                return 1.0;   // zeroYieldImpl(0.0) would throw.
 
-         double r = zeroYieldImpl(t);
-         return Math.Exp(-r * t);
-      }
+            double r = zeroYieldImpl(t);
+            return System.Math.Exp(-r * t);
+        }
 
-      #endregion
-   }
+        #endregion
+    }
 }

@@ -18,29 +18,31 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Math;
+
+namespace QLNet.Math.Optimization
 {
-   //! Multi-dimensional Conjugate Gradient class.
-   /*! Fletcher-Reeves-Polak-Ribiere algorithm
-       adapted from Numerical Recipes in C, 2nd edition.
+    //! Multi-dimensional Conjugate Gradient class.
+    /*! Fletcher-Reeves-Polak-Ribiere algorithm
+        adapted from Numerical Recipes in C, 2nd edition.
 
-       User has to provide line-search method and optimization end criteria.
+        User has to provide line-search method and optimization end criteria.
 
-       This optimization method requires the knowledge of
-       the gradient of the cost function.
+        This optimization method requires the knowledge of
+        the gradient of the cost function.
 
-       \ingroup optimizers
-   */
-   public class ConjugateGradient : LineSearchBasedMethod
-   {
-      public ConjugateGradient(LineSearch lineSearch = null)
-         : base(lineSearch)
-      {}
+        \ingroup optimizers
+    */
+    public class ConjugateGradient : LineSearchBasedMethod
+    {
+        public ConjugateGradient(LineSearch lineSearch = null)
+           : base(lineSearch)
+        { }
 
-      protected override Vector getUpdatedDirection(Problem P, double gold2, Vector gradient)
-      {
-         return lineSearch_.lastGradient() * -1 +
-                (P.gradientNormValue() / gold2) * lineSearch_.searchDirection;
-      }
-   }
+        protected override Vector getUpdatedDirection(Problem P, double gold2, Vector gradient)
+        {
+            return lineSearch_.lastGradient() * -1 +
+                   P.gradientNormValue() / gold2 * lineSearch_.searchDirection;
+        }
+    }
 }

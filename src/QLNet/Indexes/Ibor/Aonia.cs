@@ -14,18 +14,23 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-namespace QLNet
-{
-   //! %Aonia index
-   /*! Aonia (Australia Overnight Index Average) rate fixed by the RBA.
+using QLNet.Currencies;
+using QLNet.Termstructures;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
 
-   See <http://www.isda.org/publications/pdf/Supplement-13-to-2000DefinitionsAnnex.pdf>.
-   */
-   public class Aonia : OvernightIndex
-   {
-      public Aonia(Handle<YieldTermStructure> h = null)
-         : base("Aonia", 0, new AUDCurrency(), new Australia(), new Actual365Fixed(),
-                h ?? new Handle<YieldTermStructure>())
-      {}
-   }
+namespace QLNet.Indexes.Ibor
+{
+    //! %Aonia index
+    /*! Aonia (Australia Overnight Index Average) rate fixed by the RBA.
+
+    See <http://www.isda.org/publications/pdf/Supplement-13-to-2000DefinitionsAnnex.pdf>.
+    */
+    public class Aonia : OvernightIndex
+    {
+        public Aonia(Handle<YieldTermStructure> h = null)
+           : base("Aonia", 0, new AUDCurrency(), new Australia(), new Actual365Fixed(),
+                  h ?? new Handle<YieldTermStructure>())
+        { }
+    }
 }

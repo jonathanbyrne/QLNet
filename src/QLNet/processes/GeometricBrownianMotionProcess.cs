@@ -17,43 +17,43 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.processes
 {
-   //! Geometric brownian-motion process
-   /*! This class describes the stochastic process governed by
-       \f[
-           dS(t, S)= \mu S dt + \sigma S dW_t.
-       \f]
+    //! Geometric brownian-motion process
+    /*! This class describes the stochastic process governed by
+        \f[
+            dS(t, S)= \mu S dt + \sigma S dW_t.
+        \f]
 
-       \ingroup processes
-   */
-   public class GeometricBrownianMotionProcess : StochasticProcess1D
-   {
-      protected double initialValue_;
-      protected double mue_;
-      protected double sigma_;
+        \ingroup processes
+    */
+    public class GeometricBrownianMotionProcess : StochasticProcess1D
+    {
+        protected double initialValue_;
+        protected double mue_;
+        protected double sigma_;
 
-      public GeometricBrownianMotionProcess(double initialValue, double mue, double sigma)
-         : base(new EulerDiscretization())
-      {
-         initialValue_ = initialValue;
-         mue_ = mue;
-         sigma_ = sigma;
-      }
+        public GeometricBrownianMotionProcess(double initialValue, double mue, double sigma)
+           : base(new EulerDiscretization())
+        {
+            initialValue_ = initialValue;
+            mue_ = mue;
+            sigma_ = sigma;
+        }
 
-      public override double x0()
-      {
-         return initialValue_;
-      }
+        public override double x0()
+        {
+            return initialValue_;
+        }
 
-      public override double drift(double t, double x)
-      {
-         return mue_ * x;
-      }
+        public override double drift(double t, double x)
+        {
+            return mue_ * x;
+        }
 
-      public override double diffusion(double t, double x)
-      {
-         return sigma_ * x;
-      }
-   }
+        public override double diffusion(double t, double x)
+        {
+            return sigma_ * x;
+        }
+    }
 }

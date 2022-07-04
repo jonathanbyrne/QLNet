@@ -18,21 +18,22 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Math;
 using System;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences
 {
-   //! Zero exercise condition.
-   /*! Used in CEV models */
-   public class ZeroCondition<array_type> : IStepCondition<array_type> where array_type : Vector
-   {
-      public void applyTo(object a, double t)
-      {
-         Vector o = (Vector)a;
-         for (int i = 0; i < o.Count; i++)
-         {
-            o[i] = Math.Max(o[i], 0.0);
-         }
-      }
-   }
+    //! Zero exercise condition.
+    /*! Used in CEV models */
+    public class ZeroCondition<array_type> : IStepCondition<array_type> where array_type : Vector
+    {
+        public void applyTo(object a, double t)
+        {
+            Vector o = (Vector)a;
+            for (int i = 0; i < o.Count; i++)
+            {
+                o[i] = System.Math.Max(o[i], 0.0);
+            }
+        }
+    }
 }

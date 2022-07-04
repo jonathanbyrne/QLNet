@@ -31,17 +31,17 @@ using System.Linq;
 // granted, provided that this notice is preserved.
 // ===========================================================================
 
-namespace QLNet
+namespace QLNet.Math
 {
-   //! Prime numbers calculator
-   /*! Taken from "Monte Carlo Methods in Finance", by Peter Jäckel
-    */
-   public class PrimeNumbers
-   {
-      //! Get and store one after another.
+    //! Prime numbers calculator
+    /*! Taken from "Monte Carlo Methods in Finance", by Peter Jäckel
+     */
+    public class PrimeNumbers
+    {
+        //! Get and store one after another.
 
-      private static readonly ulong[] firstPrimes =
-      {
+        private static readonly ulong[] firstPrimes =
+        {
          // the first two primes are mandatory for bootstrapping
          2,  3,
          // optional additional precomputed primes
@@ -49,42 +49,42 @@ namespace QLNet
          31, 37, 41, 43, 47
       };
 
-      private static List<ulong> primeNumbers_ = new List<ulong>();
+        private static List<ulong> primeNumbers_ = new List<ulong>();
 
-      private PrimeNumbers()
-      {}
+        private PrimeNumbers()
+        { }
 
-      public  static ulong get(int absoluteIndex)
-      {
-         if (primeNumbers_.empty())
-            primeNumbers_.AddRange(firstPrimes);
+        public static ulong get(int absoluteIndex)
+        {
+            if (primeNumbers_.empty())
+                primeNumbers_.AddRange(firstPrimes);
 
-         while (primeNumbers_.Count <= absoluteIndex)
-            nextPrimeNumber();
+            while (primeNumbers_.Count <= absoluteIndex)
+                nextPrimeNumber();
 
-         return primeNumbers_[absoluteIndex];
-      }
+            return primeNumbers_[absoluteIndex];
+        }
 
-      private static ulong nextPrimeNumber()
-      {
-         ulong p, n, m = primeNumbers_.Last();
-         do
-         {
-            // skip the even numbers
-            m += 2;
-            n = (ulong)Math.Sqrt((double)m);
-            // i=1 since the even numbers have already been skipped
-            int i = 1;
+        private static ulong nextPrimeNumber()
+        {
+            ulong p, n, m = primeNumbers_.Last();
             do
             {
-               p = primeNumbers_[i];
-               ++i;
+                // skip the even numbers
+                m += 2;
+                n = (ulong)System.Math.Sqrt((double)m);
+                // i=1 since the even numbers have already been skipped
+                int i = 1;
+                do
+                {
+                    p = primeNumbers_[i];
+                    ++i;
+                }
+                while (m % p != 0 && p <= n);
             }
-            while ((m % p != 0) && p <= n);
-         }
-         while (p <= n);
-         primeNumbers_.Add(m);
-         return m;
-      }
-   }
+            while (p <= n);
+            primeNumbers_.Add(m);
+            return m;
+        }
+    }
 }

@@ -19,42 +19,42 @@
 
 using System;
 
-namespace QLNet
+namespace QLNet.Quotes
 {
-   public class DerivedQuote : Quote
-   {
-      //! market quote whose value depends on another quote
-      /*! \test the correctness of the returned values is tested by
-                checking them against numerical calculations.
-      */
-      private Handle<Quote> element_;
-      private Func<double, double> f_;
+    public class DerivedQuote : Quote
+    {
+        //! market quote whose value depends on another quote
+        /*! \test the correctness of the returned values is tested by
+                  checking them against numerical calculations.
+        */
+        private Handle<Quote> element_;
+        private Func<double, double> f_;
 
-      public DerivedQuote(Handle<Quote> element, Func<double, double> f)
-      {
-         element_ = element;
-         f_ = f;
+        public DerivedQuote(Handle<Quote> element, Func<double, double> f)
+        {
+            element_ = element;
+            f_ = f;
 
-         element_.registerWith(this.update);
-      }
+            element_.registerWith(update);
+        }
 
-      //! Quote interface
-      public override double value()
-      {
-         if (!isValid())
-            throw new ArgumentException("invalid DerivedQuote");
-         return f_(element_.link.value());
-      }
+        //! Quote interface
+        public override double value()
+        {
+            if (!isValid())
+                throw new ArgumentException("invalid DerivedQuote");
+            return f_(element_.link.value());
+        }
 
-      public override bool isValid()
-      {
-         return element_.link.isValid();
-      }
+        public override bool isValid()
+        {
+            return element_.link.isValid();
+        }
 
-      public void update()
-      {
-         notifyObservers();
-      }
+        public void update()
+        {
+            notifyObservers();
+        }
 
-   }
+    }
 }

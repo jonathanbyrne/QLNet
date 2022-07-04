@@ -16,89 +16,91 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Extensions;
+using QLNet.Math;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences
 {
-   public interface ISchemeFactory
-   {
-      IMixedScheme factory(object L, object bcs, object[] additionalInputs = null);
-   }
+    public interface ISchemeFactory
+    {
+        IMixedScheme factory(object L, object bcs, object[] additionalInputs = null);
+    }
 
-   public interface IMixedScheme
-   {
-      void step(ref object a, double t, double theta = 1.0);
-      void setStep(double dt);
-   }
+    public interface IMixedScheme
+    {
+        void step(ref object a, double t, double theta = 1.0);
+        void setStep(double dt);
+    }
 
-   //! Mixed (explicit/implicit) scheme for finite difference methods
-   /*! In this implementation, the passed operator must be derived
-       from either TimeConstantOperator or TimeDependentOperator.
+    //! Mixed (explicit/implicit) scheme for finite difference methods
+    /*! In this implementation, the passed operator must be derived
+        from either TimeConstantOperator or TimeDependentOperator.
 
-       \ingroup findiff
-   */
-   public class MixedScheme<Operator> : IMixedScheme where Operator : IOperator
-   {
-      protected Operator L_, I_, explicitPart_, implicitPart_;
-      protected double dt_;
-      protected double theta_;
-      protected List<BoundaryCondition<IOperator>> bcs_;
+        \ingroup findiff
+    */
+    public class MixedScheme<Operator> : IMixedScheme where Operator : IOperator
+    {
+        protected Operator L_, I_, explicitPart_, implicitPart_;
+        protected double dt_;
+        protected double theta_;
+        protected List<BoundaryCondition<IOperator>> bcs_;
 
-      // constructors
-      public MixedScheme() { }  // required for generics
-      public MixedScheme(Operator L, double theta, List<BoundaryCondition<IOperator>> bcs)
-      {
-         L_ = (Operator)L.Clone();
-         I_ = (Operator)L.identity(L.size());
-         dt_ = 0.0;
-         theta_ = theta;
-         bcs_ = bcs;
-      }
+        // constructors
+        public MixedScheme() { }  // required for generics
+        public MixedScheme(Operator L, double theta, List<BoundaryCondition<IOperator>> bcs)
+        {
+            L_ = (Operator)L.Clone();
+            I_ = (Operator)L.identity(L.size());
+            dt_ = 0.0;
+            theta_ = theta;
+            bcs_ = bcs;
+        }
 
-      public void step(ref object o, double t, double theta = 1.0)
-      {
-         Vector a = (Vector)o;
+        public void step(ref object o, double t, double theta = 1.0)
+        {
+            Vector a = (Vector)o;
 
-         int i;
-         for (i = 0; i < bcs_.Count; i++)
-            bcs_[i].setTime(t);
-         if (theta_.IsNotEqual(1.0))   // there is an explicit part
-         {
-            if (L_.isTimeDependent())
+            int i;
+            for (i = 0; i < bcs_.Count; i++)
+                bcs_[i].setTime(t);
+            if (theta_.IsNotEqual(1.0))   // there is an explicit part
             {
-               L_.setTime(t);
-               explicitPart_ = (Operator)L_.subtract(I_, L_.multiply((1.0 - theta_) * dt_, L_));
+                if (L_.isTimeDependent())
+                {
+                    L_.setTime(t);
+                    explicitPart_ = (Operator)L_.subtract(I_, L_.multiply((1.0 - theta_) * dt_, L_));
+                }
+                for (i = 0; i < bcs_.Count; i++)
+                    bcs_[i].applyBeforeApplying(explicitPart_);
+                a = explicitPart_.applyTo(a);
+                for (i = 0; i < bcs_.Count; i++)
+                    bcs_[i].applyAfterApplying(a);
             }
-            for (i = 0; i < bcs_.Count; i++)
-               bcs_[i].applyBeforeApplying(explicitPart_);
-            a = explicitPart_.applyTo(a);
-            for (i = 0; i < bcs_.Count; i++)
-               bcs_[i].applyAfterApplying(a);
-         }
-         if (theta_.IsNotEqual(0.0))   // there is an implicit part
-         {
-            if (L_.isTimeDependent())
+            if (theta_.IsNotEqual(0.0))   // there is an implicit part
             {
-               L_.setTime(t - dt_);
-               implicitPart_ = (Operator)L_.add(I_, L_.multiply(theta_ * dt_, L_));
+                if (L_.isTimeDependent())
+                {
+                    L_.setTime(t - dt_);
+                    implicitPart_ = (Operator)L_.add(I_, L_.multiply(theta_ * dt_, L_));
+                }
+                for (i = 0; i < bcs_.Count; i++)
+                    bcs_[i].applyBeforeSolving(implicitPart_, a);
+                a = implicitPart_.solveFor(a);
+                for (i = 0; i < bcs_.Count; i++)
+                    bcs_[i].applyAfterSolving(a);
             }
-            for (i = 0; i < bcs_.Count; i++)
-               bcs_[i].applyBeforeSolving(implicitPart_, a);
-            a = implicitPart_.solveFor(a);
-            for (i = 0; i < bcs_.Count; i++)
-               bcs_[i].applyAfterSolving(a);
-         }
 
-         o = a;
-      }
+            o = a;
+        }
 
-      public void setStep(double dt)
-      {
-         dt_ = dt;
-         if (theta_.IsNotEqual(1.0)) // there is an explicit part
-            explicitPart_ = (Operator)L_.subtract(I_, L_.multiply((1.0 - theta_) * dt_, L_));
-         if (theta_.IsNotEqual(0.0)) // there is an implicit part
-            implicitPart_ = (Operator)L_.add(I_, L_.multiply(theta_ * dt_, L_));
-      }
-   }
+        public void setStep(double dt)
+        {
+            dt_ = dt;
+            if (theta_.IsNotEqual(1.0)) // there is an explicit part
+                explicitPart_ = (Operator)L_.subtract(I_, L_.multiply((1.0 - theta_) * dt_, L_));
+            if (theta_.IsNotEqual(0.0)) // there is an implicit part
+                implicitPart_ = (Operator)L_.add(I_, L_.multiply(theta_ * dt_, L_));
+        }
+    }
 }

@@ -17,14 +17,16 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Patterns;
+
 namespace QLNet
 {
-   //! Shared handle to an observable
-   /*! All copies of an instance of this class refer to the same observable by means of a relinkable smart pointer. When such
-       pointer is relinked to another observable, the change will be propagated to all the copies.
-       <tt>registerAsObserver</tt> is not needed since C# does automatic garbage collection */
+    //! Shared handle to an observable
+    /*! All copies of an instance of this class refer to the same observable by means of a relinkable smart pointer. When such
+        pointer is relinked to another observable, the change will be propagated to all the copies.
+        <tt>registerAsObserver</tt> is not needed since C# does automatic garbage collection */
 
-   public class Handle<T> where T : IObservable
+    public class Handle<T> where T : IObservable
    {
       protected Link link_;
 

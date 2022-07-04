@@ -17,69 +17,70 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Methods.montecarlo;
 using System;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Math.randomnumbers
 {
-   //! Inverse cumulative random sequence generator
-   /*! It uses a sequence of uniform deviate in (0, 1) as the
-       source of cumulative distribution values.
-       Then an inverse cumulative distribution is used to calculate
-       the distribution deviate.
+    //! Inverse cumulative random sequence generator
+    /*! It uses a sequence of uniform deviate in (0, 1) as the
+        source of cumulative distribution values.
+        Then an inverse cumulative distribution is used to calculate
+        the distribution deviate.
 
-       The uniform deviate sequence is supplied by USG.
-       The inverse cumulative distribution is supplied by IC.
-   */
+        The uniform deviate sequence is supplied by USG.
+        The inverse cumulative distribution is supplied by IC.
+    */
 
-   public class InverseCumulativeRsg<USG, IC> : IRNG where USG : IRNG where IC : IValue
-   {
-      private USG uniformSequenceGenerator_;
-      private int dimension_;
-      private Sample<List<double>> x_;
-      private IC ICD_;
+    public class InverseCumulativeRsg<USG, IC> : IRNG where USG : IRNG where IC : IValue
+    {
+        private USG uniformSequenceGenerator_;
+        private int dimension_;
+        private Sample<List<double>> x_;
+        private IC ICD_;
 
-      public InverseCumulativeRsg(USG uniformSequenceGenerator)
-      {
-         uniformSequenceGenerator_ = uniformSequenceGenerator;
-         dimension_ = uniformSequenceGenerator_.dimension();
-         x_ = new Sample<List<double>>(new InitializedList<double>(dimension_), 1.0);
-      }
+        public InverseCumulativeRsg(USG uniformSequenceGenerator)
+        {
+            uniformSequenceGenerator_ = uniformSequenceGenerator;
+            dimension_ = uniformSequenceGenerator_.dimension();
+            x_ = new Sample<List<double>>(new InitializedList<double>(dimension_), 1.0);
+        }
 
-      public InverseCumulativeRsg(USG uniformSequenceGenerator, IC inverseCumulative) : this(uniformSequenceGenerator)
-      {
-         ICD_ = inverseCumulative;
-      }
+        public InverseCumulativeRsg(USG uniformSequenceGenerator, IC inverseCumulative) : this(uniformSequenceGenerator)
+        {
+            ICD_ = inverseCumulative;
+        }
 
-      #region IRNG interface
+        #region IRNG interface
 
-      //! returns next sample from the Gaussian distribution
-      public Sample<List<double>> nextSequence()
-      {
-         Sample<List<double>> sample = uniformSequenceGenerator_.nextSequence();
-         x_.weight = sample.weight;
-         for (int i = 0; i < dimension_; i++)
-         {
-            x_.value[i] = ICD_.value(sample.value[i]);
-         }
-         return x_;
-      }
+        //! returns next sample from the Gaussian distribution
+        public Sample<List<double>> nextSequence()
+        {
+            Sample<List<double>> sample = uniformSequenceGenerator_.nextSequence();
+            x_.weight = sample.weight;
+            for (int i = 0; i < dimension_; i++)
+            {
+                x_.value[i] = ICD_.value(sample.value[i]);
+            }
+            return x_;
+        }
 
-      public Sample<List<double>> lastSequence()
-      {
-         return x_;
-      }
+        public Sample<List<double>> lastSequence()
+        {
+            return x_;
+        }
 
-      public int dimension()
-      {
-         return dimension_;
-      }
+        public int dimension()
+        {
+            return dimension_;
+        }
 
-      public IRNG factory(int dimensionality, ulong seed)
-      {
-         throw new NotSupportedException();
-      }
+        public IRNG factory(int dimensionality, ulong seed)
+        {
+            throw new NotSupportedException();
+        }
 
-      #endregion
-   }
+        #endregion
+    }
 }

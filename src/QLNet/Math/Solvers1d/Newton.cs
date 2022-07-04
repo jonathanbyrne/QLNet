@@ -17,51 +17,53 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Exceptions;
+using QLNet.Extensions;
 using System;
 
-namespace QLNet
+namespace QLNet.Math.Solvers1d
 {
-   //! %Newton 1-D solver
-   /*! \note This solver requires that the passed function object
-             implement a method <tt>Real derivative(Real)</tt>.
-   */
-   public class Newton : Solver1D
-   {
-      protected override double solveImpl(ISolver1d f, double xAccuracy)
-      {
-         /* The implementation of the algorithm was inspired by Press, Teukolsky, Vetterling, and Flannery,
-            "Numerical Recipes in C", 2nd edition, Cambridge University Press */
+    //! %Newton 1-D solver
+    /*! \note This solver requires that the passed function object
+              implement a method <tt>Real derivative(Real)</tt>.
+    */
+    public class Newton : Solver1D
+    {
+        protected override double solveImpl(ISolver1d f, double xAccuracy)
+        {
+            /* The implementation of the algorithm was inspired by Press, Teukolsky, Vetterling, and Flannery,
+               "Numerical Recipes in C", 2nd edition, Cambridge University Press */
 
-         double froot, dfroot, dx;
+            double froot, dfroot, dx;
 
-         froot = f.value(root_);
-         dfroot = f.derivative(root_);
-
-         if (dfroot.IsEqual(default(double)))
-            throw new ArgumentException("Newton requires function's derivative");
-         ++evaluationNumber_;
-
-         while (evaluationNumber_ <= maxEvaluations_)
-         {
-            dx = froot / dfroot;
-            root_ -= dx;
-            // jumped out of brackets, switch to NewtonSafe
-            if ((xMin_ - root_) * (root_ - xMax_) < 0.0)
-            {
-               NewtonSafe s = new NewtonSafe();
-               s.setMaxEvaluations(maxEvaluations_ - evaluationNumber_);
-               return s.solve(f, xAccuracy, root_ + dx, xMin_, xMax_);
-            }
-            if (Math.Abs(dx) < xAccuracy)
-               return root_;
             froot = f.value(root_);
             dfroot = f.derivative(root_);
-            evaluationNumber_++;
-         }
 
-         Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
-                       QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
-         return 0;
-      }
-   }
+            if (dfroot.IsEqual(default))
+                throw new ArgumentException("Newton requires function's derivative");
+            ++evaluationNumber_;
+
+            while (evaluationNumber_ <= maxEvaluations_)
+            {
+                dx = froot / dfroot;
+                root_ -= dx;
+                // jumped out of brackets, switch to NewtonSafe
+                if ((xMin_ - root_) * (root_ - xMax_) < 0.0)
+                {
+                    NewtonSafe s = new NewtonSafe();
+                    s.setMaxEvaluations(maxEvaluations_ - evaluationNumber_);
+                    return s.solve(f, xAccuracy, root_ + dx, xMin_, xMax_);
+                }
+                if (System.Math.Abs(dx) < xAccuracy)
+                    return root_;
+                froot = f.value(root_);
+                dfroot = f.derivative(root_);
+                evaluationNumber_++;
+            }
+
+            Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
+                          QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
+            return 0;
+        }
+    }
 }

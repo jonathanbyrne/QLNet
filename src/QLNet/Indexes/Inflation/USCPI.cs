@@ -17,61 +17,67 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Currencies;
+using QLNet.Time;
+
+namespace QLNet.Indexes.Inflation
 {
-   //! US CPI index
-   public class USCPI : ZeroInflationIndex
-   {
-      public USCPI(bool interpolated)
-         : this(interpolated, new Handle<ZeroInflationTermStructure>()) {}
+    //! US CPI index
+    public class USCPI : ZeroInflationIndex
+    {
+        public USCPI(bool interpolated)
+           : this(interpolated, new Handle<ZeroInflationTermStructure>()) { }
 
-      public USCPI(bool interpolated,
-                   Handle<ZeroInflationTermStructure> ts)
-         : base("CPI",
-                new USRegion(),
-                false,
-                interpolated,
-                Frequency.Monthly,
-                new Period(1, TimeUnit.Months), // availability
-                new USDCurrency(),
-                ts) {}
-   }
+        public USCPI(bool interpolated,
+                     Handle<ZeroInflationTermStructure> ts)
+           : base("CPI",
+                  new USRegion(),
+                  false,
+                  interpolated,
+                  Frequency.Monthly,
+                  new Period(1, TimeUnit.Months), // availability
+                  new USDCurrency(),
+                  ts)
+        { }
+    }
 
-   //! Genuine year-on-year US CPI (i.e. not a ratio of US CPI)
-   public class YYUSCPI : YoYInflationIndex
-   {
-      public YYUSCPI(bool interpolated)
-         : this(interpolated, new Handle<YoYInflationTermStructure>()) {}
+    //! Genuine year-on-year US CPI (i.e. not a ratio of US CPI)
+    public class YYUSCPI : YoYInflationIndex
+    {
+        public YYUSCPI(bool interpolated)
+           : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
 
-      public YYUSCPI(bool interpolated,
-                     Handle<YoYInflationTermStructure> ts)
-         : base("YY_CPI",
-                new USRegion(),
-                false,
-                interpolated,
-                false,
-                Frequency.Monthly,
-                new Period(1, TimeUnit.Months),
-                new USDCurrency(),
-                ts) {}
-   }
+        public YYUSCPI(bool interpolated,
+                       Handle<YoYInflationTermStructure> ts)
+           : base("YY_CPI",
+                  new USRegion(),
+                  false,
+                  interpolated,
+                  false,
+                  Frequency.Monthly,
+                  new Period(1, TimeUnit.Months),
+                  new USDCurrency(),
+                  ts)
+        { }
+    }
 
-   //! Fake year-on-year US CPI (i.e. a ratio of US CPI)
-   public class YYUSCPIr : YoYInflationIndex
-   {
-      public YYUSCPIr(bool interpolated)
-         : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
+    //! Fake year-on-year US CPI (i.e. a ratio of US CPI)
+    public class YYUSCPIr : YoYInflationIndex
+    {
+        public YYUSCPIr(bool interpolated)
+           : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
 
-      public YYUSCPIr(bool interpolated,
-                      Handle<YoYInflationTermStructure> ts)
-         : base("YYR_CPI",
-                new USRegion(),
-                false,
-                interpolated,
-                true,
-                Frequency.Monthly,
-                new Period(1, TimeUnit.Months),
-                new USDCurrency(),
-                ts) {}
-   }
+        public YYUSCPIr(bool interpolated,
+                        Handle<YoYInflationTermStructure> ts)
+           : base("YYR_CPI",
+                  new USRegion(),
+                  false,
+                  interpolated,
+                  true,
+                  Frequency.Monthly,
+                  new Period(1, TimeUnit.Months),
+                  new USDCurrency(),
+                  ts)
+        { }
+    }
 }

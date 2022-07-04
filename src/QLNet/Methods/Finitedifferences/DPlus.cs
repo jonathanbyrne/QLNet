@@ -18,25 +18,25 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences
 {
-   //! \f$ D_{+} \f$ matricial representation
-   /*! The differential operator \f$ D_{+} \f$ discretizes the
-       first derivative with the first-order formula
-       \f[ \frac{\partial u_{i}}{\partial x} \approx
-           \frac{u_{i+1}-u_{i}}{h} = D_{+} u_{i}
-       \f]
+    //! \f$ D_{+} \f$ matricial representation
+    /*! The differential operator \f$ D_{+} \f$ discretizes the
+        first derivative with the first-order formula
+        \f[ \frac{\partial u_{i}}{\partial x} \approx
+            \frac{u_{i+1}-u_{i}}{h} = D_{+} u_{i}
+        \f]
 
-       \ingroup findiff
-   */
-   public class DPlus : TridiagonalOperator
-   {
-      public DPlus(int gridPoints, double h)
-         : base(gridPoints)
-      {
-         setFirstRow(-1.0 / h, 1.0 / h);
-         setMidRows(0.0, -1.0 / h, 1.0 / h);
-         setLastRow(-1.0 / h, 1.0 / h);                    // linear extrapolation
-      }
-   }
+        \ingroup findiff
+    */
+    public class DPlus : TridiagonalOperator
+    {
+        public DPlus(int gridPoints, double h)
+           : base(gridPoints)
+        {
+            setFirstRow(-1.0 / h, 1.0 / h);
+            setMidRows(0.0, -1.0 / h, 1.0 / h);
+            setLastRow(-1.0 / h, 1.0 / h);                    // linear extrapolation
+        }
+    }
 }

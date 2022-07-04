@@ -1,21 +1,21 @@
 ﻿using System;
 
-namespace QLNet
+namespace QLNet.Exceptions
 {
-   public class NotTradableException : Exception
-   {
-      public NotTradableException()
-      {
-      }
+    public class NotTradableException : Exception
+    {
+        public NotTradableException()
+        {
+        }
 
-      public NotTradableException(string message)
-         : base(message)
-      {
-      }
+        public NotTradableException(string message)
+           : base(message)
+        {
+        }
 
-      public NotTradableException(string message, Exception inner)
-         : base(message, inner)
-      {
-      }
-   }
+        public NotTradableException(string message, Exception inner)
+           : base(message, inner)
+        {
+        }
+    }
 }

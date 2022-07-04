@@ -13,99 +13,103 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+using QLNet.Cashflows;
+using QLNet.Instruments;
+using QLNet.Termstructures.Inflation;
+using QLNet.Time;
 using System;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Pricingengines.inflation
 {
-   //! This engine only adds timing functionality (e.g. different lag)
-   //! w.r.t. an existing interpolated price surface.
-   public class InterpolatingCPICapFloorEngine : CPICapFloor.Engine
-   {
-      public InterpolatingCPICapFloorEngine(Handle<CPICapFloorTermPriceSurface> priceSurf)
-      {
-         priceSurf_ = priceSurf;
+    //! This engine only adds timing functionality (e.g. different lag)
+    //! w.r.t. an existing interpolated price surface.
+    public class InterpolatingCPICapFloorEngine : CPICapFloor.Engine
+    {
+        public InterpolatingCPICapFloorEngine(Handle<CPICapFloorTermPriceSurface> priceSurf)
+        {
+            priceSurf_ = priceSurf;
 
-         priceSurf_.registerWith(update);
-      }
+            priceSurf_.registerWith(update);
+        }
 
-      public override void calculate()
-      {
-         double npv = 0.0;
+        public override void calculate()
+        {
+            double npv = 0.0;
 
-         // what is the difference between the observationLag of the surface
-         // and the observationLag of the cap/floor?
-         // TODO next line will fail if units are different
-         Period lagDiff = arguments_.observationLag - priceSurf_.link.observationLag();
-         // next line will fail if units are different if Period() is not well written
-         Utils.QL_REQUIRE(lagDiff >= new Period(0, TimeUnit.Months), () => "InterpolatingCPICapFloorEngine: " +
-                          "lag difference must be non-negative: " + lagDiff);
+            // what is the difference between the observationLag of the surface
+            // and the observationLag of the cap/floor?
+            // TODO next line will fail if units are different
+            Period lagDiff = arguments_.observationLag - priceSurf_.link.observationLag();
+            // next line will fail if units are different if Period() is not well written
+            Utils.QL_REQUIRE(lagDiff >= new Period(0, TimeUnit.Months), () => "InterpolatingCPICapFloorEngine: " +
+                             "lag difference must be non-negative: " + lagDiff);
 
-         // we now need an effective maturity to use in the price surface because this uses
-         // maturity of calibration instruments as its time axis, N.B. this must also
-         // use the roll because the surface does
-         Date effectiveMaturity = arguments_.payDate - lagDiff;
+            // we now need an effective maturity to use in the price surface because this uses
+            // maturity of calibration instruments as its time axis, N.B. this must also
+            // use the roll because the surface does
+            Date effectiveMaturity = arguments_.payDate - lagDiff;
 
 
-         // what interpolation do we use? Index / flat / linear
-         if (arguments_.observationInterpolation == InterpolationType.AsIndex)
-         {
-            // same as index means we can just use the price surface
-            // since this uses the index
-            if (arguments_.type == Option.Type.Call)
+            // what interpolation do we use? Index / flat / linear
+            if (arguments_.observationInterpolation == InterpolationType.AsIndex)
             {
-               npv = priceSurf_.link.capPrice(effectiveMaturity, arguments_.strike);
+                // same as index means we can just use the price surface
+                // since this uses the index
+                if (arguments_.type == QLNet.Option.Type.Call)
+                {
+                    npv = priceSurf_.link.capPrice(effectiveMaturity, arguments_.strike);
+                }
+                else
+                {
+                    npv = priceSurf_.link.floorPrice(effectiveMaturity, arguments_.strike);
+                }
+
+
             }
             else
             {
-               npv = priceSurf_.link.floorPrice(effectiveMaturity, arguments_.strike);
+                KeyValuePair<Date, Date> dd = Utils.inflationPeriod(effectiveMaturity, arguments_.infIndex.link.frequency());
+                double priceStart = 0.0;
+
+                if (arguments_.type == QLNet.Option.Type.Call)
+                {
+                    priceStart = priceSurf_.link.capPrice(dd.Key, arguments_.strike);
+                }
+                else
+                {
+                    priceStart = priceSurf_.link.floorPrice(dd.Key, arguments_.strike);
+                }
+
+                // if we use a flat index vs the interpolated one ...
+                if (arguments_.observationInterpolation == InterpolationType.Flat)
+                {
+                    // then use the price for the first day in the period because the value cannot change after then
+                    npv = priceStart;
+                }
+                else
+                {
+                    // linear interpolation will be very close
+                    double priceEnd = 0.0;
+                    if (arguments_.type == QLNet.Option.Type.Call)
+                    {
+                        priceEnd = priceSurf_.link.capPrice(dd.Value + new Period(1, TimeUnit.Days), arguments_.strike);
+                    }
+                    else
+                    {
+                        priceEnd = priceSurf_.link.floorPrice(dd.Value + new Period(1, TimeUnit.Days), arguments_.strike);
+                    }
+
+                    npv = priceStart + (priceEnd - priceStart) * (effectiveMaturity - dd.Key)
+                          / (dd.Value + new Period(1, TimeUnit.Days) - dd.Key); // can't get to next period'
+                }
             }
 
+            results_.value = npv;
+        }
 
-         }
-         else
-         {
-            KeyValuePair<Date, Date> dd = Utils.inflationPeriod(effectiveMaturity, arguments_.infIndex.link.frequency());
-            double priceStart = 0.0;
+        public virtual string name() { return "InterpolatingCPICapFloorEngine"; }
 
-            if (arguments_.type == Option.Type.Call)
-            {
-               priceStart = priceSurf_.link.capPrice(dd.Key, arguments_.strike);
-            }
-            else
-            {
-               priceStart = priceSurf_.link.floorPrice(dd.Key, arguments_.strike);
-            }
-
-            // if we use a flat index vs the interpolated one ...
-            if (arguments_.observationInterpolation == InterpolationType.Flat)
-            {
-               // then use the price for the first day in the period because the value cannot change after then
-               npv = priceStart;
-            }
-            else
-            {
-               // linear interpolation will be very close
-               double priceEnd = 0.0;
-               if (arguments_.type == Option.Type.Call)
-               {
-                  priceEnd = priceSurf_.link.capPrice((dd.Value + new Period(1, TimeUnit.Days)), arguments_.strike);
-               }
-               else
-               {
-                  priceEnd = priceSurf_.link.floorPrice((dd.Value + new Period(1, TimeUnit.Days)), arguments_.strike);
-               }
-
-               npv = priceStart + (priceEnd - priceStart) * (effectiveMaturity - dd.Key)
-                     / ((dd.Value + new Period(1, TimeUnit.Days)) - dd.Key); // can't get to next period'
-            }
-         }
-
-         results_.value = npv;
-      }
-
-      public  virtual String name() { return "InterpolatingCPICapFloorEngine"; }
-
-      protected Handle<CPICapFloorTermPriceSurface> priceSurf_;
-   }
+        protected Handle<CPICapFloorTermPriceSurface> priceSurf_;
+    }
 }

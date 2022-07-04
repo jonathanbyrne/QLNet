@@ -18,48 +18,51 @@
 */
 
 
-namespace QLNet
+using QLNet.Quotes;
+using QLNet.Time;
+
+namespace QLNet.Termstructures.Volatility.equityfx
 {
-   //! Constant Black volatility, no time-strike dependence
-   /*! This class implements the BlackVolatilityTermStructure interface for a constant Black volatility (no time/strike
-       dependence). */
-   public class BlackConstantVol : BlackVolatilityTermStructure
-   {
-      private Handle<Quote> volatility_;
+    //! Constant Black volatility, no time-strike dependence
+    /*! This class implements the BlackVolatilityTermStructure interface for a constant Black volatility (no time/strike
+        dependence). */
+    public class BlackConstantVol : BlackVolatilityTermStructure
+    {
+        private Handle<Quote> volatility_;
 
-      public BlackConstantVol(Date referenceDate, Calendar cal, double volatility, DayCounter dc)
-         : base(referenceDate, cal, BusinessDayConvention.Following, dc)
-      {
-         volatility_ = new Handle<Quote>(new SimpleQuote(volatility));
-      }
+        public BlackConstantVol(Date referenceDate, Calendar cal, double volatility, DayCounter dc)
+           : base(referenceDate, cal, BusinessDayConvention.Following, dc)
+        {
+            volatility_ = new Handle<Quote>(new SimpleQuote(volatility));
+        }
 
-      public BlackConstantVol(Date referenceDate, Calendar cal, Handle<Quote> volatility, DayCounter dc)
-         : base(referenceDate, cal, BusinessDayConvention.Following, dc)
-      {
-         volatility_ = volatility;
+        public BlackConstantVol(Date referenceDate, Calendar cal, Handle<Quote> volatility, DayCounter dc)
+           : base(referenceDate, cal, BusinessDayConvention.Following, dc)
+        {
+            volatility_ = volatility;
 
-         volatility_.registerWith(update);
-      }
+            volatility_.registerWith(update);
+        }
 
-      public BlackConstantVol(int settlementDays, Calendar cal, double volatility, DayCounter dc)
-         : base(settlementDays, cal, BusinessDayConvention.Following, dc)
-      {
-         volatility_ = new Handle<Quote>(new SimpleQuote(volatility));
-      }
+        public BlackConstantVol(int settlementDays, Calendar cal, double volatility, DayCounter dc)
+           : base(settlementDays, cal, BusinessDayConvention.Following, dc)
+        {
+            volatility_ = new Handle<Quote>(new SimpleQuote(volatility));
+        }
 
-      public BlackConstantVol(int settlementDays, Calendar cal, Handle<Quote> volatility, DayCounter dc)
-         : base(settlementDays, cal, BusinessDayConvention.Following, dc)
-      {
-         volatility_ = volatility;
+        public BlackConstantVol(int settlementDays, Calendar cal, Handle<Quote> volatility, DayCounter dc)
+           : base(settlementDays, cal, BusinessDayConvention.Following, dc)
+        {
+            volatility_ = volatility;
 
-         volatility_.registerWith(update);
-      }
+            volatility_.registerWith(update);
+        }
 
 
-      public override Date maxDate() { return Date.maxDate(); }
-      public override double minStrike() { return double.MinValue; }
-      public override double maxStrike() { return double.MaxValue; }
+        public override Date maxDate() { return Date.maxDate(); }
+        public override double minStrike() { return double.MinValue; }
+        public override double maxStrike() { return double.MaxValue; }
 
-      protected override double blackVolImpl(double t, double x) { return volatility_.link.value(); }
-   }
+        protected override double blackVolImpl(double t, double x) { return volatility_.link.value(); }
+    }
 }

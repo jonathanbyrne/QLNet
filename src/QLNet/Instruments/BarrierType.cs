@@ -17,20 +17,20 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Instruments
 {
 
-   //! Placeholder for enumerated barrier types
-   public struct Barrier
-   {
-      public enum Type
-      {
-         DownIn,
-         UpIn,
-         DownOut,
-         UpOut,
-         NULL
-      }
-   }
+    //! Placeholder for enumerated barrier types
+    public struct Barrier
+    {
+        public enum Type
+        {
+            DownIn,
+            UpIn,
+            DownOut,
+            UpOut,
+            NULL
+        }
+    }
 
 }

@@ -16,6 +16,8 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Exceptions;
+using QLNet.Patterns;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,8 +25,8 @@ using System.Reflection;
 
 namespace QLNet
 {
-   // here are extensions to IList to accomodate some QL functionality as well as have useful things for .net
-   public static partial class Utils
+    // here are extensions to IList to accomodate some QL functionality as well as have useful things for .net
+    public static partial class Utils
    {
       public static bool empty<T>(this IList<T> items) { return items.Count == 0; }
 
@@ -76,9 +78,9 @@ namespace QLNet
          double? floor = Get(floors, i);
          double? cap = Get(caps, i);
          if (floor != null)
-            result = Math.Max(Convert.ToDouble(floor), result);
+            result = System.Math.Max(Convert.ToDouble(floor), result);
          if (cap != null)
-            result = Math.Min(Convert.ToDouble(cap), result);
+            result = System.Math.Min(Convert.ToDouble(cap), result);
          return result;
       }
 
@@ -98,7 +100,7 @@ namespace QLNet
       // this is the overload for Pow with int power: much faster and more precise
       public static double Pow(double x, int y)
       {
-         int n = Math.Abs(y);
+         int n = System.Math.Abs(y);
          double retval = 1;
          for (; ; x *= x)
          {

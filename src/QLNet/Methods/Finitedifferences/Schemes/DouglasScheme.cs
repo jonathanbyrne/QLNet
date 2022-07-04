@@ -17,77 +17,79 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Math;
+using QLNet.Methods.Finitedifferences.Operators;
 using System;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences.Schemes
 {
-   /// <summary>
-   /// Douglas operator splitting
-   /// </summary>
-   public class DouglasScheme : IMixedScheme, ISchemeFactory
-   {
-      public DouglasScheme()
-      { }
+    /// <summary>
+    /// Douglas operator splitting
+    /// </summary>
+    public class DouglasScheme : IMixedScheme, ISchemeFactory
+    {
+        public DouglasScheme()
+        { }
 
-      public DouglasScheme(double theta,
-                           FdmLinearOpComposite map,
-                           List<BoundaryCondition<FdmLinearOp>> bcSet = null)
-      {
-         dt_ = null;
-         theta_ = theta;
-         map_ = map;
-         bcSet_ = new BoundaryConditionSchemeHelper(bcSet);
-      }
+        public DouglasScheme(double theta,
+                             FdmLinearOpComposite map,
+                             List<BoundaryCondition<FdmLinearOp>> bcSet = null)
+        {
+            dt_ = null;
+            theta_ = theta;
+            map_ = map;
+            bcSet_ = new BoundaryConditionSchemeHelper(bcSet);
+        }
 
-      #region ISchemeFactory
+        #region ISchemeFactory
 
-      public IMixedScheme factory(object L, object bcs, object[] additionalInputs = null)
-      {
-         double? theta = additionalInputs[0] as double?;
-         return new DouglasScheme(theta.Value,
-                                  L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
-      }
+        public IMixedScheme factory(object L, object bcs, object[] additionalInputs = null)
+        {
+            double? theta = additionalInputs[0] as double?;
+            return new DouglasScheme(theta.Value,
+                                     L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
+        }
 
-      #endregion
+        #endregion
 
-      #region IMixedScheme interface
+        #region IMixedScheme interface
 
-      public void step(ref object a, double t, double theta = 1.0)
-      {
-         Utils.QL_REQUIRE(t - dt_.Value > -1e-8, () => "a step towards negative time given");
-         map_.setTime(Math.Max(0.0, t - dt_.Value), t);
-         bcSet_.setTime(Math.Max(0.0, t - dt_.Value));
+        public void step(ref object a, double t, double theta = 1.0)
+        {
+            Utils.QL_REQUIRE(t - dt_.Value > -1e-8, () => "a step towards negative time given");
+            map_.setTime(System.Math.Max(0.0, t - dt_.Value), t);
+            bcSet_.setTime(System.Math.Max(0.0, t - dt_.Value));
 
-         bcSet_.applyBeforeApplying(map_);
-         Vector y = (a as Vector) + dt_.Value * map_.apply((a as Vector));
-         bcSet_.applyAfterApplying(y);
+            bcSet_.applyBeforeApplying(map_);
+            Vector y = (a as Vector) + dt_.Value * map_.apply(a as Vector);
+            bcSet_.applyAfterApplying(y);
 
-         for (int i = 0; i < map_.size(); ++i)
-         {
-            Vector rhs = y - theta_ * dt_.Value * map_.apply_direction(i, (a as Vector));
-            y = map_.solve_splitting(i, rhs, -theta_ * dt_.Value);
-         }
-         bcSet_.applyAfterSolving(y);
+            for (int i = 0; i < map_.size(); ++i)
+            {
+                Vector rhs = y - theta_ * dt_.Value * map_.apply_direction(i, a as Vector);
+                y = map_.solve_splitting(i, rhs, -theta_ * dt_.Value);
+            }
+            bcSet_.applyAfterSolving(y);
 
-         a = y;
-      }
+            a = y;
+        }
 
-      public void setStep(double dt)
-      {
-         dt_ = dt;
-      }
+        public void setStep(double dt)
+        {
+            dt_ = dt;
+        }
 
-      #endregion
+        #endregion
 
-      protected Vector apply(Vector r)
-      {
-         return r - dt_.Value * map_.apply(r);
-      }
+        protected Vector apply(Vector r)
+        {
+            return r - dt_.Value * map_.apply(r);
+        }
 
-      protected double? dt_;
-      protected double theta_;
-      protected FdmLinearOpComposite map_;
-      protected BoundaryConditionSchemeHelper bcSet_;
-   }
+        protected double? dt_;
+        protected double theta_;
+        protected FdmLinearOpComposite map_;
+        protected BoundaryConditionSchemeHelper bcSet_;
+    }
 }

@@ -19,30 +19,32 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Math;
+
+namespace QLNet.Termstructures
 {
-   //! bootstrap error
-   public class BootstrapError<T, U> : ISolver1d
+    //! bootstrap error
+    public class BootstrapError<T, U> : ISolver1d
       where T : Curve<U>
       where U : TermStructure
-   {
+    {
 
-      private T curve_;
-      private BootstrapHelper<U> helper_;
-      private int segment_;
+        private T curve_;
+        private BootstrapHelper<U> helper_;
+        private int segment_;
 
-      public BootstrapError(T curve, BootstrapHelper<U> helper, int segment)
-      {
-         curve_ = curve;
-         helper_ = helper;
-         segment_ = segment;
-      }
+        public BootstrapError(T curve, BootstrapHelper<U> helper, int segment)
+        {
+            curve_ = curve;
+            helper_ = helper;
+            segment_ = segment;
+        }
 
-      public override double value(double guess)
-      {
-         curve_.updateGuess(curve_.data_, guess, segment_);
-         curve_.interpolation_.update();
-         return helper_.quoteError();
-      }
-   }
+        public override double value(double guess)
+        {
+            curve_.updateGuess(curve_.data_, guess, segment_);
+            curve_.interpolation_.update();
+            return helper_.quoteError();
+        }
+    }
 }

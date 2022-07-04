@@ -17,69 +17,71 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Math;
+using QLNet.Methods.Finitedifferences.Operators;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences.Meshers
 {
-   /// <summary>
-   /// uniform grid mesher
-   /// </summary>
-   public class UniformGridMesher : FdmMesher
-   {
-      public UniformGridMesher(FdmLinearOpLayout layout, List < Pair < double?, double? >> boundaries)
-      : base(layout)
-      {
-         dx_ = new Vector(layout.dim().Count);
-         locations_ = new InitializedList<List<double>>(layout.dim().Count);
+    /// <summary>
+    /// uniform grid mesher
+    /// </summary>
+    public class UniformGridMesher : FdmMesher
+    {
+        public UniformGridMesher(FdmLinearOpLayout layout, List<Pair<double?, double?>> boundaries)
+        : base(layout)
+        {
+            dx_ = new Vector(layout.dim().Count);
+            locations_ = new InitializedList<List<double>>(layout.dim().Count);
 
-         Utils.QL_REQUIRE(boundaries.Count == layout.dim().Count,
-                          () => "inconsistent boundaries given");
+            Utils.QL_REQUIRE(boundaries.Count == layout.dim().Count,
+                             () => "inconsistent boundaries given");
 
-         for (int i = 0; i < layout.dim().Count; ++i)
-         {
-            dx_[i] = (boundaries[i].second.Value - boundaries[i].first.Value)
-                     / (layout.dim()[i] - 1);
-
-            locations_[i] = new InitializedList<double>(layout.dim()[i]);
-            for (int j = 0; j < layout.dim()[i]; ++j)
+            for (int i = 0; i < layout.dim().Count; ++i)
             {
-               locations_[i][j] = boundaries[i].first.Value + j * dx_[i];
+                dx_[i] = (boundaries[i].second.Value - boundaries[i].first.Value)
+                         / (layout.dim()[i] - 1);
+
+                locations_[i] = new InitializedList<double>(layout.dim()[i]);
+                for (int j = 0; j < layout.dim()[i]; ++j)
+                {
+                    locations_[i][j] = boundaries[i].first.Value + j * dx_[i];
+                }
             }
-         }
-      }
+        }
 
-      public override double? dplus(FdmLinearOpIterator iter, int direction)
-      {
-         return dx_[direction];
-      }
+        public override double? dplus(FdmLinearOpIterator iter, int direction)
+        {
+            return dx_[direction];
+        }
 
-      public override double? dminus(FdmLinearOpIterator iter, int direction)
-      {
-         return dx_[direction];
-      }
+        public override double? dminus(FdmLinearOpIterator iter, int direction)
+        {
+            return dx_[direction];
+        }
 
-      public override double location(FdmLinearOpIterator iter,
-                                      int direction)
-      {
-         return locations_[direction][iter.coordinates()[direction]];
-      }
+        public override double location(FdmLinearOpIterator iter,
+                                        int direction)
+        {
+            return locations_[direction][iter.coordinates()[direction]];
+        }
 
-      public override Vector locations(int direction)
-      {
-         Vector retVal = new Vector(layout_.size());
+        public override Vector locations(int direction)
+        {
+            Vector retVal = new Vector(layout_.size());
 
-         FdmLinearOpIterator endIter = layout_.end();
-         for (FdmLinearOpIterator iter = layout_.begin();
-              iter != endIter;
-              ++iter)
-         {
-            retVal[iter.index()] = locations_[direction][iter.coordinates()[direction]];
-         }
+            FdmLinearOpIterator endIter = layout_.end();
+            for (FdmLinearOpIterator iter = layout_.begin();
+                 iter != endIter;
+                 ++iter)
+            {
+                retVal[iter.index()] = locations_[direction][iter.coordinates()[direction]];
+            }
 
-         return retVal;
-      }
+            return retVal;
+        }
 
-      protected Vector dx_;
-      protected List<List<double>> locations_;
-   }
+        protected Vector dx_;
+        protected List<List<double>> locations_;
+    }
 }

@@ -21,75 +21,75 @@
 
 using System;
 
-namespace QLNet
+namespace QLNet.Time.Calendars
 {
-   //! Danish calendar
-   /*! Holidays:
-       <ul>
-       <li>Saturdays</li>
-       <li>Sundays</li>
-       <li>Maundy Thursday</li>
-       <li>Good Friday</li>
-       <li>Easter Monday</li>
-       <li>General Prayer Day, 25 days after Easter Monday</li>
-       <li>Ascension</li>
-       <li>Whit (Pentecost) Monday </li>
-       <li>New Year's Day, January 1st</li>
-       <li>Constitution Day, June 5th</li>
-       <li>Christmas, December 25th</li>
-       <li>Boxing Day, December 26th</li>
-       </ul>
+    //! Danish calendar
+    /*! Holidays:
+        <ul>
+        <li>Saturdays</li>
+        <li>Sundays</li>
+        <li>Maundy Thursday</li>
+        <li>Good Friday</li>
+        <li>Easter Monday</li>
+        <li>General Prayer Day, 25 days after Easter Monday</li>
+        <li>Ascension</li>
+        <li>Whit (Pentecost) Monday </li>
+        <li>New Year's Day, January 1st</li>
+        <li>Constitution Day, June 5th</li>
+        <li>Christmas, December 25th</li>
+        <li>Boxing Day, December 26th</li>
+        </ul>
 
-       \ingroup calendars
-   */
-   public class Denmark : Calendar
-   {
-      public Denmark() : base(Impl.Singleton) { }
+        \ingroup calendars
+    */
+    public class Denmark : Calendar
+    {
+        public Denmark() : base(Impl.Singleton) { }
 
-      class Impl : Calendar.WesternImpl
-      {
-         public static readonly Impl Singleton = new Impl();
-         private Impl() { }
+        class Impl : WesternImpl
+        {
+            public static readonly Impl Singleton = new Impl();
+            private Impl() { }
 
-         public override string name() { return "Denmark"; }
-         public override bool isBusinessDay(Date date)
-         {
-            DayOfWeek w = date.DayOfWeek;
-            int d = date.Day, dd = date.DayOfYear;
-            Month m = (Month)date.Month;
-            int y = date.Year;
-            int em = easterMonday(y);
-            if (isWeekend(w)
-                // Maundy Thursday
-                || (dd == em - 4)
-                // Good Friday
-                || (dd == em - 3)
-                // Easter Monday
-                || (dd == em)
-                // General Prayer Day
-                || (dd == em + 25)
-                // Ascension
-                || (dd == em + 38)
-                // Day after Ascension (bank holiday after year 2008)
-                || (dd == em + 39 && date.Year > 2008)
-                // Whit Monday
-                || (dd == em + 49)
-                // New Year's Day
-                || (d == 1 && m == Month.January)
-                // Constitution Day, June 5th
-                || (d == 5 && m == Month.June)
-                // Christmas day
-                || (d == 24 && m == Month.December)
-                // Christmas
-                || (d == 25 && m == Month.December)
-                // Boxing Day
-                || (d == 26 && m == Month.December)
-                // New Year's Eve (bank holiday from 2003)
-                || (d == 31 && m == Month.December && date.Year >= 2003))
-               return false;
-            return true;
-         }
-      }
-   }
+            public override string name() { return "Denmark"; }
+            public override bool isBusinessDay(Date date)
+            {
+                DayOfWeek w = date.DayOfWeek;
+                int d = date.Day, dd = date.DayOfYear;
+                Month m = (Month)date.Month;
+                int y = date.Year;
+                int em = easterMonday(y);
+                if (isWeekend(w)
+                    // Maundy Thursday
+                    || dd == em - 4
+                    // Good Friday
+                    || dd == em - 3
+                    // Easter Monday
+                    || dd == em
+                    // General Prayer Day
+                    || dd == em + 25
+                    // Ascension
+                    || dd == em + 38
+                    // Day after Ascension (bank holiday after year 2008)
+                    || dd == em + 39 && date.Year > 2008
+                    // Whit Monday
+                    || dd == em + 49
+                    // New Year's Day
+                    || d == 1 && m == Month.January
+                    // Constitution Day, June 5th
+                    || d == 5 && m == Month.June
+                    // Christmas day
+                    || d == 24 && m == Month.December
+                    // Christmas
+                    || d == 25 && m == Month.December
+                    // Boxing Day
+                    || d == 26 && m == Month.December
+                    // New Year's Eve (bank holiday from 2003)
+                    || d == 31 && m == Month.December && date.Year >= 2003)
+                    return false;
+                return true;
+            }
+        }
+    }
 }
 

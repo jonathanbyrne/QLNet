@@ -17,38 +17,45 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Currencies;
+using QLNet.Indexes;
+using QLNet.Time;
+
+namespace QLNet.Indexes.Inflation
 {
-   //! UK Retail Price Inflation Index
-   public class UKRPI : ZeroInflationIndex
-   {
-      public UKRPI(bool interpolated)
-         : this(interpolated, new Handle<ZeroInflationTermStructure>()) { }
+    //! UK Retail Price Inflation Index
+    public class UKRPI : ZeroInflationIndex
+    {
+        public UKRPI(bool interpolated)
+           : this(interpolated, new Handle<ZeroInflationTermStructure>()) { }
 
-      public UKRPI(bool interpolated, Handle<ZeroInflationTermStructure> ts)
-         : base("RPI", new UKRegion(), false, interpolated, Frequency.Monthly,
-                new Period(1, TimeUnit.Months), new GBPCurrency(), ts) {}
-   }
+        public UKRPI(bool interpolated, Handle<ZeroInflationTermStructure> ts)
+           : base("RPI", new UKRegion(), false, interpolated, Frequency.Monthly,
+                  new Period(1, TimeUnit.Months), new GBPCurrency(), ts)
+        { }
+    }
 
-   //! Genuine year-on-year UK RPI (i.e. not a ratio of UK RPI)
-   public class YYUKRPI : YoYInflationIndex
-   {
-      public YYUKRPI(bool interpolated)
-         : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
+    //! Genuine year-on-year UK RPI (i.e. not a ratio of UK RPI)
+    public class YYUKRPI : YoYInflationIndex
+    {
+        public YYUKRPI(bool interpolated)
+           : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
 
-      public YYUKRPI(bool interpolated, Handle<YoYInflationTermStructure> ts)
-         : base("YY_RPI", new UKRegion(), false, interpolated, false, Frequency.Monthly,
-                new Period(1, TimeUnit.Months), new GBPCurrency(), ts) {}
-   }
+        public YYUKRPI(bool interpolated, Handle<YoYInflationTermStructure> ts)
+           : base("YY_RPI", new UKRegion(), false, interpolated, false, Frequency.Monthly,
+                  new Period(1, TimeUnit.Months), new GBPCurrency(), ts)
+        { }
+    }
 
-   //! Fake year-on-year UK RPI (i.e. a ratio of UK RPI)
-   public class YYUKRPIr : YoYInflationIndex
-   {
-      public YYUKRPIr(bool interpolated)
-         : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
+    //! Fake year-on-year UK RPI (i.e. a ratio of UK RPI)
+    public class YYUKRPIr : YoYInflationIndex
+    {
+        public YYUKRPIr(bool interpolated)
+           : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
 
-      public YYUKRPIr(bool interpolated, Handle<YoYInflationTermStructure> ts)
-         : base("YYR_RPI", new UKRegion(), false, interpolated, true, Frequency.Monthly,
-                new Period(1, TimeUnit.Months), new GBPCurrency(), ts) {}
-   }
+        public YYUKRPIr(bool interpolated, Handle<YoYInflationTermStructure> ts)
+           : base("YYR_RPI", new UKRegion(), false, interpolated, true, Frequency.Monthly,
+                  new Period(1, TimeUnit.Months), new GBPCurrency(), ts)
+        { }
+    }
 }

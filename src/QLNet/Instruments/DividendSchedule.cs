@@ -18,10 +18,10 @@
 */
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Instruments
 {
-   public class DividendSchedule : List<Dividend>
-   {
+    public class DividendSchedule : List<Dividend>
+    {
 
-   }
+    }
 }

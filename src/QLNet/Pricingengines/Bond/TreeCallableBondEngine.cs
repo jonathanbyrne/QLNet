@@ -16,76 +16,81 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Instruments.Bonds;
+using QLNet.Models;
+using QLNet.Pricingengines;
+using QLNet.Termstructures;
+using QLNet.Time;
 using System.Collections.Generic;
 
 // Numerical lattice engines for callable/puttable bonds
-namespace QLNet
+namespace QLNet.Pricingengines.Bond
 {
-   //! Numerical lattice engine for callable fixed rate bonds
-   /*! \ingroup callablebondengines */
-   public class TreeCallableFixedRateBondEngine : LatticeShortRateModelEngine<CallableBond.Arguments, CallableBond.Results>
-   {
-      /* Constructors
-          \note the term structure is only needed when the short-rate
-                model cannot provide one itself.
-      */
-      public TreeCallableFixedRateBondEngine(ShortRateModel model, int  timeSteps,
-                                             Handle<YieldTermStructure> termStructure)
-         : base(model, timeSteps)
+    //! Numerical lattice engine for callable fixed rate bonds
+    /*! \ingroup callablebondengines */
+    public class TreeCallableFixedRateBondEngine : LatticeShortRateModelEngine<CallableBond.Arguments, CallableBond.Results>
+    {
+        /* Constructors
+            \note the term structure is only needed when the short-rate
+                  model cannot provide one itself.
+        */
+        public TreeCallableFixedRateBondEngine(ShortRateModel model, int timeSteps,
+                                               Handle<YieldTermStructure> termStructure)
+           : base(model, timeSteps)
 
-      {
-         termStructure_ = termStructure;
-         termStructure_.registerWith(update);
-      }
+        {
+            termStructure_ = termStructure;
+            termStructure_.registerWith(update);
+        }
 
 
-      public TreeCallableFixedRateBondEngine(ShortRateModel model, TimeGrid timeGrid,
-                                             Handle<YieldTermStructure> termStructure)
-         : base(model, timeGrid)
-      {
-         termStructure_ = termStructure;
-         termStructure_.registerWith(update);
-      }
+        public TreeCallableFixedRateBondEngine(ShortRateModel model, TimeGrid timeGrid,
+                                               Handle<YieldTermStructure> termStructure)
+           : base(model, timeGrid)
+        {
+            termStructure_ = termStructure;
+            termStructure_.registerWith(update);
+        }
 
-      public override void calculate()
-      {
-         Utils.QL_REQUIRE(model_ != null, () => "no model specified");
+        public override void calculate()
+        {
+            Utils.QL_REQUIRE(model_ != null, () => "no model specified");
 
-         Date referenceDate;
-         DayCounter dayCounter;
+            Date referenceDate;
+            DayCounter dayCounter;
 
-         ITermStructureConsistentModel tsmodel = (ITermStructureConsistentModel)base.model_.link;
-         if (tsmodel != null)
-         {
-            referenceDate = tsmodel.termStructure().link.referenceDate();
-            dayCounter = tsmodel.termStructure().link.dayCounter();
-         }
-         else
-         {
-            referenceDate = termStructure_.link.referenceDate();
-            dayCounter = termStructure_.link.dayCounter();
-         }
+            ITermStructureConsistentModel tsmodel = (ITermStructureConsistentModel)model_.link;
+            if (tsmodel != null)
+            {
+                referenceDate = tsmodel.termStructure().link.referenceDate();
+                dayCounter = tsmodel.termStructure().link.dayCounter();
+            }
+            else
+            {
+                referenceDate = termStructure_.link.referenceDate();
+                dayCounter = termStructure_.link.dayCounter();
+            }
 
-         DiscretizedCallableFixedRateBond callableBond = new DiscretizedCallableFixedRateBond(arguments_, referenceDate, dayCounter);
-         Lattice lattice;
+            DiscretizedCallableFixedRateBond callableBond = new DiscretizedCallableFixedRateBond(arguments_, referenceDate, dayCounter);
+            Lattice lattice;
 
-         if (lattice_ != null)
-         {
-            lattice = lattice_;
-         }
-         else
-         {
-            List<double> times = callableBond.mandatoryTimes();
-            TimeGrid timeGrid = new TimeGrid(times, times.Count, timeSteps_);
-            lattice = model_.link.tree(timeGrid);
-         }
+            if (lattice_ != null)
+            {
+                lattice = lattice_;
+            }
+            else
+            {
+                List<double> times = callableBond.mandatoryTimes();
+                TimeGrid timeGrid = new TimeGrid(times, times.Count, timeSteps_);
+                lattice = model_.link.tree(timeGrid);
+            }
 
-         double redemptionTime = dayCounter.yearFraction(referenceDate, arguments_.redemptionDate);
-         callableBond.initialize(lattice, redemptionTime);
-         callableBond.rollback(0.0);
-         results_.value = results_.settlementValue = callableBond.presentValue();
-      }
+            double redemptionTime = dayCounter.yearFraction(referenceDate, arguments_.redemptionDate);
+            callableBond.initialize(lattice, redemptionTime);
+            callableBond.rollback(0.0);
+            results_.value = results_.settlementValue = callableBond.presentValue();
+        }
 
-      private Handle<YieldTermStructure> termStructure_;
-   }
+        private Handle<YieldTermStructure> termStructure_;
+    }
 }

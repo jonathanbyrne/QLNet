@@ -16,33 +16,36 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Math;
+using QLNet.Math.matrixutilities;
+using QLNet.Methods.Finitedifferences.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences.Operators
 {
-   public abstract class FdmLinearOpComposite : FdmLinearOp
-   {
-      //! Time \f$t1 <= t2\f$ is required
-      public abstract void setTime(double t1, double t2);
+    public abstract class FdmLinearOpComposite : FdmLinearOp
+    {
+        //! Time \f$t1 <= t2\f$ is required
+        public abstract void setTime(double t1, double t2);
 
-      public abstract Vector apply_mixed(Vector r);
+        public abstract Vector apply_mixed(Vector r);
 
-      public abstract Vector apply_direction(int direction, Vector r);
-      public abstract Vector solve_splitting(int direction, Vector r, double s);
-      public abstract Vector preconditioner(Vector r, double s);
+        public abstract Vector apply_direction(int direction, Vector r);
+        public abstract Vector solve_splitting(int direction, Vector r, double s);
+        public abstract Vector preconditioner(Vector r, double s);
 
-      public virtual List<SparseMatrix> toMatrixDecomp()
-      {
-         return null;
-      }
+        public virtual List<SparseMatrix> toMatrixDecomp()
+        {
+            return null;
+        }
 
-      public override SparseMatrix toMatrix()
-      {
-         List<SparseMatrix> dcmp = toMatrixDecomp();
-         SparseMatrix retVal = dcmp.accumulate(1, dcmp.Count, dcmp.First(), (a, b) => a + b);
-         return retVal;
-      }
-   }
+        public override SparseMatrix toMatrix()
+        {
+            List<SparseMatrix> dcmp = toMatrixDecomp();
+            SparseMatrix retVal = dcmp.accumulate(1, dcmp.Count, dcmp.First(), (a, b) => a + b);
+            return retVal;
+        }
+    }
 }

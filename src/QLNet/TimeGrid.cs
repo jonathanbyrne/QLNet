@@ -18,15 +18,16 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Extensions;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace QLNet
 {
-   /// <summary>
-   /// Time grid class
-   /// </summary>
-   public class TimeGrid
+    /// <summary>
+    /// Time grid class
+    /// </summary>
+    public class TimeGrid
    {
       /// <summary>
       /// Regularly spaced time-grid

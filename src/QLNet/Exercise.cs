@@ -18,13 +18,14 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Time;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace QLNet
 {
-   //! Base exercise class
-   public class Exercise
+    //! Base exercise class
+    public class Exercise
    {
       public enum Type
       {

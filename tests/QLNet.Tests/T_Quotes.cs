@@ -19,108 +19,109 @@
 
 using System;
 using Xunit;
-using QLNet;
+using QLNet.Quotes;
 
-namespace TestSuite
+namespace QLNet.Tests
 {
-   [Collection("QLNet CI Tests")]
-   public class T_Quotes
-   {
-      double add10(double x) { return x + 10; }
-      double mul10(double x) { return x * 10; }
-      double sub10(double x) { return x - 10; }
+    [Collection("QLNet CI Tests")]
+    public class T_Quotes
+    {
+        double add10(double x) { return x + 10; }
+        double mul10(double x) { return x * 10; }
+        double sub10(double x) { return x - 10; }
 
-      double add
-         (double x, double y) { return x + y; }
-      double mul(double x, double y) { return x * y; }
-      double sub(double x, double y) { return x - y; }
+        double add
+           (double x, double y)
+        { return x + y; }
+        double mul(double x, double y) { return x * y; }
+        double sub(double x, double y) { return x - y; }
 
-      [Fact]
-      public void testObservable()
-      {
-         // Testing observability of quotes
+        [Fact]
+        public void testObservable()
+        {
+            // Testing observability of quotes
 
-         SimpleQuote me = new SimpleQuote(0.0);
-         Flag f = new Flag();
+            SimpleQuote me = new SimpleQuote(0.0);
+            Flag f = new Flag();
 
-         me.registerWith(f.update);
-         me.setValue(3.14);
+            me.registerWith(f.update);
+            me.setValue(3.14);
 
-         if (!f.isUp())
-            QAssert.Fail("Observer was not notified of quote change");
+            if (!f.isUp())
+                QAssert.Fail("Observer was not notified of quote change");
 
-      }
-      [Fact]
-      public void testObservableHandle()
-      {
+        }
+        [Fact]
+        public void testObservableHandle()
+        {
 
-         // Testing observability of quote handles
+            // Testing observability of quote handles
 
-         SimpleQuote me1 = new SimpleQuote(0.0);
-         RelinkableHandle<Quote> h = new RelinkableHandle<Quote>(me1);
+            SimpleQuote me1 = new SimpleQuote(0.0);
+            RelinkableHandle<Quote> h = new RelinkableHandle<Quote>(me1);
 
-         Flag f = new Flag();
+            Flag f = new Flag();
 
-         h.registerWith(f.update);
+            h.registerWith(f.update);
 
-         me1.setValue(3.14);
+            me1.setValue(3.14);
 
-         if (!f.isUp())
-            QAssert.Fail("Observer was not notified of quote change");
+            if (!f.isUp())
+                QAssert.Fail("Observer was not notified of quote change");
 
-         f.lower();
-         SimpleQuote me2 = new SimpleQuote(0.0);
-         h.linkTo(me2);
+            f.lower();
+            SimpleQuote me2 = new SimpleQuote(0.0);
+            h.linkTo(me2);
 
-         if (!f.isUp())
-            QAssert.Fail("Observer was not notified of quote change");
+            if (!f.isUp())
+                QAssert.Fail("Observer was not notified of quote change");
 
-      }
+        }
 
-      [Fact]
-      public void testDerived()
-      {
+        [Fact]
+        public void testDerived()
+        {
 
-         // Testing derived quotes
+            // Testing derived quotes
 
-         Func<double, double>[] f = {add10, mul10, sub10};
+            Func<double, double>[] f = { add10, mul10, sub10 };
 
-         Quote me = new SimpleQuote(17.0);
-         Handle<Quote> h = new Handle<Quote>(me);
+            Quote me = new SimpleQuote(17.0);
+            Handle<Quote> h = new Handle<Quote>(me);
 
-         for (int i = 0; i < 3; i++)
-         {
-            DerivedQuote derived = new DerivedQuote(h, f[i]);
-            double x = derived.value(),
-                   y = f[i](me.value());
-            if (Math.Abs(x - y) > 1.0e-10)
-               QAssert.Fail("derived quote yields " + x + "function result is " + y);
-         }
+            for (int i = 0; i < 3; i++)
+            {
+                DerivedQuote derived = new DerivedQuote(h, f[i]);
+                double x = derived.value(),
+                       y = f[i](me.value());
+                if (System.Math.Abs(x - y) > 1.0e-10)
+                    QAssert.Fail("derived quote yields " + x + "function result is " + y);
+            }
 
-      }
+        }
 
-      [Fact]
-      public void testComposite()
-      {
-         // Testing composite quotes
+        [Fact]
+        public void testComposite()
+        {
+            // Testing composite quotes
 
-         Func<double, double, double >[] f = { add, mul, sub };
+            Func<double, double, double>[] f = { add, mul, sub };
 
-         Quote me1 = new SimpleQuote(12.0),
-         me2 = new SimpleQuote(13.0);
-         Handle<Quote> h1 = new Handle<Quote>(me1),
-         h2 = new Handle<Quote>(me2);
+            Quote me1 = new SimpleQuote(12.0),
+            me2 = new SimpleQuote(13.0);
+            Handle<Quote> h1 = new Handle<Quote>(me1),
+            h2 = new Handle<Quote>(me2);
 
-         for (int i = 0; i < 3; i++)
-         {
-            CompositeQuote composite = new CompositeQuote(h1, h2, f[i]);
-            double x = composite.value(),
-                   y = f[i](me1.value(), me2.value());
-            if (Math.Abs(x - y) > 1.0e-10)
-               QAssert.Fail("composite quote yields " + x + "function result is " + y);
-         }
-      }
+            for (int i = 0; i < 3; i++)
+            {
+                CompositeQuote composite = new CompositeQuote(h1, h2, f[i]);
+                double x = composite.value(),
+                       y = f[i](me1.value(), me2.value());
+                if (System.Math.Abs(x - y) > 1.0e-10)
+                    QAssert.Fail("composite quote yields " + x + "function result is " + y);
+            }
+        }
 
 
-   }
+    }
 }

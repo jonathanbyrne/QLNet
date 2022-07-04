@@ -16,63 +16,63 @@
 
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Math.Interpolations
 {
 
-   public class FlatExtrapolator2D : Interpolation2D
-   {
-      public FlatExtrapolator2D(Interpolation2D decoratedInterpolation)
-      {
-         impl_ = new FlatExtrapolator2DImpl(decoratedInterpolation);
-      }
+    public class FlatExtrapolator2D : Interpolation2D
+    {
+        public FlatExtrapolator2D(Interpolation2D decoratedInterpolation)
+        {
+            impl_ = new FlatExtrapolator2DImpl(decoratedInterpolation);
+        }
 
-      protected class FlatExtrapolator2DImpl: Interpolation2D.Impl
-      {
-         public FlatExtrapolator2DImpl(Interpolation2D decoratedInterpolation)
-         {
-            decoratedInterp_ = decoratedInterpolation;
-            calculate();
-         }
-         public double xMin() { return decoratedInterp_.xMin();}
-         public double xMax() { return decoratedInterp_.xMax();}
-         public List<double> xValues() {return decoratedInterp_.xValues();}
-         public int locateX(double x) {return decoratedInterp_.locateX(x);}
-         public double yMin() {return decoratedInterp_.yMin();}
-         public double yMax() {return decoratedInterp_.yMax();}
-         public List<double> yValues() {return decoratedInterp_.yValues();}
-         public int locateY(double y) {return decoratedInterp_.locateY(y);}
-         public Matrix zData() {return decoratedInterp_.zData();}
-         public bool isInRange(double x, double y) {return decoratedInterp_.isInRange(x, y);}
-         public void update() {decoratedInterp_.update();}
-         public void calculate()
-         {
-            // Nothing to do here
-         }
-         public double value(double x, double y)
-         {
-            x = bindX(x);
-            y = bindY(y);
-            return decoratedInterp_.value(x, y);
-         }
+        protected class FlatExtrapolator2DImpl : Impl
+        {
+            public FlatExtrapolator2DImpl(Interpolation2D decoratedInterpolation)
+            {
+                decoratedInterp_ = decoratedInterpolation;
+                calculate();
+            }
+            public double xMin() { return decoratedInterp_.xMin(); }
+            public double xMax() { return decoratedInterp_.xMax(); }
+            public List<double> xValues() { return decoratedInterp_.xValues(); }
+            public int locateX(double x) { return decoratedInterp_.locateX(x); }
+            public double yMin() { return decoratedInterp_.yMin(); }
+            public double yMax() { return decoratedInterp_.yMax(); }
+            public List<double> yValues() { return decoratedInterp_.yValues(); }
+            public int locateY(double y) { return decoratedInterp_.locateY(y); }
+            public Matrix zData() { return decoratedInterp_.zData(); }
+            public bool isInRange(double x, double y) { return decoratedInterp_.isInRange(x, y); }
+            public void update() { decoratedInterp_.update(); }
+            public void calculate()
+            {
+                // Nothing to do here
+            }
+            public double value(double x, double y)
+            {
+                x = bindX(x);
+                y = bindY(y);
+                return decoratedInterp_.value(x, y);
+            }
 
-         private Interpolation2D decoratedInterp_;
+            private Interpolation2D decoratedInterp_;
 
-         private double bindX(double x)
-         {
-            if (x < xMin())
-               return xMin();
-            if (x > xMax())
-               return xMax();
-            return x;
-         }
-         private double bindY(double y)
-         {
-            if (y < yMin())
-               return yMin();
-            if (y > yMax())
-               return yMax();
-            return y;
-         }
-      }
-   }
+            private double bindX(double x)
+            {
+                if (x < xMin())
+                    return xMin();
+                if (x > xMax())
+                    return xMax();
+                return x;
+            }
+            private double bindY(double y)
+            {
+                if (y < yMin())
+                    return yMin();
+                if (y > yMax())
+                    return yMax();
+                return y;
+            }
+        }
+    }
 }

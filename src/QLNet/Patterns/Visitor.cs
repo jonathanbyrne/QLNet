@@ -17,11 +17,11 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Patterns
 {
-   // to make the objects Visitor-ready
-   public interface IAcyclicVisitor
-   {
-      void visit(object o);
-   }
+    // to make the objects Visitor-ready
+    public interface IAcyclicVisitor
+    {
+        void visit(object o);
+    }
 }

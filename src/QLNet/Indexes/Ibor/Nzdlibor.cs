@@ -17,22 +17,28 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Currencies;
+using QLNet.Termstructures;
+using QLNet.Time;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
+
+namespace QLNet.Indexes.Ibor
 {
 
-   //! %NZD %LIBOR rate
-   /*! New Zealand Dollar LIBOR discontinued as of 2013.
-   */
-   public class NZDLibor : Libor
-   {
-      public NZDLibor(Period tenor)
-         : base("NZDLibor", tenor, 2, new NZDCurrency(), new NewZealand(), new Actual360(), new Handle<YieldTermStructure>())
-      {}
+    //! %NZD %LIBOR rate
+    /*! New Zealand Dollar LIBOR discontinued as of 2013.
+    */
+    public class NZDLibor : Libor
+    {
+        public NZDLibor(Period tenor)
+           : base("NZDLibor", tenor, 2, new NZDCurrency(), new NewZealand(), new Actual360(), new Handle<YieldTermStructure>())
+        { }
 
-      public NZDLibor(Period tenor, Handle<YieldTermStructure> h)
-         : base("NZDLibor", tenor, 2, new NZDCurrency(), new NewZealand(), new Actual360(), h)
-      {}
+        public NZDLibor(Period tenor, Handle<YieldTermStructure> h)
+           : base("NZDLibor", tenor, 2, new NZDCurrency(), new NewZealand(), new Actual360(), h)
+        { }
 
-   }
+    }
 
 }

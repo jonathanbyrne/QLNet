@@ -19,12 +19,17 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Cashflows;
+using QLNet.Extensions;
+using QLNet.Indexes;
+using QLNet.Patterns;
+using QLNet.Time;
 using System;
 using System.Collections.Generic;
 
 namespace QLNet
 {
-   public static partial class Utils
+    public static partial class Utils
    {
       public static double? toNullable(double? val)
       {

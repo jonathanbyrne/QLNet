@@ -17,11 +17,13 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Time;
+
+namespace QLNet.Instruments.Bonds
 {
-   public interface IPrepayModel
-   {
-      double getCPR(Date valDate);
-      double getSMM(Date valDate);
-   }
+    public interface IPrepayModel
+    {
+        double getCPR(Date valDate);
+        double getSMM(Date valDate);
+    }
 }

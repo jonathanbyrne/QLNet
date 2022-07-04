@@ -16,12 +16,13 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Patterns;
 using System;
 
 namespace QLNet
 {
-   //! Abstract base class for option payoffs
-   public class Payoff
+    //! Abstract base class for option payoffs
+    public class Payoff
    {
       // Payoff interface
       /*! \warning This method is used for output and comparison between

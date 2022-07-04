@@ -17,169 +17,174 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Instruments;
+using QLNet.Math.Distributions;
+using QLNet.Pricingengines;
+using QLNet.processes;
+using QLNet.Time;
 using System;
 
-namespace QLNet
+namespace QLNet.Pricingengines.vanilla
 {
-   //! Pricing engine for American options with Ju quadratic approximation
-   //    ! Reference:
-   //        An Approximate Formula for Pricing American Options,
-   //        Journal of Derivatives Winter 1999,
-   //        Ju, N.
-   //
-   //        \warning Barone-Adesi-Whaley critical commodity price
-   //                 calculation is used, it has not been modified to see
-   //                 whether the method of Ju is faster. Ju does not say
-   //                 how he solves the equation for the critical stock
-   //                 price, e.g. Newton method. He just gives the
-   //                 solution.  The method of BAW gives answers to the
-   //                 same accuracy as in Ju (1999).
-   //
-   //        \ingroup vanillaengines
-   //
-   //        \test the correctness of the returned value is tested by
-   //              reproducing results available in literature.
-   //
-   public class JuQuadraticApproximationEngine : VanillaOption.Engine
-   {
-      //     An Approximate Formula for Pricing American Options
-      //        Journal of Derivatives Winter 1999
-      //        Ju, N.
-      //
+    //! Pricing engine for American options with Ju quadratic approximation
+    //    ! Reference:
+    //        An Approximate Formula for Pricing American Options,
+    //        Journal of Derivatives Winter 1999,
+    //        Ju, N.
+    //
+    //        \warning Barone-Adesi-Whaley critical commodity price
+    //                 calculation is used, it has not been modified to see
+    //                 whether the method of Ju is faster. Ju does not say
+    //                 how he solves the equation for the critical stock
+    //                 price, e.g. Newton method. He just gives the
+    //                 solution.  The method of BAW gives answers to the
+    //                 same accuracy as in Ju (1999).
+    //
+    //        \ingroup vanillaengines
+    //
+    //        \test the correctness of the returned value is tested by
+    //              reproducing results available in literature.
+    //
+    public class JuQuadraticApproximationEngine : OneAssetOption.Engine
+    {
+        //     An Approximate Formula for Pricing American Options
+        //        Journal of Derivatives Winter 1999
+        //        Ju, N.
+        //
 
-      private GeneralizedBlackScholesProcess process_;
+        private GeneralizedBlackScholesProcess process_;
 
-      public JuQuadraticApproximationEngine(GeneralizedBlackScholesProcess process)
-      {
-         process_ = process;
-         process_.registerWith(update);
-      }
+        public JuQuadraticApproximationEngine(GeneralizedBlackScholesProcess process)
+        {
+            process_ = process;
+            process_.registerWith(update);
+        }
 
-      public override void calculate()
-      {
-         Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.American, () => "not an American Option");
+        public override void calculate()
+        {
+            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.American, () => "not an American Option");
 
-         AmericanExercise ex = arguments_.exercise as AmericanExercise;
+            AmericanExercise ex = arguments_.exercise as AmericanExercise;
 
-         Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
+            Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
 
-         Utils.QL_REQUIRE(!ex.payoffAtExpiry(), () => "payoff at expiry not handled");
+            Utils.QL_REQUIRE(!ex.payoffAtExpiry(), () => "payoff at expiry not handled");
 
-         StrikedTypePayoff payoff = arguments_.payoff as StrikedTypePayoff;
-         Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
+            StrikedTypePayoff payoff = arguments_.payoff as StrikedTypePayoff;
+            Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
-         double variance = process_.blackVolatility().link.blackVariance(ex.lastDate(), payoff.strike());
-         double dividendDiscount = process_.dividendYield().link.discount(ex.lastDate());
-         double riskFreeDiscount = process_.riskFreeRate().link.discount(ex.lastDate());
-         double spot = process_.stateVariable().link.value();
+            double variance = process_.blackVolatility().link.blackVariance(ex.lastDate(), payoff.strike());
+            double dividendDiscount = process_.dividendYield().link.discount(ex.lastDate());
+            double riskFreeDiscount = process_.riskFreeRate().link.discount(ex.lastDate());
+            double spot = process_.stateVariable().link.value();
 
-         Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
+            Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
 
-         double forwardPrice = spot * dividendDiscount / riskFreeDiscount;
-         BlackCalculator black = new BlackCalculator(payoff, forwardPrice, Math.Sqrt(variance), riskFreeDiscount);
+            double forwardPrice = spot * dividendDiscount / riskFreeDiscount;
+            BlackCalculator black = new BlackCalculator(payoff, forwardPrice, System.Math.Sqrt(variance), riskFreeDiscount);
 
-         if (dividendDiscount >= 1.0 && payoff.optionType() == Option.Type.Call)
-         {
-            // early exercise never optimal
-            results_.value = black.value();
-            results_.delta = black.delta(spot);
-            results_.deltaForward = black.deltaForward();
-            results_.elasticity = black.elasticity(spot);
-            results_.gamma = black.gamma(spot);
-
-            DayCounter rfdc = process_.riskFreeRate().link.dayCounter();
-            DayCounter divdc = process_.dividendYield().link.dayCounter();
-            DayCounter voldc = process_.blackVolatility().link.dayCounter();
-            double t = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(), arguments_.exercise.lastDate());
-            results_.rho = black.rho(t);
-
-            t = divdc.yearFraction(process_.dividendYield().link.referenceDate(), arguments_.exercise.lastDate());
-            results_.dividendRho = black.dividendRho(t);
-
-            t = voldc.yearFraction(process_.blackVolatility().link.referenceDate(), arguments_.exercise.lastDate());
-            results_.vega = black.vega(t);
-            results_.theta = black.theta(spot, t);
-            results_.thetaPerDay = black.thetaPerDay(spot, t);
-
-            results_.strikeSensitivity = black.strikeSensitivity();
-            results_.itmCashProbability = black.itmCashProbability();
-         }
-         else
-         {
-            // early exercise can be optimal
-            CumulativeNormalDistribution cumNormalDist = new CumulativeNormalDistribution();
-            NormalDistribution normalDist = new NormalDistribution();
-
-            double tolerance = 1e-6;
-            double Sk = BaroneAdesiWhaleyApproximationEngine.criticalPrice(payoff, riskFreeDiscount, dividendDiscount,
-                                                                           variance, tolerance);
-
-            double forwardSk = Sk * dividendDiscount / riskFreeDiscount;
-
-            double alpha = -2.0 * Math.Log(riskFreeDiscount) / (variance);
-            double beta = 2.0 * Math.Log(dividendDiscount / riskFreeDiscount) / (variance);
-            double h = 1 - riskFreeDiscount;
-            double phi = 0;
-            switch (payoff.optionType())
+            if (dividendDiscount >= 1.0 && payoff.optionType() == QLNet.Option.Type.Call)
             {
-               case Option.Type.Call:
-                  phi = 1;
-                  break;
-               case Option.Type.Put:
-                  phi = -1;
-                  break;
-               default:
-                  Utils.QL_FAIL("invalid option type");
-                  break;
-            }
-            //it can throw: to be fixed
-            // FLOATING_POINT_EXCEPTION
-            double temp_root = Math.Sqrt((beta - 1) * (beta - 1) + (4 * alpha) / h);
-            double lambda = (-(beta - 1) + phi * temp_root) / 2;
-            double lambda_prime = -phi * alpha / (h * h * temp_root);
+                // early exercise never optimal
+                results_.value = black.value();
+                results_.delta = black.delta(spot);
+                results_.deltaForward = black.deltaForward();
+                results_.elasticity = black.elasticity(spot);
+                results_.gamma = black.gamma(spot);
 
-            double black_Sk = Utils.blackFormula(payoff.optionType(), payoff.strike(), forwardSk, Math.Sqrt(variance)) *
-                              riskFreeDiscount;
-            double hA = phi * (Sk - payoff.strike()) - black_Sk;
+                DayCounter rfdc = process_.riskFreeRate().link.dayCounter();
+                DayCounter divdc = process_.dividendYield().link.dayCounter();
+                DayCounter voldc = process_.blackVolatility().link.dayCounter();
+                double t = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(), arguments_.exercise.lastDate());
+                results_.rho = black.rho(t);
 
-            double d1_Sk = (Math.Log(forwardSk / payoff.strike()) + 0.5 * variance) / Math.Sqrt(variance);
-            double d2_Sk = d1_Sk - Math.Sqrt(variance);
-            double part1 = forwardSk * normalDist.value(d1_Sk) / (alpha * Math.Sqrt(variance));
-            double part2 = -phi * forwardSk * cumNormalDist.value(phi * d1_Sk) * Math.Log(dividendDiscount) /
-                           Math.Log(riskFreeDiscount);
-            double part3 = +phi * payoff.strike() * cumNormalDist.value(phi * d2_Sk);
-            double V_E_h = part1 + part2 + part3;
+                t = divdc.yearFraction(process_.dividendYield().link.referenceDate(), arguments_.exercise.lastDate());
+                results_.dividendRho = black.dividendRho(t);
 
-            double b = (1 - h) * alpha * lambda_prime / (2 * (2 * lambda + beta - 1));
-            double c = -((1 - h) * alpha / (2 * lambda + beta - 1)) *
-                       (V_E_h / (hA) + 1 / h + lambda_prime / (2 * lambda + beta - 1));
-            double temp_spot_ratio = Math.Log(spot / Sk);
-            double chi = temp_spot_ratio * (b * temp_spot_ratio + c);
+                t = voldc.yearFraction(process_.blackVolatility().link.referenceDate(), arguments_.exercise.lastDate());
+                results_.vega = black.vega(t);
+                results_.theta = black.theta(spot, t);
+                results_.thetaPerDay = black.thetaPerDay(spot, t);
 
-            if (phi * (Sk - spot) > 0)
-            {
-               results_.value = black.value() + hA * Math.Pow((spot / Sk), lambda) / (1 - chi);
+                results_.strikeSensitivity = black.strikeSensitivity();
+                results_.itmCashProbability = black.itmCashProbability();
             }
             else
             {
-               results_.value = phi * (spot - payoff.strike());
-            }
+                // early exercise can be optimal
+                CumulativeNormalDistribution cumNormalDist = new CumulativeNormalDistribution();
+                NormalDistribution normalDist = new NormalDistribution();
 
-            double temp_chi_prime = (2 * b / spot) * Math.Log(spot / Sk);
-            double chi_prime = temp_chi_prime + c / spot;
-            double chi_double_prime = 2 * b / (spot * spot) - temp_chi_prime / spot - c / (spot * spot);
-            results_.delta = phi * dividendDiscount * cumNormalDist.value(phi * d1_Sk) +
-                             (lambda / (spot * (1 - chi)) + chi_prime / ((1 - chi) * (1 - chi))) *
-                             (phi * (Sk - payoff.strike()) - black_Sk) * Math.Pow((spot / Sk), lambda);
+                double tolerance = 1e-6;
+                double Sk = BaroneAdesiWhaleyApproximationEngine.criticalPrice(payoff, riskFreeDiscount, dividendDiscount,
+                                                                               variance, tolerance);
 
-            results_.gamma = phi * dividendDiscount * normalDist.value(phi * d1_Sk) / (spot * Math.Sqrt(variance)) +
-                             (2 * lambda * chi_prime / (spot * (1 - chi) * (1 - chi)) +
-                              2 * chi_prime * chi_prime / ((1 - chi) * (1 - chi) * (1 - chi)) +
-                              chi_double_prime / ((1 - chi) * (1 - chi)) +
-                              lambda * (1 - lambda) / (spot * spot * (1 - chi))) *
-                             (phi * (Sk - payoff.strike()) - black_Sk) * Math.Pow((spot / Sk), lambda);
-         } // end of "early exercise can be optimal"
-      }
-   }
+                double forwardSk = Sk * dividendDiscount / riskFreeDiscount;
+
+                double alpha = -2.0 * System.Math.Log(riskFreeDiscount) / variance;
+                double beta = 2.0 * System.Math.Log(dividendDiscount / riskFreeDiscount) / variance;
+                double h = 1 - riskFreeDiscount;
+                double phi = 0;
+                switch (payoff.optionType())
+                {
+                    case QLNet.Option.Type.Call:
+                        phi = 1;
+                        break;
+                    case QLNet.Option.Type.Put:
+                        phi = -1;
+                        break;
+                    default:
+                        Utils.QL_FAIL("invalid option type");
+                        break;
+                }
+                //it can throw: to be fixed
+                // FLOATING_POINT_EXCEPTION
+                double temp_root = System.Math.Sqrt((beta - 1) * (beta - 1) + 4 * alpha / h);
+                double lambda = (-(beta - 1) + phi * temp_root) / 2;
+                double lambda_prime = -phi * alpha / (h * h * temp_root);
+
+                double black_Sk = Utils.blackFormula(payoff.optionType(), payoff.strike(), forwardSk, System.Math.Sqrt(variance)) *
+                                  riskFreeDiscount;
+                double hA = phi * (Sk - payoff.strike()) - black_Sk;
+
+                double d1_Sk = (System.Math.Log(forwardSk / payoff.strike()) + 0.5 * variance) / System.Math.Sqrt(variance);
+                double d2_Sk = d1_Sk - System.Math.Sqrt(variance);
+                double part1 = forwardSk * normalDist.value(d1_Sk) / (alpha * System.Math.Sqrt(variance));
+                double part2 = -phi * forwardSk * cumNormalDist.value(phi * d1_Sk) * System.Math.Log(dividendDiscount) /
+                               System.Math.Log(riskFreeDiscount);
+                double part3 = +phi * payoff.strike() * cumNormalDist.value(phi * d2_Sk);
+                double V_E_h = part1 + part2 + part3;
+
+                double b = (1 - h) * alpha * lambda_prime / (2 * (2 * lambda + beta - 1));
+                double c = -((1 - h) * alpha / (2 * lambda + beta - 1)) *
+                           (V_E_h / hA + 1 / h + lambda_prime / (2 * lambda + beta - 1));
+                double temp_spot_ratio = System.Math.Log(spot / Sk);
+                double chi = temp_spot_ratio * (b * temp_spot_ratio + c);
+
+                if (phi * (Sk - spot) > 0)
+                {
+                    results_.value = black.value() + hA * System.Math.Pow(spot / Sk, lambda) / (1 - chi);
+                }
+                else
+                {
+                    results_.value = phi * (spot - payoff.strike());
+                }
+
+                double temp_chi_prime = 2 * b / spot * System.Math.Log(spot / Sk);
+                double chi_prime = temp_chi_prime + c / spot;
+                double chi_double_prime = 2 * b / (spot * spot) - temp_chi_prime / spot - c / (spot * spot);
+                results_.delta = phi * dividendDiscount * cumNormalDist.value(phi * d1_Sk) +
+                                 (lambda / (spot * (1 - chi)) + chi_prime / ((1 - chi) * (1 - chi))) *
+                                 (phi * (Sk - payoff.strike()) - black_Sk) * System.Math.Pow(spot / Sk, lambda);
+
+                results_.gamma = phi * dividendDiscount * normalDist.value(phi * d1_Sk) / (spot * System.Math.Sqrt(variance)) +
+                                 (2 * lambda * chi_prime / (spot * (1 - chi) * (1 - chi)) +
+                                  2 * chi_prime * chi_prime / ((1 - chi) * (1 - chi) * (1 - chi)) +
+                                  chi_double_prime / ((1 - chi) * (1 - chi)) +
+                                  lambda * (1 - lambda) / (spot * spot * (1 - chi))) *
+                                 (phi * (Sk - payoff.strike()) - black_Sk) * System.Math.Pow(spot / Sk, lambda);
+            } // end of "early exercise can be optimal"
+        }
+    }
 
 }

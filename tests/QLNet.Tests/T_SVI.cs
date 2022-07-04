@@ -22,102 +22,103 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Xunit;
-using QLNet;
 using Xunit.Abstractions;
+using QLNet.Math.Interpolations;
 
-namespace TestSuite
+namespace QLNet.Tests
 {
-   [Collection("QLNet CI Tests")]
-   public class T_SVI
-   {
-      private readonly ITestOutputHelper testOutputHelper;
+    [Collection("QLNet CI Tests")]
+    public class T_SVI
+    {
+        private readonly ITestOutputHelper testOutputHelper;
 
-      public T_SVI(ITestOutputHelper testOutputHelper)
-      {
-         this.testOutputHelper = testOutputHelper;
-      }
+        public T_SVI(ITestOutputHelper testOutputHelper)
+        {
+            this.testOutputHelper = testOutputHelper;
+        }
 
-      double add10(double x) { return x + 10; }
-      double mul10(double x) { return x * 10; }
-      double sub10(double x) { return x - 10; }
+        double add10(double x) { return x + 10; }
+        double mul10(double x) { return x * 10; }
+        double sub10(double x) { return x - 10; }
 
-      double add
-         (double x, double y) { return x + y; }
-      double mul(double x, double y) { return x * y; }
-      double sub(double x, double y) { return x - y; }
+        double add
+           (double x, double y)
+        { return x + y; }
+        double mul(double x, double y) { return x * y; }
+        double sub(double x, double y) { return x - y; }
 
-      [Fact (Skip = "Failing")]
-      public void testCalibration()
-      {
-         double forward = 0.03;
-         double tau = 1.0;
+        [Fact(Skip = "Failing")]
+        public void testCalibration()
+        {
+            double forward = 0.03;
+            double tau = 1.0;
 
-         //Real a = 0.04;
-         //Real b = 0.1;
-         //Real rho = -0.5;
-         //Real sigma = 0.1;
-         //Real m  = 0.0;
-         double a = 0.1;
-         double b = 0.06;
-         double rho = -0.9;
-         double m = 0.24;
-         double sigma = 0.06;
+            //Real a = 0.04;
+            //Real b = 0.1;
+            //Real rho = -0.5;
+            //Real sigma = 0.1;
+            //Real m  = 0.0;
+            double a = 0.1;
+            double b = 0.06;
+            double rho = -0.9;
+            double m = 0.24;
+            double sigma = 0.06;
 
-         List<double> strikes = new List<double>();
-         strikes.Add(0.01);
-         strikes.Add(0.015);
-         strikes.Add(0.02);
-         strikes.Add(0.025);
-         strikes.Add(0.03);
-         strikes.Add(0.035);
-         strikes.Add(0.04);
-         strikes.Add(0.045);
-         strikes.Add(0.05);
+            List<double> strikes = new List<double>();
+            strikes.Add(0.01);
+            strikes.Add(0.015);
+            strikes.Add(0.02);
+            strikes.Add(0.025);
+            strikes.Add(0.03);
+            strikes.Add(0.035);
+            strikes.Add(0.04);
+            strikes.Add(0.045);
+            strikes.Add(0.05);
 
-         List<double> vols = new InitializedList<double>(strikes.Count, 0.20); //dummy vols (we do not calibrate here)
+            List<double> vols = new InitializedList<double>(strikes.Count, 0.20); //dummy vols (we do not calibrate here)
 
-         SviInterpolation svi = new SviInterpolation(strikes, strikes.Count, vols, tau,
-                                                     forward, a, b, sigma, rho, m, true, true, true,
-                                                     true, true);
+            SviInterpolation svi = new SviInterpolation(strikes, strikes.Count, vols, tau,
+                                                        forward, a, b, sigma, rho, m, true, true, true,
+                                                        true, true);
 
-         svi.enableExtrapolation();
+            svi.enableExtrapolation();
 
-         List<double> sviVols = new InitializedList<double>(strikes.Count, 0.0);
-         for (int i = 0; i < strikes.Count; ++i)
-            sviVols[i] = svi.value(strikes[i]);
+            List<double> sviVols = new InitializedList<double>(strikes.Count, 0.0);
+            for (int i = 0; i < strikes.Count; ++i)
+                sviVols[i] = svi.value(strikes[i]);
 
-         SviInterpolation svi2 = new SviInterpolation(strikes, strikes.Count, sviVols, tau,
-                                                      forward, null, null, null,
-                                                      null, null, false, false, false,
-                                                      false, false, false, null,
-                                                      null, 1E-8, false,
-                                                      0); //don't allow for random start values
+            SviInterpolation svi2 = new SviInterpolation(strikes, strikes.Count, sviVols, tau,
+                                                         forward, null, null, null,
+                                                         null, null, false, false, false,
+                                                         false, false, false, null,
+                                                         null, 1E-8, false,
+                                                         0); //don't allow for random start values
 
-         svi2.enableExtrapolation();
-         svi2.update();
+            svi2.enableExtrapolation();
+            svi2.update();
 
-         testOutputHelper.WriteLine("a=" + svi2.a());
-         if (!Utils.close_enough(a, svi2.a(), 100))
-            QAssert.Fail("error in a coefficient estimation");
+            testOutputHelper.WriteLine("a=" + svi2.a());
+            if (!Utils.close_enough(a, svi2.a(), 100))
+                QAssert.Fail("error in a coefficient estimation");
 
-         testOutputHelper.WriteLine("b=" + svi2.b());
-         if (!Utils.close_enough(b, svi2.b(), 100))
-            QAssert.Fail("error in b coefficient estimation");
+            testOutputHelper.WriteLine("b=" + svi2.b());
+            if (!Utils.close_enough(b, svi2.b(), 100))
+                QAssert.Fail("error in b coefficient estimation");
 
-         testOutputHelper.WriteLine("sigma=" + svi2.sigma());
-         if (!Utils.close_enough(sigma, svi2.sigma(), 100))
-            QAssert.Fail("error in sigma coefficient estimation");
+            testOutputHelper.WriteLine("sigma=" + svi2.sigma());
+            if (!Utils.close_enough(sigma, svi2.sigma(), 100))
+                QAssert.Fail("error in sigma coefficient estimation");
 
-         testOutputHelper.WriteLine("rho=" + svi2.rho());
-         if (!Utils.close_enough(rho, svi2.rho(), 100))
-            QAssert.Fail("error in rho coefficient estimation");
+            testOutputHelper.WriteLine("rho=" + svi2.rho());
+            if (!Utils.close_enough(rho, svi2.rho(), 100))
+                QAssert.Fail("error in rho coefficient estimation");
 
-         testOutputHelper.WriteLine("m=" + svi2.m());
-         if (!Utils.close_enough(m, svi2.m(), 100))
-            QAssert.Fail("error in m coefficient estimation");
+            testOutputHelper.WriteLine("m=" + svi2.m());
+            if (!Utils.close_enough(m, svi2.m(), 100))
+                QAssert.Fail("error in m coefficient estimation");
 
-         testOutputHelper.WriteLine("error=" + svi2.rmsError());
-      }
+            testOutputHelper.WriteLine("error=" + svi2.rmsError());
+        }
 
-   }
+    }
 }

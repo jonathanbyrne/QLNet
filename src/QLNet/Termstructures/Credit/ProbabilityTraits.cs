@@ -16,178 +16,181 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Math;
+using QLNet.Termstructures.Yield;
+using QLNet.Time;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QLNet
+namespace QLNet.Termstructures.Credit
 {
-   /// <summary>
-   /// Survival-Probability-curve traits
-   /// </summary>
-   public class SurvivalProbability : ITraits<DefaultProbabilityTermStructure>
-   {
-      const double avgHazardRate = 0.01;
-      const double maxHazardRate = 1.0;
+    /// <summary>
+    /// Survival-Probability-curve traits
+    /// </summary>
+    public class SurvivalProbability : ITraits<DefaultProbabilityTermStructure>
+    {
+        const double avgHazardRate = 0.01;
+        const double maxHazardRate = 1.0;
 
-      public Date initialDate(DefaultProbabilityTermStructure c) { return c.referenceDate(); }   // start of curve data
-      public double initialValue(DefaultProbabilityTermStructure c) { return 1; }    // value at reference date
-      public void updateGuess(List<double> data, double discount, int i) { data[i] = discount; }
-      public int maxIterations() { return 50; }   // upper bound for convergence loop
+        public Date initialDate(DefaultProbabilityTermStructure c) { return c.referenceDate(); }   // start of curve data
+        public double initialValue(DefaultProbabilityTermStructure c) { return 1; }    // value at reference date
+        public void updateGuess(List<double> data, double discount, int i) { data[i] = discount; }
+        public int maxIterations() { return 50; }   // upper bound for convergence loop
 
-      public double discountImpl(Interpolation i, double t) { return i.value(t, true); }
-      public double zeroYieldImpl(Interpolation i, double t) { throw new NotSupportedException(); }
-      public double forwardImpl(Interpolation i, double t) { throw new NotSupportedException(); }
+        public double discountImpl(Interpolation i, double t) { return i.value(t, true); }
+        public double zeroYieldImpl(Interpolation i, double t) { throw new NotSupportedException(); }
+        public double forwardImpl(Interpolation i, double t) { throw new NotSupportedException(); }
 
-      public double guess(int i, InterpolatedCurve c, bool validData, int f)
-      {
-         if (validData) // previous iteration value
-            return c.data()[i];
+        public double guess(int i, InterpolatedCurve c, bool validData, int f)
+        {
+            if (validData) // previous iteration value
+                return c.data()[i];
 
-         if (i == 1) // first pillar
-            return 1.0 / (1.0 + avgHazardRate * 0.25);
+            if (i == 1) // first pillar
+                return 1.0 / (1.0 + avgHazardRate * 0.25);
 
-         // extrapolate
-         Date d = c.dates()[i];
-         return ((DefaultProbabilityTermStructure)c).survivalProbability(d, true);
-      }
+            // extrapolate
+            Date d = c.dates()[i];
+            return ((DefaultProbabilityTermStructure)c).survivalProbability(d, true);
+        }
 
-      public double minValueAfter(int i, InterpolatedCurve c, bool validData, int f)
-      {
-         if (validData)
-         {
-            return c.data().Last() / 2.0;
-         }
-         double dt = c.times()[i] - c.times()[i - 1];
-         return c.data()[i - 1] * Math.Exp(-maxHazardRate * dt);
-      }
+        public double minValueAfter(int i, InterpolatedCurve c, bool validData, int f)
+        {
+            if (validData)
+            {
+                return c.data().Last() / 2.0;
+            }
+            double dt = c.times()[i] - c.times()[i - 1];
+            return c.data()[i - 1] * System.Math.Exp(-maxHazardRate * dt);
+        }
 
-      public double maxValueAfter(int i, InterpolatedCurve c, bool validData, int f)
-      {
-         // survival probability cannot increase
-         return c.data()[i - 1];
-      }
-   }
+        public double maxValueAfter(int i, InterpolatedCurve c, bool validData, int f)
+        {
+            // survival probability cannot increase
+            return c.data()[i - 1];
+        }
+    }
 
-   /// <summary>
-   ///  Hazard-rate-curve traits
-   /// </summary>
-   public class HazardRate  : ITraits<DefaultProbabilityTermStructure>
-   {
-      const double avgHazardRate = 0.01;
-      const double maxHazardRate = 1.0;
+    /// <summary>
+    ///  Hazard-rate-curve traits
+    /// </summary>
+    public class HazardRate : ITraits<DefaultProbabilityTermStructure>
+    {
+        const double avgHazardRate = 0.01;
+        const double maxHazardRate = 1.0;
 
-      public Date initialDate(DefaultProbabilityTermStructure c)
-      {
-         return c.referenceDate();
-      }
-      public double initialValue(DefaultProbabilityTermStructure c)
-      {
-         return avgHazardRate;
-      }
-      public double guess(int i, InterpolatedCurve c, bool validData, int f)
-      {
-         if (validData) // previous iteration value
-            return c.data()[i];
-
-         if (i == 1) // first pillar
+        public Date initialDate(DefaultProbabilityTermStructure c)
+        {
+            return c.referenceDate();
+        }
+        public double initialValue(DefaultProbabilityTermStructure c)
+        {
             return avgHazardRate;
+        }
+        public double guess(int i, InterpolatedCurve c, bool validData, int f)
+        {
+            if (validData) // previous iteration value
+                return c.data()[i];
 
-         // extrapolate
-         Date d = c.dates()[i];
-         return ((DefaultProbabilityTermStructure)c).hazardRate(d, true);
-      }
-      public double minValueAfter(int i, InterpolatedCurve c, bool validData, int f)
-      {
-         if (validData)
-         {
-            double r = c.data().Min();
-            return r / 2.0;
-         }
-         return Const.QL_EPSILON;
-      }
-      public double maxValueAfter(int i, InterpolatedCurve c, bool validData, int f)
-      {
-         if (validData)
-         {
-            double r = c.data().Max();
-            return r * 2.0;
-         }
-         // no constraints.
-         // We choose as max a value very unlikely to be exceeded.
-         return maxHazardRate;
-      }
-      public  void updateGuess(List<double> data, double rate, int i)
-      {
-         data[i] = rate;
-         if (i == 1)
-            data[0] = rate; // first point is updated as well
-      }
-      public int maxIterations() { return 30; }
+            if (i == 1) // first pillar
+                return avgHazardRate;
 
-      public double discountImpl(Interpolation i, double t) { return i.value(t, true); }
-      public double zeroYieldImpl(Interpolation i, double t) { throw new NotSupportedException(); }
-      public double forwardImpl(Interpolation i, double t) { throw new NotSupportedException(); }
-   }
+            // extrapolate
+            Date d = c.dates()[i];
+            return ((DefaultProbabilityTermStructure)c).hazardRate(d, true);
+        }
+        public double minValueAfter(int i, InterpolatedCurve c, bool validData, int f)
+        {
+            if (validData)
+            {
+                double r = c.data().Min();
+                return r / 2.0;
+            }
+            return Const.QL_EPSILON;
+        }
+        public double maxValueAfter(int i, InterpolatedCurve c, bool validData, int f)
+        {
+            if (validData)
+            {
+                double r = c.data().Max();
+                return r * 2.0;
+            }
+            // no constraints.
+            // We choose as max a value very unlikely to be exceeded.
+            return maxHazardRate;
+        }
+        public void updateGuess(List<double> data, double rate, int i)
+        {
+            data[i] = rate;
+            if (i == 1)
+                data[0] = rate; // first point is updated as well
+        }
+        public int maxIterations() { return 30; }
 
-   /// <summary>
-   /// Default-density-curve traits
-   /// </summary>
-   public class DefaultDensity : ITraits<DefaultProbabilityTermStructure>
-   {
-      const double avgHazardRate = 0.01;
-      const double maxHazardRate = 1.0;
+        public double discountImpl(Interpolation i, double t) { return i.value(t, true); }
+        public double zeroYieldImpl(Interpolation i, double t) { throw new NotSupportedException(); }
+        public double forwardImpl(Interpolation i, double t) { throw new NotSupportedException(); }
+    }
 
-      public Date initialDate(DefaultProbabilityTermStructure c)
-      {
-         return c.referenceDate();
-      }
-      public double initialValue(DefaultProbabilityTermStructure c)
-      {
-         return avgHazardRate;
-      }
-      public double guess(int i, InterpolatedCurve c, bool validData, int f)
-      {
-         if (validData) // previous iteration value
-            return c.data()[i];
+    /// <summary>
+    /// Default-density-curve traits
+    /// </summary>
+    public class DefaultDensity : ITraits<DefaultProbabilityTermStructure>
+    {
+        const double avgHazardRate = 0.01;
+        const double maxHazardRate = 1.0;
 
-         if (i == 1) // first pillar
+        public Date initialDate(DefaultProbabilityTermStructure c)
+        {
+            return c.referenceDate();
+        }
+        public double initialValue(DefaultProbabilityTermStructure c)
+        {
             return avgHazardRate;
+        }
+        public double guess(int i, InterpolatedCurve c, bool validData, int f)
+        {
+            if (validData) // previous iteration value
+                return c.data()[i];
 
-         // extrapolate
-         Date d = c.dates()[i];
-         return ((DefaultProbabilityTermStructure)c).defaultDensity(d, true);
-      }
-      public double minValueAfter(int i, InterpolatedCurve c, bool validData, int f)
-      {
-         if (validData)
-         {
-            double r = c.data().Min();
-            return r / 2.0;
-         }
-         return Const.QL_EPSILON;
-      }
-      public double maxValueAfter(int i, InterpolatedCurve c, bool validData, int f)
-      {
-         if (validData)
-         {
-            double r = c.data().Max();
-            return r * 2.0;
-         }
-         // no constraints.
-         // We choose as max a value very unlikely to be exceeded.
-         return maxHazardRate;
-      }
-      public void updateGuess(List<double> data, double density, int i)
-      {
-         data[i] = density;
-         if (i == 1)
-            data[0] = density; // first point is updated as well
-      }
-      public int maxIterations() { return 30; }
+            if (i == 1) // first pillar
+                return avgHazardRate;
 
-      public double discountImpl(Interpolation i, double t) { return i.value(t, true); }
-      public double zeroYieldImpl(Interpolation i, double t) { throw new NotSupportedException(); }
-      public double forwardImpl(Interpolation i, double t) { throw new NotSupportedException(); }
-   }
+            // extrapolate
+            Date d = c.dates()[i];
+            return ((DefaultProbabilityTermStructure)c).defaultDensity(d, true);
+        }
+        public double minValueAfter(int i, InterpolatedCurve c, bool validData, int f)
+        {
+            if (validData)
+            {
+                double r = c.data().Min();
+                return r / 2.0;
+            }
+            return Const.QL_EPSILON;
+        }
+        public double maxValueAfter(int i, InterpolatedCurve c, bool validData, int f)
+        {
+            if (validData)
+            {
+                double r = c.data().Max();
+                return r * 2.0;
+            }
+            // no constraints.
+            // We choose as max a value very unlikely to be exceeded.
+            return maxHazardRate;
+        }
+        public void updateGuess(List<double> data, double density, int i)
+        {
+            data[i] = density;
+            if (i == 1)
+                data[0] = density; // first point is updated as well
+        }
+        public int maxIterations() { return 30; }
+
+        public double discountImpl(Interpolation i, double t) { return i.value(t, true); }
+        public double zeroYieldImpl(Interpolation i, double t) { throw new NotSupportedException(); }
+        public double forwardImpl(Interpolation i, double t) { throw new NotSupportedException(); }
+    }
 }

@@ -15,59 +15,59 @@
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
 using System.Collections.Generic;
-using component = System.Collections.Generic.KeyValuePair<QLNet.Instrument, double>;
+using component = System.Collections.Generic.KeyValuePair<QLNet.Instruments.Instrument, double>;
 
-namespace QLNet
+namespace QLNet.Instruments
 {
-   //! %Composite instrument
-   /*! This instrument is an aggregate of other instruments. Its NPV
-       is the sum of the NPVs of its components, each possibly
-       multiplied by a given factor.
+    //! %Composite instrument
+    /*! This instrument is an aggregate of other instruments. Its NPV
+        is the sum of the NPVs of its components, each possibly
+        multiplied by a given factor.
 
-       \warning Methods that drive the calculation directly (such as
-                recalculate(), freeze() and others) might not work
-                correctly.
+        \warning Methods that drive the calculation directly (such as
+                 recalculate(), freeze() and others) might not work
+                 correctly.
 
-       \ingroup instruments
-   */
-   public class CompositeInstrument : Instrument
-   {
-      //! adds an instrument to the composite
-      public void add
-         (Instrument instrument, double multiplier = 1.0)
-      {
-         components_.Add(new KeyValuePair<Instrument, double>(instrument, multiplier));
-         instrument.registerWith(update);
-         update();
-      }
+        \ingroup instruments
+    */
+    public class CompositeInstrument : Instrument
+    {
+        //! adds an instrument to the composite
+        public void add
+           (Instrument instrument, double multiplier = 1.0)
+        {
+            components_.Add(new component(instrument, multiplier));
+            instrument.registerWith(update);
+            update();
+        }
 
-      //! shorts an instrument from the composite
-      public void subtract(Instrument instrument, double multiplier = 1.0)
-      {
-         add
-            (instrument, -multiplier);
-      }
-      // Instrument interface
-      public override bool isExpired()
-      {
-         foreach (component c in components_)
-         {
-            if (!c.Key.isExpired())
-               return false;
-         }
-         return true;
-      }
+        //! shorts an instrument from the composite
+        public void subtract(Instrument instrument, double multiplier = 1.0)
+        {
+            add
+               (instrument, -multiplier);
+        }
+        // Instrument interface
+        public override bool isExpired()
+        {
+            foreach (component c in components_)
+            {
+                if (!c.Key.isExpired())
+                    return false;
+            }
+            return true;
+        }
 
-      protected override void performCalculations()
-      {
-         NPV_ = 0.0;
-         foreach (component c in components_)
-         {
-            NPV_ += c.Value * c.Key.NPV();
-         }
-      }
+        protected override void performCalculations()
+        {
+            NPV_ = 0.0;
+            foreach (component c in components_)
+            {
+                NPV_ += c.Value * c.Key.NPV();
+            }
+        }
 
-      private List<component> components_ = new List<component>();
+        private List<component> components_ = new List<component>();
 
-   }
+    }
 }

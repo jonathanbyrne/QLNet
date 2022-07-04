@@ -17,13 +17,14 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Patterns;
 using System;
 
 namespace QLNet
 {
-   // Pricing Engine interfaces
-   // these interfaces replace the abstract PricingEngine class below
-   public interface IPricingEngine : IObservable
+    // Pricing Engine interfaces
+    // these interfaces replace the abstract PricingEngine class below
+    public interface IPricingEngine : IObservable
    {
       IPricingEngineArguments getArguments();
       IPricingEngineResults getResults();

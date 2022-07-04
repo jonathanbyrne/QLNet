@@ -14,12 +14,17 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using QLNet.Extensions;
+using QLNet.Instruments;
+using QLNet.Math;
+using QLNet.Math.Distributions;
+using QLNet.Math.Solvers1d;
 using System;
 
 namespace QLNet
 {
 
-   public partial class Utils
+    public partial class Utils
    {
       /*! Black 1976 formula
         \warning instead of volatility it uses standard deviation,
@@ -37,7 +42,7 @@ namespace QLNet
          Utils.QL_REQUIRE(discount > 0.0, () => "discount (" + discount + ") must be positive");
 
          if (stdDev.IsEqual(0.0))
-            return Math.Max((forward - strike) * (int)optionType, 0.0) * discount;
+            return System.Math.Max((forward - strike) * (int)optionType, 0.0) * discount;
 
          forward = forward + displacement;
          strike = strike + displacement;
@@ -45,9 +50,9 @@ namespace QLNet
          // since displacement is non-negative strike==0 iff displacement==0
          // so returning forward*discount is OK
          if (strike.IsEqual(0.0))
-            return (optionType == Option.Type.Call ? forward* discount : 0.0);
+            return (optionType == QLNet.Option.Type.Call ? forward* discount : 0.0);
 
-         double d1 = Math.Log(forward / strike) / stdDev + 0.5 * stdDev;
+         double d1 = System.Math.Log(forward / strike) / stdDev + 0.5 * stdDev;
          double d2 = d1 - stdDev;
          CumulativeNormalDistribution phi = new CumulativeNormalDistribution();
          double nd1 = phi.value((int)optionType * d1);
@@ -96,7 +101,7 @@ namespace QLNet
          strike = strike + displacement;
          if (strike.IsEqual(forward))
             // Brenner-Subrahmanyan (1988) and Feinstein (1988) ATM approx.
-            stdDev = blackPrice / discount * Math.Sqrt(2.0 * Const.M_PI) / forward;
+            stdDev = blackPrice / discount * System.Math.Sqrt(2.0 * Const.M_PI) / forward;
          else
          {
             // Corrado and Miller extended moneyness approximation
@@ -109,9 +114,9 @@ namespace QLNet
                // 1. zero it
                temp2 = 0.0;
             // 2. Manaster-Koehler (1982) efficient Newton-Raphson seed
-            temp2 = Math.Sqrt(temp2);
+            temp2 = System.Math.Sqrt(temp2);
             temp += temp2;
-            temp *= Math.Sqrt(2.0 * Const.M_PI);
+            temp *= System.Math.Sqrt(2.0 * Const.M_PI);
             stdDev = temp / (forward + strike);
          }
 
@@ -176,9 +181,9 @@ namespace QLNet
             double d2 = blackFormulaStdDevSecondDerivative(strike, forward, s0, 1.0, 0.0);
             double ds = 0.0;
             double tmp = d1 * d1 + 2.0 * d2 * dc;
-            if (Math.Abs(d2) > 1E-10 && tmp >= 0.0)
-               ds = (-d1 + Math.Sqrt(tmp)) / d2; // second order approximation
-            else if (Math.Abs(d1) > 1E-10)
+            if (System.Math.Abs(d2) > 1E-10 && tmp >= 0.0)
+               ds = (-d1 + System.Math.Sqrt(tmp)) / d2; // second order approximation
+            else if (System.Math.Abs(d1) > 1E-10)
                ds = dc / d1; // first order approximation
             stdDev = s0 + ds;
          }
@@ -233,14 +238,14 @@ namespace QLNet
          // solve for the out-of-the-money option which has
          // greater vega/price ratio, i.e.
          // it is numerically more robust for implied vol calculations
-         if (optionType == Option.Type.Put && strike > forward)
+         if (optionType == QLNet.Option.Type.Put && strike > forward)
          {
-            optionType = Option.Type.Call;
+            optionType = QLNet.Option.Type.Call;
             blackPrice = otherOptionPrice;
          }
-         if (optionType == Option.Type.Call && strike < forward)
+         if (optionType == QLNet.Option.Type.Call && strike < forward)
          {
-            optionType = Option.Type.Put;
+            optionType = QLNet.Option.Type.Put;
             blackPrice = otherOptionPrice;
          }
 
@@ -292,8 +297,8 @@ namespace QLNet
          forward = forward + displacement;
          strike = strike + displacement;
          if (strike.IsEqual(0.0))
-            return (optionType == Option.Type.Call ? 1.0 : 0.0);
-         double d2 = Math.Log(forward / strike) / stdDev - 0.5 * stdDev;
+            return (optionType == QLNet.Option.Type.Call ? 1.0 : 0.0);
+         double d2 = System.Math.Log(forward / strike) / stdDev - 0.5 * stdDev;
          CumulativeNormalDistribution phi = new CumulativeNormalDistribution();
          return phi.value((int)optionType * d2);
       }
@@ -332,7 +337,7 @@ namespace QLNet
          if (stdDev.IsEqual(0.0) || strike.IsEqual(0.0))
             return 0.0;
 
-         double d1 = Math.Log(forward / strike) / stdDev + .5 * stdDev;
+         double d1 = System.Math.Log(forward / strike) / stdDev + .5 * stdDev;
          return discount * forward *
                 new CumulativeNormalDistribution().derivative(d1);
       }
@@ -346,7 +351,7 @@ namespace QLNet
                                                      double discount = 1.0,
                                                      double displacement = 0.0)
       {
-         return  blackFormulaStdDevDerivative(strike, forward, stdDev, discount, displacement) * Math.Sqrt(expiry);
+         return  blackFormulaStdDevDerivative(strike, forward, stdDev, discount, displacement) * System.Math.Sqrt(expiry);
       }
 
       public static double blackFormulaStdDevDerivative(PlainVanillaPayoff payoff,
@@ -381,8 +386,8 @@ namespace QLNet
          if (stdDev.IsEqual(0.0) || strike.IsEqual(0.0))
             return 0.0;
 
-         double d1 = Math.Log(forward / strike) / stdDev + .5 * stdDev;
-         double d1p = -Math.Log(forward / strike) / (stdDev * stdDev) + .5;
+         double d1 = System.Math.Log(forward / strike) / stdDev + .5 * stdDev;
+         double d1p = -System.Math.Log(forward / strike) / (stdDev * stdDev) + .5;
          return discount * forward *
                 new NormalDistribution().derivative(d1) * d1p;
       }
@@ -415,7 +420,7 @@ namespace QLNet
                     "discount (" + discount + ") must be positive");
          double d = (forward - strike) * (int)optionType, h = d / stdDev;
          if (stdDev.IsEqual(0.0))
-            return discount * Math.Max(d, 0.0);
+            return discount * System.Math.Max(d, 0.0);
          CumulativeNormalDistribution phi = new CumulativeNormalDistribution();
          double result = discount * (stdDev * phi.derivative(h) + d * phi.value(h));
          QL_REQUIRE(result >= 0.0, () =>
@@ -449,14 +454,14 @@ namespace QLNet
                                                            double bachelierPrice,
                                                            double discount = 1.0)
       {
-         double SQRT_QL_EPSILON = Math.Sqrt(Const.QL_EPSILON);
+         double SQRT_QL_EPSILON = System.Math.Sqrt(Const.QL_EPSILON);
 
          QL_REQUIRE(tte > 0.0, () => "tte (" + tte + ") must be positive");
 
          double forwardPremium = bachelierPrice / discount;
 
          double straddlePremium;
-         if (optionType == Option.Type.Call)
+         if (optionType == QLNet.Option.Type.Call)
          {
             straddlePremium = 2.0 * forwardPremium - (forward - strike);
          }
@@ -469,14 +474,14 @@ namespace QLNet
          QL_REQUIRE(nu <= 1.0, () => "nu (" + nu + ") must be <= 1.0");
          QL_REQUIRE(nu >= -1.0, () => "nu (" + nu + ") must be >= -1.0");
 
-         nu = Math.Max(-1.0 + Const.QL_EPSILON, Math.Min(nu, 1.0 - Const.QL_EPSILON));
+         nu = System.Math.Max(-1.0 + Const.QL_EPSILON, System.Math.Min(nu, 1.0 - Const.QL_EPSILON));
 
          // nu / arctanh(nu) -> 1 as nu -> 0
-         double eta = (Math.Abs(nu) < SQRT_QL_EPSILON) ? 1.0 : nu / ((Math.Log(1 + nu) - Math.Log(1 - nu)) / 2);
+         double eta = (System.Math.Abs(nu) < SQRT_QL_EPSILON) ? 1.0 : nu / ((System.Math.Log(1 + nu) - System.Math.Log(1 - nu)) / 2);
 
          double heta = h(eta);
 
-         double impliedBpvol = Math.Sqrt(Const.M_PI / (2 * tte)) * straddlePremium * heta;
+         double impliedBpvol = System.Math.Sqrt(Const.M_PI / (2 * tte)) * straddlePremium * heta;
 
          return impliedBpvol;
       }
@@ -513,7 +518,7 @@ namespace QLNet
          double den = B0 + eta * (B1 + eta * (B2 + eta * (B3 + eta * (B4 + eta
                                                                       * (B5 + eta * (B6 + eta * (B7 + eta * (B8 + eta * B9))))))));
 
-         return Math.Sqrt(eta) * (num / den);
+         return System.Math.Sqrt(eta) * (num / den);
 
       }
 
@@ -578,7 +583,7 @@ namespace QLNet
             Utils.QL_REQUIRE(undiscountedBlackPrice >= 0.0, () =>
                              "undiscounted Black price (" +
                              undiscountedBlackPrice + ") must be non-negative");
-            signedMoneyness_ = (int)optionType * Math.Log((forward + displacement) / (strike + displacement));
+            signedMoneyness_ = (int)optionType * System.Math.Log((forward + displacement) / (strike + displacement));
          }
          public override double value(double stdDev)
          {
@@ -586,7 +591,7 @@ namespace QLNet
             Utils.QL_REQUIRE(stdDev >= 0.0, () => "stdDev (" + stdDev + ") must be non-negative");
 #endif
             if (stdDev.IsEqual(0.0))
-               return Math.Max(signedForward_ - signedStrike_, 0.0)
+               return System.Math.Max(signedForward_ - signedStrike_, 0.0)
                       - undiscountedBlackPrice_;
             double temp = halfOptionType_ * stdDev;
             double d = signedMoneyness_ / stdDev;
@@ -595,7 +600,7 @@ namespace QLNet
             double result = signedForward_ * N_.value(signedD1)
                             - signedStrike_ * N_.value(signedD2);
             // numerical inaccuracies can yield a negative answer
-            return Math.Max(0.0, result) - undiscountedBlackPrice_;
+            return System.Math.Max(0.0, result) - undiscountedBlackPrice_;
          }
 
          public override double derivative(double stdDev)

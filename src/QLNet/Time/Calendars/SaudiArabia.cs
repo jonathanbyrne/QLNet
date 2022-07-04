@@ -21,69 +21,69 @@
 
 using System;
 
-namespace QLNet
+namespace QLNet.Time.Calendars
 {
-   //! Saudi Arabian calendar
-   /*! Holidays for the Tadawul financial market
-       (data from <http://www.tadawul.com.sa>):
-       <ul>
-       <li>Thursdays</li>
-       <li>Fridays</li>
-       <li>National Day of Saudi Arabia, September 23rd</li>
-       </ul>
+    //! Saudi Arabian calendar
+    /*! Holidays for the Tadawul financial market
+        (data from <http://www.tadawul.com.sa>):
+        <ul>
+        <li>Thursdays</li>
+        <li>Fridays</li>
+        <li>National Day of Saudi Arabia, September 23rd</li>
+        </ul>
 
-       Other holidays for which no rule is given
-       (data available for 2004-2011 only:)
-       <ul>
-       <li>Eid Al-Adha</li>
-       <li>Eid Al-Fitr</li>
-       </ul>
+        Other holidays for which no rule is given
+        (data available for 2004-2011 only:)
+        <ul>
+        <li>Eid Al-Adha</li>
+        <li>Eid Al-Fitr</li>
+        </ul>
 
-       \ingroup calendars
-   */
-   public class SaudiArabia : Calendar
-   {
-      public SaudiArabia() : base(Impl.Singleton) { }
+        \ingroup calendars
+    */
+    public class SaudiArabia : Calendar
+    {
+        public SaudiArabia() : base(Impl.Singleton) { }
 
-      class Impl : Calendar
-      {
-         public static readonly Impl Singleton = new Impl();
-         private Impl() { }
+        class Impl : Calendar
+        {
+            public static readonly Impl Singleton = new Impl();
+            private Impl() { }
 
-         public override string name() { return "Tadawul"; }
-         public override bool isWeekend(DayOfWeek w)
-         {
-            return w == DayOfWeek.Thursday || w == DayOfWeek.Friday;
-         }
+            public override string name() { return "Tadawul"; }
+            public override bool isWeekend(DayOfWeek w)
+            {
+                return w == DayOfWeek.Thursday || w == DayOfWeek.Friday;
+            }
 
-         public override bool isBusinessDay(Date date)
-         {
-            DayOfWeek w = date.DayOfWeek;
-            int d = date.Day, dd = date.DayOfYear;
-            Month m = (Month)date.Month;
-            int y = date.Year;
+            public override bool isBusinessDay(Date date)
+            {
+                DayOfWeek w = date.DayOfWeek;
+                int d = date.Day, dd = date.DayOfYear;
+                Month m = (Month)date.Month;
+                int y = date.Year;
 
-            if (isWeekend(w)
-                // National Day
-                || (d == 23 && m == Month.September)
-                // Eid Al-Adha
-                || (d >= 1 && d <= 6 && m == Month.February && y == 2004)
-                || (d >= 21 && d <= 25 && m == Month.January && y == 2005)
-                || (d >= 26 && m == Month.November && y == 2009)
-                || (d <= 4 && m == Month.December && y == 2009)
-                || (d >= 11 && d <= 19 && m == Month.November && y == 2010)
-                // Eid Al-Fitr
-                || (d >= 25 && d <= 29 && m == Month.November && y == 2004)
-                || (d >= 14 && d <= 18 && m == Month.November && y == 2005)
-                || (d >= 25 && m == Month.August && y == 2011)
-                || (d <= 2 && m == Month.September && y == 2011)
-                // other one-shot holidays
-                || (d == 26 && m == Month.February && y == 2011)
-                || (d == 19 && m == Month.March && y == 2011)
-               )
-               return false;
-            return true;
-         }
-      }
-   }
+                if (isWeekend(w)
+                    // National Day
+                    || d == 23 && m == Month.September
+                    // Eid Al-Adha
+                    || d >= 1 && d <= 6 && m == Month.February && y == 2004
+                    || d >= 21 && d <= 25 && m == Month.January && y == 2005
+                    || d >= 26 && m == Month.November && y == 2009
+                    || d <= 4 && m == Month.December && y == 2009
+                    || d >= 11 && d <= 19 && m == Month.November && y == 2010
+                    // Eid Al-Fitr
+                    || d >= 25 && d <= 29 && m == Month.November && y == 2004
+                    || d >= 14 && d <= 18 && m == Month.November && y == 2005
+                    || d >= 25 && m == Month.August && y == 2011
+                    || d <= 2 && m == Month.September && y == 2011
+                    // other one-shot holidays
+                    || d == 26 && m == Month.February && y == 2011
+                    || d == 19 && m == Month.March && y == 2011
+                   )
+                    return false;
+                return true;
+            }
+        }
+    }
 }

@@ -13,216 +13,224 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+using QLNet.Math;
+using QLNet.Math.randomnumbers;
+using QLNet.Math.statistics;
+using QLNet.Methods.montecarlo;
+using QLNet.Models.Equity;
+using QLNet.Models.Shortrate.Onefactormodels;
+using QLNet.Patterns;
+using QLNet.processes;
 using System;
 
-namespace QLNet
+namespace QLNet.Pricingengines.vanilla
 {
-   public class MCHestonHullWhiteEngine<RNG, S> : MCVanillaEngine<MultiVariate, RNG, S>
-      where RNG : IRSG, new ()
-      where S : IGeneralStatistics, new ()
-   {
-      public MCHestonHullWhiteEngine(HybridHestonHullWhiteProcess process,
-                                     int? timeSteps,
-                                     int? timeStepsPerYear,
-                                     bool antitheticVariate,
-                                     bool controlVariate,
-                                     int? requiredSamples,
-                                     double? requiredTolerance,
-                                     int? maxSamples,
-                                     ulong seed)
-      : base(process, timeSteps, timeStepsPerYear, false, antitheticVariate, controlVariate, requiredSamples,
-             requiredTolerance, maxSamples, seed)
-      {
-         process_ =  process;
-      }
+    public class MCHestonHullWhiteEngine<RNG, S> : MCVanillaEngine<MultiVariate, RNG, S>
+      where RNG : IRSG, new()
+      where S : IGeneralStatistics, new()
+    {
+        public MCHestonHullWhiteEngine(HybridHestonHullWhiteProcess process,
+                                       int? timeSteps,
+                                       int? timeStepsPerYear,
+                                       bool antitheticVariate,
+                                       bool controlVariate,
+                                       int? requiredSamples,
+                                       double? requiredTolerance,
+                                       int? maxSamples,
+                                       ulong seed)
+        : base(process, timeSteps, timeStepsPerYear, false, antitheticVariate, controlVariate, requiredSamples,
+               requiredTolerance, maxSamples, seed)
+        {
+            process_ = process;
+        }
 
-      public override void calculate()
-      {
-         base.calculate();
+        public override void calculate()
+        {
+            base.calculate();
 
-         if (this.controlVariate_)
-         {
-            // control variate might lead to small negative
-            // option values for deep OTM options
-            this.results_.value = Math.Max(0.0, this.results_.value.GetValueOrDefault());
-         }
-      }
+            if (controlVariate_)
+            {
+                // control variate might lead to small negative
+                // option values for deep OTM options
+                results_.value = System.Math.Max(0.0, results_.value.GetValueOrDefault());
+            }
+        }
 
-      protected override PathPricer<IPath> pathPricer()
-      {
-         Exercise exercise = arguments_.exercise;
+        protected override PathPricer<IPath> pathPricer()
+        {
+            Exercise exercise = arguments_.exercise;
 
-         Utils.QL_REQUIRE(exercise.type() == Exercise.Type.European, () => "only european exercise is supported");
+            Utils.QL_REQUIRE(exercise.type() == Exercise.Type.European, () => "only european exercise is supported");
 
-         double exerciseTime = process_.time(exercise.lastDate());
+            double exerciseTime = process_.time(exercise.lastDate());
 
-         return new HestonHullWhitePathPricer(exerciseTime, this.arguments_.payoff, (HybridHestonHullWhiteProcess) process_);
-      }
+            return new HestonHullWhitePathPricer(exerciseTime, arguments_.payoff, (HybridHestonHullWhiteProcess)process_);
+        }
 
-      protected override PathPricer<IPath> controlPathPricer()
-      {
-         HybridHestonHullWhiteProcess process = process_ as HybridHestonHullWhiteProcess;
-         Utils.QL_REQUIRE(process != null, () => "invalid process");
+        protected override PathPricer<IPath> controlPathPricer()
+        {
+            HybridHestonHullWhiteProcess process = process_ as HybridHestonHullWhiteProcess;
+            Utils.QL_REQUIRE(process != null, () => "invalid process");
 
-         HestonProcess hestonProcess = process.hestonProcess() ;
+            HestonProcess hestonProcess = process.hestonProcess();
 
-         Utils.QL_REQUIRE(hestonProcess != null, () =>
-                          "first constituent of the joint stochastic process need to be of type HestonProcess");
+            Utils.QL_REQUIRE(hestonProcess != null, () =>
+                             "first constituent of the joint stochastic process need to be of type HestonProcess");
 
-         Exercise exercise = this.arguments_.exercise;
+            Exercise exercise = arguments_.exercise;
 
-         Utils.QL_REQUIRE(exercise.type() == Exercise.Type.European, () => "only european exercise is supported");
+            Utils.QL_REQUIRE(exercise.type() == Exercise.Type.European, () => "only european exercise is supported");
 
-         double exerciseTime = process.time(exercise.lastDate());
+            double exerciseTime = process.time(exercise.lastDate());
 
-         return new HestonHullWhitePathPricer(exerciseTime, this.arguments_.payoff, process) ;
+            return new HestonHullWhitePathPricer(exerciseTime, arguments_.payoff, process);
 
-      }
-      protected override IPricingEngine controlPricingEngine()
-      {
-         HybridHestonHullWhiteProcess process = process_ as HybridHestonHullWhiteProcess;
-         Utils.QL_REQUIRE(process != null, () => "invalid process");
+        }
+        protected override IPricingEngine controlPricingEngine()
+        {
+            HybridHestonHullWhiteProcess process = process_ as HybridHestonHullWhiteProcess;
+            Utils.QL_REQUIRE(process != null, () => "invalid process");
 
-         HestonProcess hestonProcess = process.hestonProcess();
+            HestonProcess hestonProcess = process.hestonProcess();
 
-         HullWhiteForwardProcess hullWhiteProcess = process.hullWhiteProcess();
+            HullWhiteForwardProcess hullWhiteProcess = process.hullWhiteProcess();
 
-         HestonModel hestonModel = new HestonModel(hestonProcess);
+            HestonModel hestonModel = new HestonModel(hestonProcess);
 
-         HullWhite hwModel = new HullWhite(hestonProcess.riskFreeRate(),
-                                           hullWhiteProcess.a(),
-                                           hullWhiteProcess.sigma());
+            HullWhite hwModel = new HullWhite(hestonProcess.riskFreeRate(),
+                                              hullWhiteProcess.a(),
+                                              hullWhiteProcess.sigma());
 
-         return new AnalyticHestonHullWhiteEngine(hestonModel, hwModel, 144);
-      }
+            return new AnalyticHestonHullWhiteEngine(hestonModel, hwModel, 144);
+        }
 
-      protected override IPathGenerator<IRNG> controlPathGenerator()
-      {
-         int dimensions = process_.factors();
-         TimeGrid grid = this.timeGrid();
-         IRNG generator = (IRNG)new  RNG().make_sequence_generator(dimensions * (grid.size() - 1), this.seed_);
-         HybridHestonHullWhiteProcess process = process_ as HybridHestonHullWhiteProcess;
-         Utils.QL_REQUIRE(process != null, () => "invalid process");
-         HybridHestonHullWhiteProcess cvProcess = new HybridHestonHullWhiteProcess(process.hestonProcess(),
-                                                                                   process.hullWhiteProcess(), 0.0, process.discretization());
+        protected override IPathGenerator<IRNG> controlPathGenerator()
+        {
+            int dimensions = process_.factors();
+            TimeGrid grid = timeGrid();
+            IRNG generator = new RNG().make_sequence_generator(dimensions * (grid.size() - 1), seed_);
+            HybridHestonHullWhiteProcess process = process_ as HybridHestonHullWhiteProcess;
+            Utils.QL_REQUIRE(process != null, () => "invalid process");
+            HybridHestonHullWhiteProcess cvProcess = new HybridHestonHullWhiteProcess(process.hestonProcess(),
+                                                                                      process.hullWhiteProcess(), 0.0, process.discretization());
 
-         return  new MultiPathGenerator<IRNG>(cvProcess, grid, generator, false) ;
-      }
-   }
+            return new MultiPathGenerator<IRNG>(cvProcess, grid, generator, false);
+        }
+    }
 
-   //! Monte Carlo Heston/Hull-White engine factory
-   public class MakeMCHestonHullWhiteEngine <RNG, S>
-      where RNG : IRSG, new ()
-      where S : IGeneralStatistics, new ()
-   {
-      public MakeMCHestonHullWhiteEngine(HybridHestonHullWhiteProcess process)
-      {
-         process_ = process;
-         steps_ = null;
-         stepsPerYear_ = null;
-         samples_ = null;
-         maxSamples_ = null;
-         antithetic_ = false;
-         controlVariate_ = false;
-         tolerance_ = null;
-         seed_ = 0;
-      }
-      // named parameters
-      public MakeMCHestonHullWhiteEngine<RNG, S> withSteps(int steps)
-      {
-         steps_ = steps;
-         return this;
-      }
-      public MakeMCHestonHullWhiteEngine<RNG, S> withStepsPerYear(int steps)
-      {
-         stepsPerYear_ = steps;
-         return this;
-      }
-      public MakeMCHestonHullWhiteEngine<RNG, S> withAntitheticVariate(bool b = true)
-      {
-         antithetic_ = b;
-         return this;
-      }
-      public MakeMCHestonHullWhiteEngine<RNG, S> withControlVariate(bool b = true)
-      {
-         controlVariate_ = b;
-         return this;
-      }
-      public MakeMCHestonHullWhiteEngine<RNG, S> withSamples(int samples)
-      {
-         Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
-         samples_ = samples;
-         return this;
-      }
-      public MakeMCHestonHullWhiteEngine<RNG, S> withAbsoluteTolerance(double tolerance)
-      {
-         Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
-         Utils.QL_REQUIRE(FastActivator<RNG>.Create().allowsErrorEstimate != 0, () =>
-                          "chosen random generator policy does not allow an error estimate");
-         tolerance_ = tolerance;
-         return this;
-      }
-      public MakeMCHestonHullWhiteEngine<RNG, S> withMaxSamples(int samples)
-      {
-         maxSamples_ = samples;
-         return this;
-      }
-      public MakeMCHestonHullWhiteEngine<RNG, S> withSeed(ulong seed)
-      {
-         seed_ = seed;
-         return this;
-      }
-      // conversion to pricing engine
-      public IPricingEngine getAsPricingEngine()
-      {
-         Utils.QL_REQUIRE(steps_ != null || stepsPerYear_ != null, () => "number of steps not given");
-         Utils.QL_REQUIRE(steps_ == null || stepsPerYear_ == null, () => "number of steps overspecified");
-         return new MCHestonHullWhiteEngine<RNG, S>(process_,
-                                                    steps_,
-                                                    stepsPerYear_,
-                                                    antithetic_,
-                                                    controlVariate_,
-                                                    samples_,
-                                                    tolerance_,
-                                                    maxSamples_,
-                                                    seed_);
-      }
+    //! Monte Carlo Heston/Hull-White engine factory
+    public class MakeMCHestonHullWhiteEngine<RNG, S>
+       where RNG : IRSG, new()
+       where S : IGeneralStatistics, new()
+    {
+        public MakeMCHestonHullWhiteEngine(HybridHestonHullWhiteProcess process)
+        {
+            process_ = process;
+            steps_ = null;
+            stepsPerYear_ = null;
+            samples_ = null;
+            maxSamples_ = null;
+            antithetic_ = false;
+            controlVariate_ = false;
+            tolerance_ = null;
+            seed_ = 0;
+        }
+        // named parameters
+        public MakeMCHestonHullWhiteEngine<RNG, S> withSteps(int steps)
+        {
+            steps_ = steps;
+            return this;
+        }
+        public MakeMCHestonHullWhiteEngine<RNG, S> withStepsPerYear(int steps)
+        {
+            stepsPerYear_ = steps;
+            return this;
+        }
+        public MakeMCHestonHullWhiteEngine<RNG, S> withAntitheticVariate(bool b = true)
+        {
+            antithetic_ = b;
+            return this;
+        }
+        public MakeMCHestonHullWhiteEngine<RNG, S> withControlVariate(bool b = true)
+        {
+            controlVariate_ = b;
+            return this;
+        }
+        public MakeMCHestonHullWhiteEngine<RNG, S> withSamples(int samples)
+        {
+            Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
+            samples_ = samples;
+            return this;
+        }
+        public MakeMCHestonHullWhiteEngine<RNG, S> withAbsoluteTolerance(double tolerance)
+        {
+            Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
+            Utils.QL_REQUIRE(FastActivator<RNG>.Create().allowsErrorEstimate != 0, () =>
+                             "chosen random generator policy does not allow an error estimate");
+            tolerance_ = tolerance;
+            return this;
+        }
+        public MakeMCHestonHullWhiteEngine<RNG, S> withMaxSamples(int samples)
+        {
+            maxSamples_ = samples;
+            return this;
+        }
+        public MakeMCHestonHullWhiteEngine<RNG, S> withSeed(ulong seed)
+        {
+            seed_ = seed;
+            return this;
+        }
+        // conversion to pricing engine
+        public IPricingEngine getAsPricingEngine()
+        {
+            Utils.QL_REQUIRE(steps_ != null || stepsPerYear_ != null, () => "number of steps not given");
+            Utils.QL_REQUIRE(steps_ == null || stepsPerYear_ == null, () => "number of steps overspecified");
+            return new MCHestonHullWhiteEngine<RNG, S>(process_,
+                                                       steps_,
+                                                       stepsPerYear_,
+                                                       antithetic_,
+                                                       controlVariate_,
+                                                       samples_,
+                                                       tolerance_,
+                                                       maxSamples_,
+                                                       seed_);
+        }
 
-      private HybridHestonHullWhiteProcess process_;
-      private int? steps_, stepsPerYear_, samples_, maxSamples_;
-      private bool antithetic_, controlVariate_;
-      private double? tolerance_;
-      private ulong seed_;
-   }
+        private HybridHestonHullWhiteProcess process_;
+        private int? steps_, stepsPerYear_, samples_, maxSamples_;
+        private bool antithetic_, controlVariate_;
+        private double? tolerance_;
+        private ulong seed_;
+    }
 
-   public class HestonHullWhitePathPricer : PathPricer<IPath>
-   {
-      public HestonHullWhitePathPricer(double exerciseTime, Payoff payoff, HybridHestonHullWhiteProcess process)
-      {
-         exerciseTime_ = exerciseTime;
-         payoff_ = payoff;
-         process_ = process;
-      }
+    public class HestonHullWhitePathPricer : PathPricer<IPath>
+    {
+        public HestonHullWhitePathPricer(double exerciseTime, Payoff payoff, HybridHestonHullWhiteProcess process)
+        {
+            exerciseTime_ = exerciseTime;
+            payoff_ = payoff;
+            process_ = process;
+        }
 
-      public double value(IPath path)
-      {
-         MultiPath p = path as MultiPath;
-         Utils.QL_REQUIRE(p != null, () => "invalid path");
+        public double value(IPath path)
+        {
+            MultiPath p = path as MultiPath;
+            Utils.QL_REQUIRE(p != null, () => "invalid path");
 
-         Utils.QL_REQUIRE(p.pathSize() > 0, () => "the path cannot be empty");
+            Utils.QL_REQUIRE(p.pathSize() > 0, () => "the path cannot be empty");
 
-         Vector states = new Vector(p.assetNumber());
-         for (int j = 0; j < states.size(); ++j)
-         {
-            states[j] = p[j][p.pathSize() - 1];
-         }
+            Vector states = new Vector(p.assetNumber());
+            for (int j = 0; j < states.size(); ++j)
+            {
+                states[j] = p[j][p.pathSize() - 1];
+            }
 
-         double df = 1.0 / process_.numeraire(exerciseTime_, states);
-         return payoff_.value(states[0]) * df;
-      }
+            double df = 1.0 / process_.numeraire(exerciseTime_, states);
+            return payoff_.value(states[0]) * df;
+        }
 
-      private double exerciseTime_;
-      private Payoff payoff_;
-      private HybridHestonHullWhiteProcess process_;
-   }
+        private double exerciseTime_;
+        private Payoff payoff_;
+        private HybridHestonHullWhiteProcess process_;
+    }
 }

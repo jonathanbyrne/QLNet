@@ -14,72 +14,74 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-namespace QLNet
+using QLNet.Patterns;
+
+namespace QLNet.Quotes
 {
-   //! Class for the quotation of delta vs vol.
-   /*! It includes the various delta quotation types
-       in FX markets as well as ATM types.
-   */
-   public class DeltaVolQuote : Quote, IObserver
-   {
-      public enum DeltaType
-      {
-         Spot,        // Spot Delta, e.g. usual Black Scholes delta
-         Fwd,         // Forward Delta
-         PaSpot,      // Premium Adjusted Spot Delta
-         PaFwd        // Premium Adjusted Forward Delta
-      }
+    //! Class for the quotation of delta vs vol.
+    /*! It includes the various delta quotation types
+        in FX markets as well as ATM types.
+    */
+    public class DeltaVolQuote : Quote, IObserver
+    {
+        public enum DeltaType
+        {
+            Spot,        // Spot Delta, e.g. usual Black Scholes delta
+            Fwd,         // Forward Delta
+            PaSpot,      // Premium Adjusted Spot Delta
+            PaFwd        // Premium Adjusted Forward Delta
+        }
 
-      public enum AtmType
-      {
-         AtmNull,         // Default, if not an atm quote
-         AtmSpot,         // K=S_0
-         AtmFwd,          // K=F
-         AtmDeltaNeutral, // Call Delta = Put Delta
-         AtmVegaMax,      // K such that Vega is Maximum
-         AtmGammaMax,     // K such that Gamma is Maximum
-         AtmPutCall50     // K such that Call Delta=0.50 (only for Fwd Delta)
-      }
+        public enum AtmType
+        {
+            AtmNull,         // Default, if not an atm quote
+            AtmSpot,         // K=S_0
+            AtmFwd,          // K=F
+            AtmDeltaNeutral, // Call Delta = Put Delta
+            AtmVegaMax,      // K such that Vega is Maximum
+            AtmGammaMax,     // K such that Gamma is Maximum
+            AtmPutCall50     // K such that Call Delta=0.50 (only for Fwd Delta)
+        }
 
-      // Standard constructor delta vs vol.
-      public DeltaVolQuote(double delta, Handle<Quote> vol, double maturity, DeltaType deltaType)
-      {
-         delta_ = delta;
-         vol_ = vol;
-         deltaType_ = deltaType;
-         maturity_ = maturity;
-         atmType_ = DeltaVolQuote.AtmType.AtmNull;
+        // Standard constructor delta vs vol.
+        public DeltaVolQuote(double delta, Handle<Quote> vol, double maturity, DeltaType deltaType)
+        {
+            delta_ = delta;
+            vol_ = vol;
+            deltaType_ = deltaType;
+            maturity_ = maturity;
+            atmType_ = AtmType.AtmNull;
 
-         vol_.registerWith(update);
-      }
+            vol_.registerWith(update);
+        }
 
-      // Additional constructor, if special atm quote is used
-      public DeltaVolQuote(Handle<Quote> vol, DeltaType deltaType, double maturity, AtmType atmType)
-      {
-         vol_ = vol;
-         deltaType_ = deltaType;
-         maturity_ = maturity;
-         atmType_ = atmType;
+        // Additional constructor, if special atm quote is used
+        public DeltaVolQuote(Handle<Quote> vol, DeltaType deltaType, double maturity, AtmType atmType)
+        {
+            vol_ = vol;
+            deltaType_ = deltaType;
+            maturity_ = maturity;
+            atmType_ = atmType;
 
-         vol_.registerWith(update);
-      }
+            vol_.registerWith(update);
+        }
 
-      public void update()  { notifyObservers(); }
+        public void update() { notifyObservers(); }
 
-      public override double value() { return vol_.link.value(); }
-      public double delta() { return delta_; }
-      public double maturity() { return maturity_; }
+        public override double value() { return vol_.link.value(); }
+        public double delta() { return delta_; }
+        public double maturity() { return maturity_; }
 
-      public AtmType atmType() { return atmType_; }
-      public DeltaType deltaType() { return deltaType_; }
+        public AtmType atmType() { return atmType_; }
+        public DeltaType deltaType() { return deltaType_; }
 
-      public override bool isValid() { return !vol_.empty() && vol_.link.isValid(); }
+        public override bool isValid() { return !vol_.empty() && vol_.link.isValid(); }
 
-      private double delta_;
-      private Handle<Quote> vol_;
-      private DeltaType deltaType_;
-      private double maturity_;
-      private AtmType atmType_;
+        private double delta_;
+        private Handle<Quote> vol_;
+        private DeltaType deltaType_;
+        private double maturity_;
+        private AtmType atmType_;
 
-   }
+    }
 }

@@ -17,51 +17,52 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Time;
 using System;
 
-namespace QLNet
+namespace QLNet.Cashflows
 {
-   //! Predetermined cash flow
-   /*! This cash flow pays a predetermined amount at a given date. */
-   public class SimpleCashFlow : CashFlow
-   {
-      private double amount_;
-      public override double amount() { return amount_; }
-      private Date date_;
-      public override Date date() { return date_; }
+    //! Predetermined cash flow
+    /*! This cash flow pays a predetermined amount at a given date. */
+    public class SimpleCashFlow : CashFlow
+    {
+        private double amount_;
+        public override double amount() { return amount_; }
+        private Date date_;
+        public override Date date() { return date_; }
 
-      public SimpleCashFlow(double amount, Date date)
-      {
-         Utils.QL_REQUIRE(date != null, () => "null date SimpleCashFlow");
-         amount_ = amount;
-         date_ = date;
-      }
-   }
+        public SimpleCashFlow(double amount, Date date)
+        {
+            Utils.QL_REQUIRE(date != null, () => "null date SimpleCashFlow");
+            amount_ = amount;
+            date_ = date;
+        }
+    }
 
-   //! Bond redemption
-   /*! This class specializes SimpleCashFlow so that visitors
-       can perform more detailed cash-flow analysis.
-   */
-   public class Redemption : SimpleCashFlow
-   {
-      public Redemption(double amount, Date date) : base(amount, date) { }
-   }
+    //! Bond redemption
+    /*! This class specializes SimpleCashFlow so that visitors
+        can perform more detailed cash-flow analysis.
+    */
+    public class Redemption : SimpleCashFlow
+    {
+        public Redemption(double amount, Date date) : base(amount, date) { }
+    }
 
-   //! Amortizing payment
-   /*! This class specializes SimpleCashFlow so that visitors
-       can perform more detailed cash-flow analysis.
-   */
-   public class AmortizingPayment : SimpleCashFlow
-   {
-      public AmortizingPayment(double amount, Date date) : base(amount, date) { }
-   }
+    //! Amortizing payment
+    /*! This class specializes SimpleCashFlow so that visitors
+        can perform more detailed cash-flow analysis.
+    */
+    public class AmortizingPayment : SimpleCashFlow
+    {
+        public AmortizingPayment(double amount, Date date) : base(amount, date) { }
+    }
 
-   //! Voluntary Prepay
-   /*! This class specializes SimpleCashFlow so that visitors
-       can perform more detailed cash-flow analysis.
-   */
-   public class VoluntaryPrepay : SimpleCashFlow
-   {
-      public VoluntaryPrepay(double amount, Date date) : base(amount, date) { }
-   }
+    //! Voluntary Prepay
+    /*! This class specializes SimpleCashFlow so that visitors
+        can perform more detailed cash-flow analysis.
+    */
+    public class VoluntaryPrepay : SimpleCashFlow
+    {
+        public VoluntaryPrepay(double amount, Date date) : base(amount, date) { }
+    }
 }

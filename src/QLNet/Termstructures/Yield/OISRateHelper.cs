@@ -16,117 +16,121 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Indexes;
+using QLNet.Instruments;
+using QLNet.Quotes;
+using QLNet.Time;
 using System;
 
-namespace QLNet
+namespace QLNet.Termstructures.Yield
 {
-   public class OISRateHelper : RelativeDateRateHelper
-   {
-      public OISRateHelper(int settlementDays,
-                           Period tenor, // swap maturity
-                           Handle<Quote> fixedRate,
-                           OvernightIndex overnightIndex)
-         : base(fixedRate)
-      {
-         settlementDays_ = settlementDays;
-         tenor_ = tenor;
-         overnightIndex_ = overnightIndex;
-         overnightIndex_.registerWith(update);
-         initializeDates();
-      }
+    public class OISRateHelper : RelativeDateRateHelper
+    {
+        public OISRateHelper(int settlementDays,
+                             Period tenor, // swap maturity
+                             Handle<Quote> fixedRate,
+                             OvernightIndex overnightIndex)
+           : base(fixedRate)
+        {
+            settlementDays_ = settlementDays;
+            tenor_ = tenor;
+            overnightIndex_ = overnightIndex;
+            overnightIndex_.registerWith(update);
+            initializeDates();
+        }
 
-      public OvernightIndexedSwap swap() { return swap_; }
+        public OvernightIndexedSwap swap() { return swap_; }
 
-      protected override void initializeDates()
-      {
+        protected override void initializeDates()
+        {
 
-         // dummy OvernightIndex with curve/swap arguments
-         // review here
-         IborIndex clonedIborIndex = overnightIndex_.clone(termStructureHandle_);
-         OvernightIndex clonedOvernightIndex = clonedIborIndex as OvernightIndex;
+            // dummy OvernightIndex with curve/swap arguments
+            // review here
+            IborIndex clonedIborIndex = overnightIndex_.clone(termStructureHandle_);
+            OvernightIndex clonedOvernightIndex = clonedIborIndex as OvernightIndex;
 
-         swap_ = new MakeOIS(tenor_, clonedOvernightIndex, 0.0)
-         .withSettlementDays(settlementDays_)
-         .withDiscountingTermStructure(termStructureHandle_);
+            swap_ = new MakeOIS(tenor_, clonedOvernightIndex, 0.0)
+            .withSettlementDays(settlementDays_)
+            .withDiscountingTermStructure(termStructureHandle_);
 
-         earliestDate_ = swap_.startDate();
-         latestDate_ = swap_.maturityDate();
-      }
+            earliestDate_ = swap_.startDate();
+            latestDate_ = swap_.maturityDate();
+        }
 
-      public override void setTermStructure(YieldTermStructure t)
-      {
-         // no need to register---the index is not lazy
-         termStructureHandle_.linkTo(t, false);
-         base.setTermStructure(t);
-      }
+        public override void setTermStructure(YieldTermStructure t)
+        {
+            // no need to register---the index is not lazy
+            termStructureHandle_.linkTo(t, false);
+            base.setTermStructure(t);
+        }
 
-      public override double impliedQuote()
-      {
-         if (termStructure_ == null)
-            throw new ArgumentException("term structure not set");
+        public override double impliedQuote()
+        {
+            if (termStructure_ == null)
+                throw new ArgumentException("term structure not set");
 
-         // we didn't register as observers - force calculation
-         swap_.recalculate();
-         return swap_.fairRate().Value;
-      }
+            // we didn't register as observers - force calculation
+            swap_.recalculate();
+            return swap_.fairRate().Value;
+        }
 
-      protected int settlementDays_;
-      protected Period tenor_;
-      protected OvernightIndex overnightIndex_;
-      protected OvernightIndexedSwap swap_;
-      protected RelinkableHandle<YieldTermStructure> termStructureHandle_ = new RelinkableHandle<YieldTermStructure>();
-   }
-
-
-   //! Rate helper for bootstrapping over Overnight Indexed Swap rates
-   public class DatedOISRateHelper : RateHelper
-   {
-
-      public DatedOISRateHelper(Date startDate,
-                                Date endDate,
-                                Handle<Quote> fixedRate,
-                                OvernightIndex overnightIndex)
-
-         : base(fixedRate)
-      {
-
-         overnightIndex.registerWith(update);
-
-         // dummy OvernightIndex with curve/swap arguments
-         // review here
-         IborIndex clonedIborIndex = overnightIndex.clone(termStructureHandle_);
-         OvernightIndex clonedOvernightIndex = clonedIborIndex as OvernightIndex;
-
-         swap_ = new MakeOIS(new Period(), clonedOvernightIndex, 0.0)
-         .withEffectiveDate(startDate)
-         .withTerminationDate(endDate)
-         .withDiscountingTermStructure(termStructureHandle_);
-
-         earliestDate_ = swap_.startDate();
-         latestDate_ = swap_.maturityDate();
-
-      }
+        protected int settlementDays_;
+        protected Period tenor_;
+        protected OvernightIndex overnightIndex_;
+        protected OvernightIndexedSwap swap_;
+        protected RelinkableHandle<YieldTermStructure> termStructureHandle_ = new RelinkableHandle<YieldTermStructure>();
+    }
 
 
-      public override void setTermStructure(YieldTermStructure t)
-      {
-         // no need to register---the index is not lazy
-         termStructureHandle_.linkTo(t, false);
-         base.setTermStructure(t);
+    //! Rate helper for bootstrapping over Overnight Indexed Swap rates
+    public class DatedOISRateHelper : RateHelper
+    {
 
-      }
+        public DatedOISRateHelper(Date startDate,
+                                  Date endDate,
+                                  Handle<Quote> fixedRate,
+                                  OvernightIndex overnightIndex)
 
-      public override double impliedQuote()
-      {
-         if (termStructure_ == null)
-            throw new ArgumentException("term structure not set");
+           : base(fixedRate)
+        {
 
-         // we didn't register as observers - force calculation
-         swap_.recalculate();
-         return swap_.fairRate().Value;
-      }
+            overnightIndex.registerWith(update);
 
-      protected OvernightIndexedSwap swap_;
-      protected RelinkableHandle<YieldTermStructure> termStructureHandle_ = new RelinkableHandle<YieldTermStructure>();
-   }
+            // dummy OvernightIndex with curve/swap arguments
+            // review here
+            IborIndex clonedIborIndex = overnightIndex.clone(termStructureHandle_);
+            OvernightIndex clonedOvernightIndex = clonedIborIndex as OvernightIndex;
+
+            swap_ = new MakeOIS(new Period(), clonedOvernightIndex, 0.0)
+            .withEffectiveDate(startDate)
+            .withTerminationDate(endDate)
+            .withDiscountingTermStructure(termStructureHandle_);
+
+            earliestDate_ = swap_.startDate();
+            latestDate_ = swap_.maturityDate();
+
+        }
+
+
+        public override void setTermStructure(YieldTermStructure t)
+        {
+            // no need to register---the index is not lazy
+            termStructureHandle_.linkTo(t, false);
+            base.setTermStructure(t);
+
+        }
+
+        public override double impliedQuote()
+        {
+            if (termStructure_ == null)
+                throw new ArgumentException("term structure not set");
+
+            // we didn't register as observers - force calculation
+            swap_.recalculate();
+            return swap_.fairRate().Value;
+        }
+
+        protected OvernightIndexedSwap swap_;
+        protected RelinkableHandle<YieldTermStructure> termStructureHandle_ = new RelinkableHandle<YieldTermStructure>();
+    }
 }

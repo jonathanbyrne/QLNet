@@ -16,147 +16,149 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet;
+using QLNet.Math.matrixutilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QLNet
+namespace QLNet.Math
 {
-   //! general linear least squares regression
-   /*! References:
-      "Numerical Recipes in C", 2nd edition,
-       Press, Teukolsky, Vetterling, Flannery,
+    //! general linear least squares regression
+    /*! References:
+       "Numerical Recipes in C", 2nd edition,
+        Press, Teukolsky, Vetterling, Flannery,
 
-       \test the correctness of the returned values is tested by
-             checking their properties.
-   */
-   public class LinearLeastSquaresRegression : LinearLeastSquaresRegression<double>
-   {
-      public LinearLeastSquaresRegression(List<double> x, List<double> y, List<Func<double, double>> v)
-         : base(x, y, v) { }
-   }
+        \test the correctness of the returned values is tested by
+              checking their properties.
+    */
+    public class LinearLeastSquaresRegression : LinearLeastSquaresRegression<double>
+    {
+        public LinearLeastSquaresRegression(List<double> x, List<double> y, List<Func<double, double>> v)
+           : base(x, y, v) { }
+    }
 
-   public class LinearLeastSquaresRegression<ArgumentType>
-   {
-      private Vector a_, err_, residuals_, standardErrors_;
+    public class LinearLeastSquaresRegression<ArgumentType>
+    {
+        private Vector a_, err_, residuals_, standardErrors_;
 
-      public Vector coefficients() { return a_; }
-      public Vector residuals() { return residuals_; }
+        public Vector coefficients() { return a_; }
+        public Vector residuals() { return residuals_; }
 
-      //! standard parameter errors as given by Excel, R etc.
-      public Vector standardErrors() { return standardErrors_; }
-      //! modeling uncertainty as definied in Numerical Recipes
+        //! standard parameter errors as given by Excel, R etc.
+        public Vector standardErrors() { return standardErrors_; }
+        //! modeling uncertainty as definied in Numerical Recipes
 
-      public Vector error() { return err_; }
+        public Vector error() { return err_; }
 
 
-      public LinearLeastSquaresRegression(List<ArgumentType> x, List<double> y, List<Func<ArgumentType, double>> v)
-      {
-         a_ = new Vector(v.Count, 0);
-         err_ = new Vector(v.Count, 0);
-         residuals_ = new Vector(x.Count, 0);
-         standardErrors_ = new Vector(v.Count, 0);
+        public LinearLeastSquaresRegression(List<ArgumentType> x, List<double> y, List<Func<ArgumentType, double>> v)
+        {
+            a_ = new Vector(v.Count, 0);
+            err_ = new Vector(v.Count, 0);
+            residuals_ = new Vector(x.Count, 0);
+            standardErrors_ = new Vector(v.Count, 0);
 
-         Utils.QL_REQUIRE(x.Count == y.Count, () => "sample set need to be of the same size");
-         Utils.QL_REQUIRE(x.Count >= v.Count, () => "sample set is too small");
+            Utils.QL_REQUIRE(x.Count == y.Count, () => "sample set need to be of the same size");
+            Utils.QL_REQUIRE(x.Count >= v.Count, () => "sample set is too small");
 
-         int i;
-         int n = x.Count;
-         int m = v.Count;
+            int i;
+            int n = x.Count;
+            int m = v.Count;
 
-         Matrix A = new Matrix(n, m);
-         for (i = 0; i < m; ++i)
-            x.ForEach((jj, xx) => A[jj, i] = v[i](xx));
+            Matrix A = new Matrix(n, m);
+            for (i = 0; i < m; ++i)
+                x.ForEach((jj, xx) => A[jj, i] = v[i](xx));
 
-         SVD svd = new SVD(A);
-         Matrix V = svd.V();
-         Matrix U = svd.U();
-         Vector w = svd.singularValues();
-         double threshold = n * Const.QL_EPSILON;
+            SVD svd = new SVD(A);
+            Matrix V = svd.V();
+            Matrix U = svd.U();
+            Vector w = svd.singularValues();
+            double threshold = n * Const.QL_EPSILON;
 
-         for (i = 0; i < m; ++i)
-         {
-            if (w[i] > threshold)
+            for (i = 0; i < m; ++i)
             {
-               double u = 0;
-               U.column(i).ForEach((ii, vv) => u += vv * y[ii]);
-               u /= w[i];
+                if (w[i] > threshold)
+                {
+                    double u = 0;
+                    U.column(i).ForEach((ii, vv) => u += vv * y[ii]);
+                    u /= w[i];
 
-               for (int j = 0; j < m; ++j)
-               {
-                  a_[j]  += u * V[j, i];
-                  err_[j] += V[j, i] * V[j, i] / (w[i] * w[i]);
-               }
+                    for (int j = 0; j < m; ++j)
+                    {
+                        a_[j] += u * V[j, i];
+                        err_[j] += V[j, i] * V[j, i] / (w[i] * w[i]);
+                    }
+                }
             }
-         }
-         err_ = Vector.Sqrt(err_);
-         residuals_ = A * a_ - new Vector(y);
+            err_ = Vector.Sqrt(err_);
+            residuals_ = A * a_ - new Vector(y);
 
-         double chiSq = residuals_.Sum(r => r * r);
-         err_.ForEach((ii, vv) => standardErrors_[ii] = vv * Math.Sqrt(chiSq / (n - 2)));
-      }
-   }
+            double chiSq = residuals_.Sum(r => r * r);
+            err_.ForEach((ii, vv) => standardErrors_[ii] = vv * System.Math.Sqrt(chiSq / (n - 2)));
+        }
+    }
 
-   //! linear regression y_i = a_0 + a_1*x_0 +..+a_n*x_{n-1} + eps
-   public class LinearRegression
-   {
-      private LinearLeastSquaresRegression<List<double>> reg_;
-
-
-      //! one dimensional linear regression
-      public LinearRegression(List<double> x, List<double> y)
-      {
-         reg_ = new LinearLeastSquaresRegression<List<double>>(argumentWrapper(x), y, linearFcts(1));
-      }
-
-      //! multi dimensional linear regression
-      public LinearRegression(List<List<double>> x, List<double> y)
-      {
-         reg_ = new LinearLeastSquaresRegression<List<double>>(x, y, linearFcts(x[0].Count));
-      }
-
-      public Vector coefficients()   { return reg_.coefficients(); }
-
-      public Vector residuals()      { return reg_.residuals(); }
-      public Vector standardErrors()  { return reg_.standardErrors(); }
+    //! linear regression y_i = a_0 + a_1*x_0 +..+a_n*x_{n-1} + eps
+    public class LinearRegression
+    {
+        private LinearLeastSquaresRegression<List<double>> reg_;
 
 
-      class LinearFct
-      {
-         private int i_;
+        //! one dimensional linear regression
+        public LinearRegression(List<double> x, List<double> y)
+        {
+            reg_ = new LinearLeastSquaresRegression<List<double>>(argumentWrapper(x), y, linearFcts(1));
+        }
 
-         public LinearFct(int i)
-         {
-            i_ = i;
-         }
+        //! multi dimensional linear regression
+        public LinearRegression(List<List<double>> x, List<double> y)
+        {
+            reg_ = new LinearLeastSquaresRegression<List<double>>(x, y, linearFcts(x[0].Count));
+        }
 
-         public double value(List<double> x)
-         {
-            return x[i_];
-         }
-      }
+        public Vector coefficients() { return reg_.coefficients(); }
 
-      private List<Func<List<double>, double>> linearFcts(int dims)
-      {
-         List<Func<List<double>, double>> retVal = new List<Func<List<double>, double>>();
-         retVal.Add(x => 1.0);
+        public Vector residuals() { return reg_.residuals(); }
+        public Vector standardErrors() { return reg_.standardErrors(); }
 
-         for (int i = 0; i < dims; ++i)
-         {
-            retVal.Add(new LinearFct(i).value);
-         }
 
-         return retVal;
-      }
+        class LinearFct
+        {
+            private int i_;
 
-      private List<List<double>> argumentWrapper(List<double> x)
-      {
-         List<List<double>> retVal = new List<List<double>>();
+            public LinearFct(int i)
+            {
+                i_ = i;
+            }
 
-         foreach (var v in x)
-            retVal.Add(new List<double>() { v });
+            public double value(List<double> x)
+            {
+                return x[i_];
+            }
+        }
 
-         return retVal;
-      }
-   }
+        private List<Func<List<double>, double>> linearFcts(int dims)
+        {
+            List<Func<List<double>, double>> retVal = new List<Func<List<double>, double>>();
+            retVal.Add(x => 1.0);
+
+            for (int i = 0; i < dims; ++i)
+            {
+                retVal.Add(new LinearFct(i).value);
+            }
+
+            return retVal;
+        }
+
+        private List<List<double>> argumentWrapper(List<double> x)
+        {
+            List<List<double>> retVal = new List<List<double>>();
+
+            foreach (var v in x)
+                retVal.Add(new List<double>() { v });
+
+            return retVal;
+        }
+    }
 }

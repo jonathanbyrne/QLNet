@@ -17,17 +17,23 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Math;
+using QLNet.Math.Interpolations;
+using QLNet.Math.ODE;
+using QLNet.Methods.Finitedifferences.Meshers;
+using QLNet.Methods.Finitedifferences.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using QLNet.Math.Solvers1d;
 
 namespace QLNet
 {
-   public static partial class Utils
+    public static partial class Utils
    {
       public static double Asinh(double x)
       {
-         return Math.Log(x + Math.Sqrt(x * x + 1.0));
+         return System.Math.Log(x + System.Math.Sqrt(x * x + 1.0));
       }
    }
 
@@ -71,8 +77,8 @@ namespace QLNet
                {
                   double z0 = -c1 / (c2 - c1);
                   double u0 =
-                     Math.Max(
-                        Math.Min(Convert.ToInt32(z0 * (size - 1) + 0.5),
+                     System.Math.Max(
+                        System.Math.Min(Convert.ToInt32(z0 * (size - 1) + 0.5),
                                  Convert.ToInt32(size) - 2),
                         1) / (Convert.ToDouble(size - 1));
                   u.Add(u0);
@@ -87,7 +93,7 @@ namespace QLNet
             {
                double li = requireCPoint ? transform.value(i * dx) : i * dx;
                locations_[i] = cPoint.Value
-                               + density.GetValueOrDefault() * Math.Sinh(c1 * (1.0 - li) + c2 * li);
+                               + density.GetValueOrDefault() * System.Math.Sinh(c1 * (1.0 - li) + c2 * li);
             }
          }
          else
@@ -134,7 +140,7 @@ namespace QLNet
                s += 1.0 / (betas_[i].GetValueOrDefault() + (y - points_[i].GetValueOrDefault()) *
                            (y - points_[i].GetValueOrDefault()));
             }
-            return a / Math.Sqrt(s);
+            return a / System.Math.Sqrt(s);
          }
 
          protected AdaptiveRungeKutta rk_;
@@ -240,7 +246,7 @@ namespace QLNet
                   new OdeSolver2(odeSolution.value, points[i].Value),
                   Const.QL_EPSILON, x[j], 0.5 / size);
 
-               w.Add(new Pair < double?, double? >(Math.Min(x[size - 2], x[j]), e));
+               w.Add(new Pair < double?, double? >(System.Math.Min(x[size - 2], x[j]), e));
             }
          }
          w.Add(new Pair < double?, double? >(1.0, 1.0));

@@ -17,161 +17,165 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Instruments;
+using QLNet.Math;
+using QLNet.Methods.Finitedifferences;
+using QLNet.processes;
 using System;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Pricingengines.vanilla
 {
-   public class FDMultiPeriodEngine : FDConditionEngineTemplate
-   {
-      protected List<Event> events_ = new List<Event>();
-      protected List<double> stoppingTimes_ = new List<double>();
-      protected int timeStepPerPeriod_;
-      protected FiniteDifferenceModel<CrankNicolson<TridiagonalOperator>> model_;
+    public class FDMultiPeriodEngine : FDConditionEngineTemplate
+    {
+        protected List<Event> events_ = new List<Event>();
+        protected List<double> stoppingTimes_ = new List<double>();
+        protected int timeStepPerPeriod_;
+        protected FiniteDifferenceModel<CrankNicolson<TridiagonalOperator>> model_;
 
-      // required for generics
-      public FDMultiPeriodEngine() { }
+        // required for generics
+        public FDMultiPeriodEngine() { }
 
-      //protected FDMultiPeriodEngine(GeneralizedBlackScholesProcess process,
-      //     int gridPoints = 100, int timeSteps = 100, bool timeDependent = false)
-      protected FDMultiPeriodEngine(GeneralizedBlackScholesProcess process, int timeSteps,  int gridPoints, bool timeDependent)
-         : base(process, timeSteps, gridPoints, timeDependent)
-      {
-         timeStepPerPeriod_ = timeSteps;
-      }
+        //protected FDMultiPeriodEngine(GeneralizedBlackScholesProcess process,
+        //     int gridPoints = 100, int timeSteps = 100, bool timeDependent = false)
+        protected FDMultiPeriodEngine(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
+           : base(process, timeSteps, gridPoints, timeDependent)
+        {
+            timeStepPerPeriod_ = timeSteps;
+        }
 
-      protected virtual void executeIntermediateStep(int step) { throw new NotSupportedException(); }
+        protected virtual void executeIntermediateStep(int step) { throw new NotSupportedException(); }
 
 
-      protected virtual void initializeModel()
-      {
-         model_ = new FiniteDifferenceModel<CrankNicolson<TridiagonalOperator>>(finiteDifferenceOperator_, BCs_);
-      }
+        protected virtual void initializeModel()
+        {
+            model_ = new FiniteDifferenceModel<CrankNicolson<TridiagonalOperator>>(finiteDifferenceOperator_, BCs_);
+        }
 
-      protected double getDividendTime(int i)
-      {
-         return stoppingTimes_[i];
-      }
+        protected double getDividendTime(int i)
+        {
+            return stoppingTimes_[i];
+        }
 
-      protected virtual void setupArguments(IPricingEngineArguments args, List<Event> schedule)
-      {
-         base.setupArguments(args);
-         events_ = schedule;
-         stoppingTimes_.Clear();
-         int n = schedule.Count;
-         stoppingTimes_ = new List<double>(n);
-         for (int i = 0; i < n; ++i)
-            stoppingTimes_.Add(process_.time(events_[i].date()));
-      }
+        protected virtual void setupArguments(IPricingEngineArguments args, List<Event> schedule)
+        {
+            base.setupArguments(args);
+            events_ = schedule;
+            stoppingTimes_.Clear();
+            int n = schedule.Count;
+            stoppingTimes_ = new List<double>(n);
+            for (int i = 0; i < n; ++i)
+                stoppingTimes_.Add(process_.time(events_[i].date()));
+        }
 
-      public override void setupArguments(IPricingEngineArguments a)
-      {
-         base.setupArguments(a);
-         OneAssetOption.Arguments args = a as OneAssetOption.Arguments;
-         Utils.QL_REQUIRE(args != null, () => "incorrect argument type");
-         events_.Clear();
+        public override void setupArguments(IPricingEngineArguments a)
+        {
+            base.setupArguments(a);
+            QLNet.Option.Arguments args = a as QLNet.Option.Arguments;
+            Utils.QL_REQUIRE(args != null, () => "incorrect argument type");
+            events_.Clear();
 
-         int n = args.exercise.dates().Count;
-         stoppingTimes_ = new InitializedList<double>(n);
-         for (int i = 0; i < n; ++i)
-            stoppingTimes_[i] = process_.time(args.exercise.date(i));
-      }
+            int n = args.exercise.dates().Count;
+            stoppingTimes_ = new InitializedList<double>(n);
+            for (int i = 0; i < n; ++i)
+                stoppingTimes_[i] = process_.time(args.exercise.date(i));
+        }
 
-      public override void calculate(IPricingEngineResults r)
-      {
-         OneAssetOption.Results results = r as OneAssetOption.Results;
-         Utils.QL_REQUIRE(results != null, () => "incorrect results type");
+        public override void calculate(IPricingEngineResults r)
+        {
+            OneAssetOption.Results results = r as OneAssetOption.Results;
+            Utils.QL_REQUIRE(results != null, () => "incorrect results type");
 
-         double beginDate, endDate;
-         int dateNumber = stoppingTimes_.Count;
-         bool lastDateIsResTime = false;
-         int firstIndex = -1;
-         int lastIndex = dateNumber - 1;
-         bool firstDateIsZero = false;
-         double firstNonZeroDate = getResidualTime();
+            double beginDate, endDate;
+            int dateNumber = stoppingTimes_.Count;
+            bool lastDateIsResTime = false;
+            int firstIndex = -1;
+            int lastIndex = dateNumber - 1;
+            bool firstDateIsZero = false;
+            double firstNonZeroDate = getResidualTime();
 
-         double dateTolerance = 1e-6;
-         int j;
+            double dateTolerance = 1e-6;
+            int j;
 
-         if (dateNumber > 0)
-         {
-            Utils.QL_REQUIRE(getDividendTime(0) >= 0, () => "first date (" + getDividendTime(0) + ") cannot be negative");
-            if (getDividendTime(0) < getResidualTime() * dateTolerance)
+            if (dateNumber > 0)
             {
-               firstDateIsZero = true;
-               firstIndex = 0;
-               if (dateNumber >= 2)
-                  firstNonZeroDate = getDividendTime(1);
+                Utils.QL_REQUIRE(getDividendTime(0) >= 0, () => "first date (" + getDividendTime(0) + ") cannot be negative");
+                if (getDividendTime(0) < getResidualTime() * dateTolerance)
+                {
+                    firstDateIsZero = true;
+                    firstIndex = 0;
+                    if (dateNumber >= 2)
+                        firstNonZeroDate = getDividendTime(1);
+                }
+
+                if (System.Math.Abs(getDividendTime(lastIndex) - getResidualTime()) < dateTolerance)
+                {
+                    lastDateIsResTime = true;
+                    lastIndex = dateNumber - 2;
+                }
+
+                if (!firstDateIsZero)
+                    firstNonZeroDate = getDividendTime(0);
+
+                if (dateNumber >= 2)
+                {
+                    for (j = 1; j < dateNumber; j++)
+                        Utils.QL_REQUIRE(getDividendTime(j - 1) < getDividendTime(j), () =>
+                                         "dates must be in increasing order: " + getDividendTime(j - 1) +
+                                         " is not strictly smaller than " + getDividendTime(j));
+                }
             }
 
-            if (Math.Abs(getDividendTime(lastIndex) - getResidualTime()) < dateTolerance)
+            double dt = getResidualTime() / (timeStepPerPeriod_ * (dateNumber + 1));
+
+            // Ensure that dt is always smaller than the first non-zero date
+            if (firstNonZeroDate <= dt)
+                dt = firstNonZeroDate / 2.0;
+
+            setGridLimits();
+            initializeInitialCondition();
+            initializeOperator();
+            initializeBoundaryConditions();
+            initializeModel();
+            initializeStepCondition();
+
+            prices_ = (SampledCurve)intrinsicValues_.Clone();
+            if (lastDateIsResTime)
+                executeIntermediateStep(dateNumber - 1);
+
+            j = lastIndex;
+            object temp;
+            do
             {
-               lastDateIsResTime = true;
-               lastIndex = dateNumber - 2;
-            }
+                if (j == dateNumber - 1)
+                    beginDate = getResidualTime();
+                else
+                    beginDate = getDividendTime(j + 1);
 
-            if (!firstDateIsZero)
-               firstNonZeroDate = getDividendTime(0);
+                if (j >= 0)
+                    endDate = getDividendTime(j);
+                else
+                    endDate = dt;
 
-            if (dateNumber >= 2)
-            {
-               for (j = 1; j < dateNumber; j++)
-                  Utils.QL_REQUIRE(getDividendTime(j - 1) < getDividendTime(j), () =>
-                                   "dates must be in increasing order: " + getDividendTime(j - 1) +
-                                   " is not strictly smaller than " + getDividendTime(j));
-            }
-         }
+                temp = prices_.values();
+                model_.rollback(ref temp, beginDate, endDate, timeStepPerPeriod_, stepCondition_);
+                prices_.setValues((Vector)temp);
 
-         double dt = getResidualTime() / (timeStepPerPeriod_ * (dateNumber + 1));
-
-         // Ensure that dt is always smaller than the first non-zero date
-         if (firstNonZeroDate <= dt)
-            dt = firstNonZeroDate / 2.0;
-
-         setGridLimits();
-         initializeInitialCondition();
-         initializeOperator();
-         initializeBoundaryConditions();
-         initializeModel();
-         initializeStepCondition();
-
-         prices_ = (SampledCurve)intrinsicValues_.Clone();
-         if (lastDateIsResTime)
-            executeIntermediateStep(dateNumber - 1);
-
-         j = lastIndex;
-         object temp;
-         do
-         {
-            if (j == dateNumber - 1)
-               beginDate = getResidualTime();
-            else
-               beginDate = getDividendTime(j + 1);
-
-            if (j >= 0)
-               endDate = getDividendTime(j);
-            else
-               endDate = dt;
+                if (j >= 0)
+                    executeIntermediateStep(j);
+            } while (--j >= firstIndex);
 
             temp = prices_.values();
-            model_.rollback(ref temp, beginDate, endDate, timeStepPerPeriod_, stepCondition_);
+            model_.rollback(ref temp, dt, 0, 1, stepCondition_);
             prices_.setValues((Vector)temp);
 
-            if (j >= 0)
-               executeIntermediateStep(j);
-         } while (--j >= firstIndex);
+            if (firstDateIsZero)
+                executeIntermediateStep(0);
 
-         temp = prices_.values();
-         model_.rollback(ref temp, dt, 0, 1, stepCondition_);
-         prices_.setValues((Vector)temp);
-
-         if (firstDateIsZero)
-            executeIntermediateStep(0);
-
-         results.value = prices_.valueAtCenter();
-         results.delta = prices_.firstDerivativeAtCenter();
-         results.gamma = prices_.secondDerivativeAtCenter();
-         results.additionalResults["priceCurve"] = prices_;
-      }
-   }
+            results.value = prices_.valueAtCenter();
+            results.delta = prices_.firstDerivativeAtCenter();
+            results.gamma = prices_.secondDerivativeAtCenter();
+            results.additionalResults["priceCurve"] = prices_;
+        }
+    }
 }

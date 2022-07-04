@@ -17,12 +17,19 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Currencies;
+using QLNet.Indexes;
+using QLNet.Termstructures;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
+
+namespace QLNet.Indexes.Ibor
 {
-   public class FedFunds : OvernightIndex
-   {
-      public FedFunds(Handle<YieldTermStructure> h = null)
-         : base("FedFunds", 0, new USDCurrency(), new UnitedStates(UnitedStates.Market.Settlement),
-                new Actual360(), h ?? new Handle<YieldTermStructure>()) {}
-   }
+    public class FedFunds : OvernightIndex
+    {
+        public FedFunds(Handle<YieldTermStructure> h = null)
+           : base("FedFunds", 0, new USDCurrency(), new UnitedStates(UnitedStates.Market.Settlement),
+                  new Actual360(), h ?? new Handle<YieldTermStructure>())
+        { }
+    }
 }

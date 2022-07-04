@@ -1430,7 +1430,7 @@
 //               double indexfixing = vars.iborIndex.fixing(fixingDate);
 //               double difference = rate - indexfixing;
 
-//               if (Math.Abs(difference) > vars.rateTolerance)
+//               if (System.Math.Abs(difference) > vars.rateTolerance)
 //               {
 //                  QAssert.Fail("\n" +
 //                               "i:\t" + i + "\n" +

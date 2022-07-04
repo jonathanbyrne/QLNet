@@ -18,50 +18,50 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Time.DayCounters
 {
-   //! Actual/360 day count convention
-   /*! Actual/360 day count convention, also known as "Act/360", or "A/360". */
-   public class Actual360 : DayCounter
-   {
-      public enum Actual360Convention { excludeLastDay, includeLastDay }
+    //! Actual/360 day count convention
+    /*! Actual/360 day count convention, also known as "Act/360", or "A/360". */
+    public class Actual360 : DayCounter
+    {
+        public enum Actual360Convention { excludeLastDay, includeLastDay }
 
-      public Actual360(bool c = false) : base(conventions(c)) { }
+        public Actual360(bool c = false) : base(conventions(c)) { }
 
-      private static DayCounter conventions(bool c)
-      {
-         if (c)
-            return IncludedImpl.Singleton;
+        private static DayCounter conventions(bool c)
+        {
+            if (c)
+                return IncludedImpl.Singleton;
 
-         return Impl.Singleton;
-      }
+            return Impl.Singleton;
+        }
 
-      class Impl : DayCounter
-      {
-         public static readonly Impl Singleton = new Impl();
-         private Impl() { }
+        class Impl : DayCounter
+        {
+            public static readonly Impl Singleton = new Impl();
+            private Impl() { }
 
-         public override string name() { return "Actual/360"; }
-         public override int dayCount(Date d1, Date d2) { return (d2 - d1); }
-         public override double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd)
-         {
-            return Date.daysBetween(d1, d2) / 360.0;
-         }
+            public override string name() { return "Actual/360"; }
+            public override int dayCount(Date d1, Date d2) { return d2 - d1; }
+            public override double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd)
+            {
+                return Date.daysBetween(d1, d2) / 360.0;
+            }
 
-      }
+        }
 
-      class IncludedImpl : DayCounter
-      {
-         public static readonly IncludedImpl Singleton = new IncludedImpl();
-         private IncludedImpl() { }
+        class IncludedImpl : DayCounter
+        {
+            public static readonly IncludedImpl Singleton = new IncludedImpl();
+            private IncludedImpl() { }
 
-         public override string name() { return "Actual/360 (inc)"; }
-         public override int dayCount(Date d1, Date d2) { return (d2 - d1) + 1; }
-         public override double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd)
-         {
-            return (Date.daysBetween(d1, d2) + 1) / 360.0;
-         }
+            public override string name() { return "Actual/360 (inc)"; }
+            public override int dayCount(Date d1, Date d2) { return d2 - d1 + 1; }
+            public override double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd)
+            {
+                return (Date.daysBetween(d1, d2) + 1) / 360.0;
+            }
 
-      }
-   }
+        }
+    }
 }

@@ -16,27 +16,28 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Quotes;
 using System;
 
-namespace QLNet
+namespace QLNet.Instruments
 {
-   //! Simple stock class
-   public class Stock : Instrument
-   {
-      private Handle<Quote> quote_;
+    //! Simple stock class
+    public class Stock : Instrument
+    {
+        private Handle<Quote> quote_;
 
-      public Stock(Handle<Quote> quote)
-      {
-         quote_ = quote;
-         quote_.registerWith(update);
-      }
+        public Stock(Handle<Quote> quote)
+        {
+            quote_ = quote;
+            quote_.registerWith(update);
+        }
 
-      public override bool isExpired() { return false; }
+        public override bool isExpired() { return false; }
 
-      protected override void performCalculations()
-      {
-         Utils.QL_REQUIRE(!quote_.empty(), () => "null quote set");
-         NPV_ = quote_.link.value();
-      }
-   }
+        protected override void performCalculations()
+        {
+            Utils.QL_REQUIRE(!quote_.empty(), () => "null quote set");
+            NPV_ = quote_.link.value();
+        }
+    }
 }

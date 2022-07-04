@@ -17,19 +17,19 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Instruments
 {
 
 
-   //! Placeholder for enumerated averaging types
-   public struct Average
-   {
-      public enum Type
-      {
-         Arithmetic,
-         Geometric,
-         NULL
-      }
-   }
+    //! Placeholder for enumerated averaging types
+    public struct Average
+    {
+        public enum Type
+        {
+            Arithmetic,
+            Geometric,
+            NULL
+        }
+    }
 
 }

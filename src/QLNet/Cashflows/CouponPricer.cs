@@ -18,6 +18,15 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Cashflows;
+using QLNet.Extensions;
+using QLNet.Indexes;
+using QLNet.Patterns;
+using QLNet.Quotes;
+using QLNet.Termstructures;
+using QLNet.Termstructures.Volatility.Optionlet;
+using QLNet.Termstructures.Volatility.swaption;
+using QLNet.Time;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -25,8 +34,8 @@ using System.Reflection;
 namespace QLNet
 {
 
-   //! generic pricer for floating-rate coupons
-   public abstract class FloatingRateCouponPricer : IObservable, IObserver
+    //! generic pricer for floating-rate coupons
+    public abstract class FloatingRateCouponPricer : IObservable, IObserver
    {
       // required interface
       public abstract double swapletPrice();
@@ -156,7 +165,7 @@ namespace QLNet
       }
       public override double capletPrice(double effectiveCap)
       {
-         double capletPrice = optionletPrice(Option.Type.Call, effectiveCap);
+         double capletPrice = optionletPrice(QLNet.Option.Type.Call, effectiveCap);
          return gearing_ * capletPrice;
       }
       public override double capletRate(double effectiveCap)
@@ -165,7 +174,7 @@ namespace QLNet
       }
       public override double floorletPrice(double effectiveFloor)
       {
-         double floorletPrice = optionletPrice(Option.Type.Put, effectiveFloor);
+         double floorletPrice = optionletPrice(QLNet.Option.Type.Put, effectiveFloor);
          return gearing_ * floorletPrice;
       }
       public override double floorletRate(double effectiveFloor)
@@ -181,7 +190,7 @@ namespace QLNet
             // the amount is determined
             double a;
             double b;
-            if (optionType == Option.Type.Call)
+            if (optionType == QLNet.Option.Type.Call)
             {
                a = coupon_.indexFixing();
                b = effStrike;
@@ -191,14 +200,14 @@ namespace QLNet
                a = effStrike;
                b = coupon_.indexFixing();
             }
-            return Math.Max(a - b, 0.0) * accrualPeriod_ * discount_;
+            return System.Math.Max(a - b, 0.0) * accrualPeriod_ * discount_;
          }
          else
          {
             // not yet determined, use Black model
             Utils.QL_REQUIRE(!capletVolatility().empty(), () => "missing optionlet volatility");
 
-            double stdDev = Math.Sqrt(capletVolatility().link.blackVariance(fixingDate, effStrike));
+            double stdDev = System.Math.Sqrt(capletVolatility().link.blackVariance(fixingDate, effStrike));
             double shift = capletVolatility().link.displacement();
             bool shiftedLn = capletVolatility().link.volatilityType() == VolatilityType.ShiftedLognormal;
             double fixing =

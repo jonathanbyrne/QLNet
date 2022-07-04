@@ -13,52 +13,54 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+using QLNet.Methods.montecarlo;
+using QLNet.Models.MarketModels.BrownianGenerators;
 using System;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Math.randomnumbers
 {
-   // Interface class to map the functionality of SobolBrownianGenerator
-   // to the "conventional" sequence generator interface
-   public class SobolBrownianBridgeRsg : IRNG
-   {
-      public SobolBrownianBridgeRsg(int factors, int steps,
-                                    SobolBrownianGenerator.Ordering ordering = SobolBrownianGenerator.Ordering.Diagonal,
-                                    ulong seed = 0,
-                                    SobolRsg.DirectionIntegers directionIntegers = SobolRsg.DirectionIntegers.JoeKuoD7)
-      {
-         factors_ = factors;
-         steps_ = steps;
-         dim_ = factors * steps;
-         seq_ = new Sample<List<double>>(new InitializedList<double>(factors * steps), 1.0) ;
-         gen_ = new SobolBrownianGenerator(factors, steps, ordering, seed, directionIntegers);
-      }
+    // Interface class to map the functionality of SobolBrownianGenerator
+    // to the "conventional" sequence generator interface
+    public class SobolBrownianBridgeRsg : IRNG
+    {
+        public SobolBrownianBridgeRsg(int factors, int steps,
+                                      SobolBrownianGenerator.Ordering ordering = SobolBrownianGenerator.Ordering.Diagonal,
+                                      ulong seed = 0,
+                                      SobolRsg.DirectionIntegers directionIntegers = SobolRsg.DirectionIntegers.JoeKuoD7)
+        {
+            factors_ = factors;
+            steps_ = steps;
+            dim_ = factors * steps;
+            seq_ = new Sample<List<double>>(new InitializedList<double>(factors * steps), 1.0);
+            gen_ = new SobolBrownianGenerator(factors, steps, ordering, seed, directionIntegers);
+        }
 
-      public Sample<List<double>> nextSequence()
-      {
-         gen_.nextPath();
-         List<double> output = new InitializedList<double>(factors_);
-         for (int i = 0; i < steps_; ++i)
-         {
-            gen_.nextStep(output);
-            for (int j = 0; j < output.Count ; j++)
+        public Sample<List<double>> nextSequence()
+        {
+            gen_.nextPath();
+            List<double> output = new InitializedList<double>(factors_);
+            for (int i = 0; i < steps_; ++i)
             {
-               seq_.value[j + i * factors_] = output[j];
+                gen_.nextStep(output);
+                for (int j = 0; j < output.Count; j++)
+                {
+                    seq_.value[j + i * factors_] = output[j];
+                }
             }
-         }
 
-         return seq_;
-      }
-      public Sample<List<double>> lastSequence() {return seq_;}
-      public IRNG factory(int dimensionality, ulong seed)
-      {
-         throw new NotImplementedException();
-      }
+            return seq_;
+        }
+        public Sample<List<double>> lastSequence() { return seq_; }
+        public IRNG factory(int dimensionality, ulong seed)
+        {
+            throw new NotImplementedException();
+        }
 
-      public int dimension() {return dim_;}
+        public int dimension() { return dim_; }
 
-      private int factors_, steps_, dim_;
-      private Sample<List<double>> seq_;
-      private SobolBrownianGenerator gen_;
-   }
+        private int factors_, steps_, dim_;
+        private Sample<List<double>> seq_;
+        private SobolBrownianGenerator gen_;
+    }
 }

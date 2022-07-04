@@ -17,49 +17,50 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Methods.Finitedifferences.Operators;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences.Utilities
 {
-   /// <summary>
-   /// helper class to extract the indices on a boundary
-   /// </summary>
-   public class FdmIndicesOnBoundary
-   {
-      public FdmIndicesOnBoundary(FdmLinearOpLayout layout,
-                                  int direction, FdmDirichletBoundary.Side side)
-      {
-         List<int> newDim = new List<int>(layout.dim());
-         newDim[direction] = 1;
-         int hyperSize
-            = newDim.accumulate(0, newDim.Count, 1,
-                                (a, b) => (a * b));
+    /// <summary>
+    /// helper class to extract the indices on a boundary
+    /// </summary>
+    public class FdmIndicesOnBoundary
+    {
+        public FdmIndicesOnBoundary(FdmLinearOpLayout layout,
+                                    int direction, FdmDirichletBoundary.Side side)
+        {
+            List<int> newDim = new List<int>(layout.dim());
+            newDim[direction] = 1;
+            int hyperSize
+               = newDim.accumulate(0, newDim.Count, 1,
+                                   (a, b) => a * b);
 
-         indices_ = new InitializedList<int>(hyperSize);
+            indices_ = new InitializedList<int>(hyperSize);
 
-         int i = 0;
-         FdmLinearOpIterator endIter = layout.end();
-         for (FdmLinearOpIterator iter = layout.begin();
-              iter != endIter;
-              ++iter)
-         {
-            if ((side == FdmDirichletBoundary.Side.Lower
-                 && iter.coordinates()[direction] == 0)
-                || (side == FdmDirichletBoundary.Side.Upper
-                    && iter.coordinates()[direction]
-                    == layout.dim()[direction] - 1))
+            int i = 0;
+            FdmLinearOpIterator endIter = layout.end();
+            for (FdmLinearOpIterator iter = layout.begin();
+                 iter != endIter;
+                 ++iter)
             {
-               Utils.QL_REQUIRE(hyperSize > i, () => "index missmatch");
-               indices_[i++] = iter.index();
+                if (side == FdmDirichletBoundary.Side.Lower
+                     && iter.coordinates()[direction] == 0
+                    || side == FdmDirichletBoundary.Side.Upper
+                        && iter.coordinates()[direction]
+                        == layout.dim()[direction] - 1)
+                {
+                    Utils.QL_REQUIRE(hyperSize > i, () => "index missmatch");
+                    indices_[i++] = iter.index();
+                }
             }
-         }
-      }
+        }
 
-      public List<int> getIndices()
-      {
-         return indices_;
-      }
+        public List<int> getIndices()
+        {
+            return indices_;
+        }
 
-      protected List<int> indices_;
-   }
+        protected List<int> indices_;
+    }
 }

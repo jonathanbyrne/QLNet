@@ -17,54 +17,55 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Exceptions;
 using System;
 
-namespace QLNet
+namespace QLNet.Math.Solvers1d
 {
-   public class Secant : Solver1D
-   {
-      protected override double solveImpl(ISolver1d f, double xAccuracy)
-      {
+    public class Secant : Solver1D
+    {
+        protected override double solveImpl(ISolver1d f, double xAccuracy)
+        {
 
-         /* The implementation of the algorithm was inspired by
-            Press, Teukolsky, Vetterling, and Flannery,
-            "Numerical Recipes in C", 2nd edition, Cambridge
-            University Press
-         */
+            /* The implementation of the algorithm was inspired by
+               Press, Teukolsky, Vetterling, and Flannery,
+               "Numerical Recipes in C", 2nd edition, Cambridge
+               University Press
+            */
 
-         double fl, froot, dx, xl;
+            double fl, froot, dx, xl;
 
-         // Pick the bound with the smaller function value
-         // as the most recent guess
-         if (Math.Abs(fxMin_) < Math.Abs(fxMax_))
-         {
-            root_ = xMin_;
-            froot = fxMin_;
-            xl = xMax_;
-            fl = fxMax_;
-         }
-         else
-         {
-            root_ = xMax_;
-            froot = fxMax_;
-            xl = xMin_;
-            fl = fxMin_;
-         }
-         while (evaluationNumber_ <= maxEvaluations_)
-         {
-            dx = (xl - root_) * froot / (froot - fl);
-            xl = root_;
-            fl = froot;
-            root_ += dx;
-            froot = f.value(root_);
-            ++evaluationNumber_;
-            if (Math.Abs(dx) < xAccuracy || Utils.close(froot, 0.0))
-               return root_;
-         }
+            // Pick the bound with the smaller function value
+            // as the most recent guess
+            if (System.Math.Abs(fxMin_) < System.Math.Abs(fxMax_))
+            {
+                root_ = xMin_;
+                froot = fxMin_;
+                xl = xMax_;
+                fl = fxMax_;
+            }
+            else
+            {
+                root_ = xMax_;
+                froot = fxMax_;
+                xl = xMin_;
+                fl = fxMin_;
+            }
+            while (evaluationNumber_ <= maxEvaluations_)
+            {
+                dx = (xl - root_) * froot / (froot - fl);
+                xl = root_;
+                fl = froot;
+                root_ += dx;
+                froot = f.value(root_);
+                ++evaluationNumber_;
+                if (System.Math.Abs(dx) < xAccuracy || Utils.close(froot, 0.0))
+                    return root_;
+            }
 
-         Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
-                       QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
-         return 0;
-      }
-   }
+            Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
+                          QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
+            return 0;
+        }
+    }
 }

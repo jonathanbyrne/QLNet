@@ -17,15 +17,15 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Methods.montecarlo
 {
-   //! base class for path pricers
-   /*! Returns the value of an option on a given path.
+    //! base class for path pricers
+    /*! Returns the value of an option on a given path.
 
-       \ingroup mcarlo
-   */
-   public interface PathPricer<PathType>
-   {
-      double value(PathType pt);
-   }
+        \ingroup mcarlo
+    */
+    public interface PathPricer<PathType>
+    {
+        double value(PathType pt);
+    }
 }

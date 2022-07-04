@@ -18,57 +18,61 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Cashflows;
+using QLNet.Instruments;
+using QLNet.Termstructures;
+
+namespace QLNet.Pricingengines.Bond
 {
-   public class DiscountingBondEngine : Bond.Engine
-   {
-      private Handle<YieldTermStructure> discountCurve_;
-      private bool? includeSettlementDateFlows_;
+    public class DiscountingBondEngine : QLNet.Instruments.Bond.Engine
+    {
+        private Handle<YieldTermStructure> discountCurve_;
+        private bool? includeSettlementDateFlows_;
 
-      public Handle<YieldTermStructure> discountCurve() {return discountCurve_; }
+        public Handle<YieldTermStructure> discountCurve() { return discountCurve_; }
 
-      public DiscountingBondEngine(Handle<YieldTermStructure> discountCurve, bool? includeSettlementDateFlows = null)
-      {
-         discountCurve_ = discountCurve;
-         discountCurve_.registerWith(update);
-         includeSettlementDateFlows_ = includeSettlementDateFlows;
-      }
+        public DiscountingBondEngine(Handle<YieldTermStructure> discountCurve, bool? includeSettlementDateFlows = null)
+        {
+            discountCurve_ = discountCurve;
+            discountCurve_.registerWith(update);
+            includeSettlementDateFlows_ = includeSettlementDateFlows;
+        }
 
-      public override void calculate()
-      {
-         Utils.QL_REQUIRE(!discountCurve_.empty(), () => "discounting term structure handle is empty");
+        public override void calculate()
+        {
+            Utils.QL_REQUIRE(!discountCurve_.empty(), () => "discounting term structure handle is empty");
 
-         results_.valuationDate = discountCurve_.link.referenceDate();
-         bool includeRefDateFlows =
-            includeSettlementDateFlows_.HasValue ?
-            includeSettlementDateFlows_.Value :
-            Settings.includeReferenceDateEvents;
+            results_.valuationDate = discountCurve_.link.referenceDate();
+            bool includeRefDateFlows =
+               includeSettlementDateFlows_.HasValue ?
+               includeSettlementDateFlows_.Value :
+               Settings.includeReferenceDateEvents;
 
-         results_.value = CashFlows.npv(arguments_.cashflows,
-                                        discountCurve_,
-                                        includeRefDateFlows,
-                                        results_.valuationDate,
-                                        results_.valuationDate);
+            results_.value = CashFlows.npv(arguments_.cashflows,
+                                           discountCurve_,
+                                           includeRefDateFlows,
+                                           results_.valuationDate,
+                                           results_.valuationDate);
 
-         results_.cash = CashFlows.cash(arguments_.cashflows, arguments_.settlementDate);
+            results_.cash = CashFlows.cash(arguments_.cashflows, arguments_.settlementDate);
 
-         // a bond's cashflow on settlement date is never taken into
-         // account, so we might have to play it safe and recalculate
-         if (!includeRefDateFlows && results_.valuationDate == arguments_.settlementDate)
-         {
-            // same parameters as above, we can avoid another call
-            results_.settlementValue = results_.value;
-         }
-         else
-         {
-            // no such luck
-            results_.settlementValue =
-               CashFlows.npv(arguments_.cashflows,
-                             discountCurve_,
-                             false,
-                             arguments_.settlementDate,
-                             arguments_.settlementDate);
-         }
-      }
-   }
+            // a bond's cashflow on settlement date is never taken into
+            // account, so we might have to play it safe and recalculate
+            if (!includeRefDateFlows && results_.valuationDate == arguments_.settlementDate)
+            {
+                // same parameters as above, we can avoid another call
+                results_.settlementValue = results_.value;
+            }
+            else
+            {
+                // no such luck
+                results_.settlementValue =
+                   CashFlows.npv(arguments_.cashflows,
+                                 discountCurve_,
+                                 false,
+                                 arguments_.settlementDate,
+                                 arguments_.settlementDate);
+            }
+        }
+    }
 }

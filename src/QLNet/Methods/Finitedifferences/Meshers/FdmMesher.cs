@@ -16,30 +16,32 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Math;
+using QLNet.Methods.Finitedifferences.Operators;
 using System;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences.Meshers
 {
-   public abstract class FdmMesher
-   {
-      public FdmMesher(FdmLinearOpLayout layout)
-      {
-         layout_ = layout;
-      }
+    public abstract class FdmMesher
+    {
+        public FdmMesher(FdmLinearOpLayout layout)
+        {
+            layout_ = layout;
+        }
 
-      public abstract double? dplus(FdmLinearOpIterator iter,
-                                    int direction);
-      public abstract double? dminus(FdmLinearOpIterator iter,
-                                     int direction);
-      public abstract double location(FdmLinearOpIterator iter,
+        public abstract double? dplus(FdmLinearOpIterator iter,
                                       int direction);
-      public abstract Vector locations(int direction);
+        public abstract double? dminus(FdmLinearOpIterator iter,
+                                       int direction);
+        public abstract double location(FdmLinearOpIterator iter,
+                                        int direction);
+        public abstract Vector locations(int direction);
 
-      public FdmLinearOpLayout layout()
-      {
-         return layout_;
-      }
+        public FdmLinearOpLayout layout()
+        {
+            return layout_;
+        }
 
-      protected FdmLinearOpLayout layout_;
-   }
+        protected FdmLinearOpLayout layout_;
+    }
 }

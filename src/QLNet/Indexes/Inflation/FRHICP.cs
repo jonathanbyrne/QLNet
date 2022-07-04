@@ -17,62 +17,68 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Currencies;
+using QLNet.Time;
+
+namespace QLNet.Indexes.Inflation
 {
 
-   //! FR HICP index
-   public class FRHICP : ZeroInflationIndex
-   {
-      public FRHICP(bool interpolated)
-         : this(interpolated, new Handle<ZeroInflationTermStructure>()) {}
+    //! FR HICP index
+    public class FRHICP : ZeroInflationIndex
+    {
+        public FRHICP(bool interpolated)
+           : this(interpolated, new Handle<ZeroInflationTermStructure>()) { }
 
-      public FRHICP(bool interpolated,
-                    Handle<ZeroInflationTermStructure> ts)
-         : base("HICP",
-                new FranceRegion(),
-                false,
-                interpolated,
-                Frequency.Monthly,
-                new Period(1, TimeUnit.Months),
-                new EURCurrency(),
-                ts) {}
-   }
+        public FRHICP(bool interpolated,
+                      Handle<ZeroInflationTermStructure> ts)
+           : base("HICP",
+                  new FranceRegion(),
+                  false,
+                  interpolated,
+                  Frequency.Monthly,
+                  new Period(1, TimeUnit.Months),
+                  new EURCurrency(),
+                  ts)
+        { }
+    }
 
-   //! Genuine year-on-year FR HICP (i.e. not a ratio)
-   public class YYFRHICP : YoYInflationIndex
-   {
-      public YYFRHICP(bool interpolated)
-         : this(interpolated, new Handle<YoYInflationTermStructure>()) {}
+    //! Genuine year-on-year FR HICP (i.e. not a ratio)
+    public class YYFRHICP : YoYInflationIndex
+    {
+        public YYFRHICP(bool interpolated)
+           : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
 
-      public YYFRHICP(bool interpolated,
-                      Handle<YoYInflationTermStructure> ts)
-         : base("YY_HICP",
-                new FranceRegion(),
-                false,
-                interpolated,
-                false,
-                Frequency.Monthly,
-                new Period(1, TimeUnit.Months),
-                new EURCurrency(),
-                ts) {}
-   }
+        public YYFRHICP(bool interpolated,
+                        Handle<YoYInflationTermStructure> ts)
+           : base("YY_HICP",
+                  new FranceRegion(),
+                  false,
+                  interpolated,
+                  false,
+                  Frequency.Monthly,
+                  new Period(1, TimeUnit.Months),
+                  new EURCurrency(),
+                  ts)
+        { }
+    }
 
-   //! Fake year-on-year FR HICP (i.e. a ratio)
-   public class YYFRHICPr : YoYInflationIndex
-   {
-      public YYFRHICPr(bool interpolated)
-         : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
+    //! Fake year-on-year FR HICP (i.e. a ratio)
+    public class YYFRHICPr : YoYInflationIndex
+    {
+        public YYFRHICPr(bool interpolated)
+           : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
 
-      public YYFRHICPr(bool interpolated,
-                       Handle<YoYInflationTermStructure> ts)
-         : base("YYR_HICP",
-                new FranceRegion(),
-                false,
-                interpolated,
-                true,
-                Frequency.Monthly,
-                new Period(1, TimeUnit.Months),
-                new EURCurrency(),
-                ts) {}
-   }
+        public YYFRHICPr(bool interpolated,
+                         Handle<YoYInflationTermStructure> ts)
+           : base("YYR_HICP",
+                  new FranceRegion(),
+                  false,
+                  interpolated,
+                  true,
+                  Frequency.Monthly,
+                  new Period(1, TimeUnit.Months),
+                  new EURCurrency(),
+                  ts)
+        { }
+    }
 }

@@ -17,71 +17,74 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Instruments;
+using QLNet.Math.integrals;
+using QLNet.processes;
 using System;
 
-namespace QLNet
+namespace QLNet.Pricingengines.vanilla
 {
 
-   public class Integrand
-   {
-      private Payoff payoff_;
-      private double s0_;
-      private double drift_;
-      private double variance_;
+    public class Integrand
+    {
+        private Payoff payoff_;
+        private double s0_;
+        private double drift_;
+        private double variance_;
 
-      public Integrand(Payoff payoff, double s0, double drift, double variance)
-      {
-         payoff_ = payoff;
-         s0_ = s0;
-         drift_ = drift;
-         variance_ = variance;
-      }
-      public double value(double x)
-      {
-         double temp = s0_ * Math.Exp(x);
-         double result = payoff_.value(temp);
-         return result * Math.Exp(-(x - drift_) * (x - drift_) / (2.0 * variance_));
-      }
-   }
+        public Integrand(Payoff payoff, double s0, double drift, double variance)
+        {
+            payoff_ = payoff;
+            s0_ = s0;
+            drift_ = drift;
+            variance_ = variance;
+        }
+        public double value(double x)
+        {
+            double temp = s0_ * System.Math.Exp(x);
+            double result = payoff_.value(temp);
+            return result * System.Math.Exp(-(x - drift_) * (x - drift_) / (2.0 * variance_));
+        }
+    }
 
-   //! Pricing engine for European vanilla options using integral approach
-//    ! \todo define tolerance for calculate()
-//
-//        \ingroup vanillaengines
-//
-   public class IntegralEngine : VanillaOption.Engine
-   {
-      private GeneralizedBlackScholesProcess process_;
+    //! Pricing engine for European vanilla options using integral approach
+    //    ! \todo define tolerance for calculate()
+    //
+    //        \ingroup vanillaengines
+    //
+    public class IntegralEngine : OneAssetOption.Engine
+    {
+        private GeneralizedBlackScholesProcess process_;
 
-      public IntegralEngine(GeneralizedBlackScholesProcess process)
-      {
-         process_ = process;
+        public IntegralEngine(GeneralizedBlackScholesProcess process)
+        {
+            process_ = process;
 
-         process_.registerWith(update);
-      }
+            process_.registerWith(update);
+        }
 
-      public override void calculate()
-      {
-         Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European, () => "not an European Option");
+        public override void calculate()
+        {
+            Utils.QL_REQUIRE(arguments_.exercise.type() == Exercise.Type.European, () => "not an European Option");
 
-         StrikedTypePayoff payoff = arguments_.payoff as StrikedTypePayoff;
+            StrikedTypePayoff payoff = arguments_.payoff as StrikedTypePayoff;
 
-         Utils.QL_REQUIRE(payoff != null, () => "not an European Option");
+            Utils.QL_REQUIRE(payoff != null, () => "not an European Option");
 
-         double variance = process_.blackVolatility().link.blackVariance(arguments_.exercise.lastDate(), payoff.strike());
+            double variance = process_.blackVolatility().link.blackVariance(arguments_.exercise.lastDate(), payoff.strike());
 
-         double dividendDiscount = process_.dividendYield().link.discount(arguments_.exercise.lastDate());
-         double riskFreeDiscount = process_.riskFreeRate().link.discount(arguments_.exercise.lastDate());
-         double drift = Math.Log(dividendDiscount / riskFreeDiscount) - 0.5 * variance;
+            double dividendDiscount = process_.dividendYield().link.discount(arguments_.exercise.lastDate());
+            double riskFreeDiscount = process_.riskFreeRate().link.discount(arguments_.exercise.lastDate());
+            double drift = System.Math.Log(dividendDiscount / riskFreeDiscount) - 0.5 * variance;
 
-         Integrand f = new Integrand(arguments_.payoff, process_.stateVariable().link.value(), drift, variance);
-         SegmentIntegral integrator = new SegmentIntegral(5000);
+            Integrand f = new Integrand(arguments_.payoff, process_.stateVariable().link.value(), drift, variance);
+            SegmentIntegral integrator = new SegmentIntegral(5000);
 
-         double infinity = 10.0 * Math.Sqrt(variance);
-         results_.value = process_.riskFreeRate().link.discount(arguments_.exercise.lastDate()) /
-                          Math.Sqrt(2.0 * Math.PI * variance) *
-                          integrator.value(f.value, drift - infinity, drift + infinity);
-      }
-   }
+            double infinity = 10.0 * System.Math.Sqrt(variance);
+            results_.value = process_.riskFreeRate().link.discount(arguments_.exercise.lastDate()) /
+                             System.Math.Sqrt(2.0 * System.Math.PI * variance) *
+                             integrator.value(f.value, drift - infinity, drift + infinity);
+        }
+    }
 
 }

@@ -17,30 +17,37 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Currencies;
+using QLNet.Indexes;
+using QLNet.Termstructures;
+using QLNet.Time;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
+
+namespace QLNet.Indexes.Ibor
 {
 
-   /// <summary>
-   /// CDOR rate
-   /// Canadian Dollar Offered Rate fixed by IDA.
-   /// <remarks>
-   /// Conventions are taken from a number of sources including
-   /// OpenGamma "Interest Rate Instruments and Market Conventions
-   /// Guide", BBG, IKON.
-   /// </remarks>
-   /// <remarks>
-   /// This is the rate fixed in Canada by IDA. Use CADLibor
-   /// if you're interested in the London fixing by BBA.
-   /// </remarks>
-   /// </summary>
-   public class Cdor : IborIndex
-   {
-      public Cdor(Period tenor)
-         : base("CDOR", tenor, 0, new CADCurrency(), new Canada(), BusinessDayConvention.ModifiedFollowing, false, new Actual365Fixed(), new Handle<YieldTermStructure>())
-      {}
+    /// <summary>
+    /// CDOR rate
+    /// Canadian Dollar Offered Rate fixed by IDA.
+    /// <remarks>
+    /// Conventions are taken from a number of sources including
+    /// OpenGamma "Interest Rate Instruments and Market Conventions
+    /// Guide", BBG, IKON.
+    /// </remarks>
+    /// <remarks>
+    /// This is the rate fixed in Canada by IDA. Use CADLibor
+    /// if you're interested in the London fixing by BBA.
+    /// </remarks>
+    /// </summary>
+    public class Cdor : IborIndex
+    {
+        public Cdor(Period tenor)
+           : base("CDOR", tenor, 0, new CADCurrency(), new Canada(), BusinessDayConvention.ModifiedFollowing, false, new Actual365Fixed(), new Handle<YieldTermStructure>())
+        { }
 
-      public Cdor(Period tenor, Handle<YieldTermStructure> h)
-         : base("CDOR", tenor, 0, new CADCurrency(), new Canada(), BusinessDayConvention.ModifiedFollowing, false, new Actual365Fixed(), h)
-      {}
-   }
+        public Cdor(Period tenor, Handle<YieldTermStructure> h)
+           : base("CDOR", tenor, 0, new CADCurrency(), new Canada(), BusinessDayConvention.ModifiedFollowing, false, new Actual365Fixed(), h)
+        { }
+    }
 }

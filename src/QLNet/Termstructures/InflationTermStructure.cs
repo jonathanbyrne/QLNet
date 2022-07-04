@@ -19,11 +19,14 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Termstructures;
+using QLNet.Termstructures.Inflation;
+using QLNet.Time;
 using System.Collections.Generic;
 
 namespace QLNet
 {
-   public static partial class Utils
+    public static partial class Utils
    {
       //! utility function giving the inflation period for a given date
       public static KeyValuePair<Date, Date> inflationPeriod(Date d, Frequency frequency)

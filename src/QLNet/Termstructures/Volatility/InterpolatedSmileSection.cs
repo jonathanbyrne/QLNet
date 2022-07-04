@@ -14,196 +14,203 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using QLNet.Math;
+using QLNet.Patterns;
+using QLNet.Quotes;
+using QLNet.Termstructures;
+using QLNet.Termstructures.Volatility.Optionlet;
+using QLNet.Time;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using QLNet.Time.DayCounters;
 
-namespace QLNet
+namespace QLNet.Termstructures.Volatility
 {
-   public class InterpolatedSmileSection<Interpolator> : SmileSection, InterpolatedCurve
-      where Interpolator : IInterpolationFactory, new ()
-   {
-      public InterpolatedSmileSection(double timeToExpiry,
-                                      List<double> strikes,
-                                      List<Handle<Quote>> stdDevHandles,
-                                      Handle<Quote> atmLevel,
-                                      Interpolator interpolator = default(Interpolator),
-                                      DayCounter dc = null, //Actual365Fixed()
-                                      VolatilityType type = VolatilityType.ShiftedLognormal,
-                                      double shift = 0.0)
-         : base(timeToExpiry, dc ?? new Actual365Fixed(), type, shift)
-      {
-         exerciseTimeSquareRoot_ = Math.Sqrt(exerciseTime());
-         strikes_ = strikes;
-         stdDevHandles_ = stdDevHandles;
-         atmLevel_ = atmLevel;
-         vols_ = new InitializedList<double>(stdDevHandles.Count);
+    public class InterpolatedSmileSection<Interpolator> : SmileSection, InterpolatedCurve
+      where Interpolator : IInterpolationFactory, new()
+    {
+        public InterpolatedSmileSection(double timeToExpiry,
+                                        List<double> strikes,
+                                        List<Handle<Quote>> stdDevHandles,
+                                        Handle<Quote> atmLevel,
+                                        Interpolator interpolator = default,
+                                        DayCounter dc = null, //Actual365Fixed()
+                                        VolatilityType type = VolatilityType.ShiftedLognormal,
+                                        double shift = 0.0)
+           : base(timeToExpiry, dc ?? new Actual365Fixed(), type, shift)
+        {
+            exerciseTimeSquareRoot_ = System.Math.Sqrt(exerciseTime());
+            strikes_ = strikes;
+            stdDevHandles_ = stdDevHandles;
+            atmLevel_ = atmLevel;
+            vols_ = new InitializedList<double>(stdDevHandles.Count);
 
-         for (int i = 0; i < stdDevHandles_.Count; ++i)
-            stdDevHandles_[i].registerWith(update);
+            for (int i = 0; i < stdDevHandles_.Count; ++i)
+                stdDevHandles_[i].registerWith(update);
 
-         atmLevel_.registerWith(update);
-         // check strikes!!!!!!!!!!!!!!!!!!!!
-         if (interpolator == null)
-            interpolator = FastActivator<Interpolator>.Create();
-         interpolation_ = interpolator.interpolate(strikes_, strikes_.Count, vols_);
-      }
+            atmLevel_.registerWith(update);
+            // check strikes!!!!!!!!!!!!!!!!!!!!
+            if (interpolator == null)
+                interpolator = FastActivator<Interpolator>.Create();
+            interpolation_ = interpolator.interpolate(strikes_, strikes_.Count, vols_);
+        }
 
-      public InterpolatedSmileSection(double timeToExpiry,
-                                      List<double> strikes,
-                                      List<double> stdDevs,
-                                      double atmLevel,
-                                      Interpolator interpolator = default(Interpolator),
-                                      DayCounter dc = null,  //Actual365Fixed(),
-                                      VolatilityType type = VolatilityType.ShiftedLognormal,
-                                      double shift = 0.0)
-         : base(timeToExpiry, dc ?? new Actual365Fixed(), type, shift)
-      {
-         exerciseTimeSquareRoot_ = Math.Sqrt(exerciseTime());
-         strikes_ = strikes;
-         stdDevHandles_ = new InitializedList<Handle<Quote>>(stdDevs.Count);
-         vols_ = new InitializedList<double>(stdDevs.Count);
+        public InterpolatedSmileSection(double timeToExpiry,
+                                        List<double> strikes,
+                                        List<double> stdDevs,
+                                        double atmLevel,
+                                        Interpolator interpolator = default,
+                                        DayCounter dc = null,  //Actual365Fixed(),
+                                        VolatilityType type = VolatilityType.ShiftedLognormal,
+                                        double shift = 0.0)
+           : base(timeToExpiry, dc ?? new Actual365Fixed(), type, shift)
+        {
+            exerciseTimeSquareRoot_ = System.Math.Sqrt(exerciseTime());
+            strikes_ = strikes;
+            stdDevHandles_ = new InitializedList<Handle<Quote>>(stdDevs.Count);
+            vols_ = new InitializedList<double>(stdDevs.Count);
 
-         // fill dummy handles to allow generic handle-based
-         // computations later on
-         for (int i = 0; i < stdDevs.Count; ++i)
-            stdDevHandles_[i] = new Handle<Quote>(new SimpleQuote(stdDevs[i]));
+            // fill dummy handles to allow generic handle-based
+            // computations later on
+            for (int i = 0; i < stdDevs.Count; ++i)
+                stdDevHandles_[i] = new Handle<Quote>(new SimpleQuote(stdDevs[i]));
 
-         atmLevel_ = new Handle<Quote>(new SimpleQuote(atmLevel));
-         // check strikes!!!!!!!!!!!!!!!!!!!!
-         if (interpolator == null)
-            interpolator = FastActivator<Interpolator>.Create();
-         interpolation_ = interpolator.interpolate(strikes_, strikes_.Count, vols_);
-      }
+            atmLevel_ = new Handle<Quote>(new SimpleQuote(atmLevel));
+            // check strikes!!!!!!!!!!!!!!!!!!!!
+            if (interpolator == null)
+                interpolator = FastActivator<Interpolator>.Create();
+            interpolation_ = interpolator.interpolate(strikes_, strikes_.Count, vols_);
+        }
 
-      public InterpolatedSmileSection(Date d,
-                                      List<double> strikes,
-                                      List<Handle<Quote> > stdDevHandles,
-                                      Handle<Quote> atmLevel,
-                                      DayCounter dc = null,  //Actual365Fixed(),
-                                      Interpolator interpolator = default(Interpolator),
-                                      Date referenceDate = null,
-                                      VolatilityType type = VolatilityType.ShiftedLognormal,
-                                      double shift = 0.0)
-         : base(d, dc ?? new Actual365Fixed(), referenceDate, type, shift)
-      {
-         exerciseTimeSquareRoot_ = Math.Sqrt(exerciseTime());
-         strikes_ = strikes;
-         stdDevHandles_ = stdDevHandles;
-         atmLevel_ = atmLevel;
-         vols_ = new InitializedList<double>(stdDevHandles.Count);
+        public InterpolatedSmileSection(Date d,
+                                        List<double> strikes,
+                                        List<Handle<Quote>> stdDevHandles,
+                                        Handle<Quote> atmLevel,
+                                        DayCounter dc = null,  //Actual365Fixed(),
+                                        Interpolator interpolator = default,
+                                        Date referenceDate = null,
+                                        VolatilityType type = VolatilityType.ShiftedLognormal,
+                                        double shift = 0.0)
+           : base(d, dc ?? new Actual365Fixed(), referenceDate, type, shift)
+        {
+            exerciseTimeSquareRoot_ = System.Math.Sqrt(exerciseTime());
+            strikes_ = strikes;
+            stdDevHandles_ = stdDevHandles;
+            atmLevel_ = atmLevel;
+            vols_ = new InitializedList<double>(stdDevHandles.Count);
 
-         for (int i = 0; i < stdDevHandles_.Count; ++i)
-            stdDevHandles_[i].registerWith(update);
-         atmLevel_.registerWith(update);
-         // check strikes!!!!!!!!!!!!!!!!!!!!
-         if (interpolator == null)
-            interpolator = FastActivator<Interpolator>.Create();
-         interpolation_ = interpolator.interpolate(strikes_, strikes_.Count, vols_);
-      }
+            for (int i = 0; i < stdDevHandles_.Count; ++i)
+                stdDevHandles_[i].registerWith(update);
+            atmLevel_.registerWith(update);
+            // check strikes!!!!!!!!!!!!!!!!!!!!
+            if (interpolator == null)
+                interpolator = FastActivator<Interpolator>.Create();
+            interpolation_ = interpolator.interpolate(strikes_, strikes_.Count, vols_);
+        }
 
-      public InterpolatedSmileSection(Date d,
-                                      List<double> strikes,
-                                      List<double> stdDevs,
-                                      double atmLevel,
-                                      DayCounter dc = null,  // Actual365Fixed(),
-                                      Interpolator interpolator = default(Interpolator),
-                                      Date referenceDate = null,
-                                      double shift = 0.0)
-         : base(d, dc ?? new Actual365Fixed(), referenceDate, VolatilityType.ShiftedLognormal, shift)
-      {
-         exerciseTimeSquareRoot_ = Math.Sqrt(exerciseTime());
-         strikes_ = strikes;
-         stdDevHandles_ = new InitializedList<Handle<Quote>>(stdDevs.Count);
-         vols_ = new InitializedList<double>(stdDevs.Count);
+        public InterpolatedSmileSection(Date d,
+                                        List<double> strikes,
+                                        List<double> stdDevs,
+                                        double atmLevel,
+                                        DayCounter dc = null,  // Actual365Fixed(),
+                                        Interpolator interpolator = default,
+                                        Date referenceDate = null,
+                                        double shift = 0.0)
+           : base(d, dc ?? new Actual365Fixed(), referenceDate, VolatilityType.ShiftedLognormal, shift)
+        {
+            exerciseTimeSquareRoot_ = System.Math.Sqrt(exerciseTime());
+            strikes_ = strikes;
+            stdDevHandles_ = new InitializedList<Handle<Quote>>(stdDevs.Count);
+            vols_ = new InitializedList<double>(stdDevs.Count);
 
-         //fill dummy handles to allow generic handle-based
-         // computations later on
-         for (int i = 0; i < stdDevs.Count; ++i)
-            stdDevHandles_[i] = new Handle<Quote>(new SimpleQuote(stdDevs[i]));
-         atmLevel_ = new Handle<Quote>(new SimpleQuote(atmLevel));
-         // check strikes!!!!!!!!!!!!!!!!!!!!
-         if (interpolator == null)
-            interpolator = FastActivator<Interpolator>.Create();
+            //fill dummy handles to allow generic handle-based
+            // computations later on
+            for (int i = 0; i < stdDevs.Count; ++i)
+                stdDevHandles_[i] = new Handle<Quote>(new SimpleQuote(stdDevs[i]));
+            atmLevel_ = new Handle<Quote>(new SimpleQuote(atmLevel));
+            // check strikes!!!!!!!!!!!!!!!!!!!!
+            if (interpolator == null)
+                interpolator = FastActivator<Interpolator>.Create();
 
-         interpolation_ = interpolator.interpolate(strikes_, strikes_.Count, vols_);
-      }
+            interpolation_ = interpolator.interpolate(strikes_, strikes_.Count, vols_);
+        }
 
-      protected override void performCalculations()
-      {
-         for (int i = 0; i < stdDevHandles_.Count; ++i)
-            vols_[i] = stdDevHandles_[i].link.value() / exerciseTimeSquareRoot_;
-         interpolation_.update();
-      }
+        protected override void performCalculations()
+        {
+            for (int i = 0; i < stdDevHandles_.Count; ++i)
+                vols_[i] = stdDevHandles_[i].link.value() / exerciseTimeSquareRoot_;
+            interpolation_.update();
+        }
 
 
-      protected override double varianceImpl(double strike)
-      {
-         calculate();
-         double v = interpolation_.value(strike, true);
-         return v * v * exerciseTime();
-      }
+        protected override double varianceImpl(double strike)
+        {
+            calculate();
+            double v = interpolation_.value(strike, true);
+            return v * v * exerciseTime();
+        }
 
-      protected override double volatilityImpl(double strike)
-      {
-         calculate();
-         return interpolation_.value(strike, true);
-      }
-      public override double minStrike() { return strikes_.First(); }
-      public override double maxStrike() { return strikes_.Last(); }
-      public override double? atmLevel()  { return atmLevel_.link.value(); }
-      public override void update() {base.update();}
+        protected override double volatilityImpl(double strike)
+        {
+            calculate();
+            return interpolation_.value(strike, true);
+        }
+        public override double minStrike() { return strikes_.First(); }
+        public override double maxStrike() { return strikes_.Last(); }
+        public override double? atmLevel() { return atmLevel_.link.value(); }
+        public override void update() { base.update(); }
 
-      private double exerciseTimeSquareRoot_;
-      private List<double> strikes_;
-      private List<Handle<Quote>> stdDevHandles_;
-      private Handle<Quote> atmLevel_;
-      private List<double> vols_;
+        private double exerciseTimeSquareRoot_;
+        private List<double> strikes_;
+        private List<Handle<Quote>> stdDevHandles_;
+        private Handle<Quote> atmLevel_;
+        private List<double> vols_;
 
-      #region InterpolatedCurve
+        #region InterpolatedCurve
 
-      public List<double> times_ { get; set; }
-      public List<double> times() { return this.times_; }
+        public List<double> times_ { get; set; }
+        public List<double> times() { return times_; }
 
-      public List<Date> dates_ { get; set; }
-      public List<Date> dates() { return dates_; }
-      public Date maxDate_ { get; set; }
-      public Date maxDate()
-      {
-         if (maxDate_ != null)
-            return maxDate_;
+        public List<Date> dates_ { get; set; }
+        public List<Date> dates() { return dates_; }
+        public Date maxDate_ { get; set; }
+        public Date maxDate()
+        {
+            if (maxDate_ != null)
+                return maxDate_;
 
-         return dates_.Last();
-      }
+            return dates_.Last();
+        }
 
-      public List<double> data_ { get; set; }
-      public List<double> discounts() { return this.data_; }
-      public List<double> data() { return discounts(); }
+        public List<double> data_ { get; set; }
+        public List<double> discounts() { return data_; }
+        public List<double> data() { return discounts(); }
 
-      public Interpolation interpolation_ { get; set; }
-      public IInterpolationFactory interpolator_ { get; set; }
+        public Interpolation interpolation_ { get; set; }
+        public IInterpolationFactory interpolator_ { get; set; }
 
-      public Dictionary<Date, double> nodes()
-      {
-         Dictionary<Date, double> results = new Dictionary<Date, double>();
-         dates_.ForEach((i, x) => results.Add(x, data_[i]));
-         return results;
-      }
+        public Dictionary<Date, double> nodes()
+        {
+            Dictionary<Date, double> results = new Dictionary<Date, double>();
+            dates_.ForEach((i, x) => results.Add(x, data_[i]));
+            return results;
+        }
 
-      public void setupInterpolation()
-      {
-         interpolation_ = interpolator_.interpolate(times_, times_.Count, data_);
-      }
+        public void setupInterpolation()
+        {
+            interpolation_ = interpolator_.interpolate(times_, times_.Count, data_);
+        }
 
-      public object Clone()
-      {
-         InterpolatedCurve copy = this.MemberwiseClone() as InterpolatedCurve;
-         copy.times_ = new List<double>(times_);
-         copy.data_ = new List<double>(data_);
-         copy.interpolator_ = interpolator_;
-         copy.setupInterpolation();
-         return copy;
-      }
-      #endregion
-   }
+        public object Clone()
+        {
+            InterpolatedCurve copy = MemberwiseClone() as InterpolatedCurve;
+            copy.times_ = new List<double>(times_);
+            copy.data_ = new List<double>(data_);
+            copy.interpolator_ = interpolator_;
+            copy.setupInterpolation();
+            return copy;
+        }
+        #endregion
+    }
 }

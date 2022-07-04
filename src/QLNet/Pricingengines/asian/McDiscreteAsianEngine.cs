@@ -17,145 +17,153 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Instruments;
+using QLNet.Math.randomnumbers;
+using QLNet.Math.statistics;
+using QLNet.Methods.montecarlo;
+using QLNet.Patterns;
+using QLNet.Pricingengines;
+using QLNet.processes;
+using QLNet.Time;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QLNet
+namespace QLNet.Pricingengines.asian
 {
-   //! Pricing engine for discrete average Asians using Monte Carlo simulation
-   /*! \warning control-variate calculation is disabled under VC++6.
+    //! Pricing engine for discrete average Asians using Monte Carlo simulation
+    /*! \warning control-variate calculation is disabled under VC++6.
 
-       \ingroup asianengines
-   */
+        \ingroup asianengines
+    */
 
-   public class MCDiscreteAveragingAsianEngine<RNG, S> : McSimulation<SingleVariate, RNG, S>, IGenericEngine
+    public class MCDiscreteAveragingAsianEngine<RNG, S> : McSimulation<SingleVariate, RNG, S>, IGenericEngine
       //DiscreteAveragingAsianOption.Engine,
       //McSimulation<SingleVariate,RNG,S>
       where RNG : IRSG, new()
       where S : IGeneralStatistics, new()
-   {
-      // data members
-      protected GeneralizedBlackScholesProcess process_;
-      protected int maxTimeStepsPerYear_;
-      protected int requiredSamples_, maxSamples_;
-      double requiredTolerance_;
-      bool brownianBridge_;
-      ulong seed_;
+    {
+        // data members
+        protected GeneralizedBlackScholesProcess process_;
+        protected int maxTimeStepsPerYear_;
+        protected int requiredSamples_, maxSamples_;
+        double requiredTolerance_;
+        bool brownianBridge_;
+        ulong seed_;
 
-      // constructor
-      public MCDiscreteAveragingAsianEngine(
-         GeneralizedBlackScholesProcess process,
-         int maxTimeStepsPerYear,
-         bool brownianBridge,
-         bool antitheticVariate,
-         bool controlVariate,
-         int requiredSamples,
-         double requiredTolerance,
-         int maxSamples,
-         ulong seed) : base(antitheticVariate, controlVariate)
-      {
-         process_ = process;
-         maxTimeStepsPerYear_ = maxTimeStepsPerYear;
-         requiredSamples_ = requiredSamples;
-         maxSamples_ = maxSamples;
-         requiredTolerance_ = requiredTolerance;
-         brownianBridge_ = brownianBridge;
-         seed_ = seed;
-         process_.registerWith(update);
-      }
+        // constructor
+        public MCDiscreteAveragingAsianEngine(
+           GeneralizedBlackScholesProcess process,
+           int maxTimeStepsPerYear,
+           bool brownianBridge,
+           bool antitheticVariate,
+           bool controlVariate,
+           int requiredSamples,
+           double requiredTolerance,
+           int maxSamples,
+           ulong seed) : base(antitheticVariate, controlVariate)
+        {
+            process_ = process;
+            maxTimeStepsPerYear_ = maxTimeStepsPerYear;
+            requiredSamples_ = requiredSamples;
+            maxSamples_ = maxSamples;
+            requiredTolerance_ = requiredTolerance;
+            brownianBridge_ = brownianBridge;
+            seed_ = seed;
+            process_.registerWith(update);
+        }
 
-      public void calculate()
-      {
-         base.calculate(requiredTolerance_, requiredSamples_, maxSamples_);
-         results_.value = this.mcModel_.sampleAccumulator().mean();
-         if (FastActivator<RNG>.Create().allowsErrorEstimate != 0)
-            results_.errorEstimate =
-               this.mcModel_.sampleAccumulator().errorEstimate();
-      }
+        public void calculate()
+        {
+            calculate(requiredTolerance_, requiredSamples_, maxSamples_);
+            results_.value = mcModel_.sampleAccumulator().mean();
+            if (FastActivator<RNG>.Create().allowsErrorEstimate != 0)
+                results_.errorEstimate =
+                   mcModel_.sampleAccumulator().errorEstimate();
+        }
 
-      // McSimulation implementation
-      protected override TimeGrid timeGrid()
-      {
-         Date referenceDate = process_.riskFreeRate().link.referenceDate();
-         DayCounter voldc = process_.blackVolatility().link.dayCounter();
-         List<double> fixingTimes = new InitializedList<double>(arguments_.fixingDates.Count);
+        // McSimulation implementation
+        protected override TimeGrid timeGrid()
+        {
+            Date referenceDate = process_.riskFreeRate().link.referenceDate();
+            DayCounter voldc = process_.blackVolatility().link.dayCounter();
+            List<double> fixingTimes = new InitializedList<double>(arguments_.fixingDates.Count);
 
-         for (int i = 0; i < arguments_.fixingDates.Count; i++)
-         {
-            if (arguments_.fixingDates[i] >= referenceDate)
+            for (int i = 0; i < arguments_.fixingDates.Count; i++)
             {
-               double t = voldc.yearFraction(referenceDate,
-                                             arguments_.fixingDates[i]);
-               fixingTimes[i] = t;
+                if (arguments_.fixingDates[i] >= referenceDate)
+                {
+                    double t = voldc.yearFraction(referenceDate,
+                                                  arguments_.fixingDates[i]);
+                    fixingTimes[i] = t;
+                }
             }
-         }
-         // handle here maxStepsPerYear
-         return new TimeGrid(fixingTimes.Last(), fixingTimes.Count);
-      }
+            // handle here maxStepsPerYear
+            return new TimeGrid(fixingTimes.Last(), fixingTimes.Count);
+        }
 
-      protected override IPathGenerator<IRNG> pathGenerator()
-      {
+        protected override IPathGenerator<IRNG> pathGenerator()
+        {
 
-         TimeGrid grid = this.timeGrid();
-         IRNG gen = (IRNG)new RNG().make_sequence_generator(grid.size() - 1, seed_);
-         return new PathGenerator<IRNG>(process_, grid,
-                                        gen, brownianBridge_);
-      }
+            TimeGrid grid = timeGrid();
+            IRNG gen = new RNG().make_sequence_generator(grid.size() - 1, seed_);
+            return new PathGenerator<IRNG>(process_, grid,
+                                           gen, brownianBridge_);
+        }
 
-      protected override double? controlVariateValue()
-      {
-         IPricingEngine controlPE = this.controlPricingEngine();
-         Utils.QL_REQUIRE(controlPE != null, () => "engine does not provide control variation pricing engine");
+        protected override double? controlVariateValue()
+        {
+            IPricingEngine controlPE = controlPricingEngine();
+            Utils.QL_REQUIRE(controlPE != null, () => "engine does not provide control variation pricing engine");
 
-         DiscreteAveragingAsianOption.Arguments controlArguments =
-            (DiscreteAveragingAsianOption.Arguments)controlPE.getArguments();
-         controlArguments = arguments_;
-         controlPE.calculate();
+            DiscreteAveragingAsianOption.Arguments controlArguments =
+               (DiscreteAveragingAsianOption.Arguments)controlPE.getArguments();
+            controlArguments = arguments_;
+            controlPE.calculate();
 
-         DiscreteAveragingAsianOption.Results controlResults =
-            (DiscreteAveragingAsianOption.Results)(controlPE.getResults());
+            OneAssetOption.Results controlResults =
+               (OneAssetOption.Results)controlPE.getResults();
 
-         return controlResults.value;
+            return controlResults.value;
 
-      }
+        }
 
-      protected override PathPricer<IPath> pathPricer()
-      {
-         throw new System.NotImplementedException();
-      }
+        protected override PathPricer<IPath> pathPricer()
+        {
+            throw new System.NotImplementedException();
+        }
 
-      #region PricingEngine
-      protected DiscreteAveragingAsianOption.Arguments arguments_ = new DiscreteAveragingAsianOption.Arguments();
-      protected DiscreteAveragingAsianOption.Results results_ = new DiscreteAveragingAsianOption.Results();
+        #region PricingEngine
+        protected DiscreteAveragingAsianOption.Arguments arguments_ = new DiscreteAveragingAsianOption.Arguments();
+        protected OneAssetOption.Results results_ = new OneAssetOption.Results();
 
-      public IPricingEngineArguments getArguments() { return arguments_; }
-      public IPricingEngineResults getResults() { return results_; }
-      public void reset() { results_.reset(); }
+        public IPricingEngineArguments getArguments() { return arguments_; }
+        public IPricingEngineResults getResults() { return results_; }
+        public void reset() { results_.reset(); }
 
-      #region Observer & Observable
-      // observable interface
-      private readonly WeakEventSource eventSource = new WeakEventSource();
-      public event Callback notifyObserversEvent
-      {
-         add
-         {
-            eventSource.Subscribe(value);
-         }
-         remove
-         {
-            eventSource.Unsubscribe(value);
-         }
-      }
+        #region Observer & Observable
+        // observable interface
+        private readonly WeakEventSource eventSource = new WeakEventSource();
+        public event Callback notifyObserversEvent
+        {
+            add
+            {
+                eventSource.Subscribe(value);
+            }
+            remove
+            {
+                eventSource.Unsubscribe(value);
+            }
+        }
 
-      public void registerWith(Callback handler) { notifyObserversEvent += handler; }
-      public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
-      protected void notifyObservers()
-      {
-         eventSource.Raise();
-      }
+        public void registerWith(Callback handler) { notifyObserversEvent += handler; }
+        public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
+        protected void notifyObservers()
+        {
+            eventSource.Raise();
+        }
 
-      public void update() { notifyObservers(); }
-      #endregion
-      #endregion
-   }
+        public void update() { notifyObservers(); }
+        #endregion
+        #endregion
+    }
 }

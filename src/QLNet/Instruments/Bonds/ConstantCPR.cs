@@ -16,25 +16,26 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Time;
 using System;
 
-namespace QLNet
+namespace QLNet.Instruments.Bonds
 {
-   public class ConstantCPR : IPrepayModel
-   {
-      public ConstantCPR(double cpr)
-      {
-         _cpr = cpr;
-      }
-      public double getCPR(Date valDate)
-      {
-         return _cpr;
-      }
-      public double getSMM(Date valDate)
-      {
-         return 1 - Math.Pow((1 - getCPR(valDate)), (1 / 12d));
-      }
+    public class ConstantCPR : IPrepayModel
+    {
+        public ConstantCPR(double cpr)
+        {
+            _cpr = cpr;
+        }
+        public double getCPR(Date valDate)
+        {
+            return _cpr;
+        }
+        public double getSMM(Date valDate)
+        {
+            return 1 - System.Math.Pow(1 - getCPR(valDate), 1 / 12d);
+        }
 
-      private double _cpr;
-   }
+        private double _cpr;
+    }
 }

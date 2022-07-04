@@ -16,128 +16,131 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Math;
+using QLNet.Math.matrixutilities;
+using QLNet.Methods.Finitedifferences.Operators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences.Schemes
 {
-   /*! In one dimension the Crank-Nicolson scheme is equivalent to the
-       Douglas scheme and in higher dimensions it is usually inferior to
-       operator splitting methods like Craig-Sneyd or Hundsdorfer-Verwer.
-   */
-   public class TrBDF2Scheme<TrapezoidalScheme> : IMixedScheme, ISchemeFactory
+    /*! In one dimension the Crank-Nicolson scheme is equivalent to the
+        Douglas scheme and in higher dimensions it is usually inferior to
+        operator splitting methods like Craig-Sneyd or Hundsdorfer-Verwer.
+    */
+    public class TrBDF2Scheme<TrapezoidalScheme> : IMixedScheme, ISchemeFactory
       where TrapezoidalScheme : class, IMixedScheme
-   {
-      public enum SolverType { BiCGstab, GMRES }
+    {
+        public enum SolverType { BiCGstab, GMRES }
 
-      public TrBDF2Scheme()
-      { }
+        public TrBDF2Scheme()
+        { }
 
-      public TrBDF2Scheme(double alpha,
-                          FdmLinearOpComposite map,
-                          TrapezoidalScheme trapezoidalScheme,
-                          List<BoundaryCondition<FdmLinearOp>> bcSet = null,
-                          double relTol = 1E-8,
-                          TrBDF2Scheme<TrapezoidalScheme>.SolverType solverType = TrBDF2Scheme<TrapezoidalScheme>.SolverType.BiCGstab)
-      {
-         dt_ = null;
-         beta_ = null;
-         iterations_ = 0;
-         alpha_ = alpha;
-         map_ = map;
-         trapezoidalScheme_ = trapezoidalScheme;
-         bcSet_ = new BoundaryConditionSchemeHelper(bcSet);
-         relTol_ = relTol;
-         solverType_ = solverType;
-      }
+        public TrBDF2Scheme(double alpha,
+                            FdmLinearOpComposite map,
+                            TrapezoidalScheme trapezoidalScheme,
+                            List<BoundaryCondition<FdmLinearOp>> bcSet = null,
+                            double relTol = 1E-8,
+                            SolverType solverType = SolverType.BiCGstab)
+        {
+            dt_ = null;
+            beta_ = null;
+            iterations_ = 0;
+            alpha_ = alpha;
+            map_ = map;
+            trapezoidalScheme_ = trapezoidalScheme;
+            bcSet_ = new BoundaryConditionSchemeHelper(bcSet);
+            relTol_ = relTol;
+            solverType_ = solverType;
+        }
 
-      #region ISchemeFactory
+        #region ISchemeFactory
 
-      public IMixedScheme factory(object L, object bcs, object[] additionalInputs = null)
-      {
-         double? alpha = additionalInputs[0] as double?;
-         TrapezoidalScheme trapezoidalScheme = additionalInputs[1] as TrapezoidalScheme;
-         double? relTol = additionalInputs[0] as double?;
-         TrBDF2Scheme<TrapezoidalScheme>.SolverType? solverType = additionalInputs[2] as TrBDF2Scheme<TrapezoidalScheme>.SolverType?;
-         return new TrBDF2Scheme<TrapezoidalScheme>(alpha.Value, L as FdmLinearOpComposite, trapezoidalScheme,
-                                                    bcs as List<BoundaryCondition<FdmLinearOp>>, relTol.Value, solverType.Value);
-      }
+        public IMixedScheme factory(object L, object bcs, object[] additionalInputs = null)
+        {
+            double? alpha = additionalInputs[0] as double?;
+            TrapezoidalScheme trapezoidalScheme = additionalInputs[1] as TrapezoidalScheme;
+            double? relTol = additionalInputs[0] as double?;
+            SolverType? solverType = additionalInputs[2] as SolverType?;
+            return new TrBDF2Scheme<TrapezoidalScheme>(alpha.Value, L as FdmLinearOpComposite, trapezoidalScheme,
+                                                       bcs as List<BoundaryCondition<FdmLinearOp>>, relTol.Value, solverType.Value);
+        }
 
-      #endregion
+        #endregion
 
-      public void step(ref object a, double t, double theta = 1.0)
-      {
-         Utils.QL_REQUIRE(t - dt_ > -1e-8, () => "a step towards negative time given");
-         double intermediateTimeStep = dt_.Value * alpha_;
+        public void step(ref object a, double t, double theta = 1.0)
+        {
+            Utils.QL_REQUIRE(t - dt_ > -1e-8, () => "a step towards negative time given");
+            double intermediateTimeStep = dt_.Value * alpha_;
 
-         object fStar = a;
-         trapezoidalScheme_.setStep(intermediateTimeStep);
-         trapezoidalScheme_.step(ref fStar, t);
+            object fStar = a;
+            trapezoidalScheme_.setStep(intermediateTimeStep);
+            trapezoidalScheme_.step(ref fStar, t);
 
-         bcSet_.setTime(Math.Max(0.0, t - dt_.Value));
-         bcSet_.applyBeforeSolving(map_, a as Vector);
+            bcSet_.setTime(System.Math.Max(0.0, t - dt_.Value));
+            bcSet_.applyBeforeSolving(map_, a as Vector);
 
-         Vector fStarVec = fStar as Vector;
-         Vector f = (1.0 / alpha_ * fStarVec - Math.Pow(1.0 - alpha_, 2.0) / alpha_ * (a as Vector)) / (2.0 - alpha_);
+            Vector fStarVec = fStar as Vector;
+            Vector f = (1.0 / alpha_ * fStarVec - System.Math.Pow(1.0 - alpha_, 2.0) / alpha_ * (a as Vector)) / (2.0 - alpha_);
 
-         if (map_.size() == 1)
-         {
-            a = map_.solve_splitting(0, f, -beta_.Value);
-         }
-         else
-         {
-            if (solverType_ == SolverType.BiCGstab)
+            if (map_.size() == 1)
             {
-               BiCGStab.MatrixMult preconditioner = x => map_.preconditioner(x, -beta_.Value);
-               BiCGStab.MatrixMult applyF = x => this.apply(x);
-
-               BiCGStabResult result =
-                  new BiCGStab(applyF, Math.Max(10, (a as Vector).Count), relTol_, preconditioner).solve(f, f);
-
-               iterations_ += result.Iterations;
-               a = result.X;
-            }
-            else if (solverType_ == SolverType.GMRES)
-            {
-               GMRES.MatrixMult preconditioner = x => map_.preconditioner(x, -beta_.Value);
-               GMRES.MatrixMult applyF = x => this.apply(x);
-
-               GMRESResult result =
-                  new GMRES(applyF, Math.Max(10, (a as Vector).Count) / 10, relTol_, preconditioner).solve(f, f);
-
-               iterations_ += result.Errors.Count;
-               a = result.X;
+                a = map_.solve_splitting(0, f, -beta_.Value);
             }
             else
-               Utils.QL_FAIL("unknown/illegal solver type");
-         }
-         bcSet_.applyAfterSolving(a as Vector);
-      }
+            {
+                if (solverType_ == SolverType.BiCGstab)
+                {
+                    BiCGStab.MatrixMult preconditioner = x => map_.preconditioner(x, -beta_.Value);
+                    BiCGStab.MatrixMult applyF = x => apply(x);
 
-      public void setStep(double dt)
-      {
-         dt_ = dt;
-         beta_ = (1.0 - alpha_) / (2.0 - alpha_) * dt_.Value;
-      }
+                    BiCGStabResult result =
+                       new BiCGStab(applyF, System.Math.Max(10, (a as Vector).Count), relTol_, preconditioner).solve(f, f);
 
-      public int numberOfIterations()
-      {
-         return iterations_;
-      }
+                    iterations_ += result.Iterations;
+                    a = result.X;
+                }
+                else if (solverType_ == SolverType.GMRES)
+                {
+                    GMRES.MatrixMult preconditioner = x => map_.preconditioner(x, -beta_.Value);
+                    GMRES.MatrixMult applyF = x => apply(x);
 
-      public Vector apply(Vector r)
-      {
-         return r - beta_.Value * map_.apply(r);
-      }
+                    GMRESResult result =
+                       new GMRES(applyF, System.Math.Max(10, (a as Vector).Count) / 10, relTol_, preconditioner).solve(f, f);
 
-      protected double? dt_, beta_;
-      protected double alpha_, relTol_;
-      protected int iterations_;
+                    iterations_ += result.Errors.Count;
+                    a = result.X;
+                }
+                else
+                    Utils.QL_FAIL("unknown/illegal solver type");
+            }
+            bcSet_.applyAfterSolving(a as Vector);
+        }
 
-      protected FdmLinearOpComposite map_;
-      protected TrapezoidalScheme trapezoidalScheme_;
-      protected BoundaryConditionSchemeHelper bcSet_;
-      protected SolverType solverType_;
-   }
+        public void setStep(double dt)
+        {
+            dt_ = dt;
+            beta_ = (1.0 - alpha_) / (2.0 - alpha_) * dt_.Value;
+        }
+
+        public int numberOfIterations()
+        {
+            return iterations_;
+        }
+
+        public Vector apply(Vector r)
+        {
+            return r - beta_.Value * map_.apply(r);
+        }
+
+        protected double? dt_, beta_;
+        protected double alpha_, relTol_;
+        protected int iterations_;
+
+        protected FdmLinearOpComposite map_;
+        protected TrapezoidalScheme trapezoidalScheme_;
+        protected BoundaryConditionSchemeHelper bcSet_;
+        protected SolverType solverType_;
+    }
 }

@@ -13,42 +13,45 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+using QLNet.Quotes;
+using QLNet.Termstructures.Volatility.Optionlet;
+using QLNet.Time;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace QLNet
+namespace QLNet.Termstructures.Volatility
 {
-   public class SpreadedSmileSection : SmileSection
-   {
-      public SpreadedSmileSection(SmileSection underlyingSection, Handle<Quote> spread)
-      {
-         underlyingSection_ = underlyingSection;
-         spread_ = spread;
+    public class SpreadedSmileSection : SmileSection
+    {
+        public SpreadedSmileSection(SmileSection underlyingSection, Handle<Quote> spread)
+        {
+            underlyingSection_ = underlyingSection;
+            spread_ = spread;
 
-         underlyingSection_.registerWith(update);
-         spread_.registerWith(update);
-      }
-      // SmileSection interface
-      public override double minStrike() { return underlyingSection_.minStrike(); }
-      public override double maxStrike() { return underlyingSection_.maxStrike(); }
-      public override double? atmLevel() { return underlyingSection_.atmLevel(); }
-      public override Date exerciseDate() { return underlyingSection_.exerciseDate(); }
-      public override double exerciseTime() { return underlyingSection_.exerciseTime(); }
-      public override DayCounter dayCounter() { return underlyingSection_.dayCounter(); }
-      public override Date referenceDate() { return underlyingSection_.referenceDate(); }
-      public override VolatilityType volatilityType() { return underlyingSection_.volatilityType(); }
-      public override double shift() { return underlyingSection_.shift(); }
+            underlyingSection_.registerWith(update);
+            spread_.registerWith(update);
+        }
+        // SmileSection interface
+        public override double minStrike() { return underlyingSection_.minStrike(); }
+        public override double maxStrike() { return underlyingSection_.maxStrike(); }
+        public override double? atmLevel() { return underlyingSection_.atmLevel(); }
+        public override Date exerciseDate() { return underlyingSection_.exerciseDate(); }
+        public override double exerciseTime() { return underlyingSection_.exerciseTime(); }
+        public override DayCounter dayCounter() { return underlyingSection_.dayCounter(); }
+        public override Date referenceDate() { return underlyingSection_.referenceDate(); }
+        public override VolatilityType volatilityType() { return underlyingSection_.volatilityType(); }
+        public override double shift() { return underlyingSection_.shift(); }
 
-      // LazyObject interface
-      public override void update() { notifyObservers(); }
+        // LazyObject interface
+        public override void update() { notifyObservers(); }
 
-      protected override double volatilityImpl(double k)
-      {
-         return underlyingSection_.volatility(k) + spread_.link.value();
-      }
-      private SmileSection underlyingSection_;
-      private Handle<Quote> spread_;
-   }
+        protected override double volatilityImpl(double k)
+        {
+            return underlyingSection_.volatility(k) + spread_.link.value();
+        }
+        private SmileSection underlyingSection_;
+        private Handle<Quote> spread_;
+    }
 }

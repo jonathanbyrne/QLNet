@@ -16,13 +16,15 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Math.Distributions;
+using QLNet.Patterns;
 using System;
 using System.Numerics;
 
 namespace QLNet
 {
 
-   public static partial class Utils
+    public static partial class Utils
    {
       /*  Compute modified Bessel functions I_nv(x) and K_nv(x)
 
@@ -43,8 +45,8 @@ namespace QLNet
       public class doubleUnweighted : Weight<double>
       {
          public double weightSmallX(double x) { return 1.0; }
-         public double weight1LargeX(double x) { return Math.Exp(x); }
-         public double weight2LargeX(double x) { return Math.Exp(-x); }
+         public double weight1LargeX(double x) { return System.Math.Exp(x); }
+         public double weight2LargeX(double x) { return System.Math.Exp(-x); }
       }
 
       public class complexUnweighted : Weight<Complex>
@@ -56,9 +58,9 @@ namespace QLNet
 
       public class doubleExponentiallyWeighted : Weight<double>
       {
-         public double weightSmallX(double x) { return Math.Exp(-x); }
+         public double weightSmallX(double x) { return System.Math.Exp(-x); }
          public double weight1LargeX(double x) { return 1.0; }
-         public double weight2LargeX(double x) { return Math.Exp(-2.0 * x); }
+         public double weight2LargeX(double x) { return System.Math.Exp(-2.0 * x); }
       }
 
       public class complexExponentiallyWeighted : Weight<Complex>
@@ -131,14 +133,14 @@ namespace QLNet
       where T : Weight<double>, new ()
          where I : baseValue<double>, new ()
       {
-         if (Math.Abs(x) < 13.0)
+         if (System.Math.Abs(x) < 13.0)
          {
-            double alpha = Math.Pow(0.5 * x, nu) / GammaFunction.value(1.0 + nu);
+            double alpha = System.Math.Pow(0.5 * x, nu) / GammaFunction.value(1.0 + nu);
             double Y = 0.25 * x * x;
             int k = 1;
             double sum = alpha, B_k = alpha;
 
-            while (Math.Abs(B_k *= Y / (k * (k + nu))) > Math.Abs(sum) * Const.QL_EPSILON)
+            while (System.Math.Abs(B_k *= Y / (k * (k + nu))) > System.Math.Abs(sum) * Const.QL_EPSILON)
             {
                sum += B_k;
                Utils.QL_REQUIRE(++k < 1000, () => "max iterations exceeded");
@@ -165,9 +167,9 @@ namespace QLNet
             }
 
             double i = FastActivator<I>.Create().value();
-            return 1.0 / Math.Sqrt(2 * Const.M_PI * x) *
+            return 1.0 / System.Math.Sqrt(2 * Const.M_PI * x) *
                    (FastActivator<T>.Create().weight1LargeX(x) * s1 +
-                    i * Math.Exp(i * nu * Const.M_PI) * FastActivator<T>.Create().weight2LargeX(x) * s2);
+                    i * System.Math.Exp(i * nu * Const.M_PI) * FastActivator<T>.Create().weight2LargeX(x) * s2);
          }
       }
 
@@ -221,7 +223,7 @@ namespace QLNet
       {
          return Const.M_PI_2 * (modifiedBesselFunction_i_impl<T, I>(-nu, x) -
                                 modifiedBesselFunction_i_impl<T, I>(nu, x)) /
-                Math.Sin(Const.M_PI * nu);
+                System.Math.Sin(Const.M_PI * nu);
       }
 
 
@@ -231,7 +233,7 @@ namespace QLNet
       {
          return Const.M_PI_2 * (modifiedBesselFunction_i_impl<T, I>(-nu, x) -
                                 modifiedBesselFunction_i_impl<T, I>(nu, x)) /
-                Math.Sin(Const.M_PI * nu);
+                System.Math.Sin(Const.M_PI * nu);
       }
    }
 }

@@ -18,33 +18,39 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Currencies;
+using QLNet.Termstructures;
+using QLNet.Time;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
+
+namespace QLNet.Indexes.Ibor
 {
 
-   //! %CHF %LIBOR rate
-   /*! Swiss Franc LIBOR fixed by ICE.
+    //! %CHF %LIBOR rate
+    /*! Swiss Franc LIBOR fixed by ICE.
 
-       See <https://www.theice.com/marketdata/reports/170>.
+        See <https://www.theice.com/marketdata/reports/170>.
 
-       \warning This is the rate fixed in London by BBA. Use ZIBOR if
-                you're interested in the Zurich fixing.
-   */
-   public class CHFLibor : Libor
-   {
-      public CHFLibor(Period tenor)
-         : base("CHFLibor", tenor, 2, new CHFCurrency(), new Switzerland(), new Actual360(), new Handle<YieldTermStructure>())
-      {}
+        \warning This is the rate fixed in London by BBA. Use ZIBOR if
+                 you're interested in the Zurich fixing.
+    */
+    public class CHFLibor : Libor
+    {
+        public CHFLibor(Period tenor)
+           : base("CHFLibor", tenor, 2, new CHFCurrency(), new Switzerland(), new Actual360(), new Handle<YieldTermStructure>())
+        { }
 
-      public CHFLibor(Period tenor, Handle<YieldTermStructure> h)
-         : base("CHFLibor", tenor, 2, new CHFCurrency(), new Switzerland(), new Actual360(), h)
-      {}
-   }
+        public CHFLibor(Period tenor, Handle<YieldTermStructure> h)
+           : base("CHFLibor", tenor, 2, new CHFCurrency(), new Switzerland(), new Actual360(), h)
+        { }
+    }
 
-   //! base class for the one day deposit BBA %CHF %LIBOR indexes
-   public class DailyTenorCHFLibor : DailyTenorLibor
-   {
-      public DailyTenorCHFLibor(int settlementDays, Handle<YieldTermStructure> h)
-         : base("CHFLibor", settlementDays, new CHFCurrency(), new Switzerland(), new Actual360(), h)
-      { }
-   }
+    //! base class for the one day deposit BBA %CHF %LIBOR indexes
+    public class DailyTenorCHFLibor : DailyTenorLibor
+    {
+        public DailyTenorCHFLibor(int settlementDays, Handle<YieldTermStructure> h)
+           : base("CHFLibor", settlementDays, new CHFCurrency(), new Switzerland(), new Actual360(), h)
+        { }
+    }
 }

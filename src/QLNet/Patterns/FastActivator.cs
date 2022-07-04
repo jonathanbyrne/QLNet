@@ -18,26 +18,26 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace QLNet
+namespace QLNet.Patterns
 {
-   // Base on Sergey Teplyakov code
-   // https://blogs.msdn.microsoft.com/seteplia/2017/02/01/dissecting-the-new-constraint-in-c-a-perfect-example-of-a-leaky-abstraction/
-   //
-   public static class FastActivator<T> where T : new ()
-   {
-      /// <summary>
-      /// Extremely fast generic factory method that returns an instance
-      /// of the type <typeparam name="T"/>.
-      /// </summary>
-      public static readonly Func<T> Create = DynamicModuleLambdaCompiler.GenerateFactory<T>();
-   }
+    // Base on Sergey Teplyakov code
+    // https://blogs.msdn.microsoft.com/seteplia/2017/02/01/dissecting-the-new-constraint-in-c-a-perfect-example-of-a-leaky-abstraction/
+    //
+    public static class FastActivator<T> where T : new()
+    {
+        /// <summary>
+        /// Extremely fast generic factory method that returns an instance
+        /// of the type <typeparam name="T"/>.
+        /// </summary>
+        public static readonly Func<T> Create = DynamicModuleLambdaCompiler.GenerateFactory<T>();
+    }
 
-   public static class DynamicModuleLambdaCompiler
-   {
-      public static Func<T> GenerateFactory<T>() where T : new ()
-      {
-         Expression<Func<T>> expr = () => new T();
-         NewExpression newExpr = (NewExpression)expr.Body;
+    public static class DynamicModuleLambdaCompiler
+    {
+        public static Func<T> GenerateFactory<T>() where T : new()
+        {
+            Expression<Func<T>> expr = () => new T();
+            NewExpression newExpr = (NewExpression)expr.Body;
 
 #if NET452
          var method = new DynamicMethod(
@@ -47,32 +47,32 @@ namespace QLNet
             m: typeof(DynamicModuleLambdaCompiler).Module,
             skipVisibility: true);
 #else
-         var method = new DynamicMethod(
-            name: "lambda",
-            returnType: newExpr.Type,
-            parameterTypes: new Type[0],
-            m: typeof(DynamicModuleLambdaCompiler).GetTypeInfo().Module,
-            skipVisibility: true);
+            var method = new DynamicMethod(
+               name: "lambda",
+               returnType: newExpr.Type,
+               parameterTypes: new Type[0],
+               m: typeof(DynamicModuleLambdaCompiler).GetTypeInfo().Module,
+               skipVisibility: true);
 #endif
 
-         ILGenerator ilGen = method.GetILGenerator();
-         // Constructor for value types could be null
-         if (newExpr.Constructor != null)
-         {
-            ilGen.Emit(OpCodes.Newobj, newExpr.Constructor);
-         }
-         else
-         {
-            LocalBuilder temp = ilGen.DeclareLocal(newExpr.Type);
-            ilGen.Emit(OpCodes.Ldloca, temp);
-            ilGen.Emit(OpCodes.Initobj, newExpr.Type);
-            ilGen.Emit(OpCodes.Ldloc, temp);
-         }
+            ILGenerator ilGen = method.GetILGenerator();
+            // Constructor for value types could be null
+            if (newExpr.Constructor != null)
+            {
+                ilGen.Emit(OpCodes.Newobj, newExpr.Constructor);
+            }
+            else
+            {
+                LocalBuilder temp = ilGen.DeclareLocal(newExpr.Type);
+                ilGen.Emit(OpCodes.Ldloca, temp);
+                ilGen.Emit(OpCodes.Initobj, newExpr.Type);
+                ilGen.Emit(OpCodes.Ldloc, temp);
+            }
 
-         ilGen.Emit(OpCodes.Ret);
+            ilGen.Emit(OpCodes.Ret);
 
-         return (Func<T>)method.CreateDelegate(typeof(Func<T>));
-      }
-   }
+            return (Func<T>)method.CreateDelegate(typeof(Func<T>));
+        }
+    }
 
 }

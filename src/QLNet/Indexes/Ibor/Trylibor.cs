@@ -17,26 +17,32 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Currencies;
+using QLNet.Termstructures;
+using QLNet.Time;
+using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
+
+namespace QLNet.Indexes.Ibor
 {
 
-   //! %TRY %LIBOR rate
-   /*! TRY LIBOR fixed by TBA.
+    //! %TRY %LIBOR rate
+    /*! TRY LIBOR fixed by TBA.
 
-       See <http://www.trlibor.org/trlibor/english/>
+        See <http://www.trlibor.org/trlibor/english/>
 
-       \todo check end-of-month adjustment.
-   */
-   public class TRLibor : IborIndex
-   {
-      public TRLibor(Period tenor)
-         : base("TRLibor", tenor, 0, new TRYCurrency(), new Turkey(), BusinessDayConvention.ModifiedFollowing, false, new Actual360(), new Handle<YieldTermStructure>())
-      {}
+        \todo check end-of-month adjustment.
+    */
+    public class TRLibor : IborIndex
+    {
+        public TRLibor(Period tenor)
+           : base("TRLibor", tenor, 0, new TRYCurrency(), new Turkey(), BusinessDayConvention.ModifiedFollowing, false, new Actual360(), new Handle<YieldTermStructure>())
+        { }
 
-      public TRLibor(Period tenor, Handle<YieldTermStructure> h)
-         : base("TRLibor", tenor, 0, new TRYCurrency(), new Turkey(), BusinessDayConvention.ModifiedFollowing, false, new Actual360(), h)
-      {}
+        public TRLibor(Period tenor, Handle<YieldTermStructure> h)
+           : base("TRLibor", tenor, 0, new TRYCurrency(), new Turkey(), BusinessDayConvention.ModifiedFollowing, false, new Actual360(), h)
+        { }
 
-   }
+    }
 
 }

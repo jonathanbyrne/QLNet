@@ -14,58 +14,60 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-namespace QLNet
+using QLNet.Time;
+
+namespace QLNet.Instruments
 {
-   public class ForwardVanillaOption : OneAssetOption
-   {
-      public ForwardVanillaOption(double moneyness,
-                                  Date resetDate,
-                                  StrikedTypePayoff payoff,
-                                  Exercise exercise)
-         : base(payoff, exercise)
-      {
-         moneyness_ = moneyness;
-         resetDate_ = resetDate;
-      }
+    public class ForwardVanillaOption : OneAssetOption
+    {
+        public ForwardVanillaOption(double moneyness,
+                                    Date resetDate,
+                                    StrikedTypePayoff payoff,
+                                    Exercise exercise)
+           : base(payoff, exercise)
+        {
+            moneyness_ = moneyness;
+            resetDate_ = resetDate;
+        }
 
-      public override void setupArguments(IPricingEngineArguments args)
-      {
-         base.setupArguments(args);
-         ForwardVanillaOption.Arguments arguments = args as ForwardVanillaOption.Arguments;
-         Utils.QL_REQUIRE(arguments != null, () => "wrong argument type");
+        public override void setupArguments(IPricingEngineArguments args)
+        {
+            base.setupArguments(args);
+            Arguments arguments = args as Arguments;
+            Utils.QL_REQUIRE(arguments != null, () => "wrong argument type");
 
-         arguments.moneyness = moneyness_;
-         arguments.resetDate = resetDate_;
-      }
-      public override void fetchResults(IPricingEngineResults r)
-      {
-         base.fetchResults(r);
-         ForwardVanillaOption.Results results = r as ForwardVanillaOption.Results;
-         Utils.QL_REQUIRE(results != null, () => "no results returned from pricing engine");
-         delta_       = results.delta;
-         gamma_       = results.gamma;
-         theta_       = results.theta;
-         vega_        = results.vega;
-         rho_         = results.rho;
-         dividendRho_ = results.dividendRho;
-      }
+            arguments.moneyness = moneyness_;
+            arguments.resetDate = resetDate_;
+        }
+        public override void fetchResults(IPricingEngineResults r)
+        {
+            base.fetchResults(r);
+            Results results = r as Results;
+            Utils.QL_REQUIRE(results != null, () => "no results returned from pricing engine");
+            delta_ = results.delta;
+            gamma_ = results.gamma;
+            theta_ = results.theta;
+            vega_ = results.vega;
+            rho_ = results.rho;
+            dividendRho_ = results.dividendRho;
+        }
 
-      // arguments
-      private double moneyness_;
-      private Date resetDate_;
+        // arguments
+        private double moneyness_;
+        private Date resetDate_;
 
-      public new class Arguments : OneAssetOption.Arguments
-      {
-         public override void validate()
-         {
-            Utils.QL_REQUIRE(moneyness > 0.0, () => "negative or zero moneyness given");
-            Utils.QL_REQUIRE(resetDate != null, () => "null reset date given");
-            Utils.QL_REQUIRE(resetDate >= Settings.evaluationDate(), () => "reset date in the past");
-            Utils.QL_REQUIRE(this.exercise.lastDate() > resetDate, () => "reset date later or equal to maturity");
-         }
-         public double moneyness { get; set; }
-         public Date resetDate { get; set; }
-      }
+        public new class Arguments : Option.Arguments
+        {
+            public override void validate()
+            {
+                Utils.QL_REQUIRE(moneyness > 0.0, () => "negative or zero moneyness given");
+                Utils.QL_REQUIRE(resetDate != null, () => "null reset date given");
+                Utils.QL_REQUIRE(resetDate >= Settings.evaluationDate(), () => "reset date in the past");
+                Utils.QL_REQUIRE(exercise.lastDate() > resetDate, () => "reset date later or equal to maturity");
+            }
+            public double moneyness { get; set; }
+            public Date resetDate { get; set; }
+        }
 
-   }
+    }
 }

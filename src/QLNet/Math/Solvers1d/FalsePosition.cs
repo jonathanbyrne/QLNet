@@ -17,67 +17,69 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Exceptions;
+using QLNet.Math;
 using System;
 
-namespace QLNet
+namespace QLNet.Math.Solvers1d
 {
-   public class FalsePosition : Solver1D
-   {
-      protected override double solveImpl(ISolver1d f, double xAccuracy)
-      {
-         /* The implementation of the algorithm was inspired by
-            Press, Teukolsky, Vetterling, and Flannery,
-            "Numerical Recipes in C", 2nd edition,
-            Cambridge University Press
-         */
+    public class FalsePosition : Solver1D
+    {
+        protected override double solveImpl(ISolver1d f, double xAccuracy)
+        {
+            /* The implementation of the algorithm was inspired by
+               Press, Teukolsky, Vetterling, and Flannery,
+               "Numerical Recipes in C", 2nd edition,
+               Cambridge University Press
+            */
 
-         double fl, fh, xl, xh, dx, del, froot;
+            double fl, fh, xl, xh, dx, del, froot;
 
-         // Identify the limits so that xl corresponds to the low side
-         if (fxMin_ < 0.0)
-         {
-            xl = xMin_;
-            fl = fxMin_;
-            xh = xMax_;
-            fh = fxMax_;
-         }
-         else
-         {
-            xl = xMax_;
-            fl = fxMax_;
-            xh = xMin_;
-            fh = fxMin_;
-         }
-         dx = xh - xl ;
-
-         while (evaluationNumber_ <= maxEvaluations_)
-         {
-            // Increment with respect to latest value
-            root_ = xl + dx * fl / (fl - fh);
-            froot = f.value(root_);
-            evaluationNumber_++;
-            if (froot < 0.0)         // Replace appropriate limit
+            // Identify the limits so that xl corresponds to the low side
+            if (fxMin_ < 0.0)
             {
-               del = xl - root_;
-               xl = root_;
-               fl = froot;
+                xl = xMin_;
+                fl = fxMin_;
+                xh = xMax_;
+                fh = fxMax_;
             }
             else
             {
-               del = xh - root_;
-               xh = root_;
-               fh = froot;
+                xl = xMax_;
+                fl = fxMax_;
+                xh = xMin_;
+                fh = fxMin_;
             }
             dx = xh - xl;
-            // Convergence criterion
-            if (Math.Abs(del) < xAccuracy || Utils.close(froot, 0.0))
+
+            while (evaluationNumber_ <= maxEvaluations_)
             {
-               return root_;
+                // Increment with respect to latest value
+                root_ = xl + dx * fl / (fl - fh);
+                froot = f.value(root_);
+                evaluationNumber_++;
+                if (froot < 0.0)         // Replace appropriate limit
+                {
+                    del = xl - root_;
+                    xl = root_;
+                    fl = froot;
+                }
+                else
+                {
+                    del = xh - root_;
+                    xh = root_;
+                    fh = froot;
+                }
+                dx = xh - xl;
+                // Convergence criterion
+                if (System.Math.Abs(del) < xAccuracy || Utils.close(froot, 0.0))
+                {
+                    return root_;
+                }
             }
-         }
-         Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
-                       QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
-         return 0;
-      }
-   }
+            Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
+                          QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
+            return 0;
+        }
+    }
 }

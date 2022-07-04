@@ -17,24 +17,26 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
-{
-   //! One-dimensional tree-based lattice.
-   public class TreeLattice1D<T> : TreeLattice<T> where T : IGenericLattice
-   {
-      public TreeLattice1D(TimeGrid timeGrid, int n) : base(timeGrid, n) { }
+using QLNet.Math;
 
-      public override Vector grid(double t)
-      {
-         int i = timeGrid().index(t);
-         Vector grid = new Vector(impl().size(i));
-         for (int j = 0; j < grid.size(); j++)
-            grid[j] = impl().underlying(i, j);
-         return grid;
-      }
-      public virtual double underlying(int i, int index)
-      {
-         return impl().underlying(i, index);
-      }
-   }
+namespace QLNet.Methods.lattices
+{
+    //! One-dimensional tree-based lattice.
+    public class TreeLattice1D<T> : TreeLattice<T> where T : IGenericLattice
+    {
+        public TreeLattice1D(TimeGrid timeGrid, int n) : base(timeGrid, n) { }
+
+        public override Vector grid(double t)
+        {
+            int i = timeGrid().index(t);
+            Vector grid = new Vector(impl().size(i));
+            for (int j = 0; j < grid.size(); j++)
+                grid[j] = impl().underlying(i, j);
+            return grid;
+        }
+        public virtual double underlying(int i, int index)
+        {
+            return impl().underlying(i, index);
+        }
+    }
 }

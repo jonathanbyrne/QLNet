@@ -19,46 +19,46 @@
 using System;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Methods.montecarlo
 {
-   //! Correlated multiple asset paths
-   /*! MultiPath contains the list of paths for each asset, i.e.,
-       multipath[j] is the path followed by the j-th asset.
+    //! Correlated multiple asset paths
+    /*! MultiPath contains the list of paths for each asset, i.e.,
+        multipath[j] is the path followed by the j-th asset.
 
-       \ingroup mcarlo
-   */
-   public class MultiPath : IPath
-   {
-      private List<Path> multiPath_;
+        \ingroup mcarlo
+    */
+    public class MultiPath : IPath
+    {
+        private List<Path> multiPath_;
 
-      public MultiPath() {}
-      public MultiPath(int nAsset, TimeGrid timeGrid)
-      {
-         multiPath_ = new List<Path>(nAsset);
-         for (int i = 0; i < nAsset; i++)
-            multiPath_.Add(new Path(timeGrid));
-         Utils.QL_REQUIRE(nAsset > 0, () => "number of asset must be positive");
-      }
+        public MultiPath() { }
+        public MultiPath(int nAsset, TimeGrid timeGrid)
+        {
+            multiPath_ = new List<Path>(nAsset);
+            for (int i = 0; i < nAsset; i++)
+                multiPath_.Add(new Path(timeGrid));
+            Utils.QL_REQUIRE(nAsset > 0, () => "number of asset must be positive");
+        }
 
-      public MultiPath(List<Path> multiPath)
-      {
-         multiPath_ = multiPath;
-      }
+        public MultiPath(List<Path> multiPath)
+        {
+            multiPath_ = multiPath;
+        }
 
-      // inspectors
-      public int assetNumber() { return multiPath_.Count; }
-      public int length() { return pathSize(); }
-      public int pathSize() { return multiPath_[0].length(); }
+        // inspectors
+        public int assetNumber() { return multiPath_.Count; }
+        public int length() { return pathSize(); }
+        public int pathSize() { return multiPath_[0].length(); }
 
-      // read/write access to components
-      public Path this[int j] { get { return multiPath_[j]; } set { multiPath_[j] = value; } }
+        // read/write access to components
+        public Path this[int j] { get { return multiPath_[j]; } set { multiPath_[j] = value; } }
 
-      // ICloneable interface
-      public object Clone()
-      {
-         MultiPath temp = (MultiPath)this.MemberwiseClone();
-         temp.multiPath_ = new List<Path>(this.multiPath_);
-         return temp;
-      }
-   }
+        // ICloneable interface
+        public object Clone()
+        {
+            MultiPath temp = (MultiPath)MemberwiseClone();
+            temp.multiPath_ = new List<Path>(multiPath_);
+            return temp;
+        }
+    }
 }

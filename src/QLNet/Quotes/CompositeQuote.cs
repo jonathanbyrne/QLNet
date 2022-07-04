@@ -19,49 +19,49 @@
 
 using System;
 
-namespace QLNet
+namespace QLNet.Quotes
 {
-   public class CompositeQuote : Quote
-   {
-      //! market element whose value depends on two other market element
-      /*! \test the correctness of the returned values is tested by
-                checking them against numerical calculations.
-      */
-      private Handle<Quote> element1_;
-      private Handle<Quote> element2_;
-      private Func<double, double, double> f_;
+    public class CompositeQuote : Quote
+    {
+        //! market element whose value depends on two other market element
+        /*! \test the correctness of the returned values is tested by
+                  checking them against numerical calculations.
+        */
+        private Handle<Quote> element1_;
+        private Handle<Quote> element2_;
+        private Func<double, double, double> f_;
 
-      public CompositeQuote(Handle<Quote> element1, Handle<Quote> element2, Func<double, double, double> f)
-      {
-         element1_ = element1;
-         element2_ = element2;
-         f_ = f;
+        public CompositeQuote(Handle<Quote> element1, Handle<Quote> element2, Func<double, double, double> f)
+        {
+            element1_ = element1;
+            element2_ = element2;
+            f_ = f;
 
-         element1_.registerWith(this.update);
-         element2_.registerWith(this.update);
-      }
+            element1_.registerWith(update);
+            element2_.registerWith(update);
+        }
 
-      // inspectors
-      public double value1() { return element1_.link.value(); }
-      public double value2() { return element2_.link.value(); }
+        // inspectors
+        public double value1() { return element1_.link.value(); }
+        public double value2() { return element2_.link.value(); }
 
-      public void update()
-      {
-         notifyObservers();
-      }
+        public void update()
+        {
+            notifyObservers();
+        }
 
-      //! Quote interface
-      public override double value()
-      {
-         if (!isValid())
-            throw new ArgumentException("invalid DerivedQuote");
-         return f_(element1_.link.value(), element2_.link.value());
-      }
+        //! Quote interface
+        public override double value()
+        {
+            if (!isValid())
+                throw new ArgumentException("invalid DerivedQuote");
+            return f_(element1_.link.value(), element2_.link.value());
+        }
 
-      public override bool isValid()
-      {
-         return (element1_.link.isValid() && element2_.link.isValid());
-      }
+        public override bool isValid()
+        {
+            return element1_.link.isValid() && element2_.link.isValid();
+        }
 
-   }
+    }
 }

@@ -17,13 +17,14 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using QLNet.Math;
 using System;
 using System.Collections.Generic;
 
 namespace QLNet
 {
-   //! Discretized asset class used by numerical
-   public abstract class DiscretizedAsset
+    //! Discretized asset class used by numerical
+    public abstract class DiscretizedAsset
    {
       private Lattice method_;
 
@@ -267,7 +268,7 @@ namespace QLNet
       protected void applyExerciseCondition()
       {
          for (int i = 0; i < values_.size(); i++)
-            values_[i] = Math.Max(underlying_.values()[i], values_[i]);
+            values_[i] = System.Math.Max(underlying_.values()[i], values_[i]);
       }
    }
 }

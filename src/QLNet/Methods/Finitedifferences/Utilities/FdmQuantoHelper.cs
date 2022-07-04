@@ -17,94 +17,99 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+using QLNet.Math;
+using QLNet.Patterns;
+using QLNet.Termstructures;
+using QLNet.Termstructures.Volatility.equityfx;
+
+namespace QLNet.Methods.Finitedifferences.Utilities
 {
-   public class FdmQuantoHelper : IObservable
-   {
-      public FdmQuantoHelper(
-         YieldTermStructure rTS,
-         YieldTermStructure fTS,
-         BlackVolTermStructure fxVolTS,
-         double equityFxCorrelation,
-         double exchRateATMlevel)
-      {
-         rTS_ = rTS;
-         fTS_ = fTS;
-         fxVolTS_ = fxVolTS;
-         equityFxCorrelation_ = equityFxCorrelation;
-         exchRateATMlevel_ = exchRateATMlevel;
-      }
+    public class FdmQuantoHelper : IObservable
+    {
+        public FdmQuantoHelper(
+           YieldTermStructure rTS,
+           YieldTermStructure fTS,
+           BlackVolTermStructure fxVolTS,
+           double equityFxCorrelation,
+           double exchRateATMlevel)
+        {
+            rTS_ = rTS;
+            fTS_ = fTS;
+            fxVolTS_ = fxVolTS;
+            equityFxCorrelation_ = equityFxCorrelation;
+            exchRateATMlevel_ = exchRateATMlevel;
+        }
 
-      public double quantoAdjustment(double equityVol, double t1, double t2)
-      {
-         double rDomestic = rTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
-         double rForeign = fTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
-         double fxVol = fxVolTS_.blackForwardVol(t1, t2, exchRateATMlevel_);
+        public double quantoAdjustment(double equityVol, double t1, double t2)
+        {
+            double rDomestic = rTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
+            double rForeign = fTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
+            double fxVol = fxVolTS_.blackForwardVol(t1, t2, exchRateATMlevel_);
 
-         return rDomestic - rForeign + equityVol * fxVol * equityFxCorrelation_;
-      }
+            return rDomestic - rForeign + equityVol * fxVol * equityFxCorrelation_;
+        }
 
-      public Vector quantoAdjustment(Vector equityVol, double t1, double t2)
-      {
-         double rDomestic = rTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
-         double rForeign = fTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
-         double fxVol = fxVolTS_.blackForwardVol(t1, t2, exchRateATMlevel_);
+        public Vector quantoAdjustment(Vector equityVol, double t1, double t2)
+        {
+            double rDomestic = rTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
+            double rForeign = fTS_.forwardRate(t1, t2, Compounding.Continuous).rate();
+            double fxVol = fxVolTS_.blackForwardVol(t1, t2, exchRateATMlevel_);
 
-         Vector retVal = new Vector(equityVol.size());
-         for (int i = 0; i < retVal.size(); ++i)
-         {
-            retVal[i] = rDomestic - rForeign + equityVol[i] * fxVol * equityFxCorrelation_;
-         }
-         return retVal;
-      }
+            Vector retVal = new Vector(equityVol.size());
+            for (int i = 0; i < retVal.size(); ++i)
+            {
+                retVal[i] = rDomestic - rForeign + equityVol[i] * fxVol * equityFxCorrelation_;
+            }
+            return retVal;
+        }
 
-      public YieldTermStructure foreignTermStructure() { return fTS_; }
-      public YieldTermStructure riskFreeTermStructure() { return rTS_; }
-      public BlackVolTermStructure fxVolatilityTermStructure() { return fxVolTS_; }
-      public double equityFxCorrelation() { return equityFxCorrelation_; }
-      public double exchRateATMlevel() { return exchRateATMlevel_; }
+        public YieldTermStructure foreignTermStructure() { return fTS_; }
+        public YieldTermStructure riskFreeTermStructure() { return rTS_; }
+        public BlackVolTermStructure fxVolatilityTermStructure() { return fxVolTS_; }
+        public double equityFxCorrelation() { return equityFxCorrelation_; }
+        public double exchRateATMlevel() { return exchRateATMlevel_; }
 
-      protected YieldTermStructure rTS_, fTS_;
-      protected BlackVolTermStructure fxVolTS_;
-      protected double equityFxCorrelation_, exchRateATMlevel_;
+        protected YieldTermStructure rTS_, fTS_;
+        protected BlackVolTermStructure fxVolTS_;
+        protected double equityFxCorrelation_, exchRateATMlevel_;
 
-      #region Observer & Observable
+        #region Observer & Observable
 
-      // observable interface
-      private readonly WeakEventSource eventSource = new WeakEventSource();
+        // observable interface
+        private readonly WeakEventSource eventSource = new WeakEventSource();
 
-      public event Callback notifyObserversEvent
-      {
-         add
-         {
-            eventSource.Subscribe(value);
-         }
-         remove
-         {
-            eventSource.Unsubscribe(value);
-         }
-      }
+        public event Callback notifyObserversEvent
+        {
+            add
+            {
+                eventSource.Subscribe(value);
+            }
+            remove
+            {
+                eventSource.Unsubscribe(value);
+            }
+        }
 
-      public void registerWith(Callback handler)
-      {
-         notifyObserversEvent += handler;
-      }
+        public void registerWith(Callback handler)
+        {
+            notifyObserversEvent += handler;
+        }
 
-      public void unregisterWith(Callback handler)
-      {
-         notifyObserversEvent -= handler;
-      }
+        public void unregisterWith(Callback handler)
+        {
+            notifyObserversEvent -= handler;
+        }
 
-      protected void notifyObservers()
-      {
-         eventSource.Raise();
-      }
+        protected void notifyObservers()
+        {
+            eventSource.Raise();
+        }
 
-      public virtual void update()
-      {
-         notifyObservers();
-      }
+        public virtual void update()
+        {
+            notifyObservers();
+        }
 
-      #endregion
-   }
+        #endregion
+    }
 }

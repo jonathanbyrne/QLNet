@@ -17,52 +17,54 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Math;
+using QLNet.Models;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.legacy.libormarketmodels
 {
-   //! caplet volatility model
-   public abstract class LmVolatilityModel
-   {
-      protected LmVolatilityModel(int size, int nArguments)
-      {
-         size_ = size;
-         arguments_ = new InitializedList<Parameter>(nArguments);
-      }
+    //! caplet volatility model
+    public abstract class LmVolatilityModel
+    {
+        protected LmVolatilityModel(int size, int nArguments)
+        {
+            size_ = size;
+            arguments_ = new InitializedList<Parameter>(nArguments);
+        }
 
-      public int size()
-      {
-         return size_;
-      }
+        public int size()
+        {
+            return size_;
+        }
 
-      public abstract void generateArguments();
+        public abstract void generateArguments();
 
-      public abstract Vector volatility(double t, Vector x = null);
+        public abstract Vector volatility(double t, Vector x = null);
 
-      public virtual double volatility(int i, double t, Vector x = null)
-      {
-         // inefficient implementation, please overload in derived classes
-         return volatility(t, x)[i];
-      }
+        public virtual double volatility(int i, double t, Vector x = null)
+        {
+            // inefficient implementation, please overload in derived classes
+            return volatility(t, x)[i];
+        }
 
-      public virtual double integratedVariance(int i, int j, double u, Vector x = null)
-      {
-         Utils.QL_FAIL("integratedVariance() method is not supported");
-         return 0;
-      }
+        public virtual double integratedVariance(int i, int j, double u, Vector x = null)
+        {
+            Utils.QL_FAIL("integratedVariance() method is not supported");
+            return 0;
+        }
 
-      public List<Parameter> parameters()
-      {
-         return arguments_;
-      }
+        public List<Parameter> parameters()
+        {
+            return arguments_;
+        }
 
-      public void setParams(List<Parameter> arguments)
-      {
-         arguments_ = arguments;
-         generateArguments();
-      }
+        public void setParams(List<Parameter> arguments)
+        {
+            arguments_ = arguments;
+            generateArguments();
+        }
 
-      protected int size_;
-      protected List<Parameter> arguments_;
-   }
+        protected int size_;
+        protected List<Parameter> arguments_;
+    }
 }

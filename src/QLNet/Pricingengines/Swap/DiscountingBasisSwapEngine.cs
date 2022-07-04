@@ -16,51 +16,55 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+using QLNet.Cashflows;
+using QLNet.Instruments;
+using QLNet.Termstructures;
+using QLNet.Time;
 using System;
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Pricingengines.Swap
 {
-   public class DiscountingBasisSwapEngine : Swap.SwapEngine
-   {
-      private List<Handle<YieldTermStructure>> discountCurve_;
+    public class DiscountingBasisSwapEngine : Instruments.Swap.SwapEngine
+    {
+        private List<Handle<YieldTermStructure>> discountCurve_;
 
-      public DiscountingBasisSwapEngine(Handle<YieldTermStructure> discountCurve1,
-                                        Handle<YieldTermStructure> discountCurve2)
-      {
-         discountCurve_ = new List<Handle<YieldTermStructure>>();
-         discountCurve_.Add(discountCurve1);
-         discountCurve_.Add(discountCurve2);
-      }
+        public DiscountingBasisSwapEngine(Handle<YieldTermStructure> discountCurve1,
+                                          Handle<YieldTermStructure> discountCurve2)
+        {
+            discountCurve_ = new List<Handle<YieldTermStructure>>();
+            discountCurve_.Add(discountCurve1);
+            discountCurve_.Add(discountCurve2);
+        }
 
-      // Instrument interface
-      public override void calculate()
-      {
-         if (discountCurve_.empty())
-            throw new ArgumentException("no discounting term structure set");
-         if (discountCurve_.Count != arguments_.legs.Count)
-            throw new ArgumentException("no discounting term structure set for all legs");
+        // Instrument interface
+        public override void calculate()
+        {
+            if (discountCurve_.empty())
+                throw new ArgumentException("no discounting term structure set");
+            if (discountCurve_.Count != arguments_.legs.Count)
+                throw new ArgumentException("no discounting term structure set for all legs");
 
-         results_.value = results_.cash = 0;
-         results_.errorEstimate = null;
-         results_.legNPV = new InitializedList < double? >(arguments_.legs.Count);
-         results_.legBPS = new InitializedList < double? >(arguments_.legs.Count);
-         List < double? > startDiscounts = new InitializedList < double? >(arguments_.legs.Count);
-         for (int i = 0; i < arguments_.legs.Count; ++i)
-         {
-            results_.value += results_.legNPV[i];
-            results_.cash += arguments_.payer[i] * CashFlows.cash(arguments_.legs[i]);
-            try
+            results_.value = results_.cash = 0;
+            results_.errorEstimate = null;
+            results_.legNPV = new InitializedList<double?>(arguments_.legs.Count);
+            results_.legBPS = new InitializedList<double?>(arguments_.legs.Count);
+            List<double?> startDiscounts = new InitializedList<double?>(arguments_.legs.Count);
+            for (int i = 0; i < arguments_.legs.Count; ++i)
             {
-               Date d = CashFlows.startDate(arguments_.legs[i]);
-               startDiscounts[i] = discountCurve_[i].link.discount(d);
+                results_.value += results_.legNPV[i];
+                results_.cash += arguments_.payer[i] * CashFlows.cash(arguments_.legs[i]);
+                try
+                {
+                    Date d = CashFlows.startDate(arguments_.legs[i]);
+                    startDiscounts[i] = discountCurve_[i].link.discount(d);
+                }
+                catch
+                {
+                    startDiscounts[i] = null;
+                }
             }
-            catch
-            {
-               startDiscounts[i] = null;
-            }
-         }
-         results_.additionalResults.Add("startDiscounts", startDiscounts);
-      }
-   }
+            results_.additionalResults.Add("startDiscounts", startDiscounts);
+        }
+    }
 }
