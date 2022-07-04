@@ -17,7 +17,6 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 using QLNet.Time;
-using System.Collections.Generic;
 
 namespace QLNet.Instruments
 {
@@ -76,8 +75,4 @@ namespace QLNet.Instruments
         private Date date_;
 
     }
-
-    [JetBrains.Annotations.PublicAPI] public class CallabilitySchedule : List<Callability> { }
-
-
 }

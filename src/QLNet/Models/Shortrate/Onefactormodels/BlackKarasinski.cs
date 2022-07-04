@@ -16,13 +16,12 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
+
 using QLNet.Math.Solvers1d;
 using QLNet.Methods.lattices;
 using QLNet.Termstructures;
 using System;
 using QLNet.Math.Optimization;
-using QLNet.processes;
 
 namespace QLNet.Models.Shortrate.Onefactormodels
 {
@@ -97,54 +96,6 @@ namespace QLNet.Models.Shortrate.Onefactormodels
     }
 
     //! Short-rate dynamics in the Black-Karasinski model
-    [JetBrains.Annotations.PublicAPI] public class Dynamics : OneFactorModel.ShortRateDynamics
-    {
-
-        public Dynamics(Parameter fitting, double alpha, double sigma)
-           : base(new OrnsteinUhlenbeckProcess(alpha, sigma))
-        {
-            fitting_ = fitting;
-        }
-
-        public override double variable(double t, double r) => System.Math.Log(r) - fitting_.value(t);
-
-        public override double shortRate(double t, double x) => System.Math.Exp(x + fitting_.value(t));
-
-        private Parameter fitting_;
-    }
 
     // Private function used by solver to determine time-dependent parameter
-    [JetBrains.Annotations.PublicAPI] public class Helper : ISolver1d
-    {
-        private int size_;
-        private double dt_;
-        private double xMin_, dx_;
-        private Vector statePrices_;
-        private double discountBondPrice_;
-
-        public Helper(int i, double xMin, double dx,
-                      double discountBondPrice,
-                      OneFactorModel.ShortRateTree tree)
-        {
-            size_ = tree.size(i);
-            dt_ = tree.timeGrid().dt(i);
-            xMin_ = xMin;
-            dx_ = dx;
-            statePrices_ = tree.statePrices(i);
-            discountBondPrice_ = discountBondPrice;
-        }
-
-        public override double value(double theta)
-        {
-            var value = discountBondPrice_;
-            var x = xMin_;
-            for (var j = 0; j < size_; j++)
-            {
-                var discount = System.Math.Exp(-System.Math.Exp(theta + x) * dt_);
-                value -= statePrices_[j] * discount;
-                x += dx_;
-            }
-            return value;
-        }
-    }
 }

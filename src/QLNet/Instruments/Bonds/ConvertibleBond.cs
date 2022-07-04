@@ -17,29 +17,15 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Indexes;
 using QLNet.Instruments;
 using QLNet.Quotes;
 using QLNet.Time;
 using System.Collections.Generic;
 using System.Linq;
-using QLNet.Cashflows;
 
 namespace QLNet.Instruments.Bonds
 {
     //! %callability leaving to the holder the possibility to convert
-    [JetBrains.Annotations.PublicAPI] public class SoftCallability : Callability
-    {
-        public SoftCallability(Price price, Date date, double trigger)
-           : base(price, Type.Call, date)
-        {
-            trigger_ = trigger;
-        }
-
-        public double trigger() => trigger_;
-
-        private double trigger_;
-    }
 
     //! base class for convertible bonds
     [JetBrains.Annotations.PublicAPI] public class ConvertibleBond : Bond
@@ -301,33 +287,6 @@ namespace QLNet.Instruments.Bonds
                 convertibility and callability into account.
     */
 
-    [JetBrains.Annotations.PublicAPI] public class ConvertibleZeroCouponBond : ConvertibleBond
-    {
-        public ConvertibleZeroCouponBond(Exercise exercise,
-                                         double conversionRatio,
-                                         DividendSchedule dividends,
-                                         CallabilitySchedule callability,
-                                         Handle<Quote> creditSpread,
-                                         Date issueDate,
-                                         int settlementDays,
-                                         DayCounter dayCounter,
-                                         Schedule schedule,
-                                         double redemption = 100)
-           : base(
-                exercise, conversionRatio, dividends, callability, creditSpread, issueDate, settlementDays, schedule,
-                redemption)
-        {
-            cashflows_ = new List<CashFlow>();
-
-            // !!! notional forcibly set to 100
-            setSingleRedemption(100.0, redemption, maturityDate_);
-
-            option_ = new option(this, exercise, conversionRatio, dividends, callability, creditSpread, cashflows_,
-                                 dayCounter, schedule,
-                                 issueDate, settlementDays, redemption);
-        }
-    }
-
     //! convertible fixed-coupon bond
     /*! \warning Most methods inherited from Bond (such as yield or
                  the yield-based dirtyPrice and cleanPrice) refer to
@@ -335,81 +294,10 @@ namespace QLNet.Instruments.Bonds
                  convertibility and callability into account.
     */
 
-    [JetBrains.Annotations.PublicAPI] public class ConvertibleFixedCouponBond : ConvertibleBond
-    {
-        public ConvertibleFixedCouponBond(Exercise exercise,
-                                          double conversionRatio,
-                                          DividendSchedule dividends,
-                                          CallabilitySchedule callability,
-                                          Handle<Quote> creditSpread,
-                                          Date issueDate,
-                                          int settlementDays,
-                                          List<double> coupons,
-                                          DayCounter dayCounter,
-                                          Schedule schedule,
-                                          double redemption = 100)
-           : base(
-                exercise, conversionRatio, dividends, callability, creditSpread, issueDate, settlementDays, schedule,
-                redemption)
-        {
-            // !!! notional forcibly set to 100
-            cashflows_ = new FixedRateLeg(schedule)
-            .withCouponRates(coupons, dayCounter)
-            .withNotionals(100.0)
-            .withPaymentAdjustment(schedule.businessDayConvention());
-
-            addRedemptionsToCashflows(new List<double>() { redemption });
-
-            Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
-
-            option_ = new option(this, exercise, conversionRatio, dividends, callability, creditSpread, cashflows_,
-                                 dayCounter, schedule,
-                                 issueDate, settlementDays, redemption);
-        }
-    }
-
     //! convertible floating-rate bond
     /*! \warning Most methods inherited from Bond (such as yield or
                  the yield-based dirtyPrice and cleanPrice) refer to
                  the underlying plain-vanilla bond and do not take
                  convertibility and callability into account.
     */
-
-    [JetBrains.Annotations.PublicAPI] public class ConvertibleFloatingRateBond : ConvertibleBond
-    {
-        public ConvertibleFloatingRateBond(Exercise exercise,
-                                           double conversionRatio,
-                                           DividendSchedule dividends,
-                                           CallabilitySchedule callability,
-                                           Handle<Quote> creditSpread,
-                                           Date issueDate,
-                                           int settlementDays,
-                                           IborIndex index,
-                                           int fixingDays,
-                                           List<double> spreads,
-                                           DayCounter dayCounter,
-                                           Schedule schedule,
-                                           double redemption = 100)
-           : base(
-                exercise, conversionRatio, dividends, callability, creditSpread, issueDate, settlementDays, schedule,
-                redemption)
-
-        {
-            // !!! notional forcibly set to 100
-            cashflows_ = new IborLeg(schedule, index)
-            .withPaymentDayCounter(dayCounter)
-            .withFixingDays(fixingDays)
-            .withSpreads(spreads)
-            .withNotionals(100.0)
-            .withPaymentAdjustment(schedule.businessDayConvention());
-
-            addRedemptionsToCashflows(new List<double> { redemption });
-
-            Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
-
-            option_ = new option(this, exercise, conversionRatio, dividends, callability, creditSpread, cashflows_,
-                                 dayCounter, schedule,
-                                 issueDate, settlementDays, redemption);
-        }
-    }
 }

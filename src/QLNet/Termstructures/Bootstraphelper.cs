@@ -24,17 +24,6 @@ using System;
 
 namespace QLNet.Termstructures
 {
-    public struct Pillar
-    {
-        //! Enumeration for pillar determination alternatives
-        /*! These alternatives specify the determination of the pillar date. */
-        public enum Choice
-        {
-            MaturityDate,     //! instruments maturity date
-            LastRelevantDate, //! last date relevant for instrument pricing
-            CustomDate        //! custom choice
-        }
-    }
     // Base helper class for bootstrapping
     /* This class provides an abstraction for the instruments used to bootstrap a term structure.
        It is advised that a bootstrap helper for an instrument contains an instance of the actual instrument
@@ -148,12 +137,5 @@ namespace QLNet.Termstructures
 
         public virtual void update() { notifyObservers(); }
         #endregion
-    }
-
-    [JetBrains.Annotations.PublicAPI] public class RateHelper : BootstrapHelper<YieldTermStructure>
-    {
-        public RateHelper() : base() { } // required for generics
-        public RateHelper(Handle<Quote> quote) : base(quote) { }
-        public RateHelper(double quote) : base(quote) { }
     }
 }

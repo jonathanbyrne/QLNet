@@ -13,41 +13,11 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
-using QLNet.Time;
-using System;
+
 using System.Collections.Generic;
 
 namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public class CouponConversion
-   {
-      public CouponConversion(DateTime date, double rate)
-      {
-         Date = date;
-         Rate = rate;
-      }
-
-      public DateTime Date { get; set; }
-      public double Rate { get; set; }
-      public override string ToString() => ($"Conversion Date : {Date}\nConversion Rate : {Rate}");
-   }
-
-   [JetBrains.Annotations.PublicAPI] public class CouponConversionSchedule : List<CouponConversion>
+    [JetBrains.Annotations.PublicAPI] public class CouponConversionSchedule : List<CouponConversion>
    {}
-
-   public static partial class Utils
-   {
-      public static List<double> CreateCouponSchedule(Schedule schedule,
-                                                      CouponConversionSchedule couponConversionSchedule)
-      {
-         List<double> ret = new InitializedList<double>(schedule.Count);
-         for (var i = 0 ; i < couponConversionSchedule.Count; i++)
-            for (var j = 0; j < schedule.Count; j++)
-               if (schedule[j] >= (Date)couponConversionSchedule[i].Date)
-                  ret[j] = couponConversionSchedule[i].Rate;
-
-         return ret;
-      }
-
-   }
 }

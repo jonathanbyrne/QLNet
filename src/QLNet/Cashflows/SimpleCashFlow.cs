@@ -44,26 +44,14 @@ namespace QLNet.Cashflows
     /*! This class specializes SimpleCashFlow so that visitors
         can perform more detailed cash-flow analysis.
     */
-    [JetBrains.Annotations.PublicAPI] public class Redemption : SimpleCashFlow
-    {
-        public Redemption(double amount, Date date) : base(amount, date) { }
-    }
 
     //! Amortizing payment
     /*! This class specializes SimpleCashFlow so that visitors
         can perform more detailed cash-flow analysis.
     */
-    [JetBrains.Annotations.PublicAPI] public class AmortizingPayment : SimpleCashFlow
-    {
-        public AmortizingPayment(double amount, Date date) : base(amount, date) { }
-    }
 
     //! Voluntary Prepay
     /*! This class specializes SimpleCashFlow so that visitors
         can perform more detailed cash-flow analysis.
     */
-    [JetBrains.Annotations.PublicAPI] public class VoluntaryPrepay : SimpleCashFlow
-    {
-        public VoluntaryPrepay(double amount, Date date) : base(amount, date) { }
-    }
 }

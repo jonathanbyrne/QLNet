@@ -25,11 +25,6 @@ using QLNet.Math.statistics;
 
 namespace QLNet.Tests
 {
-    class IncrementalGaussianStatistics : GenericGaussianStatistics<IncrementalStatistics>
-    {
-        public double downsideVariance() => impl_.downsideVariance();
-    }
-
     [Collection("QLNet CI Tests")]
     [JetBrains.Annotations.PublicAPI] public class T_RiskStats
     {

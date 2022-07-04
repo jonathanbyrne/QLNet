@@ -40,25 +40,6 @@ namespace QLNet.Math.matrixutilities
         http://bilder.buecher.de/zusatz/12/12950/12950560_lese_1.pdf
     */
 
-    public struct GMRESResult
-    {
-        public GMRESResult(List<double> e, Vector xx)
-        {
-            errors = e;
-            x = xx;
-        }
-
-        private List<double> errors;
-        private Vector x;
-
-        public List<double> Errors { get => errors;
-            set => errors = value;
-        }
-        public Vector X { get => x;
-            set => x = value;
-        }
-    }
-
     /// <summary>
     /// Generalized minimal residual method
     /// </summary>

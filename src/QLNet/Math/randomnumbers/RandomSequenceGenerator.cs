@@ -23,15 +23,6 @@ using System.Collections.Generic;
 
 namespace QLNet.Math.randomnumbers
 {
-    [JetBrains.Annotations.PublicAPI] public interface IRNG
-    {
-        int dimension();
-        Sample<List<double>> nextSequence();
-        Sample<List<double>> lastSequence();
-
-        IRNG factory(int dimensionality, ulong seed);
-    }
-
     /*! Random sequence generator based on a pseudo-random number generator RNG.
         Do not use with low-discrepancy sequence generator.
     */

@@ -18,47 +18,16 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Extensions;
-using QLNet.Math;
+
 using QLNet.Math.Solvers1d;
-using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.Optionlet;
 using System;
 using System.Linq;
-using QLNet.Pricingengines.swaption;
-using QLNet.Time.DayCounters;
 
 namespace QLNet.Instruments
 {
     //! %settlement information
-    public struct Settlement
-    {
-        public enum Type { Physical, Cash };
-        public enum Method
-        {
-            PhysicalOTC,
-            PhysicalCleared,
-            CollateralizedCashPrice,
-            ParYieldCurve
-        };
-
-        public static void checkTypeAndMethodConsistency(Type settlementType, Method settlementMethod)
-        {
-            if (settlementType == Type.Physical)
-            {
-                Utils.QL_REQUIRE(settlementMethod == Method.PhysicalOTC ||
-                                 settlementMethod == Method.PhysicalCleared,
-                                 () => "invalid settlement method for physical settlement");
-            }
-            if (settlementType == Type.Cash)
-            {
-                Utils.QL_REQUIRE(settlementMethod == Method.CollateralizedCashPrice ||
-                                 settlementMethod == Method.ParYieldCurve,
-                                 () => "invalid settlement method for cash settlement");
-            }
-        }
-    }
 
     //! %Swaption class
     /*! \ingroup instruments
@@ -177,66 +146,6 @@ namespace QLNet.Instruments
     }
 
     //! base class for swaption engines
-    public abstract class SwaptionEngine : GenericEngine<Swaption.Arguments, Instrument.Results> { }
-
-    [JetBrains.Annotations.PublicAPI] public class ImpliedVolHelper_ : ISolver1d
-    {
-
-        private IPricingEngine engine_;
-        private Handle<YieldTermStructure> discountCurve_;
-        private double targetValue_;
-        private SimpleQuote vol_;
-        private Instrument.Results results_;
-
-        public ImpliedVolHelper_(Swaption swaption,
-                                 Handle<YieldTermStructure> discountCurve,
-                                 double targetValue,
-                                 double? displacement = 0.0,
-                                 VolatilityType type = VolatilityType.ShiftedLognormal)
-        {
-            discountCurve_ = discountCurve;
-            targetValue_ = targetValue;
-            // set an implausible value, so that calculation is forced
-            // at first ImpliedVolHelper::operator()(Volatility x) call
-            vol_ = new SimpleQuote(-1.0);
-            var h = new Handle<Quote>(vol_);
-            switch (type)
-            {
-                case VolatilityType.ShiftedLognormal:
-                    engine_ = new BlackSwaptionEngine(discountCurve_, h, new Actual365Fixed(), displacement);
-                    break;
-                case VolatilityType.Normal:
-                    engine_ = new BachelierSwaptionEngine(discountCurve_, h, new Actual365Fixed());
-                    break;
-                default:
-                    Utils.QL_FAIL("unknown VolatilityType (" + type.ToString() + ")");
-                    break;
-            }
-            swaption.setupArguments(engine_.getArguments());
-            results_ = engine_.getResults() as Instrument.Results;
-        }
-
-        public override double value(double x)
-        {
-            if (x.IsNotEqual(vol_.value()))
-            {
-                vol_.setValue(x);
-                engine_.calculate();
-            }
-            return results_.value.Value - targetValue_;
-        }
-
-        public override double derivative(double x)
-        {
-            if (x.IsNotEqual(vol_.value()))
-            {
-                vol_.setValue(x);
-                engine_.calculate();
-            }
-            Utils.QL_REQUIRE(results_.additionalResults.Keys.Contains("vega"), () => "vega not provided");
-            return (double)results_.additionalResults["vega"];
-        }
-    }
 }
 
 

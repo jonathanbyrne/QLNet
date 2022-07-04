@@ -17,10 +17,8 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Instruments;
+
 using QLNet.processes;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Pricingengines.vanilla
 {
@@ -28,55 +26,6 @@ namespace QLNet.Pricingengines.vanilla
     /*! \todo The dividend class really needs to be made more
               sophisticated to distinguish between fixed dividends and fractional dividends
     */
-    public abstract class FDDividendEngineBase : FDMultiPeriodEngine
-    {
-        // required for generics
-        protected FDDividendEngineBase() { }
-
-        //public FDDividendEngineBase(GeneralizedBlackScholesProcess process,
-        //    Size timeSteps = 100, Size gridPoints = 100, bool timeDependent = false)
-        protected FDDividendEngineBase(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
-           : base(process, timeSteps, gridPoints, timeDependent) { }
-
-        public override FDVanillaEngine factory(GeneralizedBlackScholesProcess process,
-                                                int timeSteps, int gridPoints, bool timeDependent) =>
-            factory2(process, timeSteps, gridPoints, timeDependent);
-
-        public abstract FDVanillaEngine factory2(GeneralizedBlackScholesProcess process,
-                                                 int timeSteps, int gridPoints, bool timeDependent);
-
-        public override void setupArguments(IPricingEngineArguments a)
-        {
-            var args = a as DividendVanillaOption.Arguments;
-            Utils.QL_REQUIRE(args != null, () => "incorrect argument ExerciseType");
-            var events = new List<Event>();
-            foreach (Event e in args.cashFlow)
-                events.Add(e);
-            base.setupArguments(a, events);
-        }
-
-        protected double getDividendAmount(int i)
-        {
-            var dividend = events_[i] as Dividend;
-            if (dividend != null)
-            {
-                return dividend.amount();
-            }
-            else
-            {
-                return 0.0;
-            }
-        }
-
-        protected double getDiscountedDividend(int i)
-        {
-            var dividend = getDividendAmount(i);
-            var discount = process_.riskFreeRate().link.discount(events_[i].date()) /
-                           process_.dividendYield().link.discount(events_[i].date());
-            return dividend * discount;
-        }
-    }
-
 
     //! Finite-differences pricing engine for dividend options using
     // escowed dividend model
@@ -88,56 +37,6 @@ namespace QLNet.Pricingengines.vanilla
        This is set as the default engine, because it is consistent
        with the analytic version.
     */
-    [JetBrains.Annotations.PublicAPI] public class FDDividendEngineMerton73 : FDDividendEngineBase
-    {
-        // required for generics
-        public FDDividendEngineMerton73() { }
-
-        public FDDividendEngineMerton73(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
-           : base(process, timeSteps, gridPoints, timeDependent) { }
-
-        public override FDVanillaEngine factory2(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent) => throw new NotImplementedException();
-        // The value of the x axis is the NPV of the underlying minus the
-        // value of the paid dividends.
-
-        // Note that to get the PDE to work, I have to scale the values
-        // and not shift them.  This means that the price curve assumes
-        // that the dividends are scaled with the value of the underlying.
-        //
-        protected override void setGridLimits()
-        {
-            var paidDividends = 0.0;
-            for (var i = 0; i < events_.Count; i++)
-            {
-                if (getDividendTime(i) >= 0.0)
-                    paidDividends += getDiscountedDividend(i);
-            }
-
-            setGridLimits(process_.stateVariable().link.value() - paidDividends, getResidualTime());
-            ensureStrikeInGrid();
-        }
-
-        // TODO:  Make this work for both fixed and scaled dividends
-        protected override void executeIntermediateStep(int step)
-        {
-            var scaleFactor = getDiscountedDividend(step) / center_ + 1.0;
-            sMin_ *= scaleFactor;
-            sMax_ *= scaleFactor;
-            center_ *= scaleFactor;
-
-            intrinsicValues_.scaleGrid(scaleFactor);
-            intrinsicValues_.sample(payoff_.value);
-            prices_.scaleGrid(scaleFactor);
-            initializeOperator();
-            initializeModel();
-
-            initializeStepCondition();
-            stepCondition_.applyTo(prices_.values(), getDividendTime(step));
-        }
-
-
-    }
-
 
     //! Finite-differences engine for dividend options using shifted dividends
     /*! \ingroup vanillaengines */
@@ -147,62 +46,6 @@ namespace QLNet.Pricingengines.vanilla
 
        \todo Review literature to see whether this is described
     */
-    [JetBrains.Annotations.PublicAPI] public class FDDividendEngineShiftScale : FDDividendEngineBase
-    {
-        public FDDividendEngineShiftScale(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
-           : base(process, timeSteps, gridPoints, timeDependent) { }
-
-        public override FDVanillaEngine factory2(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent) => throw new NotImplementedException();
-
-        protected override void setGridLimits()
-        {
-            var underlying = process_.stateVariable().link.value();
-            for (var i = 0; i < events_.Count; i++)
-            {
-                var dividend = events_[i] as Dividend;
-                if (dividend == null)
-                    continue;
-                if (getDividendTime(i) < 0.0)
-                    continue;
-                underlying -= dividend.amount(underlying);
-            }
-
-            setGridLimits(underlying, getResidualTime());
-            ensureStrikeInGrid();
-        }
-
-        protected override void executeIntermediateStep(int step)
-        {
-            var dividend = events_[step] as Dividend;
-            if (dividend == null)
-                return;
-            var adder = new DividendAdder(dividend);
-            sMin_ = adder.value(sMin_);
-            sMax_ = adder.value(sMax_);
-            center_ = adder.value(center_);
-            intrinsicValues_.transformGrid(adder.value);
-
-            intrinsicValues_.sample(payoff_.value);
-            prices_.transformGrid(adder.value);
-
-            initializeOperator();
-            initializeModel();
-
-            initializeStepCondition();
-            stepCondition_.applyTo(prices_.values(), getDividendTime(step));
-        }
-
-        class DividendAdder
-        {
-            private Dividend dividend;
-
-            public DividendAdder(Dividend d)
-            {
-                dividend = d;
-            }
-            public double value(double x) => x + dividend.amount(x);
-        }
-    }
 
     // Use Merton73 engine as default.
     [JetBrains.Annotations.PublicAPI] public class FDDividendEngine : FDDividendEngineMerton73

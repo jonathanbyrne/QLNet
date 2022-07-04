@@ -36,18 +36,6 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Tests
 {
-    internal struct Datum
-    {
-        public Date date;
-        public double rate;
-
-        public Datum(Date d, double r)
-        {
-            date = d;
-            rate = r;
-        }
-    }
-
     //===========================================================================================
     // zero inflation tests, index, termstructure, and swaps
     //===========================================================================================

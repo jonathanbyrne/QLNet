@@ -13,12 +13,11 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
-using QLNet.Extensions;
+
 using QLNet.Instruments;
 using QLNet.Models.Shortrate.Onefactormodels;
 using QLNet.processes;
 using QLNet.Termstructures.Volatility.equityfx;
-using QLNet.Time;
 using System;
 
 namespace QLNet.Pricingengines.vanilla
@@ -103,35 +102,4 @@ namespace QLNet.Pricingengines.vanilla
         private double rho_;
         private GeneralizedBlackScholesProcess process_;
     }
-
-
-    [JetBrains.Annotations.PublicAPI] public class ShiftedBlackVolTermStructure : BlackVolTermStructure
-    {
-        public ShiftedBlackVolTermStructure(double varianceOffset, Handle<BlackVolTermStructure> volTS)
-           : base(volTS.link.referenceDate(), volTS.link.calendar(), BusinessDayConvention.Following, volTS.link.dayCounter())
-        {
-            varianceOffset_ = varianceOffset;
-            volTS_ = volTS;
-        }
-
-        public override double minStrike() => volTS_.link.minStrike();
-
-        public override double maxStrike() => volTS_.link.maxStrike();
-
-        public override Date maxDate() => volTS_.link.maxDate();
-
-        protected override double blackVarianceImpl(double t, double strike) => volTS_.link.blackVariance(t, strike, true) + varianceOffset_;
-
-        protected override double blackVolImpl(double t, double strike)
-        {
-            var nonZeroMaturity = t.IsEqual(0.0) ? 0.00001 : t;
-            var var = blackVarianceImpl(nonZeroMaturity, strike);
-            return System.Math.Sqrt(var / nonZeroMaturity);
-        }
-
-        private double varianceOffset_;
-        private Handle<BlackVolTermStructure> volTS_;
-
-    }
-
 }

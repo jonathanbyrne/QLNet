@@ -42,42 +42,6 @@ namespace QLNet.Indexes.Inflation
     }
 
     //! Genuine year-on-year US CPI (i.e. not a ratio of US CPI)
-    [JetBrains.Annotations.PublicAPI] public class YYUSCPI : YoYInflationIndex
-    {
-        public YYUSCPI(bool interpolated)
-           : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
-
-        public YYUSCPI(bool interpolated,
-                       Handle<YoYInflationTermStructure> ts)
-           : base("YY_CPI",
-                  new USRegion(),
-                  false,
-                  interpolated,
-                  false,
-                  Frequency.Monthly,
-                  new Period(1, TimeUnit.Months),
-                  new USDCurrency(),
-                  ts)
-        { }
-    }
 
     //! Fake year-on-year US CPI (i.e. a ratio of US CPI)
-    [JetBrains.Annotations.PublicAPI] public class YYUSCPIr : YoYInflationIndex
-    {
-        public YYUSCPIr(bool interpolated)
-           : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
-
-        public YYUSCPIr(bool interpolated,
-                        Handle<YoYInflationTermStructure> ts)
-           : base("YYR_CPI",
-                  new USRegion(),
-                  false,
-                  interpolated,
-                  true,
-                  Frequency.Monthly,
-                  new Period(1, TimeUnit.Months),
-                  new USDCurrency(),
-                  ts)
-        { }
-    }
 }

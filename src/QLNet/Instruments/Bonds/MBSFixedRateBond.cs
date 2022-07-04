@@ -17,7 +17,6 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 using QLNet.Instruments.Bonds;
-using QLNet.Math;
 using QLNet.Math.Solvers1d;
 using QLNet.Time;
 using System;
@@ -125,51 +124,5 @@ namespace QLNet
       protected double PassThroughRate_;
       protected DayCounter dCounter_;
 
-   }
-
-   [JetBrains.Annotations.PublicAPI] public class MonthlyYieldFinder : ISolver1d
-   {
-      private double faceAmount_;
-      private List<CashFlow> cashflows_;
-      private Date settlement_;
-
-      public MonthlyYieldFinder(double faceAmount, List<CashFlow> cashflows, Date settlement)
-      {
-         faceAmount_ = faceAmount;
-         cashflows_ = cashflows;
-         settlement_ = settlement;
-      }
-
-      public override double value(double yield) => Utils.PVDifference(faceAmount_, cashflows_, yield, settlement_);
-   }
-
-
-   public partial class Utils
-   {
-      public static double PVDifference(double faceAmount, List<CashFlow> cashflows, double yield, Date settlement)
-      {
-         var price = 0.0;
-         var actualDate = new Date(1, 1, 1970) ;
-         var cashflowindex = 0 ;
-
-
-         for (var i = 0; i < cashflows.Count; i++)
-         {
-            if (cashflows[i].hasOccurred(settlement))
-               continue;
-            // TODO use daycounter to find cashflowindex
-            if (cashflows[i].date() != actualDate)
-            {
-               actualDate = cashflows[i].date();
-               cashflowindex++;
-            }
-            var amount = cashflows[i].amount();
-            price += amount / System.Math.Pow((1 + yield / 100), cashflowindex);
-         }
-
-         return price - faceAmount;
-
-
-      }
    }
 }

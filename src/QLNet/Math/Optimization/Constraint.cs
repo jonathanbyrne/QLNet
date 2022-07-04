@@ -22,13 +22,6 @@ using System;
 
 namespace QLNet.Math.Optimization
 {
-    [JetBrains.Annotations.PublicAPI] public interface IConstraint
-    {
-        bool test(Vector param);
-        Vector upperBound(Vector parameters);
-        Vector lowerBound(Vector parameters);
-    }
-
     //! Base constraint class
     [JetBrains.Annotations.PublicAPI] public class Constraint
     {
@@ -87,162 +80,12 @@ namespace QLNet.Math.Optimization
     }
 
     //! No constraint
-    [JetBrains.Annotations.PublicAPI] public class NoConstraint : Constraint
-    {
-        private class Impl : IConstraint
-        {
-            public bool test(Vector v) => true;
-
-            public Vector upperBound(Vector parameters) => new Vector(parameters.size(), double.MaxValue);
-
-            public Vector lowerBound(Vector parameters) => new Vector(parameters.size(), double.MinValue);
-        }
-        public NoConstraint() : base(new Impl()) { }
-    }
 
     //! %Constraint imposing positivity to all arguments
-    [JetBrains.Annotations.PublicAPI] public class PositiveConstraint : Constraint
-    {
-        public PositiveConstraint()
-           : base(new Impl())
-        {
-        }
-
-        private class Impl : IConstraint
-        {
-            public bool test(Vector v)
-            {
-                for (var i = 0; i < v.Count; ++i)
-                {
-                    if (v[i] <= 0.0)
-                        return false;
-                }
-                return true;
-            }
-
-            public Vector upperBound(Vector parameters) => new Vector(parameters.size(), double.MaxValue);
-
-            public Vector lowerBound(Vector parameters) => new Vector(parameters.size(), 0.0);
-        }
-    }
 
     //! %Constraint imposing all arguments to be in [low,high]
-    [JetBrains.Annotations.PublicAPI] public class BoundaryConstraint : Constraint
-    {
-        public BoundaryConstraint(double low, double high)
-           : base(new Impl(low, high))
-        {
-        }
-
-        private class Impl : IConstraint
-        {
-            private double low_;
-            private double high_;
-
-            public Impl(double low, double high)
-            {
-                low_ = low;
-                high_ = high;
-            }
-            public bool test(Vector v)
-            {
-                for (var i = 0; i < v.Count; i++)
-                {
-                    if (v[i] < low_ || v[i] > high_)
-                        return false;
-                }
-                return true;
-            }
-
-            public Vector upperBound(Vector parameters) => new Vector(parameters.size(), high_);
-
-            public Vector lowerBound(Vector parameters) => new Vector(parameters.size(), low_);
-        }
-    }
 
     //! %Constraint enforcing both given sub-constraints
-    [JetBrains.Annotations.PublicAPI] public class CompositeConstraint : Constraint
-    {
-        public CompositeConstraint(Constraint c1, Constraint c2) : base(new Impl(c1, c2)) { }
-
-        private class Impl : IConstraint
-        {
-            private Constraint c1_, c2_;
-
-            public Impl(Constraint c1, Constraint c2)
-            {
-                c1_ = c1;
-                c2_ = c2;
-            }
-
-            public bool test(Vector p) => c1_.test(p) && c2_.test(p);
-
-            public Vector upperBound(Vector parameters)
-            {
-                var c1ub = c1_.upperBound(parameters);
-                var c2ub = c2_.upperBound(parameters);
-                var rtrnArray = new Vector(c1ub.size(), 0.0);
-
-                for (var iter = 0; iter < c1ub.size(); iter++)
-                {
-                    rtrnArray[iter] = System.Math.Min(c1ub[iter], c2ub[iter]);
-                }
-
-                return rtrnArray;
-            }
-
-            public Vector lowerBound(Vector parameters)
-            {
-                var c1lb = c1_.lowerBound(parameters);
-                var c2lb = c2_.lowerBound(parameters);
-                var rtrnArray = new Vector(c1lb.size(), 0.0);
-
-                for (var iter = 0; iter < c1lb.size(); iter++)
-                {
-                    rtrnArray[iter] = System.Math.Max(c1lb[iter], c2lb[iter]);
-
-                }
-
-                return rtrnArray;
-            }
-        }
-    }
 
     //! %Constraint imposing i-th argument to be in [low_i,high_i] for all i
-    [JetBrains.Annotations.PublicAPI] public class NonhomogeneousBoundaryConstraint : Constraint
-    {
-        private class Impl : IConstraint
-        {
-            public Impl(Vector low, Vector high)
-            {
-                low_ = low;
-                high_ = high;
-                Utils.QL_REQUIRE(low_.Count == high_.Count, () => "Upper and lower boundaries sizes are inconsistent.");
-            }
-
-            public bool test(Vector parameters)
-            {
-                Utils.QL_REQUIRE(parameters.size() == low_.Count, () =>
-                                 "Number of parameters and boundaries sizes are inconsistent.");
-
-                for (var i = 0; i < parameters.size(); i++)
-                {
-                    if (parameters[i] < low_[i] || parameters[i] > high_[i])
-                        return false;
-                }
-                return true;
-            }
-
-            public Vector upperBound(Vector v) => high_;
-
-            public Vector lowerBound(Vector v) => low_;
-
-            private Vector low_, high_;
-        }
-
-        public NonhomogeneousBoundaryConstraint(Vector low, Vector high)
-           : base(new Impl(low, high))
-        { }
-    }
-
 }

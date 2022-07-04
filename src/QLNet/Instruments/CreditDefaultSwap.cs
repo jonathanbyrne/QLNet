@@ -32,17 +32,6 @@ using QLNet.Time.Calendars;
 
 namespace QLNet.Instruments
 {
-    public struct Protection
-    {
-        public enum Side { Buyer, Seller }
-    }
-
-    public enum PricingModel
-    {
-        Midpoint,
-        ISDA
-    }
-
     /// <summary>
     /// Credit default swap
     /// <remarks>

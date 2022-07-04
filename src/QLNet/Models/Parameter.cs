@@ -18,12 +18,10 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Extensions;
+
 using QLNet.Math;
 using QLNet.Math.Optimization;
-using QLNet.Termstructures;
 using System;
-using System.Collections.Generic;
 
 namespace QLNet.Models
 {
@@ -67,124 +65,14 @@ namespace QLNet.Models
     }
 
     //! Standard constant parameter \f$ a(t) = a \f$
-    [JetBrains.Annotations.PublicAPI] public class ConstantParameter : Parameter
-    {
-        private new class Impl : Parameter.Impl
-        {
-            public override double value(Vector parameters, double UnnamedParameter1) => parameters[0];
-        }
-        public ConstantParameter(Constraint constraint)
-           : base(1, new Impl(), constraint)
-        {
-        }
-
-        public ConstantParameter(double value, Constraint constraint)
-           : base(1, new Impl(), constraint)
-        {
-            params_[0] = value;
-
-            Utils.QL_REQUIRE(testParams(params_), () => ": invalid value");
-        }
-
-    }
 
     //! %Parameter which is always zero \f$ a(t) = 0 \f$
-    [JetBrains.Annotations.PublicAPI] public class NullParameter : Parameter
-    {
-        private new class Impl : Parameter.Impl
-        {
-            public override double value(Vector UnnamedParameter1, double UnnamedParameter2) => 0.0;
-        }
-        public NullParameter()
-           : base(0, new Impl(), new NoConstraint())
-        {
-        }
-    }
 
     //! Piecewise-constant parameter
     //    ! \f$ a(t) = a_i if t_{i-1} \geq t < t_i \f$.
     //        This kind of parameter is usually used to enhance the fitting of a
     //        model
     //
-    [JetBrains.Annotations.PublicAPI] public class PiecewiseConstantParameter : Parameter
-    {
-        private new class Impl : Parameter.Impl
-        {
-            public Impl(List<double> times)
-            {
-                times_ = times;
-            }
-
-            public override double value(Vector parameters, double t)
-            {
-                var size = times_.Count;
-                for (var i = 0; i < size; i++)
-                {
-                    if (t < times_[i])
-                        return parameters[i];
-                }
-                return parameters[size];
-            }
-            private List<double> times_;
-        }
-        public PiecewiseConstantParameter(List<double> times, Constraint constraint = null)
-           : base(times.Count + 1, new Impl(times), constraint ?? new NoConstraint())
-        {
-        }
-    }
 
     //! Deterministic time-dependent parameter used for yield-curve fitting
-    [JetBrains.Annotations.PublicAPI] public class TermStructureFittingParameter : Parameter
-    {
-        [JetBrains.Annotations.PublicAPI] public class NumericalImpl : Impl
-        {
-            private List<double> times_;
-            private List<double> values_;
-            private Handle<YieldTermStructure> termStructure_;
-
-            public NumericalImpl(Handle<YieldTermStructure> termStructure)
-            {
-                times_ = new List<double>();
-                values_ = new List<double>();
-                termStructure_ = termStructure;
-            }
-
-            public void setvalue(double t, double x)
-            {
-                times_.Add(t);
-                values_.Add(x);
-            }
-
-            public void change(double x)
-            {
-                values_[values_.Count - 1] = x;
-            }
-
-            public void reset()
-            {
-                times_.Clear();
-                values_.Clear();
-            }
-            public override double value(Vector UnnamedParameter1, double t)
-            {
-                var nIndex = times_.FindIndex(val => val.IsEqual(t));
-                Utils.QL_REQUIRE(nIndex != -1, () => "fitting parameter not set!");
-
-                return values_[nIndex];
-            }
-
-            public Handle<YieldTermStructure> termStructure() => termStructure_;
-        }
-
-        public TermStructureFittingParameter(Impl impl)
-           : base(0, impl, new NoConstraint())
-        {
-        }
-
-        public TermStructureFittingParameter(Handle<YieldTermStructure> term)
-           : base(0, new NumericalImpl(term), new NoConstraint())
-        {
-        }
-    }
-
 }

@@ -94,10 +94,4 @@ namespace QLNet.Math.Optimization
         //! Default epsilon for finite difference method :
         public virtual double finiteDifferenceEpsilon() => 1e-8;
     }
-
-    [JetBrains.Annotations.PublicAPI] public interface IParametersTransformation
-    {
-        Vector direct(Vector x);
-        Vector inverse(Vector x);
-    }
 }

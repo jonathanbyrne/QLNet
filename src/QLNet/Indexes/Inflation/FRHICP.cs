@@ -43,42 +43,6 @@ namespace QLNet.Indexes.Inflation
     }
 
     //! Genuine year-on-year FR HICP (i.e. not a ratio)
-    [JetBrains.Annotations.PublicAPI] public class YYFRHICP : YoYInflationIndex
-    {
-        public YYFRHICP(bool interpolated)
-           : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
-
-        public YYFRHICP(bool interpolated,
-                        Handle<YoYInflationTermStructure> ts)
-           : base("YY_HICP",
-                  new FranceRegion(),
-                  false,
-                  interpolated,
-                  false,
-                  Frequency.Monthly,
-                  new Period(1, TimeUnit.Months),
-                  new EURCurrency(),
-                  ts)
-        { }
-    }
 
     //! Fake year-on-year FR HICP (i.e. a ratio)
-    [JetBrains.Annotations.PublicAPI] public class YYFRHICPr : YoYInflationIndex
-    {
-        public YYFRHICPr(bool interpolated)
-           : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
-
-        public YYFRHICPr(bool interpolated,
-                         Handle<YoYInflationTermStructure> ts)
-           : base("YYR_HICP",
-                  new FranceRegion(),
-                  false,
-                  interpolated,
-                  true,
-                  Frequency.Monthly,
-                  new Period(1, TimeUnit.Months),
-                  new EURCurrency(),
-                  ts)
-        { }
-    }
 }

@@ -48,13 +48,4 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! base class for the one day deposit ICE %JPY %LIBOR indexes
-    [JetBrains.Annotations.PublicAPI] public class DailyTenorJPYLibor : DailyTenorLibor
-    {
-        public DailyTenorJPYLibor(int settlementDays) : this(settlementDays, new Handle<YieldTermStructure>())
-        { }
-
-        public DailyTenorJPYLibor(int settlementDays, Handle<YieldTermStructure> h)
-           : base("JPYLibor", settlementDays, new JPYCurrency(), new Japan(), new Actual360(), h)
-        { }
-    }
 }

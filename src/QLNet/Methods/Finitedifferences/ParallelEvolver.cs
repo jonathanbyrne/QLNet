@@ -34,21 +34,6 @@ namespace QLNet.Methods.Finitedifferences
     */
     /*! \ingroup findiff */
 
-    [JetBrains.Annotations.PublicAPI] public class StepConditionSet<array_type> : List<IStepCondition<array_type>>, IStepCondition<array_type>
-      where array_type : Vector
-    {
-        public void applyTo(object o, double t)
-        {
-            var a = (List<array_type>)o;
-            for (var i = 0; i < Count; i++)
-            {
-                this[i].applyTo(a[i], t);
-            }
-        }
-    }
-
-    [JetBrains.Annotations.PublicAPI] public class BoundaryConditionSet : List<List<BoundaryCondition<IOperator>>> { }
-
     [JetBrains.Annotations.PublicAPI] public class ParallelEvolver<Evolver> : IMixedScheme, ISchemeFactory where Evolver : IMixedScheme, ISchemeFactory, new()
     {
         private List<IMixedScheme> evolvers_;

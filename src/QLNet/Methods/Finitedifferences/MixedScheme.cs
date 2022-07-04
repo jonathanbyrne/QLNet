@@ -22,17 +22,6 @@ using System.Collections.Generic;
 
 namespace QLNet.Methods.Finitedifferences
 {
-    [JetBrains.Annotations.PublicAPI] public interface ISchemeFactory
-    {
-        IMixedScheme factory(object L, object bcs, object[] additionalInputs = null);
-    }
-
-    [JetBrains.Annotations.PublicAPI] public interface IMixedScheme
-    {
-        void step(ref object a, double t, double theta = 1.0);
-        void setStep(double dt);
-    }
-
     //! Mixed (explicit/implicit) scheme for finite difference methods
     /*! In this implementation, the passed operator must be derived
         from either TimeConstantOperator or TimeDependentOperator.

@@ -47,10 +47,4 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! base class for the one day deposit BBA %CHF %LIBOR indexes
-    [JetBrains.Annotations.PublicAPI] public class DailyTenorCHFLibor : DailyTenorLibor
-    {
-        public DailyTenorCHFLibor(int settlementDays, Handle<YieldTermStructure> h)
-           : base("CHFLibor", settlementDays, new CHFCurrency(), new Switzerland(), new Actual360(), h)
-        { }
-    }
 }

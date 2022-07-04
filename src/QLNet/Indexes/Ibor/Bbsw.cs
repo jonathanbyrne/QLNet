@@ -43,50 +43,14 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! 1-month %Bbsw index
-    [JetBrains.Annotations.PublicAPI] public class Bbsw1M : Bbsw
-    {
-        public Bbsw1M(Handle<YieldTermStructure> h = null)
-           : base(new Period(1, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
-        { }
-    }
 
     //! 2-month %Bbsw index
-    [JetBrains.Annotations.PublicAPI] public class Bbsw2M : Bbsw
-    {
-        public Bbsw2M(Handle<YieldTermStructure> h = null)
-           : base(new Period(2, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
-        { }
-    }
 
     //! 3-month %Bbsw index
-    [JetBrains.Annotations.PublicAPI] public class Bbsw3M : Bbsw
-    {
-        public Bbsw3M(Handle<YieldTermStructure> h = null)
-           : base(new Period(3, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
-        { }
-    }
 
     //! 4-month %Bbsw index
-    [JetBrains.Annotations.PublicAPI] public class Bbsw4M : Bbsw
-    {
-        public Bbsw4M(Handle<YieldTermStructure> h = null)
-           : base(new Period(4, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
-        { }
-    }
 
     //! 5-month %Bbsw index
-    [JetBrains.Annotations.PublicAPI] public class Bbsw5M : Bbsw
-    {
-        public Bbsw5M(Handle<YieldTermStructure> h = null)
-           : base(new Period(5, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
-        { }
-    }
 
     //! 6-month %Bbsw index
-    [JetBrains.Annotations.PublicAPI] public class Bbsw6M : Bbsw
-    {
-        public Bbsw6M(Handle<YieldTermStructure> h = null)
-           : base(new Period(6, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
-        { }
-    }
 }

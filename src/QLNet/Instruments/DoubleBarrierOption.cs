@@ -20,17 +20,6 @@ using QLNet.Quotes;
 
 namespace QLNet.Instruments
 {
-    public struct DoubleBarrier
-    {
-        public enum Type
-        {
-            KnockIn,
-            KnockOut,
-            KIKO,     //! lower barrier KI, upper KO
-            KOKI      //! lower barrier KO, upper KI
-        }
-    }
-
     //! %Double Barrier option on a single asset.
     /*! The analytic pricing engine will be used if none if passed.
 

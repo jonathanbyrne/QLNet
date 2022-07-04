@@ -58,64 +58,14 @@ namespace QLNet.Indexes
     }
 
     //! Australia as geographical/economic region
-    [JetBrains.Annotations.PublicAPI] public class AustraliaRegion : Region
-    {
-        public AustraliaRegion()
-        {
-            var AUdata = new Data("Australia", "AU");
-            data_ = AUdata;
-        }
-
-    }
 
     //! European Union as geographical/economic region
-    [JetBrains.Annotations.PublicAPI] public class EURegion : Region
-    {
-        public EURegion()
-        {
-            var EUdata = new Data("EU", "EU");
-            data_ = EUdata;
-        }
-    }
 
     //! France as geographical/economic region
-    [JetBrains.Annotations.PublicAPI] public class FranceRegion : Region
-    {
-        public FranceRegion()
-        {
-            var FRdata = new Data("France", "FR");
-            data_ = FRdata;
-        }
-    }
-
 
     //! United Kingdom as geographical/economic region
-    [JetBrains.Annotations.PublicAPI] public class UKRegion : Region
-    {
-        public UKRegion()
-        {
-            var UKdata = new Data("UK", "UK");
-            data_ = UKdata;
-        }
-    }
 
     //! USA as geographical/economic region
-    [JetBrains.Annotations.PublicAPI] public class USRegion : Region
-    {
-        public USRegion()
-        {
-            var USdata = new Data("USA", "US");
-            data_ = USdata;
-        }
-    }
 
     //! South Africa as geographical/economic region
-    [JetBrains.Annotations.PublicAPI] public class ZARegion : Region
-    {
-        public ZARegion()
-        {
-            var ZAdata = new Data("South Africa", "ZA");
-            data_ = ZAdata;
-        }
-    }
 }

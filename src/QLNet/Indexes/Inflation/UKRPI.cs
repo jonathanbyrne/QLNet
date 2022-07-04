@@ -36,26 +36,6 @@ namespace QLNet.Indexes.Inflation
     }
 
     //! Genuine year-on-year UK RPI (i.e. not a ratio of UK RPI)
-    [JetBrains.Annotations.PublicAPI] public class YYUKRPI : YoYInflationIndex
-    {
-        public YYUKRPI(bool interpolated)
-           : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
-
-        public YYUKRPI(bool interpolated, Handle<YoYInflationTermStructure> ts)
-           : base("YY_RPI", new UKRegion(), false, interpolated, false, Frequency.Monthly,
-                  new Period(1, TimeUnit.Months), new GBPCurrency(), ts)
-        { }
-    }
 
     //! Fake year-on-year UK RPI (i.e. a ratio of UK RPI)
-    [JetBrains.Annotations.PublicAPI] public class YYUKRPIr : YoYInflationIndex
-    {
-        public YYUKRPIr(bool interpolated)
-           : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
-
-        public YYUKRPIr(bool interpolated, Handle<YoYInflationTermStructure> ts)
-           : base("YYR_RPI", new UKRegion(), false, interpolated, true, Frequency.Monthly,
-                  new Period(1, TimeUnit.Months), new GBPCurrency(), ts)
-        { }
-    }
 }

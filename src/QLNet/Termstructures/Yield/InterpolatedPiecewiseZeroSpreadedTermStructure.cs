@@ -17,7 +17,6 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 using QLNet.Math;
-using QLNet.Math.Interpolations;
 using QLNet.Patterns;
 using QLNet.Quotes;
 using QLNet.Termstructures;
@@ -128,17 +127,5 @@ namespace QLNet.Termstructures.Yield
             }
             interpolator_ = factory_.interpolate(times_, times_.Count, spreadValues_);
         }
-    }
-
-    [JetBrains.Annotations.PublicAPI] public class PiecewiseZeroSpreadedTermStructure : InterpolatedPiecewiseZeroSpreadedTermStructure<Linear>
-    {
-        public PiecewiseZeroSpreadedTermStructure(Handle<YieldTermStructure> h,
-                                                  List<Handle<Quote>> spreads,
-                                                  List<Date> dates,
-                                                  Compounding compounding = Compounding.Continuous,
-                                                  Frequency frequency = Frequency.NoFrequency,
-                                                  DayCounter dc = default)
-           : base(h, spreads, dates, compounding, frequency, dc, new Linear())
-        { }
     }
 }

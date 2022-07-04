@@ -142,20 +142,4 @@ namespace QLNet
    //! Relinkable handle to an observable
    /*! An instance of this class can be relinked so that it points to another observable. The change will be propagated to all
        handles that were created as copies of such instance. */
-
-   [JetBrains.Annotations.PublicAPI] public class RelinkableHandle<T> : Handle<T> where T : IObservable
-   {
-      public RelinkableHandle() : base(default(T), true) { }
-
-      public RelinkableHandle(T h) : base(h, true) { }
-
-      public RelinkableHandle(T h, bool registerAsObserver) : base(h, registerAsObserver) { }
-
-      public void linkTo(T h) { linkTo(h, true); }
-
-      public void linkTo(T h, bool registerAsObserver)
-      {
-         link_.linkTo(h, registerAsObserver);
-      }
-   }
 }

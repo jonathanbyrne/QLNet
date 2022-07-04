@@ -25,12 +25,6 @@ namespace QLNet.Math
 {
     // it is an abstract class for solver evaluations
     // it should be an interface but to avoid optional derivate method, it is made as abstract class
-    public abstract class ISolver1d : IValue
-    {
-        public abstract double value(double v);
-
-        public virtual double derivative(double x) => 0;
-    }
 
     //! Base class for 1-D solvers
     /*! Before calling <tt>solveImpl</tt>, the base class will set its protected data members so that:

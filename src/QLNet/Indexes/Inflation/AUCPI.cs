@@ -47,51 +47,6 @@ namespace QLNet.Indexes.Inflation
     }
 
     //! Genuine year-on-year AU CPI (i.e. not a ratio)
-    [JetBrains.Annotations.PublicAPI] public class YYAUCPI : YoYInflationIndex
-    {
-        public YYAUCPI(Frequency frequency,
-                       bool revised,
-                       bool interpolated)
-           : this(frequency, revised, interpolated, new Handle<YoYInflationTermStructure>()) { }
-
-        public YYAUCPI(Frequency frequency,
-                       bool revised,
-                       bool interpolated,
-                       Handle<YoYInflationTermStructure> ts)
-           : base("YY_CPI",
-                  new AustraliaRegion(),
-                  revised,
-                  interpolated,
-                  false,
-                  frequency,
-                  new Period(2, TimeUnit.Months),
-                  new AUDCurrency(),
-                  ts)
-        { }
-    }
-
 
     //! Fake year-on-year AUCPI (i.e. a ratio)
-    [JetBrains.Annotations.PublicAPI] public class YYAUCPIr : YoYInflationIndex
-    {
-        public YYAUCPIr(Frequency frequency,
-                        bool revised,
-                        bool interpolated)
-           : this(frequency, revised, interpolated, new Handle<YoYInflationTermStructure>()) { }
-
-        public YYAUCPIr(Frequency frequency,
-                        bool revised,
-                        bool interpolated,
-                        Handle<YoYInflationTermStructure> ts)
-           : base("YYR_CPI",
-                  new AustraliaRegion(),
-                  revised,
-                  interpolated,
-                  true,
-                  frequency,
-                  new Period(2, TimeUnit.Months),
-                  new AUDCurrency(),
-                  ts)
-        { }
-    }
 }

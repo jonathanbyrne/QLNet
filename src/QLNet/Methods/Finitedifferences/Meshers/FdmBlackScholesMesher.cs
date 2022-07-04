@@ -23,7 +23,6 @@ using QLNet.processes;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using QLNet.Math.Distributions;
@@ -36,45 +35,6 @@ using QLNet.Time;
 
 namespace QLNet.Methods.Finitedifferences.Meshers
 {
-    [JetBrains.Annotations.PublicAPI] public class Pair<TFirst, TSecond>
-    {
-        protected KeyValuePair<TFirst, TSecond> pair;
-
-        public Pair() { }
-
-        public Pair(TFirst first, TSecond second)
-        {
-            pair = new KeyValuePair<TFirst, TSecond>(first, second);
-        }
-
-        public void set(TFirst first, TSecond second)
-        {
-            pair = new KeyValuePair<TFirst, TSecond>(first, second);
-        }
-
-        public TFirst first => pair.Key;
-
-        public TSecond second => pair.Value;
-    }
-
-    [JetBrains.Annotations.PublicAPI] public class pair_double : Pair<double, double>, IComparable<Pair<double, double>>
-    {
-        public pair_double(double first, double second)
-           : base(first, second)
-        { }
-
-        public int CompareTo(Pair<double, double> other) => first.CompareTo(other.first);
-    }
-
-    [JetBrains.Annotations.PublicAPI] public class equal_on_first : IEqualityComparer<Pair<double?, double?>>
-    {
-        public bool Equals(Pair<double?, double?> p1,
-                           Pair<double?, double?> p2) =>
-            Utils.close_enough(p1.first.Value, p2.first.Value, 1000);
-
-        public int GetHashCode(Pair<double?, double?> p) => Convert.ToInt32(p.first.Value * p.second.Value);
-    }
-
     [JetBrains.Annotations.PublicAPI] public class FdmBlackScholesMesher : Fdm1dMesher
     {
         public FdmBlackScholesMesher(int size,

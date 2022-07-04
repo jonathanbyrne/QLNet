@@ -115,14 +115,4 @@ namespace QLNet.Pricingengines.vanilla
            cash-or-nothing at-hit digital payoff is tested by
            reproducing numerical derivatives.
     */
-
-    [JetBrains.Annotations.PublicAPI] public class AnalyticDigitalAmericanKOEngine : AnalyticDigitalAmericanEngine
-    {
-        public AnalyticDigitalAmericanKOEngine(GeneralizedBlackScholesProcess engine) :
-           base(engine)
-        { }
-
-        public override bool knock_in() => false;
-    }
-
 }

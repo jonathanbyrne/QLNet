@@ -27,7 +27,6 @@ namespace QLNet.Termstructures.Volatility.Optionlet
     /*! StrippedOptionletBase specialization. It's up to derived
          classes to implement LazyObject::performCalculations
      */
-    public enum VolatilityType { ShiftedLognormal, Normal }
     [JetBrains.Annotations.PublicAPI] public class OptionletStripper : StrippedOptionletBase
     {
         // StrippedOptionletBase interface

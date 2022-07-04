@@ -157,50 +157,5 @@ namespace QLNet.Math
 
     }
 
-    /// <summary>
-    /// Up-rounding
-    /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class UpRounding : Rounding
-    {
-        public UpRounding(int precision) : base(precision, Type.Up, 5) { }
-        public UpRounding(int precision, int digit) : base(precision, Type.Up, digit) { }
-    }
-
-    /// <summary>
-    /// Down-rounding.
-    /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class DownRounding : Rounding
-    {
-        public DownRounding(int precision) : base(precision, Type.Down, 5) { }
-        public DownRounding(int precision, int digit) : base(precision, Type.Down, digit) { }
-    }
-
-    /// <summary>
-    /// Closest rounding.
-    /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class ClosestRounding : Rounding
-    {
-        public ClosestRounding(int precision) : base(precision, Type.Closest, 5) { }
-        public ClosestRounding(int precision, int digit) : base(precision, Type.Closest, digit) { }
-    }
-
     //!
-    /// <summary>
-    /// Ceiling truncation.
-    /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class CeilingTruncation : Rounding
-    {
-        public CeilingTruncation(int precision) : base(precision, Type.Ceiling, 5) { }
-        public CeilingTruncation(int precision, int digit) : base(precision, Type.Ceiling, digit) { }
-    }
-
-    /// <summary>
-    /// Floor truncation.
-    /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class FloorTruncation : Rounding
-    {
-        public FloorTruncation(int precision) : base(precision, Type.Floor, 5) { }
-        public FloorTruncation(int precision, int digit) : base(precision, Type.Floor, digit) { }
-    }
-
 }

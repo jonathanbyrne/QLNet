@@ -29,17 +29,7 @@ using System.Collections.Generic;
 
 namespace QLNet
 {
-    public static partial class Utils
-   {
-      public static double? toNullable(double? val)
-      {
-         if (val.IsEqual(double.MinValue) || val == null)
-            return null;
-         return val;
-      }
-   }
-
-   public static class CashFlowVectors
+    public static class CashFlowVectors
    {
       public static List<CashFlow> FloatingLeg<InterestRateIndexType, FloatingCouponType, CappedFlooredCouponType>(
          List<double> nominals,

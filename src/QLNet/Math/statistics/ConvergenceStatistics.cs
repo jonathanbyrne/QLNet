@@ -22,20 +22,6 @@ using System.Collections.Generic;
 
 namespace QLNet.Math.statistics
 {
-    [JetBrains.Annotations.PublicAPI] public interface IConvergenceSteps
-    {
-        int initialSamples();
-        int nextSamples(int current);
-    }
-
-    [JetBrains.Annotations.PublicAPI] public class DoublingConvergenceSteps : IConvergenceSteps
-    {
-
-        public int initialSamples() => 1;
-
-        public int nextSamples(int current) => 2 * current + 1;
-    }
-
     //! statistics class with convergence table
     /*! This class decorates another statistics class adding a
         convergence table calculation. The table tracks the

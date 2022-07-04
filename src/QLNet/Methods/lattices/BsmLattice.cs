@@ -24,12 +24,6 @@ using System;
 namespace QLNet.Methods.lattices
 {
     // this is just a wrapper for QL compatibility
-    [JetBrains.Annotations.PublicAPI] public class BlackScholesLattice<T> : BlackScholesLattice where T : ITree
-    {
-        public BlackScholesLattice(ITree tree, double riskFreeRate, double end, int steps)
-           : base(tree, riskFreeRate, end, steps)
-        { }
-    }
 
     //! Simple binomial lattice approximating the Black-Scholes model
     /*! \ingroup lattices */

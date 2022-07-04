@@ -57,18 +57,6 @@ namespace QLNet
    //! Early-exercise base class
    /*! The payoff can be at exercise (the default) or at expiry */
 
-   [JetBrains.Annotations.PublicAPI] public class EarlyExercise : Exercise
-   {
-      private bool payoffAtExpiry_;
-
-      public bool payoffAtExpiry() => payoffAtExpiry_;
-
-      public EarlyExercise(Type type, bool payoffAtExpiry) : base(type)
-      {
-         payoffAtExpiry_ = payoffAtExpiry;
-      }
-   }
-
    //! American exercise
    /*! An American option can be exercised at any time between two
        predefined dates; the first date might be omitted, in which
@@ -78,51 +66,9 @@ namespace QLNet
              from earliestDate and not earlier
    */
 
-   [JetBrains.Annotations.PublicAPI] public class AmericanExercise : EarlyExercise
-   {
-      public AmericanExercise(Date earliestDate, Date latestDate, bool payoffAtExpiry = false)
-         : base(Type.American, payoffAtExpiry)
-      {
-         Utils.QL_REQUIRE(earliestDate <= latestDate, () => "earliest > latest exercise date");
-         dates_ = new InitializedList<Date>(2);
-         dates_[0] = earliestDate;
-         dates_[1] = latestDate;
-      }
-
-      public AmericanExercise(Date latest, bool payoffAtExpiry = false) : base(Type.American, payoffAtExpiry)
-      {
-         dates_ = new InitializedList<Date>(2);
-         dates_[0] = Date.minDate();
-         dates_[1] = latest;
-      }
-   }
-
    //! Bermudan exercise
    /*! A Bermudan option can only be exercised at a set of fixed dates. */
 
-   [JetBrains.Annotations.PublicAPI] public class BermudanExercise : EarlyExercise
-   {
-      public BermudanExercise(List<Date> dates) : this(dates, false)
-      {}
-
-      public BermudanExercise(List<Date> dates, bool payoffAtExpiry)
-         : base(Type.Bermudan, payoffAtExpiry)
-      {
-         Utils.QL_REQUIRE(!dates.empty(), () => "no exercise date given");
-
-         dates_ = dates;
-         dates_.Sort();
-      }
-   }
-
    //! European exercise
    /*! A European option can only be exercised at one (expiry) date. */
-
-   [JetBrains.Annotations.PublicAPI] public class EuropeanExercise : Exercise
-   {
-      public EuropeanExercise(Date date) : base(Type.European)
-      {
-         dates_ = new InitializedList<Date>(1, date);
-      }
-   }
 }

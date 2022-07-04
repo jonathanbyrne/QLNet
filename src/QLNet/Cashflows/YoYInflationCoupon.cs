@@ -18,7 +18,6 @@
 */
 using QLNet.Indexes;
 using QLNet.Time;
-using System.Collections.Generic;
 
 namespace QLNet.Cashflows
 {
@@ -67,32 +66,4 @@ namespace QLNet.Cashflows
 
     //! Helper class building a sequence of capped/floored yoy inflation coupons
     //! payoff is: spread + gearing x index
-    [JetBrains.Annotations.PublicAPI] public class yoyInflationLeg : yoyInflationLegBase
-    {
-        public yoyInflationLeg(Schedule schedule, Calendar cal,
-                               YoYInflationIndex index,
-                               Period observationLag)
-        {
-            schedule_ = schedule;
-            index_ = index;
-            observationLag_ = observationLag;
-            paymentAdjustment_ = BusinessDayConvention.ModifiedFollowing;
-            paymentCalendar_ = cal;
-        }
-
-
-        public override List<CashFlow> value() =>
-            CashFlowVectors.yoyInflationLeg(notionals_,
-                schedule_,
-                paymentAdjustment_,
-                index_,
-                gearings_,
-                spreads_,
-                paymentDayCounter_,
-                caps_,
-                floors_,
-                paymentCalendar_,
-                fixingDays_,
-                observationLag_);
-    }
 }

@@ -49,19 +49,4 @@ namespace QLNet.Indexes.Ibor
            : base("CADLibor", tenor, 0, new CADCurrency(), new Canada(), new Actual365Fixed(), h)
         { }
     }
-
-    /// <summary>
-    /// Overnight CAD Libor index
-    /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class CADLiborON : DailyTenorLibor
-    {
-        public CADLiborON()
-           : base("CADLibor", 0, new CADCurrency(), new Canada(), new Actual365Fixed(), new Handle<YieldTermStructure>())
-        { }
-
-        public CADLiborON(Handle<YieldTermStructure> h)
-           : base("CADLibor", 0, new CADCurrency(), new Canada(), new Actual365Fixed(), h)
-        { }
-    }
-
 }

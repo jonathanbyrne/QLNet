@@ -19,236 +19,21 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Cashflows;
-using QLNet.Extensions;
-using QLNet.Instruments;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.Optionlet;
 using QLNet.Termstructures.Volatility.swaption;
 using QLNet.Time;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using QLNet.Pricingengines.Swap;
-using QLNet.Time.Calendars;
-using QLNet.Time.DayCounters;
 
 namespace QLNet.Pricingengines.swaption
 {
-    [JetBrains.Annotations.PublicAPI] public interface ISwaptionEngineSpec
-    {
-        VolatilityType type();
-
-        double value(QLNet.Option.Type type, double strike, double atmForward, double stdDev, double annuity,
-                     double displacement = 0.0);
-
-        double vega(double strike, double atmForward, double stdDev, double exerciseTime, double annuity,
-                    double displacement = 0.0);
-    }
-
     /*! Generic Black-style-formula swaption engine
         This is the base class for the Black and Bachelier swaption engines */
-    [JetBrains.Annotations.PublicAPI] public class BlackStyleSwaptionEngine<Spec> : SwaptionEngine
-       where Spec : ISwaptionEngineSpec, new()
-    {
-        public enum CashAnnuityModel
-        {
-            SwapRate,
-            DiscountCurve
-        };
-
-        public BlackStyleSwaptionEngine(Handle<YieldTermStructure> discountCurve,
-                                        double vol,
-                                        DayCounter dc = null,
-                                        double? displacement = 0.0,
-                                        CashAnnuityModel model = CashAnnuityModel.DiscountCurve)
-        {
-            dc = dc == null ? new Actual365Fixed() : dc;
-            discountCurve_ = discountCurve;
-            vol_ = new Handle<SwaptionVolatilityStructure>(new ConstantSwaptionVolatility(0, new NullCalendar(),
-                                                                                          BusinessDayConvention.Following, vol, dc, new Spec().type(), displacement));
-            model_ = model;
-            displacement_ = displacement;
-            discountCurve_.registerWith(update);
-        }
-
-        public BlackStyleSwaptionEngine(Handle<YieldTermStructure> discountCurve,
-                                        Handle<Quote> vol,
-                                        DayCounter dc = null,
-                                        double? displacement = 0.0,
-                                        CashAnnuityModel model = CashAnnuityModel.DiscountCurve)
-        {
-            dc = dc == null ? new Actual365Fixed() : dc;
-            discountCurve_ = discountCurve;
-            vol_ = new Handle<SwaptionVolatilityStructure>(new ConstantSwaptionVolatility(0, new NullCalendar(),
-                                                                                          BusinessDayConvention.Following, vol, dc, new Spec().type(), displacement));
-            model_ = model;
-            displacement_ = displacement;
-            discountCurve_.registerWith(update);
-            vol_.registerWith(update);
-        }
-
-        public BlackStyleSwaptionEngine(Handle<YieldTermStructure> discountCurve,
-                                        Handle<SwaptionVolatilityStructure> volatility,
-                                        double? displacement = 0.0,
-                                        CashAnnuityModel model = CashAnnuityModel.DiscountCurve)
-        {
-            discountCurve_ = discountCurve;
-            vol_ = volatility;
-            model_ = model;
-            displacement_ = displacement;
-            discountCurve_.registerWith(update);
-            vol_.registerWith(update);
-        }
-
-        public override void calculate()
-        {
-
-            var exerciseDate = arguments_.exercise.date(0);
-
-            // the part of the swap preceding exerciseDate should be truncated
-            // to avoid taking into account unwanted cashflows
-            // for the moment we add a check avoiding this situation
-            var swap = arguments_.swap;
-
-            var strike = swap.fixedRate;
-            var fixedLeg = swap.fixedLeg();
-            var firstCoupon = fixedLeg[0] as FixedRateCoupon;
-
-            Utils.QL_REQUIRE(firstCoupon != null, () => "wrong coupon ExerciseType");
-
-            Utils.QL_REQUIRE(firstCoupon.accrualStartDate() >= exerciseDate,
-                             () => "swap start (" + firstCoupon.accrualStartDate() + ") before exercise date ("
-                             + exerciseDate + ") not supported in Black swaption engine");
-
-            // using the forecasting curve
-            swap.setPricingEngine(new DiscountingSwapEngine(swap.iborIndex().forwardingTermStructure()));
-            var atmForward = swap.fairRate();
-
-            // Volatilities are quoted for zero-spreaded swaps.
-            // Therefore, any spread on the floating leg must be removed
-            // with a corresponding correction on the fixed leg.
-            if (swap.spread.IsNotEqual(0.0))
-            {
-                var correction = swap.spread * System.Math.Abs(swap.floatingLegBPS() / swap.fixedLegBPS());
-                strike -= correction;
-                atmForward -= correction;
-                results_.additionalResults["spreadCorrection"] = correction;
-            }
-            else
-            {
-                results_.additionalResults["spreadCorrection"] = 0.0;
-            }
-            results_.additionalResults["strike"] = strike;
-            results_.additionalResults["atmForward"] = atmForward;
-
-            // using the discounting curve
-            swap.setPricingEngine(new DiscountingSwapEngine(discountCurve_, false));
-            double annuity = 0;
-            if (arguments_.settlementType == Settlement.Type.Physical ||
-                arguments_.settlementType == Settlement.Type.Cash &&
-                 arguments_.settlementMethod == Settlement.Method.CollateralizedCashPrice)
-            {
-                annuity = System.Math.Abs(swap.fixedLegBPS()) / Const.BASIS_POINT;
-            }
-            else if (arguments_.settlementType == Settlement.Type.Cash &&
-                     arguments_.settlementMethod == Settlement.Method.ParYieldCurve)
-            {
-                var dayCount = firstCoupon.dayCounter();
-
-                // we assume that the cash settlement date is equal
-                // to the swap start date
-                var discountDate = model_ == CashAnnuityModel.DiscountCurve
-                                    ? firstCoupon.accrualStartDate()
-                                    : discountCurve_.link.referenceDate();
-
-                var fixedLegCashBPS =
-                   CashFlows.bps(fixedLeg,
-                                 new InterestRate(atmForward, dayCount, Compounding.Compounded, Frequency.Annual), false,
-                                 discountDate);
-
-                annuity = System.Math.Abs(fixedLegCashBPS / Const.BASIS_POINT) * discountCurve_.link.discount(discountDate);
-            }
-            else
-            {
-                Utils.QL_FAIL("unknown settlement ExerciseType");
-            }
-            results_.additionalResults["annuity"] = annuity;
-
-            var swapLength = vol_.link.swapLength(swap.floatingSchedule().dates().First(),
-                                                     swap.floatingSchedule().dates().Last());
-            results_.additionalResults["swapLength"] = swapLength;
-
-            var variance = vol_.link.blackVariance(exerciseDate,
-                                                      swapLength,
-                                                      strike);
-            var displacement = displacement_ == null
-                                  ? vol_.link.shift(exerciseDate, swapLength)
-                                  : Convert.ToDouble(displacement_);
-            var stdDev = System.Math.Sqrt(variance);
-            results_.additionalResults["stdDev"] = stdDev;
-            var w = arguments_.type == VanillaSwap.Type.Payer ? QLNet.Option.Type.Call : QLNet.Option.Type.Put;
-            results_.value = new Spec().value(w, strike, atmForward, stdDev, annuity, displacement);
-
-            var exerciseTime = vol_.link.timeFromReference(exerciseDate);
-            results_.additionalResults["vega"] =
-               new Spec().vega(strike, atmForward, stdDev, exerciseTime, annuity, displacement);
-        }
-
-        public Handle<YieldTermStructure> termStructure() => discountCurve_;
-
-        public Handle<SwaptionVolatilityStructure> volatility() => vol_;
-
-        private Handle<YieldTermStructure> discountCurve_;
-        private Handle<SwaptionVolatilityStructure> vol_;
-        private CashAnnuityModel model_;
-        private double? displacement_;
-    }
 
     // shifted lognormal ExerciseType engine
-    [JetBrains.Annotations.PublicAPI] public class Black76Spec : ISwaptionEngineSpec
-    {
-        private VolatilityType type_;
-
-        public VolatilityType type() => type_;
-
-        public Black76Spec()
-        {
-            type_ = VolatilityType.ShiftedLognormal;
-        }
-
-        public double value(QLNet.Option.Type type, double strike, double atmForward, double stdDev, double annuity,
-                            double displacement = 0.0) =>
-            Utils.blackFormula(type, strike, atmForward, stdDev, annuity, displacement);
-
-        public double vega(double strike, double atmForward, double stdDev, double exerciseTime, double annuity,
-                           double displacement = 0.0) =>
-            System.Math.Sqrt(exerciseTime) *
-            Utils.blackFormulaStdDevDerivative(strike, atmForward, stdDev, annuity, displacement);
-    }
 
     // shifted lognormal ExerciseType engine
-    [JetBrains.Annotations.PublicAPI] public class BachelierSpec : ISwaptionEngineSpec
-    {
-        private VolatilityType type_;
-
-        public VolatilityType type() => type_;
-
-        public BachelierSpec()
-        {
-            type_ = VolatilityType.Normal;
-        }
-
-        public double value(QLNet.Option.Type type, double strike, double atmForward, double stdDev, double annuity,
-                            double displacement = 0.0) =>
-            Utils.bachelierBlackFormula(type, strike, atmForward, stdDev, annuity);
-
-        public double vega(double strike, double atmForward, double stdDev, double exerciseTime, double annuity,
-                           double displacement = 0.0) =>
-            System.Math.Sqrt(exerciseTime) *
-            Utils.bachelierBlackFormulaStdDevDerivative(strike, atmForward, stdDev, annuity);
-    }
 
     [JetBrains.Annotations.PublicAPI] public class BlackSwaptionEngine : BlackStyleSwaptionEngine<Black76Spec>
     {
@@ -274,30 +59,6 @@ namespace QLNet.Pricingengines.swaption
         {
             Utils.QL_REQUIRE(vol.link.volatilityType() == VolatilityType.ShiftedLognormal,
                              () => "BlackSwaptionEngine requires (shifted) lognormal input volatility");
-        }
-    }
-
-    [JetBrains.Annotations.PublicAPI] public class BachelierSwaptionEngine : BlackStyleSwaptionEngine<BachelierSpec>
-    {
-        public BachelierSwaptionEngine(Handle<YieldTermStructure> discountCurve,
-                                       double vol, DayCounter dc = null,
-                                       CashAnnuityModel model = CashAnnuityModel.DiscountCurve)
-           : base(discountCurve, vol, dc, 0.0, model)
-        { }
-
-        public BachelierSwaptionEngine(Handle<YieldTermStructure> discountCurve,
-                                       Handle<Quote> vol, DayCounter dc = null,
-                                       CashAnnuityModel model = CashAnnuityModel.DiscountCurve)
-           : base(discountCurve, vol, dc, 0.0, model)
-        { }
-
-        public BachelierSwaptionEngine(Handle<YieldTermStructure> discountCurve,
-                                       Handle<SwaptionVolatilityStructure> vol,
-                                       CashAnnuityModel model = CashAnnuityModel.DiscountCurve)
-           : base(discountCurve, vol, 0.0, model)
-        {
-            Utils.QL_REQUIRE(vol.link.volatilityType() == VolatilityType.Normal,
-                             () => "BachelierSwaptionEngine requires normal input volatility");
         }
     }
 }

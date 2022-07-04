@@ -20,96 +20,10 @@
 using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System;
 using System.Collections.Generic;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class OvernightIndexedCouponPricer : FloatingRateCouponPricer
-    {
-        private OvernightIndexedCoupon coupon_;
-
-        public override void initialize(FloatingRateCoupon coupon)
-        {
-            coupon_ = coupon as OvernightIndexedCoupon;
-            Utils.QL_REQUIRE(coupon_ != null, () => "wrong coupon ExerciseType");
-        }
-
-        public override double swapletRate()
-        {
-            var index = coupon_.index() as OvernightIndex;
-
-            var fixingDates = coupon_.fixingDates();
-            var dt = coupon_.dt();
-
-            var n = dt.Count;
-            var i = 0;
-
-            var compoundFactor = 1.0;
-
-            // already fixed part
-            var today = Settings.evaluationDate();
-            while (fixingDates[i] < today && i < n)
-            {
-                // rate must have been fixed
-                var pastFixing = IndexManager.instance().getHistory(index.name())[fixingDates[i]];
-
-                Utils.QL_REQUIRE(pastFixing != null, () => "Missing " + index.name() + " fixing for " + fixingDates[i].ToString());
-
-                compoundFactor *= 1.0 + pastFixing.GetValueOrDefault() * dt[i];
-                ++i;
-            }
-
-            // today is a border case
-            if (fixingDates[i] == today && i < n)
-            {
-                // might have been fixed
-                try
-                {
-                    var pastFixing = IndexManager.instance().getHistory(index.name())[fixingDates[i]];
-
-                    if (pastFixing != null)
-                    {
-                        compoundFactor *= 1.0 + pastFixing.GetValueOrDefault() * dt[i];
-                        ++i;
-                    }
-                    else
-                    {
-                        // fall through and forecast
-                    }
-                }
-                catch (Exception)
-                {
-                    // fall through and forecast
-                }
-            }
-
-            // forward part using telescopic property in order
-            // to avoid the evaluation of multiple forward fixings
-            if (i < n)
-            {
-                var curve = index.forwardingTermStructure();
-                Utils.QL_REQUIRE(!curve.empty(), () => "null term structure set to this instance of" + index.name());
-
-                var dates = coupon_.valueDates();
-                var startDiscount = curve.link.discount(dates[i]);
-                var endDiscount = curve.link.discount(dates[n]);
-
-                compoundFactor *= startDiscount / endDiscount;
-            }
-
-            var rate = (compoundFactor - 1.0) / coupon_.accrualPeriod();
-            return coupon_.gearing() * rate + coupon_.spread();
-        }
-
-        public override double swapletPrice() { Utils.QL_FAIL("swapletPrice not available"); return 0; }
-        public override double capletPrice(double d) { Utils.QL_FAIL("capletPrice not available"); return 0; }
-        public override double capletRate(double d) { Utils.QL_FAIL("capletRate not available"); return 0; }
-        public override double floorletPrice(double d) { Utils.QL_FAIL("floorletPrice not available"); return 0; }
-        public override double floorletRate(double d) { Utils.QL_FAIL("floorletRate not available"); return 0; }
-
-    }
-
     [JetBrains.Annotations.PublicAPI] public class OvernightIndexedCoupon : FloatingRateCoupon
     {
         public OvernightIndexedCoupon(
@@ -190,60 +104,4 @@ namespace QLNet.Cashflows
     }
 
     //! helper class building a sequence of overnight coupons
-    [JetBrains.Annotations.PublicAPI] public class OvernightLeg : RateLegBase
-    {
-        public OvernightLeg(Schedule schedule, OvernightIndex overnightIndex)
-        {
-            schedule_ = schedule;
-            overnightIndex_ = overnightIndex;
-            paymentAdjustment_ = BusinessDayConvention.Following;
-        }
-        public new OvernightLeg withNotionals(double notional)
-        {
-            notionals_ = new List<double>(); notionals_.Add(notional);
-            return this;
-        }
-        public new OvernightLeg withNotionals(List<double> notionals)
-        {
-            notionals_ = notionals;
-            return this;
-        }
-        public OvernightLeg withPaymentDayCounter(DayCounter dayCounter)
-        {
-            paymentDayCounter_ = dayCounter;
-            return this;
-        }
-        public new OvernightLeg withPaymentAdjustment(BusinessDayConvention convention)
-        {
-            paymentAdjustment_ = convention;
-            return this;
-        }
-        public OvernightLeg withGearings(double gearing)
-        {
-            gearings_ = new List<double>(); gearings_.Add(gearing);
-            return this;
-        }
-        public OvernightLeg withGearings(List<double> gearings)
-        {
-            gearings_ = gearings;
-            return this;
-        }
-        public OvernightLeg withSpreads(double spread)
-        {
-            spreads_ = new List<double>(); spreads_.Add(spread);
-            return this;
-        }
-        public OvernightLeg withSpreads(List<double> spreads)
-        {
-            spreads_ = spreads;
-            return this;
-        }
-
-        public override List<CashFlow> value() => CashFlowVectors.OvernightLeg(notionals_, schedule_, paymentAdjustment_, overnightIndex_, gearings_, spreads_, paymentDayCounter_);
-
-        private OvernightIndex overnightIndex_;
-        private List<double> gearings_;
-        private List<double> spreads_;
-    }
-
 }

@@ -42,42 +42,6 @@ namespace QLNet.Indexes.Inflation
     }
 
     //! Genuine year-on-year South African CPI (i.e. not a ratio of South African CPI)
-    [JetBrains.Annotations.PublicAPI] public class YYZACPI : YoYInflationIndex
-    {
-        public YYZACPI(bool interpolated)
-           : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
-
-        public YYZACPI(bool interpolated,
-                       Handle<YoYInflationTermStructure> ts)
-           : base("YY_CPI",
-                  new ZARegion(),
-                  false,
-                  interpolated,
-                  false,
-                  Frequency.Monthly,
-                  new Period(1, TimeUnit.Months),
-                  new ZARCurrency(),
-                  ts)
-        { }
-    }
 
     //! Fake year-on-year South African CPI (i.e. a ratio of South African CPI)
-    [JetBrains.Annotations.PublicAPI] public class YYZACPIr : YoYInflationIndex
-    {
-        public YYZACPIr(bool interpolated)
-           : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
-
-        public YYZACPIr(bool interpolated,
-                        Handle<YoYInflationTermStructure> ts)
-           : base("YYR_CPI",
-                  new ZARegion(),
-                  false,
-                  interpolated,
-                  true,
-                  Frequency.Monthly,
-                  new Period(1, TimeUnit.Months),
-                  new ZARCurrency(),
-                  ts)
-        { }
-    }
 }

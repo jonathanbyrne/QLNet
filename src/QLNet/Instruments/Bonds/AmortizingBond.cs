@@ -26,11 +26,6 @@ using QLNet.Time.Calendars;
 
 namespace QLNet.Instruments.Bonds
 {
-    public enum AmortizingMethod
-    {
-        EffectiveInterestRate
-    }
-
     [JetBrains.Annotations.PublicAPI] public class AmortizingBond : Bond
     {
 

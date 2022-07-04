@@ -14,7 +14,6 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 using QLNet.Extensions;
-using QLNet.Math;
 using QLNet.Math.Distributions;
 using QLNet.Math.Solvers1d;
 using QLNet.Quotes;
@@ -364,45 +363,4 @@ namespace QLNet.Pricingengines
         private double fExpPos_, fExpNeg_;
 
     }
-
-
-    [JetBrains.Annotations.PublicAPI] public class BlackDeltaPremiumAdjustedSolverClass : ISolver1d
-    {
-        public BlackDeltaPremiumAdjustedSolverClass(QLNet.Option.Type ot,
-                                                    DeltaVolQuote.DeltaType dt,
-                                                    double spot,
-                                                    double dDiscount,   // domestic discount
-                                                    double fDiscount,   // foreign  discount
-                                                    double stdDev,
-                                                    double delta)
-        {
-            bdc_ = new BlackDeltaCalculator(ot, dt, spot, dDiscount, fDiscount, stdDev);
-            delta_ = delta;
-        }
-
-        public override double value(double strike) => bdc_.deltaFromStrike(strike) - delta_;
-
-        private BlackDeltaCalculator bdc_;
-        private double delta_;
-    }
-
-    [JetBrains.Annotations.PublicAPI] public class BlackDeltaPremiumAdjustedMaxStrikeClass : ISolver1d
-    {
-        public BlackDeltaPremiumAdjustedMaxStrikeClass(QLNet.Option.Type ot,
-                                                       DeltaVolQuote.DeltaType dt,
-                                                       double spot,
-                                                       double dDiscount,   // domestic discount
-                                                       double fDiscount,   // foreign  discount
-                                                       double stdDev)
-        {
-            bdc_ = new BlackDeltaCalculator(ot, dt, spot, dDiscount, fDiscount, stdDev);
-            stdDev_ = stdDev;
-        }
-
-        public override double value(double strike) => bdc_.cumD2(strike) * stdDev_ - bdc_.nD2(strike);
-
-        private BlackDeltaCalculator bdc_;
-        private double stdDev_;
-    }
-
 }

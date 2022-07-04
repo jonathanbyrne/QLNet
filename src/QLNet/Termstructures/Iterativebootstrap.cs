@@ -21,8 +21,6 @@
 using QLNet.Extensions;
 using QLNet.Math.Solvers1d;
 using QLNet.Patterns;
-using QLNet.Termstructures.Inflation;
-using QLNet.Termstructures.Yield;
 using QLNet.Time;
 using System;
 using System.Collections.Generic;
@@ -30,25 +28,6 @@ using QLNet.Math.Interpolations;
 
 namespace QLNet.Termstructures
 {
-    [JetBrains.Annotations.PublicAPI] public interface IBootStrap<T>
-    {
-        void setup(T ts);
-        void calculate();
-    }
-
-    [JetBrains.Annotations.PublicAPI] public class IterativeBootstrapForYield : IterativeBootstrap<PiecewiseYieldCurve, YieldTermStructure>
-    {
-    }
-
-    [JetBrains.Annotations.PublicAPI] public class IterativeBootstrapForInflation : IterativeBootstrap<PiecewiseZeroInflationCurve, ZeroInflationTermStructure>
-    {
-    }
-
-    [JetBrains.Annotations.PublicAPI] public class IterativeBootstrapForYoYInflation : IterativeBootstrap<PiecewiseYoYInflationCurve, YoYInflationTermStructure>
-    {
-    }
-
-
     //! Universal piecewise-term-structure boostrapper.
     [JetBrains.Annotations.PublicAPI] public class IterativeBootstrap<T, U> : IBootStrap<T>
        where T : Curve<U>, new()

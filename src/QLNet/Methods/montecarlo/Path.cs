@@ -28,17 +28,6 @@ namespace QLNet.Methods.montecarlo
         \note the path includes the initial asset value as its first point.
     */
 
-    [JetBrains.Annotations.PublicAPI] public interface IPath : ICloneable
-    {
-        int length();
-    }
-
-    [JetBrains.Annotations.PublicAPI] public interface IPathGenerator<GSG>
-    {
-        Sample<IPath> next();
-        Sample<IPath> antithetic();
-    }
-
     [JetBrains.Annotations.PublicAPI] public class Path : IPath
     {
         private TimeGrid timeGrid_;

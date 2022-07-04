@@ -19,46 +19,13 @@
 using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System;
 using QLNet.Currencies;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
 
 namespace QLNet
 {
-    public static partial class Utils
-   {
-      public static BusinessDayConvention euriborConvention(Period p)
-      {
-         switch (p.units())
-         {
-            case TimeUnit.Days:
-            case TimeUnit.Weeks:
-               return BusinessDayConvention.Following;
-            case TimeUnit.Months:
-            case TimeUnit.Years:
-               return BusinessDayConvention.ModifiedFollowing;
-            default:
-               throw new ArgumentException("Unknown TimeUnit: " + p.units());
-         }
-      }
-
-      public static bool euriborEOM(Period p)
-      {
-         switch (p.units())
-         {
-            case TimeUnit.Days:
-            case TimeUnit.Weeks:
-               return false;
-            case TimeUnit.Months:
-            case TimeUnit.Years:
-               return true;
-            default:
-               throw new ArgumentException("Unknown TimeUnit: " + p.units());
-         }
-      }
-   }
-   /// <summary>
+    /// <summary>
    /// %Euribor index
    /// Euribor rate fixed by the ECB.
    /// This is the rate fixed by the ECB. Use EurLibor if you're interested in the London fixing by BBA.
@@ -82,89 +49,24 @@ namespace QLNet
        convention used for Euribor and the actual/365 convention
        previously used by a few pre-EUR currencies.
    */
-   [JetBrains.Annotations.PublicAPI] public class Euribor365 : IborIndex
-   {
-      public Euribor365(Period tenor) : this(tenor, new Handle<YieldTermStructure>()) { }
-      public Euribor365(Period tenor, Handle<YieldTermStructure> h)
-         : base("Euribor365", tenor,
-                2, // settlement days
-                new EURCurrency(), new TARGET(), Utils.euriborConvention(tenor), Utils.euriborEOM(tenor),
-                new Actual365Fixed(), h)
-      {
-         Utils.QL_REQUIRE(this.tenor().units() != TimeUnit.Days, () =>
-                          "for daily tenors (" + this.tenor() + ") dedicated DailyTenor constructor must be used");
-      }
-   }
 
    //! 1-week %Euribor index
-   [JetBrains.Annotations.PublicAPI] public class EuriborSW : Euribor
-   {
-      public EuriborSW() : this(new Handle<YieldTermStructure>()) { }
-      public EuriborSW(Handle<YieldTermStructure> h) : base(new Period(1, TimeUnit.Weeks), h) { }
-   }
 
    //! 2-weeks %Euribor index
-   [JetBrains.Annotations.PublicAPI] public class Euribor2W : Euribor
-   {
-      public Euribor2W() : this(new Handle<YieldTermStructure>()) { }
-      public Euribor2W(Handle<YieldTermStructure> h) : base(new Period(2, TimeUnit.Weeks), h) { }
-   }
 
    //! 3-weeks %Euribor index
-   [JetBrains.Annotations.PublicAPI] public class Euribor3W : Euribor
-   {
-      public Euribor3W() : this(new Handle<YieldTermStructure>()) { }
-      public Euribor3W(Handle<YieldTermStructure> h) : base(new Period(3, TimeUnit.Weeks), h) { }
-   }
 
    //! 1-month %Euribor index
-   [JetBrains.Annotations.PublicAPI] public class Euribor1M : Euribor
-   {
-      public Euribor1M() : this(new Handle<YieldTermStructure>()) { }
-      public Euribor1M(Handle<YieldTermStructure> h) : base(new Period(1, TimeUnit.Months), h) { }
-   }
 
    //! 2-months %Euribor index
-   [JetBrains.Annotations.PublicAPI] public class Euribor2M : Euribor
-   {
-      public Euribor2M() : this(new Handle<YieldTermStructure>()) { }
-      public Euribor2M(Handle<YieldTermStructure> h) : base(new Period(2, TimeUnit.Months), h) { }
-   }
 
    // 3-months %Euribor index
-   [JetBrains.Annotations.PublicAPI] public class Euribor3M : Euribor
-   {
-      public Euribor3M() : this(new Handle<YieldTermStructure>()) { }
-      public Euribor3M(Handle<YieldTermStructure> h) : base(new Period(3, TimeUnit.Months), h) {}
-   }
 
    // 4-months %Euribor index
-   [JetBrains.Annotations.PublicAPI] public class Euribor4M : Euribor
-   {
-      public Euribor4M() : this(new Handle<YieldTermStructure>()) { }
-      public Euribor4M(Handle<YieldTermStructure> h) : base(new Period(4, TimeUnit.Months), h) { }
-   }
 
    // 5-months %Euribor index
-   [JetBrains.Annotations.PublicAPI] public class Euribor5M : Euribor
-   {
-      public Euribor5M() : this(new Handle<YieldTermStructure>()) { }
-      public Euribor5M(Handle<YieldTermStructure> h) : base(new Period(5, TimeUnit.Months), h) { }
-   }
 
    // 6-months %Euribor index
-   [JetBrains.Annotations.PublicAPI] public class Euribor6M : Euribor
-   {
-      public Euribor6M() : this(new Handle<YieldTermStructure>()) { }
-      public Euribor6M(Handle<YieldTermStructure> h) : base(new Period(6, TimeUnit.Months), h) { }
-   }
 
    // 1-year %Euribor index
-   [JetBrains.Annotations.PublicAPI] public class Euribor1Y : Euribor
-   {
-      public Euribor1Y() : this(new Handle<YieldTermStructure>()) { }
-      public Euribor1Y(Handle<YieldTermStructure> h) : base(new Period(1, TimeUnit.Years), h) { }
-
-   }
-
 }

@@ -42,24 +42,6 @@ namespace QLNet.Indexes.Ibor
     }
 
     //! base class for the one day deposit ICE %USD %LIBOR indexes
-    [JetBrains.Annotations.PublicAPI] public class DailyTenorUSDLibor : DailyTenorLibor
-    {
-        public DailyTenorUSDLibor(int settlementDays) : this(settlementDays, new Handle<YieldTermStructure>())
-        { }
-        public DailyTenorUSDLibor(int settlementDays, Handle<YieldTermStructure> h)
-           : base("USDLibor", settlementDays, new USDCurrency(), new UnitedStates(UnitedStates.Market.Settlement), new Actual360(), h)
-        { }
-
-    }
 
     //! Overnight %USD %Libor index
-    [JetBrains.Annotations.PublicAPI] public class USDLiborON : DailyTenorUSDLibor
-    {
-        public USDLiborON() : this(new Handle<YieldTermStructure>())
-        { }
-
-        public USDLiborON(Handle<YieldTermStructure> h) : base(0, h)
-        { }
-
-    }
 }

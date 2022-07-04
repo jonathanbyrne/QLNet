@@ -16,7 +16,6 @@
 
 using QLNet.Indexes.swap;
 using QLNet.Time;
-using System.Collections.Generic;
 
 namespace QLNet.Cashflows
 {
@@ -58,51 +57,4 @@ namespace QLNet.Cashflows
 
         private new SwapSpreadIndex index_;
     }
-
-    [JetBrains.Annotations.PublicAPI] public class CappedFlooredCmsSpreadCoupon : CappedFlooredCoupon
-    {
-        public CappedFlooredCmsSpreadCoupon()
-        { }
-
-        public CappedFlooredCmsSpreadCoupon(Date paymentDate,
-                                            double nominal,
-                                            Date startDate,
-                                            Date endDate,
-                                            int fixingDays,
-                                            SwapSpreadIndex index,
-                                            double gearing = 1.0,
-                                            double spread = 0.0,
-                                            double? cap = null,
-                                            double? floor = null,
-                                            Date refPeriodStart = null,
-                                            Date refPeriodEnd = null,
-                                            DayCounter dayCounter = null,
-                                            bool isInArrears = false)
-        : base(new CmsSpreadCoupon(paymentDate, nominal, startDate, endDate, fixingDays,
-                                   index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears), cap, floor)
-        { }
-    }
-
-    /// <summary>
-    /// helper class building a sequence of capped/floored cms-spread-rate coupons
-    /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class CmsSpreadLeg : FloatingLegBase
-    {
-        public CmsSpreadLeg(Schedule schedule, SwapSpreadIndex swapSpreadIndex)
-        {
-            schedule_ = schedule;
-            swapSpreadIndex_ = swapSpreadIndex;
-            paymentAdjustment_ = BusinessDayConvention.Following;
-            inArrears_ = false;
-            zeroPayments_ = false;
-        }
-        public override List<CashFlow> value() =>
-            CashFlowVectors.FloatingLeg<SwapSpreadIndex, CmsSpreadCoupon, CappedFlooredCmsSpreadCoupon>(
-                notionals_, schedule_, swapSpreadIndex_, paymentDayCounter_,
-                paymentAdjustment_, fixingDays_, gearings_, spreads_, caps_,
-                floors_, inArrears_, zeroPayments_);
-
-        private SwapSpreadIndex swapSpreadIndex_;
-    }
-
 }

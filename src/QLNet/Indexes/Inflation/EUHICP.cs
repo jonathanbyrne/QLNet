@@ -37,28 +37,6 @@ namespace QLNet.Indexes.Inflation
     }
 
     //! Genuine year-on-year EU HICP (i.e. not a ratio of EU HICP)
-    [JetBrains.Annotations.PublicAPI] public class YYEUHICP : YoYInflationIndex
-    {
-        public YYEUHICP(bool interpolated)
-           : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
-
-        public YYEUHICP(bool interpolated, Handle<YoYInflationTermStructure> ts)
-           : base("YY_HICP", new EURegion(), false, interpolated, false, Frequency.Monthly,
-                  new Period(1, TimeUnit.Months), new EURCurrency(), ts)
-        { }
-    }
-
 
     //! Fake year-on-year EU HICP (i.e. a ratio of EU HICP)
-    [JetBrains.Annotations.PublicAPI] public class YYEUHICPr : YoYInflationIndex
-    {
-        public YYEUHICPr(bool interpolated)
-           : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
-
-        public YYEUHICPr(bool interpolated, Handle<YoYInflationTermStructure> ts)
-           : base("YYR_HICP", new EURegion(), false, interpolated, true, Frequency.Monthly,
-                  new Period(1, TimeUnit.Months), new EURCurrency(), ts)
-        { }
-    }
-
 }

@@ -13,13 +13,12 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
-using QLNet.Math;
+
 using QLNet.Math.randomnumbers;
 using QLNet.Math.statistics;
 using QLNet.Methods.montecarlo;
 using QLNet.Models.Equity;
 using QLNet.Models.Shortrate.Onefactormodels;
-using QLNet.Patterns;
 using QLNet.processes;
 using System;
 
@@ -119,118 +118,4 @@ namespace QLNet.Pricingengines.vanilla
     }
 
     //! Monte Carlo Heston/Hull-White engine factory
-    [JetBrains.Annotations.PublicAPI] public class MakeMCHestonHullWhiteEngine<RNG, S>
-       where RNG : IRSG, new()
-       where S : IGeneralStatistics, new()
-    {
-        public MakeMCHestonHullWhiteEngine(HybridHestonHullWhiteProcess process)
-        {
-            process_ = process;
-            steps_ = null;
-            stepsPerYear_ = null;
-            samples_ = null;
-            maxSamples_ = null;
-            antithetic_ = false;
-            controlVariate_ = false;
-            tolerance_ = null;
-            seed_ = 0;
-        }
-        // named parameters
-        public MakeMCHestonHullWhiteEngine<RNG, S> withSteps(int steps)
-        {
-            steps_ = steps;
-            return this;
-        }
-        public MakeMCHestonHullWhiteEngine<RNG, S> withStepsPerYear(int steps)
-        {
-            stepsPerYear_ = steps;
-            return this;
-        }
-        public MakeMCHestonHullWhiteEngine<RNG, S> withAntitheticVariate(bool b = true)
-        {
-            antithetic_ = b;
-            return this;
-        }
-        public MakeMCHestonHullWhiteEngine<RNG, S> withControlVariate(bool b = true)
-        {
-            controlVariate_ = b;
-            return this;
-        }
-        public MakeMCHestonHullWhiteEngine<RNG, S> withSamples(int samples)
-        {
-            Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
-            samples_ = samples;
-            return this;
-        }
-        public MakeMCHestonHullWhiteEngine<RNG, S> withAbsoluteTolerance(double tolerance)
-        {
-            Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
-            Utils.QL_REQUIRE(FastActivator<RNG>.Create().allowsErrorEstimate != 0, () =>
-                             "chosen random generator policy does not allow an error estimate");
-            tolerance_ = tolerance;
-            return this;
-        }
-        public MakeMCHestonHullWhiteEngine<RNG, S> withMaxSamples(int samples)
-        {
-            maxSamples_ = samples;
-            return this;
-        }
-        public MakeMCHestonHullWhiteEngine<RNG, S> withSeed(ulong seed)
-        {
-            seed_ = seed;
-            return this;
-        }
-        // conversion to pricing engine
-        public IPricingEngine getAsPricingEngine()
-        {
-            Utils.QL_REQUIRE(steps_ != null || stepsPerYear_ != null, () => "number of steps not given");
-            Utils.QL_REQUIRE(steps_ == null || stepsPerYear_ == null, () => "number of steps overspecified");
-            return new MCHestonHullWhiteEngine<RNG, S>(process_,
-                                                       steps_,
-                                                       stepsPerYear_,
-                                                       antithetic_,
-                                                       controlVariate_,
-                                                       samples_,
-                                                       tolerance_,
-                                                       maxSamples_,
-                                                       seed_);
-        }
-
-        private HybridHestonHullWhiteProcess process_;
-        private int? steps_, stepsPerYear_, samples_, maxSamples_;
-        private bool antithetic_, controlVariate_;
-        private double? tolerance_;
-        private ulong seed_;
-    }
-
-    [JetBrains.Annotations.PublicAPI] public class HestonHullWhitePathPricer : PathPricer<IPath>
-    {
-        public HestonHullWhitePathPricer(double exerciseTime, Payoff payoff, HybridHestonHullWhiteProcess process)
-        {
-            exerciseTime_ = exerciseTime;
-            payoff_ = payoff;
-            process_ = process;
-        }
-
-        public double value(IPath path)
-        {
-            var p = path as MultiPath;
-            Utils.QL_REQUIRE(p != null, () => "invalid path");
-
-            Utils.QL_REQUIRE(p.pathSize() > 0, () => "the path cannot be empty");
-
-            var states = new Vector(p.assetNumber());
-            for (var j = 0; j < states.size(); ++j)
-            {
-                states[j] = p[j][p.pathSize() - 1];
-            }
-
-            var df = 1.0 / process_.numeraire(exerciseTime_, states);
-            return payoff_.value(states[0]) * df;
-        }
-
-        private double exerciseTime_;
-        private Payoff payoff_;
-        private HybridHestonHullWhiteProcess process_;
-    }
 }

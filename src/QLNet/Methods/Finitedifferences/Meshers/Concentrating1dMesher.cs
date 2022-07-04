@@ -29,12 +29,7 @@ using QLNet.Math.Solvers1d;
 
 namespace QLNet
 {
-    public static partial class Utils
-   {
-      public static double Asinh(double x) => System.Math.Log(x + System.Math.Sqrt(x * x + 1.0));
-   }
-
-   [JetBrains.Annotations.PublicAPI] public class Concentrating1dMesher : Fdm1dMesher
+    [JetBrains.Annotations.PublicAPI] public class Concentrating1dMesher : Fdm1dMesher
    {
       public Concentrating1dMesher(double start, double end, int size,
                                    Pair < double?, double? > cPoints = null,
