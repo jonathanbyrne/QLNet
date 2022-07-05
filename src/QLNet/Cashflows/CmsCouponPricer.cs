@@ -4,13 +4,13 @@ namespace QLNet
 {
     public abstract class CmsCouponPricer : FloatingRateCouponPricer
     {
+        private Handle<SwaptionVolatilityStructure> swaptionVol_;
+
         protected CmsCouponPricer(Handle<SwaptionVolatilityStructure> v = null)
         {
             swaptionVol_ = v ?? new Handle<SwaptionVolatilityStructure>();
             swaptionVol_.registerWith(update);
         }
-
-        public Handle<SwaptionVolatilityStructure> swaptionVolatility() => swaptionVol_;
 
         public void setSwaptionVolatility(Handle<SwaptionVolatilityStructure> v = null)
         {
@@ -19,6 +19,7 @@ namespace QLNet
             swaptionVol_.registerWith(update);
             update();
         }
-        private Handle<SwaptionVolatilityStructure> swaptionVol_;
+
+        public Handle<SwaptionVolatilityStructure> swaptionVolatility() => swaptionVol_;
     }
 }

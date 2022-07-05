@@ -16,12 +16,14 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class DividendSchedule : List<Dividend>
+    [PublicAPI]
+    public class DividendSchedule : List<Dividend>
     {
-
     }
 }

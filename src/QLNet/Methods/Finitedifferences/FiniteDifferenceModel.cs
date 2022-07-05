@@ -16,24 +16,27 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
-using QLNet.Patterns;
-using System;
+
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Math;
+using QLNet.Patterns;
 
 namespace QLNet.Methods.Finitedifferences
 {
-    [JetBrains.Annotations.PublicAPI] public class FiniteDifferenceModel<Evolver> where Evolver : IMixedScheme, ISchemeFactory, new()
+    [PublicAPI]
+    public class FiniteDifferenceModel<Evolver> where Evolver : IMixedScheme, ISchemeFactory, new()
     {
         private Evolver evolver_;
-        public Evolver evolver() => evolver_;
-
         private List<double> stoppingTimes_;
 
         // constructors
         public FiniteDifferenceModel(object L, object bcs)
-           : this(L, bcs, new List<double>()) { }
+            : this(L, bcs, new List<double>())
+        {
+        }
+
         public FiniteDifferenceModel(object L, object bcs, List<double> stoppingTimes)
         {
             evolver_ = (Evolver)FastActivator<Evolver>.Create().factory(L, bcs);
@@ -52,9 +55,15 @@ namespace QLNet.Methods.Finitedifferences
             stoppingTimes_ = stoppingTimes_.Distinct().ToList();
         }
 
+        public Evolver evolver() => evolver_;
+
         /*! solves the problem between the given times, applying a condition at every step.
             \warning being this a rollback, <tt>from</tt> must be a later time than <tt>to</tt>. */
-        public void rollback(ref object a, double from, double to, int steps) { rollbackImpl(ref a, from, to, steps, null); }
+        public void rollback(ref object a, double from, double to, int steps)
+        {
+            rollbackImpl(ref a, from, to, steps, null);
+        }
+
         public void rollback(ref object a, double from, double to, int steps, IStepCondition<Vector> condition)
         {
             rollbackImpl(ref a, from, to, steps, condition);
@@ -62,7 +71,6 @@ namespace QLNet.Methods.Finitedifferences
 
         private void rollbackImpl(ref object o, double from, double to, int steps, IStepCondition<Vector> condition)
         {
-
             Utils.QL_REQUIRE(from >= to, () => "trying to roll back from " + from + " to " + to);
 
             double dt = (from - to) / steps, t = from;
@@ -71,13 +79,19 @@ namespace QLNet.Methods.Finitedifferences
             if (!stoppingTimes_.empty() && stoppingTimes_.Last() == from)
             {
                 if (condition != null)
+                {
                     condition.applyTo(o, from);
+                }
             }
+
             for (var i = 0; i < steps; ++i, t -= dt)
             {
                 double now = t, next = t - dt;
                 if (System.Math.Abs(to - next) < System.Math.Sqrt(Const.QL_EPSILON))
+                {
                     next = to;
+                }
+
                 var hit = false;
                 for (var j = stoppingTimes_.Count - 1; j >= 0; --j)
                 {
@@ -90,11 +104,15 @@ namespace QLNet.Methods.Finitedifferences
                         evolver_.setStep(now - stoppingTimes_[j]);
                         evolver_.step(ref o, now);
                         if (condition != null)
+                        {
                             condition.applyTo(o, stoppingTimes_[j]);
+                        }
+
                         // ...and continue the cycle
                         now = stoppingTimes_[j];
                     }
                 }
+
                 // if we did hit...
                 if (hit)
                 {
@@ -105,8 +123,11 @@ namespace QLNet.Methods.Finitedifferences
                         evolver_.setStep(now - next);
                         evolver_.step(ref o, now);
                         if (condition != null)
+                        {
                             condition.applyTo(o, next);
+                        }
                     }
+
                     // ...and in any case, we have to reset the
                     // evolver to the default step.
                     evolver_.setStep(dt);
@@ -117,10 +138,11 @@ namespace QLNet.Methods.Finitedifferences
                     // default step, which is ok for us.
                     evolver_.step(ref o, now);
                     if (condition != null)
+                    {
                         condition.applyTo(o, next);
+                    }
                 }
             }
         }
-
     }
 }

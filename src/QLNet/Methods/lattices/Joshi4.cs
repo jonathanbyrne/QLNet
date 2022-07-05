@@ -1,12 +1,16 @@
-﻿namespace QLNet.Methods.lattices
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Methods.lattices
 {
-    [JetBrains.Annotations.PublicAPI] public class Joshi4 : BinomialTree<Joshi4>, ITreeFactory<Joshi4>
+    [PublicAPI]
+    public class Joshi4 : BinomialTree<Joshi4>, ITreeFactory<Joshi4>
     {
         protected double up_, down_, pu_, pd_;
 
         // parameterless constructor is requried for generics
         public Joshi4()
-        { }
+        {
+        }
 
         public Joshi4(StochasticProcess1D process, double end, int steps, double strike)
             : base(process, end, steps % 2 != 0 ? steps : steps + 1)
@@ -24,9 +28,11 @@
             down_ = (ermqdt - pu_ * up_) / (1.0 - pu_);
         }
 
-        public override double underlying(int i, int index) => x0_ * System.Math.Pow(down_, i - index) * System.Math.Pow(up_, index);
+        public Joshi4 factory(StochasticProcess1D process, double end, int steps, double strike) => new Joshi4(process, end, steps, strike);
 
         public override double probability(int x, int y, int branch) => branch == 1 ? pu_ : pd_;
+
+        public override double underlying(int i, int index) => x0_ * System.Math.Pow(down_, i - index) * System.Math.Pow(up_, index);
 
         protected double computeUpProb(double k, double dj)
         {
@@ -49,7 +55,5 @@
             p += delta / (k * k * k * rootk);
             return p;
         }
-
-        public Joshi4 factory(StochasticProcess1D process, double end, int steps, double strike) => new Joshi4(process, end, steps, strike);
     }
 }

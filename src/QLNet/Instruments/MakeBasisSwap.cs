@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Pricingengines.Swap;
 using QLNet.Termstructures;
@@ -26,32 +27,31 @@ namespace QLNet.Instruments
 {
     // helper class
     // This class provides a more comfortable way to instantiate standard basis swap.
-    [JetBrains.Annotations.PublicAPI] public class MakeBasisSwap
+    [PublicAPI]
+    public class MakeBasisSwap
     {
-        private Period forwardStart_, swapTenor_;
-        private IborIndex iborIndex1_, iborIndex2_;
-
         private Date effectiveDate_, terminationDate_;
+        private IPricingEngine engine_;
         private Calendar float1Calendar_, float2Calendar_;
-
-        private BasisSwap.Type type_;
-        private double nominal_;
-        private Period float1Tenor_, float2Tenor_;
         private BusinessDayConvention float1Convention_, float1TerminationDateConvention_;
-        private BusinessDayConvention float2Convention_, float2TerminationDateConvention_;
-        private DateGeneration.Rule float1Rule_, float2Rule_;
+        private DayCounter float1DayCount_, float2DayCount_;
         private bool float1EndOfMonth_, float2EndOfMonth_;
         private Date float1FirstDate_, float1NextToLastDate_;
-        private Date float2FirstDate_, float2NextToLastDate_;
+        private DateGeneration.Rule float1Rule_, float2Rule_;
         private double float1Spread_, float2Spread_;
-        private DayCounter float1DayCount_, float2DayCount_;
-
-        IPricingEngine engine_;
-
+        private Period float1Tenor_, float2Tenor_;
+        private BusinessDayConvention float2Convention_, float2TerminationDateConvention_;
+        private Date float2FirstDate_, float2NextToLastDate_;
+        private Period forwardStart_, swapTenor_;
+        private IborIndex iborIndex1_, iborIndex2_;
+        private double nominal_;
+        private BasisSwap.Type type_;
 
         public MakeBasisSwap(Period swapTenor, IborIndex index1, IborIndex index2) :
-           this(swapTenor, index1, index2, new Period(0, TimeUnit.Days))
-        { }
+            this(swapTenor, index1, index2, new Period(0, TimeUnit.Days))
+        {
+        }
+
         public MakeBasisSwap(Period swapTenor, IborIndex index1, IborIndex index2, Period forwardStart)
         {
             swapTenor_ = swapTenor;
@@ -77,6 +77,9 @@ namespace QLNet.Instruments
             engine_ = new DiscountingBasisSwapEngine(index1.forwardingTermStructure(), index2.forwardingTermStructure());
         }
 
+        // swap creator
+        public static implicit operator BasisSwap(MakeBasisSwap o) => o.value();
+
         public MakeBasisSwap receiveFixed() => receiveFixed(true);
 
         public MakeBasisSwap receiveFixed(bool flag)
@@ -84,156 +87,15 @@ namespace QLNet.Instruments
             type_ = flag ? BasisSwap.Type.Receiver : BasisSwap.Type.Payer;
             return this;
         }
-        public MakeBasisSwap withType(BasisSwap.Type type)
-        {
-            type_ = type;
-            return this;
-        }
-        public MakeBasisSwap withNominal(double n)
-        {
-            nominal_ = n;
-            return this;
-        }
-        public MakeBasisSwap withEffectiveDate(Date effectiveDate)
-        {
-            effectiveDate_ = effectiveDate;
-            return this;
-        }
-
-        public MakeBasisSwap withTerminationDate(Date terminationDate)
-        {
-            terminationDate_ = terminationDate;
-            return this;
-        }
-
-        public MakeBasisSwap withRule(DateGeneration.Rule r)
-        {
-            float1Rule_ = r;
-            float2Rule_ = r;
-            return this;
-        }
-
-        public MakeBasisSwap withDiscountingTermStructure(Handle<YieldTermStructure> discountingTermStructure1,
-                                                          Handle<YieldTermStructure> discountingTermStructure2)
-        {
-            engine_ = new DiscountingBasisSwapEngine(discountingTermStructure1, discountingTermStructure2);
-            return this;
-        }
-
-        public MakeBasisSwap withFloating1LegTenor(Period t)
-        {
-            float1Tenor_ = t;
-            return this;
-        }
-        public MakeBasisSwap withFloating1Calendar(Calendar cal)
-        {
-            float1Calendar_ = cal;
-            return this;
-        }
-        public MakeBasisSwap withFloating1LegConvention(BusinessDayConvention bdc)
-        {
-            float1Convention_ = bdc;
-            return this;
-        }
-        public MakeBasisSwap withFloating1LegTerminationDateConvention(BusinessDayConvention bdc)
-        {
-            float1TerminationDateConvention_ = bdc;
-            return this;
-        }
-        public MakeBasisSwap withFloating1LegRule(DateGeneration.Rule r)
-        {
-            float1Rule_ = r;
-            return this;
-        }
-        public MakeBasisSwap withFloating1LegEndOfMonth() => withFloating1LegEndOfMonth(true);
-
-        public MakeBasisSwap withFloating1LegEndOfMonth(bool flag)
-        {
-            float1EndOfMonth_ = flag;
-            return this;
-        }
-        public MakeBasisSwap withFloating1LegFirstDate(Date d)
-        {
-            float1FirstDate_ = d;
-            return this;
-        }
-        public MakeBasisSwap withFloating1LegNextToLastDate(Date d)
-        {
-            float1NextToLastDate_ = d;
-            return this;
-        }
-        public MakeBasisSwap withFloating1LegDayCount(DayCounter dc)
-        {
-            float1DayCount_ = dc;
-            return this;
-        }
-
-
-        // *****
-
-        public MakeBasisSwap withFloating2LegTenor(Period t)
-        {
-            float2Tenor_ = t;
-            return this;
-        }
-        public MakeBasisSwap withFloating2LegCalendar(Calendar cal)
-        {
-            float2Calendar_ = cal;
-            return this;
-        }
-        public MakeBasisSwap withFloating2LegConvention(BusinessDayConvention bdc)
-        {
-            float2Convention_ = bdc;
-            return this;
-        }
-        public MakeBasisSwap withFloating2LegTerminationDateConvention(BusinessDayConvention bdc)
-        {
-            float2TerminationDateConvention_ = bdc;
-            return this;
-        }
-        public MakeBasisSwap withFloating2LegRule(DateGeneration.Rule r)
-        {
-            float2Rule_ = r;
-            return this;
-        }
-        public MakeBasisSwap withFloating2LegEndOfMonth() => withFloating2LegEndOfMonth(true);
-
-        public MakeBasisSwap withFloating2LegEndOfMonth(bool flag)
-        {
-            float2EndOfMonth_ = flag;
-            return this;
-        }
-        public MakeBasisSwap withFloating2LegFirstDate(Date d)
-        {
-            float2FirstDate_ = d;
-            return this;
-        }
-        public MakeBasisSwap withFloating2LegNextToLastDate(Date d)
-        {
-            float2NextToLastDate_ = d;
-            return this;
-        }
-        public MakeBasisSwap withFloating2LegDayCount(DayCounter dc)
-        {
-            float2DayCount_ = dc;
-            return this;
-        }
-        public MakeBasisSwap withFloating2LegSpread(double sp)
-        {
-            float2Spread_ = sp;
-            return this;
-        }
-
-
-        // swap creator
-        public static implicit operator BasisSwap(MakeBasisSwap o) => o.value();
 
         public BasisSwap value()
         {
             Date startDate;
 
             if (effectiveDate_ != null)
+            {
                 startDate = effectiveDate_;
+            }
             else
             {
                 var fixingDays = iborIndex1_.fixingDays();
@@ -244,29 +106,189 @@ namespace QLNet.Instruments
 
             Date endDate;
             if (terminationDate_ != null)
+            {
                 endDate = terminationDate_;
+            }
             else
+            {
                 endDate = startDate + swapTenor_;
-
+            }
 
             var float1Schedule = new Schedule(startDate, endDate,
-                                                   float1Tenor_, float1Calendar_,
-                                                   float1Convention_, float1TerminationDateConvention_,
-                                                   float1Rule_, float1EndOfMonth_,
-                                                   float1FirstDate_, float1NextToLastDate_);
+                float1Tenor_, float1Calendar_,
+                float1Convention_, float1TerminationDateConvention_,
+                float1Rule_, float1EndOfMonth_,
+                float1FirstDate_, float1NextToLastDate_);
 
             var float2Schedule = new Schedule(startDate, endDate,
-                                                   float2Tenor_, float2Calendar_,
-                                                   float2Convention_, float2TerminationDateConvention_,
-                                                   float2Rule_, float2EndOfMonth_,
-                                                   float2FirstDate_, float2NextToLastDate_);
-
+                float2Tenor_, float2Calendar_,
+                float2Convention_, float2TerminationDateConvention_,
+                float2Rule_, float2EndOfMonth_,
+                float2FirstDate_, float2NextToLastDate_);
 
             var swap = new BasisSwap(type_, nominal_,
-                                           float1Schedule, iborIndex1_, float1Spread_, float1DayCount_,
-                                           float2Schedule, iborIndex2_, float2Spread_, float2DayCount_);
+                float1Schedule, iborIndex1_, float1Spread_, float1DayCount_,
+                float2Schedule, iborIndex2_, float2Spread_, float2DayCount_);
             swap.setPricingEngine(engine_);
             return swap;
+        }
+
+        public MakeBasisSwap withDiscountingTermStructure(Handle<YieldTermStructure> discountingTermStructure1,
+            Handle<YieldTermStructure> discountingTermStructure2)
+        {
+            engine_ = new DiscountingBasisSwapEngine(discountingTermStructure1, discountingTermStructure2);
+            return this;
+        }
+
+        public MakeBasisSwap withEffectiveDate(Date effectiveDate)
+        {
+            effectiveDate_ = effectiveDate;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating1Calendar(Calendar cal)
+        {
+            float1Calendar_ = cal;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating1LegConvention(BusinessDayConvention bdc)
+        {
+            float1Convention_ = bdc;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating1LegDayCount(DayCounter dc)
+        {
+            float1DayCount_ = dc;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating1LegEndOfMonth() => withFloating1LegEndOfMonth(true);
+
+        public MakeBasisSwap withFloating1LegEndOfMonth(bool flag)
+        {
+            float1EndOfMonth_ = flag;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating1LegFirstDate(Date d)
+        {
+            float1FirstDate_ = d;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating1LegNextToLastDate(Date d)
+        {
+            float1NextToLastDate_ = d;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating1LegRule(DateGeneration.Rule r)
+        {
+            float1Rule_ = r;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating1LegTenor(Period t)
+        {
+            float1Tenor_ = t;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating1LegTerminationDateConvention(BusinessDayConvention bdc)
+        {
+            float1TerminationDateConvention_ = bdc;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating2LegCalendar(Calendar cal)
+        {
+            float2Calendar_ = cal;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating2LegConvention(BusinessDayConvention bdc)
+        {
+            float2Convention_ = bdc;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating2LegDayCount(DayCounter dc)
+        {
+            float2DayCount_ = dc;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating2LegEndOfMonth() => withFloating2LegEndOfMonth(true);
+
+        public MakeBasisSwap withFloating2LegEndOfMonth(bool flag)
+        {
+            float2EndOfMonth_ = flag;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating2LegFirstDate(Date d)
+        {
+            float2FirstDate_ = d;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating2LegNextToLastDate(Date d)
+        {
+            float2NextToLastDate_ = d;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating2LegRule(DateGeneration.Rule r)
+        {
+            float2Rule_ = r;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating2LegSpread(double sp)
+        {
+            float2Spread_ = sp;
+            return this;
+        }
+
+        // *****
+
+        public MakeBasisSwap withFloating2LegTenor(Period t)
+        {
+            float2Tenor_ = t;
+            return this;
+        }
+
+        public MakeBasisSwap withFloating2LegTerminationDateConvention(BusinessDayConvention bdc)
+        {
+            float2TerminationDateConvention_ = bdc;
+            return this;
+        }
+
+        public MakeBasisSwap withNominal(double n)
+        {
+            nominal_ = n;
+            return this;
+        }
+
+        public MakeBasisSwap withRule(DateGeneration.Rule r)
+        {
+            float1Rule_ = r;
+            float2Rule_ = r;
+            return this;
+        }
+
+        public MakeBasisSwap withTerminationDate(Date terminationDate)
+        {
+            terminationDate_ = terminationDate;
+            return this;
+        }
+
+        public MakeBasisSwap withType(BasisSwap.Type type)
+        {
+            type_ = type;
+            return this;
         }
     }
 }

@@ -17,28 +17,33 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Time;
 
 namespace QLNet.Indexes.Inflation
 {
     //! US CPI index
-    [JetBrains.Annotations.PublicAPI] public class USCPI : ZeroInflationIndex
+    [PublicAPI]
+    public class USCPI : ZeroInflationIndex
     {
         public USCPI(bool interpolated)
-           : this(interpolated, new Handle<ZeroInflationTermStructure>()) { }
+            : this(interpolated, new Handle<ZeroInflationTermStructure>())
+        {
+        }
 
         public USCPI(bool interpolated,
-                     Handle<ZeroInflationTermStructure> ts)
-           : base("CPI",
-                  new USRegion(),
-                  false,
-                  interpolated,
-                  Frequency.Monthly,
-                  new Period(1, TimeUnit.Months), // availability
-                  new USDCurrency(),
-                  ts)
-        { }
+            Handle<ZeroInflationTermStructure> ts)
+            : base("CPI",
+                new USRegion(),
+                false,
+                interpolated,
+                Frequency.Monthly,
+                new Period(1, TimeUnit.Months), // availability
+                new USDCurrency(),
+                ts)
+        {
+        }
     }
 
     //! Genuine year-on-year US CPI (i.e. not a ratio of US CPI)

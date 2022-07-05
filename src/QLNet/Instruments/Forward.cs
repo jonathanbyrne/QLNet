@@ -44,27 +44,26 @@ namespace QLNet.Instruments
     */
     public abstract class Forward : Instrument
     {
+        protected BusinessDayConvention businessDayConvention_;
+        protected Calendar calendar_;
+        protected DayCounter dayCounter_;
+        protected Handle<YieldTermStructure> discountCurve_;
+        /*! must set this in derived classes, based on particular underlying */
+        protected Handle<YieldTermStructure> incomeDiscountCurve_;
+        //! maturityDate of the forward contract or delivery date of underlying
+        protected Date maturityDate_;
+        protected Payoff payoff_;
+        protected int settlementDays_;
         /*! derived classes must set this, typically via spotIncome() */
         protected double underlyingIncome_;
         /*! derived classes must set this, typically via spotValue() */
         protected double underlyingSpotValue_;
-
-        protected DayCounter dayCounter_;
-        protected Calendar calendar_;
-        protected BusinessDayConvention businessDayConvention_;
-        protected int settlementDays_;
-        protected Payoff payoff_;
         /*! valueDate = settlement date (date the fwd contract starts accruing) */
         protected Date valueDate_;
-        //! maturityDate of the forward contract or delivery date of underlying
-        protected Date maturityDate_;
-        protected Handle<YieldTermStructure> discountCurve_;
-        /*! must set this in derived classes, based on particular underlying */
-        protected Handle<YieldTermStructure> incomeDiscountCurve_;
 
         protected Forward(DayCounter dayCounter, Calendar calendar, BusinessDayConvention businessDayConvention,
-                          int settlementDays, Payoff payoff, Date valueDate, Date maturityDate,
-                          Handle<YieldTermStructure> discountCurve)
+            int settlementDays, Payoff payoff, Date valueDate, Date maturityDate,
+            Handle<YieldTermStructure> discountCurve)
         {
             dayCounter_ = dayCounter;
             calendar_ = calendar;
@@ -81,18 +80,11 @@ namespace QLNet.Instruments
             discountCurve_.registerWith(update);
         }
 
-        public virtual Date settlementDate()
-        {
-            var d = calendar_.advance(Settings.evaluationDate(), settlementDays_, TimeUnit.Days);
-            return Date.Max(d, valueDate_);
-        }
-
-        public override bool isExpired() => new simple_event(maturityDate_).hasOccurred(settlementDate());
+        //! NPV of income/dividends/storage-costs etc. of underlying instrument
+        public abstract double spotIncome(Handle<YieldTermStructure> incomeDiscountCurve);
 
         //! returns spot value/price of an underlying financial instrument
         public abstract double spotValue();
-        //! NPV of income/dividends/storage-costs etc. of underlying instrument
-        public abstract double spotIncome(Handle<YieldTermStructure> incomeDiscountCurve);
 
         // Calculations
         //! forward value/price of underlying, discounting income/dividends
@@ -115,12 +107,19 @@ namespace QLNet.Instruments
         relevant zero rate at the FRA's maturityDate_
         */
         public InterestRate impliedYield(double underlyingSpotValue, double forwardValue, Date settlementDate,
-                                         Compounding compoundingConvention, DayCounter dayCounter)
+            Compounding compoundingConvention, DayCounter dayCounter)
         {
-
             var tenor = dayCounter.yearFraction(settlementDate, maturityDate_);
             var compoundingFactor = forwardValue / (underlyingSpotValue - spotIncome(incomeDiscountCurve_));
             return InterestRate.impliedRate(compoundingFactor, dayCounter, compoundingConvention, Frequency.Annual, tenor);
+        }
+
+        public override bool isExpired() => new simple_event(maturityDate_).hasOccurred(settlementDate());
+
+        public virtual Date settlementDate()
+        {
+            var d = calendar_.advance(Settings.evaluationDate(), settlementDays_, TimeUnit.Days);
+            return Date.Max(d, valueDate_);
         }
 
         protected override void performCalculations()

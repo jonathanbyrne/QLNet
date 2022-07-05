@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
 using QLNet.Instruments.Bonds;
@@ -7,8 +8,11 @@ using QLNet.Time;
 
 namespace QLNet.Termstructures.Yield
 {
-    [JetBrains.Annotations.PublicAPI] public class CPIBondHelper : BondHelper
+    [PublicAPI]
+    public class CPIBondHelper : BondHelper
     {
+        protected CPIBond cpiBond_;
+
         public CPIBondHelper(Handle<Quote> price,
             int settlementDays,
             double faceAmount,
@@ -38,8 +42,5 @@ namespace QLNet.Termstructures.Yield
         }
 
         public CPIBond cpiBond() => cpiBond_;
-
-        protected CPIBond cpiBond_;
-
     }
 }

@@ -16,6 +16,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Instruments;
 using QLNet.Pricingengines.Swap;
@@ -36,19 +37,32 @@ namespace QLNet.Termstructures.Yield
         assumed to be equal to the settlement date of the swap itself.
                 \ingroup termstructures
     */
-    [JetBrains.Annotations.PublicAPI] public class BasisSwapHelper : RelativeDateRateHelper
+    [PublicAPI]
+    public class BasisSwapHelper : RelativeDateRateHelper
     {
+        protected Handle<YieldTermStructure> discountHandle_;
+        protected RelinkableHandle<YieldTermStructure> discountRelinkableHandle_ = new RelinkableHandle<YieldTermStructure>();
+        protected IborIndex longIndex_;
+        protected BusinessDayConvention rollConvention_;
+        protected Calendar settlementCalendar_;
+        protected int settlementDays_;
+        protected IborIndex shortIndex_;
+        protected bool spreadOnShort_, eom_;
+        protected BasisSwap swap_;
+        protected Period swapTenor_;
+        protected RelinkableHandle<YieldTermStructure> termStructureHandle_ = new RelinkableHandle<YieldTermStructure>();
+
         public BasisSwapHelper(Handle<Quote> spreadQuote,
-                               int settlementDays,
-                               Period swapTenor,
-                               Calendar settlementCalendar,
-                               BusinessDayConvention rollConvention,
-                               IborIndex shortIndex,
-                               IborIndex longIndex,
-                               Handle<YieldTermStructure> discount = null,
-                               bool eom = true,
-                               bool spreadOnShort = true)
-           : base(spreadQuote)
+            int settlementDays,
+            Period swapTenor,
+            Calendar settlementCalendar,
+            BusinessDayConvention rollConvention,
+            IborIndex shortIndex,
+            IborIndex longIndex,
+            Handle<YieldTermStructure> discount = null,
+            bool eom = true,
+            bool spreadOnShort = true)
+            : base(spreadQuote)
         {
             settlementDays_ = settlementDays;
             settlementCalendar_ = settlementCalendar;
@@ -99,6 +113,15 @@ namespace QLNet.Termstructures.Yield
             return spreadOnShort_ ? swap_.fairShortSpread() : swap_.fairLongSpread();
         }
 
+        public override void setTermStructure(YieldTermStructure t)
+        {
+            // do not set the relinkable handle as an observer -
+            // force recalculation when needed
+            termStructureHandle_.linkTo(t, false);
+            base.setTermStructure(t);
+            discountRelinkableHandle_.linkTo(discountHandle_.empty() ? t : discountHandle_, false);
+        }
+
         //@}
         //! \name inspectors
         //@{
@@ -112,23 +135,23 @@ namespace QLNet.Termstructures.Yield
 
             var shortLegTenor = shortIndex_.tenor();
             var shortLegSchedule = new MakeSchedule()
-            .from(settlementDate)
-            .to(maturityDate)
-            .withTenor(shortLegTenor)
-            .withCalendar(settlementCalendar_)
-            .withConvention(rollConvention_)
-            .endOfMonth(eom_)
-            .value();
+                .from(settlementDate)
+                .to(maturityDate)
+                .withTenor(shortLegTenor)
+                .withCalendar(settlementCalendar_)
+                .withConvention(rollConvention_)
+                .endOfMonth(eom_)
+                .value();
 
             var longLegTenor = longIndex_.tenor();
             var longLegSchedule = new MakeSchedule()
-            .from(settlementDate)
-            .to(maturityDate)
-            .withTenor(longLegTenor)
-            .withCalendar(settlementCalendar_)
-            .withConvention(rollConvention_)
-            .endOfMonth(eom_)
-            .value();
+                .from(settlementDate)
+                .to(maturityDate)
+                .withTenor(longLegTenor)
+                .withCalendar(settlementCalendar_)
+                .withConvention(rollConvention_)
+                .endOfMonth(eom_)
+                .value();
 
             var nominal = 1.0;
             var shortLegSpread = 0.0;
@@ -145,9 +168,9 @@ namespace QLNet.Termstructures.Yield
 
             /* Arbitrarily set the swap as paying the long index */
             swap_ = new BasisSwap(BasisSwap.Type.Payer, nominal,
-                                  shortLegSchedule, shortIndex_, shortLegSpread, shortIndex_.dayCounter(),
-                                  longLegSchedule, longIndex_, longLegSpread, longIndex_.dayCounter(),
-                                  BusinessDayConvention.Following);
+                shortLegSchedule, shortIndex_, shortLegSpread, shortIndex_.dayCounter(),
+                longLegSchedule, longIndex_, longLegSpread, longIndex_.dayCounter(),
+                BusinessDayConvention.Following);
 
             IPricingEngine engine;
 
@@ -160,29 +183,5 @@ namespace QLNet.Termstructures.Yield
             latestDate_ = swap_.maturityDate();
             maturityDate_ = latestRelevantDate_ = swap_.maturityDate();
         }
-
-        public override void setTermStructure(YieldTermStructure t)
-        {
-            // do not set the relinkable handle as an observer -
-            // force recalculation when needed
-            termStructureHandle_.linkTo(t, false);
-            base.setTermStructure(t);
-            discountRelinkableHandle_.linkTo(discountHandle_.empty() ? t : discountHandle_, false);
-        }
-
-        protected int settlementDays_;
-        protected Calendar settlementCalendar_;
-        protected Period swapTenor_;
-        protected BusinessDayConvention rollConvention_;
-        protected IborIndex shortIndex_;
-        protected IborIndex longIndex_;
-        protected bool spreadOnShort_, eom_;
-
-        protected BasisSwap swap_;
-
-        protected Handle<YieldTermStructure> discountHandle_;
-        protected RelinkableHandle<YieldTermStructure> discountRelinkableHandle_ = new RelinkableHandle<YieldTermStructure>();
-
-        protected RelinkableHandle<YieldTermStructure> termStructureHandle_ = new RelinkableHandle<YieldTermStructure>();
     }
 }

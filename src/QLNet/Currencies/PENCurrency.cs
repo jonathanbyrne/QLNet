@@ -1,9 +1,13 @@
+using JetBrains.Annotations;
 using QLNet.Math;
 
 namespace QLNet.Currencies
 {
-    [JetBrains.Annotations.PublicAPI] public class PENCurrency : Currency
+    [PublicAPI]
+    public class PENCurrency : Currency
     {
-        public PENCurrency() : base("Peruvian nuevo sol", "PEN", 604, "S/.", "", 100, new Rounding(), "%3% %1$.2f") { }
+        public PENCurrency() : base("Peruvian nuevo sol", "PEN", 604, "S/.", "", 100, new Rounding(), "%3% %1$.2f")
+        {
+        }
     }
 }

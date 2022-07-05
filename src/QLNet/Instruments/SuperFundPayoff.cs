@@ -1,11 +1,13 @@
-﻿namespace QLNet.Instruments
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class SuperFundPayoff : StrikedTypePayoff
+    [PublicAPI]
+    public class SuperFundPayoff : StrikedTypePayoff
     {
         protected double secondStrike_;
-        public double secondStrike() => secondStrike_;
 
-        public SuperFundPayoff(double strike, double secondStrike) : base(QLNet.Option.Type.Call, strike)
+        public SuperFundPayoff(double strike, double secondStrike) : base(Option.Type.Call, strike)
         {
             secondStrike_ = secondStrike;
 
@@ -16,6 +18,8 @@
 
         // Payoff interface
         public override string name() => "SuperFund";
+
+        public double secondStrike() => secondStrike_;
 
         public override double value(double price) => price >= strike_ && price < secondStrike_ ? price / strike_ : 0.0;
     }

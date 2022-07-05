@@ -20,22 +20,72 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class Loan : Instrument
+    [PublicAPI]
+    public class Loan : Instrument
     {
-        public enum Type { Deposit = -1, Loan = 1 }
         public enum Amortising
         {
             Bullet = 1,
             Step = 2,
             French = 3
         }
-        protected List<List<CashFlow>> legs_;
-        protected List<double> payer_;
-        protected List<double> notionals_;
+
+        public enum Type
+        {
+            Deposit = -1,
+            Loan = 1
+        }
+
+        ////////////////////////////////////////////////////////////////
+        // arguments, results, pricing engine
+        [PublicAPI]
+        public class Arguments : IPricingEngineArguments
+        {
+            public List<List<CashFlow>> legs { get; set; }
+
+            public List<double> payer { get; set; }
+
+            public virtual void validate()
+            {
+                if (legs.Count != payer.Count)
+                {
+                    throw new ArgumentException("number of legs and multipliers differ");
+                }
+            }
+        }
+
+        [PublicAPI]
+        public class Engine : GenericEngine<Arguments, Results>
+        {
+        }
+
+        public new class Results : Instrument.Results
+        {
+            public List<double?> legNPV { get; set; }
+
+            public override void reset()
+            {
+                base.reset();
+                // clear all previous results
+                if (legNPV == null)
+                {
+                    legNPV = new List<double?>();
+                }
+                else
+                {
+                    legNPV.Clear();
+                }
+            }
+        }
+
         protected List<double?> legNPV_;
+        protected List<List<CashFlow>> legs_;
+        protected List<double> notionals_;
+        protected List<double> payer_;
 
         public Loan(int legs)
         {
@@ -43,6 +93,30 @@ namespace QLNet.Instruments
             payer_ = new InitializedList<double>(legs);
             notionals_ = new List<double>();
             legNPV_ = new InitializedList<double?>(legs);
+        }
+
+        public override void fetchResults(IPricingEngineResults r)
+        {
+            base.fetchResults(r);
+
+            if (!(r is Results results))
+            {
+                throw new ArgumentException("wrong result ExerciseType");
+            }
+
+            if (results.legNPV.Count != 0)
+            {
+                if (results.legNPV.Count != legNPV_.Count)
+                {
+                    throw new ArgumentException("wrong number of leg NPV returned");
+                }
+
+                legNPV_ = new List<double?>(results.legNPV);
+            }
+            else
+            {
+                legNPV_ = new InitializedList<double?>(legNPV_.Count);
+            }
         }
 
         ///////////////////////////////////////////////////////////////////
@@ -53,71 +127,21 @@ namespace QLNet.Instruments
             return !legs_.Any(leg => leg.Any(cf => !cf.hasOccurred(today)));
         }
 
-        protected override void setupExpired()
-        {
-            base.setupExpired();
-            legNPV_ = new InitializedList<double?>(legNPV_.Count);
-        }
-
         public override void setupArguments(IPricingEngineArguments args)
         {
-            var arguments = args as Arguments;
-            if (arguments == null)
+            if (!(args is Arguments arguments))
+            {
                 throw new ArgumentException("wrong argument ExerciseType");
+            }
 
             arguments.legs = legs_;
             arguments.payer = payer_;
         }
 
-        public override void fetchResults(IPricingEngineResults r)
+        protected override void setupExpired()
         {
-            base.fetchResults(r);
-
-            var results = r as Results;
-            if (results == null)
-                throw new ArgumentException("wrong result ExerciseType");
-
-            if (results.legNPV.Count != 0)
-            {
-                if (results.legNPV.Count != legNPV_.Count)
-                    throw new ArgumentException("wrong number of leg NPV returned");
-                legNPV_ = new List<double?>(results.legNPV);
-            }
-            else
-            {
-                legNPV_ = new InitializedList<double?>(legNPV_.Count);
-            }
-
+            base.setupExpired();
+            legNPV_ = new InitializedList<double?>(legNPV_.Count);
         }
-
-        ////////////////////////////////////////////////////////////////
-        // arguments, results, pricing engine
-        [JetBrains.Annotations.PublicAPI] public class Arguments : IPricingEngineArguments
-        {
-            public List<List<CashFlow>> legs { get; set; }
-            public List<double> payer { get; set; }
-            public virtual void validate()
-            {
-                if (legs.Count != payer.Count)
-                    throw new ArgumentException("number of legs and multipliers differ");
-            }
-        }
-
-        public new class Results : Instrument.Results
-        {
-            public List<double?> legNPV { get; set; }
-            public override void reset()
-            {
-                base.reset();
-                // clear all previous results
-                if (legNPV == null)
-                    legNPV = new List<double?>();
-                else
-                    legNPV.Clear();
-            }
-        }
-
-        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results> { }
-
     }
 }

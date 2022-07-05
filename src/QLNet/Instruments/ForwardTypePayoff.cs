@@ -1,12 +1,12 @@
-﻿namespace QLNet.Instruments
-{
-    [JetBrains.Annotations.PublicAPI] public class ForwardTypePayoff : Payoff
-    {
-        protected Position.Type type_;
-        public Position.Type forwardType() => type_;
+﻿using JetBrains.Annotations;
 
+namespace QLNet.Instruments
+{
+    [PublicAPI]
+    public class ForwardTypePayoff : Payoff
+    {
         protected double strike_;
-        public double strike() => strike_;
+        protected Position.Type type_;
 
         public ForwardTypePayoff(Position.Type type, double strike)
         {
@@ -15,14 +15,19 @@
             Utils.QL_REQUIRE(strike >= 0.0, () => "negative strike given");
         }
 
-        // Payoff interface
-        public override string name() => "Forward";
-
         public override string description()
         {
             var result = name() + ", " + strike() + " strike";
             return result;
         }
+
+        public Position.Type forwardType() => type_;
+
+        // Payoff interface
+        public override string name() => "Forward";
+
+        public double strike() => strike_;
+
         public override double value(double price)
         {
             switch (type_)

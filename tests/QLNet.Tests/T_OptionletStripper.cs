@@ -94,13 +94,17 @@ namespace QLNet.Tests
 
                 optionTenors = new InitializedList<Period>(10);
                 for (var i = 0; i < optionTenors.Count; ++i)
+                {
                     optionTenors[i] = new Period(i + 1, TimeUnit.Years);
+                }
 
                 var flatVol = .18;
 
                 List<Handle<Quote>> curveVHandle = new InitializedList<Handle<Quote>>(optionTenors.Count);
                 for (var i = 0; i < optionTenors.Count; ++i)
+                {
                     curveVHandle[i] = new Handle<Quote>(new SimpleQuote(flatVol));
+                }
 
                 flatTermVolCurve = new Handle<CapFloorTermVolCurve>(new CapFloorTermVolCurve(0, calendar, BusinessDayConvention.Following, optionTenors,
                                                                                              curveVHandle, dayCounter));
@@ -114,11 +118,15 @@ namespace QLNet.Tests
 
                 optionTenors = new InitializedList<Period>(10);
                 for (var i = 0; i < optionTenors.Count; ++i)
+                {
                     optionTenors[i] = new Period(i + 1, TimeUnit.Years);
+                }
 
                 strikes = new InitializedList<double>(10);
                 for (var j = 0; j < strikes.Count; ++j)
+                {
                     strikes[j] = (j + 1) / 100.0;
+                }
 
                 var flatVol = .18;
                 termV = new Matrix(optionTenors.Count, strikes.Count, flatVol);
@@ -284,12 +292,14 @@ namespace QLNet.Tests
 
                     var error = System.Math.Abs(priceFromStrippedVolatility - priceFromConstantVolatility);
                     if (error > vars.tolerance)
+                    {
                         QAssert.Fail("\noption tenor:       " + vars.optionTenors[tenorIndex] +
                                      "\nstrike:             " + vars.strikes[strikeIndex] +
                                      "\nstripped vol price: " + priceFromStrippedVolatility +
                                      "\nconstant vol price: " + priceFromConstantVolatility +
                                      "\nerror:              " + error +
                                      "\ntolerance:          " + vars.tolerance);
+                    }
                 }
             }
         }
@@ -337,12 +347,14 @@ namespace QLNet.Tests
 
                     var error = System.Math.Abs(priceFromStrippedVolatility - priceFromConstantVolatility);
                     if (error > vars.tolerance)
+                    {
                         QAssert.Fail("\noption tenor:       " + vars.optionTenors[tenorIndex] +
                                      "\nstrike:             " + vars.strikes[strikeIndex] +
                                      "\nstripped vol price: " + priceFromStrippedVolatility +
                                      "\nconstant vol price: " + priceFromConstantVolatility +
                                      "\nerror:              " + error +
                                      "\ntolerance:          " + vars.tolerance);
+                    }
                 }
             }
         }
@@ -395,6 +407,7 @@ namespace QLNet.Tests
 
                     var error = System.Math.Abs(strippedVol1 - strippedVol2);
                     if (error > vars.tolerance)
+                    {
                         QAssert.Fail("\noption tenor:  " + vars.optionTenors[tenorIndex] +
                                      "\nstrike:        " + vars.strikes[strikeIndex] +
                                      "\nstripped vol1: " + strippedVol1 +
@@ -402,6 +415,7 @@ namespace QLNet.Tests
                                      "\nflat vol:      " + flatVol +
                                      "\nerror:         " + error +
                                      "\ntolerance:     " + vars.tolerance);
+                    }
                 }
             }
 
@@ -446,6 +460,7 @@ namespace QLNet.Tests
 
                     var error = System.Math.Abs(strippedVol1 - strippedVol2);
                     if (error > vars.tolerance)
+                    {
                         QAssert.Fail("\noption tenor:  " + vars.optionTenors[tenorIndex] +
                                      "\nstrike:        " + vars.strikes[strikeIndex] +
                                      "\nstripped vol1: " + strippedVol1 +
@@ -453,6 +468,7 @@ namespace QLNet.Tests
                                      "\nflat vol:      " + flatVol +
                                      "\nerror:         " + error +
                                      "\ntolerance:     " + vars.tolerance);
+                    }
                 }
             }
         }

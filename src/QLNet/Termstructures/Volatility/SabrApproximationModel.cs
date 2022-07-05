@@ -1,4 +1,8 @@
 namespace QLNet
 {
-    public enum SabrApproximationModel { Obloj2008 = 1, Hagan2002 = 0 }
+    public enum SabrApproximationModel
+    {
+        Obloj2008 = 1,
+        Hagan2002 = 0
+    }
 }

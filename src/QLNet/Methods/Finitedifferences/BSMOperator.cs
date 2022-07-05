@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.processes;
 
@@ -24,9 +25,12 @@ namespace QLNet.Methods.Finitedifferences
 {
     //! Black-Scholes-Merton differential operator
     /*! \ingroup findiff */
-    [JetBrains.Annotations.PublicAPI] public class BSMOperator : TridiagonalOperator
+    [PublicAPI]
+    public class BSMOperator : TridiagonalOperator
     {
-        public BSMOperator() { }
+        public BSMOperator()
+        {
+        }
 
         public BSMOperator(int size, double dx, double r, double q, double sigma) : base(size)
         {

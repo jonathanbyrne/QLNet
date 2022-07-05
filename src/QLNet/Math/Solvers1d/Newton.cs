@@ -17,9 +17,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System;
+using JetBrains.Annotations;
 using QLNet.Exceptions;
 using QLNet.Extensions;
-using System;
 
 namespace QLNet.Math.Solvers1d
 {
@@ -27,7 +29,8 @@ namespace QLNet.Math.Solvers1d
     /*! \note This solver requires that the passed function object
               implement a method <tt>Real derivative(Real)</tt>.
     */
-    [JetBrains.Annotations.PublicAPI] public class Newton : Solver1D
+    [PublicAPI]
+    public class Newton : Solver1D
     {
         protected override double solveImpl(ISolver1d f, double xAccuracy)
         {
@@ -40,7 +43,10 @@ namespace QLNet.Math.Solvers1d
             dfroot = f.derivative(root_);
 
             if (dfroot.IsEqual(default))
+            {
                 throw new ArgumentException("Newton requires function's derivative");
+            }
+
             ++evaluationNumber_;
 
             while (evaluationNumber_ <= maxEvaluations_)
@@ -54,15 +60,19 @@ namespace QLNet.Math.Solvers1d
                     s.setMaxEvaluations(maxEvaluations_ - evaluationNumber_);
                     return s.solve(f, xAccuracy, root_ + dx, xMin_, xMax_);
                 }
+
                 if (System.Math.Abs(dx) < xAccuracy)
+                {
                     return root_;
+                }
+
                 froot = f.value(root_);
                 dfroot = f.derivative(root_);
                 evaluationNumber_++;
             }
 
             Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
-                          QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
+                QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
             return 0;
         }
     }

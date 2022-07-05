@@ -1,6 +1,9 @@
+using JetBrains.Annotations;
+
 namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public interface IPricingEngineResults
+    [PublicAPI]
+    public interface IPricingEngineResults
     {
         void reset();
     }

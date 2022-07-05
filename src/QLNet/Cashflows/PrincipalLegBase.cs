@@ -16,39 +16,43 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Time;
+
 using System.Collections.Generic;
+using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
     public abstract class PrincipalLegBase
     {
-        protected Schedule schedule_;
+        protected DayCounter dayCounter_;
         protected List<double> notionals_;
         protected BusinessDayConvention paymentAdjustment_;
-        protected DayCounter dayCounter_;
+        protected Schedule schedule_;
         protected int sign_;
+
         public static implicit operator List<CashFlow>(PrincipalLegBase o) => o.value();
 
         public abstract List<CashFlow> value();
 
-
         // initializers
         public PrincipalLegBase withNotionals(double notional)
         {
-            notionals_ = new List<double>() { notional };
+            notionals_ = new List<double> { notional };
             return this;
         }
+
         public PrincipalLegBase withNotionals(List<double> notionals)
         {
             notionals_ = notionals;
             return this;
         }
+
         public PrincipalLegBase withPaymentAdjustment(BusinessDayConvention convention)
         {
             paymentAdjustment_ = convention;
             return this;
         }
+
         public PrincipalLegBase withPaymentDayCounter(DayCounter dayCounter)
         {
             dayCounter_ = dayCounter;
@@ -60,7 +64,6 @@ namespace QLNet.Cashflows
             sign_ = sign;
             return this;
         }
-
     }
 
     //! helper class building a Bullet Principal leg

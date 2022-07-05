@@ -14,45 +14,50 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Instruments.Bonds;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Pricingengines.Bond
 {
     /// <summary>
-    /// Monte Carlo pricing engine for cat bonds
+    ///     Monte Carlo pricing engine for cat bonds
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class MonteCarloCatBondEngine : CatBond.Engine
+    [PublicAPI]
+    public class MonteCarloCatBondEngine : CatBond.Engine
     {
+        private CatRisk catRisk_;
+        private Handle<YieldTermStructure> discountCurve_;
+        private bool? includeSettlementDateFlows_;
+
         public MonteCarloCatBondEngine(CatRisk catRisk,
-                                       Handle<YieldTermStructure> discountCurve,
-                                       bool? includeSettlementDateFlows = null)
+            Handle<YieldTermStructure> discountCurve,
+            bool? includeSettlementDateFlows = null)
         {
             catRisk_ = catRisk;
             discountCurve_ = discountCurve;
             includeSettlementDateFlows_ = includeSettlementDateFlows;
         }
+
         public override void calculate()
         {
             Utils.QL_REQUIRE(!discountCurve_.empty(), () =>
-                             "discounting term structure handle is empty");
+                "discounting term structure handle is empty");
 
             results_.valuationDate = discountCurve_.link.referenceDate();
 
-            var includeRefDateFlows = includeSettlementDateFlows_.HasValue ?
-                                       includeSettlementDateFlows_.Value :
-                                       Settings.includeReferenceDateEvents;
+            var includeRefDateFlows = includeSettlementDateFlows_.HasValue ? includeSettlementDateFlows_.Value : Settings.includeReferenceDateEvents;
 
             results_.value = npv(includeRefDateFlows,
-                                 results_.valuationDate,
-                                 results_.valuationDate,
-                                 out var lossProbability,
-                                 out var exhaustionProbability,
-                                 out var expectedLoss);
+                results_.valuationDate,
+                results_.valuationDate,
+                out var lossProbability,
+                out var exhaustionProbability,
+                out var expectedLoss);
 
             results_.lossProbability = lossProbability;
             results_.exhaustionProbability = exhaustionProbability;
@@ -70,33 +75,40 @@ namespace QLNet.Pricingengines.Bond
             {
                 // no such luck
                 results_.settlementValue =
-                   npv(includeRefDateFlows, arguments_.settlementDate, arguments_.settlementDate,
-                       out lossProbability, out exhaustionProbability, out expectedLoss);
+                    npv(includeRefDateFlows, arguments_.settlementDate, arguments_.settlementDate,
+                        out lossProbability, out exhaustionProbability, out expectedLoss);
             }
         }
+
         public Handle<YieldTermStructure> discountCurve() => discountCurve_;
 
         protected double cashFlowRiskyValue(CashFlow cf, NotionalPath notionalPath) => cf.amount() * notionalPath.notionalRate(cf.date()); //TODO: fix for more complicated cashflows
 
         protected double npv(bool includeSettlementDateFlows,
-                             Date settlementDate,
-                             Date npvDate,
-                             out double lossProbability,
-                             out double exhaustionProbability,
-                             out double expectedLoss)
+            Date settlementDate,
+            Date npvDate,
+            out double lossProbability,
+            out double exhaustionProbability,
+            out double expectedLoss)
         {
             const int MAX_PATHS = 10000; //TODO
             lossProbability = 0.0;
             exhaustionProbability = 0.0;
             expectedLoss = 0.0;
             if (arguments_.cashflows.empty())
+            {
                 return 0.0;
+            }
 
             if (settlementDate == null)
+            {
                 settlementDate = Settings.evaluationDate();
+            }
 
             if (npvDate == null)
+            {
                 npvDate = settlementDate;
+            }
 
             var totalNPV = 0.0;
             var effectiveDate = Date.Max(arguments_.startDate, settlementDate);
@@ -115,13 +127,17 @@ namespace QLNet.Pricingengines.Bond
                     totalNPV += pathNpv(includeSettlementDateFlows, settlementDate, notionalPath);
                     lossProbability += 1;
                     if (notionalPath.loss().IsEqual(1))
+                    {
                         exhaustionProbability += 1;
+                    }
+
                     expectedLoss += notionalPath.loss();
                 }
                 else
                 {
                     totalNPV += riskFreeNPV;
                 }
+
                 pathCount++;
             }
 
@@ -129,12 +145,11 @@ namespace QLNet.Pricingengines.Bond
             exhaustionProbability /= pathCount;
             expectedLoss /= pathCount;
             return totalNPV / (pathCount * discountCurve_.link.discount(npvDate));
-
         }
 
         protected double pathNpv(bool includeSettlementDateFlows,
-                                 Date settlementDate,
-                                 NotionalPath notionalPath)
+            Date settlementDate,
+            NotionalPath notionalPath)
         {
             var totalNPV = 0.0;
             for (var i = 0; i < arguments_.cashflows.Count; ++i)
@@ -145,12 +160,8 @@ namespace QLNet.Pricingengines.Bond
                     totalNPV += amount * discountCurve_.link.discount(arguments_.cashflows[i].date());
                 }
             }
+
             return totalNPV;
         }
-
-        private CatRisk catRisk_;
-        private Handle<YieldTermStructure> discountCurve_;
-        private bool? includeSettlementDateFlows_;
-
     }
 }

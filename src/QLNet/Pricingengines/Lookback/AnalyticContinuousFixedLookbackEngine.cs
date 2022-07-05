@@ -13,10 +13,11 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
 using QLNet.processes;
-using System;
 
 namespace QLNet.Pricingengines.Lookback
 {
@@ -24,13 +25,18 @@ namespace QLNet.Pricingengines.Lookback
     /*! Formula from "Option Pricing Formulas",
         E.G. Haug, McGraw-Hill, 1998, p.63-64
     */
-    [JetBrains.Annotations.PublicAPI] public class AnalyticContinuousFixedLookbackEngine : ContinuousFixedLookbackOption.Engine
+    [PublicAPI]
+    public class AnalyticContinuousFixedLookbackEngine : ContinuousFixedLookbackOption.Engine
     {
+        private CumulativeNormalDistribution f_ = new CumulativeNormalDistribution();
+        private GeneralizedBlackScholesProcess process_;
+
         public AnalyticContinuousFixedLookbackEngine(GeneralizedBlackScholesProcess process)
         {
             process_ = process;
             process_.registerWith(update);
         }
+
         public override void calculate()
         {
             var payoff = arguments_.payoff as PlainVanillaPayoff;
@@ -45,53 +51,32 @@ namespace QLNet.Pricingengines.Lookback
                 case QLNet.Option.Type.Call:
                     Utils.QL_REQUIRE(payoff.strike() >= 0.0, () => "Strike must be positive or null");
                     if (strike <= minmax())
+                    {
                         results_.value = A(1) + C(1);
+                    }
                     else
+                    {
                         results_.value = B(1);
+                    }
+
                     break;
                 case QLNet.Option.Type.Put:
                     Utils.QL_REQUIRE(payoff.strike() > 0.0, () => "Strike must be positive");
                     if (strike >= minmax())
+                    {
                         results_.value = A(-1) + C(-1);
+                    }
                     else
+                    {
                         results_.value = B(-1);
+                    }
+
                     break;
                 default:
                     Utils.QL_FAIL("Unknown ExerciseType");
                     break;
             }
         }
-
-        private GeneralizedBlackScholesProcess process_;
-        private CumulativeNormalDistribution f_ = new CumulativeNormalDistribution();
-        // helper methods
-        private double underlying() => process_.x0();
-
-        private double strike()
-        {
-            var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "Non-plain payoff given");
-            return payoff.strike();
-        }
-        private double residualTime() => process_.time(arguments_.exercise.lastDate());
-
-        private double volatility() => process_.blackVolatility().link.blackVol(residualTime(), strike());
-
-        private double minmax() => arguments_.minmax.GetValueOrDefault();
-
-        private double stdDeviation() => volatility() * System.Math.Sqrt(residualTime());
-
-        private double riskFreeRate() =>
-            process_.riskFreeRate().link.zeroRate(residualTime(),
-                Compounding.Continuous, Frequency.NoFrequency).value();
-
-        private double riskFreeDiscount() => process_.riskFreeRate().link.discount(residualTime());
-
-        private double dividendYield() =>
-            process_.dividendYield().link.zeroRate(residualTime(),
-                Compounding.Continuous, Frequency.NoFrequency).value();
-
-        private double dividendDiscount() => process_.dividendYield().link.discount(residualTime());
 
         private double A(double eta)
         {
@@ -109,6 +94,7 @@ namespace QLNet.Pricingengines.Lookback
                           underlying() * riskFreeDiscount() *
                           (powss * N3 - dividendDiscount() * N4 / riskFreeDiscount()) / lambda);
         }
+
         private double B(double eta)
         {
             var vol = volatility();
@@ -125,6 +111,37 @@ namespace QLNet.Pricingengines.Lookback
                           underlying() * riskFreeDiscount() *
                           (powss * N3 - dividendDiscount() * N4 / riskFreeDiscount()) / lambda);
         }
+
         private double C(double eta) => eta * (riskFreeDiscount() * (minmax() - strike()));
+
+        private double dividendDiscount() => process_.dividendYield().link.discount(residualTime());
+
+        private double dividendYield() =>
+            process_.dividendYield().link.zeroRate(residualTime(),
+                Compounding.Continuous, Frequency.NoFrequency).value();
+
+        private double minmax() => arguments_.minmax.GetValueOrDefault();
+
+        private double residualTime() => process_.time(arguments_.exercise.lastDate());
+
+        private double riskFreeDiscount() => process_.riskFreeRate().link.discount(residualTime());
+
+        private double riskFreeRate() =>
+            process_.riskFreeRate().link.zeroRate(residualTime(),
+                Compounding.Continuous, Frequency.NoFrequency).value();
+
+        private double stdDeviation() => volatility() * System.Math.Sqrt(residualTime());
+
+        private double strike()
+        {
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
+            Utils.QL_REQUIRE(payoff != null, () => "Non-plain payoff given");
+            return payoff.strike();
+        }
+
+        // helper methods
+        private double underlying() => process_.x0();
+
+        private double volatility() => process_.blackVolatility().link.blackVol(residualTime(), strike());
     }
 }

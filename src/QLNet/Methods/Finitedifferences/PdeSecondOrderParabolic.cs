@@ -16,6 +16,7 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using QLNet.Math;
 using QLNet.processes;
 
@@ -24,8 +25,11 @@ namespace QLNet.Methods.Finitedifferences
     public abstract class PdeSecondOrderParabolic
     {
         public abstract double diffusion(double t, double x);
-        public abstract double drift(double t, double x);
+
         public abstract double discount(double t, double x);
+
+        public abstract double drift(double t, double x);
+
         public abstract PdeSecondOrderParabolic factory(GeneralizedBlackScholesProcess process);
 
         public void generateOperator(double t, TransformedGrid tg, TridiagonalOperator L)

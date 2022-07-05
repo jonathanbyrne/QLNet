@@ -19,12 +19,12 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.Optionlet;
 using QLNet.Termstructures.Volatility.swaption;
 using QLNet.Time;
-using System.Collections.Generic;
 
 namespace QLNet.Pricingengines.swaption
 {
@@ -35,30 +35,33 @@ namespace QLNet.Pricingengines.swaption
 
     // shifted lognormal ExerciseType engine
 
-    [JetBrains.Annotations.PublicAPI] public class BlackSwaptionEngine : BlackStyleSwaptionEngine<Black76Spec>
+    [PublicAPI]
+    public class BlackSwaptionEngine : BlackStyleSwaptionEngine<Black76Spec>
     {
         public BlackSwaptionEngine(Handle<YieldTermStructure> discountCurve,
-                                   double vol, DayCounter dc = null,
-                                   double? displacement = 0.0,
-                                   CashAnnuityModel model = CashAnnuityModel.DiscountCurve)
-        : base(discountCurve, vol, dc, displacement, model)
-        { }
+            double vol, DayCounter dc = null,
+            double? displacement = 0.0,
+            CashAnnuityModel model = CashAnnuityModel.DiscountCurve)
+            : base(discountCurve, vol, dc, displacement, model)
+        {
+        }
 
         public BlackSwaptionEngine(Handle<YieldTermStructure> discountCurve,
-                                   Handle<Quote> vol, DayCounter dc = null,
-                                   double? displacement = 0.0,
-                                   CashAnnuityModel model = CashAnnuityModel.DiscountCurve)
-        : base(discountCurve, vol, dc, displacement, model)
-        { }
+            Handle<Quote> vol, DayCounter dc = null,
+            double? displacement = 0.0,
+            CashAnnuityModel model = CashAnnuityModel.DiscountCurve)
+            : base(discountCurve, vol, dc, displacement, model)
+        {
+        }
 
         public BlackSwaptionEngine(Handle<YieldTermStructure> discountCurve,
-                                   Handle<SwaptionVolatilityStructure> vol,
-                                   double? displacement = null,
-                                   CashAnnuityModel model = CashAnnuityModel.DiscountCurve)
-        : base(discountCurve, vol, displacement, model)
+            Handle<SwaptionVolatilityStructure> vol,
+            double? displacement = null,
+            CashAnnuityModel model = CashAnnuityModel.DiscountCurve)
+            : base(discountCurve, vol, displacement, model)
         {
             Utils.QL_REQUIRE(vol.link.volatilityType() == VolatilityType.ShiftedLognormal,
-                             () => "BlackSwaptionEngine requires (shifted) lognormal input volatility");
+                () => "BlackSwaptionEngine requires (shifted) lognormal input volatility");
         }
     }
 }

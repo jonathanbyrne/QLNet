@@ -17,20 +17,22 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Instruments;
-using QLNet.Quotes;
-using QLNet.Time;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Quotes;
+using QLNet.Time;
 
 namespace QLNet.Instruments.Bonds
 {
     //! %callability leaving to the holder the possibility to convert
 
     //! base class for convertible bonds
-    [JetBrains.Annotations.PublicAPI] public class ConvertibleBond : Bond
+    [PublicAPI]
+    public class ConvertibleBond : Bond
     {
-        [JetBrains.Annotations.PublicAPI] public class option : OneAssetOption
+        [PublicAPI]
+        public class option : OneAssetOption
         {
             public new class Arguments : Option.Arguments
             {
@@ -41,21 +43,33 @@ namespace QLNet.Instruments.Bonds
                     redemption = null;
                 }
 
-                public double? conversionRatio { get; set; }
-                public Handle<Quote> creditSpread { get; set; }
-                public DividendSchedule dividends { get; set; }
-                public List<Date> dividendDates { get; set; }
                 public List<Date> callabilityDates { get; set; }
-                public List<Callability.Type> callabilityTypes { get; set; }
+
                 public List<double> callabilityPrices { get; set; }
+
                 public List<double?> callabilityTriggers { get; set; }
-                public List<Date> couponDates { get; set; }
+
+                public List<Callability.Type> callabilityTypes { get; set; }
+
+                public double? conversionRatio { get; set; }
+
                 public List<double> couponAmounts { get; set; }
+
+                public List<Date> couponDates { get; set; }
+
+                public Handle<Quote> creditSpread { get; set; }
+
+                public List<Date> dividendDates { get; set; }
+
+                public DividendSchedule dividends { get; set; }
+
                 public Date issueDate { get; set; }
+
+                public double? redemption { get; set; }
+
                 public Date settlementDate { get; set; }
 
                 public int? settlementDays { get; set; }
-                public double? redemption { get; set; }
 
                 public override void validate()
                 {
@@ -63,7 +77,7 @@ namespace QLNet.Instruments.Bonds
 
                     Utils.QL_REQUIRE(conversionRatio != null, () => "null conversion ratio");
                     Utils.QL_REQUIRE(conversionRatio > 0.0,
-                                     () => "positive conversion ratio required: " + conversionRatio + " not allowed");
+                        () => "positive conversion ratio required: " + conversionRatio + " not allowed");
 
                     Utils.QL_REQUIRE(redemption != null, () => "null redemption");
                     Utils.QL_REQUIRE(redemption >= 0.0, () => "positive redemption required: " + redemption + " not allowed");
@@ -73,34 +87,48 @@ namespace QLNet.Instruments.Bonds
                     Utils.QL_REQUIRE(settlementDays != null, () => "null settlement days");
 
                     Utils.QL_REQUIRE(callabilityDates.Count == callabilityTypes.Count,
-                                     () => "different number of callability dates and types");
+                        () => "different number of callability dates and types");
                     Utils.QL_REQUIRE(callabilityDates.Count == callabilityPrices.Count,
-                                     () => "different number of callability dates and prices");
+                        () => "different number of callability dates and prices");
                     Utils.QL_REQUIRE(callabilityDates.Count == callabilityTriggers.Count,
-                                     () => "different number of callability dates and triggers");
+                        () => "different number of callability dates and triggers");
 
                     Utils.QL_REQUIRE(couponDates.Count == couponAmounts.Count,
-                                     () => "different number of coupon dates and amounts");
+                        () => "different number of coupon dates and amounts");
                 }
             }
+
             public new class Engine : GenericEngine<Arguments,
-               Results>
-            { }
+                Results>
+            {
+            }
+
+            private ConvertibleBond bond_;
+            private CallabilitySchedule callability_;
+            private List<CashFlow> cashflows_;
+            private double conversionRatio_;
+            private Handle<Quote> creditSpread_;
+            private DayCounter dayCounter_;
+            private DividendSchedule dividends_;
+            private Date issueDate_;
+            private double redemption_;
+            private Schedule schedule_;
+            private int settlementDays_;
 
             public option(ConvertibleBond bond,
-                          Exercise exercise,
-                          double conversionRatio,
-                          DividendSchedule dividends,
-                          CallabilitySchedule callability,
-                          Handle<Quote> creditSpread,
-                          List<CashFlow> cashflows,
-                          DayCounter dayCounter,
-                          Schedule schedule,
-                          Date issueDate,
-                          int settlementDays,
-                          double redemption)
-               : base(new PlainVanillaPayoff(Type.Call, bond.notionals()[0] / 100.0 * redemption / conversionRatio),
-                      exercise)
+                Exercise exercise,
+                double conversionRatio,
+                DividendSchedule dividends,
+                CallabilitySchedule callability,
+                Handle<Quote> creditSpread,
+                List<CashFlow> cashflows,
+                DayCounter dayCounter,
+                Schedule schedule,
+                Date issueDate,
+                int settlementDays,
+                double redemption)
+                : base(new PlainVanillaPayoff(Type.Call, bond.notionals()[0] / 100.0 * redemption / conversionRatio),
+                    exercise)
             {
                 bond_ = bond;
                 conversionRatio_ = conversionRatio;
@@ -128,24 +156,40 @@ namespace QLNet.Instruments.Bonds
 
                 var n = callability_.Count;
                 if (moreArgs.callabilityDates == null)
+                {
                     moreArgs.callabilityDates = new List<Date>();
+                }
                 else
+                {
                     moreArgs.callabilityDates.Clear();
+                }
 
                 if (moreArgs.callabilityTypes == null)
+                {
                     moreArgs.callabilityTypes = new List<Callability.Type>();
+                }
                 else
+                {
                     moreArgs.callabilityTypes.Clear();
+                }
 
                 if (moreArgs.callabilityPrices == null)
+                {
                     moreArgs.callabilityPrices = new List<double>();
+                }
                 else
+                {
                     moreArgs.callabilityPrices.Clear();
+                }
 
                 if (moreArgs.callabilityTriggers == null)
+                {
                     moreArgs.callabilityTriggers = new List<double?>();
+                }
                 else
+                {
                     moreArgs.callabilityTriggers.Clear();
+                }
 
                 for (var i = 0; i < n; i++)
                 {
@@ -155,30 +199,45 @@ namespace QLNet.Instruments.Bonds
                         moreArgs.callabilityDates.Add(callability_[i].date());
 
                         if (callability_[i].price().type() == Callability.Price.Type.Clean)
+                        {
                             moreArgs.callabilityPrices.Add(callability_[i].price().amount() +
                                                            bond_.accruedAmount(callability_[i].date()));
+                        }
                         else
+                        {
                             moreArgs.callabilityPrices.Add(callability_[i].price().amount());
+                        }
 
-                        var softCall = callability_[i] as SoftCallability;
-                        if (softCall != null)
+                        if (callability_[i] is SoftCallability softCall)
+                        {
                             moreArgs.callabilityTriggers.Add(softCall.trigger());
+                        }
                         else
+                        {
                             moreArgs.callabilityTriggers.Add(null);
+                        }
                     }
                 }
 
                 var cashflows = bond_.cashflows();
 
                 if (moreArgs.couponDates == null)
+                {
                     moreArgs.couponDates = new List<Date>();
+                }
                 else
+                {
                     moreArgs.couponDates.Clear();
+                }
 
                 if (moreArgs.couponAmounts == null)
+                {
                     moreArgs.couponAmounts = new List<double>();
+                }
                 else
+                {
                     moreArgs.couponAmounts.Clear();
+                }
 
                 for (var i = 0; i < cashflows.Count - 1; i++)
                 {
@@ -190,14 +249,22 @@ namespace QLNet.Instruments.Bonds
                 }
 
                 if (moreArgs.dividends == null)
+                {
                     moreArgs.dividends = new DividendSchedule();
+                }
                 else
+                {
                     moreArgs.dividends.Clear();
+                }
 
                 if (moreArgs.dividendDates == null)
+                {
                     moreArgs.dividendDates = new List<Date>();
+                }
                 else
+                {
                     moreArgs.dividendDates.Clear();
+                }
 
                 for (var i = 0; i < dividends_.Count; i++)
                 {
@@ -214,38 +281,24 @@ namespace QLNet.Instruments.Bonds
                 moreArgs.settlementDays = settlementDays_;
                 moreArgs.redemption = redemption_;
             }
-
-            private ConvertibleBond bond_;
-            private double conversionRatio_;
-            private CallabilitySchedule callability_;
-            private DividendSchedule dividends_;
-            private Handle<Quote> creditSpread_;
-            private List<CashFlow> cashflows_;
-            private DayCounter dayCounter_;
-            private Date issueDate_;
-            private Schedule schedule_;
-            private int settlementDays_;
-            private double redemption_;
         }
 
-        public double conversionRatio() => conversionRatio_;
-
-        public DividendSchedule dividends() => dividends_;
-
-        public CallabilitySchedule callability() => callability_;
-
-        public Handle<Quote> creditSpread() => creditSpread_;
+        protected CallabilitySchedule callability_;
+        protected double conversionRatio_;
+        protected Handle<Quote> creditSpread_;
+        protected DividendSchedule dividends_;
+        protected option option_;
 
         protected ConvertibleBond(Exercise exercise,
-                                  double conversionRatio,
-                                  DividendSchedule dividends,
-                                  CallabilitySchedule callability,
-                                  Handle<Quote> creditSpread,
-                                  Date issueDate,
-                                  int settlementDays,
-                                  Schedule schedule,
-                                  double redemption)
-           : base(settlementDays, schedule.calendar(), issueDate)
+            double conversionRatio,
+            DividendSchedule dividends,
+            CallabilitySchedule callability,
+            Handle<Quote> creditSpread,
+            Date issueDate,
+            int settlementDays,
+            Schedule schedule,
+            double redemption)
+            : base(settlementDays, schedule.calendar(), issueDate)
         {
             conversionRatio_ = conversionRatio;
             callability_ = callability;
@@ -257,14 +310,22 @@ namespace QLNet.Instruments.Bonds
             if (!callability.empty())
             {
                 Utils.QL_REQUIRE(callability.Last().date() <= maturityDate_, () =>
-                                 "last callability date ("
-                                 + callability.Last().date()
-                                 + ") later than maturity ("
-                                 + maturityDate_.ToShortDateString() + ")");
+                    "last callability date ("
+                    + callability.Last().date()
+                    + ") later than maturity ("
+                    + maturityDate_.ToShortDateString() + ")");
             }
 
             creditSpread.registerWith(update);
         }
+
+        public CallabilitySchedule callability() => callability_;
+
+        public double conversionRatio() => conversionRatio_;
+
+        public Handle<Quote> creditSpread() => creditSpread_;
+
+        public DividendSchedule dividends() => dividends_;
 
         protected override void performCalculations()
         {
@@ -272,12 +333,6 @@ namespace QLNet.Instruments.Bonds
             NPV_ = settlementValue_ = option_.NPV();
             errorEstimate_ = null;
         }
-
-        protected double conversionRatio_;
-        protected CallabilitySchedule callability_;
-        protected DividendSchedule dividends_;
-        protected Handle<Quote> creditSpread_;
-        protected option option_;
     }
 
     //! convertible zero-coupon bond

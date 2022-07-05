@@ -214,10 +214,12 @@ namespace QLNet.Tests
                 var value = option.NPV();
 
                 if (System.Math.Abs(refValue - value) > tolerance)
+                {
                     QAssert.Fail("NPV changed by null dividend :\n"
                                  + "    previous value: " + value + "\n"
                                  + "    current value:  " + refValue + "\n"
                                  + "    change:         " + (value - refValue));
+                }
             }
         }
 

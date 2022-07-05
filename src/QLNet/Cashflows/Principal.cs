@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
@@ -24,41 +25,27 @@ namespace QLNet.Cashflows
     //! %principal payment over a fixed period
     //! This class implements part of the CashFlow interface but it is
     //  still abstract and provides derived classes with methods for accrual period calculations.
-    [JetBrains.Annotations.PublicAPI] public class Principal : CashFlow
+    [PublicAPI]
+    public class Principal : CashFlow
     {
-        protected double nominal_;
         protected double amount_;
         protected DayCounter dayCounter_;
+        protected double nominal_;
         protected Date paymentDate_, accrualStartDate_, accrualEndDate_, refPeriodStart_, refPeriodEnd_;
 
-        // access to properties
-        public double nominal() => nominal_;
-
-        public override Date date() => paymentDate_;
-
-        public Date accrualStartDate() => accrualStartDate_;
-
-        public Date accrualEndDate() => accrualEndDate_;
-
-        public Date refPeriodStart => refPeriodStart_;
-
-        public Date refPeriodEnd => refPeriodEnd_;
-
-        public override double amount() => amount_;
-
-        public void setAmount(double amount) { amount_ = amount; }
-        public DayCounter dayCounter() => dayCounter_;
-
         // Constructors
-        public Principal() { }       // default constructor
+        public Principal()
+        {
+        } // default constructor
+
         public Principal(double amount,
-                         double nominal,
-                         Date paymentDate,
-                         Date accrualStartDate,
-                         Date accrualEndDate,
-                         DayCounter dayCounter,
-                         Date refPeriodStart = null,
-                         Date refPeriodEnd = null)
+            double nominal,
+            Date paymentDate,
+            Date accrualStartDate,
+            Date accrualEndDate,
+            DayCounter dayCounter,
+            Date refPeriodStart = null,
+            Date refPeriodEnd = null)
         {
             amount_ = amount;
             nominal_ = nominal;
@@ -69,9 +56,36 @@ namespace QLNet.Cashflows
             refPeriodEnd_ = refPeriodEnd;
             dayCounter_ = dayCounter;
             if (refPeriodStart_ == null)
+            {
                 refPeriodStart_ = accrualStartDate_;
+            }
+
             if (refPeriodEnd_ == null)
+            {
                 refPeriodEnd_ = accrualEndDate_;
+            }
+        }
+
+        public Date refPeriodEnd => refPeriodEnd_;
+
+        public Date refPeriodStart => refPeriodStart_;
+
+        public Date accrualEndDate() => accrualEndDate_;
+
+        public Date accrualStartDate() => accrualStartDate_;
+
+        public override double amount() => amount_;
+
+        public override Date date() => paymentDate_;
+
+        public DayCounter dayCounter() => dayCounter_;
+
+        // access to properties
+        public double nominal() => nominal_;
+
+        public void setAmount(double amount)
+        {
+            amount_ = amount;
         }
     }
 }

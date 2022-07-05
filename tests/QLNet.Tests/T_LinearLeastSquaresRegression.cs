@@ -194,7 +194,9 @@ namespace QLNet.Tests
 
             var coeff = new Vector(v.Count);
             for (var i = 0; i < v.Count; ++i)
+            {
                 coeff[i] = rng.next().value;
+            }
 
             List<double> y = new InitializedList<double>(nr, 0.0);
             List<Vector> x = new InitializedList<Vector>(nr);

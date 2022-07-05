@@ -16,8 +16,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using System;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Methods.montecarlo
 {
@@ -27,16 +28,23 @@ namespace QLNet.Methods.montecarlo
 
         \ingroup mcarlo
     */
-    [JetBrains.Annotations.PublicAPI] public class MultiPath : IPath
+    [PublicAPI]
+    public class MultiPath : IPath
     {
         private List<Path> multiPath_;
 
-        public MultiPath() { }
+        public MultiPath()
+        {
+        }
+
         public MultiPath(int nAsset, TimeGrid timeGrid)
         {
             multiPath_ = new List<Path>(nAsset);
             for (var i = 0; i < nAsset; i++)
+            {
                 multiPath_.Add(new Path(timeGrid));
+            }
+
             Utils.QL_REQUIRE(nAsset > 0, () => "number of asset must be positive");
         }
 
@@ -45,17 +53,15 @@ namespace QLNet.Methods.montecarlo
             multiPath_ = multiPath;
         }
 
-        // inspectors
-        public int assetNumber() => multiPath_.Count;
-
-        public int length() => pathSize();
-
-        public int pathSize() => multiPath_[0].length();
-
         // read/write access to components
-        public Path this[int j] { get => multiPath_[j];
+        public Path this[int j]
+        {
+            get => multiPath_[j];
             set => multiPath_[j] = value;
         }
+
+        // inspectors
+        public int assetNumber() => multiPath_.Count;
 
         // ICloneable interface
         public object Clone()
@@ -64,5 +70,9 @@ namespace QLNet.Methods.montecarlo
             temp.multiPath_ = new List<Path>(multiPath_);
             return temp;
         }
+
+        public int length() => pathSize();
+
+        public int pathSize() => multiPath_[0].length();
     }
 }

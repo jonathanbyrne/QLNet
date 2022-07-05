@@ -13,11 +13,13 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Math.Distributions;
 using QLNet.Math.randomnumbers;
 using QLNet.Methods.montecarlo;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Models.MarketModels.BrownianGenerators
 {
@@ -25,27 +27,38 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
     /*! Incremental Brownian generator using a Sobol generator,
         inverse-cumulative Gaussian method, and Brownian bridging.
     */
-    [JetBrains.Annotations.PublicAPI] public class SobolBrownianGenerator : IBrownianGenerator
+    [PublicAPI]
+    public class SobolBrownianGenerator : IBrownianGenerator
     {
         public enum Ordering
         {
-            Factors,  /*!< The variates with the best quality will be
+            Factors, /*!< The variates with the best quality will be
                         used for the evolution of the first factor. */
-            Steps,    /*!< The variates with the best quality will be
+            Steps, /*!< The variates with the best quality will be
                         used for the largest steps of all factors. */
-            Diagonal  /*!< A diagonal schema will be used to assign
+            Diagonal /*!< A diagonal schema will be used to assign
                         the variates with the best quality to the
                         most important factors and the largest
                         steps. */
         }
+
+        private BrownianBridge bridge_;
+        private List<List<double>> bridgedVariates_;
+        private int factors_, steps_;
+        private InverseCumulativeRsg<SobolRsg, InverseCumulativeNormal> generator_;
+        // work variables
+        private int lastStep_;
+        private List<List<int>> orderedIndices_;
+        private Ordering ordering_;
+
         public SobolBrownianGenerator(int factors, int steps, Ordering ordering, ulong seed = 0,
-                                      SobolRsg.DirectionIntegers directionIntegers = SobolRsg.DirectionIntegers.Jaeckel)
+            SobolRsg.DirectionIntegers directionIntegers = SobolRsg.DirectionIntegers.Jaeckel)
         {
             factors_ = factors;
             steps_ = steps;
             ordering_ = ordering;
             generator_ = new InverseCumulativeRsg<SobolRsg, InverseCumulativeNormal>(
-               new SobolRsg(factors * steps, seed, directionIntegers), new InverseCumulativeNormal());
+                new SobolRsg(factors * steps, seed, directionIntegers), new InverseCumulativeNormal());
             bridge_ = new BrownianBridge(steps);
             lastStep_ = 0;
             orderedIndices_ = new InitializedList<List<int>>(factors);
@@ -85,11 +98,13 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
                     permList.Add(sample.value[index]);
                 }
 
-                bridge_.transform(permList, bridgedVariates_[i]);   // TODO Check
+                bridge_.transform(permList, bridgedVariates_[i]); // TODO Check
             }
+
             lastStep_ = 0;
             return sample.weight;
         }
+
         public double nextStep(List<double> output)
         {
 #if QL_EXTRA_SAFETY_CHECKS
@@ -97,7 +112,10 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
          Utils.QL_REQUIRE(lastStep_<steps_, () => "sequence exhausted");
 #endif
             for (var i = 0; i < factors_; ++i)
+            {
                 output[i] = bridgedVariates_[i][lastStep_];
+            }
+
             ++lastStep_;
             return 1.0;
         }
@@ -125,6 +143,7 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
                 {
                     sample[k] = variates[k][j];
                 }
+
                 for (var i = 0; i < factors_; ++i)
                 {
                     var permList = new List<double>();
@@ -132,27 +151,13 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
                     {
                         permList.Add(sample[index]);
                     }
+
                     var temp = retVal[i].GetRange(j * steps_, retVal[i].Count - j * steps_);
-                    bridge_.transform(permList, temp);   // TODO Check
+                    bridge_.transform(permList, temp); // TODO Check
                 }
             }
+
             return retVal;
-        }
-
-        private void fillByFactor(List<List<int>> M, int factors, int steps)
-        {
-            var counter = 0;
-            for (var i = 0; i < factors; ++i)
-                for (var j = 0; j < steps; ++j)
-                    M[i][j] = counter++;
-        }
-
-        private void fillByStep(List<List<int>> M, int factors, int steps)
-        {
-            var counter = 0;
-            for (var j = 0; j < steps; ++j)
-                for (var i = 0; i < factors; ++i)
-                    M[i][j] = counter++;
         }
 
         // variate 2 is used for the second factor's full path
@@ -181,6 +186,7 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
                         i0 = factors - 1;
                         j0 = j0 + 1;
                     }
+
                     i = i0;
                     j = j0;
                 }
@@ -193,13 +199,24 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
             }
         }
 
-        private int factors_, steps_;
-        private Ordering ordering_;
-        private InverseCumulativeRsg<SobolRsg, InverseCumulativeNormal> generator_;
-        private BrownianBridge bridge_;
-        // work variables
-        private int lastStep_;
-        private List<List<int>> orderedIndices_;
-        private List<List<double>> bridgedVariates_;
+        private void fillByFactor(List<List<int>> M, int factors, int steps)
+        {
+            var counter = 0;
+            for (var i = 0; i < factors; ++i)
+            for (var j = 0; j < steps; ++j)
+            {
+                M[i][j] = counter++;
+            }
+        }
+
+        private void fillByStep(List<List<int>> M, int factors, int steps)
+        {
+            var counter = 0;
+            for (var j = 0; j < steps; ++j)
+            for (var i = 0; i < factors; ++i)
+            {
+                M[i][j] = counter++;
+            }
+        }
     }
 }

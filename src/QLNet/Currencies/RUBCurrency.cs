@@ -1,9 +1,13 @@
+using JetBrains.Annotations;
 using QLNet.Math;
 
 namespace QLNet.Currencies
 {
-    [JetBrains.Annotations.PublicAPI] public class RUBCurrency : Currency
+    [PublicAPI]
+    public class RUBCurrency : Currency
     {
-        public RUBCurrency() : base("Russian ruble", "RUB", 643, "", "", 100, new Rounding(), "%1$.2f %2%") { }
+        public RUBCurrency() : base("Russian ruble", "RUB", 643, "", "", 100, new Rounding(), "%1$.2f %2%")
+        {
+        }
     }
 }

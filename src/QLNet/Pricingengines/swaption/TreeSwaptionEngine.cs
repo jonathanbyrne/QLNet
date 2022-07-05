@@ -17,13 +17,14 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Models;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Pricingengines.swaption
 {
@@ -38,11 +39,11 @@ namespace QLNet.Pricingengines.swaption
 
         \test calculations are checked against cached results
     */
-    [JetBrains.Annotations.PublicAPI] public class TreeSwaptionEngine
-       : LatticeShortRateModelEngine<Swaption.Arguments,
-         Instrument.Results>
+    [PublicAPI]
+    public class TreeSwaptionEngine
+        : LatticeShortRateModelEngine<Swaption.Arguments,
+            Instrument.Results>
     {
-
         private Handle<YieldTermStructure> termStructure_;
 
         /* Constructors
@@ -50,25 +51,30 @@ namespace QLNet.Pricingengines.swaption
                   model cannot provide one itself.
         */
         public TreeSwaptionEngine(ShortRateModel model,
-                                  int timeSteps)
-           : this(model, timeSteps, new Handle<YieldTermStructure>())
-        { }
+            int timeSteps)
+            : this(model, timeSteps, new Handle<YieldTermStructure>())
+        {
+        }
+
         public TreeSwaptionEngine(ShortRateModel model,
-                                  int timeSteps,
-                                  Handle<YieldTermStructure> termStructure)
-           : base(model, timeSteps)
+            int timeSteps,
+            Handle<YieldTermStructure> termStructure)
+            : base(model, timeSteps)
         {
             termStructure_ = termStructure;
             termStructure_.registerWith(update);
         }
+
         public TreeSwaptionEngine(ShortRateModel model,
-                                  TimeGrid timeGrid)
-           : this(model, timeGrid, new Handle<YieldTermStructure>())
-        { }
+            TimeGrid timeGrid)
+            : this(model, timeGrid, new Handle<YieldTermStructure>())
+        {
+        }
+
         public TreeSwaptionEngine(ShortRateModel model,
-                                  TimeGrid timeGrid,
-                                  Handle<YieldTermStructure> termStructure)
-           : base(model, timeGrid)
+            TimeGrid timeGrid,
+            Handle<YieldTermStructure> termStructure)
+            : base(model, timeGrid)
         {
             termStructure_ = new Handle<YieldTermStructure>();
             termStructure_ = termStructure;
@@ -77,9 +83,8 @@ namespace QLNet.Pricingengines.swaption
 
         public override void calculate()
         {
-
             Utils.QL_REQUIRE(arguments_.settlementMethod != Settlement.Method.ParYieldCurve, () =>
-                             "cash-settled (ParYieldCurve) swaptions not priced with tree engine");
+                "cash-settled (ParYieldCurve) swaptions not priced with tree engine");
 
             Utils.QL_REQUIRE(model_ != null, () => "no model specified");
 
@@ -87,7 +92,7 @@ namespace QLNet.Pricingengines.swaption
             DayCounter dayCounter;
 
             var tsmodel =
-               (ITermStructureConsistentModel)model_.link;
+                (ITermStructureConsistentModel)model_.link;
             try
             {
                 if (tsmodel != null)
@@ -123,9 +128,11 @@ namespace QLNet.Pricingengines.swaption
 
             List<double> stoppingTimes = new InitializedList<double>(arguments_.exercise.dates().Count);
             for (var i = 0; i < stoppingTimes.Count; ++i)
+            {
                 stoppingTimes[i] =
-                   dayCounter.yearFraction(referenceDate,
-                                           arguments_.exercise.date(i));
+                    dayCounter.yearFraction(referenceDate,
+                        arguments_.exercise.date(i));
+            }
 
             swaption.initialize(lattice, stoppingTimes.Last());
 
@@ -138,6 +145,5 @@ namespace QLNet.Pricingengines.swaption
 
             results_.value = swaption.presentValue();
         }
-
     }
 }

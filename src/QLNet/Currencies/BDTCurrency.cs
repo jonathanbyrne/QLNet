@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
 
 namespace QLNet.Currencies
@@ -26,9 +27,12 @@ namespace QLNet.Currencies
         It is divided in 100 paisa.
            \ingroup currencies
     */
-    [JetBrains.Annotations.PublicAPI] public class BDTCurrency : Currency
+    [PublicAPI]
+    public class BDTCurrency : Currency
     {
-        public BDTCurrency() : base("Bangladesh taka", "BDT", 50, "Bt", "", 100, new Rounding(), "%3% %1$.2f") { }
+        public BDTCurrency() : base("Bangladesh taka", "BDT", 50, "Bt", "", 100, new Rounding(), "%3% %1$.2f")
+        {
+        }
     }
 
     //! Chinese yuan

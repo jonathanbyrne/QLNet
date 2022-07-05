@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.randomnumbers;
 using QLNet.Math.statistics;
@@ -26,27 +27,29 @@ using QLNet.processes;
 namespace QLNet.Pricingengines.asian
 {
     /// <summary>
-    /// Monte Carlo pricing engine for discrete arithmetic average-strike Asian
+    ///     Monte Carlo pricing engine for discrete arithmetic average-strike Asian
     /// </summary>
     /// <typeparam name="RNG"></typeparam>
     /// <typeparam name="S"></typeparam>
-    [JetBrains.Annotations.PublicAPI] public class MCDiscreteArithmeticASEngine<RNG, S>
-      : MCDiscreteAveragingAsianEngine<RNG, S>
+    [PublicAPI]
+    public class MCDiscreteArithmeticASEngine<RNG, S>
+        : MCDiscreteAveragingAsianEngine<RNG, S>
         where RNG : IRSG, new()
         where S : Statistics, new()
     {
         // constructor
         public MCDiscreteArithmeticASEngine(
-           GeneralizedBlackScholesProcess process,
-           bool brownianBridge,
-           bool antitheticVariate,
-           int requiredSamples,
-           double requiredTolerance,
-           int maxSamples,
-           ulong seed)
-           : base(process, 1, brownianBridge, antitheticVariate, false,
-                  requiredSamples, requiredTolerance, maxSamples, seed)
-        { }
+            GeneralizedBlackScholesProcess process,
+            bool brownianBridge,
+            bool antitheticVariate,
+            int requiredSamples,
+            double requiredTolerance,
+            int maxSamples,
+            ulong seed)
+            : base(process, 1, brownianBridge, antitheticVariate, false,
+                requiredSamples, requiredTolerance, maxSamples, seed)
+        {
+        }
 
         protected override PathPricer<IPath> pathPricer()
         {
@@ -57,12 +60,10 @@ namespace QLNet.Pricingengines.asian
             Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
 
             return (PathPricer<IPath>)new ArithmeticASOPathPricer(
-                      payoff.optionType(),
-                      process_.riskFreeRate().link.discount(timeGrid().Last()),
-                      arguments_.runningAccumulator.GetValueOrDefault(),
-                      arguments_.pastFixings.GetValueOrDefault());
+                payoff.optionType(),
+                process_.riskFreeRate().link.discount(timeGrid().Last()),
+                arguments_.runningAccumulator.GetValueOrDefault(),
+                arguments_.pastFixings.GetValueOrDefault());
         }
     }
 }
-
-

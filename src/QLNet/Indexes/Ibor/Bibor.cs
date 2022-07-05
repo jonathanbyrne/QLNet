@@ -14,8 +14,8 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
-using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time;
 using QLNet.Time.Calendars;
@@ -24,11 +24,105 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Indexes.Ibor
 {
     /// <summary>
-    /// Bibor index
-    /// Bangkok Interbank Offered Rate  fixed by the Bank of Thailand BOT.
+    ///     Bibor index
+    ///     Bangkok Interbank Offered Rate  fixed by the Bank of Thailand BOT.
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class Bibor : IborIndex
+    [PublicAPI]
+    public class Bibor : IborIndex
     {
+        /// <summary>
+        ///     1-month Bibor index
+        /// </summary>
+        [PublicAPI]
+        public class Bibor1M : Bibor
+        {
+            public Bibor1M(Handle<YieldTermStructure> h = null)
+                : base(new Period(1, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
+            {
+            }
+        }
+
+        /// <summary>
+        ///     1-year Bibor index
+        /// </summary>
+        [PublicAPI]
+        public class Bibor1Y : Bibor
+        {
+            public Bibor1Y(Handle<YieldTermStructure> h = null)
+                : base(new Period(1, TimeUnit.Years), h ?? new Handle<YieldTermStructure>())
+            {
+            }
+        }
+
+        /// <summary>
+        ///     2-months Bibor index
+        /// </summary>
+        [PublicAPI]
+        public class Bibor2M : Bibor
+        {
+            public Bibor2M(Handle<YieldTermStructure> h = null)
+                : base(new Period(2, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
+            {
+            }
+        }
+
+        /// <summary>
+        ///     3-months Bibor index
+        /// </summary>
+        [PublicAPI]
+        public class Bibor3M : Bibor
+        {
+            public Bibor3M(Handle<YieldTermStructure> h = null)
+                : base(new Period(3, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
+            {
+            }
+        }
+
+        /// <summary>
+        ///     6-months Bibor index
+        /// </summary>
+        [PublicAPI]
+        public class Bibor6M : Bibor
+        {
+            public Bibor6M(Handle<YieldTermStructure> h = null)
+                : base(new Period(6, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
+            {
+            }
+        }
+
+        /// <summary>
+        ///     9-months Bibor index
+        /// </summary>
+        [PublicAPI]
+        public class Bibor9M : Bibor
+        {
+            public Bibor9M(Handle<YieldTermStructure> h = null)
+                : base(new Period(9, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
+            {
+            }
+        }
+
+        /// <summary>
+        ///     1-week Bibor index
+        /// </summary>
+        [PublicAPI]
+        public class BiborSW : Bibor
+        {
+            public BiborSW(Handle<YieldTermStructure> h = null)
+                : base(new Period(1, TimeUnit.Weeks), h ?? new Handle<YieldTermStructure>())
+            {
+            }
+        }
+
+        public Bibor(Period tenor, Handle<YieldTermStructure> h = null)
+            : base("Bibor", tenor, 2, new THBCurrency(), new Thailand(),
+                BiborConvention(tenor), BiborEOM(tenor),
+                new Actual365Fixed(), h ?? new Handle<YieldTermStructure>())
+        {
+            Utils.QL_REQUIRE(this.tenor().units() != TimeUnit.Days, () =>
+                "for daily tenors (" + this.tenor() + ") dedicated DailyTenor constructor must be used");
+        }
+
         public static BusinessDayConvention BiborConvention(Period p)
         {
             switch (p.units())
@@ -59,85 +153,6 @@ namespace QLNet.Indexes.Ibor
                     Utils.QL_FAIL("invalid time units");
                     return false;
             }
-        }
-
-        public Bibor(Period tenor, Handle<YieldTermStructure> h = null)
-           : base("Bibor", tenor, 2, new THBCurrency(), new Thailand(),
-                  BiborConvention(tenor), BiborEOM(tenor),
-                  new Actual365Fixed(), h ?? new Handle<YieldTermStructure>())
-        {
-            Utils.QL_REQUIRE(this.tenor().units() != TimeUnit.Days, () =>
-                             "for daily tenors (" + this.tenor() + ") dedicated DailyTenor constructor must be used");
-        }
-
-        /// <summary>
-        /// 1-week Bibor index
-        /// </summary>
-        [JetBrains.Annotations.PublicAPI] public class BiborSW : Bibor
-        {
-            public BiborSW(Handle<YieldTermStructure> h = null)
-               : base(new Period(1, TimeUnit.Weeks), h ?? new Handle<YieldTermStructure>())
-            { }
-        }
-
-        /// <summary>
-        /// 1-month Bibor index
-        /// </summary>
-        [JetBrains.Annotations.PublicAPI] public class Bibor1M : Bibor
-        {
-            public Bibor1M(Handle<YieldTermStructure> h = null)
-               : base(new Period(1, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
-            { }
-        }
-
-        /// <summary>
-        /// 2-months Bibor index
-        /// </summary>
-        [JetBrains.Annotations.PublicAPI] public class Bibor2M : Bibor
-        {
-            public Bibor2M(Handle<YieldTermStructure> h = null)
-               : base(new Period(2, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
-            { }
-        }
-
-        /// <summary>
-        /// 3-months Bibor index
-        /// </summary>
-        [JetBrains.Annotations.PublicAPI] public class Bibor3M : Bibor
-        {
-            public Bibor3M(Handle<YieldTermStructure> h = null)
-               : base(new Period(3, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
-            { }
-        }
-
-        /// <summary>
-        /// 6-months Bibor index
-        /// </summary>
-        [JetBrains.Annotations.PublicAPI] public class Bibor6M : Bibor
-        {
-            public Bibor6M(Handle<YieldTermStructure> h = null)
-               : base(new Period(6, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
-            { }
-        }
-
-        /// <summary>
-        /// 9-months Bibor index
-        /// </summary>
-        [JetBrains.Annotations.PublicAPI] public class Bibor9M : Bibor
-        {
-            public Bibor9M(Handle<YieldTermStructure> h = null)
-               : base(new Period(9, TimeUnit.Months), h ?? new Handle<YieldTermStructure>())
-            { }
-        }
-
-        /// <summary>
-        /// 1-year Bibor index
-        /// </summary>
-        [JetBrains.Annotations.PublicAPI] public class Bibor1Y : Bibor
-        {
-            public Bibor1Y(Handle<YieldTermStructure> h = null)
-               : base(new Period(1, TimeUnit.Years), h ?? new Handle<YieldTermStructure>())
-            { }
         }
     }
 }

@@ -17,25 +17,80 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Extensions;
-using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Extensions;
 
 namespace QLNet.Math.ODE
 {
     /// <summary>
-    /// Runge-Kutta ODE integration
-    /// <remarks>
-    /// Runge Kutta method with adaptive stepsize as described in
-    /// Numerical Recipes in C, Chapter 16.2
-    /// </remarks>
+    ///     Runge-Kutta ODE integration
+    ///     <remarks>
+    ///         Runge Kutta method with adaptive stepsize as described in
+    ///         Numerical Recipes in C, Chapter 16.2
+    ///     </remarks>
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class AdaptiveRungeKutta
+    [PublicAPI]
+    public class AdaptiveRungeKutta
     {
         public delegate List<double> OdeFct(double x, List<double> l);
 
         public delegate double OdeFct1d(double x, double y);
 
+        [PublicAPI]
+        public class OdeFctWrapper
+        {
+            protected OdeFct1d ode1d_;
+
+            public OdeFctWrapper(OdeFct1d ode1d)
+            {
+                ode1d_ = ode1d;
+            }
+
+            public List<double> value(double x, List<double> y)
+            {
+                List<double> res = new InitializedList<double>(1, ode1d_(x, y[0]));
+                return res;
+            }
+        }
+
+        protected const double ADAPTIVERK_MAXSTP = 10000.0,
+            ADAPTIVERK_TINY = 1.0E-30,
+            ADAPTIVERK_SAFETY = 0.9,
+            ADAPTIVERK_PGROW = -0.2,
+            ADAPTIVERK_PSHRINK = -0.25,
+            ADAPTIVERK_ERRCON = 1.89E-4;
+        protected double a2,
+            a3,
+            a4,
+            a5,
+            a6,
+            b21,
+            b31,
+            b32,
+            b41,
+            b42,
+            b43,
+            b51,
+            b52,
+            b53,
+            b54,
+            b61,
+            b62,
+            b63,
+            b64,
+            b65,
+            c1,
+            c3,
+            c4,
+            c6,
+            dc1,
+            dc3,
+            dc4,
+            dc5,
+            dc6;
+        protected double eps_, h1_, hmin_;
+        protected List<double> yStart_;
         /*! The class is constructed with the following inputs:
             - eps       prescribed error for the solution
             - h1        start step size
@@ -43,8 +98,8 @@ namespace QLNet.Math.ODE
         */
 
         public AdaptiveRungeKutta(double eps = 1.0e-6,
-                                  double h1 = 1.0e-4,
-                                  double hmin = 0.0)
+            double h1 = 1.0e-4,
+            double hmin = 0.0)
         {
             eps_ = eps;
             h1_ = h1;
@@ -88,9 +143,9 @@ namespace QLNet.Math.ODE
             \rightarrow K^n \f$ as \f$ f'(x) = F(x,f(x)) \f$, $K=R,
             C$ */
         public List<double> value(OdeFct ode,
-                                  List<double> y1,
-                                  double x1,
-                                  double x2)
+            List<double> y1,
+            double x1,
+            double x2)
         {
             var n = y1.Count;
             var y = new List<double>(y1);
@@ -103,40 +158,111 @@ namespace QLNet.Math.ODE
             {
                 var dydx = ode(x, y);
                 for (var i = 0; i < n; i++)
+                {
                     yScale[i] = System.Math.Abs(y[i]) + System.Math.Abs(dydx[i] * h) + ADAPTIVERK_TINY;
+                }
+
                 if ((x + h - x2) * (x + h - x1) > 0.0)
+                {
                     h = x2 - x;
+                }
+
                 rkqs(y, dydx, ref x, h, eps_, yScale, ref hdid, ref hnext, ode);
 
                 if ((x - x2) * (x2 - x1) >= 0.0)
+                {
                     return y;
+                }
 
                 if (System.Math.Abs(hnext) <= hmin_)
+                {
                     Utils.QL_FAIL("Step size (" + hnext + ") too small ("
                                   + hmin_ + " min) in AdaptiveRungeKutta");
+                }
+
                 h = hnext;
             }
+
             Utils.QL_FAIL("Too many steps (" + ADAPTIVERK_MAXSTP
-                          + ") in AdaptiveRungeKutta");
+                                             + ") in AdaptiveRungeKutta");
             return null;
         }
 
         public double value(OdeFct1d ode,
-                            double y1,
-                            double x1,
-                            double x2) =>
+            double y1,
+            double x1,
+            double x2) =>
             value(new OdeFctWrapper(ode).value,
                 new InitializedList<double>(1, y1), x1, x2)[0];
 
+        protected void rkck(List<double> y,
+            List<double> dydx,
+            ref double x,
+            double h,
+            ref List<double> yout,
+            ref List<double> yerr,
+            OdeFct derivs)
+        {
+            var n = y.Count;
+            List<double> ak2 = new InitializedList<double>(n),
+                ak3 = new InitializedList<double>(n),
+                ak4 = new InitializedList<double>(n),
+                ak5 = new InitializedList<double>(n),
+                ak6 = new InitializedList<double>(n),
+                ytemp = new InitializedList<double>(n);
+
+            // first step
+            for (var i = 0; i < n; i++)
+            {
+                ytemp[i] = y[i] + b21 * h * dydx[i];
+            }
+
+            // second step
+            ak2 = derivs(x + a2 * h, ytemp);
+            for (var i = 0; i < n; i++)
+            {
+                ytemp[i] = y[i] + h * (b31 * dydx[i] + b32 * ak2[i]);
+            }
+
+            // third step
+            ak3 = derivs(x + a3 * h, ytemp);
+            for (var i = 0; i < n; i++)
+            {
+                ytemp[i] = y[i] + h * (b41 * dydx[i] + b42 * ak2[i] + b43 * ak3[i]);
+            }
+
+            // fourth step
+            ak4 = derivs(x + a4 * h, ytemp);
+            for (var i = 0; i < n; i++)
+            {
+                ytemp[i] = y[i] + h * (b51 * dydx[i] + b52 * ak2[i] + b53 * ak3[i] + b54 * ak4[i]);
+            }
+
+            // fifth step
+            ak5 = derivs(x + a5 * h, ytemp);
+            for (var i = 0; i < n; i++)
+            {
+                ytemp[i] = y[i] + h * (b61 * dydx[i] + b62 * ak2[i] + b63 * ak3[i] + b64 * ak4[i] + b65 * ak5[i]);
+            }
+
+            // sixth step
+            ak6 = derivs(x + a6 * h, ytemp);
+            for (var i = 0; i < n; i++)
+            {
+                yout[i] = y[i] + h * (c1 * dydx[i] + c3 * ak3[i] + c4 * ak4[i] + c6 * ak6[i]);
+                yerr[i] = h * (dc1 * dydx[i] + dc3 * ak3[i] + dc4 * ak4[i] + dc5 * ak5[i] + dc6 * ak6[i]);
+            }
+        }
+
         protected void rkqs(List<double> y,
-                            List<double> dydx,
-                            ref double x,
-                            double htry,
-                            double eps,
-                            List<double> yScale,
-                            ref double hdid,
-                            ref double hnext,
-                            OdeFct derivs)
+            List<double> dydx,
+            ref double x,
+            double htry,
+            double eps,
+            List<double> yScale,
+            ref double hdid,
+            ref double hnext,
+            OdeFct derivs)
         {
             var n = y.Count;
             double errmax, xnew;
@@ -144,12 +270,15 @@ namespace QLNet.Math.ODE
 
             var h = htry;
 
-            for (; ; )
+            for (;;)
             {
                 rkck(y, dydx, ref x, h, ref ytemp, ref yerr, derivs);
                 errmax = 0.0;
                 for (var i = 0; i < n; i++)
+                {
                     errmax = System.Math.Max(errmax, System.Math.Abs(yerr[i] / yScale[i]));
+                }
+
                 errmax /= eps;
                 if (errmax > 1.0)
                 {
@@ -165,127 +294,31 @@ namespace QLNet.Math.ODE
                     h = h >= 0.0 ? max_positive : max_negative;
                     xnew = x + h;
                     if (xnew.IsEqual(x))
+                    {
                         Utils.QL_FAIL("Stepsize underflow (" + h + " at x = " + x
                                       + ") in AdaptiveRungeKutta::rkqs");
+                    }
+
                     continue;
+                }
+
+                if (errmax > ADAPTIVERK_ERRCON)
+                {
+                    hnext = ADAPTIVERK_SAFETY * h * System.Math.Pow(errmax, ADAPTIVERK_PGROW);
                 }
                 else
                 {
-                    if (errmax > ADAPTIVERK_ERRCON)
-                        hnext = ADAPTIVERK_SAFETY * h * System.Math.Pow(errmax, ADAPTIVERK_PGROW);
-                    else
-                        hnext = 5.0 * h;
-                    x += hdid = h;
-                    for (var i = 0; i < n; i++)
-                        y[i] = ytemp[i];
-                    break;
+                    hnext = 5.0 * h;
                 }
+
+                x += hdid = h;
+                for (var i = 0; i < n; i++)
+                {
+                    y[i] = ytemp[i];
+                }
+
+                break;
             }
-        }
-
-        protected void rkck(List<double> y,
-                            List<double> dydx,
-                            ref double x,
-                            double h,
-                            ref List<double> yout,
-                            ref List<double> yerr,
-                            OdeFct derivs)
-        {
-            var n = y.Count;
-            List<double> ak2 = new InitializedList<double>(n),
-            ak3 = new InitializedList<double>(n),
-            ak4 = new InitializedList<double>(n),
-            ak5 = new InitializedList<double>(n),
-            ak6 = new InitializedList<double>(n),
-            ytemp = new InitializedList<double>(n);
-
-            // first step
-            for (var i = 0; i < n; i++)
-                ytemp[i] = y[i] + b21 * h * dydx[i];
-
-            // second step
-            ak2 = derivs(x + a2 * h, ytemp);
-            for (var i = 0; i < n; i++)
-                ytemp[i] = y[i] + h * (b31 * dydx[i] + b32 * ak2[i]);
-
-            // third step
-            ak3 = derivs(x + a3 * h, ytemp);
-            for (var i = 0; i < n; i++)
-                ytemp[i] = y[i] + h * (b41 * dydx[i] + b42 * ak2[i] + b43 * ak3[i]);
-
-            // fourth step
-            ak4 = derivs(x + a4 * h, ytemp);
-            for (var i = 0; i < n; i++)
-                ytemp[i] = y[i] + h * (b51 * dydx[i] + b52 * ak2[i] + b53 * ak3[i] + b54 * ak4[i]);
-
-            // fifth step
-            ak5 = derivs(x + a5 * h, ytemp);
-            for (var i = 0; i < n; i++)
-                ytemp[i] = y[i] + h * (b61 * dydx[i] + b62 * ak2[i] + b63 * ak3[i] + b64 * ak4[i] + b65 * ak5[i]);
-
-            // sixth step
-            ak6 = derivs(x + a6 * h, ytemp);
-            for (var i = 0; i < n; i++)
-            {
-                yout[i] = y[i] + h * (c1 * dydx[i] + c3 * ak3[i] + c4 * ak4[i] + c6 * ak6[i]);
-                yerr[i] = h * (dc1 * dydx[i] + dc3 * ak3[i] + dc4 * ak4[i] + dc5 * ak5[i] + dc6 * ak6[i]);
-            }
-        }
-
-        protected List<double> yStart_;
-        protected double eps_, h1_, hmin_;
-
-        protected double a2,
-                  a3,
-                  a4,
-                  a5,
-                  a6,
-                  b21,
-                  b31,
-                  b32,
-                  b41,
-                  b42,
-                  b43,
-                  b51,
-                  b52,
-                  b53,
-                  b54,
-                  b61,
-                  b62,
-                  b63,
-                  b64,
-                  b65,
-                  c1,
-                  c3,
-                  c4,
-                  c6,
-                  dc1,
-                  dc3,
-                  dc4,
-                  dc5,
-                  dc6;
-
-        protected const double ADAPTIVERK_MAXSTP = 10000.0,
-                               ADAPTIVERK_TINY = 1.0E-30,
-                               ADAPTIVERK_SAFETY = 0.9,
-                               ADAPTIVERK_PGROW = -0.2,
-                               ADAPTIVERK_PSHRINK = -0.25,
-                               ADAPTIVERK_ERRCON = 1.89E-4;
-
-        [JetBrains.Annotations.PublicAPI] public class OdeFctWrapper
-        {
-            public OdeFctWrapper(OdeFct1d ode1d)
-            {
-                ode1d_ = ode1d;
-            }
-
-            public List<double> value(double x, List<double> y)
-            {
-                List<double> res = new InitializedList<double>(1, ode1d_(x, y[0]));
-                return res;
-            }
-
-            protected OdeFct1d ode1d_;
         }
     }
 }

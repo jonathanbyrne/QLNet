@@ -16,21 +16,22 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Cashflows;
-using QLNet.Instruments;
-using QLNet.Termstructures;
-using QLNet.Time;
+
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Cashflows;
+using QLNet.Termstructures;
 
 namespace QLNet.Pricingengines.Swap
 {
-    [JetBrains.Annotations.PublicAPI] public class DiscountingBasisSwapEngine : Instruments.Swap.SwapEngine
+    [PublicAPI]
+    public class DiscountingBasisSwapEngine : Instruments.Swap.SwapEngine
     {
         private List<Handle<YieldTermStructure>> discountCurve_;
 
         public DiscountingBasisSwapEngine(Handle<YieldTermStructure> discountCurve1,
-                                          Handle<YieldTermStructure> discountCurve2)
+            Handle<YieldTermStructure> discountCurve2)
         {
             discountCurve_ = new List<Handle<YieldTermStructure>>();
             discountCurve_.Add(discountCurve1);
@@ -41,9 +42,14 @@ namespace QLNet.Pricingengines.Swap
         public override void calculate()
         {
             if (discountCurve_.empty())
+            {
                 throw new ArgumentException("no discounting term structure set");
+            }
+
             if (discountCurve_.Count != arguments_.legs.Count)
+            {
                 throw new ArgumentException("no discounting term structure set for all legs");
+            }
 
             results_.value = results_.cash = 0;
             results_.errorEstimate = null;
@@ -64,6 +70,7 @@ namespace QLNet.Pricingengines.Swap
                     startDiscounts[i] = null;
                 }
             }
+
             results_.additionalResults.Add("startDiscounts", startDiscounts);
         }
     }

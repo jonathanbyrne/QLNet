@@ -17,8 +17,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
-using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time;
 using QLNet.Time.Calendars;
@@ -26,7 +26,6 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.Ibor
 {
-
     //! %CHF %ZIBOR rate
     //    ! Zurich Interbank Offered Rate.
     //
@@ -36,16 +35,17 @@ namespace QLNet.Indexes.Ibor
     //        \todo check settlement days, end-of-month adjustment,
     //              and day-count convention.
     //
-    [JetBrains.Annotations.PublicAPI] public class Zibor : IborIndex
+    [PublicAPI]
+    public class Zibor : IborIndex
     {
         public Zibor(Period tenor)
-           : base("Zibor", tenor, 2, new CHFCurrency(), new Switzerland(), BusinessDayConvention.ModifiedFollowing, false, new Actual360(), new Handle<YieldTermStructure>())
+            : base("Zibor", tenor, 2, new CHFCurrency(), new Switzerland(), BusinessDayConvention.ModifiedFollowing, false, new Actual360(), new Handle<YieldTermStructure>())
         {
         }
+
         public Zibor(Period tenor, Handle<YieldTermStructure> h)
-           : base("Zibor", tenor, 2, new CHFCurrency(), new Switzerland(), BusinessDayConvention.ModifiedFollowing, false, new Actual360(), h)
+            : base("Zibor", tenor, 2, new CHFCurrency(), new Switzerland(), BusinessDayConvention.ModifiedFollowing, false, new Actual360(), h)
         {
         }
     }
-
 }

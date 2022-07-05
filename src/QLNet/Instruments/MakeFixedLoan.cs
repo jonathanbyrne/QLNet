@@ -17,25 +17,27 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Time;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class MakeFixedLoan
+    [PublicAPI]
+    public class MakeFixedLoan
     {
-        private double nominal_;
+        private Loan.Amortising amortising_;
         private Calendar calendar_;
-        private Date startDate_, endDate_;
-        private Frequency frequency_;
         private BusinessDayConvention convention_;
         private DayCounter dayCounter_;
-        private double fixedRate_;
-        private Loan.Type type_;
-        private Loan.Amortising amortising_;
-        private DateGeneration.Rule rule_;
         private bool endOfMonth_;
+        private double fixedRate_;
+        private Frequency frequency_;
+        private double nominal_;
+        private DateGeneration.Rule rule_;
+        private Date startDate_, endDate_;
+        private Loan.Type type_;
 
         public MakeFixedLoan(Date startDate, Date endDate, double fixedRate, Frequency frequency)
         {
@@ -54,15 +56,27 @@ namespace QLNet.Instruments
             endOfMonth_ = false;
         }
 
-        public MakeFixedLoan withType(Loan.Type type)
+        // Loan creator
+        public static implicit operator FixedLoan(MakeFixedLoan o) => o.value();
+
+        public FixedLoan value()
         {
-            type_ = type;
-            return this;
+            var fixedSchedule = new Schedule(startDate_, endDate_, new Period(frequency_),
+                calendar_, convention_, convention_, rule_, endOfMonth_);
+
+            var principalPeriod = amortising_ == Loan.Amortising.Bullet ? new Period(Frequency.Once) : new Period(frequency_);
+
+            var principalSchedule = new Schedule(startDate_, endDate_, principalPeriod,
+                calendar_, convention_, convention_, rule_, endOfMonth_);
+
+            var fl = new FixedLoan(type_, nominal_, fixedSchedule, fixedRate_, dayCounter_,
+                principalSchedule, convention_);
+            return fl;
         }
 
-        public MakeFixedLoan withNominal(double n)
+        public MakeFixedLoan withAmortising(Loan.Amortising Amortising)
         {
-            nominal_ = n;
+            amortising_ = Amortising;
             return this;
         }
 
@@ -84,45 +98,28 @@ namespace QLNet.Instruments
             return this;
         }
 
-        public MakeFixedLoan withRule(DateGeneration.Rule r)
-        {
-            rule_ = r;
-            return this;
-        }
-
         public MakeFixedLoan withEndOfMonth(bool flag)
         {
             endOfMonth_ = flag;
             return this;
         }
 
-        public MakeFixedLoan withAmortising(Loan.Amortising Amortising)
+        public MakeFixedLoan withNominal(double n)
         {
-            amortising_ = Amortising;
+            nominal_ = n;
             return this;
         }
 
-        // Loan creator
-        public static implicit operator FixedLoan(MakeFixedLoan o) => o.value();
-
-        public FixedLoan value()
+        public MakeFixedLoan withRule(DateGeneration.Rule r)
         {
-
-            var fixedSchedule = new Schedule(startDate_, endDate_, new Period(frequency_),
-                                                  calendar_, convention_, convention_, rule_, endOfMonth_);
-
-            var principalPeriod = amortising_ == Loan.Amortising.Bullet ?
-                                     new Period(Frequency.Once) :
-                                     new Period(frequency_);
-
-            var principalSchedule = new Schedule(startDate_, endDate_, principalPeriod,
-                                                      calendar_, convention_, convention_, rule_, endOfMonth_);
-
-            var fl = new FixedLoan(type_, nominal_, fixedSchedule, fixedRate_, dayCounter_,
-                                         principalSchedule, convention_);
-            return fl;
-
+            rule_ = r;
+            return this;
         }
 
+        public MakeFixedLoan withType(Loan.Type type)
+        {
+            type_ = type;
+            return this;
+        }
     }
 }

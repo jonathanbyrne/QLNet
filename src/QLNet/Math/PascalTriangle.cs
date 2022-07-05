@@ -15,12 +15,20 @@
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math
 {
     //! Pascal triangle coefficients calculator
-    [JetBrains.Annotations.PublicAPI] public class PascalTriangle
+    [PublicAPI]
+    public class PascalTriangle
     {
+        private static List<List<ulong>> coefficients_ = new List<List<ulong>>();
+
+        private PascalTriangle()
+        {
+        }
+
         //! Get and store one vector of coefficients after another.
         public static List<ulong> get(int order)
         {
@@ -35,12 +43,15 @@ namespace QLNet.Math
                 coefficients_.Add(new InitializedList<ulong>(4, 1));
                 coefficients_[3][1] = coefficients_[3][2] = 3;
             }
+
             while (coefficients_.Count <= order)
+            {
                 nextOrder();
+            }
+
             return coefficients_[order];
         }
 
-        private PascalTriangle() { }
         private static void nextOrder()
         {
             var order = coefficients_.Count;
@@ -51,7 +62,5 @@ namespace QLNet.Math
                 coefficients_[order][i] = coefficients_[order][order - i] = coefficients_[order - 1][i - 1] + coefficients_[order - 1][i];
             }
         }
-
-        private static List<List<ulong>> coefficients_ = new List<List<ulong>>();
     }
 }

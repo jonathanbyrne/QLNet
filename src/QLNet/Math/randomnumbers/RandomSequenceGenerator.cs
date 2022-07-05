@@ -16,23 +16,24 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Methods.montecarlo;
 using QLNet.Patterns;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Math.randomnumbers
 {
     /*! Random sequence generator based on a pseudo-random number generator RNG.
         Do not use with low-discrepancy sequence generator.
     */
-    [JetBrains.Annotations.PublicAPI] public class RandomSequenceGenerator<RNG> : IRNG where RNG : IRNGTraits, new()
+    [PublicAPI]
+    public class RandomSequenceGenerator<RNG> : IRNG where RNG : IRNGTraits, new()
     {
         private int dimensionality_;
-
+        private List<ulong> int32Sequence_;
         private RNG rng_;
         private Sample<List<double>> sequence_;
-        private List<ulong> int32Sequence_;
 
         public RandomSequenceGenerator(int dimensionality, RNG rng)
         {
@@ -41,7 +42,10 @@ namespace QLNet.Math.randomnumbers
 
             var ls = new List<double>();
             for (var i = 0; i < dimensionality; i++)
+            {
                 ls.Add(0.0);
+            }
+
             sequence_ = new Sample<List<double>>(ls, 1.0);
             int32Sequence_ = new InitializedList<ulong>(dimensionality);
 
@@ -62,10 +66,12 @@ namespace QLNet.Math.randomnumbers
             {
                 int32Sequence_[i] = rng_.nextInt32();
             }
+
             return int32Sequence_;
         }
 
         #region IRGN interface
+
         public Sample<List<double>> nextSequence()
         {
             sequence_.weight = 1.0;
@@ -75,6 +81,7 @@ namespace QLNet.Math.randomnumbers
                 sequence_.value[i] = x.value;
                 sequence_.weight *= x.weight;
             }
+
             return sequence_;
         }
 

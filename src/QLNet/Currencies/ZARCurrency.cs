@@ -17,17 +17,21 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
 
 namespace QLNet.Currencies
 {
     /// <summary>
-    /// South-African rand
-    /// The ISO three-letter code is ZAR; the numeric code is 710.
-    /// It is divided into 100 cents.
+    ///     South-African rand
+    ///     The ISO three-letter code is ZAR; the numeric code is 710.
+    ///     It is divided into 100 cents.
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class ZARCurrency : Currency
+    [PublicAPI]
+    public class ZARCurrency : Currency
     {
-        public ZARCurrency() : base("South-African rand", "ZAR", 710, "R", "", 100, new Rounding(), "%3% %1$.2f") { }
+        public ZARCurrency() : base("South-African rand", "ZAR", 710, "R", "", 100, new Rounding(), "%3% %1$.2f")
+        {
+        }
     }
 }

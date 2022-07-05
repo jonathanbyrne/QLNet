@@ -16,21 +16,24 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Math;
-using System;
 
 namespace QLNet.processes
 {
     //! Euler discretization for stochastic processes
-    [JetBrains.Annotations.PublicAPI] public class EulerDiscretization : IDiscretization, IDiscretization1D
+    [PublicAPI]
+    public class EulerDiscretization : IDiscretization, IDiscretization1D
     {
-        /*! Returns an approximation of the drift defined as
-            \f$ \mu(t_0, \mathbf{x}_0) \Delta t \f$. */
-        public Vector drift(StochasticProcess process, double t0, Vector x0, double dt) => process.drift(t0, x0) * dt;
-
-        /*! Returns an approximation of the drift defined as
-            \f$ \mu(t_0, x_0) \Delta t \f$. */
-        public double drift(StochasticProcess1D process, double t0, double x0, double dt) => process.drift(t0, x0) * dt;
+        /*! Returns an approximation of the covariance defined as
+            \f$ \sigma(t_0, \mathbf{x}_0)^2 \Delta t \f$. */
+        public Matrix covariance(StochasticProcess process, double t0, Vector x0, double dt)
+        {
+            var sigma = process.diffusion(t0, x0);
+            var result = sigma * Matrix.transpose(sigma) * dt;
+            return result;
+        }
 
         /*! Returns an approximation of the diffusion defined as
             \f$ \sigma(t_0, \mathbf{x}_0) \sqrt{\Delta t} \f$. */
@@ -40,14 +43,13 @@ namespace QLNet.processes
             \f$ \sigma(t_0, x_0) \sqrt{\Delta t} \f$. */
         public double diffusion(StochasticProcess1D process, double t0, double x0, double dt) => process.diffusion(t0, x0) * System.Math.Sqrt(dt);
 
-        /*! Returns an approximation of the covariance defined as
-            \f$ \sigma(t_0, \mathbf{x}_0)^2 \Delta t \f$. */
-        public Matrix covariance(StochasticProcess process, double t0, Vector x0, double dt)
-        {
-            var sigma = process.diffusion(t0, x0);
-            var result = sigma * Matrix.transpose(sigma) * dt;
-            return result;
-        }
+        /*! Returns an approximation of the drift defined as
+            \f$ \mu(t_0, \mathbf{x}_0) \Delta t \f$. */
+        public Vector drift(StochasticProcess process, double t0, Vector x0, double dt) => process.drift(t0, x0) * dt;
+
+        /*! Returns an approximation of the drift defined as
+            \f$ \mu(t_0, x_0) \Delta t \f$. */
+        public double drift(StochasticProcess1D process, double t0, double x0, double dt) => process.drift(t0, x0) * dt;
 
         /*! Returns an approximation of the variance defined as
             \f$ \sigma(t_0, x_0)^2 \Delta t \f$. */

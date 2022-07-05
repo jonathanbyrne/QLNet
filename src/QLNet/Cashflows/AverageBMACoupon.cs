@@ -17,53 +17,67 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Indexes;
-using QLNet.Time;
+
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
     /// <summary>
-    /// Average BMA coupon
-    /// <para>Coupon paying a BMA index, where the coupon rate is a
-    /// weighted average of relevant fixings.</para>
+    ///     Average BMA coupon
+    ///     <para>
+    ///         Coupon paying a BMA index, where the coupon rate is a
+    ///         weighted average of relevant fixings.
+    ///     </para>
     /// </summary>
     /// <remarks>
-    /// The weighted average is computed based on the
-    /// actual calendar days for which a given fixing is valid and
-    /// contributing to the given interest period.
-    ///
-    /// Before weights are computed, the fixing schedule is adjusted
-    /// for the index's fixing day gap. See rate() method for details.
+    ///     The weighted average is computed based on the
+    ///     actual calendar days for which a given fixing is valid and
+    ///     contributing to the given interest period.
+    ///     Before weights are computed, the fixing schedule is adjusted
+    ///     for the index's fixing day gap. See rate() method for details.
     /// </remarks>
-    [JetBrains.Annotations.PublicAPI] public class AverageBmaCoupon : FloatingRateCoupon
+    [PublicAPI]
+    public class AverageBmaCoupon : FloatingRateCoupon
     {
+        private Schedule fixingSchedule_;
 
         public AverageBmaCoupon(Date paymentDate,
-                                double nominal,
-                                Date startDate,
-                                Date endDate,
-                                BMAIndex index,
-                                double gearing = 1.0,
-                                double spread = 0.0,
-                                Date refPeriodStart = null,
-                                Date refPeriodEnd = null,
-                                DayCounter dayCounter = null)
-           : base(paymentDate, nominal, startDate, endDate, index.fixingDays(), index, gearing, spread,
-                  refPeriodStart, refPeriodEnd, dayCounter)
+            double nominal,
+            Date startDate,
+            Date endDate,
+            BMAIndex index,
+            double gearing = 1.0,
+            double spread = 0.0,
+            Date refPeriodStart = null,
+            Date refPeriodEnd = null,
+            DayCounter dayCounter = null)
+            : base(paymentDate, nominal, startDate, endDate, index.fixingDays(), index, gearing, spread,
+                refPeriodStart, refPeriodEnd, dayCounter)
         {
             fixingSchedule_ = index.fixingSchedule(
-                                 index.fixingCalendar()
-                                 .advance(startDate, new Period(-index.fixingDays(), TimeUnit.Days),
-                                          BusinessDayConvention.Preceding), endDate);
+                index.fixingCalendar()
+                    .advance(startDate, new Period(-index.fixingDays(), TimeUnit.Days),
+                        BusinessDayConvention.Preceding), endDate);
             setPricer(new AverageBmaCouponPricer());
         }
 
         /// <summary>
-        /// Get the fixing date
+        ///     not applicable here
         /// </summary>
-        /// <remarks>FloatingRateCoupon interface not applicable here; use <c>fixingDates()</c> instead
+        public override double convexityAdjustment()
+        {
+            Utils.QL_FAIL("not defined for average-BMA coupon");
+            return 0;
+        }
+
+        /// <summary>
+        ///     Get the fixing date
+        /// </summary>
+        /// <remarks>
+        ///     FloatingRateCoupon interface not applicable here; use <c>fixingDates()</c> instead
         /// </remarks>
         public override Date fixingDate()
         {
@@ -72,13 +86,13 @@ namespace QLNet.Cashflows
         }
 
         /// <summary>
-        /// Get the fixing dates of the rates to be averaged
+        ///     Get the fixing dates of the rates to be averaged
         /// </summary>
         /// <returns>A list of dates</returns>
         public List<Date> FixingDates() => fixingSchedule_.dates();
 
         /// <summary>
-        /// not applicable here; use indexFixings() instead
+        ///     not applicable here; use indexFixings() instead
         /// </summary>
         public override double indexFixing()
         {
@@ -87,20 +101,12 @@ namespace QLNet.Cashflows
         }
 
         /// <summary>
-        /// fixings of the underlying index to be averaged
+        ///     fixings of the underlying index to be averaged
         /// </summary>
         /// <returns>A list of double</returns>
-        public List<double> IndexFixings() { return fixingSchedule_.dates().Select(d => index_.fixing(d)).ToList(); }
-
-        /// <summary>
-        /// not applicable here
-        /// </summary>
-        public override double convexityAdjustment()
+        public List<double> IndexFixings()
         {
-            Utils.QL_FAIL("not defined for average-BMA coupon");
-            return 0;
+            return fixingSchedule_.dates().Select(d => index_.fixing(d)).ToList();
         }
-
-        private Schedule fixingSchedule_;
     }
 }

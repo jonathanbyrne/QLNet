@@ -16,27 +16,34 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Time;
+
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
     //! %Calendar for reproducing theoretical calculations.
     /*! This calendar has no holidays. It ensures that dates at whole-month distances have the same day of month.    */
-    [JetBrains.Annotations.PublicAPI] public class NullCalendar : Calendar
+    [PublicAPI]
+    public class NullCalendar : Calendar
     {
-        public NullCalendar() : base(Impl.Singleton) { }
-
-        class Impl : Calendar
+        private class Impl : Calendar
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "Null calendar";
+            private Impl()
+            {
+            }
+
+            public override bool isBusinessDay(Date d) => true;
 
             public override bool isWeekend(DayOfWeek w) => false;
 
-            public override bool isBusinessDay(Date d) => true;
+            public override string name() => "Null calendar";
+        }
+
+        public NullCalendar() : base(Impl.Singleton)
+        {
         }
     }
 }

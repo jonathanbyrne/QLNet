@@ -13,18 +13,20 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.Quotes;
 using QLNet.Termstructures.Volatility.Optionlet;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace QLNet.Termstructures.Volatility
 {
-    [JetBrains.Annotations.PublicAPI] public class SpreadedSmileSection : SmileSection
+    [PublicAPI]
+    public class SpreadedSmileSection : SmileSection
     {
+        private Handle<Quote> spread_;
+        private SmileSection underlyingSection_;
+
         public SpreadedSmileSection(SmileSection underlyingSection, Handle<Quote> spread)
         {
             underlyingSection_ = underlyingSection;
@@ -33,31 +35,32 @@ namespace QLNet.Termstructures.Volatility
             underlyingSection_.registerWith(update);
             spread_.registerWith(update);
         }
-        // SmileSection interface
-        public override double minStrike() => underlyingSection_.minStrike();
-
-        public override double maxStrike() => underlyingSection_.maxStrike();
 
         public override double? atmLevel() => underlyingSection_.atmLevel();
+
+        public override DayCounter dayCounter() => underlyingSection_.dayCounter();
 
         public override Date exerciseDate() => underlyingSection_.exerciseDate();
 
         public override double exerciseTime() => underlyingSection_.exerciseTime();
 
-        public override DayCounter dayCounter() => underlyingSection_.dayCounter();
+        public override double maxStrike() => underlyingSection_.maxStrike();
+
+        // SmileSection interface
+        public override double minStrike() => underlyingSection_.minStrike();
 
         public override Date referenceDate() => underlyingSection_.referenceDate();
-
-        public override VolatilityType volatilityType() => underlyingSection_.volatilityType();
 
         public override double shift() => underlyingSection_.shift();
 
         // LazyObject interface
-        public override void update() { notifyObservers(); }
+        public override void update()
+        {
+            notifyObservers();
+        }
+
+        public override VolatilityType volatilityType() => underlyingSection_.volatilityType();
 
         protected override double volatilityImpl(double k) => underlyingSection_.volatility(k) + spread_.link.value();
-
-        private SmileSection underlyingSection_;
-        private Handle<Quote> spread_;
     }
 }

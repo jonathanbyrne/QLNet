@@ -182,16 +182,17 @@ namespace QLNet.Tests
                                 var discrepancy = System.Math.Abs(numericalVega - analyticalVega);
                                 discrepancy /= numericalVega;
                                 if (discrepancy > tolerance)
+                                {
                                     QAssert.Fail(
-                                       "failed to compute cap/floor vega:" +
-                                       "\n   lengths:     " + new Period(lengths[j], TimeUnit.Years) +
-                                       "\n   strike:      " + strikes[k] +
-                                       "\n   types:       " + types[h] +
-                                       "\n   calculated:  " + analyticalVega +
-                                       "\n   expected:    " + numericalVega +
-                                       "\n   discrepancy: " + discrepancy +
-                                       "\n   tolerance:   " + tolerance);
-
+                                        "failed to compute cap/floor vega:" +
+                                        "\n   lengths:     " + new Period(lengths[j], TimeUnit.Years) +
+                                        "\n   strike:      " + strikes[k] +
+                                        "\n   types:       " + types[h] +
+                                        "\n   calculated:  " + analyticalVega +
+                                        "\n   expected:    " + numericalVega +
+                                        "\n   discrepancy: " + discrepancy +
+                                        "\n   tolerance:   " + tolerance);
+                                }
                             }
                         }
                     }
@@ -232,28 +233,32 @@ namespace QLNet.Tests
                     for (var k = 0; k < cap_values.Count - 1; k++)
                     {
                         if (cap_values[k] < cap_values[k + 1])
+                        {
                             QAssert.Fail(
-                               "NPV is increasing with the strike in a cap: \n"
-                               + "    length:     " + lengths[i] + " years\n"
-                               + "    volatility: " + vols[j] + "\n"
-                               + "    value:      " + cap_values[k]
-                               + " at strike: " + strikes[k] + "\n"
-                               + "    value:      " + cap_values[k + 1]
-                               + " at strike: " + strikes[k + 1]);
+                                "NPV is increasing with the strike in a cap: \n"
+                                + "    length:     " + lengths[i] + " years\n"
+                                + "    volatility: " + vols[j] + "\n"
+                                + "    value:      " + cap_values[k]
+                                + " at strike: " + strikes[k] + "\n"
+                                + "    value:      " + cap_values[k + 1]
+                                + " at strike: " + strikes[k + 1]);
+                        }
                     }
 
                     // same for floors
                     for (var k = 0; k < floor_values.Count - 1; k++)
                     {
                         if (floor_values[k] > floor_values[k + 1])
+                        {
                             QAssert.Fail(
-                               "NPV is decreasing with the strike in a floor: \n"
-                               + "    length:     " + lengths[i] + " years\n"
-                               + "    volatility: " + vols[j] + "\n"
-                               + "    value:      " + floor_values[k]
-                               + " at strike: " + strikes[k] + "\n"
-                               + "    value:      " + floor_values[k + 1]
-                               + " at strike: " + strikes[k + 1]);
+                                "NPV is decreasing with the strike in a floor: \n"
+                                + "    length:     " + lengths[i] + " years\n"
+                                + "    volatility: " + vols[j] + "\n"
+                                + "    value:      " + floor_values[k]
+                                + " at strike: " + strikes[k] + "\n"
+                                + "    value:      " + floor_values[k + 1]
+                                + " at strike: " + strikes[k + 1]);
+                        }
                     }
                 }
             }
@@ -386,15 +391,18 @@ namespace QLNet.Tests
                         var floorATMRate = floor.atmRate(vars.termStructure);
 
                         if (!checkAbsError(floorATMRate, capATMRate, 1.0e-10))
+                        {
                             QAssert.Fail(
-                               "Cap ATM Rate and floor ATM Rate should be equal :\n"
-                               + "   length:        " + lengths[i] + " years\n"
-                               + "   volatility:    " + vols[k] + "\n"
-                               + "   strike:        " + strikes[j] + "\n"
-                               + "   cap ATM rate:  " + capATMRate + "\n"
-                               + "   floor ATM rate:" + floorATMRate + "\n"
-                               + "   relative Error:"
-                               + Utilities.relativeError(capATMRate, floorATMRate, capATMRate) * 100 + "%");
+                                "Cap ATM Rate and floor ATM Rate should be equal :\n"
+                                + "   length:        " + lengths[i] + " years\n"
+                                + "   volatility:    " + vols[k] + "\n"
+                                + "   strike:        " + strikes[j] + "\n"
+                                + "   cap ATM rate:  " + capATMRate + "\n"
+                                + "   floor ATM rate:" + floorATMRate + "\n"
+                                + "   relative Error:"
+                                + Utilities.relativeError(capATMRate, floorATMRate, capATMRate) * 100 + "%");
+                        }
+
                         var swap = new VanillaSwap(VanillaSwap.Type.Payer, vars.nominals[0],
                                                            schedule, floorATMRate,
                                                            vars.index.dayCounter(),
@@ -404,14 +412,15 @@ namespace QLNet.Tests
                                                  new DiscountingSwapEngine(vars.termStructure));
                         var swapNPV = swap.NPV();
                         if (!checkAbsError(swapNPV, 0, 1.0e-10))
+                        {
                             QAssert.Fail(
-                               "the NPV of a Swap struck at ATM rate "
-                               + "should be equal to 0:\n"
-                               + "   length:        " + lengths[i] + " years\n"
-                               + "   volatility:    " + vols[k] + "\n"
-                               + "   ATM rate:      " + floorATMRate + "\n"
-                               + "   swap NPV:      " + swapNPV);
-
+                                "the NPV of a Swap struck at ATM rate "
+                                + "should be equal to 0:\n"
+                                + "   length:        " + lengths[i] + " years\n"
+                                + "   volatility:    " + vols[k] + "\n"
+                                + "   ATM rate:      " + floorATMRate + "\n"
+                                + "   swap NPV:      " + swapNPV);
+                        }
                     }
                 }
             }
@@ -536,15 +545,19 @@ namespace QLNet.Tests
 
             // test Black cap price against cached value
             if (System.Math.Abs(cap.NPV() - cachedCapNPV) > 1.0e-11)
+            {
                 QAssert.Fail("failed to reproduce cached cap value:\n"
                              + "    calculated: " + cap.NPV() + "\n"
                              + "    expected:   " + cachedCapNPV);
+            }
 
             // test Black floor price against cached value
             if (System.Math.Abs(floor.NPV() - cachedFloorNPV) > 1.0e-11)
+            {
                 QAssert.Fail("failed to reproduce cached floor value:\n"
                              + "    calculated: " + floor.NPV() + "\n"
                              + "    expected:   " + cachedFloorNPV);
+            }
         }
     }
 }

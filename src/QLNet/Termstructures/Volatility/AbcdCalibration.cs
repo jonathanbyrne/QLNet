@@ -14,18 +14,21 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-using QLNet.Math;
-using QLNet.Math.Optimization;
-using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Math;
 using QLNet.Math.Distributions;
+using QLNet.Math.Optimization;
 
 namespace QLNet.Termstructures.Volatility
 {
-    [JetBrains.Annotations.PublicAPI] public class AbcdCalibration
+    [PublicAPI]
+    public class AbcdCalibration
     {
         private class AbcdError : CostFunction
         {
+            private readonly AbcdCalibration abcd_;
+
             public AbcdError(AbcdCalibration abcd)
             {
                 abcd_ = abcd;
@@ -50,16 +53,17 @@ namespace QLNet.Termstructures.Volatility
                 abcd_.d_ = y[3];
                 return abcd_.errors();
             }
-
-            private AbcdCalibration abcd_;
         }
 
         private class AbcdParametersTransformation : IParametersTransformation
         {
+            private readonly Vector y_;
+
             public AbcdParametersTransformation()
             {
                 y_ = new Vector(4);
             }
+
             // to constrained <- from unconstrained
             public Vector direct(Vector x)
             {
@@ -79,27 +83,37 @@ namespace QLNet.Termstructures.Volatility
                 y_[0] = System.Math.Log(x[0] + x[3]);
                 return y_;
             }
-
-            private Vector y_;
         }
 
+        private double a_, b_, c_, d_;
 
-        public AbcdCalibration() { }
+        // optimization method used for fitting
+        private EndCriteria.Type abcdEndCriteria_;
+        private EndCriteria endCriteria_;
+        private OptimizationMethod optMethod_;
+        //! Parameters
+        private List<double> times_, blackVols_;
+        private bool vegaWeighted_;
+        private List<double> weights_;
+
+        public AbcdCalibration()
+        {
+        }
 
         // to constrained <- from unconstrained
         public AbcdCalibration(List<double> t,
-                               List<double> blackVols,
-                               double aGuess = -0.06,
-                               double bGuess = 0.17,
-                               double cGuess = 0.54,
-                               double dGuess = 0.17,
-                               bool aIsFixed = false,
-                               bool bIsFixed = false,
-                               bool cIsFixed = false,
-                               bool dIsFixed = false,
-                               bool vegaWeighted = false,
-                               EndCriteria endCriteria = null,
-                               OptimizationMethod method = null)
+            List<double> blackVols,
+            double aGuess = -0.06,
+            double bGuess = 0.17,
+            double cGuess = 0.54,
+            double dGuess = 0.17,
+            bool aIsFixed = false,
+            bool bIsFixed = false,
+            bool cIsFixed = false,
+            bool dIsFixed = false,
+            bool vegaWeighted = false,
+            EndCriteria endCriteria = null,
+            OptimizationMethod method = null)
         {
             aIsFixed_ = aIsFixed;
             bIsFixed_ = bIsFixed;
@@ -117,11 +131,10 @@ namespace QLNet.Termstructures.Volatility
             times_ = t;
             blackVols_ = blackVols;
 
-
             AbcdMathFunction.validate(aGuess, bGuess, cGuess, dGuess);
 
             Utils.QL_REQUIRE(blackVols.Count == t.Count, () =>
-                             "mismatch between number of times (" + t.Count + ") and blackVols (" + blackVols.Count + ")");
+                "mismatch between number of times (" + t.Count + ") and blackVols (" + blackVols.Count + ")");
 
             // if no optimization method or endCriteria is provided, we provide one
             if (optMethod_ == null)
@@ -138,26 +151,34 @@ namespace QLNet.Termstructures.Volatility
                 var maxIterations = 10000;
                 var maxStationaryStateIterations = 1000;
                 var rootEpsilon = 1.0e-8;
-                var functionEpsilon = 0.3e-4;     // Why 0.3e-4 ?
+                var functionEpsilon = 0.3e-4; // Why 0.3e-4 ?
                 var gradientNormEpsilon = 0.3e-4; // Why 0.3e-4 ?
                 endCriteria_ = new EndCriteria(maxIterations, maxStationaryStateIterations, rootEpsilon, functionEpsilon,
-                                               gradientNormEpsilon);
+                    gradientNormEpsilon);
             }
         }
 
-        //! adjustment factors needed to match Black vols
-        public List<double> k(List<double> t, List<double> blackVols)
+        public bool aIsFixed_ { get; set; }
+
+        public bool bIsFixed_ { get; set; }
+
+        public bool cIsFixed_ { get; set; }
+
+        public bool dIsFixed_ { get; set; }
+
+        public IParametersTransformation transformation_ { get; set; }
+
+        public double a() => a_;
+
+        public double abcdBlackVolatility(double u, double a, double b, double c, double d)
         {
-            Utils.QL_REQUIRE(blackVols.Count == t.Count, () =>
-                             "mismatch between number of times (" + t.Count + ") and blackVols (" + blackVols.Count + ")");
-            List<double> k = new InitializedList<double>(t.Count);
-            for (var i = 0; i < t.Count; i++)
-            {
-                k[i] = blackVols[i] / value(t[i]);
-            }
-            return k;
+            var model = new AbcdFunction(a, b, c, d);
+            return model.volatility(0.0, u, u);
         }
 
+        public double b() => b_;
+
+        public double c() => c_;
 
         public void compute()
         {
@@ -171,60 +192,60 @@ namespace QLNet.Termstructures.Volatility
                     weights_[i] = new CumulativeNormalDistribution().derivative(.5 * stdDev);
                     weightsSum += weights_[i];
                 }
+
                 // weight normalization
                 for (var i = 0; i < times_.Count; i++)
                 {
                     weights_[i] /= weightsSum;
                 }
-
             }
+
             // there is nothing to optimize
             if (aIsFixed_ && bIsFixed_ && cIsFixed_ && dIsFixed_)
             {
                 abcdEndCriteria_ = EndCriteria.Type.None;
                 return;
             }
-            else
-            {
-                var costFunction = new AbcdError(this);
-                transformation_ = new AbcdParametersTransformation();
 
-                var guess = new Vector(4);
-                guess[0] = a_;
-                guess[1] = b_;
-                guess[2] = c_;
-                guess[3] = d_;
+            var costFunction = new AbcdError(this);
+            transformation_ = new AbcdParametersTransformation();
 
-                List<bool> parameterAreFixed = new InitializedList<bool>(4);
-                parameterAreFixed[0] = aIsFixed_;
-                parameterAreFixed[1] = bIsFixed_;
-                parameterAreFixed[2] = cIsFixed_;
-                parameterAreFixed[3] = dIsFixed_;
+            var guess = new Vector(4);
+            guess[0] = a_;
+            guess[1] = b_;
+            guess[2] = c_;
+            guess[3] = d_;
 
-                var inversedTransformatedGuess = new Vector(transformation_.inverse(guess));
+            List<bool> parameterAreFixed = new InitializedList<bool>(4);
+            parameterAreFixed[0] = aIsFixed_;
+            parameterAreFixed[1] = bIsFixed_;
+            parameterAreFixed[2] = cIsFixed_;
+            parameterAreFixed[3] = dIsFixed_;
 
-                var projectedAbcdCostFunction = new ProjectedCostFunction(costFunction,
-                                                                                            inversedTransformatedGuess, parameterAreFixed);
+            var inversedTransformatedGuess = new Vector(transformation_.inverse(guess));
 
-                var projectedGuess = new Vector(projectedAbcdCostFunction.project(inversedTransformatedGuess));
+            var projectedAbcdCostFunction = new ProjectedCostFunction(costFunction,
+                inversedTransformatedGuess, parameterAreFixed);
 
-                var constraint = new NoConstraint();
-                var problem = new Problem(projectedAbcdCostFunction, constraint, projectedGuess);
-                abcdEndCriteria_ = optMethod_.minimize(problem, endCriteria_);
-                var projectedResult = new Vector(problem.currentValue());
-                var transfResult = new Vector(projectedAbcdCostFunction.include(projectedResult));
+            var projectedGuess = new Vector(projectedAbcdCostFunction.project(inversedTransformatedGuess));
 
-                var result = transformation_.direct(transfResult);
-                AbcdMathFunction.validate(a_, b_, c_, d_);
-                a_ = result[0];
-                b_ = result[1];
-                c_ = result[2];
-                d_ = result[3];
-            }
+            var constraint = new NoConstraint();
+            var problem = new Problem(projectedAbcdCostFunction, constraint, projectedGuess);
+            abcdEndCriteria_ = optMethod_.minimize(problem, endCriteria_);
+            var projectedResult = new Vector(problem.currentValue());
+            var transfResult = new Vector(projectedAbcdCostFunction.include(projectedResult));
+
+            var result = transformation_.direct(transfResult);
+            AbcdMathFunction.validate(a_, b_, c_, d_);
+            a_ = result[0];
+            b_ = result[1];
+            c_ = result[2];
+            d_ = result[3];
         }
 
-        //calibration results
-        public double value(double x) => abcdBlackVolatility(x, a_, b_, c_, d_);
+        public double d() => d_;
+
+        public EndCriteria.Type endCriteria() => abcdEndCriteria_;
 
         public double error()
         {
@@ -235,7 +256,33 @@ namespace QLNet.Termstructures.Volatility
                 error = value(times_[i]) - blackVols_[i];
                 squaredError += error * error * weights_[i];
             }
+
             return System.Math.Sqrt(n * squaredError / (n - 1));
+        }
+
+        public Vector errors()
+        {
+            var results = new Vector(times_.Count);
+            for (var i = 0; i < times_.Count; i++)
+            {
+                results[i] = (value(times_[i]) - blackVols_[i]) * System.Math.Sqrt(weights_[i]);
+            }
+
+            return results;
+        }
+
+        //! adjustment factors needed to match Black vols
+        public List<double> k(List<double> t, List<double> blackVols)
+        {
+            Utils.QL_REQUIRE(blackVols.Count == t.Count, () =>
+                "mismatch between number of times (" + t.Count + ") and blackVols (" + blackVols.Count + ")");
+            List<double> k = new InitializedList<double>(t.Count);
+            for (var i = 0; i < t.Count; i++)
+            {
+                k[i] = blackVols[i] / value(t[i]);
+            }
+
+            return k;
         }
 
         public double maxError()
@@ -246,51 +293,11 @@ namespace QLNet.Termstructures.Volatility
                 error = System.Math.Abs(value(times_[i]) - blackVols_[i]);
                 maxError = System.Math.Max(maxError, error);
             }
+
             return maxError;
         }
 
-        public Vector errors()
-        {
-            var results = new Vector(times_.Count);
-            for (var i = 0; i < times_.Count; i++)
-            {
-                results[i] = (value(times_[i]) - blackVols_[i]) * System.Math.Sqrt(weights_[i]);
-            }
-            return results;
-        }
-
-        public double abcdBlackVolatility(double u, double a, double b, double c, double d)
-        {
-            var model = new AbcdFunction(a, b, c, d);
-            return model.volatility(0.0, u, u);
-        }
-
-        public EndCriteria.Type endCriteria() => abcdEndCriteria_;
-
-        public double a() => a_;
-
-        public double b() => b_;
-
-        public double c() => c_;
-
-        public double d() => d_;
-
-        public bool aIsFixed_ { get; set; }
-        public bool bIsFixed_ { get; set; }
-        public bool cIsFixed_ { get; set; }
-        public bool dIsFixed_ { get; set; }
-        private double a_, b_, c_, d_;
-        public IParametersTransformation transformation_ { get; set; }
-
-
-        // optimization method used for fitting
-        private EndCriteria.Type abcdEndCriteria_;
-        private EndCriteria endCriteria_;
-        private OptimizationMethod optMethod_;
-        private List<double> weights_;
-        private bool vegaWeighted_;
-        //! Parameters
-        private List<double> times_, blackVols_;
-
+        //calibration results
+        public double value(double x) => abcdBlackVolatility(x, a_, b_, c_, d_);
     }
 }

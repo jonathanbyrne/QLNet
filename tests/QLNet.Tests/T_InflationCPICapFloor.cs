@@ -301,11 +301,20 @@ namespace QLNet.Tests
                 fStrikesUK = new List<double>();
                 cfMaturitiesUK = new List<Period>();
                 for (var i = 0; i < ncStrikes; i++)
+                {
                     cStrikesUK.Add(cStrike[i]);
+                }
+
                 for (var i = 0; i < nfStrikes; i++)
+                {
                     fStrikesUK.Add(fStrike[i]);
+                }
+
                 for (var i = 0; i < ncfMaturities; i++)
+                {
                     cfMaturitiesUK.Add(cfMat[i]);
+                }
+
                 cPriceUK = new Matrix(ncStrikes, ncfMaturities);
                 fPriceUK = new Matrix(nfStrikes, ncfMaturities);
                 for (var i = 0; i < ncStrikes; i++)

@@ -17,19 +17,26 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences.Operators;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Schemes
 {
-    [JetBrains.Annotations.PublicAPI] public class ExplicitEulerScheme : IMixedScheme, ISchemeFactory
+    [PublicAPI]
+    public class ExplicitEulerScheme : IMixedScheme, ISchemeFactory
     {
-        public ExplicitEulerScheme() { }
+        protected BoundaryConditionSchemeHelper bcSet_;
+        protected double? dt_;
+        protected FdmLinearOpComposite map_;
+
+        public ExplicitEulerScheme()
+        {
+        }
+
         public ExplicitEulerScheme(FdmLinearOpComposite map,
-                                   List<BoundaryCondition<FdmLinearOp>> bcSet = null)
+            List<BoundaryCondition<FdmLinearOp>> bcSet = null)
         {
             dt_ = null;
             map_ = map;
@@ -37,11 +44,13 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         }
 
         #region ISchemeFactory
+
         public IMixedScheme factory(object L, object bcs, object[] additionalInputs = null) => new ExplicitEulerScheme(L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
 
         #endregion
 
         #region IMixedScheme interface
+
         public void step(ref object a, double t, double theta = 1.0)
         {
             Utils.QL_REQUIRE(t - dt_ > -1e-8, () => "a step towards negative time given");
@@ -57,10 +66,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         {
             dt_ = dt;
         }
-        #endregion
 
-        protected double? dt_;
-        protected FdmLinearOpComposite map_;
-        protected BoundaryConditionSchemeHelper bcSet_;
+        #endregion
     }
 }

@@ -14,40 +14,62 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-using QLNet.Instruments;
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet.Instruments.Bonds
 {
     /// <summary>
-    /// Catastrophe Bond - CAT
-    /// <remarks>
-    /// A catastrophe bond (CAT) is a high-yield debt instrument that is usually
-    /// insurance-linked and meant to raise money in case of a catastrophe such
-    /// as a hurricane or earthquake.
-    /// </remarks>
+    ///     Catastrophe Bond - CAT
+    ///     <remarks>
+    ///         A catastrophe bond (CAT) is a high-yield debt instrument that is usually
+    ///         insurance-linked and meant to raise money in case of a catastrophe such
+    ///         as a hurricane or earthquake.
+    ///     </remarks>
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class CatBond : Bond
+    [PublicAPI]
+    public class CatBond : Bond
     {
+        public new class Arguments : Bond.Arguments
+        {
+            public NotionalRisk notionalRisk;
+            public Date startDate;
+
+            public override void validate()
+            {
+                base.validate();
+                Utils.QL_REQUIRE(notionalRisk != null, () => "null notionalRisk");
+            }
+        }
+
+        public new class Engine : GenericEngine<Arguments, Results>
+        {
+        }
+
+        public new class Results : Bond.Results
+        {
+            public double exhaustionProbability;
+            public double expectedLoss;
+            public double lossProbability;
+        }
+
+        protected double exhaustionProbability_;
+        protected double expectedLoss_;
+        protected double lossProbability_;
+        protected NotionalRisk notionalRisk_;
+
         public CatBond(int settlementDays,
-                       Calendar calendar,
-                       Date issueDate,
-                       NotionalRisk notionalRisk)
-           : base(settlementDays, calendar, issueDate)
+            Calendar calendar,
+            Date issueDate,
+            NotionalRisk notionalRisk)
+            : base(settlementDays, calendar, issueDate)
         {
             notionalRisk_ = notionalRisk;
         }
 
-        public override void setupArguments(IPricingEngineArguments args)
-        {
-            var arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong arguments ExerciseType");
+        public double exhaustionProbability() => exhaustionProbability_;
 
-            base.setupArguments(args);
-
-            arguments.notionalRisk = notionalRisk_;
-            arguments.startDate = issueDate();
-        }
+        public double expectedLoss() => expectedLoss_;
 
         public override void fetchResults(IPricingEngineResults r)
         {
@@ -62,35 +84,15 @@ namespace QLNet.Instruments.Bonds
 
         public double lossProbability() => lossProbability_;
 
-        public double expectedLoss() => expectedLoss_;
-
-        public double exhaustionProbability() => exhaustionProbability_;
-
-        protected NotionalRisk notionalRisk_;
-        protected double lossProbability_;
-        protected double exhaustionProbability_;
-        protected double expectedLoss_;
-
-        public new class Arguments : Bond.Arguments
+        public override void setupArguments(IPricingEngineArguments args)
         {
-            public Date startDate;
-            public NotionalRisk notionalRisk;
+            var arguments = args as Arguments;
+            Utils.QL_REQUIRE(arguments != null, () => "wrong arguments ExerciseType");
 
-            public override void validate()
-            {
-                base.validate();
-                Utils.QL_REQUIRE(notionalRisk != null, () => "null notionalRisk");
-            }
+            base.setupArguments(args);
+
+            arguments.notionalRisk = notionalRisk_;
+            arguments.startDate = issueDate();
         }
-
-        public new class Results : Bond.Results
-        {
-            public double lossProbability;
-            public double exhaustionProbability;
-            public double expectedLoss;
-        }
-
-        public new class Engine : GenericEngine<Arguments, Results>
-        { }
     }
 }

@@ -1,28 +1,28 @@
-﻿namespace QLNet.Math.Distributions
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.Distributions
 {
-    [JetBrains.Annotations.PublicAPI] public class MoroInverseCumulativeNormal : IValue
+    [PublicAPI]
+    public class MoroInverseCumulativeNormal : IValue
     {
+        private const double a0_ = 2.50662823884;
+        private const double a1_ = -18.61500062529;
+        private const double a2_ = 41.39119773534;
+        private const double a3_ = -25.44106049637;
+        private const double b0_ = -8.47351093090;
+        private const double b1_ = 23.08336743743;
+        private const double b2_ = -21.06224101826;
+        private const double b3_ = 3.13082909833;
+        private const double c0_ = 0.3374754822726147;
+        private const double c1_ = 0.9761690190917186;
+        private const double c2_ = 0.1607979714918209;
+        private const double c3_ = 0.0276438810333863;
+        private const double c4_ = 0.0038405729373609;
+        private const double c5_ = 0.0003951896511919;
+        private const double c6_ = 0.0000321767881768;
+        private const double c7_ = 0.0000002888167364;
+        private const double c8_ = 0.0000003960315187;
         private double average_, sigma_;
-
-        const double a0_ = 2.50662823884;
-        const double a1_ = -18.61500062529;
-        const double a2_ = 41.39119773534;
-        const double a3_ = -25.44106049637;
-
-        const double b0_ = -8.47351093090;
-        const double b1_ = 23.08336743743;
-        const double b2_ = -21.06224101826;
-        const double b3_ = 3.13082909833;
-
-        const double c0_ = 0.3374754822726147;
-        const double c1_ = 0.9761690190917186;
-        const double c2_ = 0.1607979714918209;
-        const double c3_ = 0.0276438810333863;
-        const double c4_ = 0.0038405729373609;
-        const double c5_ = 0.0003951896511919;
-        const double c6_ = 0.0000321767881768;
-        const double c7_ = 0.0000002888167364;
-        const double c8_ = 0.0000003960315187;
 
         public MoroInverseCumulativeNormal(double average, double sigma)
         {
@@ -52,15 +52,22 @@
             {
                 // improved approximation for the tail (Moro 1995)
                 if (x < 0.5)
+                {
                     result = x;
+                }
                 else
+                {
                     result = 1.0 - x;
+                }
+
                 result = System.Math.Log(-System.Math.Log(result));
                 result = c0_ + result * (c1_ + result * (c2_ + result * (c3_ + result *
                     (c4_ + result * (c5_ + result * (c6_ + result *
                         (c7_ + result * c8_)))))));
                 if (x < 0.5)
+                {
                     result = -result;
+                }
             }
 
             return average_ + result * sigma_;

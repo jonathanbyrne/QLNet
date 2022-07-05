@@ -17,7 +17,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -74,12 +76,139 @@ namespace QLNet.Time.Calendars
         \test the correctness of the returned results is tested  against a list of known holidays.
     */
 
-    [JetBrains.Annotations.PublicAPI] public class UnitedKingdom : Calendar
+    [PublicAPI]
+    public class UnitedKingdom : Calendar
     {
-        public enum Market { Settlement, Exchange, Metals }
+        public enum Market
+        {
+            Settlement,
+            Exchange,
+            Metals
+        }
 
-        public UnitedKingdom() : this(Market.Settlement) { }
-        public UnitedKingdom(Market m) : base()
+        private class Exchange : WesternImpl
+        {
+            internal static readonly Exchange Singleton = new Exchange();
+
+            private Exchange()
+            {
+            }
+
+            public override bool isBusinessDay(Date date)
+            {
+                var w = date.DayOfWeek;
+                int d = date.Day, dd = date.DayOfYear;
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
+                if (isWeekend(w)
+                    // New Year's Day (possibly moved to Monday)
+                    || (d == 1 || (d == 2 || d == 3) && w == DayOfWeek.Monday) && m == Month.January
+                    // Good Friday
+                    || dd == em - 3
+                    // Easter Monday
+                    || dd == em
+                    || isBankHoliday(d, w, m, y)
+                    // Christmas (possibly moved to Monday or Tuesday)
+                    || (d == 25 || d == 27 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday)) && m == Month.December
+                    // Boxing Day (possibly moved to Monday or Tuesday)
+                    || (d == 26 || d == 28 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday)) && m == Month.December
+                    // December 31st, 1999 only
+                    || d == 31 && m == Month.December && y == 1999)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            public override string name() => "London stock exchange";
+        }
+
+        private class Metals : WesternImpl
+        {
+            internal static readonly Metals Singleton = new Metals();
+
+            private Metals()
+            {
+            }
+
+            public override bool isBusinessDay(Date date)
+            {
+                var w = date.DayOfWeek;
+                int d = date.Day, dd = date.DayOfYear;
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
+                if (isWeekend(w)
+                    // New Year's Day (possibly moved to Monday)
+                    || (d == 1 || (d == 2 || d == 3) && w == DayOfWeek.Monday) && m == Month.January
+                    // Good Friday
+                    || dd == em - 3
+                    // Easter Monday
+                    || dd == em
+                    || isBankHoliday(d, w, m, y)
+                    // Christmas (possibly moved to Monday or Tuesday)
+                    || (d == 25 || d == 27 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday)) && m == Month.December
+                    // Boxing Day (possibly moved to Monday or Tuesday)
+                    || (d == 26 || d == 28 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday)) && m == Month.December
+                    // December 31st, 1999 only
+                    || d == 31 && m == Month.December && y == 1999)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            public override string name() => "London metals exchange";
+        }
+
+        private class Settlement : WesternImpl
+        {
+            public static readonly Settlement Singleton = new Settlement();
+
+            private Settlement()
+            {
+            }
+
+            public override bool isBusinessDay(Date date)
+            {
+                var w = date.DayOfWeek;
+                int d = date.Day, dd = date.DayOfYear;
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
+
+                if (isWeekend(w)
+                    // New Year's Day (possibly moved to Monday)
+                    || (d == 1 || (d == 2 || d == 3) && w == DayOfWeek.Monday) && m == Month.January
+                    // Good Friday
+                    || dd == em - 3
+                    // Easter Monday
+                    || dd == em
+                    || isBankHoliday(d, w, m, y)
+                    // Christmas (possibly moved to Monday or Tuesday)
+                    || (d == 25 || d == 27 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday)) && m == Month.December
+                    // Boxing Day (possibly moved to Monday or Tuesday)
+                    || (d == 26 || d == 28 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday)) && m == Month.December
+                    // December 31st, 1999 only
+                    || d == 31 && m == Month.December && y == 1999)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            public override string name() => "UK settlement";
+        }
+
+        public UnitedKingdom() : this(Market.Settlement)
+        {
+        }
+
+        public UnitedKingdom(Market m)
         {
             switch (m)
             {
@@ -113,103 +242,5 @@ namespace QLNet.Time.Calendars
             || d >= 25 && w == DayOfWeek.Monday && m == Month.August
             // April 29th, 2011 only (Royal Wedding Bank Holiday)
             || d == 29 && m == Month.April && y == 2011;
-
-        private class Settlement : WesternImpl
-        {
-            public static readonly Settlement Singleton = new Settlement();
-            private Settlement() { }
-
-            public override string name() => "UK settlement";
-
-            public override bool isBusinessDay(Date date)
-            {
-                var w = date.DayOfWeek;
-                int d = date.Day, dd = date.DayOfYear;
-                var m = (Month)date.Month;
-                var y = date.Year;
-                var em = easterMonday(y);
-
-                if (isWeekend(w)
-                    // New Year's Day (possibly moved to Monday)
-                    || (d == 1 || (d == 2 || d == 3) && w == DayOfWeek.Monday) && m == Month.January
-                    // Good Friday
-                    || dd == em - 3
-                    // Easter Monday
-                    || dd == em
-                    || isBankHoliday(d, w, m, y)
-                    // Christmas (possibly moved to Monday or Tuesday)
-                    || (d == 25 || d == 27 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday)) && m == Month.December
-                    // Boxing Day (possibly moved to Monday or Tuesday)
-                    || (d == 26 || d == 28 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday)) && m == Month.December
-                    // December 31st, 1999 only
-                    || d == 31 && m == Month.December && y == 1999)
-                    return false;
-                return true;
-            }
-        }
-        private class Exchange : WesternImpl
-        {
-            internal static readonly Exchange Singleton = new Exchange();
-            private Exchange() { }
-
-            public override string name() => "London stock exchange";
-
-            public override bool isBusinessDay(Date date)
-            {
-                var w = date.DayOfWeek;
-                int d = date.Day, dd = date.DayOfYear;
-                var m = (Month)date.Month;
-                var y = date.Year;
-                var em = easterMonday(y);
-                if (isWeekend(w)
-                    // New Year's Day (possibly moved to Monday)
-                    || (d == 1 || (d == 2 || d == 3) && w == DayOfWeek.Monday) && m == Month.January
-                    // Good Friday
-                    || dd == em - 3
-                    // Easter Monday
-                    || dd == em
-                    || isBankHoliday(d, w, m, y)
-                    // Christmas (possibly moved to Monday or Tuesday)
-                    || (d == 25 || d == 27 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday)) && m == Month.December
-                    // Boxing Day (possibly moved to Monday or Tuesday)
-                    || (d == 26 || d == 28 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday)) && m == Month.December
-                    // December 31st, 1999 only
-                    || d == 31 && m == Month.December && y == 1999)
-                    return false;
-                return true;
-            }
-        }
-        private class Metals : WesternImpl
-        {
-            internal static readonly Metals Singleton = new Metals();
-            private Metals() { }
-
-            public override string name() => "London metals exchange";
-
-            public override bool isBusinessDay(Date date)
-            {
-                var w = date.DayOfWeek;
-                int d = date.Day, dd = date.DayOfYear;
-                var m = (Month)date.Month;
-                var y = date.Year;
-                var em = easterMonday(y);
-                if (isWeekend(w)
-                    // New Year's Day (possibly moved to Monday)
-                    || (d == 1 || (d == 2 || d == 3) && w == DayOfWeek.Monday) && m == Month.January
-                    // Good Friday
-                    || dd == em - 3
-                    // Easter Monday
-                    || dd == em
-                    || isBankHoliday(d, w, m, y)
-                    // Christmas (possibly moved to Monday or Tuesday)
-                    || (d == 25 || d == 27 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday)) && m == Month.December
-                    // Boxing Day (possibly moved to Monday or Tuesday)
-                    || (d == 26 || d == 28 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday)) && m == Month.December
-                    // December 31st, 1999 only
-                    || d == 31 && m == Month.December && y == 1999)
-                    return false;
-                return true;
-            }
-        }
     }
 }

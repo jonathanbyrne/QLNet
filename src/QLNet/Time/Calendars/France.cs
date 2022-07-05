@@ -16,71 +16,102 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
     /// <summary>
-    /// French calendars
+    ///     French calendars
     /// </summary>
     /// <remarks>
-    /// 
-    /// Public holidays:
-    ///  
-    ///  Saturdays
-    ///  Sundays
-    ///  New Year's Day, January 1st
-    ///  Easter Monday
-    ///  Labour Day, May 1st
-    ///  Armistice 1945, May 8th
-    ///  Ascension, May 10th
-    ///  Pentecôte, May 21st
-    ///  Fête nationale, July 14th
-    ///  Assumption, August 15th
-    ///  All Saint's Day, November 1st
-    ///  Armistice 1918, November 11th
-    ///  Christmas Day, December 25th
-    ///  
-    ///
-    ///  Holidays for the stock exchange (data from https://www.stockmarketclock.com/exchanges/euronext-paris/market-holidays/):
-    ///  
-    ///  Saturdays
-    ///  Sundays
-    ///  New Year's Day, January 1st
-    ///  Good Friday
-    ///  Easter Monday
-    ///  Labour Day, May 1st
-    ///  Christmas Eve, December 24th
-    ///  Christmas Day, December 25th
-    ///  Boxing Day, December 26th
-    ///  New Year's Eve, December 31st
+    ///     Public holidays:
+    ///     Saturdays
+    ///     Sundays
+    ///     New Year's Day, January 1st
+    ///     Easter Monday
+    ///     Labour Day, May 1st
+    ///     Armistice 1945, May 8th
+    ///     Ascension, May 10th
+    ///     Pentecôte, May 21st
+    ///     Fête nationale, July 14th
+    ///     Assumption, August 15th
+    ///     All Saint's Day, November 1st
+    ///     Armistice 1918, November 11th
+    ///     Christmas Day, December 25th
+    ///     Holidays for the stock exchange (data from
+    ///     https://www.stockmarketclock.com/exchanges/euronext-paris/market-holidays/):
+    ///     Saturdays
+    ///     Sundays
+    ///     New Year's Day, January 1st
+    ///     Good Friday
+    ///     Easter Monday
+    ///     Labour Day, May 1st
+    ///     Christmas Eve, December 24th
+    ///     Christmas Day, December 25th
+    ///     Boxing Day, December 26th
+    ///     New Year's Eve, December 31st
     /// </remarks>
-    [JetBrains.Annotations.PublicAPI] public class France : Calendar
+    [PublicAPI]
+    public class France : Calendar
     {
         // French calendars
         public enum Market
         {
             Settlement, // generic settlement calendar
             Exchange // Paris stock-exchange calendar
-        };
+        }
 
-        public France() : this(Market.Settlement) { }
-
-        public France(Market m) : base()
+        private class Exchange : WesternImpl
         {
-            calendar_ = m switch
+            public static readonly Exchange Singleton = new Exchange();
+
+            private Exchange()
             {
-                Market.Settlement => Settlement.Singleton,
-                Market.Exchange => Exchange.Singleton,
-                _ => throw new ArgumentException("Unknown market: " + m)
-            };
+            }
+
+            public override bool isBusinessDay(Date date)
+            {
+                var w = date.DayOfWeek;
+                int d = date.Day, dd = date.DayOfYear;
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
+                if (isWeekend(w)
+                    // Jour de l'An
+                    || d == 1 && m == Month.January
+                    // Good Friday
+                    || dd == em - 3
+                    // Easter Monday
+                    || dd == em
+                    // Labor Day
+                    || d == 1 && m == Month.May
+                    // Christmas Eve
+                    || d == 24 && m == Month.December
+                    // Christmas Day
+                    || d == 25 && m == Month.December
+                    // Boxing Day
+                    || d == 26 && m == Month.December
+                    // New Year's Eve
+                    || d == 31 && m == Month.December)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            public override string name() => "Paris stock exchange";
         }
 
         private class Settlement : WesternImpl
         {
             public static readonly Settlement Singleton = new Settlement();
-            private Settlement() { }
-            public override string name() => "French settlement";
+
+            private Settlement()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -112,44 +143,28 @@ namespace QLNet.Time.Calendars
                     || d == 11 && m == Month.November
                     // Noel
                     || d == 25 && m == Month.December)
+                {
                     return false;
+                }
+
                 return true;
             }
+
+            public override string name() => "French settlement";
         }
 
-        private class Exchange : WesternImpl
+        public France() : this(Market.Settlement)
         {
-            public static readonly Exchange Singleton = new Exchange();
-            private Exchange() { }
-            public override string name() => "Paris stock exchange";
+        }
 
-            public override bool isBusinessDay(Date date)
+        public France(Market m)
+        {
+            calendar_ = m switch
             {
-                var w = date.DayOfWeek;
-                int d = date.Day, dd = date.DayOfYear;
-                var m = (Month)date.Month;
-                var y = date.Year;
-                var em = easterMonday(y);
-                if (isWeekend(w)
-                    // Jour de l'An
-                    || d == 1 && m == Month.January
-                    // Good Friday
-                    || dd == em - 3
-                    // Easter Monday
-                    || dd == em
-                    // Labor Day
-                    || d == 1 && m == Month.May
-                    // Christmas Eve
-                    || d == 24 && m == Month.December
-                    // Christmas Day
-                    || d == 25 && m == Month.December
-                    // Boxing Day
-                    || d == 26 && m == Month.December
-                    // New Year's Eve
-                    || d == 31 && m == Month.December)
-                    return false;
-                return true;
-            }
+                Market.Settlement => Settlement.Singleton,
+                Market.Exchange => Exchange.Singleton,
+                _ => throw new ArgumentException("Unknown market: " + m)
+            };
         }
     }
 }

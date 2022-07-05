@@ -1,11 +1,19 @@
+using JetBrains.Annotations;
+
 namespace QLNet.Math
 {
     /// <summary>
-    /// Ceiling truncation.
+    ///     Ceiling truncation.
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class CeilingTruncation : Rounding
+    [PublicAPI]
+    public class CeilingTruncation : Rounding
     {
-        public CeilingTruncation(int precision) : base(precision, Type.Ceiling, 5) { }
-        public CeilingTruncation(int precision, int digit) : base(precision, Type.Ceiling, digit) { }
+        public CeilingTruncation(int precision) : base(precision, Type.Ceiling, 5)
+        {
+        }
+
+        public CeilingTruncation(int precision, int digit) : base(precision, Type.Ceiling, digit)
+        {
+        }
     }
 }

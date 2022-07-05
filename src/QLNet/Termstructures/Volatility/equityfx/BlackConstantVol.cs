@@ -17,7 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-
+using JetBrains.Annotations;
 using QLNet.Quotes;
 using QLNet.Time;
 
@@ -26,18 +26,19 @@ namespace QLNet.Termstructures.Volatility.equityfx
     //! Constant Black volatility, no time-strike dependence
     /*! This class implements the BlackVolatilityTermStructure interface for a constant Black volatility (no time/strike
         dependence). */
-    [JetBrains.Annotations.PublicAPI] public class BlackConstantVol : BlackVolatilityTermStructure
+    [PublicAPI]
+    public class BlackConstantVol : BlackVolatilityTermStructure
     {
         private Handle<Quote> volatility_;
 
         public BlackConstantVol(Date referenceDate, Calendar cal, double volatility, DayCounter dc)
-           : base(referenceDate, cal, BusinessDayConvention.Following, dc)
+            : base(referenceDate, cal, BusinessDayConvention.Following, dc)
         {
             volatility_ = new Handle<Quote>(new SimpleQuote(volatility));
         }
 
         public BlackConstantVol(Date referenceDate, Calendar cal, Handle<Quote> volatility, DayCounter dc)
-           : base(referenceDate, cal, BusinessDayConvention.Following, dc)
+            : base(referenceDate, cal, BusinessDayConvention.Following, dc)
         {
             volatility_ = volatility;
 
@@ -45,25 +46,24 @@ namespace QLNet.Termstructures.Volatility.equityfx
         }
 
         public BlackConstantVol(int settlementDays, Calendar cal, double volatility, DayCounter dc)
-           : base(settlementDays, cal, BusinessDayConvention.Following, dc)
+            : base(settlementDays, cal, BusinessDayConvention.Following, dc)
         {
             volatility_ = new Handle<Quote>(new SimpleQuote(volatility));
         }
 
         public BlackConstantVol(int settlementDays, Calendar cal, Handle<Quote> volatility, DayCounter dc)
-           : base(settlementDays, cal, BusinessDayConvention.Following, dc)
+            : base(settlementDays, cal, BusinessDayConvention.Following, dc)
         {
             volatility_ = volatility;
 
             volatility_.registerWith(update);
         }
 
-
         public override Date maxDate() => Date.maxDate();
 
-        public override double minStrike() => double.MinValue;
-
         public override double maxStrike() => double.MaxValue;
+
+        public override double minStrike() => double.MinValue;
 
         protected override double blackVolImpl(double t, double x) => volatility_.link.value();
     }

@@ -1,10 +1,14 @@
-﻿namespace QLNet.Methods.lattices
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Methods.lattices
 {
-    [JetBrains.Annotations.PublicAPI] public class Trigeorgis : EqualJumpsBinomialTree<Trigeorgis>, ITreeFactory<Trigeorgis>
+    [PublicAPI]
+    public class Trigeorgis : EqualJumpsBinomialTree<Trigeorgis>, ITreeFactory<Trigeorgis>
     {
         // parameterless constructor is requried for generics
         public Trigeorgis()
-        { }
+        {
+        }
 
         public Trigeorgis(StochasticProcess1D process, double end, int steps, double strike)
             : base(process, end, steps)

@@ -13,15 +13,15 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using System;
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Exceptions;
-using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Math.Optimization;
 using QLNet.Pricingengines.Bond;
-using QLNet.Termstructures;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Termstructures.Yield
 {
@@ -73,132 +73,9 @@ namespace QLNet.Termstructures.Yield
 
         \ingroup yieldtermstructures
     */
-    [JetBrains.Annotations.PublicAPI] public class FittedBondDiscountCurve : YieldTermStructure
+    [PublicAPI]
+    public class FittedBondDiscountCurve : YieldTermStructure
     {
-        // Constructors
-        //! reference date based on current evaluation date
-        public FittedBondDiscountCurve(int settlementDays,
-                                       Calendar calendar,
-                                       List<BondHelper> bondHelpers,
-                                       DayCounter dayCounter,
-                                       FittingMethod fittingMethod,
-                                       double accuracy = 1.0e-10,
-                                       int maxEvaluations = 10000,
-                                       Vector guess = null,
-                                       double simplexLambda = 1.0,
-                                       int maxStationaryStateIterations = 100)
-           : base(settlementDays, calendar, dayCounter)
-        {
-            accuracy_ = accuracy;
-            maxEvaluations_ = maxEvaluations;
-            simplexLambda_ = simplexLambda;
-            maxStationaryStateIterations_ = maxStationaryStateIterations;
-            guessSolution_ = guess ?? new Vector();
-            bondHelpers_ = bondHelpers;
-            fittingMethod_ = fittingMethod;
-
-            fittingMethod_.curve_ = this;
-            setup();
-        }
-
-        //! curve reference date fixed for life of curve
-        public FittedBondDiscountCurve(Date referenceDate,
-                                       List<BondHelper> bondHelpers,
-                                       DayCounter dayCounter,
-                                       FittingMethod fittingMethod,
-                                       double accuracy = 1.0e-10,
-                                       int maxEvaluations = 10000,
-                                       Vector guess = null,
-                                       double simplexLambda = 1.0,
-                                       int maxStationaryStateIterations = 100)
-           : base(referenceDate, new Calendar(), dayCounter)
-        {
-            accuracy_ = accuracy;
-            maxEvaluations_ = maxEvaluations;
-            simplexLambda_ = simplexLambda;
-            maxStationaryStateIterations_ = maxStationaryStateIterations;
-            guessSolution_ = guess;
-            bondHelpers_ = bondHelpers;
-            fittingMethod_ = fittingMethod;
-
-            fittingMethod_.curve_ = this;
-            setup();
-        }
-
-        // Inspectors
-        //! total number of bonds used to fit the yield curve
-        public int numberOfBonds() => bondHelpers_.Count;
-
-        //! the latest date for which the curve can return values
-        public override Date maxDate()
-        {
-            calculate();
-            return maxDate_;
-        }
-        //! class holding the results of the fit
-        public FittingMethod fitResults()
-        {
-            calculate();
-            return fittingMethod_.clone();
-        }
-
-        private void setup()
-        {
-            for (var i = 0; i < bondHelpers_.Count; ++i)
-                bondHelpers_[i].registerWith(update);
-        }
-
-        protected override void performCalculations()
-        {
-            Utils.QL_REQUIRE(!bondHelpers_.empty(), () => "no bondHelpers given");
-
-            maxDate_ = Date.minDate();
-            var refDate = referenceDate();
-
-            // double check bond quotes still valid and/or instruments not expired
-            for (var i = 0; i < bondHelpers_.Count; ++i)
-            {
-                var bond = bondHelpers_[i].bond();
-                Utils.QL_REQUIRE(bondHelpers_[i].quote().link.isValid(), () =>
-                                 i + 1 + " bond (maturity: " +
-                                 bond.maturityDate() + ") has an invalid price quote");
-                var bondSettlement = bond.settlementDate();
-                Utils.QL_REQUIRE(bondSettlement >= refDate, () =>
-                                 i + 1 + " bond settlemente date (" +
-                                 bondSettlement + ") before curve reference date (" +
-                                 refDate + ")");
-                Utils.QL_REQUIRE(BondFunctions.isTradable(bond, bondSettlement), () =>
-                                 i + 1 + " bond non tradable at " +
-                                 bondSettlement + " settlement date (maturity" +
-                                 " being " + bond.maturityDate() + ")",
-                                 QLNetExceptionEnum.NotTradableException);
-                maxDate_ = Date.Max(maxDate_, bondHelpers_[i].pillarDate());
-                bondHelpers_[i].setTermStructure(this);
-            }
-            fittingMethod_.init();
-            fittingMethod_.calculate();
-
-        }
-
-        protected override double discountImpl(double t)
-        {
-            calculate();
-            return fittingMethod_.discountFunction(fittingMethod_.solution_, t);
-        }
-        // target accuracy level to be used in the optimization routine
-        private double accuracy_;
-        // max number of evaluations to be used in the optimization routine
-        private int maxEvaluations_;
-        // sets the scale in the (Simplex) optimization routine
-        private double simplexLambda_;
-        // max number of evaluations where no improvement to solution is made
-        private int maxStationaryStateIterations_;
-        // a guess solution may be passed into the constructor to speed calcs
-        private Vector guessSolution_;
-        private Date maxDate_;
-        private List<BondHelper> bondHelpers_;
-        private FittingMethod fittingMethod_; // TODO Clone
-
         //! Base fitting method used to construct a fitted bond discount curve
         /*! This base class provides the specific methodology/strategy
             used to construct a FittedBondDiscountCurve.  Derived classes
@@ -230,11 +107,16 @@ namespace QLNet.Termstructures.Yield
                      depending on the fitting method used, in order to get
                      proper/reasonable/faster convergence.
         */
-        [JetBrains.Annotations.PublicAPI] public class FittingMethod
+        [PublicAPI]
+        public class FittingMethod
         {
             // internal class
-            [JetBrains.Annotations.PublicAPI] public class FittingCost : CostFunction
+            [PublicAPI]
+            public class FittingCost : CostFunction
             {
+                internal List<int> firstCashFlow_;
+                private FittingMethod fittingMethod_;
+
                 public FittingCost(FittingMethod fittingMethod)
                 {
                     fittingMethod_ = fittingMethod;
@@ -248,8 +130,10 @@ namespace QLNet.Termstructures.Yield
                     {
                         squaredError += vals[i];
                     }
+
                     return squaredError;
                 }
+
                 public override Vector values(Vector x)
                 {
                     var refDate = fittingMethod_.curve_.referenceDate();
@@ -271,8 +155,11 @@ namespace QLNet.Termstructures.Yield
                             var tenor = dc.yearFraction(refDate, cf[k].date());
                             modelPrice += cf[k].amount() * fittingMethod_.discountFunction(x, tenor);
                         }
+
                         if (helper.useCleanPrice())
+                        {
                             modelPrice -= bond.accruedAmount(bondSettlement);
+                        }
 
                         // adjust price (NPV) for forward settlement
                         if (bondSettlement != refDate)
@@ -280,31 +167,53 @@ namespace QLNet.Termstructures.Yield
                             var tenor = dc.yearFraction(refDate, bondSettlement);
                             modelPrice /= fittingMethod_.discountFunction(x, tenor);
                         }
+
                         var marketPrice = helper.quote().link.value();
                         var error = modelPrice - marketPrice;
                         var weightedError = fittingMethod_.weights_[i] * error;
                         values[i] = weightedError * weightedError;
                     }
+
                     return values;
                 }
-
-                private FittingMethod fittingMethod_;
-                internal List<int> firstCashFlow_;
-
-
             }
 
-            //! total number of coefficients to fit/solve for
-            public virtual int size() => throw new NotImplementedException();
+            //! constrains discount function to unity at \f$ T=0 \f$, if true
+            protected bool constrainAtZero_;
+            //! base class sets this cost function used in the optimization routine
+            protected FittingCost costFunction_;
+            //! optional guess solution to be passed into constructor.
+            /*! The idea is to use a previous solution as a guess solution to
+               the discount curve, in an attempt to speed up calculations.
+            */
+            protected Vector guessSolution_;
+            //! internal reference to the FittedBondDiscountCurve instance
+            internal FittedBondDiscountCurve curve_;
+            //! solution array found from optimization, set in calculate()
+            internal Vector solution_;
+            // whether or not the weights should be calculated internally
+            private bool calculateWeights_;
+            // final value for the minimized cost function
+            private double costValue_;
+            // total number of iterations used in the optimization routine
+            // (possibly including gradient evaluations)
+            private int numberOfIterations_;
+            // optimization method to be used, if none provided use Simplex
+            private OptimizationMethod optimizationMethod_;
 
-            //! output array of results of optimization problem
-            public Vector solution() => solution_;
+            // array of normalized (duration) weights, one for each bond helper
+            private Vector weights_;
 
-            //! final number of iterations used in the optimization problem
-            public int numberOfIterations() => numberOfIterations_;
-
-            //! final value of cost function after optimization
-            public double minimumCostValue() => costValue_;
+            //! constructor
+            protected FittingMethod(bool constrainAtZero = true,
+                Vector weights = null,
+                OptimizationMethod optimizationMethod = null)
+            {
+                constrainAtZero_ = constrainAtZero;
+                weights_ = weights ?? new Vector();
+                calculateWeights_ = weights_.empty();
+                optimizationMethod_ = optimizationMethod;
+            }
 
             //! clone of the current object
             public virtual FittingMethod clone() => throw new NotImplementedException();
@@ -312,25 +221,82 @@ namespace QLNet.Termstructures.Yield
             //! return whether there is a constraint at zero
             public bool constrainAtZero() => constrainAtZero_;
 
-            //! return weights being used
-            public Vector weights() => weights_;
+            //! open discountFunction to public
+            public double discount(Vector x, double t) => discountFunction(x, t);
+
+            //! final value of cost function after optimization
+            public double minimumCostValue() => costValue_;
+
+            //! final number of iterations used in the optimization problem
+            public int numberOfIterations() => numberOfIterations_;
 
             //! return optimization method being used
             public OptimizationMethod optimizationMethod() => optimizationMethod_;
 
-            //! open discountFunction to public
-            public double discount(Vector x, double t) => discountFunction(x, t);
+            //! total number of coefficients to fit/solve for
+            public virtual int size() => throw new NotImplementedException();
 
-            //! constructor
-            protected FittingMethod(bool constrainAtZero = true,
-                                    Vector weights = null,
-                                    OptimizationMethod optimizationMethod = null)
+            //! output array of results of optimization problem
+            public Vector solution() => solution_;
+
+            //! return weights being used
+            public Vector weights() => weights_;
+
+            // curve optimization called here- adjust optimization parameters here
+            internal void calculate()
             {
-                constrainAtZero_ = constrainAtZero;
-                weights_ = weights ?? new Vector();
-                calculateWeights_ = weights_.empty();
-                optimizationMethod_ = optimizationMethod;
+                var costFunction = costFunction_;
+                Constraint constraint = new NoConstraint();
+
+                // start with the guess solution, if it exists
+                var x = new Vector(size(), 0.0);
+                if (!curve_.guessSolution_.empty())
+                {
+                    x = curve_.guessSolution_;
+                }
+
+                if (curve_.maxEvaluations_ == 0)
+                {
+                    //Don't calculate, simply use given parameters to provide a fitted curve.
+                    //This turns the fittedbonddiscountcurve into an evaluator of the parametric
+                    //curve, for example allowing to use the parameters for a credit spread curve
+                    //calculated with bonds in one currency to be coupled to a discount curve in
+                    //another currency.
+                    return;
+                }
+
+                //workaround for backwards compatibility
+                var optimization = optimizationMethod_;
+                if (optimization == null)
+                {
+                    optimization = new Simplex(curve_.simplexLambda_);
+                }
+
+                var problem = new Problem(costFunction, constraint, x);
+
+                var rootEpsilon = curve_.accuracy_;
+                var functionEpsilon = curve_.accuracy_;
+                var gradientNormEpsilon = curve_.accuracy_;
+
+                var endCriteria = new EndCriteria(curve_.maxEvaluations_,
+                    curve_.maxStationaryStateIterations_,
+                    rootEpsilon,
+                    functionEpsilon,
+                    gradientNormEpsilon);
+
+                optimization.minimize(problem, endCriteria);
+                solution_ = problem.currentValue();
+
+                numberOfIterations_ = problem.functionEvaluation();
+                costValue_ = problem.functionValue();
+
+                // save the results as the guess solution, in case of recalculation
+                curve_.guessSolution_ = solution_;
             }
+
+            //! discount function called by FittedBondDiscountCurve
+            internal virtual double discountFunction(Vector x, double t) => throw new NotImplementedException();
+
             //! rerun every time instruments/referenceDate changes
             internal virtual void init()
             {
@@ -374,99 +340,145 @@ namespace QLNet.Termstructures.Yield
                         var ytm = BondFunctions.yield(bond, cleanPrice, yieldDC, yieldComp, yieldFreq, bondSettlement);
 
                         var dur = BondFunctions.duration(bond, ytm, yieldDC, yieldComp, yieldFreq,
-                                                            Duration.Type.Modified, bondSettlement);
+                            Duration.Type.Modified, bondSettlement);
                         weights_[i] = 1.0 / dur;
                         squaredSum += weights_[i] * weights_[i];
                     }
+
                     weights_ /= System.Math.Sqrt(squaredSum);
                 }
 
                 Utils.QL_REQUIRE(weights_.size() == n, () =>
-                                 "Given weights do not cover all boostrapping helpers");
-
+                    "Given weights do not cover all boostrapping helpers");
             }
+        }
 
-            //! discount function called by FittedBondDiscountCurve
-            internal virtual double discountFunction(Vector x, double t) => throw new NotImplementedException();
+        // target accuracy level to be used in the optimization routine
+        private double accuracy_;
+        private List<BondHelper> bondHelpers_;
+        private FittingMethod fittingMethod_; // TODO Clone
+        // a guess solution may be passed into the constructor to speed calcs
+        private Vector guessSolution_;
+        private Date maxDate_;
+        // max number of evaluations to be used in the optimization routine
+        private int maxEvaluations_;
+        // max number of evaluations where no improvement to solution is made
+        private int maxStationaryStateIterations_;
+        // sets the scale in the (Simplex) optimization routine
+        private double simplexLambda_;
 
-            //! constrains discount function to unity at \f$ T=0 \f$, if true
-            protected bool constrainAtZero_;
-            //! internal reference to the FittedBondDiscountCurve instance
-            internal FittedBondDiscountCurve curve_;
-            //! solution array found from optimization, set in calculate()
-            internal Vector solution_;
-            //! optional guess solution to be passed into constructor.
-            /*! The idea is to use a previous solution as a guess solution to
-               the discount curve, in an attempt to speed up calculations.
-            */
-            protected Vector guessSolution_;
-            //! base class sets this cost function used in the optimization routine
-            protected FittingCost costFunction_;
+        // Constructors
+        //! reference date based on current evaluation date
+        public FittedBondDiscountCurve(int settlementDays,
+            Calendar calendar,
+            List<BondHelper> bondHelpers,
+            DayCounter dayCounter,
+            FittingMethod fittingMethod,
+            double accuracy = 1.0e-10,
+            int maxEvaluations = 10000,
+            Vector guess = null,
+            double simplexLambda = 1.0,
+            int maxStationaryStateIterations = 100)
+            : base(settlementDays, calendar, dayCounter)
+        {
+            accuracy_ = accuracy;
+            maxEvaluations_ = maxEvaluations;
+            simplexLambda_ = simplexLambda;
+            maxStationaryStateIterations_ = maxStationaryStateIterations;
+            guessSolution_ = guess ?? new Vector();
+            bondHelpers_ = bondHelpers;
+            fittingMethod_ = fittingMethod;
 
-            // curve optimization called here- adjust optimization parameters here
-            internal void calculate()
+            fittingMethod_.curve_ = this;
+            setup();
+        }
+
+        //! curve reference date fixed for life of curve
+        public FittedBondDiscountCurve(Date referenceDate,
+            List<BondHelper> bondHelpers,
+            DayCounter dayCounter,
+            FittingMethod fittingMethod,
+            double accuracy = 1.0e-10,
+            int maxEvaluations = 10000,
+            Vector guess = null,
+            double simplexLambda = 1.0,
+            int maxStationaryStateIterations = 100)
+            : base(referenceDate, new Calendar(), dayCounter)
+        {
+            accuracy_ = accuracy;
+            maxEvaluations_ = maxEvaluations;
+            simplexLambda_ = simplexLambda;
+            maxStationaryStateIterations_ = maxStationaryStateIterations;
+            guessSolution_ = guess;
+            bondHelpers_ = bondHelpers;
+            fittingMethod_ = fittingMethod;
+
+            fittingMethod_.curve_ = this;
+            setup();
+        }
+
+        //! class holding the results of the fit
+        public FittingMethod fitResults()
+        {
+            calculate();
+            return fittingMethod_.clone();
+        }
+
+        //! the latest date for which the curve can return values
+        public override Date maxDate()
+        {
+            calculate();
+            return maxDate_;
+        }
+
+        // Inspectors
+        //! total number of bonds used to fit the yield curve
+        public int numberOfBonds() => bondHelpers_.Count;
+
+        protected override double discountImpl(double t)
+        {
+            calculate();
+            return fittingMethod_.discountFunction(fittingMethod_.solution_, t);
+        }
+
+        protected override void performCalculations()
+        {
+            Utils.QL_REQUIRE(!bondHelpers_.empty(), () => "no bondHelpers given");
+
+            maxDate_ = Date.minDate();
+            var refDate = referenceDate();
+
+            // double check bond quotes still valid and/or instruments not expired
+            for (var i = 0; i < bondHelpers_.Count; ++i)
             {
-                var costFunction = costFunction_;
-                Constraint constraint = new NoConstraint();
-
-                // start with the guess solution, if it exists
-                var x = new Vector(size(), 0.0);
-                if (!curve_.guessSolution_.empty())
-                {
-                    x = curve_.guessSolution_;
-                }
-
-                if (curve_.maxEvaluations_ == 0)
-                {
-                    //Don't calculate, simply use given parameters to provide a fitted curve.
-                    //This turns the fittedbonddiscountcurve into an evaluator of the parametric
-                    //curve, for example allowing to use the parameters for a credit spread curve
-                    //calculated with bonds in one currency to be coupled to a discount curve in
-                    //another currency.
-                    return;
-                }
-
-                //workaround for backwards compatibility
-                var optimization = optimizationMethod_;
-                if (optimization == null)
-                {
-                    optimization = new Simplex(curve_.simplexLambda_);
-                }
-
-                var problem = new Problem(costFunction, constraint, x);
-
-                var rootEpsilon = curve_.accuracy_;
-                var functionEpsilon = curve_.accuracy_;
-                var gradientNormEpsilon = curve_.accuracy_;
-
-                var endCriteria = new EndCriteria(curve_.maxEvaluations_,
-                                                          curve_.maxStationaryStateIterations_,
-                                                          rootEpsilon,
-                                                          functionEpsilon,
-                                                          gradientNormEpsilon);
-
-                optimization.minimize(problem, endCriteria);
-                solution_ = problem.currentValue();
-
-                numberOfIterations_ = problem.functionEvaluation();
-                costValue_ = problem.functionValue();
-
-                // save the results as the guess solution, in case of recalculation
-                curve_.guessSolution_ = solution_;
+                var bond = bondHelpers_[i].bond();
+                Utils.QL_REQUIRE(bondHelpers_[i].quote().link.isValid(), () =>
+                    i + 1 + " bond (maturity: " +
+                    bond.maturityDate() + ") has an invalid price quote");
+                var bondSettlement = bond.settlementDate();
+                Utils.QL_REQUIRE(bondSettlement >= refDate, () =>
+                    i + 1 + " bond settlemente date (" +
+                    bondSettlement + ") before curve reference date (" +
+                    refDate + ")");
+                Utils.QL_REQUIRE(BondFunctions.isTradable(bond, bondSettlement), () =>
+                        i + 1 + " bond non tradable at " +
+                        bondSettlement + " settlement date (maturity" +
+                        " being " + bond.maturityDate() + ")",
+                    QLNetExceptionEnum.NotTradableException);
+                maxDate_ = Date.Max(maxDate_, bondHelpers_[i].pillarDate());
+                bondHelpers_[i].setTermStructure(this);
             }
 
-            // array of normalized (duration) weights, one for each bond helper
-            private Vector weights_;
-            // whether or not the weights should be calculated internally
-            private bool calculateWeights_;
-            // total number of iterations used in the optimization routine
-            // (possibly including gradient evaluations)
-            private int numberOfIterations_;
-            // final value for the minimized cost function
-            private double costValue_;
-            // optimization method to be used, if none provided use Simplex
-            private OptimizationMethod optimizationMethod_;
+            fittingMethod_.init();
+            fittingMethod_.calculate();
+        }
 
+        private void setup()
+        {
+            for (var i = 0; i < bondHelpers_.Count; ++i)
+            {
+                bondHelpers_[i].registerWith(update);
+            }
         }
     }
 }

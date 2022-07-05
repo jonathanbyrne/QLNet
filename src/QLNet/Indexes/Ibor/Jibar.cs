@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Termstructures;
 using QLNet.Time;
@@ -25,22 +26,22 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.Ibor
 {
-
     //! %JIBAR rate
     //    ! Johannesburg Interbank Agreed Rate
     //
     //        \todo check settlement days and day-count convention.
     //
-    [JetBrains.Annotations.PublicAPI] public class Jibar : IborIndex
+    [PublicAPI]
+    public class Jibar : IborIndex
     {
         public Jibar(Period tenor)
-           : base("Jibar", tenor, 0, new ZARCurrency(), new SouthAfrica(), BusinessDayConvention.ModifiedFollowing, false, new Actual365Fixed(), new Handle<YieldTermStructure>())
+            : base("Jibar", tenor, 0, new ZARCurrency(), new SouthAfrica(), BusinessDayConvention.ModifiedFollowing, false, new Actual365Fixed(), new Handle<YieldTermStructure>())
         {
         }
+
         public Jibar(Period tenor, Handle<YieldTermStructure> h)
-           : base("Jibar", tenor, 0, new ZARCurrency(), new SouthAfrica(), BusinessDayConvention.ModifiedFollowing, false, new Actual365Fixed(), h)
+            : base("Jibar", tenor, 0, new ZARCurrency(), new SouthAfrica(), BusinessDayConvention.ModifiedFollowing, false, new Actual365Fixed(), h)
         {
         }
     }
-
 }

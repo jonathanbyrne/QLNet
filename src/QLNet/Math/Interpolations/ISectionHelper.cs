@@ -1,9 +1,14 @@
-﻿namespace QLNet.Math.Interpolations
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public interface ISectionHelper
+    [PublicAPI]
+    public interface ISectionHelper
     {
-        double value(double x);
-        double primitive(double x);
         double fNext();
+
+        double primitive(double x);
+
+        double value(double x);
     }
 }

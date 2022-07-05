@@ -1,4 +1,5 @@
-﻿using QLNet.Indexes;
+﻿using JetBrains.Annotations;
+using QLNet.Indexes;
 using QLNet.Instruments;
 using QLNet.Pricingengines.Swap;
 using QLNet.Quotes;
@@ -6,8 +7,17 @@ using QLNet.Time;
 
 namespace QLNet.Termstructures.Inflation
 {
-    [JetBrains.Annotations.PublicAPI] public class YearOnYearInflationSwapHelper : BootstrapHelper<YoYInflationTermStructure>
+    [PublicAPI]
+    public class YearOnYearInflationSwapHelper : BootstrapHelper<YoYInflationTermStructure>
     {
+        protected Calendar calendar_;
+        protected DayCounter dayCounter_;
+        protected Date maturity_;
+        protected BusinessDayConvention paymentConvention_;
+        protected Period swapObsLag_;
+        protected YoYInflationIndex yii_;
+        protected YearOnYearInflationSwap yyiis_;
+
         public YearOnYearInflationSwapHelper(Handle<Quote> quote,
             Period swapObsLag,
             Date maturity,
@@ -61,6 +71,15 @@ namespace QLNet.Termstructures.Inflation
             Settings.registerWith(update);
         }
 
+        public override double impliedQuote()
+        {
+            // what does the term structure imply?
+            // in this case just the same value ... trivial case
+            // (would not be so for an inflation-linked bond)
+            yyiis_.recalculate();
+            return yyiis_.fairRate();
+        }
+
         public override void setTermStructure(YoYInflationTermStructure y)
         {
             base.setTermStructure(y);
@@ -82,13 +101,13 @@ namespace QLNet.Termstructures.Inflation
             var fixedSchedule = new MakeSchedule().from(from).to(to)
                 .withTenor(new Period(1, TimeUnit.Years))
                 .withConvention(BusinessDayConvention.Unadjusted)
-                .withCalendar(calendar_)// fixed leg gets cal from sched
+                .withCalendar(calendar_) // fixed leg gets cal from sched
                 .value();
             var yoySchedule = fixedSchedule;
             var spread = 0.0;
             var fixedRate = quote().link.value();
 
-            var nominal = 1000000.0;   // has to be something but doesn't matter what
+            var nominal = 1000000.0; // has to be something but doesn't matter what
             yyiis_ = new YearOnYearInflationSwap(YearOnYearInflationSwap.Type.Payer,
                 nominal,
                 fixedSchedule,
@@ -99,30 +118,12 @@ namespace QLNet.Termstructures.Inflation
                 swapObsLag_,
                 spread,
                 dayCounter_,
-                calendar_,  // inflation index does not have a calendar
+                calendar_, // inflation index does not have a calendar
                 paymentConvention_);
-
 
             // Because very simple instrument only takes
             // standard discounting swap engine.
             yyiis_.setPricingEngine(new DiscountingSwapEngine(y.nominalTermStructure()));
         }
-
-        public override double impliedQuote()
-        {
-            // what does the term structure imply?
-            // in this case just the same value ... trivial case
-            // (would not be so for an inflation-linked bond)
-            yyiis_.recalculate();
-            return yyiis_.fairRate();
-        }
-
-        protected Period swapObsLag_;
-        protected Date maturity_;
-        protected Calendar calendar_;
-        protected BusinessDayConvention paymentConvention_;
-        protected DayCounter dayCounter_;
-        protected YoYInflationIndex yii_;
-        protected YearOnYearInflationSwap yyiis_;
     }
 }

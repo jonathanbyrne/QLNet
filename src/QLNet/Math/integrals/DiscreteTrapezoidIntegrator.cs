@@ -1,12 +1,15 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.integrals
 {
-    [JetBrains.Annotations.PublicAPI] public class DiscreteTrapezoidIntegrator : Integrator
+    [PublicAPI]
+    public class DiscreteTrapezoidIntegrator : Integrator
     {
         public DiscreteTrapezoidIntegrator(int evaluations)
             : base(null, evaluations)
-        { }
+        {
+        }
 
         protected override double integrate(Func<double, double> f, double a, double b)
         {

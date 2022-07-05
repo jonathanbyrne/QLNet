@@ -17,19 +17,25 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Methods.Finitedifferences.Operators;
 using QLNet.Models.Shortrate.Onefactormodels;
 using QLNet.Patterns;
-using System;
 
 namespace QLNet.Methods.Finitedifferences.Solvers
 {
-    [JetBrains.Annotations.PublicAPI] public class FdmHullWhiteSolver : LazyObject
+    [PublicAPI]
+    public class FdmHullWhiteSolver : LazyObject
     {
+        protected Handle<HullWhite> model_;
+        protected FdmSchemeDesc schemeDesc_;
+        protected Fdm1DimSolver solver_;
+        protected FdmSolverDesc solverDesc_;
+
         public FdmHullWhiteSolver(
-           Handle<HullWhite> model,
-           FdmSolverDesc solverDesc,
-           FdmSchemeDesc schemeDesc = null)
+            Handle<HullWhite> model,
+            FdmSolverDesc solverDesc,
+            FdmSchemeDesc schemeDesc = null)
         {
             solverDesc_ = solverDesc;
             schemeDesc_ = schemeDesc ?? new FdmSchemeDesc().Hundsdorfer();
@@ -37,28 +43,24 @@ namespace QLNet.Methods.Finitedifferences.Solvers
             model_.registerWith(update);
         }
 
-        public double valueAt(double s)
-        {
-            calculate();
-            return solver_.interpolateAt(s);
-        }
         public double deltaAt(double s) => 0.0;
 
         public double gammaAt(double s) => 0.0;
 
         public double thetaAt(double s) => 0.0;
 
+        public double valueAt(double s)
+        {
+            calculate();
+            return solver_.interpolateAt(s);
+        }
+
         protected override void performCalculations()
         {
             var op = new FdmHullWhiteOp(
-               solverDesc_.mesher, model_.currentLink(), 0);
+                solverDesc_.mesher, model_.currentLink(), 0);
 
             solver_ = new Fdm1DimSolver(solverDesc_, schemeDesc_, op);
         }
-
-        protected Handle<HullWhite> model_;
-        protected FdmSolverDesc solverDesc_;
-        protected FdmSchemeDesc schemeDesc_;
-        protected Fdm1DimSolver solver_;
     }
 }

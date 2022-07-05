@@ -17,20 +17,28 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Time.Calendars
 {
-    [JetBrains.Annotations.PublicAPI] public class WeekendsOnly : Calendar
+    [PublicAPI]
+    public class WeekendsOnly : Calendar
     {
-        public WeekendsOnly() : base(Impl.Singleton) { }
-
-        class Impl : WesternImpl
+        private class Impl : WesternImpl
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "weekends only";
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date) => !isWeekend(date.DayOfWeek);
+
+            public override string name() => "weekends only";
+        }
+
+        public WeekendsOnly() : base(Impl.Singleton)
+        {
         }
     }
 }

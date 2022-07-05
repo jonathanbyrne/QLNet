@@ -18,18 +18,17 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Cashflows;
-using QLNet.Instruments;
 using QLNet.Termstructures;
 
 namespace QLNet.Pricingengines.Bond
 {
-    [JetBrains.Annotations.PublicAPI] public class DiscountingBondEngine : QLNet.Instruments.Bond.Engine
+    [PublicAPI]
+    public class DiscountingBondEngine : Instruments.Bond.Engine
     {
         private Handle<YieldTermStructure> discountCurve_;
         private bool? includeSettlementDateFlows_;
-
-        public Handle<YieldTermStructure> discountCurve() => discountCurve_;
 
         public DiscountingBondEngine(Handle<YieldTermStructure> discountCurve, bool? includeSettlementDateFlows = null)
         {
@@ -44,15 +43,13 @@ namespace QLNet.Pricingengines.Bond
 
             results_.valuationDate = discountCurve_.link.referenceDate();
             var includeRefDateFlows =
-               includeSettlementDateFlows_.HasValue ?
-               includeSettlementDateFlows_.Value :
-               Settings.includeReferenceDateEvents;
+                includeSettlementDateFlows_.HasValue ? includeSettlementDateFlows_.Value : Settings.includeReferenceDateEvents;
 
             results_.value = CashFlows.npv(arguments_.cashflows,
-                                           discountCurve_,
-                                           includeRefDateFlows,
-                                           results_.valuationDate,
-                                           results_.valuationDate);
+                discountCurve_,
+                includeRefDateFlows,
+                results_.valuationDate,
+                results_.valuationDate);
 
             results_.cash = CashFlows.cash(arguments_.cashflows, arguments_.settlementDate);
 
@@ -67,12 +64,14 @@ namespace QLNet.Pricingengines.Bond
             {
                 // no such luck
                 results_.settlementValue =
-                   CashFlows.npv(arguments_.cashflows,
-                                 discountCurve_,
-                                 false,
-                                 arguments_.settlementDate,
-                                 arguments_.settlementDate);
+                    CashFlows.npv(arguments_.cashflows,
+                        discountCurve_,
+                        false,
+                        arguments_.settlementDate,
+                        arguments_.settlementDate);
             }
         }
+
+        public Handle<YieldTermStructure> discountCurve() => discountCurve_;
     }
 }

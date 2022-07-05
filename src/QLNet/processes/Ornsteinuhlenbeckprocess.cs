@@ -16,7 +16,8 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using System;
+
+using JetBrains.Annotations;
 
 namespace QLNet.processes
 {
@@ -28,8 +29,14 @@ namespace QLNet.processes
 
         \ingroup processes
     */
-    [JetBrains.Annotations.PublicAPI] public class OrnsteinUhlenbeckProcess : StochasticProcess1D
+    [PublicAPI]
+    public class OrnsteinUhlenbeckProcess : StochasticProcess1D
     {
+        private double level_;
+        private double speed_;
+        private double volatility_;
+        private double x0_;
+
         public OrnsteinUhlenbeckProcess(double speed, double vol, double x0 = 0.0, double level = 0.0)
         {
             x0_ = x0;
@@ -40,20 +47,16 @@ namespace QLNet.processes
 
             Utils.QL_REQUIRE(volatility_ >= 0.0, () => "negative volatility given");
         }
-        // StochasticProcess interface
-        public override double x0() => x0_;
-
-        public double speed() => speed_;
-
-        public double volatility() => volatility_;
-
-        public double level() => level_;
-
-        public override double drift(double UnnamedParameter1, double x) => speed_ * (level_ - x);
 
         public override double diffusion(double UnnamedParameter1, double UnnamedParameter2) => volatility_;
 
+        public override double drift(double UnnamedParameter1, double x) => speed_ * (level_ - x);
+
         public override double expectation(double UnnamedParameter1, double x0, double dt) => level_ + (x0 - level_) * System.Math.Exp(-speed_ * dt);
+
+        public double level() => level_;
+
+        public double speed() => speed_;
 
         public override double stdDeviation(double t, double x0, double dt) => System.Math.Sqrt(variance(t, x0, dt));
 
@@ -64,17 +67,13 @@ namespace QLNet.processes
                 // algebraic limit for small speed
                 return volatility_ * volatility_ * dt;
             }
-            else
-            {
-                return 0.5 * volatility_ * volatility_ / speed_ * (1.0 - System.Math.Exp(-2.0 * speed_ * dt));
-            }
+
+            return 0.5 * volatility_ * volatility_ / speed_ * (1.0 - System.Math.Exp(-2.0 * speed_ * dt));
         }
 
-        private double x0_;
-        private double speed_;
-        private double level_;
-        private double volatility_;
+        public double volatility() => volatility_;
 
+        // StochasticProcess interface
+        public override double x0() => x0_;
     }
-
 }

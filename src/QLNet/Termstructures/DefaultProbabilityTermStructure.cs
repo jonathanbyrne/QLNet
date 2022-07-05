@@ -17,10 +17,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
 using QLNet.Extensions;
 using QLNet.Quotes;
 using QLNet.Time;
-using System.Collections.Generic;
 
 namespace QLNet.Termstructures
 {
@@ -32,68 +33,148 @@ namespace QLNet.Termstructures
     */
     public abstract class DefaultProbabilityTermStructure : TermStructure
     {
+        private readonly List<Date> jumpDates_;
+        // data members
+        private readonly List<Handle<Quote>> jumps_;
+        private readonly List<double> jumpTimes_;
+        private Date latestReference_;
+        private readonly int nJumps_;
+
+        #region Observer interface
+
+        public override void update()
+        {
+            base.update();
+            if (referenceDate() != latestReference_)
+            {
+                setJumps();
+            }
+        }
+
+        #endregion
+
+        // methods
+        private void setJumps()
+        {
+            if (jumpDates_.empty() && !jumps_.empty())
+            {
+                // turn of year dates
+                jumpDates_.Clear();
+                jumpTimes_.Clear();
+                var y = referenceDate().year();
+                for (var i = 0; i < nJumps_; ++i)
+                {
+                    jumpDates_.Add(new Date(31, Month.December, y + i));
+                }
+            }
+            else
+            {
+                // fixed dats
+                Utils.QL_REQUIRE(jumpDates_.Count == nJumps_, () =>
+                    "mismatch between number of jumps (" + nJumps_ +
+                    ") and jump dates (" + jumpDates_.Count + ")");
+            }
+
+            for (var i = 0; i < nJumps_; ++i)
+            {
+                jumpTimes_.Add(timeFromReference(jumpDates_[i]));
+            }
+
+            latestReference_ = base.referenceDate();
+        }
+
         #region Constructors
 
         protected DefaultProbabilityTermStructure(DayCounter dc = null, List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
-           : base(dc)
+            : base(dc)
         {
             if (jumps != null)
+            {
                 jumps_ = jumps;
+            }
             else
+            {
                 jumps_ = new List<Handle<Quote>>();
+            }
 
             if (jumpDates != null)
+            {
                 jumpDates_ = jumpDates;
+            }
             else
+            {
                 jumpDates_ = new List<Date>();
+            }
 
             jumpTimes_ = new List<double>(jumpDates_.Count);
             nJumps_ = jumps_.Count;
             setJumps();
             for (var i = 0; i < nJumps_; ++i)
+            {
                 jumps_[i].registerWith(update);
+            }
         }
 
         protected DefaultProbabilityTermStructure(Date referenceDate, Calendar cal = null, DayCounter dc = null,
-                                                  List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
-           : base(referenceDate, cal, dc)
+            List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
+            : base(referenceDate, cal, dc)
         {
             if (jumps != null)
+            {
                 jumps_ = jumps;
+            }
             else
+            {
                 jumps_ = new List<Handle<Quote>>();
+            }
 
             if (jumpDates != null)
+            {
                 jumpDates_ = jumpDates;
+            }
             else
+            {
                 jumpDates_ = new List<Date>();
+            }
 
             jumpTimes_ = new List<double>(jumpDates_.Count);
             nJumps_ = jumps_.Count;
             setJumps();
             for (var i = 0; i < nJumps_; ++i)
+            {
                 jumps_[i].registerWith(update);
+            }
         }
 
         protected DefaultProbabilityTermStructure(int settlementDays, Calendar cal, DayCounter dc = null,
-                                                  List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
-           : base(settlementDays, cal, dc)
+            List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
+            : base(settlementDays, cal, dc)
         {
             if (jumps != null)
+            {
                 jumps_ = jumps;
+            }
             else
+            {
                 jumps_ = new List<Handle<Quote>>();
+            }
 
             if (jumpDates != null)
+            {
                 jumpDates_ = jumpDates;
+            }
             else
+            {
                 jumpDates_ = new List<Date>();
+            }
 
             jumpTimes_ = new List<double>(jumpDates_.Count);
             nJumps_ = jumps_.Count;
             setJumps();
             for (var i = 0; i < nJumps_; ++i)
+            {
                 jumps_[i].registerWith(update);
+            }
         }
 
         #endregion
@@ -122,6 +203,7 @@ namespace QLNet.Termstructures
                     Utils.QL_REQUIRE(thisJump > 0.0 && thisJump <= 1.0, () => "invalid " + (i + 1) + " jump value: " + thisJump);
                     jumpEffect *= thisJump;
                 }
+
                 return jumpEffect * survivalProbabilityImpl(t);
             }
 
@@ -149,6 +231,7 @@ namespace QLNet.Termstructures
             double p1 = d1 < referenceDate() ? 0.0 : defaultProbability(d1, extrapolate), p2 = defaultProbability(d2, extrapolate);
             return p2 - p1;
         }
+
         //! probability of default between two given times
         public double defaultProbability(double t1, double t2, bool extrapo = false)
         {
@@ -202,18 +285,6 @@ namespace QLNet.Termstructures
 
         #endregion
 
-        #region Observer interface
-
-        public override void update()
-        {
-            base.update();
-            if (referenceDate() != latestReference_)
-                setJumps();
-        }
-
-        #endregion
-
-
         #region Calculations
 
         // These methods must be implemented in derived classes to
@@ -228,38 +299,5 @@ namespace QLNet.Termstructures
         protected abstract double defaultDensityImpl(double t);
 
         #endregion
-
-
-        // methods
-        private void setJumps()
-        {
-            if (jumpDates_.empty() && !jumps_.empty())
-            {
-                // turn of year dates
-                jumpDates_.Clear();
-                jumpTimes_.Clear();
-                var y = referenceDate().year();
-                for (var i = 0; i < nJumps_; ++i)
-                    jumpDates_.Add(new Date(31, Month.December, y + i));
-
-            }
-            else
-            {
-                // fixed dats
-                Utils.QL_REQUIRE(jumpDates_.Count == nJumps_, () =>
-                                 "mismatch between number of jumps (" + nJumps_ +
-                                 ") and jump dates (" + jumpDates_.Count + ")");
-            }
-            for (var i = 0; i < nJumps_; ++i)
-                jumpTimes_.Add(timeFromReference(jumpDates_[i]));
-
-            latestReference_ = base.referenceDate();
-        }
-        // data members
-        private List<Handle<Quote>> jumps_;
-        private List<Date> jumpDates_;
-        private List<double> jumpTimes_;
-        private int nJumps_;
-        private Date latestReference_;
     }
 }

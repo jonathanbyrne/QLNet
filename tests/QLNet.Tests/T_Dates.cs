@@ -35,13 +35,17 @@ namespace QLNet.Tests
 
             var knownDates = ECB.knownDates();
             if (knownDates.empty())
+            {
                 QAssert.Fail("Empty EBC date vector");
+            }
 
             var n = ECB.nextDates(Date.minDate()).Count;
 
             if (n != knownDates.Count)
+            {
                 QAssert.Fail("NextDates(minDate) returns " + n +
                              " instead of " + knownDates.Count + " dates");
+            }
 
             Date previousEcbDate = Date.minDate(),
                  currentEcbDate, ecbDateMinusOne;
@@ -52,19 +56,27 @@ namespace QLNet.Tests
                 currentEcbDate = knownDates[i];
 
                 if (!ECB.isECBdate(currentEcbDate))
+                {
                     QAssert.Fail(currentEcbDate + " fails isECBdate check");
+                }
 
                 ecbDateMinusOne = currentEcbDate - 1;
                 if (ECB.isECBdate(ecbDateMinusOne))
+                {
                     QAssert.Fail(ecbDateMinusOne + " fails isECBdate check");
+                }
 
                 if (ECB.nextDate(ecbDateMinusOne) != currentEcbDate)
+                {
                     QAssert.Fail("Next EBC date following " + ecbDateMinusOne +
                                  " must be " + currentEcbDate);
+                }
 
                 if (ECB.nextDate(previousEcbDate) != currentEcbDate)
+                {
                     QAssert.Fail("Next EBC date following " + previousEcbDate +
                                  " must be " + currentEcbDate);
+                }
 
                 previousEcbDate = currentEcbDate;
             }
@@ -72,12 +84,15 @@ namespace QLNet.Tests
             var knownDate = knownDates.First();
             ECB.removeDate(knownDate);
             if (ECB.isECBdate(knownDate))
+            {
                 QAssert.Fail("Unable to remove an EBC date");
+            }
 
             ECB.addDate(knownDate);
             if (!ECB.isECBdate(knownDate))
+            {
                 QAssert.Fail("Unable to add an EBC date");
-
+            }
         }
 
         [Fact]
@@ -110,21 +125,27 @@ namespace QLNet.Tests
 
                 // check that imm is greater than counter
                 if (imm <= counter)
+                {
                     QAssert.Fail(imm.DayOfWeek + " " + imm
                                  + " is not greater than "
                                  + counter.DayOfWeek + " " + counter);
+                }
 
                 // check that imm is an IMM date
                 if (!IMM.isIMMdate(imm, false))
+                {
                     QAssert.Fail(imm.DayOfWeek + " " + imm
                                  + " is not an IMM date (calculated from "
                                  + counter.DayOfWeek + " " + counter + ")");
+                }
 
                 // check that imm is <= to the next IMM date in the main cycle
                 if (imm > IMM.nextDate(counter, true))
+                {
                     QAssert.Fail(imm.DayOfWeek + " " + imm
                                  + " is not less than or equal to the next future in the main cycle "
                                  + IMM.nextDate(counter, true));
+                }
 
                 //// check that if counter is an IMM date, then imm==counter
                 //if (IMM::isIMMdate(counter, false) && (imm!=counter))
@@ -135,17 +156,21 @@ namespace QLNet.Tests
 
                 // check that for every date IMMdate is the inverse of IMMcode
                 if (IMM.date(IMM.code(imm), counter) != imm)
+                {
                     QAssert.Fail(IMM.code(imm)
                                  + " at calendar day " + counter
                                  + " is not the IMM code matching " + imm);
+                }
 
                 // check that for every date the 120 IMM codes refer to future dates
                 for (var i = 0; i < 40; ++i)
                 {
                     if (IMM.date(IMMcodes[i], counter) < counter)
+                    {
                         QAssert.Fail(IMM.date(IMMcodes[i], counter)
                                      + " is wrong for " + IMMcodes[i]
                                      + " at reference date " + counter);
+                    }
                 }
 
                 counter = counter + 1;
@@ -173,10 +198,12 @@ namespace QLNet.Tests
 
                 // check serial number consistency
                 if (serial != i)
+                {
                     QAssert.Fail("inconsistent serial number:\n"
                                  + "    original:      " + i + "\n"
                                  + "    date:          " + t + "\n"
                                  + "    serial number: " + serial);
+                }
 
                 int dy = t.DayOfYear,
                     d = t.Day,
@@ -188,34 +215,45 @@ namespace QLNet.Tests
                 if (!(dy == dyold + 1 ||
                       dy == 1 && dyold == 365 && !Date.IsLeapYear(yold) ||
                       dy == 1 && dyold == 366 && Date.IsLeapYear(yold)))
+                {
                     QAssert.Fail("wrong day of year increment: \n"
                                  + "    date: " + t + "\n"
                                  + "    day of year: " + dy + "\n"
                                  + "    previous:    " + dyold);
+                }
+
                 dyold = dy;
 
                 if (!(d == dold + 1 && m == mold && y == yold ||
                       d == 1 && m == mold + 1 && y == yold ||
                       d == 1 && m == 1 && y == yold + 1))
+                {
                     QAssert.Fail("wrong day,month,year increment: \n"
                                  + "    date: " + t + "\n"
                                  + "    day,month,year: "
                                  + d + "," + m + "," + y + "\n"
                                  + "    previous:       "
                                  + dold + "," + mold + "," + yold);
+                }
+
                 dold = d; mold = m; yold = y;
 
                 // check month definition
                 if (m < 1 || m > 12)
+                {
                     QAssert.Fail("invalid month: \n"
                                  + "    date:  " + t + "\n"
                                  + "    month: " + m);
+                }
 
                 // check day definition
                 if (d < 1)
+                {
                     QAssert.Fail("invalid day of month: \n"
                                  + "    date:  " + t + "\n"
                                  + "    day: " + d);
+                }
+
                 if (!(m == 1 && d <= 31 ||
                       m == 2 && d <= 28 ||
                       m == 2 && d == 29 && Date.IsLeapYear(y) ||
@@ -229,17 +267,22 @@ namespace QLNet.Tests
                       m == 10 && d <= 31 ||
                       m == 11 && d <= 30 ||
                       m == 12 && d <= 31))
+                {
                     QAssert.Fail("invalid day of month: \n"
                                  + "    date:  " + t + "\n"
                                  + "    day: " + d);
+                }
 
                 // check weekday definition
                 if (!(wd == wdold + 1 ||
                       wd == 1 && wdold == 7))
+                {
                     QAssert.Fail("invalid weekday: \n"
                                  + "    date:  " + t + "\n"
                                  + "    weekday:  " + wd + "\n"
                                  + "    previous: " + wdold);
+                }
+
                 wdold = wd;
 
                 // create the same date with a different constructor
@@ -247,11 +290,13 @@ namespace QLNet.Tests
                 // check serial number consistency
                 serial = s.serialNumber();
                 if (serial != i)
+                {
                     QAssert.Fail("inconsistent serial number:\n"
                                  + "    date:          " + t + "\n"
                                  + "    serial number: " + i + "\n"
                                  + "    cloned date:   " + s + "\n"
                                  + "    serial number: " + serial);
+                }
             }
 
         }
@@ -286,36 +331,45 @@ namespace QLNet.Tests
 
                 // check that asx is greater than counter
                 if (asx <= counter)
+                {
                     QAssert.Fail(asx.weekday() + " " + asx
                                  + " is not greater than "
                                  + counter.weekday() + " " + counter);
+                }
 
                 // check that asx is an ASX date
                 if (!ASX.isASXdate(asx, false))
+                {
                     QAssert.Fail(asx.weekday() + " " + asx
                                  + " is not an ASX date (calculated from "
                                  + counter.weekday() + " " + counter + ")");
+                }
 
                 // check that asx is <= to the next ASX date in the main cycle
                 if (asx > ASX.nextDate(counter, true))
+                {
                     QAssert.Fail(asx.weekday() + " " + asx
                                  + " is not less than or equal to the next future in the main cycle "
                                  + ASX.nextDate(counter, true));
-
+                }
 
                 // check that for every date ASXdate is the inverse of ASXcode
                 if (ASX.date(ASX.code(asx), counter) != asx)
+                {
                     QAssert.Fail(ASX.code(asx)
                                  + " at calendar day " + counter
                                  + " is not the ASX code matching " + asx);
+                }
 
                 // check that for every date the 120 ASX codes refer to future dates
                 for (var i = 0; i < 120; ++i)
                 {
                     if (ASX.date(ASXcodes[i], counter) < counter)
+                    {
                         QAssert.Fail(ASX.date(ASXcodes[i], counter)
                                      + " is wrong for " + ASXcodes[i]
                                      + " at reference date " + counter);
+                    }
                 }
 
                 counter = counter + 1;

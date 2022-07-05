@@ -18,35 +18,33 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Math;
-using QLNet.Time;
-using System;
 using System.Collections.Generic;
+using QLNet.Math;
 using QLNet.Math.Interpolations;
+using QLNet.Time;
 
 namespace QLNet.Termstructures.Volatility.swaption
 {
     public abstract class SwaptionVolatilityDiscrete : SwaptionVolatilityStructure
     {
+        protected Date evaluationDate_;
         protected int nOptionTenors_;
-        protected List<Period> optionTenors_;
+        protected int nSwapTenors_;
         protected List<Date> optionDates_;
-        protected List<double> optionTimes_;
         protected List<double> optionDatesAsReal_;
         protected Interpolation optionInterpolator_;
-
-        protected int nSwapTenors_;
-        protected List<Period> swapTenors_;
+        protected List<Period> optionTenors_;
+        protected List<double> optionTimes_;
         protected List<double> swapLengths_;
-        protected Date evaluationDate_;
+        protected List<Period> swapTenors_;
 
         protected SwaptionVolatilityDiscrete(List<Period> optionTenors,
-                                             List<Period> swapTenors,
-                                             int settlementDays,
-                                             Calendar cal,
-                                             BusinessDayConvention bdc,
-                                             DayCounter dc)
-           : base(settlementDays, cal, bdc, dc)
+            List<Period> swapTenors,
+            int settlementDays,
+            Calendar cal,
+            BusinessDayConvention bdc,
+            DayCounter dc)
+            : base(settlementDays, cal, bdc, dc)
         {
             nOptionTenors_ = optionTenors.Count;
             optionTenors_ = optionTenors;
@@ -71,12 +69,12 @@ namespace QLNet.Termstructures.Volatility.swaption
         }
 
         protected SwaptionVolatilityDiscrete(List<Period> optionTenors,
-                                             List<Period> swapTenors,
-                                             Date referenceDate,
-                                             Calendar cal,
-                                             BusinessDayConvention bdc,
-                                             DayCounter dc)
-           : base(referenceDate, cal, bdc, dc)
+            List<Period> swapTenors,
+            Date referenceDate,
+            Calendar cal,
+            BusinessDayConvention bdc,
+            DayCounter dc)
+            : base(referenceDate, cal, bdc, dc)
         {
             nOptionTenors_ = optionTenors.Count;
             optionTenors_ = optionTenors;
@@ -100,12 +98,12 @@ namespace QLNet.Termstructures.Volatility.swaption
         }
 
         protected SwaptionVolatilityDiscrete(List<Date> optionDates,
-                                             List<Period> swapTenors,
-                                             Date referenceDate,
-                                             Calendar cal,
-                                             BusinessDayConvention bdc,
-                                             DayCounter dc)
-           : base(referenceDate, cal, bdc, dc)
+            List<Period> swapTenors,
+            Date referenceDate,
+            Calendar cal,
+            BusinessDayConvention bdc,
+            DayCounter dc)
+            : base(referenceDate, cal, bdc, dc)
         {
             nOptionTenors_ = optionDates.Count;
             optionTenors_ = new InitializedList<Period>(nOptionTenors_);
@@ -127,15 +125,18 @@ namespace QLNet.Termstructures.Volatility.swaption
             optionInterpolator_.enableExtrapolation();
         }
 
-        public List<Period> optionTenors() => optionTenors_;
+        //! additional inspectors
+        public Date optionDateFromTime(double optionTime) => new Date((int)optionInterpolator_.value(optionTime));
 
         public List<Date> optionDates() => optionDates_;
 
+        public List<Period> optionTenors() => optionTenors_;
+
         public List<double> optionTimes() => optionTimes_;
 
-        public List<Period> swapTenors() => swapTenors_;
-
         public List<double> swapLengths() => swapLengths_;
+
+        public List<Period> swapTenors() => swapTenors_;
 
         public override void update()
         {
@@ -149,6 +150,7 @@ namespace QLNet.Termstructures.Volatility.swaption
                     initializeSwapLengths();
                 }
             }
+
             base.update();
         }
 
@@ -167,36 +169,37 @@ namespace QLNet.Termstructures.Volatility.swaption
             }
         }
 
-        //! additional inspectors
-        public Date optionDateFromTime(double optionTime) => new Date((int)optionInterpolator_.value(optionTime));
-
         private void checkOptionDates()
         {
             Utils.QL_REQUIRE(optionDates_[0] > referenceDate(), () =>
-                             "first option date (" + optionDates_[0] + ") must be greater than reference date (" + referenceDate() + ")");
+                "first option date (" + optionDates_[0] + ") must be greater than reference date (" + referenceDate() + ")");
             for (var i = 1; i < nOptionTenors_; ++i)
             {
                 Utils.QL_REQUIRE(optionDates_[i] > optionDates_[i - 1], () =>
-                                 "non increasing option dates: " + i + " is " + optionDates_[i - 1] + ", " + i + 1 + " is " + optionDates_[i]);
+                    "non increasing option dates: " + i + " is " + optionDates_[i - 1] + ", " + i + 1 + " is " + optionDates_[i]);
             }
         }
 
         private void checkOptionTenors()
         {
             Utils.QL_REQUIRE(optionTenors_[0] > new Period(0, TimeUnit.Days), () =>
-                             "first option tenor is negative (" + optionTenors_[0] + ")");
+                "first option tenor is negative (" + optionTenors_[0] + ")");
             for (var i = 1; i < nOptionTenors_; ++i)
+            {
                 Utils.QL_REQUIRE(optionTenors_[i] > optionTenors_[i - 1], () =>
-                                 "non increasing option tenor: " + i + " is " + optionTenors_[i - 1] + ", " + i + 1 + " is " + optionTenors_[i]);
+                    "non increasing option tenor: " + i + " is " + optionTenors_[i - 1] + ", " + i + 1 + " is " + optionTenors_[i]);
+            }
         }
 
         private void checkSwapTenors()
         {
             Utils.QL_REQUIRE(swapTenors_[0] > new Period(0, TimeUnit.Days), () =>
-                             "first swap tenor is negative (" + swapTenors_[0] + ")");
+                "first swap tenor is negative (" + swapTenors_[0] + ")");
             for (var i = 1; i < nSwapTenors_; ++i)
+            {
                 Utils.QL_REQUIRE(swapTenors_[i] > swapTenors_[i - 1], () =>
-                                 "non increasing swap tenor: " + i + " is " + swapTenors_[i - 1] + ", " + i + 1 + " is " + swapTenors_[i]);
+                    "non increasing swap tenor: " + i + " is " + swapTenors_[i - 1] + ", " + i + 1 + " is " + swapTenors_[i]);
+            }
         }
 
         private void initializeOptionDatesAndTimes()
@@ -206,19 +209,24 @@ namespace QLNet.Termstructures.Volatility.swaption
                 optionDates_[i] = optionDateFromTenor(optionTenors_[i]);
                 optionDatesAsReal_[i] = optionDates_[i].serialNumber();
             }
+
             initializeOptionTimes();
         }
 
         private void initializeOptionTimes()
         {
             for (var i = 0; i < nOptionTenors_; ++i)
+            {
                 optionTimes_[i] = timeFromReference(optionDates_[i]);
+            }
         }
 
         private void initializeSwapLengths()
         {
             for (var i = 0; i < nSwapTenors_; ++i)
+            {
                 swapLengths_[i] = swapLength(swapTenors_[i]);
+            }
         }
     }
 }

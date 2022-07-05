@@ -1,11 +1,13 @@
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Termstructures.Volatility.Optionlet;
 using QLNet.Time;
 using QLNet.Time.DayCounters;
 
 namespace QLNet.Termstructures.Volatility
 {
-    [JetBrains.Annotations.PublicAPI] public class SabrSmileSection : SmileSection
+    [PublicAPI]
+    public class SabrSmileSection : SmileSection
     {
         private double alpha_, beta_, nu_, rho_, forward_, shift_;
         private VolatilityType volatilityType_;
@@ -42,19 +44,23 @@ namespace QLNet.Termstructures.Volatility
             Utils.validateSabrParameters(alpha_, beta_, nu_, rho_);
         }
 
-        public override double minStrike() => 0.0;
+        public override double? atmLevel() => forward_;
 
         public override double maxStrike() => double.MaxValue;
 
-        public override double? atmLevel() => forward_;
+        public override double minStrike() => 0.0;
 
         protected override double varianceImpl(double strike)
         {
             double vol;
             if (volatilityType_ == VolatilityType.ShiftedLognormal)
+            {
                 vol = Utils.shiftedSabrVolatility(strike, forward_, exerciseTime(), alpha_, beta_, nu_, rho_, shift_);
+            }
             else
+            {
                 vol = Utils.shiftedSabrNormalVolatility(strike, forward_, exerciseTime(), alpha_, beta_, nu_, rho_, shift_);
+            }
 
             return vol * vol * exerciseTime();
         }
@@ -63,9 +69,13 @@ namespace QLNet.Termstructures.Volatility
         {
             double vol;
             if (volatilityType_ == VolatilityType.ShiftedLognormal)
+            {
                 vol = Utils.shiftedSabrVolatility(strike, forward_, exerciseTime(), alpha_, beta_, nu_, rho_, shift_);
+            }
             else
+            {
                 vol = Utils.shiftedSabrNormalVolatility(strike, forward_, exerciseTime(), alpha_, beta_, nu_, rho_, shift_);
+            }
 
             return vol;
         }

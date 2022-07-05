@@ -16,38 +16,60 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
+
 using System;
+using JetBrains.Annotations;
+using QLNet.Math;
 
 namespace QLNet.Methods.Finitedifferences
 {
     //! Abstract boundary condition class for finite difference problems
-    [JetBrains.Annotations.PublicAPI] public class BoundaryCondition<Operator> where Operator : IOperator
+    [PublicAPI]
+    public class BoundaryCondition<Operator> where Operator : IOperator
     {
         //! \todo Generalize for n-dimensional conditions
-        public enum Side { None, Upper, Lower }
+        public enum Side
+        {
+            None,
+            Upper,
+            Lower
+        }
+
+        /*! This method modifies an array \f$ u \f$ so that it satisfies the given condition. */
+        public virtual void applyAfterApplying(Vector v)
+        {
+            throw new NotSupportedException();
+        }
+
+        /*! This method modifies an array \f$ u \f$ so that it satisfies the given condition. */
+        public virtual void applyAfterSolving(Vector v)
+        {
+            throw new NotSupportedException();
+        }
 
         // interface
         /*! This method modifies an operator \f$ L \f$ before it is
             applied to an array \f$ u \f$ so that \f$ v = Lu \f$ will
             satisfy the given condition. */
-        public virtual void applyBeforeApplying(IOperator o) { throw new NotSupportedException(); }
-
-        /*! This method modifies an array \f$ u \f$ so that it satisfies the given condition. */
-        public virtual void applyAfterApplying(Vector v) { throw new NotSupportedException(); }
+        public virtual void applyBeforeApplying(IOperator o)
+        {
+            throw new NotSupportedException();
+        }
 
         /*! This method modifies an operator \f$ L \f$ before the linear
             system \f$ Lu' = u \f$ is solved so that \f$ u' \f$ will
             satisfy the given condition. */
-        public virtual void applyBeforeSolving(IOperator o, Vector v) { throw new NotSupportedException(); }
-
-        /*! This method modifies an array \f$ u \f$ so that it satisfies the given condition. */
-        public virtual void applyAfterSolving(Vector v) { throw new NotSupportedException(); }
+        public virtual void applyBeforeSolving(IOperator o, Vector v)
+        {
+            throw new NotSupportedException();
+        }
 
         /*! This method sets the current time for time-dependent boundary conditions. */
-        public virtual void setTime(double t) { throw new NotSupportedException(); }
+        public virtual void setTime(double t)
+        {
+            throw new NotSupportedException();
+        }
     }
-
 
     // Time-independent boundary conditions for tridiagonal operators
 

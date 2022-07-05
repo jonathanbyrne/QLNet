@@ -13,11 +13,12 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
-using QLNet.Instruments;
-using QLNet.Models.Equity;
-using System;
+
 using System.Collections.Generic;
 using System.Numerics;
+using JetBrains.Annotations;
+using QLNet.Instruments;
+using QLNet.Models.Equity;
 
 namespace QLNet.Pricingengines.vanilla
 {
@@ -39,94 +40,22 @@ namespace QLNet.Pricingengines.vanilla
 
         \ingroup vanillaengines
     */
-    [JetBrains.Annotations.PublicAPI] public class AnalyticPTDHestonEngine : GenericModelEngine<PiecewiseTimeDependentHestonModel,
+    [PublicAPI]
+    public class AnalyticPTDHestonEngine : GenericModelEngine<PiecewiseTimeDependentHestonModel,
         QLNet.Option.Arguments, OneAssetOption.Results>
     {
-        // Simple to use constructor: Using adaptive
-        // Gauss-Lobatto integration and Gatheral's version of complex log.
-        // Be aware: using a too large number for maxEvaluations might result
-        // in a stack overflow as the Lobatto integration is a recursive
-        // algorithm.
-        public AnalyticPTDHestonEngine(PiecewiseTimeDependentHestonModel model, double relTolerance, int maxEvaluations)
-           : base(model)
-        {
-            integration_ = AnalyticHestonEngine.Integration.gaussLobatto(relTolerance, null, maxEvaluations);
-        }
-
-        // Constructor using Laguerre integration
-        // and Gatheral's version of complex log.
-        public AnalyticPTDHestonEngine(PiecewiseTimeDependentHestonModel model, int integrationOrder = 144)
-           : base(model)
-        {
-            integration_ = AnalyticHestonEngine.Integration.gaussLaguerre(integrationOrder);
-
-        }
-
-        public override void calculate()
-        {
-            // this is an european option pricer
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
-
-            // plain vanilla
-            var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
-
-            var v0 = model_.link.v0();
-            var spotPrice = model_.link.s0();
-            Utils.QL_REQUIRE(spotPrice > 0.0, () => "negative or null underlying given");
-
-            var strike = payoff.strike();
-            var term = model_.link.riskFreeRate().link.dayCounter().yearFraction(
-                             model_.link.riskFreeRate().link.referenceDate(), arguments_.exercise.lastDate());
-            var riskFreeDiscount = model_.link.riskFreeRate().link.discount(arguments_.exercise.lastDate());
-            var dividendDiscount = model_.link.dividendYield().link.discount(arguments_.exercise.lastDate());
-
-            //average values
-            var timeGrid = model_.link.timeGrid();
-            var n = timeGrid.size() - 1;
-            double kappaAvg = 0.0, thetaAvg = 0.0, sigmaAvg = 0.0, rhoAvg = 0.0;
-
-            for (var i = 1; i <= n; ++i)
-            {
-                var t = 0.5 * (timeGrid[i - 1] + timeGrid[i]);
-                kappaAvg += model_.link.kappa(t);
-                thetaAvg += model_.link.theta(t);
-                sigmaAvg += model_.link.sigma(t);
-                rhoAvg += model_.link.rho(t);
-            }
-            kappaAvg /= n;
-            thetaAvg /= n;
-            sigmaAvg /= n;
-            rhoAvg /= n;
-
-            var c_inf = System.Math.Min(10.0, System.Math.Max(0.0001,
-                                                   System.Math.Sqrt(1.0 - System.Math.Pow(rhoAvg, 2)) / sigmaAvg)) * (v0 + kappaAvg * thetaAvg * term);
-
-            var p1 = integration_.calculate(c_inf,
-                                               new Fj_Helper(model_, term, strike, 1).value) / Const.M_PI;
-
-            var p2 = integration_.calculate(c_inf,
-                                               new Fj_Helper(model_, term, strike, 2).value) / Const.M_PI;
-
-            switch (payoff.optionType())
-            {
-                case QLNet.Option.Type.Call:
-                    results_.value = spotPrice * dividendDiscount * (p1 + 0.5)
-                                     - strike * riskFreeDiscount * (p2 + 0.5);
-                    break;
-                case QLNet.Option.Type.Put:
-                    results_.value = spotPrice * dividendDiscount * (p1 - 0.5)
-                                     - strike * riskFreeDiscount * (p2 - 0.5);
-                    break;
-                default:
-                    Utils.QL_FAIL("unknown option ExerciseType");
-                    break;
-            }
-        }
-
-
         private class Fj_Helper
         {
+            private readonly int j_;
+            private readonly Handle<PiecewiseTimeDependentHestonModel> model_;
+            private readonly List<double> r_;
+            private readonly List<double> q_;
+            private readonly double term_;
+            private readonly TimeGrid timeGrid_;
+            private readonly double v0_;
+            private readonly double x_;
+            private readonly double sx_;
+
             public Fj_Helper(Handle<PiecewiseTimeDependentHestonModel> model, double term, double strike, int j)
             {
                 j_ = j;
@@ -144,9 +73,9 @@ namespace QLNet.Pricingengines.vanilla
                     var begin = System.Math.Min(term_, timeGrid_[i]);
                     var end = System.Math.Min(term_, timeGrid_[i + 1]);
                     r_[i] = model.link.riskFreeRate().link.forwardRate(begin, end,
-                                                                       Compounding.Continuous, Frequency.NoFrequency).rate();
+                        Compounding.Continuous, Frequency.NoFrequency).rate();
                     q_[i] = model.link.dividendYield().link.forwardRate(begin, end,
-                                                                        Compounding.Continuous, Frequency.NoFrequency).rate();
+                        Compounding.Continuous, Frequency.NoFrequency).rate();
                 }
 
                 Utils.QL_REQUIRE(term_ < model_.link.timeGrid().Last(), () => "maturity is too large");
@@ -191,20 +120,93 @@ namespace QLNet.Pricingengines.vanilla
                             + new Complex(0.0, phi * (r_[i - 1] - q_[i - 1]) * tau) + C;
                     }
                 }
+
                 return Complex.Exp(v0_ * D + C + new Complex(0.0, phi * (x_ - sx_))).Imaginary / phi;
             }
-
-
-            private int j_;
-            private double term_;
-            private double v0_, x_, sx_;
-
-            private List<double> r_, q_;
-            private Handle<PiecewiseTimeDependentHestonModel> model_;
-            private TimeGrid timeGrid_;
         }
+
         private AnalyticHestonEngine.Integration integration_;
 
+        // Simple to use constructor: Using adaptive
+        // Gauss-Lobatto integration and Gatheral's version of complex log.
+        // Be aware: using a too large number for maxEvaluations might result
+        // in a stack overflow as the Lobatto integration is a recursive
+        // algorithm.
+        public AnalyticPTDHestonEngine(PiecewiseTimeDependentHestonModel model, double relTolerance, int maxEvaluations)
+            : base(model)
+        {
+            integration_ = AnalyticHestonEngine.Integration.gaussLobatto(relTolerance, null, maxEvaluations);
+        }
 
+        // Constructor using Laguerre integration
+        // and Gatheral's version of complex log.
+        public AnalyticPTDHestonEngine(PiecewiseTimeDependentHestonModel model, int integrationOrder = 144)
+            : base(model)
+        {
+            integration_ = AnalyticHestonEngine.Integration.gaussLaguerre(integrationOrder);
+        }
+
+        public override void calculate()
+        {
+            // this is an european option pricer
+            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
+
+            // plain vanilla
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
+            Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
+
+            var v0 = model_.link.v0();
+            var spotPrice = model_.link.s0();
+            Utils.QL_REQUIRE(spotPrice > 0.0, () => "negative or null underlying given");
+
+            var strike = payoff.strike();
+            var term = model_.link.riskFreeRate().link.dayCounter().yearFraction(
+                model_.link.riskFreeRate().link.referenceDate(), arguments_.exercise.lastDate());
+            var riskFreeDiscount = model_.link.riskFreeRate().link.discount(arguments_.exercise.lastDate());
+            var dividendDiscount = model_.link.dividendYield().link.discount(arguments_.exercise.lastDate());
+
+            //average values
+            var timeGrid = model_.link.timeGrid();
+            var n = timeGrid.size() - 1;
+            double kappaAvg = 0.0, thetaAvg = 0.0, sigmaAvg = 0.0, rhoAvg = 0.0;
+
+            for (var i = 1; i <= n; ++i)
+            {
+                var t = 0.5 * (timeGrid[i - 1] + timeGrid[i]);
+                kappaAvg += model_.link.kappa(t);
+                thetaAvg += model_.link.theta(t);
+                sigmaAvg += model_.link.sigma(t);
+                rhoAvg += model_.link.rho(t);
+            }
+
+            kappaAvg /= n;
+            thetaAvg /= n;
+            sigmaAvg /= n;
+            rhoAvg /= n;
+
+            var c_inf = System.Math.Min(10.0, System.Math.Max(0.0001,
+                System.Math.Sqrt(1.0 - System.Math.Pow(rhoAvg, 2)) / sigmaAvg)) * (v0 + kappaAvg * thetaAvg * term);
+
+            var p1 = integration_.calculate(c_inf,
+                new Fj_Helper(model_, term, strike, 1).value) / Const.M_PI;
+
+            var p2 = integration_.calculate(c_inf,
+                new Fj_Helper(model_, term, strike, 2).value) / Const.M_PI;
+
+            switch (payoff.optionType())
+            {
+                case QLNet.Option.Type.Call:
+                    results_.value = spotPrice * dividendDiscount * (p1 + 0.5)
+                                     - strike * riskFreeDiscount * (p2 + 0.5);
+                    break;
+                case QLNet.Option.Type.Put:
+                    results_.value = spotPrice * dividendDiscount * (p1 - 0.5)
+                                     - strike * riskFreeDiscount * (p2 - 0.5);
+                    break;
+                default:
+                    Utils.QL_FAIL("unknown option ExerciseType");
+                    break;
+            }
+        }
     }
 }

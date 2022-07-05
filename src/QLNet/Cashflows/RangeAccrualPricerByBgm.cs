@@ -1,12 +1,21 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Math.Distributions;
 using QLNet.Termstructures.Volatility;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class RangeAccrualPricerByBgm : RangeAccrualPricer
+    [PublicAPI]
+    public class RangeAccrualPricerByBgm : RangeAccrualPricer
     {
+        private bool byCallSpread_;
+        private double correlation_; // correlation between L(S) and L(T)
+        private double eps_;
+        private SmileSection smilesOnExpiry_;
+        private SmileSection smilesOnPayment_;
+        private bool withSmile_;
+
         public RangeAccrualPricerByBgm(double correlation,
             SmileSection smilesOnExpiry,
             SmileSection smilesOnPayment,
@@ -20,6 +29,7 @@ namespace QLNet.Cashflows
             smilesOnPayment_ = smilesOnPayment;
             eps_ = 1.0e-8;
         }
+
         // Observer interface
         public override double swapletPrice()
         {
@@ -31,23 +41,33 @@ namespace QLNet.Cashflows
                     observationTimes_[i], deflator);
                 result += digitalFloater;
             }
+
             return gearing_ * (result * accrualFactor_ / observationsNo_) + spreadLegValue_;
         }
 
-        protected double drift(double U, double lambdaS, double lambdaT, double correlation)
+        protected double callSpreadPrice(double previousForward,
+            double nextForward,
+            double previousStrike,
+            double nextStrike,
+            double deflator,
+            double previousVariance,
+            double nextVariance)
         {
-            var p = (U - startTime_) / accrualFactor_;
-            var q = (endTime_ - U) / accrualFactor_;
-            var L0T = initialValues_.Last();
+            var nextCall = Utils.blackFormula(Option.Type.Call, nextStrike, nextForward,
+                System.Math.Sqrt(nextVariance), deflator);
+            var previousCall = Utils.blackFormula(Option.Type.Call, previousStrike, previousForward,
+                System.Math.Sqrt(previousVariance), deflator);
 
-            var driftBeforeFixing =
-                p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_)
-                * (p * lambdaT * lambdaT + q * lambdaS * lambdaT * correlation) +
-                q * lambdaS * lambdaS + p * lambdaS * lambdaT * correlation;
-            var driftAfterFixing = (p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_) - 0.5) * lambdaT * lambdaT;
+            Utils.QL_REQUIRE(nextCall < previousCall, () =>
+                "RangeAccrualPricerByBgm::callSpreadPrice: nextCall > previousCall" +
+                "\n nextCall: strike :" + nextStrike + "; variance: " + nextVariance +
+                " adjusted initial value " + nextForward +
+                "\n previousCall: strike :" + previousStrike + "; variance: " + previousVariance +
+                " adjusted initial value " + previousForward);
 
-            return startTime_ > 0 ? driftBeforeFixing : driftAfterFixing;
+            return (previousCall - nextCall) / (nextStrike - previousStrike);
         }
+
         protected double derDriftDerLambdaS(double U, double lambdaS, double lambdaT, double correlation)
         {
             var p = (U - startTime_) / accrualFactor_;
@@ -60,6 +80,7 @@ namespace QLNet.Cashflows
 
             return startTime_ > 0 ? driftBeforeFixing : driftAfterFixing;
         }
+
         protected double derDriftDerLambdaT(double U, double lambdaS, double lambdaT, double correlation)
         {
             var p = (U - startTime_) / accrualFactor_;
@@ -74,63 +95,9 @@ namespace QLNet.Cashflows
             return startTime_ > 0 ? driftBeforeFixing : driftAfterFixing;
         }
 
-        protected double lambda(double U, double lambdaS, double lambdaT)
-        {
-            var p = (U - startTime_) / accrualFactor_;
-            var q = (endTime_ - U) / accrualFactor_;
-
-            return startTime_ > 0 ? q * lambdaS + p * lambdaT : lambdaT;
-        }
         protected double derLambdaDerLambdaS(double U) => startTime_ > 0 ? (endTime_ - U) / accrualFactor_ : 0.0;
 
         protected double derLambdaDerLambdaT(double U) => startTime_ > 0 ? (U - startTime_) / accrualFactor_ : 0.0;
-
-        protected List<double> driftsOverPeriod(double U, double lambdaS, double lambdaT, double correlation)
-        {
-            var result = new List<double>();
-
-            var p = (U - startTime_) / accrualFactor_;
-            var q = (endTime_ - U) / accrualFactor_;
-            var L0T = initialValues_.Last();
-
-            var driftBeforeFixing =
-                p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_) * (p * lambdaT * lambdaT + q * lambdaS * lambdaT * correlation) +
-                q * lambdaS * lambdaS + p * lambdaS * lambdaT * correlation
-                - 0.5 * lambda(U, lambdaS, lambdaT) * lambda(U, lambdaS, lambdaT);
-            var driftAfterFixing = (p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_) - 0.5) * lambdaT * lambdaT;
-
-            result.Add(driftBeforeFixing);
-            result.Add(driftAfterFixing);
-
-            return result;
-        }
-        protected List<double> lambdasOverPeriod(double U, double lambdaS, double lambdaT)
-        {
-            var result = new List<double>();
-
-            var p = (U - startTime_) / accrualFactor_;
-            var q = (endTime_ - U) / accrualFactor_;
-
-            var lambdaBeforeFixing = q * lambdaS + p * lambdaT;
-            var lambdaAfterFixing = lambdaT;
-
-            result.Add(lambdaBeforeFixing);
-            result.Add(lambdaAfterFixing);
-
-            return result;
-        }
-
-        protected double digitalRangePrice(double lowerTrigger, double upperTrigger, double initialValue, double expiry,
-            double deflator)
-        {
-            var lowerPrice = digitalPrice(lowerTrigger, initialValue, expiry, deflator);
-            var upperPrice = digitalPrice(upperTrigger, initialValue, expiry, deflator);
-            var result = lowerPrice - upperPrice;
-            Utils.QL_REQUIRE(result > 0.0, () =>
-                "RangeAccrualPricerByBgm::digitalRangePrice:\n digitalPrice(" + upperTrigger +
-                "): " + upperPrice + " >  digitalPrice(" + lowerTrigger + "): " + lowerPrice);
-            return result;
-        }
 
         protected double digitalPrice(double strike, double initialValue, double expiry, double deflator)
         {
@@ -141,6 +108,7 @@ namespace QLNet.Cashflows
                     ? digitalPriceWithSmile(strike, initialValue, expiry, deflator)
                     : digitalPriceWithoutSmile(strike, initialValue, expiry, deflator);
             }
+
             return result;
         }
 
@@ -157,7 +125,6 @@ namespace QLNet.Cashflows
             //drift of Lognormal process (of Libor) "a_U()" nel paper
             var muU = driftsOverPeriod(expiry, lambdaSATM, lambdaTATM, correlation_);
             var adjustment = startTime_ * muU[0] + (expiry - startTime_) * muU[1];
-
 
             var d2 = (System.Math.Log(initialValue / strike) + adjustment - 0.5 * variance) / System.Math.Sqrt(variance);
 
@@ -227,27 +194,75 @@ namespace QLNet.Cashflows
             return result;
         }
 
-        protected double callSpreadPrice(double previousForward,
-            double nextForward,
-            double previousStrike,
-            double nextStrike,
-            double deflator,
-            double previousVariance,
-            double nextVariance)
+        protected double digitalRangePrice(double lowerTrigger, double upperTrigger, double initialValue, double expiry,
+            double deflator)
         {
-            var nextCall = Utils.blackFormula(QLNet.Option.Type.Call, nextStrike, nextForward,
-                System.Math.Sqrt(nextVariance), deflator);
-            var previousCall = Utils.blackFormula(QLNet.Option.Type.Call, previousStrike, previousForward,
-                System.Math.Sqrt(previousVariance), deflator);
+            var lowerPrice = digitalPrice(lowerTrigger, initialValue, expiry, deflator);
+            var upperPrice = digitalPrice(upperTrigger, initialValue, expiry, deflator);
+            var result = lowerPrice - upperPrice;
+            Utils.QL_REQUIRE(result > 0.0, () =>
+                "RangeAccrualPricerByBgm::digitalRangePrice:\n digitalPrice(" + upperTrigger +
+                "): " + upperPrice + " >  digitalPrice(" + lowerTrigger + "): " + lowerPrice);
+            return result;
+        }
 
-            Utils.QL_REQUIRE(nextCall < previousCall, () =>
-                "RangeAccrualPricerByBgm::callSpreadPrice: nextCall > previousCall" +
-                "\n nextCall: strike :" + nextStrike + "; variance: " + nextVariance +
-                " adjusted initial value " + nextForward +
-                "\n previousCall: strike :" + previousStrike + "; variance: " + previousVariance +
-                " adjusted initial value " + previousForward);
+        protected double drift(double U, double lambdaS, double lambdaT, double correlation)
+        {
+            var p = (U - startTime_) / accrualFactor_;
+            var q = (endTime_ - U) / accrualFactor_;
+            var L0T = initialValues_.Last();
 
-            return (previousCall - nextCall) / (nextStrike - previousStrike);
+            var driftBeforeFixing =
+                p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_)
+                * (p * lambdaT * lambdaT + q * lambdaS * lambdaT * correlation) +
+                q * lambdaS * lambdaS + p * lambdaS * lambdaT * correlation;
+            var driftAfterFixing = (p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_) - 0.5) * lambdaT * lambdaT;
+
+            return startTime_ > 0 ? driftBeforeFixing : driftAfterFixing;
+        }
+
+        protected List<double> driftsOverPeriod(double U, double lambdaS, double lambdaT, double correlation)
+        {
+            var result = new List<double>();
+
+            var p = (U - startTime_) / accrualFactor_;
+            var q = (endTime_ - U) / accrualFactor_;
+            var L0T = initialValues_.Last();
+
+            var driftBeforeFixing =
+                p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_) * (p * lambdaT * lambdaT + q * lambdaS * lambdaT * correlation) +
+                q * lambdaS * lambdaS + p * lambdaS * lambdaT * correlation
+                - 0.5 * lambda(U, lambdaS, lambdaT) * lambda(U, lambdaS, lambdaT);
+            var driftAfterFixing = (p * accrualFactor_ * L0T / (1.0 + L0T * accrualFactor_) - 0.5) * lambdaT * lambdaT;
+
+            result.Add(driftBeforeFixing);
+            result.Add(driftAfterFixing);
+
+            return result;
+        }
+
+        protected double lambda(double U, double lambdaS, double lambdaT)
+        {
+            var p = (U - startTime_) / accrualFactor_;
+            var q = (endTime_ - U) / accrualFactor_;
+
+            return startTime_ > 0 ? q * lambdaS + p * lambdaT : lambdaT;
+        }
+
+        protected List<double> lambdasOverPeriod(double U, double lambdaS, double lambdaT)
+        {
+            var result = new List<double>();
+
+            var p = (U - startTime_) / accrualFactor_;
+            var q = (endTime_ - U) / accrualFactor_;
+
+            var lambdaBeforeFixing = q * lambdaS + p * lambdaT;
+            var lambdaAfterFixing = lambdaT;
+
+            result.Add(lambdaBeforeFixing);
+            result.Add(lambdaAfterFixing);
+
+            return result;
         }
 
         protected double smileCorrection(double strike,
@@ -268,7 +283,6 @@ namespace QLNet.Cashflows
 
             var derLambdaDerK = derLambdaDerLambdaS(expiry) * derSmileS +
                                 derLambdaDerLambdaT(expiry) * derSmileT;
-
 
             var lambdaSATM = smilesOnExpiry_.volatility(forward);
             var lambdaTATM = smilesOnPayment_.volatility(forward);
@@ -300,14 +314,5 @@ namespace QLNet.Cashflows
 
             return result;
         }
-
-
-        private double correlation_;   // correlation between L(S) and L(T)
-        private bool withSmile_;
-        private bool byCallSpread_;
-
-        private SmileSection smilesOnExpiry_;
-        private SmileSection smilesOnPayment_;
-        private double eps_;
     }
 }

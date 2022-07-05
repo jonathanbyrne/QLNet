@@ -96,9 +96,13 @@ namespace QLNet.Tests
                                         var moneyness = (strikes[i4] + displacements[i2]) /
                                                         (forwards[i3] + displacements[i2]);
                                         if (moneyness > 1.0)
+                                        {
                                             moneyness = 1.0 / moneyness;
+                                        }
+
                                         var error = (iStdDev - stdDevs[i5]) / stdDevs[i5] * moneyness;
                                         if (error > tol)
+                                        {
                                             QAssert.Fail("Failed to verify Chambers-Nawalkha approximation for "
                                                          + types[i1]
                                                          + " displacement=" + displacements[i2]
@@ -108,6 +112,7 @@ namespace QLNet.Tests
                                                          + " stddev=" + stdDevs[i5]
                                                          + " result=" + iStdDev
                                                          + " exceeds maximum error tolerance");
+                                        }
                                     }
                                 }
                             }

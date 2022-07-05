@@ -17,11 +17,11 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Extensions;
-using QLNet.Methods.Finitedifferences.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Extensions;
+using QLNet.Methods.Finitedifferences.Utilities;
 
 namespace QLNet.Math.matrixutilities
 {
@@ -41,14 +41,19 @@ namespace QLNet.Math.matrixutilities
     */
 
     /// <summary>
-    /// Generalized minimal residual method
+    ///     Generalized minimal residual method
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class GMRES
+    [PublicAPI]
+    public class GMRES
     {
         public delegate Vector MatrixMult(Vector x);
 
+        protected MatrixMult A_, M_;
+        protected int maxIter_;
+        protected double relTol_;
+
         public GMRES(MatrixMult A, int maxIter, double relTol,
-                     MatrixMult preConditioner = null)
+            MatrixMult preConditioner = null)
         {
             Utils.QL_REQUIRE(maxIter_ > 0, () => "maxIter must be greater then zero");
 
@@ -108,8 +113,8 @@ namespace QLNet.Math.matrixutilities
             List<Vector> v = new InitializedList<Vector>(1, r / g);
             List<Vector> h = new InitializedList<Vector>(1, new Vector(maxIter_, 0.0));
             List<double> c = new List<double>(maxIter_ + 1),
-            s = new List<double>(maxIter_ + 1),
-            z = new List<double>(maxIter_ + 1);
+                s = new List<double>(maxIter_ + 1),
+                z = new List<double>(maxIter_ + 1);
 
             z[0] = g;
 
@@ -129,7 +134,9 @@ namespace QLNet.Math.matrixutilities
                 h[j + 1][j] = Vector.Norm2(w);
 
                 if (h[j + 1][j] < Const.QL_EPSILON * Const.QL_EPSILON)
+                {
                     break;
+                }
 
                 v.Add(w / h[j + 1][j]);
 
@@ -165,21 +172,19 @@ namespace QLNet.Math.matrixutilities
             for (var i = k - 2; i >= 0; --i)
             {
                 y[i] = (z[i] - h[i].inner_product(
-                           i + 1, k, i + 1, y, 0.0)) / h[i][i];
+                    i + 1, k, i + 1, y, 0.0)) / h[i][i];
             }
 
             var xm = new Vector(x.Count, 0.0);
             for (var i = 0; i < x.Count; i++)
+            {
                 xm[i] = v[i].inner_product(0, k, 0, y, 0.0);
+            }
 
             xm = x + (M_ != null ? M_(xm) : xm);
 
             result = new GMRESResult(errors, xm);
             return result;
         }
-
-        protected MatrixMult A_, M_;
-        protected int maxIter_;
-        protected double relTol_;
     }
 }

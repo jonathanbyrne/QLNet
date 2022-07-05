@@ -17,12 +17,10 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.Pricingengines;
 using QLNet.processes;
-using QLNet.Time;
-using System;
 
 namespace QLNet.Pricingengines.vanilla
 {
@@ -45,13 +43,13 @@ namespace QLNet.Pricingengines.vanilla
     //        \test the correctness of the returned value is tested by
     //              reproducing results available in literature.
     //
-    [JetBrains.Annotations.PublicAPI] public class JuQuadraticApproximationEngine : OneAssetOption.Engine
+    [PublicAPI]
+    public class JuQuadraticApproximationEngine : OneAssetOption.Engine
     {
         //     An Approximate Formula for Pricing American Options
         //        Journal of Derivatives Winter 1999
         //        Ju, N.
         //
-
         private GeneralizedBlackScholesProcess process_;
 
         public JuQuadraticApproximationEngine(GeneralizedBlackScholesProcess process)
@@ -117,7 +115,7 @@ namespace QLNet.Pricingengines.vanilla
 
                 var tolerance = 1e-6;
                 var Sk = BaroneAdesiWhaleyApproximationEngine.criticalPrice(payoff, riskFreeDiscount, dividendDiscount,
-                                                                               variance, tolerance);
+                    variance, tolerance);
 
                 var forwardSk = Sk * dividendDiscount / riskFreeDiscount;
 
@@ -137,6 +135,7 @@ namespace QLNet.Pricingengines.vanilla
                         Utils.QL_FAIL("invalid option ExerciseType");
                         break;
                 }
+
                 //it can throw: to be fixed
                 // FLOATING_POINT_EXCEPTION
                 var temp_root = System.Math.Sqrt((beta - 1) * (beta - 1) + 4 * alpha / h);
@@ -186,5 +185,4 @@ namespace QLNet.Pricingengines.vanilla
             } // end of "early exercise can be optimal"
         }
     }
-
 }

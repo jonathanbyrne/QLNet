@@ -17,46 +17,46 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Math;
 using System;
+using QLNet.Math;
 
 namespace QLNet
 {
     //! %Lattice (tree, finite-differences) base class
     public abstract class Lattice
-   {
-      protected TimeGrid t_;
+    {
+        protected TimeGrid t_;
 
-      public TimeGrid timeGrid() => t_;
+        protected Lattice(TimeGrid timeGrid)
+        {
+            t_ = timeGrid;
+        }
 
-      protected Lattice(TimeGrid timeGrid)
-      {
-         t_ = timeGrid;
-      }
+        /* Numerical method interface
+  
+            These methods are to be used by discretized assets and
+            must be overridden by developers implementing numerical
+            methods. Users are advised to use the corresponding
+            methods of DiscretizedAsset instead.
+        */
 
-      /* Numerical method interface
+        //! initialize an asset at the given time.
+        public abstract void initialize(DiscretizedAsset a, double time);
 
-          These methods are to be used by discretized assets and
-          must be overridden by developers implementing numerical
-          methods. Users are advised to use the corresponding
-          methods of DiscretizedAsset instead.
-      */
+        /*! Roll back an asset until the given time, but do not perform
+            the final adjustment.
+        */
+        public abstract void partialRollback(DiscretizedAsset a, double to);
 
-      //! initialize an asset at the given time.
-      public abstract void initialize(DiscretizedAsset a, double time);
+        //! computes the present value of an asset.
+        public abstract double presentValue(DiscretizedAsset a);
 
-      /*! Roll back an asset until the given time, performing any needed adjustment. */
-      public abstract void rollback(DiscretizedAsset a, double to);
+        /*! Roll back an asset until the given time, performing any needed adjustment. */
+        public abstract void rollback(DiscretizedAsset a, double to);
 
-      /*! Roll back an asset until the given time, but do not perform
-          the final adjustment.
-      */
-      public abstract void partialRollback(DiscretizedAsset a, double to);
+        // this is a smell, but we need it. We'll rethink it later.
+        public virtual Vector grid(double t) => throw new NotImplementedException();
 
-      //! computes the present value of an asset.
-      public abstract double presentValue(DiscretizedAsset a);
-
-      // this is a smell, but we need it. We'll rethink it later.
-      public virtual Vector grid(double t) => throw new NotImplementedException();
-   }
+        public TimeGrid timeGrid() => t_;
+    }
 }

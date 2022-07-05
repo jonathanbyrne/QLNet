@@ -16,38 +16,43 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math.Optimization;
 using QLNet.Termstructures.Volatility.Optionlet;
-using System.Collections.Generic;
 
 namespace QLNet.Math.Interpolations
 {
     //! %SABR smile interpolation between discrete volatility points.
     // For volatility ExerciseType Normal and when the forward < 0, it is suggested to fix beta = 0.0
-    [JetBrains.Annotations.PublicAPI] public class SABRInterpolation : Interpolation
+    [PublicAPI]
+    public class SABRInterpolation : Interpolation
     {
-        public SABRInterpolation(List<double> xBegin,   // x = strikes
-                                 int xEnd,
-                                 List<double> yBegin,  // y = volatilities
-                                 double t,             // option expiry
-                                 double forward,
-                                 double? alpha,
-                                 double? beta,
-                                 double? nu,
-                                 double? rho,
-                                 bool alphaIsFixed,
-                                 bool betaIsFixed,
-                                 bool nuIsFixed,
-                                 bool rhoIsFixed,
-                                 bool vegaWeighted = true,
-                                 EndCriteria endCriteria = null,
-                                 OptimizationMethod optMethod = null,
-                                 double errorAccept = 0.0020,
-                                 bool useMaxError = false,
-                                 int maxGuesses = 50,
-                                 double shift = 0.0,
-                                 VolatilityType volatilityType = VolatilityType.ShiftedLognormal,
-                                 SabrApproximationModel approximationModel = SabrApproximationModel.Hagan2002)
+        private XABRCoeffHolder<SABRSpecs> coeffs_;
+
+        public SABRInterpolation(List<double> xBegin, // x = strikes
+            int xEnd,
+            List<double> yBegin, // y = volatilities
+            double t, // option expiry
+            double forward,
+            double? alpha,
+            double? beta,
+            double? nu,
+            double? rho,
+            bool alphaIsFixed,
+            bool betaIsFixed,
+            bool nuIsFixed,
+            bool rhoIsFixed,
+            bool vegaWeighted = true,
+            EndCriteria endCriteria = null,
+            OptimizationMethod optMethod = null,
+            double errorAccept = 0.0020,
+            bool useMaxError = false,
+            int maxGuesses = 50,
+            double shift = 0.0,
+            VolatilityType volatilityType = VolatilityType.ShiftedLognormal,
+            SabrApproximationModel approximationModel = SabrApproximationModel.Hagan2002)
         {
             var addParams = new List<double?>();
             addParams.Add(shift);
@@ -55,38 +60,36 @@ namespace QLNet.Math.Interpolations
             addParams.Add((double?)approximationModel);
 
             impl_ = new XABRInterpolationImpl<SABRSpecs>(
-               xBegin, xEnd, yBegin, t, forward,
-            new List<double?>() { alpha, beta, nu, rho },
-            //boost::assign::list_of(alpha)(beta)(nu)(rho),
-            new List<bool>() { alphaIsFixed, betaIsFixed, nuIsFixed, rhoIsFixed },
-            //boost::assign::list_of(alphaIsFixed)(betaIsFixed)(nuIsFixed)(rhoIsFixed),
-            vegaWeighted, endCriteria, optMethod, errorAccept, useMaxError,
-            maxGuesses, addParams);
+                xBegin, xEnd, yBegin, t, forward,
+                new List<double?> { alpha, beta, nu, rho },
+                //boost::assign::list_of(alpha)(beta)(nu)(rho),
+                new List<bool> { alphaIsFixed, betaIsFixed, nuIsFixed, rhoIsFixed },
+                //boost::assign::list_of(alphaIsFixed)(betaIsFixed)(nuIsFixed)(rhoIsFixed),
+                vegaWeighted, endCriteria, optMethod, errorAccept, useMaxError,
+                maxGuesses, addParams);
             coeffs_ = (impl_ as XABRInterpolationImpl<SABRSpecs>).coeff_;
         }
-        public double expiry() => coeffs_.t_;
-
-        public double forward() => coeffs_.forward_;
 
         public double alpha() => coeffs_.params_[0].Value;
 
         public double beta() => coeffs_.params_[1].Value;
+
+        public EndCriteria.Type endCriteria() => coeffs_.XABREndCriteria_;
+
+        public double expiry() => coeffs_.t_;
+
+        public double forward() => coeffs_.forward_;
+
+        public List<double> interpolationWeights() => coeffs_.weights_;
+
+        public double maxError() => coeffs_.maxError_.Value;
 
         public double nu() => coeffs_.params_[2].Value;
 
         public double rho() => coeffs_.params_[3].Value;
 
         public double rmsError() => coeffs_.error_.Value;
-
-        public double maxError() => coeffs_.maxError_.Value;
-
-        public List<double> interpolationWeights() => coeffs_.weights_;
-
-        public EndCriteria.Type endCriteria() => coeffs_.XABREndCriteria_;
-
-        private XABRCoeffHolder<SABRSpecs> coeffs_;
     }
 
     //! %SABR interpolation factory and traits
 }
-

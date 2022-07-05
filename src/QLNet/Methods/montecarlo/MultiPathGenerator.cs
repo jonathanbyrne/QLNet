@@ -17,9 +17,9 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.randomnumbers;
-using System.Collections.Generic;
 
 namespace QLNet.Methods.montecarlo
 {
@@ -29,12 +29,13 @@ namespace QLNet.Methods.montecarlo
         \test the generated paths are checked against cached results
     */
 
-    [JetBrains.Annotations.PublicAPI] public class MultiPathGenerator<GSG> : IPathGenerator<GSG> where GSG : IRNG
+    [PublicAPI]
+    public class MultiPathGenerator<GSG> : IPathGenerator<GSG> where GSG : IRNG
     {
         private bool brownianBridge_;
-        private StochasticProcess process_;
         private GSG generator_;
         private Sample<IPath> next_;
+        private StochasticProcess process_;
 
         public MultiPathGenerator(StochasticProcess process, TimeGrid times, GSG generator, bool brownianBridge)
         {
@@ -44,17 +45,17 @@ namespace QLNet.Methods.montecarlo
             next_ = new Sample<IPath>(new MultiPath(process.size(), times), 1.0);
 
             Utils.QL_REQUIRE(generator_.dimension() == process.factors() * (times.size() - 1), () =>
-                             "dimension (" + generator_.dimension()
-                             + ") is not equal to ("
-                             + process.factors() + " * " + (times.size() - 1)
-                             + ") the number of factors "
-                             + "times the number of time steps");
+                "dimension (" + generator_.dimension()
+                              + ") is not equal to ("
+                              + process.factors() + " * " + (times.size() - 1)
+                              + ") the number of factors "
+                              + "times the number of time steps");
             Utils.QL_REQUIRE(times.size() > 1, () => "no times given");
         }
 
-        public Sample<IPath> next() => next(false);
-
         public Sample<IPath> antithetic() => next(true);
+
+        public Sample<IPath> next() => next(false);
 
         private Sample<IPath> next(bool antithetic)
         {
@@ -65,9 +66,9 @@ namespace QLNet.Methods.montecarlo
             }
 
             var sequence_ =
-               antithetic
-               ? generator_.lastSequence()
-               : generator_.nextSequence();
+                antithetic
+                    ? generator_.lastSequence()
+                    : generator_.nextSequence();
 
             var m = process_.size();
             var n = process_.factors();
@@ -76,7 +77,9 @@ namespace QLNet.Methods.montecarlo
 
             var asset = process_.initialValues();
             for (var j = 0; j < m; j++)
+            {
                 path[j].setFront(asset[j]);
+            }
 
             Vector temp;
             next_.weight = sequence_.weight;
@@ -89,14 +92,21 @@ namespace QLNet.Methods.montecarlo
                 t = timeGrid[i - 1];
                 dt = timeGrid.dt(i - 1);
                 if (antithetic)
+                {
                     temp = -1 * new Vector(sequence_.value.GetRange(offset, n));
+                }
                 else
+                {
                     temp = new Vector(sequence_.value.GetRange(offset, n));
+                }
 
                 asset = process_.evolve(t, asset, dt, temp);
                 for (var j = 0; j < m; j++)
+                {
                     path[j][i] = asset[j];
+                }
             }
+
             return next_;
         }
     }

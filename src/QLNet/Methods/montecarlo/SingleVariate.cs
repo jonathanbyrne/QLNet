@@ -22,7 +22,9 @@ namespace QLNet.Methods.montecarlo
     // path generation and pricing traits
 
     //! default Monte Carlo traits for single-variate models
-    public struct SingleVariate { }
+    public struct SingleVariate
+    {
+    }
 
     //! default Monte Carlo traits for multi-variate models
 }

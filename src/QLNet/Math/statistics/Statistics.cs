@@ -1,4 +1,9 @@
-﻿namespace QLNet.Math.statistics
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.statistics
 {
-    [JetBrains.Annotations.PublicAPI] public class Statistics : RiskStatistics { }
+    [PublicAPI]
+    public class Statistics : RiskStatistics
+    {
+    }
 }

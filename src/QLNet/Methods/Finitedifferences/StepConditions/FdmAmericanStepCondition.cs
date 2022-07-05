@@ -17,19 +17,19 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
-using QLNet.Methods.Finitedifferences;
 using QLNet.Methods.Finitedifferences.Meshers;
-using QLNet.Methods.Finitedifferences.Operators;
 using QLNet.Methods.Finitedifferences.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.StepConditions
 {
-    [JetBrains.Annotations.PublicAPI] public class FdmAmericanStepCondition : IStepCondition<Vector>
+    [PublicAPI]
+    public class FdmAmericanStepCondition : IStepCondition<Vector>
     {
+        protected FdmInnerValueCalculator calculator_;
+        protected FdmMesher mesher_;
+
         public FdmAmericanStepCondition(FdmMesher mesher, FdmInnerValueCalculator calculator)
         {
             mesher_ = mesher;
@@ -42,7 +42,8 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
             var layout = mesher_.layout();
             var endIter = layout.end();
 
-            for (var iter = layout.begin(); iter != endIter;
+            for (var iter = layout.begin();
+                 iter != endIter;
                  ++iter)
             {
                 var innerValue = calculator_.innerValue(iter, t);
@@ -52,8 +53,5 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
                 }
             }
         }
-
-        protected FdmMesher mesher_;
-        protected FdmInnerValueCalculator calculator_;
     }
 }

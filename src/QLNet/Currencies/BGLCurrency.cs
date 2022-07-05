@@ -18,18 +18,22 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
 
 namespace QLNet.Currencies
 {
     /// <summary>
-    /// Bulgarian lev
-    /// The ISO three-letter code is BGL; the numeric code is 100.
-    /// It is divided in 100 stotinki.
+    ///     Bulgarian lev
+    ///     The ISO three-letter code is BGL; the numeric code is 100.
+    ///     It is divided in 100 stotinki.
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class BGLCurrency : Currency
+    [PublicAPI]
+    public class BGLCurrency : Currency
     {
-        public BGLCurrency() : base("Bulgarian lev", "BGL", 100, "lv", "", 100, new Rounding(), "%1$.2f %3%") { }
+        public BGLCurrency() : base("Bulgarian lev", "BGL", 100, "lv", "", 100, new Rounding(), "%1$.2f %3%")
+        {
+        }
     }
 
     //! Russian ruble

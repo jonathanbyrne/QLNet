@@ -18,21 +18,41 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using System;
+
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Optimization
 {
     //! Base constraint class
-    [JetBrains.Annotations.PublicAPI] public class Constraint
+    [PublicAPI]
+    public class Constraint
     {
         protected IConstraint impl_;
-        public bool empty() => impl_ == null;
 
-        public Constraint() : this(null) { }
+        public Constraint() : this(null)
+        {
+        }
+
         public Constraint(IConstraint impl)
         {
             impl_ = impl;
         }
+
+        public bool empty() => impl_ == null;
+
+        //! Returns lower bound for given parameters
+        public virtual Vector lowerBound(Vector parameters)
+        {
+            var result = impl_.lowerBound(parameters);
+            Utils.QL_REQUIRE(parameters.size() == result.size(), () =>
+                "lower bound size (" + result.size()
+                                     + ") not equal to params size ("
+                                     + parameters.size() + ")");
+            return result;
+        }
+
+        //! Tests if params satisfy the constraint
+        public virtual bool test(Vector p) => impl_.test(p);
 
         public double update(ref Vector p, Vector direction, double beta)
         {
@@ -43,38 +63,28 @@ namespace QLNet.Math.Optimization
             while (!valid)
             {
                 if (icount > 200)
+                {
                     Utils.QL_FAIL("can't update parameter vector");
+                }
+
                 diff *= 0.5;
                 icount++;
                 newParams = p + diff * direction;
                 valid = test(newParams);
             }
+
             p += diff * direction;
             return diff;
         }
-
-        //! Tests if params satisfy the constraint
-        public virtual bool test(Vector p) => impl_.test(p);
 
         //! Returns upper bound for given parameters
         public virtual Vector upperBound(Vector parameters)
         {
             var result = impl_.upperBound(parameters);
             Utils.QL_REQUIRE(parameters.size() == result.size(), () =>
-                             "upper bound size (" + result.size()
-                             + ") not equal to params size ("
-                             + parameters.size() + ")");
-            return result;
-        }
-
-        //! Returns lower bound for given parameters
-        public virtual Vector lowerBound(Vector parameters)
-        {
-            var result = impl_.lowerBound(parameters);
-            Utils.QL_REQUIRE(parameters.size() == result.size(), () =>
-                             "lower bound size (" + result.size()
-                             + ") not equal to params size ("
-                             + parameters.size() + ")");
+                "upper bound size (" + result.size()
+                                     + ") not equal to params size ("
+                                     + parameters.size() + ")");
             return result;
         }
     }

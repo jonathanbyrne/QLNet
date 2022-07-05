@@ -17,9 +17,10 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
-using System;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Math;
 using QLNet.Math.Optimization;
 using QLNet.Models;
 
@@ -39,10 +40,13 @@ namespace QLNet.legacy.libormarketmodels
         Caps/Swaptions Calibration,
         (<http://www.business.uts.edu.au/qfrc/conferences/qmf2001/Brigo_D.pdf>)
     */
-    [JetBrains.Annotations.PublicAPI] public class LmLinearExponentialVolatilityModel : LmVolatilityModel
+    [PublicAPI]
+    public class LmLinearExponentialVolatilityModel : LmVolatilityModel
     {
+        private List<double> fixingTimes_;
+
         public LmLinearExponentialVolatilityModel(List<double> fixingTimes, double a, double b, double c, double d)
-           : base(fixingTimes.Count, 4)
+            : base(fixingTimes.Count, 4)
         {
             fixingTimes_ = fixingTimes;
             arguments_[0] = new ConstantParameter(a, new PositiveConstraint());
@@ -51,38 +55,9 @@ namespace QLNet.legacy.libormarketmodels
             arguments_[3] = new ConstantParameter(d, new PositiveConstraint());
         }
 
-        public override Vector volatility(double t, Vector x = null)
+        public override void generateArguments()
         {
-            var a = arguments_[0].value(0.0);
-            var b = arguments_[1].value(0.0);
-            var c = arguments_[2].value(0.0);
-            var d = arguments_[3].value(0.0);
-
-            var tmp = new Vector(size_, 0.0);
-
-            for (var i = 0; i < size_; ++i)
-            {
-                var T = fixingTimes_[i];
-                if (T > t)
-                {
-                    tmp[i] = (a * (T - t) + d) * System.Math.Exp(-b * (T - t)) + c;
-                }
-            }
-            return tmp;
         }
-
-        public override double volatility(int i, double t, Vector x = null)
-        {
-            var a = arguments_[0].value(0.0);
-            var b = arguments_[1].value(0.0);
-            var c = arguments_[2].value(0.0);
-            var d = arguments_[3].value(0.0);
-
-            var T = fixingTimes_[i];
-
-            return T > t ? (a * (T - t) + d) * System.Math.Exp(-b * (T - t)) + c : 0.0;
-        }
-
 
         public override double integratedVariance(int i, int j, double u, Vector x = null)
         {
@@ -106,13 +81,41 @@ namespace QLNet.legacy.libormarketmodels
                                    - 2 * c * (k3 * (1 + b * S) + k2 * (1 + b * T)
                                               - k1 * k3 * (1 + b * (S - u))
                                               - k1 * k2 * (1 + b * (T - u)))
-                                  )
-                   ) / (4 * b * b * b * k2 * k3);
+                    )
+                ) / (4 * b * b * b * k2 * k3);
         }
 
-        public override void generateArguments()
-        { }
+        public override Vector volatility(double t, Vector x = null)
+        {
+            var a = arguments_[0].value(0.0);
+            var b = arguments_[1].value(0.0);
+            var c = arguments_[2].value(0.0);
+            var d = arguments_[3].value(0.0);
 
-        private List<double> fixingTimes_;
+            var tmp = new Vector(size_, 0.0);
+
+            for (var i = 0; i < size_; ++i)
+            {
+                var T = fixingTimes_[i];
+                if (T > t)
+                {
+                    tmp[i] = (a * (T - t) + d) * System.Math.Exp(-b * (T - t)) + c;
+                }
+            }
+
+            return tmp;
+        }
+
+        public override double volatility(int i, double t, Vector x = null)
+        {
+            var a = arguments_[0].value(0.0);
+            var b = arguments_[1].value(0.0);
+            var c = arguments_[2].value(0.0);
+            var d = arguments_[3].value(0.0);
+
+            var T = fixingTimes_[i];
+
+            return T > t ? (a * (T - t) + d) * System.Math.Exp(-b * (T - t)) + c : 0.0;
+        }
     }
 }

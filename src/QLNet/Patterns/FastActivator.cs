@@ -13,6 +13,7 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
 using System;
 
 namespace QLNet.Patterns
@@ -23,8 +24,10 @@ namespace QLNet.Patterns
     public static class FastActivator<T> where T : new()
     {
         /// <summary>
-        /// Extremely fast generic factory method that returns an instance
-        /// of the ExerciseType <typeparam name="T"/>.
+        ///     Extremely fast generic factory method that returns an instance
+        ///     of the ExerciseType
+        ///     <typeparam name="T" />
+        ///     .
         /// </summary>
         public static readonly Func<T> Create = DynamicModuleLambdaCompiler.GenerateFactory<T>();
     }

@@ -17,10 +17,10 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Instruments.Bonds;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System.Collections.Generic;
 
 namespace QLNet.Instruments
 {
@@ -66,7 +66,8 @@ namespace QLNet.Instruments
        \ingroup instruments
     */
 
-    [JetBrains.Annotations.PublicAPI] public class FixedRateBondForward : Forward
+    [PublicAPI]
+    public class FixedRateBondForward : Forward
     {
         protected FixedRateBond fixedCouponBond_;
 
@@ -79,26 +80,26 @@ namespace QLNet.Instruments
             constructor is irrelevant and will be ignored.
         */
         public FixedRateBondForward(Date valueDate, Date maturityDate, Position.Type type, double strike,
-                                    int settlementDays,
-                                    DayCounter dayCounter, Calendar calendar, BusinessDayConvention businessDayConvention,
-                                    FixedRateBond fixedCouponBond,
-                                    Handle<YieldTermStructure> discountCurve,
-                                    Handle<YieldTermStructure> incomeDiscountCurve)
-           : base(dayCounter, calendar, businessDayConvention, settlementDays, new ForwardTypePayoff(type, strike),
-                  valueDate, maturityDate, discountCurve)
+            int settlementDays,
+            DayCounter dayCounter, Calendar calendar, BusinessDayConvention businessDayConvention,
+            FixedRateBond fixedCouponBond,
+            Handle<YieldTermStructure> discountCurve,
+            Handle<YieldTermStructure> incomeDiscountCurve)
+            : base(dayCounter, calendar, businessDayConvention, settlementDays, new ForwardTypePayoff(type, strike),
+                valueDate, maturityDate, discountCurve)
         {
             fixedCouponBond_ = fixedCouponBond;
             incomeDiscountCurve_ = incomeDiscountCurve;
             incomeDiscountCurve_.registerWith(update);
         }
 
+        //! (dirty) forward bond price minus accrued on bond at delivery
+        public double cleanForwardPrice() => forwardValue() - fixedCouponBond_.accruedAmount(maturityDate_);
+
         // Calculations
 
         //! (dirty) forward bond price
         public double forwardPrice() => forwardValue();
-
-        //! (dirty) forward bond price minus accrued on bond at delivery
-        public double cleanForwardPrice() => forwardValue() - fixedCouponBond_.accruedAmount(maturityDate_);
 
         //!  NPV of bond coupons discounted using incomeDiscountCurve
         /*! Here only coupons between max(evaluation date,settlement
@@ -132,6 +133,7 @@ namespace QLNet.Instruments
                     }
                 }
             }
+
             return income;
         }
 

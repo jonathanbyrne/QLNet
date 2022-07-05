@@ -1,10 +1,16 @@
-﻿using QLNet.Indexes;
+﻿using JetBrains.Annotations;
+using QLNet.Indexes;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class CPICashFlow : IndexedCashFlow
+    [PublicAPI]
+    public class CPICashFlow : IndexedCashFlow
     {
+        protected double baseFixing_;
+        protected Frequency frequency_;
+        protected InterpolationType interpolation_;
+
         public CPICashFlow(double notional,
             ZeroInflationIndex index,
             Date baseDate,
@@ -27,22 +33,6 @@ namespace QLNet.Cashflows
                 Utils.QL_REQUIRE(frequency_ != Frequency.NoFrequency, () => "non-index interpolation w/o frequency");
             }
         }
-
-        //! value used on base date
-        /*! This does not have to agree with index on that date. */
-        public virtual double baseFixing() => baseFixing_;
-
-        //! you may not have a valid date
-        public override Date baseDate()
-        {
-            Utils.QL_FAIL("no base date specified");
-            return null;
-        }
-
-        //! do you want linear/constant/as-index interpolation of future data?
-        public virtual InterpolationType interpolation() => interpolation_;
-
-        public virtual Frequency frequency() => frequency_;
 
         //! redefined to use baseFixing() and interpolation
         public override double amount()
@@ -72,17 +62,30 @@ namespace QLNet.Cashflows
                     // no interpolation, i.e. flat = constant, so use start-of-period value
                     I1 = indexStart;
                 }
-
             }
 
             if (growthOnly())
+            {
                 return notional() * (I1 / I0 - 1.0);
-            else
-                return notional() * (I1 / I0);
+            }
+
+            return notional() * (I1 / I0);
         }
 
-        protected double baseFixing_;
-        protected InterpolationType interpolation_;
-        protected Frequency frequency_;
+        //! you may not have a valid date
+        public override Date baseDate()
+        {
+            Utils.QL_FAIL("no base date specified");
+            return null;
+        }
+
+        //! value used on base date
+        /*! This does not have to agree with index on that date. */
+        public virtual double baseFixing() => baseFixing_;
+
+        public virtual Frequency frequency() => frequency_;
+
+        //! do you want linear/constant/as-index interpolation of future data?
+        public virtual InterpolationType interpolation() => interpolation_;
     }
 }

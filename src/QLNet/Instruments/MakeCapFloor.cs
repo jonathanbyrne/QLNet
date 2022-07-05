@@ -14,12 +14,12 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
 using QLNet.Pricingengines.CapFloor;
-using QLNet.Termstructures;
 using QLNet.Time;
-using System.Collections.Generic;
 
 namespace QLNet.Instruments
 {
@@ -27,10 +27,17 @@ namespace QLNet.Instruments
     /*! This class provides a more comfortable way
         to instantiate standard market cap and floor.
     */
-    [JetBrains.Annotations.PublicAPI] public class MakeCapFloor
+    [PublicAPI]
+    public class MakeCapFloor
     {
+        private CapFloorType capFloorType_;
+        private IPricingEngine engine_;
+        private bool firstCapletExcluded_, asOptionlet_;
+        private MakeVanillaSwap makeVanillaSwap_;
+        private double? strike_;
+
         public MakeCapFloor(CapFloorType capFloorType, Period tenor, IborIndex iborIndex, double? strike = null,
-                            Period forwardStart = null)
+            Period forwardStart = null)
         {
             capFloorType_ = capFloorType;
             strike_ = strike;
@@ -41,13 +48,22 @@ namespace QLNet.Instruments
 
         public static implicit operator CapFloor(MakeCapFloor o) => o.value();
 
+        //! only get last coupon
+        public MakeCapFloor asOptionlet(bool b = true)
+        {
+            asOptionlet_ = b;
+            return this;
+        }
+
         public CapFloor value()
         {
             VanillaSwap swap = makeVanillaSwap_;
 
             var leg = swap.floatingLeg();
             if (firstCapletExcluded_)
+            {
                 leg.RemoveAt(0);
+            }
 
             // only leaves the last coupon
             if (asOptionlet_ && leg.Count > 1)
@@ -73,28 +89,6 @@ namespace QLNet.Instruments
             var capFloor = new CapFloor(capFloorType_, leg, strikeVector);
             capFloor.setPricingEngine(engine_);
             return capFloor;
-
-        }
-
-
-        public MakeCapFloor withNominal(double n)
-        {
-            makeVanillaSwap_.withNominal(n);
-            return this;
-        }
-
-        public MakeCapFloor withEffectiveDate(Date effectiveDate, bool firstCapletExcluded)
-        {
-            makeVanillaSwap_.withEffectiveDate(effectiveDate);
-            firstCapletExcluded_ = firstCapletExcluded;
-            return this;
-        }
-
-        public MakeCapFloor withTenor(Period t)
-        {
-            makeVanillaSwap_.withFixedLegTenor(t);
-            makeVanillaSwap_.withFloatingLegTenor(t);
-            return this;
         }
 
         public MakeCapFloor withCalendar(Calendar cal)
@@ -103,6 +97,7 @@ namespace QLNet.Instruments
             makeVanillaSwap_.withFloatingLegCalendar(cal);
             return this;
         }
+
         public MakeCapFloor withConvention(BusinessDayConvention bdc)
         {
             makeVanillaSwap_.withFixedLegConvention(bdc);
@@ -110,17 +105,17 @@ namespace QLNet.Instruments
             return this;
         }
 
-        public MakeCapFloor withTerminationDateConvention(BusinessDayConvention bdc)
+        public MakeCapFloor withDayCount(DayCounter dc)
         {
-            makeVanillaSwap_.withFixedLegTerminationDateConvention(bdc);
-            makeVanillaSwap_.withFloatingLegTerminationDateConvention(bdc);
+            makeVanillaSwap_.withFixedLegDayCount(dc);
+            makeVanillaSwap_.withFloatingLegDayCount(dc);
             return this;
         }
 
-        public MakeCapFloor withRule(DateGeneration.Rule r)
+        public MakeCapFloor withEffectiveDate(Date effectiveDate, bool firstCapletExcluded)
         {
-            makeVanillaSwap_.withFixedLegRule(r);
-            makeVanillaSwap_.withFloatingLegRule(r);
+            makeVanillaSwap_.withEffectiveDate(effectiveDate);
+            firstCapletExcluded_ = firstCapletExcluded;
             return this;
         }
 
@@ -145,17 +140,9 @@ namespace QLNet.Instruments
             return this;
         }
 
-        public MakeCapFloor withDayCount(DayCounter dc)
+        public MakeCapFloor withNominal(double n)
         {
-            makeVanillaSwap_.withFixedLegDayCount(dc);
-            makeVanillaSwap_.withFloatingLegDayCount(dc);
-            return this;
-        }
-
-        //! only get last coupon
-        public MakeCapFloor asOptionlet(bool b = true)
-        {
-            asOptionlet_ = b;
+            makeVanillaSwap_.withNominal(n);
             return this;
         }
 
@@ -165,13 +152,25 @@ namespace QLNet.Instruments
             return this;
         }
 
-        private CapFloorType capFloorType_;
-        private double? strike_;
-        private bool firstCapletExcluded_, asOptionlet_;
+        public MakeCapFloor withRule(DateGeneration.Rule r)
+        {
+            makeVanillaSwap_.withFixedLegRule(r);
+            makeVanillaSwap_.withFloatingLegRule(r);
+            return this;
+        }
 
-        private MakeVanillaSwap makeVanillaSwap_;
+        public MakeCapFloor withTenor(Period t)
+        {
+            makeVanillaSwap_.withFixedLegTenor(t);
+            makeVanillaSwap_.withFloatingLegTenor(t);
+            return this;
+        }
 
-        private IPricingEngine engine_;
-
+        public MakeCapFloor withTerminationDateConvention(BusinessDayConvention bdc)
+        {
+            makeVanillaSwap_.withFixedLegTerminationDateConvention(bdc);
+            makeVanillaSwap_.withFloatingLegTerminationDateConvention(bdc);
+            return this;
+        }
     }
 }

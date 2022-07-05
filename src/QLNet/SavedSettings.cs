@@ -1,12 +1,14 @@
 using System;
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public class SavedSettings : IDisposable
+    [PublicAPI]
+    public class SavedSettings : IDisposable
     {
-        private Date evaluationDate_;
         private bool enforcesTodaysHistoricFixings_;
+        private Date evaluationDate_;
         private bool includeReferenceDateEvents_;
         private bool? includeTodaysCashFlows_;
 
@@ -21,7 +23,10 @@ namespace QLNet
         public void Dispose()
         {
             if (evaluationDate_ != Settings.evaluationDate())
+            {
                 Settings.setEvaluationDate(evaluationDate_);
+            }
+
             Settings.enforcesTodaysHistoricFixings = enforcesTodaysHistoricFixings_;
             Settings.includeReferenceDateEvents = includeReferenceDateEvents_;
             Settings.includeTodaysCashFlows = includeTodaysCashFlows_;

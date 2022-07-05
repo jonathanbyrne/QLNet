@@ -1,10 +1,14 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class PlainVanillaPayoff : StrikedTypePayoff
+    [PublicAPI]
+    public class PlainVanillaPayoff : StrikedTypePayoff
     {
-        public PlainVanillaPayoff(Option.Type type, double strike) : base(type, strike) { }
+        public PlainVanillaPayoff(Option.Type type, double strike) : base(type, strike)
+        {
+        }
 
         // Payoff interface
         public override string name() => "Vanilla";
@@ -13,9 +17,9 @@ namespace QLNet.Instruments
         {
             switch (type_)
             {
-                case QLNet.Option.Type.Call:
+                case Option.Type.Call:
                     return System.Math.Max(price - strike_, 0.0);
-                case QLNet.Option.Type.Put:
+                case Option.Type.Put:
                     return System.Math.Max(strike_ - price, 0.0);
                 default:
                     throw new ArgumentException("unknown/illegal option ExerciseType");

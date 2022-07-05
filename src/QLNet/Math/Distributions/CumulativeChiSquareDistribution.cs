@@ -1,6 +1,9 @@
-﻿namespace QLNet.Math.Distributions
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.Distributions
 {
-    [JetBrains.Annotations.PublicAPI] public class CumulativeChiSquareDistribution
+    [PublicAPI]
+    public class CumulativeChiSquareDistribution
     {
         private double df_;
 

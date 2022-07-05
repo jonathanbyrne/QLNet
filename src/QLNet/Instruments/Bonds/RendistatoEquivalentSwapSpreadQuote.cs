@@ -1,12 +1,18 @@
 ﻿using System;
+using JetBrains.Annotations;
 using QLNet.Quotes;
 
 namespace QLNet.Instruments.Bonds
 {
-    [JetBrains.Annotations.PublicAPI] public class RendistatoEquivalentSwapSpreadQuote : Quote
+    [PublicAPI]
+    public class RendistatoEquivalentSwapSpreadQuote : Quote
     {
-        public RendistatoEquivalentSwapSpreadQuote(RendistatoCalculator r) { r_ = r; }
-        public override double value() => r_.equivalentSwapSpread();
+        private RendistatoCalculator r_;
+
+        public RendistatoEquivalentSwapSpreadQuote(RendistatoCalculator r)
+        {
+            r_ = r;
+        }
 
         public override bool isValid()
         {
@@ -21,6 +27,6 @@ namespace QLNet.Instruments.Bonds
             }
         }
 
-        private RendistatoCalculator r_;
+        public override double value() => r_.equivalentSwapSpread();
     }
 }

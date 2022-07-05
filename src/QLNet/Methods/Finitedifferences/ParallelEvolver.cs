@@ -16,9 +16,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Patterns;
-using System.Collections.Generic;
 
 namespace QLNet.Methods.Finitedifferences
 {
@@ -34,18 +36,32 @@ namespace QLNet.Methods.Finitedifferences
     */
     /*! \ingroup findiff */
 
-    [JetBrains.Annotations.PublicAPI] public class ParallelEvolver<Evolver> : IMixedScheme, ISchemeFactory where Evolver : IMixedScheme, ISchemeFactory, new()
+    [PublicAPI]
+    public class ParallelEvolver<Evolver> : IMixedScheme, ISchemeFactory where Evolver : IMixedScheme, ISchemeFactory, new()
     {
         private List<IMixedScheme> evolvers_;
 
         // required for generics
-        public ParallelEvolver() { }
+        public ParallelEvolver()
+        {
+        }
+
         public ParallelEvolver(List<IOperator> L, BoundaryConditionSet bcs)
         {
             evolvers_ = new List<IMixedScheme>(L.Count);
             for (var i = 0; i < L.Count; i++)
             {
                 evolvers_.Add(FastActivator<Evolver>.Create().factory(L[i], bcs[i]));
+            }
+        }
+
+        public IMixedScheme factory(object L, object bcs, object[] additionalFields = null) => new ParallelEvolver<Evolver>((List<IOperator>)L, (BoundaryConditionSet)bcs);
+
+        public void setStep(double dt)
+        {
+            for (var i = 0; i < evolvers_.Count; i++)
+            {
+                evolvers_[i].setStep(dt);
             }
         }
 
@@ -59,15 +75,5 @@ namespace QLNet.Methods.Finitedifferences
                 a[i] = temp as Vector;
             }
         }
-
-        public void setStep(double dt)
-        {
-            for (var i = 0; i < evolvers_.Count; i++)
-            {
-                evolvers_[i].setStep(dt);
-            }
-        }
-
-        public IMixedScheme factory(object L, object bcs, object[] additionalFields = null) => new ParallelEvolver<Evolver>((List<IOperator>)L, (BoundaryConditionSet)bcs);
     }
 }

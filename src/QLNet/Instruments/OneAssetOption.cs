@@ -17,28 +17,68 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Instruments
 {
     //! Base class for options on a single asset
-    [JetBrains.Annotations.PublicAPI] public class OneAssetOption : Option
+    [PublicAPI]
+    public class OneAssetOption : Option
     {
+        [PublicAPI]
+        public class Engine : GenericEngine<Arguments, Results>
+        {
+        }
+
+        //! %Results from single-asset option calculation
+        public new class Results : Instrument.Results
+        {
+            public double? delta { get; set; }
+
+            public double? deltaForward { get; set; }
+
+            public double? dividendRho { get; set; }
+
+            public double? elasticity { get; set; }
+
+            public double? gamma { get; set; }
+
+            public double? itmCashProbability { get; set; }
+
+            public double? rho { get; set; }
+
+            public double? strikeSensitivity { get; set; }
+
+            public double? theta { get; set; }
+
+            public double? thetaPerDay { get; set; }
+
+            public double? vega { get; set; }
+
+            public override void reset()
+            {
+                base.reset();
+                delta = gamma = theta = vega = rho = dividendRho = null;
+                itmCashProbability = deltaForward = elasticity = thetaPerDay = strikeSensitivity = null;
+            }
+        }
+
         // results
         protected double? delta_,
-                  deltaForward_,
-                  elasticity_,
-                  gamma_,
-                  theta_,
-                  thetaPerDay_,
-                  vega_,
-                  rho_,
-                  dividendRho_,
-                  strikeSensitivity_,
-                  itmCashProbability_;
+            deltaForward_,
+            elasticity_,
+            gamma_,
+            theta_,
+            thetaPerDay_,
+            vega_,
+            rho_,
+            dividendRho_,
+            strikeSensitivity_,
+            itmCashProbability_;
 
         public OneAssetOption(Payoff payoff, Exercise exercise) : base(payoff, exercise)
-        { }
-
-        public override bool isExpired() => new simple_event(exercise_.lastDate()).hasOccurred();
+        {
+        }
 
         public double delta()
         {
@@ -54,48 +94,6 @@ namespace QLNet.Instruments
             return deltaForward_.GetValueOrDefault();
         }
 
-        public double elasticity()
-        {
-            calculate();
-            Utils.QL_REQUIRE(elasticity_ != null, () => "elasticity not provided");
-            return elasticity_.GetValueOrDefault();
-        }
-
-        public double gamma()
-        {
-            calculate();
-            Utils.QL_REQUIRE(gamma_ != null, () => "gamma not provided");
-            return gamma_.GetValueOrDefault();
-        }
-
-        public double theta()
-        {
-            calculate();
-            Utils.QL_REQUIRE(theta_ != null, () => "theta not provided");
-            return theta_.GetValueOrDefault();
-        }
-
-        public double thetaPerDay()
-        {
-            calculate();
-            Utils.QL_REQUIRE(thetaPerDay_ != null, () => "theta per-day not provided");
-            return thetaPerDay_.GetValueOrDefault();
-        }
-
-        public double vega()
-        {
-            calculate();
-            Utils.QL_REQUIRE(vega_ != null, () => "vega not provided");
-            return vega_.GetValueOrDefault();
-        }
-
-        public double rho()
-        {
-            calculate();
-            Utils.QL_REQUIRE(rho_ != null, () => "rho not provided");
-            return rho_.GetValueOrDefault();
-        }
-
         public double dividendRho()
         {
             calculate();
@@ -103,25 +101,11 @@ namespace QLNet.Instruments
             return dividendRho_.GetValueOrDefault();
         }
 
-        public double strikeSensitivity()
+        public double elasticity()
         {
             calculate();
-            Utils.QL_REQUIRE(strikeSensitivity_ != null, () => "strike sensitivity not provided");
-            return strikeSensitivity_.GetValueOrDefault();
-        }
-
-        public double itmCashProbability()
-        {
-            calculate();
-            Utils.QL_REQUIRE(itmCashProbability_ != null, () => "in-the-money cash probability not provided");
-            return itmCashProbability_.GetValueOrDefault();
-        }
-
-        protected override void setupExpired()
-        {
-            base.setupExpired();
-            delta_ = deltaForward_ = elasticity_ = gamma_ = theta_ = thetaPerDay_ = vega_ = rho_ = dividendRho_ =
-                  strikeSensitivity_ = itmCashProbability_ = 0.0;
+            Utils.QL_REQUIRE(elasticity_ != null, () => "elasticity not provided");
+            return elasticity_.GetValueOrDefault();
         }
 
         public override void fetchResults(IPricingEngineResults r)
@@ -160,30 +144,62 @@ namespace QLNet.Instruments
             itmCashProbability_ = results.itmCashProbability;
         }
 
-        //! %Results from single-asset option calculation
-        public new class Results : Instrument.Results
+        public double gamma()
         {
-            public double? delta { get; set; }
-            public double? gamma { get; set; }
-            public double? theta { get; set; }
-            public double? vega { get; set; }
-            public double? rho { get; set; }
-            public double? dividendRho { get; set; }
-            public double? itmCashProbability { get; set; }
-            public double? deltaForward { get; set; }
-            public double? elasticity { get; set; }
-            public double? thetaPerDay { get; set; }
-            public double? strikeSensitivity { get; set; }
-
-            public override void reset()
-            {
-                base.reset();
-                delta = gamma = theta = vega = rho = dividendRho = null;
-                itmCashProbability = deltaForward = elasticity = thetaPerDay = strikeSensitivity = null;
-            }
+            calculate();
+            Utils.QL_REQUIRE(gamma_ != null, () => "gamma not provided");
+            return gamma_.GetValueOrDefault();
         }
 
-        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results>
-        { }
+        public override bool isExpired() => new simple_event(exercise_.lastDate()).hasOccurred();
+
+        public double itmCashProbability()
+        {
+            calculate();
+            Utils.QL_REQUIRE(itmCashProbability_ != null, () => "in-the-money cash probability not provided");
+            return itmCashProbability_.GetValueOrDefault();
+        }
+
+        public double rho()
+        {
+            calculate();
+            Utils.QL_REQUIRE(rho_ != null, () => "rho not provided");
+            return rho_.GetValueOrDefault();
+        }
+
+        public double strikeSensitivity()
+        {
+            calculate();
+            Utils.QL_REQUIRE(strikeSensitivity_ != null, () => "strike sensitivity not provided");
+            return strikeSensitivity_.GetValueOrDefault();
+        }
+
+        public double theta()
+        {
+            calculate();
+            Utils.QL_REQUIRE(theta_ != null, () => "theta not provided");
+            return theta_.GetValueOrDefault();
+        }
+
+        public double thetaPerDay()
+        {
+            calculate();
+            Utils.QL_REQUIRE(thetaPerDay_ != null, () => "theta per-day not provided");
+            return thetaPerDay_.GetValueOrDefault();
+        }
+
+        public double vega()
+        {
+            calculate();
+            Utils.QL_REQUIRE(vega_ != null, () => "vega not provided");
+            return vega_.GetValueOrDefault();
+        }
+
+        protected override void setupExpired()
+        {
+            base.setupExpired();
+            delta_ = deltaForward_ = elasticity_ = gamma_ = theta_ = thetaPerDay_ = vega_ = rho_ = dividendRho_ =
+                strikeSensitivity_ = itmCashProbability_ = 0.0;
+        }
     }
 }

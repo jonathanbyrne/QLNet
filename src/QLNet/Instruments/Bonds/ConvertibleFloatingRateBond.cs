@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
 using QLNet.Quotes;
@@ -6,7 +7,8 @@ using QLNet.Time;
 
 namespace QLNet.Instruments.Bonds
 {
-    [JetBrains.Annotations.PublicAPI] public class ConvertibleFloatingRateBond : ConvertibleBond
+    [PublicAPI]
+    public class ConvertibleFloatingRateBond : ConvertibleBond
     {
         public ConvertibleFloatingRateBond(Exercise exercise,
             double conversionRatio,
@@ -24,7 +26,6 @@ namespace QLNet.Instruments.Bonds
             : base(
                 exercise, conversionRatio, dividends, callability, creditSpread, issueDate, settlementDays, schedule,
                 redemption)
-
         {
             // !!! notional forcibly set to 100
             cashflows_ = new IborLeg(schedule, index)

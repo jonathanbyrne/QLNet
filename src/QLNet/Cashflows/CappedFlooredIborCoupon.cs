@@ -1,12 +1,16 @@
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class CappedFlooredIborCoupon : CappedFlooredCoupon
+    [PublicAPI]
+    public class CappedFlooredIborCoupon : CappedFlooredCoupon
     {
         // need by CashFlowVectors
-        public CappedFlooredIborCoupon() { }
+        public CappedFlooredIborCoupon()
+        {
+        }
 
         public CappedFlooredIborCoupon(Date paymentDate,
             double nominal,
@@ -22,7 +26,7 @@ namespace QLNet.Cashflows
             Date refPeriodEnd = null,
             DayCounter dayCounter = null,
             bool isInArrears = false)
-            : base(new IborCoupon(paymentDate, nominal, startDate, endDate, fixingDays, index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears) as FloatingRateCoupon, cap, floor)
+            : base(new IborCoupon(paymentDate, nominal, startDate, endDate, fixingDays, index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears), cap, floor)
         {
         }
 

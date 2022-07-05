@@ -16,45 +16,50 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
 using QLNet.Instruments;
 using QLNet.Time;
-using System.Collections.Generic;
 
 namespace QLNet
 {
     //! Predetermined cash flow
     /*! This cash flow pays a predetermined amount at a given date. */
     public abstract class Dividend : CashFlow
-   {
-      protected Date date_;
-      // Event interface
-      public override Date date() => date_;
+    {
+        protected Date date_;
 
-      protected Dividend(Date date)
-      {
-         date_ = date;
-      }
+        protected Dividend(Date date)
+        {
+            date_ = date;
+        }
 
-      public abstract double amount(double underlying);
-   }
+        public abstract double amount(double underlying);
 
-   //! Predetermined cash flow
-   /*! This cash flow pays a predetermined amount at a given date. */
+        // Event interface
+        public override Date date() => date_;
+    }
 
-   //! Predetermined cash flow
-   /*! This cash flow pays a predetermined amount at a given date. */
+    //! Predetermined cash flow
+    /*! This cash flow pays a predetermined amount at a given date. */
 
-   public static partial class Utils
-   {
-      //! helper function building a sequence of fixed dividends
-      public static DividendSchedule DividendVector(List<Date> dividendDates, List<double> dividends)
-      {
-         QL_REQUIRE(dividendDates.Count == dividends.Count, () => "size mismatch between dividend dates and amounts");
+    //! Predetermined cash flow
+    /*! This cash flow pays a predetermined amount at a given date. */
 
-         var items = new DividendSchedule();
-         for (var i = 0; i < dividendDates.Count; i++)
-            items.Add(new FixedDividend(dividends[i], dividendDates[i]));
-         return items;
-      }
-   }
+    public static partial class Utils
+    {
+        //! helper function building a sequence of fixed dividends
+        public static DividendSchedule DividendVector(List<Date> dividendDates, List<double> dividends)
+        {
+            QL_REQUIRE(dividendDates.Count == dividends.Count, () => "size mismatch between dividend dates and amounts");
+
+            var items = new DividendSchedule();
+            for (var i = 0; i < dividendDates.Count; i++)
+            {
+                items.Add(new FixedDividend(dividends[i], dividendDates[i]));
+            }
+
+            return items;
+        }
+    }
 }

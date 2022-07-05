@@ -14,89 +14,43 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-using QLNet.Extensions;
-using QLNet.Indexes;
-using QLNet.Termstructures;
-using QLNet.Termstructures.Volatility.CapFloor;
-using QLNet.Time;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Extensions;
+using QLNet.Indexes;
+using QLNet.Termstructures.Volatility.CapFloor;
+using QLNet.Time;
 
 namespace QLNet.Termstructures.Volatility.Optionlet
 {
     /*! StrippedOptionletBase specialization. It's up to derived
          classes to implement LazyObject::performCalculations
      */
-    [JetBrains.Annotations.PublicAPI] public class OptionletStripper : StrippedOptionletBase
+    [PublicAPI]
+    public class OptionletStripper : StrippedOptionletBase
     {
-        // StrippedOptionletBase interface
-        public override List<double> optionletStrikes(int i)
-        {
-            calculate();
-            Utils.QL_REQUIRE(i < optionletStrikes_.Count, () =>
-                             "index (" + i + ") must be less than optionletStrikes size (" + optionletStrikes_.Count + ")");
-            return optionletStrikes_[i];
-        }
-
-        public override List<double> optionletVolatilities(int i)
-        {
-            calculate();
-            Utils.QL_REQUIRE(i < optionletVolatilities_.Count, () =>
-                             "index (" + i + ") must be less than optionletVolatilities size (" +
-                             optionletVolatilities_.Count + ")");
-            return optionletVolatilities_[i];
-        }
-
-        public override List<Date> optionletFixingDates()
-        {
-            calculate();
-            return optionletDates_;
-        }
-        public override List<double> optionletFixingTimes()
-        {
-            calculate();
-            return optionletTimes_;
-        }
-        public override int optionletMaturities() => optionletTenors_.Count;
-
-        public override List<double> atmOptionletRates()
-        {
-            calculate();
-            return atmOptionletRate_;
-        }
-
-        public override DayCounter dayCounter() => termVolSurface_.dayCounter();
-
-        public override Calendar calendar() => termVolSurface_.calendar();
-
-        public override int settlementDays() => termVolSurface_.settlementDays();
-
-        public override BusinessDayConvention businessDayConvention() => termVolSurface_.businessDayConvention();
-
-        public List<Period> optionletFixingTenors() => optionletTenors_;
-
-        public List<Date> optionletPaymentDates()
-        {
-            calculate();
-            return optionletPaymentDates_;
-        }
-        public List<double> optionletAccrualPeriods()
-        {
-            calculate();
-            return optionletAccrualPeriods_;
-        }
-        public CapFloorTermVolSurface termVolSurface() => termVolSurface_;
-
-        public IborIndex iborIndex() => iborIndex_;
-
-        public override double displacement() => displacement_;
-
-        public override VolatilityType volatilityType() => volatilityType_;
+        protected List<double> atmOptionletRate_;
+        protected List<Period> capFloorLengths_ = new List<Period>();
+        protected Handle<YieldTermStructure> discount_;
+        protected double displacement_;
+        protected IborIndex iborIndex_;
+        protected int nOptionletTenors_;
+        protected int nStrikes_;
+        protected List<double> optionletAccrualPeriods_;
+        protected List<Date> optionletDates_;
+        protected List<Date> optionletPaymentDates_;
+        protected List<List<double>> optionletStrikes_;
+        protected List<Period> optionletTenors_ = new List<Period>();
+        protected List<double> optionletTimes_;
+        protected List<List<double>> optionletVolatilities_;
+        protected CapFloorTermVolSurface termVolSurface_;
+        protected VolatilityType volatilityType_;
 
         protected OptionletStripper(CapFloorTermVolSurface termVolSurface, IborIndex iborIndex,
-                                    Handle<YieldTermStructure> discount = null,
-                                    VolatilityType type = VolatilityType.ShiftedLognormal,
-                                    double displacement = 0.0)
+            Handle<YieldTermStructure> discount = null,
+            VolatilityType type = VolatilityType.ShiftedLognormal,
+            double displacement = 0.0)
         {
             termVolSurface_ = termVolSurface;
             iborIndex_ = iborIndex;
@@ -105,11 +59,10 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             volatilityType_ = type;
             displacement_ = displacement;
 
-
             if (volatilityType_ == VolatilityType.Normal)
             {
                 Utils.QL_REQUIRE(displacement_.IsEqual(0.0), () =>
-                                 "non-null displacement is not allowed with Normal model");
+                    "non-null displacement is not allowed with Normal model");
             }
 
             termVolSurface.registerWith(update);
@@ -124,7 +77,7 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             optionletTenors_.Add(indexTenor);
             capFloorLengths_.Add(optionletTenors_.Last() + indexTenor);
             Utils.QL_REQUIRE(maxCapFloorTenor >= capFloorLengths_.Last(), () =>
-                             "too short (" + maxCapFloorTenor + ") capfloor term vol termVolSurface");
+                "too short (" + maxCapFloorTenor + ") capfloor term vol termVolSurface");
             var nextCapFloorLength = capFloorLengths_.Last() + indexTenor;
             while (nextCapFloorLength <= maxCapFloorTenor)
             {
@@ -132,6 +85,7 @@ namespace QLNet.Termstructures.Volatility.Optionlet
                 capFloorLengths_.Add(nextCapFloorLength);
                 nextCapFloorLength += indexTenor;
             }
+
             nOptionletTenors_ = optionletTenors_.Count;
 
             optionletVolatilities_ = new InitializedList<List<double>>(nOptionletTenors_);
@@ -139,6 +93,7 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             {
                 optionletVolatilities_[x] = new InitializedList<double>(nStrikes_);
             }
+
             optionletStrikes_ = new InitializedList<List<double>>(nOptionletTenors_);
             for (var x = 0; x < nOptionletTenors_; x++)
             {
@@ -150,27 +105,74 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             atmOptionletRate_ = new InitializedList<double>(nOptionletTenors_);
             optionletPaymentDates_ = new InitializedList<Date>(nOptionletTenors_);
             optionletAccrualPeriods_ = new InitializedList<double>(nOptionletTenors_);
-
         }
-        protected CapFloorTermVolSurface termVolSurface_;
-        protected IborIndex iborIndex_;
-        protected Handle<YieldTermStructure> discount_;
-        protected int nStrikes_;
-        protected int nOptionletTenors_;
 
-        protected List<List<double>> optionletStrikes_;
-        protected List<List<double>> optionletVolatilities_;
+        public override List<double> atmOptionletRates()
+        {
+            calculate();
+            return atmOptionletRate_;
+        }
 
-        protected List<double> optionletTimes_;
-        protected List<Date> optionletDates_;
-        protected List<Period> optionletTenors_ = new List<Period>();
-        protected List<double> atmOptionletRate_;
-        protected List<Date> optionletPaymentDates_;
-        protected List<double> optionletAccrualPeriods_;
+        public override BusinessDayConvention businessDayConvention() => termVolSurface_.businessDayConvention();
 
-        protected List<Period> capFloorLengths_ = new List<Period>();
-        protected VolatilityType volatilityType_;
-        protected double displacement_;
+        public override Calendar calendar() => termVolSurface_.calendar();
 
+        public override DayCounter dayCounter() => termVolSurface_.dayCounter();
+
+        public override double displacement() => displacement_;
+
+        public IborIndex iborIndex() => iborIndex_;
+
+        public List<double> optionletAccrualPeriods()
+        {
+            calculate();
+            return optionletAccrualPeriods_;
+        }
+
+        public override List<Date> optionletFixingDates()
+        {
+            calculate();
+            return optionletDates_;
+        }
+
+        public List<Period> optionletFixingTenors() => optionletTenors_;
+
+        public override List<double> optionletFixingTimes()
+        {
+            calculate();
+            return optionletTimes_;
+        }
+
+        public override int optionletMaturities() => optionletTenors_.Count;
+
+        public List<Date> optionletPaymentDates()
+        {
+            calculate();
+            return optionletPaymentDates_;
+        }
+
+        // StrippedOptionletBase interface
+        public override List<double> optionletStrikes(int i)
+        {
+            calculate();
+            Utils.QL_REQUIRE(i < optionletStrikes_.Count, () =>
+                "index (" + i + ") must be less than optionletStrikes size (" + optionletStrikes_.Count + ")");
+            return optionletStrikes_[i];
+        }
+
+        public override List<double> optionletVolatilities(int i)
+        {
+            calculate();
+            Utils.QL_REQUIRE(i < optionletVolatilities_.Count, () =>
+                "index (" + i + ") must be less than optionletVolatilities size (" +
+                optionletVolatilities_.Count + ")");
+            return optionletVolatilities_[i];
+        }
+
+        public override int settlementDays() => termVolSurface_.settlementDays();
+
+        public CapFloorTermVolSurface termVolSurface() => termVolSurface_;
+
+        public override VolatilityType volatilityType() => volatilityType_;
     }
 }

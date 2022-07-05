@@ -1,6 +1,9 @@
-﻿namespace QLNet.Methods.Finitedifferences
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Methods.Finitedifferences
 {
-    [JetBrains.Annotations.PublicAPI] public interface ISchemeFactory
+    [PublicAPI]
+    public interface ISchemeFactory
     {
         IMixedScheme factory(object L, object bcs, object[] additionalInputs = null);
     }

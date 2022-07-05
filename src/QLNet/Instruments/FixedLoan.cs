@@ -1,25 +1,26 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Time;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class FixedLoan : Loan
+    [PublicAPI]
+    public class FixedLoan : Loan
     {
-        private Type type_;
-        private double nominal_;
-        private Schedule fixedSchedule_;
-        private double fixedRate_;
         private DayCounter fixedDayCount_;
-        private Schedule principalSchedule_;
+        private double fixedRate_;
+        private Schedule fixedSchedule_;
+        private double nominal_;
         private BusinessDayConvention paymentConvention_;
+        private Schedule principalSchedule_;
+        private Type type_;
 
         public FixedLoan(Type type, double nominal,
             Schedule fixedSchedule, double fixedRate, DayCounter fixedDayCount,
             Schedule principalSchedule, BusinessDayConvention? paymentConvention) :
             base(2)
         {
-
             type_ = type;
             nominal_ = nominal;
             fixedSchedule_ = fixedSchedule;
@@ -28,9 +29,13 @@ namespace QLNet.Instruments
             principalSchedule_ = principalSchedule;
 
             if (paymentConvention.HasValue)
+            {
                 paymentConvention_ = paymentConvention.Value;
+            }
             else
+            {
                 paymentConvention_ = fixedSchedule_.businessDayConvention();
+            }
 
             List<CashFlow> principalLeg = new PricipalLeg(principalSchedule, fixedDayCount)
                 .withNotionals(nominal)
@@ -48,7 +53,6 @@ namespace QLNet.Instruments
                 .withCouponRates(fixedRate, fixedDayCount)
                 .withPaymentAdjustment(paymentConvention_)
                 .withNotionals(notionals_);
-
 
             legs_[0] = fixedLeg;
             legs_[1] = principalLeg;

@@ -16,13 +16,17 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
-
     // data structures
 
     // Multi-cubic spline
-    [JetBrains.Annotations.PublicAPI] public class SplineGrid : InitializedList<List<double>> { }
+    [PublicAPI]
+    public class SplineGrid : InitializedList<List<double>>
+    {
+    }
 }

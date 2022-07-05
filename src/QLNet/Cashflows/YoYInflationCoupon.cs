@@ -16,34 +16,43 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
     //! %Coupon paying a YoY-inflation ExerciseType index
-    [JetBrains.Annotations.PublicAPI] public class YoYInflationCoupon : InflationCoupon
+    [PublicAPI]
+    public class YoYInflationCoupon : InflationCoupon
     {
+        protected double gearing_;
+        protected double spread_;
+        private YoYInflationIndex yoyIndex_;
+
         public YoYInflationCoupon(Date paymentDate,
-                                  double nominal,
-                                  Date startDate,
-                                  Date endDate,
-                                  int fixingDays,
-                                  YoYInflationIndex yoyIndex,
-                                  Period observationLag,
-                                  DayCounter dayCounter,
-                                  double gearing = 1.0,
-                                  double spread = 0.0,
-                                  Date refPeriodStart = null,
-                                  Date refPeriodEnd = null)
-           : base(paymentDate, nominal, startDate, endDate,
-                  fixingDays, yoyIndex, observationLag,
-                  dayCounter, refPeriodStart, refPeriodEnd)
+            double nominal,
+            Date startDate,
+            Date endDate,
+            int fixingDays,
+            YoYInflationIndex yoyIndex,
+            Period observationLag,
+            DayCounter dayCounter,
+            double gearing = 1.0,
+            double spread = 0.0,
+            Date refPeriodStart = null,
+            Date refPeriodEnd = null)
+            : base(paymentDate, nominal, startDate, endDate,
+                fixingDays, yoyIndex, observationLag,
+                dayCounter, refPeriodStart, refPeriodEnd)
         {
             yoyIndex_ = yoyIndex;
             gearing_ = gearing;
             spread_ = spread;
         }
+
+        public double adjustedFixing() => (rate() - spread()) / gearing();
 
         // Inspectors
         // index gearing, i.e. multiplicative coefficient for the index
@@ -52,17 +61,10 @@ namespace QLNet.Cashflows
         //! spread paid over the fixing of the underlying index
         public double spread() => spread_;
 
-        public double adjustedFixing() => (rate() - spread()) / gearing();
-
         public YoYInflationIndex yoyIndex() => yoyIndex_;
-
-        private YoYInflationIndex yoyIndex_;
-        protected double gearing_;
-        protected double spread_;
 
         protected override bool checkPricerImpl(InflationCouponPricer i) => i is YoYInflationCouponPricer;
     }
-
 
     //! Helper class building a sequence of capped/floored yoy inflation coupons
     //! payoff is: spread + gearing x index

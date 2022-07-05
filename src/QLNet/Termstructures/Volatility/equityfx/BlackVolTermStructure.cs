@@ -17,9 +17,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using QLNet.Extensions;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Termstructures.Volatility.equityfx
 {
@@ -33,6 +33,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
     public abstract class BlackVolTermStructure : VolatilityTermStructure
     {
         #region Constructors
+
         //! default constructor
         /*! \warning term structures initialized by means of this
                      constructor must manage their own reference date
@@ -40,20 +41,23 @@ namespace QLNet.Termstructures.Volatility.equityfx
         */
 
         protected BlackVolTermStructure(BusinessDayConvention bdc = BusinessDayConvention.Following, DayCounter dc = null)
-           : base(bdc, dc)
-        { }
+            : base(bdc, dc)
+        {
+        }
 
         //! initialize with a fixed reference date
         protected BlackVolTermStructure(Date referenceDate, Calendar cal = null,
-                                        BusinessDayConvention bdc = BusinessDayConvention.Following, DayCounter dc = null)
-           : base(referenceDate, cal, bdc, dc)
-        { }
+            BusinessDayConvention bdc = BusinessDayConvention.Following, DayCounter dc = null)
+            : base(referenceDate, cal, bdc, dc)
+        {
+        }
 
         //! calculate the reference date based on the global evaluation date
         protected BlackVolTermStructure(int settlementDays, Calendar cal, BusinessDayConvention bdc = BusinessDayConvention.Following,
-                                        DayCounter dc = null)
-           : base(settlementDays, cal, bdc, dc)
-        { }
+            DayCounter dc = null)
+            : base(settlementDays, cal, bdc, dc)
+        {
+        }
 
         #endregion
 
@@ -129,7 +133,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
                     return System.Math.Sqrt((var2 - var1) / (2 * epsilon));
                 }
             }
-            else
+
             {
                 var var1 = blackVarianceImpl(time1, strike);
                 var var2 = blackVarianceImpl(time2, strike);
@@ -179,7 +183,6 @@ namespace QLNet.Termstructures.Volatility.equityfx
         protected abstract double blackVolImpl(double t, double strike);
 
         #endregion
-
     }
 
     //! Black-volatility term structure

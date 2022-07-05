@@ -1,14 +1,16 @@
 ﻿using System;
+using JetBrains.Annotations;
 using QLNet.Patterns;
 using QLNet.processes;
 
 namespace QLNet.Methods.Finitedifferences
 {
-    [JetBrains.Annotations.PublicAPI] public class PdeConstantCoeff<PdeClass> : PdeSecondOrderParabolic where PdeClass : PdeSecondOrderParabolic, new()
+    [PublicAPI]
+    public class PdeConstantCoeff<PdeClass> : PdeSecondOrderParabolic where PdeClass : PdeSecondOrderParabolic, new()
     {
         private double diffusion_;
-        private double drift_;
         private double discount_;
+        private double drift_;
 
         public PdeConstantCoeff(GeneralizedBlackScholesProcess process, double t, double x)
         {
@@ -20,9 +22,9 @@ namespace QLNet.Methods.Finitedifferences
 
         public override double diffusion(double x, double y) => diffusion_;
 
-        public override double drift(double x, double y) => drift_;
-
         public override double discount(double x, double y) => discount_;
+
+        public override double drift(double x, double y) => drift_;
 
         public override PdeSecondOrderParabolic factory(GeneralizedBlackScholesProcess process) => throw new NotSupportedException();
     }

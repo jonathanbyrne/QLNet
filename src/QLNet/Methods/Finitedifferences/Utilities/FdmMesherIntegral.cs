@@ -17,19 +17,24 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Math;
-using QLNet.Methods.Finitedifferences.Meshers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Math;
+using QLNet.Methods.Finitedifferences.Meshers;
 
 namespace QLNet.Methods.Finitedifferences.Utilities
 {
-    [JetBrains.Annotations.PublicAPI] public class FdmMesherIntegral
+    [PublicAPI]
+    public class FdmMesherIntegral
     {
+        protected Func<Vector, Vector, double> integrator1d_;
+        protected List<Fdm1dMesher> meshers_;
+
         public FdmMesherIntegral(
-           FdmMesherComposite mesher,
-           Func<Vector, Vector, double> integrator1d)
+            FdmMesherComposite mesher,
+            Func<Vector, Vector, double> integrator1d)
         {
             meshers_ = new List<Fdm1dMesher>(mesher.getFdm1dMeshers());
             integrator1d_ = integrator1d;
@@ -45,8 +50,8 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             }
 
             var subMesher =
-               new FdmMesherComposite(
-               new List<Fdm1dMesher>(meshers_.GetRange(0, meshers_.Count - 1)));
+                new FdmMesherComposite(
+                    new List<Fdm1dMesher>(meshers_.GetRange(0, meshers_.Count - 1)));
 
             var subMesherIntegral = new FdmMesherIntegral(subMesher, integrator1d_);
             var subSize = subMesher.layout().size();
@@ -56,15 +61,12 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             for (var i = 0; i < x.size(); ++i)
             {
                 f.copy(i * subSize,
-                       (i + 1) * subSize, 0, fSub);
+                    (i + 1) * subSize, 0, fSub);
 
                 g[i] = subMesherIntegral.integrate(fSub);
             }
 
             return integrator1d_(x, g);
         }
-
-        protected List<Fdm1dMesher> meshers_;
-        protected Func<Vector, Vector, double> integrator1d_;
     }
 }

@@ -13,14 +13,12 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
 using QLNet.processes;
-using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace QLNet.Pricingengines.asian
 {
@@ -36,23 +34,27 @@ namespace QLNet.Pricingengines.asian
 
         \ingroup asianengines
     */
-    [JetBrains.Annotations.PublicAPI] public class AnalyticDiscreteGeometricAverageStrikeAsianEngine : DiscreteAveragingAsianOption.Engine
+    [PublicAPI]
+    public class AnalyticDiscreteGeometricAverageStrikeAsianEngine : DiscreteAveragingAsianOption.Engine
     {
+        private GeneralizedBlackScholesProcess process_;
+
         public AnalyticDiscreteGeometricAverageStrikeAsianEngine(GeneralizedBlackScholesProcess process)
         {
             process_ = process;
             process_.registerWith(update);
         }
+
         public override void calculate()
         {
             Utils.QL_REQUIRE(arguments_.averageType == Average.Type.Geometric, () =>
-                             "not a geometric average option");
+                "not a geometric average option");
 
             Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () =>
-                             "not an European option");
+                "not an European option");
 
             Utils.QL_REQUIRE(arguments_.runningAccumulator > 0.0, () =>
-                             "positive running product required: " + arguments_.runningAccumulator + "not allowed");
+                "positive running product required: " + arguments_.runningAccumulator + "not allowed");
 
             var runningLog = System.Math.Log(arguments_.runningAccumulator.GetValueOrDefault());
             var pastFixings = arguments_.pastFixings;
@@ -86,8 +88,7 @@ namespace QLNet.Pricingengines.asian
             fixingTimes.ForEach((ii, vv) => timeSum += fixingTimes[ii]);
 
             var residualTime = rfdc.yearFraction(arguments_.fixingDates[pastFixings.GetValueOrDefault()],
-                                                    arguments_.exercise.lastDate());
-
+                arguments_.exercise.lastDate());
 
             var underlying = process_.stateVariable().link.value();
             Utils.QL_REQUIRE(underlying > 0.0, () => "positive underlying value required");
@@ -96,16 +97,19 @@ namespace QLNet.Pricingengines.asian
 
             var exDate = arguments_.exercise.lastDate();
             var dividendRate = process_.dividendYield().link.zeroRate(exDate, divdc,
-                                                                         Compounding.Continuous, Frequency.NoFrequency).value();
+                Compounding.Continuous, Frequency.NoFrequency).value();
 
             var riskFreeRate = process_.riskFreeRate().link.zeroRate(exDate, rfdc,
-                                                                        Compounding.Continuous, Frequency.NoFrequency).value();
+                Compounding.Continuous, Frequency.NoFrequency).value();
 
             var nu = riskFreeRate - dividendRate - 0.5 * volatility * volatility;
 
             var temp = 0.0;
             for (var i = pastFixings.GetValueOrDefault() + 1; i < numberOfFixings; i++)
+            {
                 temp += fixingTimes[i - pastFixings.GetValueOrDefault() - 1] * (N - i);
+            }
+
             var variance = volatility * volatility / N / N * (timeSum + 2.0 * temp);
             var covarianceTerm = volatility * volatility / N * timeSum;
             var sigmaSum_2 = variance + volatility * volatility * residualTime - 2.0 * covarianceTerm;
@@ -129,20 +133,16 @@ namespace QLNet.Pricingengines.asian
             {
                 case QLNet.Option.Type.Call:
                     results_.value = underlying * System.Math.Exp(-dividendRate * residualTime)
-                                     * f.value(y1) - System.Math.Exp(muG + variance / 2.0 - riskFreeRate * residualTime) * f.value(y2);
+                                                * f.value(y1) - System.Math.Exp(muG + variance / 2.0 - riskFreeRate * residualTime) * f.value(y2);
                     break;
                 case QLNet.Option.Type.Put:
                     results_.value = -underlying * System.Math.Exp(-dividendRate * residualTime)
-                                     * f.value(-y1) + System.Math.Exp(muG + variance / 2.0 - riskFreeRate * residualTime) * f.value(-y2);
+                                                 * f.value(-y1) + System.Math.Exp(muG + variance / 2.0 - riskFreeRate * residualTime) * f.value(-y2);
                     break;
                 default:
                     Utils.QL_FAIL("invalid option ExerciseType");
                     break;
             }
         }
-
-
-
-        private GeneralizedBlackScholesProcess process_;
     }
 }

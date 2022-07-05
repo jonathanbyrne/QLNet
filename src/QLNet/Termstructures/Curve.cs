@@ -16,34 +16,42 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Termstructures.Yield;
 using QLNet.Time;
-using System.Collections.Generic;
 
 namespace QLNet.Termstructures
 {
-    [JetBrains.Annotations.PublicAPI] public interface Curve<T> : ITraits<T>, InterpolatedCurve
+    [PublicAPI]
+    public interface Curve<T> : ITraits<T>, InterpolatedCurve
     {
+        double accuracy_ { get; }
+
+        List<BootstrapHelper<T>> instruments_ { get; }
+
+        bool moving_ { get; }
+
         #region ITraits
 
         //protected
         ITraits<T> traits_ { get; }
+
         #endregion
 
-        #region InterpolatedCurve
-        #endregion
-
-        List<BootstrapHelper<T>> instruments_ { get; }
-        void setTermStructure(BootstrapHelper<T> helper);
-
-        double accuracy_ { get; }
-        bool moving_ { get; }
-
-        void registerWith(BootstrapHelper<T> helper);
         Date initialDate();
 
-        double timeFromReference(Date d);
         double initialValue();
-    }
 
+        void registerWith(BootstrapHelper<T> helper);
+
+        void setTermStructure(BootstrapHelper<T> helper);
+
+        double timeFromReference(Date d);
+
+        #region InterpolatedCurve
+
+        #endregion
+    }
 }

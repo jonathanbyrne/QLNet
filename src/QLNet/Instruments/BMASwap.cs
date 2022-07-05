@@ -16,38 +16,37 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Cashflows;
 using QLNet.Extensions;
 using QLNet.Indexes;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using QLNet.Cashflows;
 
 namespace QLNet.Instruments
 {
     //! swap paying Libor against BMA coupons
-    [JetBrains.Annotations.PublicAPI] public class BMASwap : Swap
+    [PublicAPI]
+    public class BMASwap : Swap
     {
-        public enum Type { Receiver = -1, Payer = 1 }
-
-        private Type type_;
-        public Type BmaSwapType() => type_;
-
-        private double nominal_;
-        public double nominal() => nominal_;
+        public enum Type
+        {
+            Receiver = -1,
+            Payer = 1
+        }
 
         private double liborFraction_;
-        public double liborFraction() => liborFraction_;
-
         private double liborSpread_;
-        public double liborSpread() => liborSpread_;
+        private double nominal_;
+        private Type type_;
 
         public BMASwap(Type type, double nominal,
-                       // Libor leg
-                       Schedule liborSchedule, double liborFraction, double liborSpread, IborIndex liborIndex, DayCounter liborDayCount,
-                       // BMA leg
-                       Schedule bmaSchedule, BMAIndex bmaIndex, DayCounter bmaDayCount)
-           : base(2)
+            // Libor leg
+            Schedule liborSchedule, double liborFraction, double liborSpread, IborIndex liborIndex, DayCounter liborDayCount,
+            // BMA leg
+            Schedule bmaSchedule, BMAIndex bmaIndex, DayCounter bmaDayCount)
+            : base(2)
         {
             type_ = type;
             nominal_ = nominal;
@@ -57,22 +56,24 @@ namespace QLNet.Instruments
             var convention = liborSchedule.businessDayConvention();
 
             legs_[0] = new IborLeg(liborSchedule, liborIndex)
-            .withPaymentDayCounter(liborDayCount)
-            .withFixingDays(liborIndex.fixingDays())
-            .withGearings(liborFraction)
-            .withSpreads(liborSpread)
-            .withNotionals(nominal)
-            .withPaymentAdjustment(convention);
+                .withPaymentDayCounter(liborDayCount)
+                .withFixingDays(liborIndex.fixingDays())
+                .withGearings(liborFraction)
+                .withSpreads(liborSpread)
+                .withNotionals(nominal)
+                .withPaymentAdjustment(convention);
 
             legs_[1] = new AverageBmaLeg(bmaSchedule, bmaIndex)
-            .WithPaymentDayCounter(bmaDayCount)
-            .withNotionals(nominal)
-            .withPaymentAdjustment(bmaSchedule.businessDayConvention());
+                .WithPaymentDayCounter(bmaDayCount)
+                .withNotionals(nominal)
+                .withPaymentAdjustment(bmaSchedule.businessDayConvention());
 
             for (var j = 0; j < 2; ++j)
             {
                 for (var i = 0; i < legs_[j].Count; i++)
+                {
                     legs_[j][i].registerWith(update);
+                }
             }
 
             switch (type_)
@@ -91,10 +92,37 @@ namespace QLNet.Instruments
             }
         }
 
+        public List<CashFlow> bmaLeg() => legs_[1];
+
+        public double bmaLegBPS()
+        {
+            calculate();
+            Utils.QL_REQUIRE(legBPS_[1] != null, () => "result not available");
+            return legBPS_[1].GetValueOrDefault();
+        }
+
+        public double bmaLegNPV()
+        {
+            calculate();
+            Utils.QL_REQUIRE(legNPV_[1] != null, () => "result not available");
+            return legNPV_[1].GetValueOrDefault();
+        }
+
+        public Type BmaSwapType() => type_;
+
+        public double fairLiborFraction()
+        {
+            var spreadNPV = liborSpread_ / Const.BASIS_POINT * liborLegBPS();
+            var pureLiborNPV = liborLegNPV() - spreadNPV;
+            Utils.QL_REQUIRE(pureLiborNPV.IsNotEqual(0.0), () => "result not available (null libor NPV)");
+            return -liborFraction_ * (bmaLegNPV() + spreadNPV) / pureLiborNPV;
+        }
+
+        public double fairLiborSpread() => liborSpread_ - NPV() / (liborLegBPS() / Const.BASIS_POINT);
+
+        public double liborFraction() => liborFraction_;
 
         public List<CashFlow> liborLeg() => legs_[0];
-
-        public List<CashFlow> bmaLeg() => legs_[1];
 
         public double liborLegBPS()
         {
@@ -110,28 +138,8 @@ namespace QLNet.Instruments
             return legNPV_[0].GetValueOrDefault();
         }
 
-        public double fairLiborFraction()
-        {
-            var spreadNPV = liborSpread_ / Const.BASIS_POINT * liborLegBPS();
-            var pureLiborNPV = liborLegNPV() - spreadNPV;
-            Utils.QL_REQUIRE(pureLiborNPV.IsNotEqual(0.0), () => "result not available (null libor NPV)");
-            return -liborFraction_ * (bmaLegNPV() + spreadNPV) / pureLiborNPV;
-        }
+        public double liborSpread() => liborSpread_;
 
-        public double fairLiborSpread() => liborSpread_ - NPV() / (liborLegBPS() / Const.BASIS_POINT);
-
-        public double bmaLegBPS()
-        {
-            calculate();
-            Utils.QL_REQUIRE(legBPS_[1] != null, () => "result not available");
-            return legBPS_[1].GetValueOrDefault();
-        }
-
-        public double bmaLegNPV()
-        {
-            calculate();
-            Utils.QL_REQUIRE(legNPV_[1] != null, () => "result not available");
-            return legNPV_[1].GetValueOrDefault();
-        }
+        public double nominal() => nominal_;
     }
 }

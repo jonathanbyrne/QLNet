@@ -1,7 +1,13 @@
-﻿namespace QLNet.Termstructures.Volatility
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Termstructures.Volatility
 {
-    [JetBrains.Annotations.PublicAPI] public class AbcdSquared
+    [PublicAPI]
+    public class AbcdSquared
     {
+        private AbcdFunction abcd_;
+        private double T_, S_;
+
         public AbcdSquared(double a, double b, double c, double d, double T, double S)
         {
             abcd_ = new AbcdFunction(a, b, c, d);
@@ -10,8 +16,5 @@
         }
 
         public double value(double t) => abcd_.covariance(t, T_, S_);
-
-        private AbcdFunction abcd_;
-        private double T_, S_;
     }
 }

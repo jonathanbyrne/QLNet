@@ -16,27 +16,30 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.randomnumbers
 {
     //! Random seed generator
     /*! Random number generator used for automatic generation of initialization seeds. */
-    [JetBrains.Annotations.PublicAPI] public class SeedGenerator
+    [PublicAPI]
+    public class SeedGenerator
     {
+        private static readonly SeedGenerator instance_ = new SeedGenerator();
         private MersenneTwisterUniformRng rng_;
 
-        private static readonly SeedGenerator instance_ = new SeedGenerator();
         private SeedGenerator()
         {
             rng_ = new MersenneTwisterUniformRng(42UL);
             initialize();
         }
 
-        public ulong get() => rng_.nextInt32();
-
         public static SeedGenerator instance() => instance_;
+
+        public ulong get() => rng_.nextInt32();
 
         private void initialize()
         {
@@ -61,7 +64,9 @@ namespace QLNet.Math.randomnumbers
             rng_ = new MersenneTwisterUniformRng(init);
 
             for (ulong i = 0; i < skip; i++)
+            {
                 rng_.nextInt32();
+            }
         }
     }
 }

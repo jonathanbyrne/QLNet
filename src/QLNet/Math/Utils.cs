@@ -16,93 +16,119 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using QLNet.Extensions;
 using QLNet.Math.Distributions;
-using System;
 
 namespace QLNet
 {
     public partial class Utils
-   {
-      public static double betaFunction(double z, double w) =>
-          System.Math.Exp(GammaFunction.logValue(z) +
-                          GammaFunction.logValue(w) -
-                          GammaFunction.logValue(z + w));
+    {
+        public static double betaContinuedFraction(double a, double b, double x) => betaContinuedFraction(a, b, x, 1e-16, 100);
 
-      public static double betaContinuedFraction(double a, double b, double x) => betaContinuedFraction(a, b, x, 1e-16, 100);
-
-      public static double betaContinuedFraction(double a, double b, double x, double accuracy, int maxIteration)
-      {
-         double aa, del;
-         var qab = a + b;
-         var qap = a + 1.0;
-         var qam = a - 1.0;
-         var c = 1.0;
-         var d = 1.0 - qab * x / qap;
-         if (System.Math.Abs(d) < Const.QL_EPSILON)
-            d = Const.QL_EPSILON;
-         d = 1.0 / d;
-         var result = d;
-
-         int m, m2;
-         for (m = 1; m <= maxIteration; m++)
-         {
-            m2 = 2 * m;
-            aa = m * (b - m) * x / ((qam + m2) * (a + m2));
-            d = 1.0 + aa * d;
+        public static double betaContinuedFraction(double a, double b, double x, double accuracy, int maxIteration)
+        {
+            double aa, del;
+            var qab = a + b;
+            var qap = a + 1.0;
+            var qam = a - 1.0;
+            var c = 1.0;
+            var d = 1.0 - qab * x / qap;
             if (System.Math.Abs(d) < Const.QL_EPSILON)
-               d = Const.QL_EPSILON;
-            c = 1.0 + aa / c;
-            if (System.Math.Abs(c) < Const.QL_EPSILON)
-               c = Const.QL_EPSILON;
+            {
+                d = Const.QL_EPSILON;
+            }
+
             d = 1.0 / d;
-            result *= d * c;
-            aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
-            d = 1.0 + aa * d;
-            if (System.Math.Abs(d) < Const.QL_EPSILON)
-               d = Const.QL_EPSILON;
-            c = 1.0 + aa / c;
-            if (System.Math.Abs(c) < Const.QL_EPSILON)
-               c = Const.QL_EPSILON;
-            d = 1.0 / d;
-            del = d * c;
-            result *= del;
-            if (System.Math.Abs(del - 1.0) < accuracy)
-               return result;
-         }
-         Utils.QL_FAIL("a or b too big, or maxIteration too small in betacf");
-         return 0;
-      }
+            var result = d;
 
-      /*! Incomplete Beta function
+            int m, m2;
+            for (m = 1; m <= maxIteration; m++)
+            {
+                m2 = 2 * m;
+                aa = m * (b - m) * x / ((qam + m2) * (a + m2));
+                d = 1.0 + aa * d;
+                if (System.Math.Abs(d) < Const.QL_EPSILON)
+                {
+                    d = Const.QL_EPSILON;
+                }
 
-          The implementation of the algorithm was inspired by
-          "Numerical Recipes in C", 2nd edition,
-          Press, Teukolsky, Vetterling, Flannery, chapter 6
-      */
-      public static double incompleteBetaFunction(double a, double b, double x) => incompleteBetaFunction(a, b, x, 1e-16, 100);
+                c = 1.0 + aa / c;
+                if (System.Math.Abs(c) < Const.QL_EPSILON)
+                {
+                    c = Const.QL_EPSILON;
+                }
 
-      public static double incompleteBetaFunction(double a, double b, double x, double accuracy, int maxIteration)
-      {
+                d = 1.0 / d;
+                result *= d * c;
+                aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
+                d = 1.0 + aa * d;
+                if (System.Math.Abs(d) < Const.QL_EPSILON)
+                {
+                    d = Const.QL_EPSILON;
+                }
 
-         QL_REQUIRE(a > 0.0, () => "a must be greater than zero");
-         QL_REQUIRE(b > 0.0, () => "b must be greater than zero");
+                c = 1.0 + aa / c;
+                if (System.Math.Abs(c) < Const.QL_EPSILON)
+                {
+                    c = Const.QL_EPSILON;
+                }
 
-         if (x.IsEqual(0.0))
-            return 0.0;
-         if (x.IsEqual(1.0))
-            return 1.0;
-         QL_REQUIRE(x > 0.0 && x<1.0, () => "x must be in [0,1]");
+                d = 1.0 / d;
+                del = d * c;
+                result *= del;
+                if (System.Math.Abs(del - 1.0) < accuracy)
+                {
+                    return result;
+                }
+            }
 
-         var result = System.Math.Exp(GammaFunction.logValue(a + b) -
-                                      GammaFunction.logValue(a) - GammaFunction.logValue(b) +
-                                      a* System.Math.Log(x) + b* System.Math.Log(1.0 - x));
+            QL_FAIL("a or b too big, or maxIteration too small in betacf");
+            return 0;
+        }
 
-         if (x < (a + 1.0) / (a + b + 2.0))
-            return result*
-                   betaContinuedFraction(a, b, x, accuracy, maxIteration) / a;
-         return 1.0 - result*
+        public static double betaFunction(double z, double w) =>
+            System.Math.Exp(GammaFunction.logValue(z) +
+                            GammaFunction.logValue(w) -
+                            GammaFunction.logValue(z + w));
+
+        /*! Incomplete Beta function
+  
+            The implementation of the algorithm was inspired by
+            "Numerical Recipes in C", 2nd edition,
+            Press, Teukolsky, Vetterling, Flannery, chapter 6
+        */
+        public static double incompleteBetaFunction(double a, double b, double x) => incompleteBetaFunction(a, b, x, 1e-16, 100);
+
+        public static double incompleteBetaFunction(double a, double b, double x, double accuracy, int maxIteration)
+        {
+            QL_REQUIRE(a > 0.0, () => "a must be greater than zero");
+            QL_REQUIRE(b > 0.0, () => "b must be greater than zero");
+
+            if (x.IsEqual(0.0))
+            {
+                return 0.0;
+            }
+
+            if (x.IsEqual(1.0))
+            {
+                return 1.0;
+            }
+
+            QL_REQUIRE(x > 0.0 && x < 1.0, () => "x must be in [0,1]");
+
+            var result = System.Math.Exp(GammaFunction.logValue(a + b) -
+                                         GammaFunction.logValue(a) - GammaFunction.logValue(b) +
+                                         a * System.Math.Log(x) + b * System.Math.Log(1.0 - x));
+
+            if (x < (a + 1.0) / (a + b + 2.0))
+            {
+                return result *
+                    betaContinuedFraction(a, b, x, accuracy, maxIteration) / a;
+            }
+
+            return 1.0 - result *
                 betaContinuedFraction(b, a, 1.0 - x, accuracy, maxIteration) / b;
-      }
-   }
+        }
+    }
 }

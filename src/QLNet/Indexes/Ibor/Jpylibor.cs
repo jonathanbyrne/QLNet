@@ -18,6 +18,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Termstructures;
 using QLNet.Time;
@@ -26,7 +27,6 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.Ibor
 {
-
     //! %JPY %LIBOR rate
     /*! Japanese Yen LIBOR fixed by ICE.
 
@@ -35,16 +35,18 @@ namespace QLNet.Indexes.Ibor
         \warning This is the rate fixed in London by ICE. Use TIBOR if
                  you're interested in the Tokio fixing.
     */
-    [JetBrains.Annotations.PublicAPI] public class JPYLibor : Libor
+    [PublicAPI]
+    public class JPYLibor : Libor
     {
         public JPYLibor(Period tenor)
-           : base("JPYLibor", tenor, 2, new JPYCurrency(), new Japan(), new Actual360(), new Handle<YieldTermStructure>())
-        { }
+            : base("JPYLibor", tenor, 2, new JPYCurrency(), new Japan(), new Actual360(), new Handle<YieldTermStructure>())
+        {
+        }
 
         public JPYLibor(Period tenor, Handle<YieldTermStructure> h)
-           : base("JPYLibor", tenor, 2, new JPYCurrency(), new Japan(), new Actual360(), h)
-        { }
-
+            : base("JPYLibor", tenor, 2, new JPYCurrency(), new Japan(), new Actual360(), h)
+        {
+        }
     }
 
     //! base class for the one day deposit ICE %JPY %LIBOR indexes

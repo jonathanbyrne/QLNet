@@ -16,16 +16,21 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.processes;
-using System;
 
 namespace QLNet.Methods.Finitedifferences
 {
-    [JetBrains.Annotations.PublicAPI] public class PdeBSM : PdeSecondOrderParabolic
+    [PublicAPI]
+    public class PdeBSM : PdeSecondOrderParabolic
     {
         private GeneralizedBlackScholesProcess process_;
 
-        public PdeBSM() { }     // required for generics
+        public PdeBSM()
+        {
+        } // required for generics
+
         public PdeBSM(GeneralizedBlackScholesProcess process)
         {
             process_ = process;
@@ -33,14 +38,17 @@ namespace QLNet.Methods.Finitedifferences
 
         public override double diffusion(double t, double x) => process_.diffusion(t, x);
 
-        public override double drift(double t, double x) => process_.drift(t, x);
-
         public override double discount(double t, double x)
         {
             if (System.Math.Abs(t) < 1e-8)
+            {
                 t = 0;
+            }
+
             return process_.riskFreeRate().link.forwardRate(t, t, Compounding.Continuous, Frequency.NoFrequency, true).rate();
         }
+
+        public override double drift(double t, double x) => process_.drift(t, x);
 
         public override PdeSecondOrderParabolic factory(GeneralizedBlackScholesProcess process) => new PdeBSM(process);
     }

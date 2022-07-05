@@ -16,13 +16,14 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Exceptions;
-using QLNet.Math;
-using System;
 
 namespace QLNet.Math.Solvers1d
 {
-    [JetBrains.Annotations.PublicAPI] public class FiniteDifferenceNewtonSafe : Solver1D
+    [PublicAPI]
+    public class FiniteDifferenceNewtonSafe : Solver1D
     {
         protected override double solveImpl(ISolver1d f, double xAccuracy)
         {
@@ -42,9 +43,7 @@ namespace QLNet.Math.Solvers1d
             var froot = f.value(root_);
             ++evaluationNumber_;
             // first order finite difference derivative
-            var dfroot = xMax_ - root_ < root_ - xMin_ ?
-                            (fxMax_ - froot) / (xMax_ - root_) :
-                            (fxMin_ - froot) / (xMin_ - root_);
+            var dfroot = xMax_ - root_ < root_ - xMin_ ? (fxMax_ - froot) / (xMax_ - root_) : (fxMin_ - froot) / (xMin_ - root_);
 
             // xMax_-xMin_>0 is verified in the constructor
             var dx = xMax_ - xMin_;
@@ -55,14 +54,13 @@ namespace QLNet.Math.Solvers1d
                 var dxold = dx;
                 // Bisect if (out of range || not decreasing fast enough)
                 if (((root_ - xh) * dfroot - froot) *
-                     ((root_ - xl) * dfroot - froot) > 0.0
+                    ((root_ - xl) * dfroot - froot) > 0.0
                     || System.Math.Abs(2.0 * froot) > System.Math.Abs(dxold * dfroot))
                 {
-
                     dx = (xh - xl) / 2.0;
                     root_ = xl + dx;
                 }
-                else     // Newton
+                else // Newton
                 {
                     dx = froot / dfroot;
                     root_ -= dx;
@@ -70,22 +68,27 @@ namespace QLNet.Math.Solvers1d
 
                 // Convergence criterion
                 if (System.Math.Abs(dx) < xAccuracy)
+                {
                     return root_;
+                }
 
                 froot = f.value(root_);
                 ++evaluationNumber_;
                 dfroot = (frootold - froot) / (rootold - root_);
 
                 if (froot < 0.0)
+                {
                     xl = root_;
+                }
                 else
+                {
                     xh = root_;
+                }
             }
 
             Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
-                          QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
+                QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
             return 0;
-
         }
     }
 }

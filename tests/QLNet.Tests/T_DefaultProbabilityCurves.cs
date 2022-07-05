@@ -61,10 +61,12 @@ namespace QLNet.Tests
                 var pBetween = pEnd - pStart;
 
                 if (System.Math.Abs(pBetween - pBetweenComputed) > tolerance)
+                {
                     QAssert.Fail("Failed to reproduce probability(d1, d2) "
                                  + "for default probability structure\n"
                                  + "    calculated probability: " + pBetweenComputed + "\n"
                                  + "    expected probability:   " + pBetween);
+                }
 
                 var t2 = dayCounter.yearFraction(today, endDate);
                 var timeProbability = flatHazardRate.defaultProbability(t2);
@@ -72,19 +74,22 @@ namespace QLNet.Tests
                    flatHazardRate.defaultProbability(endDate);
 
                 if (System.Math.Abs(timeProbability - dateProbability) > tolerance)
+                {
                     QAssert.Fail("single-time probability and single-date probability do not match\n"
                                  + "    time probability: " + timeProbability + "\n"
                                  + "    date probability: " + dateProbability);
+                }
 
                 var t1 = dayCounter.yearFraction(today, startDate);
                 timeProbability = flatHazardRate.defaultProbability(t1, t2);
                 dateProbability = flatHazardRate.defaultProbability(startDate, endDate);
 
                 if (System.Math.Abs(timeProbability - dateProbability) > tolerance)
+                {
                     QAssert.Fail("double-time probability and double-date probability do not match\n"
                                  + "    time probability: " + timeProbability + "\n"
                                  + "    date probability: " + dateProbability);
-
+                }
             }
         }
 
@@ -115,9 +120,11 @@ namespace QLNet.Tests
                 var computedProbability = flatHazardRate.defaultProbability(t);
 
                 if (System.Math.Abs(probability - computedProbability) > tolerance)
+                {
                     QAssert.Fail("Failed to reproduce probability for flat hazard rate\n"
                                  + "    calculated probability: " + computedProbability + "\n"
                                  + "    expected probability:   " + probability);
+                }
             }
         }
 

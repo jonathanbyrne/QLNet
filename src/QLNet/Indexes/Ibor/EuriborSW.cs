@@ -1,11 +1,18 @@
+using JetBrains.Annotations;
 using QLNet.Termstructures;
 using QLNet.Time;
 
 namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public class EuriborSW : Euribor
+    [PublicAPI]
+    public class EuriborSW : Euribor
     {
-        public EuriborSW() : this(new Handle<YieldTermStructure>()) { }
-        public EuriborSW(Handle<YieldTermStructure> h) : base(new Period(1, TimeUnit.Weeks), h) { }
+        public EuriborSW() : this(new Handle<YieldTermStructure>())
+        {
+        }
+
+        public EuriborSW(Handle<YieldTermStructure> h) : base(new Period(1, TimeUnit.Weeks), h)
+        {
+        }
     }
 }

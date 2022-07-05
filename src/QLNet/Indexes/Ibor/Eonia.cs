@@ -17,8 +17,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
-using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
@@ -26,11 +26,16 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Indexes.Ibor
 {
     //! %Eonia (Euro Overnight Index Average) rate fixed by the ECB.
-    [JetBrains.Annotations.PublicAPI] public class Eonia : OvernightIndex
+    [PublicAPI]
+    public class Eonia : OvernightIndex
     {
-        public Eonia() : this(new Handle<YieldTermStructure>()) { }
+        public Eonia() : this(new Handle<YieldTermStructure>())
+        {
+        }
 
         public Eonia(Handle<YieldTermStructure> h)
-           : base("Eonia", 0, new EURCurrency(), new TARGET(), new Actual360(), h) { }
+            : base("Eonia", 0, new EURCurrency(), new TARGET(), new Actual360(), h)
+        {
+        }
     }
 }

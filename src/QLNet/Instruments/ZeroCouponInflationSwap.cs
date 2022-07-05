@@ -17,11 +17,11 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Instruments
 {
@@ -54,10 +54,38 @@ namespace QLNet.Instruments
         \note we do not need Schedules on the legs because they use
               one or two dates only per leg.
     */
-    [JetBrains.Annotations.PublicAPI] public class ZeroCouponInflationSwap : Swap
+    [PublicAPI]
+    public class ZeroCouponInflationSwap : Swap
     {
+        public enum Type
+        {
+            Receiver = -1,
+            Payer = 1
+        }
 
-        public enum Type { Receiver = -1, Payer = 1 }
+        public new class Arguments : Swap.Arguments
+        {
+            public double fixedRate { get; set; }
+        }
+
+        [PublicAPI]
+        public class Engine : GenericEngine<Arguments, Results>
+        {
+        }
+
+        protected bool adjustInfObsDates_;
+        protected Date baseDate_, obsDate_;
+        protected DayCounter dayCounter_;
+        protected Calendar fixCalendar_;
+        protected BusinessDayConvention fixConvention_;
+        protected double fixedRate_;
+        protected Calendar infCalendar_;
+        protected BusinessDayConvention infConvention_;
+        protected ZeroInflationIndex infIndex_;
+        protected double nominal_;
+        protected Period observationLag_;
+        protected Date startDate_, maturityDate_;
+        protected Type type_;
 
         /* Generally inflation indices are available with a lag of 1month
            and then observed with a lag of 2-3 months depending whether
@@ -65,19 +93,19 @@ namespace QLNet.Instruments
            swap use the interpolation of the index to avoid incompatibilities.
         */
         public ZeroCouponInflationSwap(Type type,
-                                       double nominal,
-                                       Date startDate,   // start date of contract (only)
-                                       Date maturity,    // this is pre-adjustment!
-                                       Calendar fixCalendar,
-                                       BusinessDayConvention fixConvention,
-                                       DayCounter dayCounter,
-                                       double fixedRate,
-                                       ZeroInflationIndex infIndex,
-                                       Period observationLag,
-                                       bool adjustInfObsDates = false,
-                                       Calendar infCalendar = null,
-                                       BusinessDayConvention? infConvention = null)
-        : base(2)
+            double nominal,
+            Date startDate, // start date of contract (only)
+            Date maturity, // this is pre-adjustment!
+            Calendar fixCalendar,
+            BusinessDayConvention fixConvention,
+            DayCounter dayCounter,
+            double fixedRate,
+            ZeroInflationIndex infIndex,
+            Period observationLag,
+            bool adjustInfObsDates = false,
+            Calendar infCalendar = null,
+            BusinessDayConvention? infConvention = null)
+            : base(2)
         {
             type_ = type;
             nominal_ = nominal;
@@ -97,25 +125,33 @@ namespace QLNet.Instruments
             {
                 var pShift = new Period(infIndex_.frequency());
                 Utils.QL_REQUIRE(observationLag_ - pShift > infIndex_.availabilityLag(), () =>
-                                 "inconsistency between swap observation of index " + observationLag_ +
-                                 " index availability " + infIndex_.availabilityLag() +
-                                 " interpolated index period " + pShift +
-                                 " and index availability " + infIndex_.availabilityLag() +
-                                 " need (obsLag-index period) > availLag");
+                    "inconsistency between swap observation of index " + observationLag_ +
+                    " index availability " + infIndex_.availabilityLag() +
+                    " interpolated index period " + pShift +
+                    " and index availability " + infIndex_.availabilityLag() +
+                    " need (obsLag-index period) > availLag");
             }
             else
             {
                 Utils.QL_REQUIRE(infIndex_.availabilityLag() < observationLag_, () =>
-                                 "index tries to observe inflation fixings that do not yet exist: "
-                                 + " availability lag " + infIndex_.availabilityLag()
-                                 + " versus obs lag = " + observationLag_);
+                    "index tries to observe inflation fixings that do not yet exist: "
+                    + " availability lag " + infIndex_.availabilityLag()
+                    + " versus obs lag = " + observationLag_);
             }
 
-            if (infCalendar_ == null) infCalendar_ = fixCalendar_;
+            if (infCalendar_ == null)
+            {
+                infCalendar_ = fixCalendar_;
+            }
+
             if (infConvention == null)
+            {
                 infConvention_ = fixConvention_;
+            }
             else
+            {
                 infConvention_ = infConvention.Value;
+            }
 
             if (adjustInfObsDates_)
             {
@@ -135,7 +171,7 @@ namespace QLNet.Instruments
             // i.e. do not want to force the existence of an inflation
             // term structure before allowing users to create instruments.
             var T = Utils.inflationYearFraction(infIndex_.frequency(), infIndex_.interpolated(),
-                                                   dayCounter_, baseDate_, obsDate_);
+                dayCounter_, baseDate_, obsDate_);
             // N.B. the -1.0 is because swaps only exchange growth, not notionals as well
             var fixedAmount = nominal * (System.Math.Pow(1.0 + fixedRate, T) - 1.0);
 
@@ -209,6 +245,7 @@ namespace QLNet.Instruments
             base.setupArguments(args);
             // you don't actually need to do anything else because it is so simple
         }
+
         public override void fetchResults(IPricingEngineResults r)
         {
             base.fetchResults(r);
@@ -225,12 +262,14 @@ namespace QLNet.Instruments
             Utils.QL_REQUIRE(legNPV_[0] != null, () => "result not available");
             return legNPV_[0].Value;
         }
+
         public double inflationLegNPV()
         {
             calculate();
             Utils.QL_REQUIRE(legNPV_[1] != null, () => "result not available");
             return legNPV_[1].Value;
         }
+
         public double fairRate()
         {
             // What does this mean before or after trade date?
@@ -244,35 +283,12 @@ namespace QLNet.Instruments
             // +1 because the IndexedCashFlow has growthOnly=true
             var growth = icf.amount() / icf.notional() + 1.0;
             var T = Utils.inflationYearFraction(infIndex_.frequency(),
-                                                   infIndex_.interpolated(),
-                                                   dayCounter_, baseDate_, obsDate_);
+                infIndex_.interpolated(),
+                dayCounter_, baseDate_, obsDate_);
 
             return System.Math.Pow(growth, 1.0 / T) - 1.0;
         }
 
         #endregion
-
-
-        protected Type type_;
-        protected double nominal_;
-        protected Date startDate_, maturityDate_;
-        protected Calendar fixCalendar_;
-        protected BusinessDayConvention fixConvention_;
-        protected double fixedRate_;
-        protected ZeroInflationIndex infIndex_;
-        protected Period observationLag_;
-        protected bool adjustInfObsDates_;
-        protected Calendar infCalendar_;
-        protected BusinessDayConvention infConvention_;
-        protected DayCounter dayCounter_;
-        protected Date baseDate_, obsDate_;
-
-        public new class Arguments : Swap.Arguments
-        {
-            public double fixedRate { get; set; }
-        }
-
-        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results> { }
-
     }
 }

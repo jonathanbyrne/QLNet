@@ -1,20 +1,22 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Exceptions
 {
-    [JetBrains.Annotations.PublicAPI] public class NullEffectiveDateException : Exception
+    [PublicAPI]
+    public class NullEffectiveDateException : Exception
     {
         public NullEffectiveDateException()
         {
         }
 
         public NullEffectiveDateException(string message)
-           : base(message)
+            : base(message)
         {
         }
 
         public NullEffectiveDateException(string message, Exception inner)
-           : base(message, inner)
+            : base(message, inner)
         {
         }
     }

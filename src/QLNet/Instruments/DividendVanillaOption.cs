@@ -17,34 +17,60 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Pricingengines.vanilla;
 using QLNet.processes;
 using QLNet.Quotes;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using QLNet.Pricingengines.vanilla;
 
 namespace QLNet.Instruments
 {
     //! Single-asset vanilla option (no barriers) with discrete dividends
     /*! \ingroup instruments */
-    [JetBrains.Annotations.PublicAPI] public class DividendVanillaOption : OneAssetOption
+    [PublicAPI]
+    public class DividendVanillaOption : OneAssetOption
     {
+        //! %Arguments for dividend vanilla option calculation
+        public new class Arguments : Option.Arguments
+        {
+            public DividendSchedule cashFlow { get; set; }
+
+            public override void validate()
+            {
+                base.validate();
+
+                var exerciseDate = exercise.lastDate();
+
+                for (var i = 0; i < cashFlow.Count; i++)
+                {
+                    Utils.QL_REQUIRE(cashFlow[i].date() <= exerciseDate, () =>
+                        " dividend date (" + cashFlow[i].date() + ") is later than the exercise date (" + exerciseDate +
+                        ")");
+                }
+            }
+        }
+
+        //! %Dividend-vanilla-option %engine base class
+        public new class Engine : GenericEngine<Arguments, Results>
+        {
+        }
+
         private DividendSchedule cashFlow_;
 
         public DividendVanillaOption(StrikedTypePayoff payoff, Exercise exercise,
-                                     List<Date> dividendDates, List<double> dividends)
-           : base(payoff, exercise)
+            List<Date> dividendDates, List<double> dividends)
+            : base(payoff, exercise)
         {
             cashFlow_ = Utils.DividendVector(dividendDates, dividends);
         }
-
 
         /*! \warning see VanillaOption for notes on implied-volatility
                      calculation.
         */
         public double impliedVolatility(double targetValue, GeneralizedBlackScholesProcess process,
-                                        double accuracy = 1.0e-4, int maxEvaluations = 100, double minVol = 1.0e-7, double maxVol = 4.0)
+            double accuracy = 1.0e-4, int maxEvaluations = 100, double minVol = 1.0e-7, double maxVol = 4.0)
         {
             Utils.QL_REQUIRE(!isExpired(), () => "option expired");
 
@@ -71,9 +97,8 @@ namespace QLNet.Instruments
             }
 
             return ImpliedVolatilityHelper.calculate(this, engine, volQuote, targetValue, accuracy,
-                                                     maxEvaluations, minVol, maxVol);
+                maxEvaluations, minVol, maxVol);
         }
-
 
         public override void setupArguments(IPricingEngineArguments args)
         {
@@ -84,28 +109,5 @@ namespace QLNet.Instruments
 
             arguments.cashFlow = cashFlow_;
         }
-
-        //! %Arguments for dividend vanilla option calculation
-        public new class Arguments : Option.Arguments
-        {
-            public DividendSchedule cashFlow { get; set; }
-
-            public override void validate()
-            {
-                base.validate();
-
-                var exerciseDate = exercise.lastDate();
-
-                for (var i = 0; i < cashFlow.Count; i++)
-                {
-                    Utils.QL_REQUIRE(cashFlow[i].date() <= exerciseDate, () =>
-                                     " dividend date (" + cashFlow[i].date() + ") is later than the exercise date (" + exerciseDate +
-                                     ")");
-                }
-            }
-        }
-
-        //! %Dividend-vanilla-option %engine base class
-        public new class Engine : GenericEngine<Arguments, Results> { }
     }
 }

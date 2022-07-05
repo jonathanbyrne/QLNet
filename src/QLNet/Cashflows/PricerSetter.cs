@@ -1,12 +1,14 @@
-using System;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Patterns;
 
 namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public class PricerSetter : IAcyclicVisitor
+    [PublicAPI]
+    public class PricerSetter : IAcyclicVisitor
     {
         private FloatingRateCouponPricer pricer_;
+
         public PricerSetter(FloatingRateCouponPricer pricer)
         {
             pricer_ = pricer;
@@ -14,11 +16,11 @@ namespace QLNet
 
         public void visit(object o)
         {
-            var types = new Type[] { o.GetType() };
+            var types = new[] { o.GetType() };
             var methodInfo = Utils.GetMethodInfo(this, "visit", types);
             if (methodInfo != null)
             {
-                methodInfo.Invoke(this, new object[] { o });
+                methodInfo.Invoke(this, new[] { o });
             }
         }
 
@@ -26,36 +28,43 @@ namespace QLNet
         {
             // nothing to do
         }
+
         public void visit(Coupon c)
         {
             // nothing to do
         }
+
         public void visit(FloatingRateCoupon c)
         {
             c.setPricer(pricer_);
         }
+
         public void visit(CappedFlooredCoupon c)
         {
             c.setPricer(pricer_);
         }
+
         public void visit(IborCoupon c)
         {
             var iborCouponPricer = pricer_ as IborCouponPricer;
             Utils.QL_REQUIRE(iborCouponPricer != null, () => "pricer not compatible with Ibor coupon");
             c.setPricer(iborCouponPricer);
         }
+
         public void visit(DigitalIborCoupon c)
         {
             var iborCouponPricer = pricer_ as IborCouponPricer;
             Utils.QL_REQUIRE(iborCouponPricer != null, () => "pricer not compatible with Ibor coupon");
             c.setPricer(iborCouponPricer);
         }
+
         public void visit(CappedFlooredIborCoupon c)
         {
             var iborCouponPricer = pricer_ as IborCouponPricer;
             Utils.QL_REQUIRE(iborCouponPricer != null, () => "pricer not compatible with Ibor coupon");
             c.setPricer(iborCouponPricer);
         }
+
         public void visit(CmsCoupon c)
         {
             var cmsCouponPricer = pricer_ as CmsCouponPricer;

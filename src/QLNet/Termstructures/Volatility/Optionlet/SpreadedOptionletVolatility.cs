@@ -13,18 +13,19 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.Quotes;
-using QLNet.Termstructures.Volatility;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace QLNet.Termstructures.Volatility.Optionlet
 {
-    [JetBrains.Annotations.PublicAPI] public class SpreadedOptionletVolatility : OptionletVolatilityStructure
+    [PublicAPI]
+    public class SpreadedOptionletVolatility : OptionletVolatilityStructure
     {
+        private Handle<OptionletVolatilityStructure> baseVol_;
+        private Handle<Quote> spread_;
+
         public SpreadedOptionletVolatility(Handle<OptionletVolatilityStructure> baseVol, Handle<Quote> spread)
         {
             baseVol_ = baseVol;
@@ -33,24 +34,25 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             baseVol_.registerWith(update);
             spread_.registerWith(update);
         }
+
         // All virtual methods of base classes must be forwarded
         // VolatilityTermStructure interface
         public override BusinessDayConvention businessDayConvention() => baseVol_.link.businessDayConvention();
 
-        public override double minStrike() => baseVol_.link.minStrike();
-
-        public override double maxStrike() => baseVol_.link.maxStrike();
+        public override Calendar calendar() => baseVol_.link.calendar();
 
         // TermStructure interface
         public override DayCounter dayCounter() => baseVol_.link.dayCounter();
 
         public override Date maxDate() => baseVol_.link.maxDate();
 
+        public override double maxStrike() => baseVol_.link.maxStrike();
+
         public override double maxTime() => baseVol_.link.maxTime();
 
-        public override Date referenceDate() => baseVol_.link.referenceDate();
+        public override double minStrike() => baseVol_.link.minStrike();
 
-        public override Calendar calendar() => baseVol_.link.calendar();
+        public override Date referenceDate() => baseVol_.link.referenceDate();
 
         public override int settlementDays() => baseVol_.link.settlementDays();
 
@@ -61,15 +63,13 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             var baseSmile = baseVol_.link.smileSection(d, true);
             return new SpreadedSmileSection(baseSmile, spread_);
         }
+
         protected override SmileSection smileSectionImpl(double optionTime)
         {
             var baseSmile = baseVol_.link.smileSection(optionTime, true);
             return new SpreadedSmileSection(baseSmile, spread_);
         }
+
         protected override double volatilityImpl(double t, double s) => baseVol_.link.volatility(t, s, true) + spread_.link.value();
-
-        private Handle<OptionletVolatilityStructure> baseVol_;
-        private Handle<Quote> spread_;
-
     }
 }

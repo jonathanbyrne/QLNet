@@ -15,17 +15,21 @@
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Optimization
 {
-    [JetBrains.Annotations.PublicAPI] public class ProjectedConstraint : Constraint
+    [PublicAPI]
+    public class ProjectedConstraint : Constraint
     {
         private class Impl : IConstraint
         {
-            public Impl(Constraint constraint,
-                        Vector parameterValues,
-                        List<bool> fixParameters)
+            private readonly Constraint constraint_;
+            private readonly Projection projection_;
 
+            public Impl(Constraint constraint,
+                Vector parameterValues,
+                List<bool> fixParameters)
             {
                 constraint_ = constraint;
                 projection_ = new Projection(parameterValues, fixParameters);
@@ -37,25 +41,23 @@ namespace QLNet.Math.Optimization
                 projection_ = projection;
             }
 
+            public Vector lowerBound(Vector parameters) => projection_.project(constraint_.lowerBound(projection_.include(parameters)));
+
             public bool test(Vector parameters) => constraint_.test(projection_.include(parameters));
 
             public Vector upperBound(Vector parameters) => projection_.project(constraint_.upperBound(projection_.include(parameters)));
-
-            public Vector lowerBound(Vector parameters) => projection_.project(constraint_.lowerBound(projection_.include(parameters)));
-
-            private Constraint constraint_;
-            private Projection projection_;
         }
 
         public ProjectedConstraint(Constraint constraint,
-                                   Vector parameterValues,
-                                   List<bool> fixParameters)
-           : base(new Impl(constraint, parameterValues, fixParameters))
-        { }
+            Vector parameterValues,
+            List<bool> fixParameters)
+            : base(new Impl(constraint, parameterValues, fixParameters))
+        {
+        }
 
         public ProjectedConstraint(Constraint constraint, Projection projection)
-           : base(new Impl(constraint, projection))
-        { }
-
+            : base(new Impl(constraint, projection))
+        {
+        }
     }
 }

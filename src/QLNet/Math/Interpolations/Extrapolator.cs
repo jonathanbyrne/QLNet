@@ -26,14 +26,19 @@ namespace QLNet.Math.Interpolations
     // LazyObject should not be here but it is because of the InterpolatedYieldCurve
     public abstract class Extrapolator : LazyObject
     {
-        private bool extrapolate_;
-        public bool extrapolate { get => extrapolate_;
-            set => extrapolate_ = value;
-        }
+        public bool extrapolate { get; set; }
 
         // some extra functionality
-        public bool allowsExtrapolation() => extrapolate_; //! tells whether extrapolation is enabled
-        public void enableExtrapolation(bool b = true) { extrapolate_ = b; }      //! enable extrapolation in subsequent calls
-        public void disableExtrapolation(bool b = true) { extrapolate_ = !b; }    //! disable extrapolation in subsequent calls
+        public bool allowsExtrapolation() => extrapolate; //! tells whether extrapolation is enabled
+
+        public void disableExtrapolation(bool b = true)
+        {
+            extrapolate = !b;
+        } //! disable extrapolation in subsequent calls
+
+        public void enableExtrapolation(bool b = true)
+        {
+            extrapolate = b;
+        } //! enable extrapolation in subsequent calls
     }
 }

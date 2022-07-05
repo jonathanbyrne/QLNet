@@ -1,16 +1,19 @@
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class LogCubic : IInterpolationFactory
+    [PublicAPI]
+    public class LogCubic : IInterpolationFactory
     {
         private CubicInterpolation.DerivativeApprox da_;
-        private bool monotonic_;
         private CubicInterpolation.BoundaryCondition leftType_, rightType_;
         private double leftValue_, rightValue_;
+        private bool monotonic_;
 
         public LogCubic()
-        { }
+        {
+        }
 
         public LogCubic(CubicInterpolation.DerivativeApprox da, bool monotonic,
             CubicInterpolation.BoundaryCondition leftCondition, double leftConditionValue,
@@ -24,12 +27,12 @@ namespace QLNet.Math.Interpolations
             rightValue_ = rightConditionValue;
         }
 
-        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin) =>
-            new LogCubicInterpolation(xBegin, size, yBegin, da_, monotonic_,
-                leftType_, leftValue_, rightType_, rightValue_);
-
         public bool global => true;
 
         public int requiredPoints => 2;
+
+        public Interpolation interpolate(List<double> xBegin, int size, List<double> yBegin) =>
+            new LogCubicInterpolation(xBegin, size, yBegin, da_, monotonic_,
+                leftType_, leftValue_, rightType_, rightValue_);
     }
 }

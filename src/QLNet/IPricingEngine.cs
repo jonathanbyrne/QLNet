@@ -1,12 +1,17 @@
+using JetBrains.Annotations;
 using QLNet.Patterns;
 
 namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public interface IPricingEngine : IObservable
+    [PublicAPI]
+    public interface IPricingEngine : IObservable
     {
-        IPricingEngineArguments getArguments();
-        IPricingEngineResults getResults();
-        void reset();
         void calculate();
+
+        IPricingEngineArguments getArguments();
+
+        IPricingEngineResults getResults();
+
+        void reset();
     }
 }

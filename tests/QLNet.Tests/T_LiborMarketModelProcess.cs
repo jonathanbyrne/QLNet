@@ -191,9 +191,11 @@ namespace QLNet.Tests
                 var expected = lambdaExpected[i] / 100;
 
                 if (System.Math.Abs(calculated - expected) > tolerance)
+                {
                     QAssert.Fail("Failed to reproduce expected lambda values"
                                  + "\n    calculated: " + calculated
                                  + "\n    expected:   " + expected);
+                }
             }
 
             var param = process.covarParam();
@@ -250,7 +252,9 @@ namespace QLNet.Tests
             {
                 ltemp = lcompValues.GetRange(3 * i, 3);
                 for (var j = 0; j < 3; j++)
+                {
                     volaComp[i, j] = ltemp[j];
+                }
             }
             var process1 = makeProcess();
             var process2 = makeProcess(volaComp);

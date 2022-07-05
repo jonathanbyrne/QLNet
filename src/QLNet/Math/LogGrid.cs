@@ -1,11 +1,16 @@
-﻿namespace QLNet.Math
-{
-    [JetBrains.Annotations.PublicAPI] public class LogGrid : TransformedGrid
-    {
-        public LogGrid(Vector grid) : base(grid, System.Math.Log) { }
+﻿using JetBrains.Annotations;
 
-        public Vector logGridArray() => transformedGridArray();
+namespace QLNet.Math
+{
+    [PublicAPI]
+    public class LogGrid : TransformedGrid
+    {
+        public LogGrid(Vector grid) : base(grid, System.Math.Log)
+        {
+        }
 
         public double logGrid(int i) => transformedGrid(i);
+
+        public Vector logGridArray() => transformedGridArray();
     }
 }

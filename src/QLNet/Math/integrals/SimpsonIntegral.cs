@@ -16,7 +16,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.integrals
 {
@@ -24,9 +26,12 @@ namespace QLNet.Math.integrals
     /*! \test the correctness of the result is tested by checking it
               against known good values.
     */
-    [JetBrains.Annotations.PublicAPI] public class SimpsonIntegral : TrapezoidIntegral<Default>
+    [PublicAPI]
+    public class SimpsonIntegral : TrapezoidIntegral<Default>
     {
-        public SimpsonIntegral(double accuracy, int maxIterations) : base(accuracy, maxIterations) { }
+        public SimpsonIntegral(double accuracy, int maxIterations) : base(accuracy, maxIterations)
+        {
+        }
 
         protected override double integrate(Func<double, double> f, double a, double b)
         {
@@ -46,13 +51,16 @@ namespace QLNet.Math.integrals
                 // good enough? Also, don't run away immediately
                 if (System.Math.Abs(adjI - newAdjI) <= absoluteAccuracy() && i > 5)
                     // ok, exit
+                {
                     return newAdjI;
+                }
+
                 // oh well. Another step.
                 I = newI;
                 adjI = newAdjI;
                 i++;
-            }
-            while (i < maxEvaluations());
+            } while (i < maxEvaluations());
+
             Utils.QL_FAIL("max number of iterations reached");
             return 0;
         }

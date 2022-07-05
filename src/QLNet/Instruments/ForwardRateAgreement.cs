@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time;
@@ -68,19 +69,20 @@ namespace QLNet.Instruments
         \ingroup instruments
     */
 
-    [JetBrains.Annotations.PublicAPI] public class ForwardRateAgreement : Forward
+    [PublicAPI]
+    public class ForwardRateAgreement : Forward
     {
-        protected Position.Type fraType_;
         //! aka FRA rate (the market forward rate)
         protected InterestRate forwardRate_;
+        protected Position.Type fraType_;
+        protected IborIndex index_;
+        protected double notionalAmount_;
         //! aka FRA fixing rate, contract rate
         protected InterestRate strikeForwardRate_;
-        protected double notionalAmount_;
-        protected IborIndex index_;
 
         public ForwardRateAgreement(Date valueDate, Date maturityDate, Position.Type type, double strikeForwardRate,
-                                    double notionalAmount, IborIndex index, Handle<YieldTermStructure> discountCurve)
-           : base(
+            double notionalAmount, IborIndex index, Handle<YieldTermStructure> discountCurve)
+            : base(
                 index.dayCounter(), index.fixingCalendar(), index.businessDayConvention(), index.fixingDays(), new Payoff(),
                 valueDate, maturityDate, discountCurve)
         {
@@ -104,12 +106,19 @@ namespace QLNet.Instruments
             index_.registerWith(update);
         }
 
-        // Calculations
-        public override Date settlementDate() => calendar_.advance(Settings.evaluationDate(), settlementDays_, TimeUnit.Days);
+        //! Returns the relevant forward rate associated with the FRA term
+        public InterestRate forwardRate()
+        {
+            calculate();
+            return forwardRate_;
+        }
 
         /*! A FRA expires/settles on the valueDate */
 
         public override bool isExpired() => new simple_event(valueDate_).hasOccurred(settlementDate());
+
+        // Calculations
+        public override Date settlementDate() => calendar_.advance(Settings.evaluationDate(), settlementDays_, TimeUnit.Days);
 
         /*!  Income is zero for a FRA */
 
@@ -127,18 +136,11 @@ namespace QLNet.Instruments
             return result;
         }
 
-        //! Returns the relevant forward rate associated with the FRA term
-        public InterestRate forwardRate()
-        {
-            calculate();
-            return forwardRate_;
-        }
-
         protected override void performCalculations()
         {
             var fixingDate = calendar_.advance(valueDate_, -settlementDays_, TimeUnit.Days);
             forwardRate_ = new InterestRate(index_.fixing(fixingDate), index_.dayCounter(),
-                                            Compounding.Simple, Frequency.Once);
+                Compounding.Simple, Frequency.Once);
             underlyingSpotValue_ = spotValue();
             underlyingIncome_ = 0.0;
             base.performCalculations();

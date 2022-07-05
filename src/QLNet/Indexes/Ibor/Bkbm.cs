@@ -14,6 +14,7 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Termstructures;
 using QLNet.Time;
@@ -27,17 +28,18 @@ namespace QLNet.Indexes.Ibor
 
         See <http://www.nzfma.org/Site/data/default.aspx>.
     */
-    [JetBrains.Annotations.PublicAPI] public class Bkbm : IborIndex
+    [PublicAPI]
+    public class Bkbm : IborIndex
     {
         public Bkbm(Period tenor, Handle<YieldTermStructure> h = null)
-           : base("Bkbm", tenor,
-                  0, // settlement days
-                  new NZDCurrency(), new NewZealand(),
-                  BusinessDayConvention.ModifiedFollowing, true,
-                  new Actual365Fixed(), h ?? new Handle<YieldTermStructure>())
+            : base("Bkbm", tenor,
+                0, // settlement days
+                new NZDCurrency(), new NewZealand(),
+                BusinessDayConvention.ModifiedFollowing, true,
+                new Actual365Fixed(), h ?? new Handle<YieldTermStructure>())
         {
             Utils.QL_REQUIRE(this.tenor().units() != TimeUnit.Days, () =>
-                             "for daily tenors (" + this.tenor() + ") dedicated DailyTenor constructor must be used");
+                "for daily tenors (" + this.tenor() + ") dedicated DailyTenor constructor must be used");
         }
     }
 

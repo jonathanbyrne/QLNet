@@ -1,10 +1,14 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class PercentageStrikePayoff : StrikedTypePayoff
+    [PublicAPI]
+    public class PercentageStrikePayoff : StrikedTypePayoff
     {
-        public PercentageStrikePayoff(Option.Type type, double moneyness) : base(type, moneyness) { }
+        public PercentageStrikePayoff(Option.Type type, double moneyness) : base(type, moneyness)
+        {
+        }
 
         // Payoff interface
         public override string name() => "PercentageStrike";
@@ -13,9 +17,9 @@ namespace QLNet.Instruments
         {
             switch (type_)
             {
-                case QLNet.Option.Type.Call:
+                case Option.Type.Call:
                     return price * System.Math.Max(1.0 - strike_, 0.0);
-                case QLNet.Option.Type.Put:
+                case Option.Type.Put:
                     return price * System.Math.Max(strike_ - 1.0, 0.0);
                 default:
                     throw new ArgumentException("unknown/illegal option ExerciseType");

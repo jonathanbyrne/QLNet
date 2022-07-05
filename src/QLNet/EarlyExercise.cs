@@ -1,14 +1,17 @@
-﻿namespace QLNet
+﻿using JetBrains.Annotations;
+
+namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public class EarlyExercise : Exercise
+    [PublicAPI]
+    public class EarlyExercise : Exercise
     {
         private bool payoffAtExpiry_;
-
-        public bool payoffAtExpiry() => payoffAtExpiry_;
 
         public EarlyExercise(Type type, bool payoffAtExpiry) : base(type)
         {
             payoffAtExpiry_ = payoffAtExpiry;
         }
+
+        public bool payoffAtExpiry() => payoffAtExpiry_;
     }
 }

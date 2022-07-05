@@ -17,16 +17,21 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Instruments
 {
     //! Basket option on a number of assets
     //! \ingroup instruments
-    [JetBrains.Annotations.PublicAPI] public class BasketOption : MultiAssetOption
+    [PublicAPI]
+    public class BasketOption : MultiAssetOption
     {
         public new class Engine : GenericEngine<Arguments, Results>
-        { }
+        {
+        }
 
         public BasketOption(BasketPayoff payoff, Exercise exercise) : base(payoff, exercise)
-        { }
+        {
+        }
     }
 }

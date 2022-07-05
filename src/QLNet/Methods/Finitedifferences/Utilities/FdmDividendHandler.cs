@@ -17,26 +17,34 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Math.Interpolations;
 using QLNet.Methods.Finitedifferences.Meshers;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Methods.Finitedifferences.Utilities
 {
     /// <summary>
-    /// dividend handler for fdm method for one equity direction
+    ///     dividend handler for fdm method for one equity direction
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class FdmDividendHandler : IStepCondition<Vector>
+    [PublicAPI]
+    public class FdmDividendHandler : IStepCondition<Vector>
     {
+        protected List<Date> dividendDates_;
+        protected List<double> dividends_;
+        protected List<double> dividendTimes_;
+        protected int equityDirection_;
+        protected FdmMesher mesher_;
+        protected Vector x_; // grid-equity values in physical units
+
         public FdmDividendHandler(DividendSchedule schedule,
-                                  FdmMesher mesher,
-                                  Date referenceDate,
-                                  DayCounter dayCounter,
-                                  int equityDirection)
+            FdmMesher mesher,
+            Date referenceDate,
+            DayCounter dayCounter,
+            int equityDirection)
         {
             x_ = new Vector(mesher.layout().dim()[equityDirection]);
             mesher_ = mesher;
@@ -51,7 +59,7 @@ namespace QLNet.Methods.Finitedifferences.Utilities
                 dividends_.Add(iter.amount());
                 dividendDates_.Add(iter.date());
                 dividendTimes_.Add(
-                   dayCounter.yearFraction(referenceDate, iter.date()));
+                    dayCounter.yearFraction(referenceDate, iter.date()));
             }
 
             var tmp = mesher_.locations(equityDirection);
@@ -98,12 +106,13 @@ namespace QLNet.Methods.Finitedifferences.Utilities
                                     var index = j * ySpacing + k * xSpacing;
                                     tmp[k] = aCopy[index];
                                 }
+
                                 var interp = new LinearInterpolation(x_, x_.Count, tmp);
                                 for (var k = 0; k < x_.size(); ++k)
                                 {
                                     var index = j * ySpacing + k * xSpacing;
                                     a[index] = interp.value(
-                                                  System.Math.Max(x_[0], x_[k] - dividend), true);
+                                        System.Math.Max(x_[0], x_[k] - dividend), true);
                                 }
                             }
                         }
@@ -112,18 +121,10 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             }
         }
 
-        public List<double> dividendTimes() => dividendTimes_;
-
         public List<Date> dividendDates() => dividendDates_;
 
         public List<double> dividends() => dividends_;
 
-        protected Vector x_; // grid-equity values in physical units
-
-        protected List<double> dividendTimes_;
-        protected List<Date> dividendDates_;
-        protected List<double> dividends_;
-        protected FdmMesher mesher_;
-        protected int equityDirection_;
+        public List<double> dividendTimes() => dividendTimes_;
     }
 }

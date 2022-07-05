@@ -18,6 +18,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math.randomnumbers;
 using QLNet.Math.statistics;
 
@@ -39,11 +40,21 @@ namespace QLNet.Methods.montecarlo
 
         \ingroup mcarlo
     */
-    [JetBrains.Annotations.PublicAPI] public class MonteCarloModel<MC, RNG, S> where S : IGeneralStatistics
+    [PublicAPI]
+    public class MonteCarloModel<MC, RNG, S> where S : IGeneralStatistics
     {
+        private double cvOptionValue_;
+        private IPathGenerator<IRNG> cvPathGenerator_;
+        private PathPricer<IPath> cvPathPricer_;
+        private bool isAntitheticVariate_;
+        private bool isControlVariate_;
+        private IPathGenerator<IRNG> pathGenerator_;
+        private PathPricer<IPath> pathPricer_;
+        private S sampleAccumulator_;
+
         public MonteCarloModel(IPathGenerator<IRNG> pathGenerator, PathPricer<IPath> pathPricer,
-                               S sampleAccumulator, bool antitheticVariate, PathPricer<IPath> cvPathPricer = null,
-                               double cvOptionValue = 0, IPathGenerator<IRNG> cvPathGenerator = null)
+            S sampleAccumulator, bool antitheticVariate, PathPricer<IPath> cvPathPricer = null,
+            double cvOptionValue = 0, IPathGenerator<IRNG> cvPathGenerator = null)
         {
             pathGenerator_ = pathGenerator;
             pathPricer_ = pathPricer;
@@ -53,16 +64,19 @@ namespace QLNet.Methods.montecarlo
             cvOptionValue_ = cvOptionValue;
             cvPathGenerator_ = cvPathGenerator;
             if (cvPathPricer_ == null)
+            {
                 isControlVariate_ = false;
+            }
             else
+            {
                 isControlVariate_ = true;
+            }
         }
 
         public void addSamples(int samples)
         {
             for (var j = 1; j <= samples; j++)
             {
-
                 var path = pathGenerator_.next();
                 var price = pathPricer_.value(path.value);
 
@@ -86,7 +100,9 @@ namespace QLNet.Methods.montecarlo
                     if (isControlVariate_)
                     {
                         if (cvPathGenerator_ == null)
+                        {
                             price2 += cvOptionValue_ - cvPathPricer_.value(path.value);
+                        }
                         else
                         {
                             var cvPath = cvPathGenerator_.antithetic();
@@ -102,16 +118,7 @@ namespace QLNet.Methods.montecarlo
                 }
             }
         }
+
         public S sampleAccumulator() => sampleAccumulator_;
-
-        private IPathGenerator<IRNG> pathGenerator_;
-        private PathPricer<IPath> pathPricer_;
-        private S sampleAccumulator_;
-        private bool isAntitheticVariate_;
-        private PathPricer<IPath> cvPathPricer_;
-        private double cvOptionValue_;
-        private bool isControlVariate_;
-        private IPathGenerator<IRNG> cvPathGenerator_;
-
     }
 }

@@ -17,15 +17,17 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.StepConditions
 {
-    [JetBrains.Annotations.PublicAPI] public class FdmSnapshotCondition : IStepCondition<Vector>
+    [PublicAPI]
+    public class FdmSnapshotCondition : IStepCondition<Vector>
     {
+        protected double t_;
+        protected Vector values_;
+
         public FdmSnapshotCondition(double t)
         {
             t_ = t;
@@ -34,14 +36,13 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
         public void applyTo(object o, double t)
         {
             if (t == t_)
+            {
                 values_ = (Vector)o;
+            }
         }
 
         public double getTime() => t_;
 
         public Vector getValues() => values_;
-
-        protected double t_;
-        protected Vector values_;
     }
 }

@@ -19,7 +19,6 @@
 */
 
 using QLNet.Time;
-using System;
 
 namespace QLNet.Termstructures.Volatility.equityfx
 {
@@ -31,6 +30,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
     public abstract class LocalVolTermStructure : VolatilityTermStructure
     {
         #region Constructors
+
         //! default constructor
         /*! \warning term structures initialized by means of this
                      constructor must manage their own reference date
@@ -38,17 +38,23 @@ namespace QLNet.Termstructures.Volatility.equityfx
         */
 
         protected LocalVolTermStructure(BusinessDayConvention bdc = BusinessDayConvention.Following, DayCounter dc = null)
-           : base(bdc, dc) { }
+            : base(bdc, dc)
+        {
+        }
 
         //! initialize with a fixed reference date
         protected LocalVolTermStructure(Date referenceDate, Calendar cal = null,
-                                        BusinessDayConvention bdc = BusinessDayConvention.Following, DayCounter dc = null)
-           : base(referenceDate, cal, bdc, dc) { }
+            BusinessDayConvention bdc = BusinessDayConvention.Following, DayCounter dc = null)
+            : base(referenceDate, cal, bdc, dc)
+        {
+        }
 
         //! calculate the reference date based on the global evaluation date
         protected LocalVolTermStructure(int settlementDays, Calendar cal, BusinessDayConvention bdc = BusinessDayConvention.Following,
-                                        DayCounter dc = null)
-           : base(settlementDays, cal, bdc, dc) { }
+            DayCounter dc = null)
+            : base(settlementDays, cal, bdc, dc)
+        {
+        }
 
         #endregion
 
@@ -82,5 +88,4 @@ namespace QLNet.Termstructures.Volatility.equityfx
 
         #endregion
     }
-
 }

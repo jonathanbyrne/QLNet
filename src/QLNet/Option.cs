@@ -17,55 +17,59 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Instruments;
 
 namespace QLNet
 {
     //! base option class
-    [JetBrains.Annotations.PublicAPI] public class Option : Instrument
-   {
-      public enum Type
-      {
-         Put = -1,
-         Call = 1
-      }
+    [PublicAPI]
+    public class Option : Instrument
+    {
+        public enum Type
+        {
+            Put = -1,
+            Call = 1
+        }
 
-      // arguments
-      protected Payoff payoff_;
+        //! basic %option %arguments
+        [PublicAPI]
+        public class Arguments : IPricingEngineArguments
+        {
+            public Exercise exercise { get; set; }
 
-      public Payoff payoff() => payoff_;
+            public Payoff payoff { get; set; }
 
-      protected Exercise exercise_;
+            public virtual void validate()
+            {
+                Utils.QL_REQUIRE(payoff != null, () => "no payoff given");
+                Utils.QL_REQUIRE(exercise != null, () => "no exercise given");
+            }
+        }
 
-      public Exercise exercise() => exercise_;
+        protected Exercise exercise_;
 
-      public Option(Payoff payoff, Exercise exercise)
-      {
-         payoff_ = payoff;
-         exercise_ = exercise;
-      }
+        // arguments
+        protected Payoff payoff_;
 
-      public override void setupArguments(IPricingEngineArguments args)
-      {
-         var arguments = args as Option.Arguments;
+        public Option(Payoff payoff, Exercise exercise)
+        {
+            payoff_ = payoff;
+            exercise_ = exercise;
+        }
 
-         Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
+        public Exercise exercise() => exercise_;
 
-         arguments.payoff = payoff_;
-         arguments.exercise = exercise_;
-      }
+        public Payoff payoff() => payoff_;
 
-      //! basic %option %arguments
-      [JetBrains.Annotations.PublicAPI] public class Arguments : IPricingEngineArguments
-      {
-         public Payoff payoff { get; set; }
-         public Exercise exercise { get; set; }
+        public override void setupArguments(IPricingEngineArguments args)
+        {
+            var arguments = args as Arguments;
 
-         public virtual void validate()
-         {
-            Utils.QL_REQUIRE(payoff != null, () => "no payoff given");
-            Utils.QL_REQUIRE(exercise != null, () => "no exercise given");
-         }
-      }
-   }
+            Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
+
+            arguments.payoff = payoff_;
+            arguments.exercise = exercise_;
+        }
+    }
 }

@@ -19,18 +19,13 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Termstructures;
-using QLNet.Time;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace QLNet
 {
-
     //! generic pricer for floating-rate coupons
 
     //! base pricer for capped/floored Ibor coupons
-
     /*! Black-formula pricer for capped/floored Ibor coupons
        References for timing adjustments
        Black76             Hull, Options, Futures and other
@@ -40,40 +35,39 @@ namespace QLNet
        still considered experimental */
 
     //! base pricer for vanilla CMS coupons
-
     /*! (CMS) coupon pricer that has a mean reversion parameter which can be
       used to calibrate to cms market quotes */
 
     //===========================================================================//
-   //                         CouponSelectorToSetPricer                         //
-   //===========================================================================//
+    //                         CouponSelectorToSetPricer                         //
+    //===========================================================================//
 
-   partial class Utils
-   {
-      public static void setCouponPricer(List<CashFlow> leg, FloatingRateCouponPricer pricer)
-      {
-         var setter = new PricerSetter(pricer);
-         foreach (var cf in leg)
-         {
-            cf.accept(setter);
-         }
-      }
+    partial class Utils
+    {
+        public static void setCouponPricer(List<CashFlow> leg, FloatingRateCouponPricer pricer)
+        {
+            var setter = new PricerSetter(pricer);
+            foreach (var cf in leg)
+            {
+                cf.accept(setter);
+            }
+        }
 
-      public static void setCouponPricers(List<CashFlow> leg, List<FloatingRateCouponPricer> pricers)
-      {
-         var nCashFlows = leg.Count;
-         Utils.QL_REQUIRE(nCashFlows > 0, () => "no cashflows");
+        public static void setCouponPricers(List<CashFlow> leg, List<FloatingRateCouponPricer> pricers)
+        {
+            var nCashFlows = leg.Count;
+            QL_REQUIRE(nCashFlows > 0, () => "no cashflows");
 
-         var nPricers = pricers.Count;
-         Utils.QL_REQUIRE(nCashFlows >= nPricers, () =>
-                          "mismatch between leg size (" + nCashFlows +
-                          ") and number of pricers (" + nPricers + ")");
+            var nPricers = pricers.Count;
+            QL_REQUIRE(nCashFlows >= nPricers, () =>
+                "mismatch between leg size (" + nCashFlows +
+                ") and number of pricers (" + nPricers + ")");
 
-         for (var i = 0; i < nCashFlows; ++i)
-         {
-            var setter = new PricerSetter(i < nPricers ? pricers[i] : pricers[nPricers - 1]);
-            leg[i].accept(setter);
-         }
-      }
-   }
+            for (var i = 0; i < nCashFlows; ++i)
+            {
+                var setter = new PricerSetter(i < nPricers ? pricers[i] : pricers[nPricers - 1]);
+                leg[i].accept(setter);
+            }
+        }
+    }
 }

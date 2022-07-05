@@ -16,17 +16,35 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet.Instruments
 {
     //! %instrument callability
-    [JetBrains.Annotations.PublicAPI] public class Callability : Event
+    [PublicAPI]
+    public class Callability : Event
     {
-        //! amount to be paid upon callability
-        [JetBrains.Annotations.PublicAPI] public class Price
+        //! ExerciseType of the callability
+        public enum Type
         {
-            public enum Type { Dirty, Clean }
+            Call,
+            Put
+        }
+
+        //! amount to be paid upon callability
+        [PublicAPI]
+        public class Price
+        {
+            public enum Type
+            {
+                Dirty,
+                Clean
+            }
+
+            private double? amount_;
+            private Type type_;
 
             public Price()
             {
@@ -46,13 +64,11 @@ namespace QLNet.Instruments
             }
 
             public Type type() => type_;
-
-            private double? amount_;
-            private Type type_;
         }
 
-        //! ExerciseType of the callability
-        public enum Type { Call, Put }
+        private Date date_;
+        private Price price_;
+        private Type type_;
 
         public Callability(Price price, Type type, Date date)
         {
@@ -60,19 +76,16 @@ namespace QLNet.Instruments
             type_ = type;
             date_ = date;
         }
+
+        // Event interface
+        public override Date date() => date_;
+
         public Price price()
         {
             Utils.QL_REQUIRE(price_ != null, () => "no price given");
             return price_;
         }
+
         public Type type() => type_;
-
-        // Event interface
-        public override Date date() => date_;
-
-        private Price price_;
-        private Type type_;
-        private Date date_;
-
     }
 }

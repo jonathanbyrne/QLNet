@@ -160,7 +160,9 @@ namespace QLNet.Tests
 
             // also, the last period should be regular.
             if (!s.isRegular(2))
+            {
                 QAssert.Fail("last period should be regular");
+            }
         }
 
 
@@ -284,14 +286,27 @@ namespace QLNet.Tests
             // schedule without any additional information
             var schedule1 = new Schedule(dates);
             if (schedule1.Count != dates.Count)
+            {
                 QAssert.Fail("schedule1 has size " + schedule1.Count + ", expected " + dates.Count);
+            }
+
             for (var i = 0; i < dates.Count; ++i)
+            {
                 if (schedule1[i] != dates[i])
+                {
                     QAssert.Fail("schedule1 has " + schedule1[i] + " at position " + i + ", expected " + dates[i]);
+                }
+            }
+
             if (schedule1.calendar() != new NullCalendar())
+            {
                 QAssert.Fail("schedule1 has calendar " + schedule1.calendar().name() + ", expected null calendar");
+            }
+
             if (schedule1.businessDayConvention() != BusinessDayConvention.Unadjusted)
+            {
                 QAssert.Fail("schedule1 has convention " + schedule1.businessDayConvention() + ", expected unadjusted");
+            }
 
             // schedule with metadata
             var regular = new List<bool>();
@@ -302,20 +317,42 @@ namespace QLNet.Tests
             var schedule2 = new Schedule(dates, new TARGET(), BusinessDayConvention.Following, BusinessDayConvention.ModifiedPreceding, new Period(1, TimeUnit.Years),
                                               DateGeneration.Rule.Backward, true, regular);
             for (var i = 1; i < dates.Count; ++i)
+            {
                 if (schedule2.isRegular(i) != regular[i - 1])
+                {
                     QAssert.Fail("schedule2 has a " + (schedule2.isRegular(i) ? "regular" : "irregular") + " period at position " + i + ", expected " + (regular[i - 1] ? "regular" : "irregular"));
+                }
+            }
+
             if (schedule2.calendar() != new TARGET())
+            {
                 QAssert.Fail("schedule1 has calendar " + schedule2.calendar().name() + ", expected TARGET");
+            }
+
             if (schedule2.businessDayConvention() != BusinessDayConvention.Following)
+            {
                 QAssert.Fail("schedule2 has convention " + schedule2.businessDayConvention() + ", expected Following");
+            }
+
             if (schedule2.terminationDateBusinessDayConvention() != BusinessDayConvention.ModifiedPreceding)
+            {
                 QAssert.Fail("schedule2 has convention " + schedule2.terminationDateBusinessDayConvention() + ", expected Modified Preceding");
+            }
+
             if (schedule2.tenor() != new Period(1, TimeUnit.Years))
+            {
                 QAssert.Fail("schedule2 has tenor " + schedule2.tenor() + ", expected 1Y");
+            }
+
             if (schedule2.rule() != DateGeneration.Rule.Backward)
+            {
                 QAssert.Fail("schedule2 has rule " + schedule2.rule() + ", expected Backward");
+            }
+
             if (schedule2.endOfMonth() != true)
+            {
                 QAssert.Fail("schedule2 has end of month flag false, expected true");
+            }
         }
     }
 }

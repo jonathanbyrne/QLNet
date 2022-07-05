@@ -1,6 +1,9 @@
-﻿namespace QLNet.Methods.montecarlo
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Methods.montecarlo
 {
-    [JetBrains.Annotations.PublicAPI] public interface IPath : ICloneable
+    [PublicAPI]
+    public interface IPath : ICloneable
     {
         int length();
     }

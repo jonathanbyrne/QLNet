@@ -17,32 +17,24 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
 using QLNet.Math;
 using QLNet.Math.matrixutilities;
 using QLNet.Models;
-using System.Collections.Generic;
 
 namespace QLNet.legacy.libormarketmodels
 {
     // libor forward correlation model
     public abstract class LmCorrelationModel
     {
+        protected List<Parameter> arguments_;
+        protected int size_;
+
         protected LmCorrelationModel(int size, int nArguments)
         {
             size_ = size;
             arguments_ = new InitializedList<Parameter>(nArguments);
-        }
-
-        public virtual int size() => size_;
-
-        public virtual int factors() => size_;
-
-        public List<Parameter> parameters() => arguments_;
-
-        public void setParams(List<Parameter> arguments)
-        {
-            arguments_ = arguments;
-            generateArguments();
         }
 
         public abstract Matrix correlation(double t, Vector x = null);
@@ -51,17 +43,24 @@ namespace QLNet.legacy.libormarketmodels
             // inefficient implementation, please overload in derived classes
             correlation(t, x)[i, j];
 
+        public virtual int factors() => size_;
+
+        public virtual bool isTimeIndependent() => false;
+
+        public List<Parameter> parameters() => arguments_;
+
         public virtual Matrix pseudoSqrt(double t, Vector x = null) =>
             MatrixUtilitites.pseudoSqrt(correlation(t, x),
                 MatrixUtilitites.SalvagingAlgorithm.Spectral);
 
-        public virtual bool isTimeIndependent() => false;
+        public void setParams(List<Parameter> arguments)
+        {
+            arguments_ = arguments;
+            generateArguments();
+        }
+
+        public virtual int size() => size_;
 
         protected abstract void generateArguments();
-
-        protected int size_;
-        protected List<Parameter> arguments_;
-
-
     }
 }

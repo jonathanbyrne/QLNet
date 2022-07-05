@@ -13,10 +13,11 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.processes;
-using System;
 using QLNet.Pricingengines.vanilla;
+using QLNet.processes;
 
 namespace QLNet.Pricingengines.barrier
 {
@@ -34,20 +35,24 @@ namespace QLNet.Pricingengines.barrier
           asset-or-nothing at-expiry binary payoff is tested by
           reproducing results available in literature.
     */
-    [JetBrains.Annotations.PublicAPI] public class AnalyticBinaryBarrierEngine : BarrierOption.Engine
+    [PublicAPI]
+    public class AnalyticBinaryBarrierEngine : BarrierOption.Engine
     {
+        private GeneralizedBlackScholesProcess process_;
+
         public AnalyticBinaryBarrierEngine(GeneralizedBlackScholesProcess process)
         {
             process_ = process;
             process_.registerWith(update);
         }
+
         public override void calculate()
         {
             var ex = arguments_.exercise as AmericanExercise;
             Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
             Utils.QL_REQUIRE(ex.payoffAtExpiry(), () => "payoff must be at expiry");
             Utils.QL_REQUIRE(ex.dates()[0] <= process_.blackVolatility().link.referenceDate(), () =>
-                             "American option with window exercise not handled yet");
+                "American option with window exercise not handled yet");
 
             var payoff = arguments_.payoff as StrikedTypePayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
@@ -99,12 +104,9 @@ namespace QLNet.Pricingengines.barrier
             var riskFreeDiscount = process_.riskFreeRate().link.discount(ex.lastDate());
 
             var helper = new AnalyticBinaryBarrierEngine_helper(
-               process_, payoff, ex, arguments_);
+                process_, payoff, ex, arguments_);
             results_.value = helper.payoffAtExpiry(spot, variance, riskFreeDiscount);
-
         }
-
-        private GeneralizedBlackScholesProcess process_;
     }
 
     // calc helper object

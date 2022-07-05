@@ -1,6 +1,9 @@
-﻿namespace QLNet.Models.MarketModels
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Models.MarketModels
 {
-    [JetBrains.Annotations.PublicAPI] public interface IBrownianGeneratorFactory
+    [PublicAPI]
+    public interface IBrownianGeneratorFactory
     {
         IBrownianGenerator create(int factors, int steps);
     }

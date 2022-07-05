@@ -1,9 +1,18 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class MixedLinearCubic
+    [PublicAPI]
+    public class MixedLinearCubic
     {
+        private Behavior behavior_;
+        private CubicInterpolation.DerivativeApprox da_;
+        private CubicInterpolation.BoundaryCondition leftType_, rightType_;
+        private double leftValue_, rightValue_;
+        private bool monotonic_;
+        private int n_;
+
         public MixedLinearCubic(int n,
             Behavior behavior,
             CubicInterpolation.DerivativeApprox da,
@@ -25,22 +34,16 @@ namespace QLNet.Math.Interpolations
             requiredPoints = 3;
         }
 
+        // fix below
+        public bool global { get; set; }
+
+        public int requiredPoints { get; set; }
+
         public Interpolation interpolate(List<double> xBegin, int xEnd, List<double> yBegin) =>
             new MixedLinearCubicInterpolation(xBegin, xEnd,
                 yBegin, n_, behavior_,
                 da_, monotonic_,
                 leftType_, leftValue_,
                 rightType_, rightValue_);
-
-        // fix below
-        public bool global { get; set; }
-        public int requiredPoints { get; set; }
-
-        private int n_;
-        private Behavior behavior_;
-        private CubicInterpolation.DerivativeApprox da_;
-        private bool monotonic_;
-        private CubicInterpolation.BoundaryCondition leftType_, rightType_;
-        private double leftValue_, rightValue_;
     }
 }

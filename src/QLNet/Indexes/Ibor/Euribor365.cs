@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Indexes;
 using QLNet.Termstructures;
@@ -7,9 +8,13 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public class Euribor365 : IborIndex
+    [PublicAPI]
+    public class Euribor365 : IborIndex
     {
-        public Euribor365(Period tenor) : this(tenor, new Handle<YieldTermStructure>()) { }
+        public Euribor365(Period tenor) : this(tenor, new Handle<YieldTermStructure>())
+        {
+        }
+
         public Euribor365(Period tenor, Handle<YieldTermStructure> h)
             : base("Euribor365", tenor,
                 2, // settlement days

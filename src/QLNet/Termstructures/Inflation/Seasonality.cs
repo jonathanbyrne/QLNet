@@ -17,8 +17,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Termstructures.Inflation
 {
@@ -43,12 +43,13 @@ namespace QLNet.Termstructures.Inflation
         If seasonality is additive then both swap rates will show
         affects.  Additive seasonality is not implemented.
     */
-    [JetBrains.Annotations.PublicAPI] public class Seasonality
+    [PublicAPI]
+    public class Seasonality
     {
+        public virtual double correctYoYRate(Date d, double r, InflationTermStructure iTS) => 0;
+
         // Seasonality interface
         public virtual double correctZeroRate(Date d, double r, InflationTermStructure iTS) => 0;
-
-        public virtual double correctYoYRate(Date d, double r, InflationTermStructure iTS) => 0;
 
         /*! It is possible for multi-year seasonalities to be
             inconsistent with the inflation term structure they are
@@ -64,7 +65,6 @@ namespace QLNet.Termstructures.Inflation
     }
 
     //! Multiplicative seasonality in the price index (CPI/RPI/HICP/etc).
-
     /*! Stationary multiplicative seasonality in CPI/RPI/HICP (i.e. in
       price) implies that zero inflation swap rates are affected,
       but that year-on-year inflation swap rates show no effect.  Of

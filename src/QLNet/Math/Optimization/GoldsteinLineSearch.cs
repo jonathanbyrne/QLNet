@@ -17,16 +17,20 @@
  FOR A PARTICULAR PURPOSE.See the license for more details.
 */
 
-using QLNet.Math;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Optimization
 {
     // Goldstein and Price line-search class
-    [JetBrains.Annotations.PublicAPI] public class GoldsteinLineSearch : LineSearch
+    [PublicAPI]
+    public class GoldsteinLineSearch : LineSearch
     {
+        private double alpha_, beta_;
+        private double extrapolation_;
+
         //! Default constructor
         public GoldsteinLineSearch(double eps = 1e-8, double alpha = 0.05, double beta = 0.65, double extrapolation = 1.5)
-           : base(eps)
+            : base(eps)
         {
             alpha_ = alpha;
             beta_ = beta;
@@ -34,10 +38,10 @@ namespace QLNet.Math.Optimization
         }
 
         //! Perform line search
-        public override double value(Problem P,             // Optimization problem
-                                     ref EndCriteria.Type ecType,
-                                     EndCriteria endCriteria,
-                                     double t_ini)      // initial value of line-search step
+        public override double value(Problem P, // Optimization problem
+            ref EndCriteria.Type ecType,
+            EndCriteria endCriteria,
+            double t_ini) // initial value of line-search step
         {
             var constraint = P.constraint();
             succeed_ = true;
@@ -65,16 +69,25 @@ namespace QLNet.Math.Optimization
             while (qt_ - q0 < -beta_ * t * qpt_ || qt_ - q0 > -alpha_ * t * qpt_)
             {
                 if (qt_ - q0 > -alpha_ * t * qpt_)
+                {
                     tr = t;
+                }
                 else
+                {
                     tl = t;
+                }
+
                 ++loopNumber;
 
                 // calculate the new step
                 if (Utils.close_enough(tr, 0.0))
+                {
                     t *= extrapolation_;
+                }
                 else
+                {
                     t = (tl + tr) / 2.0;
+                }
 
                 // New point value
                 xtd_ = P.currentValue();
@@ -87,11 +100,15 @@ namespace QLNet.Math.Optimization
                 maxIter = endCriteria.checkMaxIterations(loopNumber, ref ecType);
 
                 if (maxIter)
+                {
                     break;
+                }
             }
 
             if (maxIter)
+            {
                 succeed_ = false;
+            }
 
             // Compute new gradient
             P.gradient(ref gradient_, xtd_);
@@ -100,9 +117,6 @@ namespace QLNet.Math.Optimization
 
             // Return new step value
             return t;
-
         }
-        private double alpha_, beta_;
-        private double extrapolation_;
     }
 }

@@ -17,8 +17,6 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using System;
-
 namespace QLNet.Math.integrals
 {
     //! orthogonal polynomial for Gaussian quadratures
@@ -36,9 +34,12 @@ namespace QLNet.Math.integrals
     */
     public abstract class GaussianOrthogonalPolynomial
     {
-        public abstract double mu_0();
         public abstract double alpha(int i);
+
         public abstract double beta(int i);
+
+        public abstract double mu_0();
+
         public abstract double w(double x);
 
         public double value(int n, double x)
@@ -48,10 +49,12 @@ namespace QLNet.Math.integrals
                 return (x - alpha(n - 1)) * value(n - 1, x)
                        - beta(n - 1) * value(n - 2, x);
             }
-            else if (n == 1)
+
+            if (n == 1)
             {
                 return x - alpha(0);
             }
+
             return 1;
         }
 

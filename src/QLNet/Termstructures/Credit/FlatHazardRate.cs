@@ -16,53 +16,25 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Quotes;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Termstructures.Credit
 {
     //! Flat hazard-rate curve
     /*! \ingroup defaultprobabilitytermstructures */
-    [JetBrains.Annotations.PublicAPI] public class FlatHazardRate : HazardRateStructure
+    [PublicAPI]
+    public class FlatHazardRate : HazardRateStructure
     {
-        #region Constructors
-
-        public FlatHazardRate(Date referenceDate, Handle<Quote> hazardRate, DayCounter dc)
-           : base(referenceDate, new Calendar(), dc)
-        {
-            hazardRate_ = hazardRate;
-            hazardRate_.registerWith(update);
-        }
-
-        public FlatHazardRate(Date referenceDate, double hazardRate, DayCounter dc)
-           : base(referenceDate, new Calendar(), dc)
-        {
-            hazardRate_ = new Handle<Quote>(new SimpleQuote(hazardRate));
-        }
-
-        public FlatHazardRate(int settlementDays, Calendar calendar, Handle<Quote> hazardRate, DayCounter dc)
-           : base(settlementDays, calendar, dc)
-        {
-            hazardRate_ = hazardRate;
-            hazardRate_.registerWith(update);
-        }
-
-        public FlatHazardRate(int settlementDays, Calendar calendar, double hazardRate, DayCounter dc)
-           : base(settlementDays, calendar, dc)
-        {
-            hazardRate_ = new Handle<Quote>(new SimpleQuote(hazardRate));
-        }
-
-        #endregion
-
+        private Handle<Quote> hazardRate_;
 
         #region TermStructure interface
 
         public override Date maxDate() => Date.maxDate();
 
         #endregion
-
 
         #region HazardRateStructure interface
 
@@ -76,7 +48,34 @@ namespace QLNet.Termstructures.Credit
 
         #endregion
 
-        private Handle<Quote> hazardRate_;
+        #region Constructors
 
+        public FlatHazardRate(Date referenceDate, Handle<Quote> hazardRate, DayCounter dc)
+            : base(referenceDate, new Calendar(), dc)
+        {
+            hazardRate_ = hazardRate;
+            hazardRate_.registerWith(update);
+        }
+
+        public FlatHazardRate(Date referenceDate, double hazardRate, DayCounter dc)
+            : base(referenceDate, new Calendar(), dc)
+        {
+            hazardRate_ = new Handle<Quote>(new SimpleQuote(hazardRate));
+        }
+
+        public FlatHazardRate(int settlementDays, Calendar calendar, Handle<Quote> hazardRate, DayCounter dc)
+            : base(settlementDays, calendar, dc)
+        {
+            hazardRate_ = hazardRate;
+            hazardRate_.registerWith(update);
+        }
+
+        public FlatHazardRate(int settlementDays, Calendar calendar, double hazardRate, DayCounter dc)
+            : base(settlementDays, calendar, dc)
+        {
+            hazardRate_ = new Handle<Quote>(new SimpleQuote(hazardRate));
+        }
+
+        #endregion
     }
 }

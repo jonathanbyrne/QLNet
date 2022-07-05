@@ -8,7 +8,7 @@ namespace QLNet
         //! utility function giving the inflation period for a given date
         public static KeyValuePair<Date, Date> inflationPeriod(Date d, Frequency frequency)
         {
-            var month = (Month) d.Month;
+            var month = (Month)d.Month;
             var year = d.Year;
 
             Month startMonth = 0;
@@ -20,18 +20,18 @@ namespace QLNet
                     endMonth = Month.December;
                     break;
                 case Frequency.Semiannual:
-                    startMonth = (Month)(6 * ((int) month - 1) / 6 + 1);
+                    startMonth = (Month)(6 * ((int)month - 1) / 6 + 1);
                     endMonth = startMonth + 5;
                     break;
                 case Frequency.Quarterly:
-                    startMonth = (Month)(3 * ((int) month - 1) / 3 + 1);
+                    startMonth = (Month)(3 * ((int)month - 1) / 3 + 1);
                     endMonth = startMonth + 2;
                     break;
                 case Frequency.Monthly:
                     startMonth = endMonth = month;
                     break;
                 default:
-                    Utils.QL_FAIL("Frequency not handled: " + frequency);
+                    QL_FAIL("Frequency not handled: " + frequency);
                     break;
             }
 
@@ -62,6 +62,7 @@ namespace QLNet
                 var limD2 = inflationPeriod(d2, f);
                 t = dayCounter.yearFraction(limD1.Key, limD2.Key);
             }
+
             return t;
         }
     }

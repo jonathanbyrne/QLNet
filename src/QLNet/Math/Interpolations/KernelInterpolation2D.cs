@@ -16,8 +16,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using System;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
@@ -47,19 +48,17 @@ namespace QLNet.Math.Interpolations
           The kernel in the implementation is kept general, although a
           Gaussian is considered in the cited text.
     */
-    [JetBrains.Annotations.PublicAPI] public class KernelInterpolation2D : Interpolation2D
+    [PublicAPI]
+    public class KernelInterpolation2D : Interpolation2D
     {
-
         /*! \pre the \f$ x \f$ values must be sorted.
               \pre kernel needs a Real operator()(Real x) implementation
 
          */
 
-
         public KernelInterpolation2D(List<double> xBegin, int size, List<double> yBegin, int ySize,
-                                     Matrix zData, IKernelFunction kernel)
+            Matrix zData, IKernelFunction kernel)
         {
-
             impl_ = new KernelInterpolation2DImpl<IKernelFunction>(xBegin, size, yBegin, ySize, zData, kernel);
             update();
         }

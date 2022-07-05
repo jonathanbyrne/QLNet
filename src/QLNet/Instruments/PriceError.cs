@@ -1,14 +1,16 @@
-﻿using QLNet.Math;
+﻿using JetBrains.Annotations;
+using QLNet.Math;
 using QLNet.Quotes;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class PriceError : ISolver1d
+    [PublicAPI]
+    public class PriceError : ISolver1d
     {
         private IPricingEngine engine_;
-        private SimpleQuote vol_;
-        private double targetValue_;
         private Instrument.Results results_;
+        private double targetValue_;
+        private SimpleQuote vol_;
 
         public PriceError(IPricingEngine engine, SimpleQuote vol, double targetValue)
         {

@@ -140,6 +140,7 @@ namespace QLNet.Tests
                                               vars.nominal * accrualPeriod * discount;
                             var error = System.Math.Abs(nd1Price - optionPrice);
                             if (error > vars.optionTolerance)
+                            {
                                 QAssert.Fail("\nDigital Call Option:" +
                                              "\nVolatility = " + capletVol +
                                              "\nStrike = " + strike +
@@ -147,6 +148,7 @@ namespace QLNet.Tests
                                              "\nOption price by replication = " + optionPrice +
                                              "\nOption price by Cox-Rubinstein formula = " + nd1Price +
                                              "\nError " + error);
+                            }
 
                             // Check digital option price vs N(d1) price using Vanilla Option class
                             if (spread == 0.0)
@@ -173,6 +175,7 @@ namespace QLNet.Tests
                                                 * forward / effFwd;
                                 error = System.Math.Abs(nd1Price - callVO);
                                 if (error > vars.blackTolerance)
+                                {
                                     QAssert.Fail("\nDigital Call Option:" +
                                                  "\nVolatility = " + capletVol +
                                                  "\nStrike = " + strike +
@@ -180,6 +183,7 @@ namespace QLNet.Tests
                                                  "\nOption price by Black asset-ot-nothing payoff = " + callVO +
                                                  "\nOption price by Cox-Rubinstein = " + nd1Price +
                                                  "\nError " + error);
+                                }
                             }
 
                             // Floating Rate Coupon + Put Digital option
@@ -196,6 +200,7 @@ namespace QLNet.Tests
                                           vars.nominal * accrualPeriod * discount;
                             error = System.Math.Abs(nd1Price - optionPrice);
                             if (error > vars.optionTolerance)
+                            {
                                 QAssert.Fail("\nDigital Put Option:" +
                                              "\nVolatility = " + capletVol +
                                              "\nStrike = " + strike +
@@ -203,6 +208,7 @@ namespace QLNet.Tests
                                              "\nOption price by replication = " + optionPrice +
                                              "\nOption price by Cox-Rubinstein = " + nd1Price +
                                              "\nError " + error);
+                            }
 
                             // Check digital option price vs N(d1) price using Vanilla Option class
                             if (spread == 0.0)
@@ -229,6 +235,7 @@ namespace QLNet.Tests
                                                 * forward / effFwd;
                                 error = System.Math.Abs(nd1Price - putVO);
                                 if (error > vars.blackTolerance)
+                                {
                                     QAssert.Fail("\nDigital Put Option:" +
                                                  "\nVolatility = " + capletVol +
                                                  "\nStrike = " + strike +
@@ -236,6 +243,7 @@ namespace QLNet.Tests
                                                  "\nOption price by Black asset-ot-nothing payoff = " + putVO +
                                                  "\nOption price by Cox-Rubinstein = " + nd1Price +
                                                  "\nError " + error);
+                                }
                             }
                         }
                     }
@@ -287,6 +295,7 @@ namespace QLNet.Tests
                 var error = System.Math.Abs(targetPrice - digitalPrice);
                 var tolerance = 1e-08;
                 if (error > tolerance)
+                {
                     QAssert.Fail("\nFloating Coupon - Digital Call Option:" +
                                  "\nVolatility = " + capletVolatility +
                                  "\nStrike = " + strike +
@@ -294,6 +303,7 @@ namespace QLNet.Tests
                                  "\nCoupon Price = " + digitalPrice +
                                  "\nTarget price = " + targetPrice +
                                  "\nError = " + error);
+                }
 
                 // Check digital option price
                 var replicationOptionPrice = digitalCappedCoupon.callOptionRate() *
@@ -301,6 +311,7 @@ namespace QLNet.Tests
                 error = System.Math.Abs(targetOptionPrice - replicationOptionPrice);
                 var optionTolerance = 1e-08;
                 if (error > optionTolerance)
+                {
                     QAssert.Fail("\nDigital Call Option:" +
                                  "\nVolatility = " + +capletVolatility +
                                  "\nStrike = " + +strike +
@@ -308,6 +319,7 @@ namespace QLNet.Tests
                                  "\nPrice by replication = " + replicationOptionPrice +
                                  "\nTarget price = " + targetOptionPrice +
                                  "\nError = " + error);
+                }
 
                 // Floating Rate Coupon + Deep-in-the-money Put Digital option
                 strike = 0.99;
@@ -322,6 +334,7 @@ namespace QLNet.Tests
                 error = System.Math.Abs(targetPrice - digitalPrice);
                 tolerance = 2.5e-06;
                 if (error > tolerance)
+                {
                     QAssert.Fail("\nFloating Coupon + Digital Put Option:" +
                                  "\nVolatility = " + capletVolatility +
                                  "\nStrike = " + strike +
@@ -329,6 +342,7 @@ namespace QLNet.Tests
                                  "\nDigital coupon price = " + digitalPrice +
                                  "\nTarget price = " + targetPrice +
                                  "\nError " + error);
+                }
 
                 // Check digital option
                 replicationOptionPrice = digitalFlooredCoupon.putOptionRate() *
@@ -336,6 +350,7 @@ namespace QLNet.Tests
                 error = System.Math.Abs(targetOptionPrice - replicationOptionPrice);
                 optionTolerance = 2.5e-06;
                 if (error > optionTolerance)
+                {
                     QAssert.Fail("\nDigital Put Option:" +
                                  "\nVolatility = " + capletVolatility +
                                  "\nStrike = " + strike +
@@ -343,6 +358,7 @@ namespace QLNet.Tests
                                  "\nPrice by replication = " + replicationOptionPrice +
                                  "\nTarget price = " + targetOptionPrice +
                                  "\nError " + error);
+                }
             }
         }
 
@@ -389,6 +405,7 @@ namespace QLNet.Tests
                 var error = System.Math.Abs(targetPrice - digitalPrice);
                 var tolerance = 1e-10;
                 if (error > tolerance)
+                {
                     QAssert.Fail("\nFloating Coupon - Digital Call Option :" +
                                  "\nVolatility = " + capletVolatility +
                                  "\nStrike = " + strike +
@@ -396,6 +413,7 @@ namespace QLNet.Tests
                                  "\nCoupon price = " + digitalPrice +
                                  "\nTarget price = " + targetPrice +
                                  "\nError = " + error);
+                }
 
                 // Check digital option price
                 var targetOptionPrice = 0.0;
@@ -404,6 +422,7 @@ namespace QLNet.Tests
                 error = System.Math.Abs(targetOptionPrice - replicationOptionPrice);
                 var optionTolerance = 1e-08;
                 if (error > optionTolerance)
+                {
                     QAssert.Fail("\nDigital Call Option:" +
                                  "\nVolatility = " + capletVolatility +
                                  "\nStrike = " + strike +
@@ -411,6 +430,7 @@ namespace QLNet.Tests
                                  "\nPrice by replication = " + replicationOptionPrice +
                                  "\nTarget price = " + targetOptionPrice +
                                  "\nError = " + error);
+                }
 
                 // Floating Rate Coupon - Deep-out-of-the-money Put Digital option
                 strike = 0.01;
@@ -424,6 +444,7 @@ namespace QLNet.Tests
                 tolerance = 1e-08;
                 error = System.Math.Abs(targetPrice - digitalPrice);
                 if (error > tolerance)
+                {
                     QAssert.Fail("\nFloating Coupon + Digital Put Coupon:" +
                                  "\nVolatility = " + capletVolatility +
                                  "\nStrike = " + strike +
@@ -431,6 +452,7 @@ namespace QLNet.Tests
                                  "\nCoupon price = " + digitalPrice +
                                  "\nTarget price = " + targetPrice +
                                  "\nError = " + error);
+                }
 
                 // Check digital option
                 targetOptionPrice = 0.0;
@@ -438,6 +460,7 @@ namespace QLNet.Tests
                                          vars.nominal * accrualPeriod * discount;
                 error = System.Math.Abs(targetOptionPrice - replicationOptionPrice);
                 if (error > optionTolerance)
+                {
                     QAssert.Fail("\nDigital Put Coupon:" +
                                  "\nVolatility = " + capletVolatility +
                                  "\nStrike = " + strike +
@@ -445,6 +468,7 @@ namespace QLNet.Tests
                                  "\nPrice by replication = " + replicationOptionPrice +
                                  "\nTarget price = " + targetOptionPrice +
                                  "\nError = " + error);
+                }
             }
         }
 
@@ -512,6 +536,7 @@ namespace QLNet.Tests
                                           vars.nominal * accrualPeriod * discount;
                         var error = System.Math.Abs(nd2Price - optionPrice);
                         if (error > vars.optionTolerance)
+                        {
                             QAssert.Fail("\nDigital Call Option:" +
                                          "\nVolatility = " + capletVol +
                                          "\nStrike = " + strike +
@@ -519,6 +544,7 @@ namespace QLNet.Tests
                                          "\nPrice by replication = " + optionPrice +
                                          "\nPrice by Reiner-Rubinstein = " + nd2Price +
                                          "\nError = " + error);
+                        }
 
                         // Check digital option price vs N(d2) price using Vanilla Option class
                         Exercise exercise = new EuropeanExercise(exerciseDate);
@@ -541,6 +567,7 @@ namespace QLNet.Tests
                                         * discount / discountAtFixing;
                         error = System.Math.Abs(nd2Price - callVO);
                         if (error > vars.blackTolerance)
+                        {
                             QAssert.Fail("\nDigital Call Option:" +
                                          "\nVolatility = " + capletVol +
                                          "\nStrike = " + strike +
@@ -548,6 +575,7 @@ namespace QLNet.Tests
                                          "\nOption price by Black asset-ot-nothing payoff = " + callVO +
                                          "\nOption price by Reiner-Rubinstein = " + nd2Price +
                                          "\nError " + error);
+                        }
 
                         // Floating Rate Coupon + Put Digital option
                         var digitalFlooredCoupon = new DigitalCoupon(underlying, nullstrike, Position.Type.Long, false,
@@ -562,6 +590,7 @@ namespace QLNet.Tests
                                       vars.nominal * accrualPeriod * discount;
                         error = System.Math.Abs(nd2Price - optionPrice);
                         if (error > vars.optionTolerance)
+                        {
                             QAssert.Fail("\nPut Digital Option:" +
                                          "\nVolatility = " + capletVol +
                                          "\nStrike = " + strike +
@@ -569,6 +598,7 @@ namespace QLNet.Tests
                                          "\nPrice by replication = " + optionPrice +
                                          "\nPrice by Reiner-Rubinstein = " + nd2Price +
                                          "\nError = " + error);
+                        }
 
                         // Check digital option price vs N(d2) price using Vanilla Option class
                         StrikedTypePayoff putPayoff = new CashOrNothingPayoff(QLNet.Option.Type.Put, effStrike, cashRate);
@@ -578,6 +608,7 @@ namespace QLNet.Tests
                                         * discount / discountAtFixing;
                         error = System.Math.Abs(nd2Price - putVO);
                         if (error > vars.blackTolerance)
+                        {
                             QAssert.Fail("\nDigital Put Option:" +
                                          "\nVolatility = " + capletVol +
                                          "\nStrike = " + strike +
@@ -585,6 +616,7 @@ namespace QLNet.Tests
                                          "\nOption price by Black asset-ot-nothing payoff = " + putVO +
                                          "\nOption price by Reiner-Rubinstein = " + nd2Price +
                                          "\nError " + error);
+                        }
                     }
                 }
             }
@@ -635,6 +667,7 @@ namespace QLNet.Tests
                 var error = System.Math.Abs(targetPrice - digitalPrice);
                 var tolerance = 1e-07;
                 if (error > tolerance)
+                {
                     QAssert.Fail("\nFloating Coupon - Digital Call Coupon:" +
                                  "\nVolatility = " + capletVolatility +
                                  "\nStrike = " + strike +
@@ -642,6 +675,7 @@ namespace QLNet.Tests
                                  "\nCoupon price = " + digitalPrice +
                                  "\nTarget price = " + targetPrice +
                                  "\nError " + error);
+                }
 
                 // Check digital option price
                 var replicationOptionPrice = digitalCappedCoupon.callOptionRate() *
@@ -649,6 +683,7 @@ namespace QLNet.Tests
                 error = System.Math.Abs(targetOptionPrice - replicationOptionPrice);
                 var optionTolerance = 1e-07;
                 if (error > optionTolerance)
+                {
                     QAssert.Fail("\nDigital Call Option:" +
                                  "\nVolatility = " + capletVolatility +
                                  "\nStrike = " + strike +
@@ -656,6 +691,7 @@ namespace QLNet.Tests
                                  "\nPrice by replication = " + replicationOptionPrice +
                                  "\nTarget price = " + targetOptionPrice +
                                  "\nError = " + error);
+                }
 
                 // Floating Rate Coupon + Deep-in-the-money Put Digital option
                 strike = 0.99;
@@ -668,6 +704,7 @@ namespace QLNet.Tests
                 digitalPrice = digitalFlooredCoupon.price(vars.termStructure);
                 error = System.Math.Abs(targetPrice - digitalPrice);
                 if (error > tolerance)
+                {
                     QAssert.Fail("\nFloating Coupon + Digital Put Option:" +
                                  "\nVolatility = " + capletVolatility +
                                  "\nStrike = " + strike +
@@ -675,12 +712,14 @@ namespace QLNet.Tests
                                  "\nCoupon price = " + digitalPrice +
                                  "\nTarget price  = " + targetPrice +
                                  "\nError = " + error);
+                }
 
                 // Check digital option
                 replicationOptionPrice = digitalFlooredCoupon.putOptionRate() *
                                          vars.nominal * accrualPeriod * discount;
                 error = System.Math.Abs(targetOptionPrice - replicationOptionPrice);
                 if (error > optionTolerance)
+                {
                     QAssert.Fail("\nDigital Put Coupon:" +
                                  "\nVolatility = " + capletVolatility +
                                  "\nStrike = " + +strike +
@@ -688,6 +727,7 @@ namespace QLNet.Tests
                                  "\nPrice by replication = " + replicationOptionPrice +
                                  "\nTarget price = " + targetOptionPrice +
                                  "\nError = " + error);
+                }
             }
         }
 
@@ -735,6 +775,7 @@ namespace QLNet.Tests
                 var error = System.Math.Abs(targetPrice - digitalPrice);
                 var tolerance = 1e-10;
                 if (error > tolerance)
+                {
                     QAssert.Fail("\nFloating Coupon + Digital Call Option:" +
                                  "\nVolatility = " + +capletVolatility +
                                  "\nStrike = " + +strike +
@@ -742,6 +783,7 @@ namespace QLNet.Tests
                                  "\nCoupon price = " + digitalPrice +
                                  "\nTarget price  = " + targetPrice +
                                  "\nError = " + error);
+                }
 
                 // Check digital option price
                 var targetOptionPrice = 0.0;
@@ -750,6 +792,7 @@ namespace QLNet.Tests
                 error = System.Math.Abs(targetOptionPrice - replicationOptionPrice);
                 var optionTolerance = 1e-10;
                 if (error > optionTolerance)
+                {
                     QAssert.Fail("\nDigital Call Option:" +
                                  "\nVolatility = " + +capletVolatility +
                                  "\nStrike = " + +strike +
@@ -757,6 +800,7 @@ namespace QLNet.Tests
                                  "\nPrice by replication = " + replicationOptionPrice +
                                  "\nTarget price = " + targetOptionPrice +
                                  "\nError = " + error);
+                }
 
                 // Deep out-of-the-money Floored Digital Coupon
                 strike = 0.01;
@@ -770,6 +814,7 @@ namespace QLNet.Tests
                 tolerance = 1e-09;
                 error = System.Math.Abs(targetPrice - digitalPrice);
                 if (error > tolerance)
+                {
                     QAssert.Fail("\nDigital Floored Coupon:" +
                                  "\nVolatility = " + +capletVolatility +
                                  "\nStrike = " + +strike +
@@ -777,6 +822,7 @@ namespace QLNet.Tests
                                  "\nCoupon price = " + digitalPrice +
                                  "\nTarget price  = " + targetPrice +
                                  "\nError = " + error);
+                }
 
                 // Check digital option
                 targetOptionPrice = 0.0;
@@ -784,6 +830,7 @@ namespace QLNet.Tests
                                          vars.nominal * accrualPeriod * discount;
                 error = System.Math.Abs(targetOptionPrice - replicationOptionPrice);
                 if (error > optionTolerance)
+                {
                     QAssert.Fail("\nDigital Put Option:" +
                                  "\nVolatility = " + +capletVolatility +
                                  "\nStrike = " + +strike +
@@ -791,6 +838,7 @@ namespace QLNet.Tests
                                  "\nPrice by replication " + replicationOptionPrice +
                                  "\nTarget price " + targetOptionPrice +
                                  "\nError " + error);
+                }
             }
         }
 
@@ -850,6 +898,7 @@ namespace QLNet.Tests
                         var error = System.Math.Abs(targetPrice - digitalPrice);
                         var tolerance = 1.0e-08;
                         if (error > tolerance)
+                        {
                             QAssert.Fail("\nCash-or-nothing:" +
                                          "\nVolatility = " + +capletVolatility +
                                          "\nStrike = " + +strike +
@@ -857,6 +906,7 @@ namespace QLNet.Tests
                                          "\nPrice = " + digitalPrice +
                                          "\nTarget Price  = " + targetPrice +
                                          "\nError = " + error);
+                        }
 
                         // Asset-or-Nothing
                         // Floating Rate Coupon + Call Digital option
@@ -874,6 +924,7 @@ namespace QLNet.Tests
                         error = System.Math.Abs(targetPrice - digitalPrice);
                         tolerance = 1.0e-07;
                         if (error > tolerance)
+                        {
                             QAssert.Fail("\nAsset-or-nothing:" +
                                          "\nVolatility = " + capletVolatility +
                                          "\nStrike = " + strike +
@@ -881,6 +932,7 @@ namespace QLNet.Tests
                                          "\nPrice = " + digitalPrice +
                                          "\nTarget Price  = " + targetPrice +
                                          "\nError = " + error);
+                        }
                     }
                 }
             }

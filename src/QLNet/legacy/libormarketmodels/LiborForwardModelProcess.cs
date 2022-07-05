@@ -16,33 +16,26 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
 using QLNet.Math;
-using QLNet.Time;
-using System;
-using System.Collections.Generic;
 using QLNet.processes;
+using QLNet.Time;
 
 namespace QLNet.legacy.libormarketmodels
 {
-    [JetBrains.Annotations.PublicAPI] public class LiborForwardModelProcess : StochasticProcess
+    [PublicAPI]
+    public class LiborForwardModelProcess : StochasticProcess
     {
-        public int size_ { get; set; }
-        public IborIndex index_ { get; set; }
-        public LfmCovarianceParameterization lfmParam_ { get; set; }
-        public List<double> initialValues_ { get; set; }
-        public List<double> fixingTimes_ { get; set; }
-        public List<Date> fixingDates_ { get; set; }
-        public List<double> accrualStartTimes_ { get; set; }
         private List<double> accrualEndTimes_;
-        public List<double> accrualPeriod_ { get; set; }
-
         private Vector m1;
         private Vector m2;
 
         public LiborForwardModelProcess(int size, IborIndex index, IDiscretization disc)
-           : base(disc)
+            : base(disc)
         {
             size_ = size;
             index_ = index;
@@ -81,7 +74,82 @@ namespace QLNet.legacy.libormarketmodels
         }
 
         public LiborForwardModelProcess(int size, IborIndex index)
-           : this(size, index, new EulerDiscretization()) { }
+            : this(size, index, new EulerDiscretization())
+        {
+        }
+
+        public List<double> accrualPeriod_ { get; set; }
+
+        public List<double> accrualStartTimes_ { get; set; }
+
+        public List<Date> fixingDates_ { get; set; }
+
+        public List<double> fixingTimes_ { get; set; }
+
+        public IborIndex index_ { get; set; }
+
+        public List<double> initialValues_ { get; set; }
+
+        public LfmCovarianceParameterization lfmParam_ { get; set; }
+
+        public int size_ { get; set; }
+
+        public List<double> accrualEndTimes() => accrualEndTimes_;
+
+        public List<double> accrualStartTimes() => accrualStartTimes_;
+
+        public override Vector apply(Vector x0, Vector dx)
+        {
+            var tmp = new Vector(size_);
+            for (var k = 0; k < size_; ++k)
+            {
+                tmp[k] = x0[k] * System.Math.Exp(dx[k]);
+            }
+
+            return tmp;
+        }
+
+        public List<CashFlow> cashFlows() => cashFlows(1);
+
+        public List<CashFlow> cashFlows(double amount)
+        {
+            var refDate = index_.forwardingTermStructure().link.referenceDate();
+
+            var schedule = new Schedule(refDate,
+                refDate + new Period(index_.tenor().length() * size_,
+                    index_.tenor().units()),
+                index_.tenor(), index_.fixingCalendar(),
+                index_.businessDayConvention(),
+                index_.businessDayConvention(),
+                DateGeneration.Rule.Forward, false);
+
+            var cashflows = (IborLeg)new IborLeg(schedule, index_)
+                .withFixingDays(index_.fixingDays())
+                .withPaymentDayCounter(index_.dayCounter())
+                .withNotionals(amount)
+                .withPaymentAdjustment(index_.businessDayConvention());
+            return cashflows.value();
+        }
+
+        public override Matrix covariance(double t, Vector x, double dt) => lfmParam_.covariance(t, x) * dt;
+
+        public LfmCovarianceParameterization covarParam() => lfmParam_;
+
+        public override Matrix diffusion(double t, Vector x) => lfmParam_.diffusion(t, x);
+
+        public List<double> discountBond(List<double> rates)
+        {
+            List<double> discountFactors = new InitializedList<double>(size_);
+            discountFactors[0] = 1.0 / (1.0 + rates[0] * accrualPeriod_[0]);
+
+            for (var i = 1; i < size_; ++i)
+            {
+                discountFactors[i] =
+                    discountFactors[i - 1] / (1.0 + rates[i] * accrualPeriod_[i]);
+            }
+
+            return discountFactors;
+        }
 
         public override Vector drift(double t, Vector x)
         {
@@ -94,26 +162,13 @@ namespace QLNet.legacy.libormarketmodels
                 m1[k] = accrualPeriod_[k] * x[k] / (1 + accrualPeriod_[k] * x[k]);
                 double inner_product = 0;
                 m1.GetRange(m, k + 1 - m).ForEach(
-                   (ii, vv) => inner_product += vv *
-                                                covariance.column(k).GetRange(m, covariance.rows() - m)[ii]);
+                    (ii, vv) => inner_product += vv *
+                                                 covariance.column(k).GetRange(m, covariance.rows() - m)[ii]);
 
                 f[k] = inner_product - 0.5 * covariance[k, k];
             }
+
             return f;
-        }
-
-        public override Matrix diffusion(double t, Vector x) => lfmParam_.diffusion(t, x);
-
-        public override Matrix covariance(double t, Vector x, double dt) => lfmParam_.covariance(t, x) * dt;
-
-        public override Vector apply(Vector x0, Vector dx)
-        {
-            var tmp = new Vector(size_);
-            for (var k = 0; k < size_; ++k)
-            {
-                tmp[k] = x0[k] * System.Math.Exp(dx[k]);
-            }
-            return tmp;
         }
 
         public override Vector evolve(double t0, Vector x0, double dt, Vector dw)
@@ -134,8 +189,8 @@ namespace QLNet.legacy.libormarketmodels
 
                 double d = 0;
                 m1.GetRange(m, k + 1 - m).ForEach(
-                   (ii, vv) => d += vv *
-                                    covariance.column(k).GetRange(m, covariance.rows() - m)[ii]);
+                    (ii, vv) => d += vv *
+                                     covariance.column(k).GetRange(m, covariance.rows() - m)[ii]);
                 d = (d - 0.5 * covariance[k, k]) * dt;
 
                 double r = 0;
@@ -147,20 +202,44 @@ namespace QLNet.legacy.libormarketmodels
 
                 double inner_product = 0;
                 m2.GetRange(m, k + 1 - m).ForEach(
-                   (ii, vv) => inner_product += vv *
-                                                covariance.column(k).GetRange(m, covariance.rows() - m)[ii]);
+                    (ii, vv) => inner_product += vv *
+                                                 covariance.column(k).GetRange(m, covariance.rows() - m)[ii]);
                 f[k] = x0[k] * System.Math.Exp(0.5 * (d + (inner_product - 0.5 * covariance[k, k]) * dt) + r);
             }
 
             return f;
         }
 
+        public override int factors() => lfmParam_.factors();
+
+        public List<Date> fixingDates() => fixingDates_;
+
+        public List<double> fixingTimes() => fixingTimes_;
+
+        public IborIndex index() => index_;
+
         public override Vector initialValues()
         {
             var tmp = new Vector(size());
             for (var i = 0; i < size(); ++i)
+            {
                 tmp[i] = initialValues_[i];
+            }
+
             return tmp;
+        }
+
+        public int nextIndexReset(double t)
+        {
+            var result = fixingTimes_.FindIndex(x => x > t);
+            if (result < 0)
+            {
+                result = ~result - 1;
+            }
+
+            // impose limits. we need the one before last at max or the first at min
+            result = System.Math.Max(System.Math.Min(result, fixingTimes_.Count - 1), 0);
+            return result;
         }
 
         public void setCovarParam(LfmCovarianceParameterization param)
@@ -168,66 +247,6 @@ namespace QLNet.legacy.libormarketmodels
             lfmParam_ = param;
         }
 
-        public LfmCovarianceParameterization covarParam() => lfmParam_;
-
-        public IborIndex index() => index_;
-
-        public List<CashFlow> cashFlows() => cashFlows(1);
-
-        public List<CashFlow> cashFlows(double amount)
-        {
-            var refDate = index_.forwardingTermStructure().link.referenceDate();
-
-            var schedule = new Schedule(refDate,
-                                             refDate + new Period(index_.tenor().length() * size_,
-                                                                  index_.tenor().units()),
-                                             index_.tenor(), index_.fixingCalendar(),
-                                             index_.businessDayConvention(),
-                                             index_.businessDayConvention(),
-                                             DateGeneration.Rule.Forward, false);
-
-            var cashflows = (IborLeg)new IborLeg(schedule, index_)
-                                .withFixingDays(index_.fixingDays())
-                                .withPaymentDayCounter(index_.dayCounter())
-                                .withNotionals(amount)
-                                .withPaymentAdjustment(index_.businessDayConvention());
-            return cashflows.value();
-        }
-
         public override int size() => size_;
-
-        public override int factors() => lfmParam_.factors();
-
-        public List<double> fixingTimes() => fixingTimes_;
-
-        public List<Date> fixingDates() => fixingDates_;
-
-        public List<double> accrualStartTimes() => accrualStartTimes_;
-
-        public List<double> accrualEndTimes() => accrualEndTimes_;
-
-        public int nextIndexReset(double t)
-        {
-            var result = fixingTimes_.FindIndex(x => x > t);
-            if (result < 0)
-                result = ~result - 1;
-            // impose limits. we need the one before last at max or the first at min
-            result = System.Math.Max(System.Math.Min(result, fixingTimes_.Count - 1), 0);
-            return result;
-        }
-
-        public List<double> discountBond(List<double> rates)
-        {
-
-            List<double> discountFactors = new InitializedList<double>(size_);
-            discountFactors[0] = 1.0 / (1.0 + rates[0] * accrualPeriod_[0]);
-
-            for (var i = 1; i < size_; ++i)
-            {
-                discountFactors[i] =
-                   discountFactors[i - 1] / (1.0 + rates[i] * accrualPeriod_[i]);
-            }
-            return discountFactors;
-        }
     }
 }

@@ -26,8 +26,10 @@
 // granted, provided that this notice is preserved.
 // ===========================================================================
 
-using QLNet.Methods.montecarlo;
+using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Methods.montecarlo;
 
 namespace QLNet.Math.randomnumbers
 {
@@ -43,18 +45,19 @@ namespace QLNet.Math.randomnumbers
           their discrepancy against known good values.
     */
 
-    [JetBrains.Annotations.PublicAPI] public class HaltonRsg : IRNG
+    [PublicAPI]
+    public class HaltonRsg : IRNG
     {
         private int dimensionality_;
-        private ulong sequenceCounter_;
-        private Sample<List<double>> sequence_;
-        private List<ulong> randomStart_;
         private List<double> randomShift_;
+        private List<ulong> randomStart_;
+        private Sample<List<double>> sequence_;
+        private ulong sequenceCounter_;
 
         public HaltonRsg(int dimensionality,
-                         ulong seed = 0,
-                         bool randomStart = true,
-                         bool randomShift = false)
+            ulong seed = 0,
+            bool randomStart = true,
+            bool randomShift = false)
         {
             dimensionality_ = dimensionality;
             sequenceCounter_ = 0;
@@ -67,13 +70,24 @@ namespace QLNet.Math.randomnumbers
             if (randomStart || randomShift)
             {
                 var uniformRsg =
-                   new RandomSequenceGenerator<MersenneTwisterUniformRng>(dimensionality_, seed);
+                    new RandomSequenceGenerator<MersenneTwisterUniformRng>(dimensionality_, seed);
                 if (randomStart)
+                {
                     randomStart_ = uniformRsg.nextInt32Sequence();
+                }
+
                 if (randomShift)
+                {
                     randomShift_ = uniformRsg.nextSequence().value;
+                }
             }
         }
+
+        public int dimension() => dimensionality_;
+
+        public IRNG factory(int dimensionality, ulong seed) => throw new NotImplementedException();
+
+        public Sample<List<double>> lastSequence() => sequence_;
 
         public Sample<List<double>> nextSequence()
         {
@@ -92,17 +106,12 @@ namespace QLNet.Math.randomnumbers
                     h += k % b * f;
                     k /= b;
                 }
+
                 sequence_.value[i] = h + randomShift_[i];
                 sequence_.value[i] -= (long)sequence_.value[i];
             }
+
             return sequence_;
         }
-
-        public Sample<List<double>> lastSequence() => sequence_;
-
-        public IRNG factory(int dimensionality, ulong seed) => throw new System.NotImplementedException();
-
-        public int dimension() => dimensionality_;
     }
 }
-

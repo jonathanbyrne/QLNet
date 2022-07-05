@@ -17,10 +17,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Termstructures
 {
@@ -29,23 +30,17 @@ namespace QLNet.Termstructures
         inheritance from this class to obtain the relevant data
         members and implement correct copy behavior.
     */
-    [JetBrains.Annotations.PublicAPI] public interface InterpolatedCurve : ICloneable
+    [PublicAPI]
+    public interface InterpolatedCurve : ICloneable
     {
-        List<double> times_ { get; set; }
-        List<double> times();
+        List<double> data_ { get; set; }
 
         List<Date> dates_ { get; set; }
-        List<Date> dates();
-        Date maxDate();
-
-        List<double> data_ { get; set; }
-        List<double> data();
-
-        Dictionary<Date, double> nodes();
 
         Interpolation interpolation_ { get; set; }
+
         IInterpolationFactory interpolator_ { get; set; }
-        void setupInterpolation();
+
         // Usually, the maximum date is the one corresponding to the
         // last node. However, it might happen that a bit of
         // extrapolation is used by construction; for instance, when a
@@ -57,5 +52,18 @@ namespace QLNet.Termstructures
         // it here might not be entirely backwards-compatible).
         Date maxDate_ { get; set; }
 
+        List<double> times_ { get; set; }
+
+        List<double> data();
+
+        List<Date> dates();
+
+        Date maxDate();
+
+        Dictionary<Date, double> nodes();
+
+        void setupInterpolation();
+
+        List<double> times();
     }
 }

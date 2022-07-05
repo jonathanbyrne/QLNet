@@ -17,7 +17,8 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using System;
+
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -42,16 +43,16 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class CzechRepublic : Calendar
+    [PublicAPI]
+    public class CzechRepublic : Calendar
     {
-        public CzechRepublic() : base(Impl.Singleton) { }
-
-        class Impl : WesternImpl
+        private class Impl : WesternImpl
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "Prague stock exchange";
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -89,9 +90,18 @@ namespace QLNet.Time.Calendars
                     // unidentified closing days for stock exchange
                     || d == 2 && m == Month.January && y == 2004
                     || d == 31 && m == Month.December && y == 2004)
+                {
                     return false;
+                }
+
                 return true;
             }
+
+            public override string name() => "Prague stock exchange";
+        }
+
+        public CzechRepublic() : base(Impl.Singleton)
+        {
         }
     }
 }

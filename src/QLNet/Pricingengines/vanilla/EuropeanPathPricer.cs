@@ -1,10 +1,15 @@
-﻿using QLNet.Instruments;
+﻿using JetBrains.Annotations;
+using QLNet.Instruments;
 using QLNet.Methods.montecarlo;
 
 namespace QLNet.Pricingengines.vanilla
 {
-    [JetBrains.Annotations.PublicAPI] public class EuropeanPathPricer : PathPricer<IPath>
+    [PublicAPI]
+    public class EuropeanPathPricer : PathPricer<IPath>
     {
+        private double discount_;
+        private PlainVanillaPayoff payoff_;
+
         public EuropeanPathPricer(QLNet.Option.Type type, double strike, double discount)
         {
             payoff_ = new PlainVanillaPayoff(type, strike);
@@ -17,8 +22,5 @@ namespace QLNet.Pricingengines.vanilla
             Utils.QL_REQUIRE(path.length() > 0, () => "the path cannot be empty");
             return payoff_.value((path as Path).back()) * discount_;
         }
-
-        private PlainVanillaPayoff payoff_;
-        private double discount_;
     }
 }

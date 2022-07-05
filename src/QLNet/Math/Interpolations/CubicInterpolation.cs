@@ -18,6 +18,7 @@
 */
 
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
@@ -62,8 +63,28 @@ namespace QLNet.Math.Interpolations
         \test to be adapted from old ones.
     */
 
-    [JetBrains.Annotations.PublicAPI] public class CubicInterpolation : Interpolation
+    [PublicAPI]
+    public class CubicInterpolation : Interpolation
     {
+        public CubicInterpolation(List<double> xBegin, int size, List<double> yBegin,
+            DerivativeApprox da,
+            bool monotonic,
+            BoundaryCondition leftCond,
+            double leftConditionValue,
+            BoundaryCondition rightCond,
+            double rightConditionValue)
+        {
+            impl_ = new CubicInterpolationImpl(xBegin, size, yBegin, da, monotonic, leftCond, leftConditionValue, rightCond,
+                rightConditionValue);
+            impl_.update();
+        }
+
+        public List<double> aCoefficients() => ((CubicInterpolationImpl)impl_).a_;
+
+        public List<double> bCoefficients() => ((CubicInterpolationImpl)impl_).b_;
+
+        public List<double> cCoefficients() => ((CubicInterpolationImpl)impl_).c_;
+
         #region enums
 
         public enum DerivativeApprox
@@ -112,7 +133,6 @@ namespace QLNet.Math.Interpolations
 
             //! Match first and second derivative at either end
             Periodic,
-
             /*! Match end-slope to the slope of the cubic that matches
                 the first four data at the respective end
             */
@@ -120,25 +140,6 @@ namespace QLNet.Math.Interpolations
         }
 
         #endregion
-
-        public CubicInterpolation(List<double> xBegin, int size, List<double> yBegin,
-                                  DerivativeApprox da,
-                                  bool monotonic,
-                                  BoundaryCondition leftCond,
-                                  double leftConditionValue,
-                                  BoundaryCondition rightCond,
-                                  double rightConditionValue)
-        {
-            impl_ = new CubicInterpolationImpl(xBegin, size, yBegin, da, monotonic, leftCond, leftConditionValue, rightCond,
-                                               rightConditionValue);
-            impl_.update();
-        }
-
-        public List<double> aCoefficients() => ((CubicInterpolationImpl)impl_).a_;
-
-        public List<double> bCoefficients() => ((CubicInterpolationImpl)impl_).b_;
-
-        public List<double> cCoefficients() => ((CubicInterpolationImpl)impl_).c_;
     }
 
     // convenience classes

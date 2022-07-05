@@ -1,10 +1,23 @@
+using JetBrains.Annotations;
 using QLNet.Quotes;
 using QLNet.Time;
 
 namespace QLNet.Termstructures.Yield
 {
-    [JetBrains.Annotations.PublicAPI] public class FxSwapRateHelper : RelativeDateRateHelper
+    [PublicAPI]
+    public class FxSwapRateHelper : RelativeDateRateHelper
     {
+        private Calendar cal_;
+        private Handle<YieldTermStructure> collHandle_;
+        private RelinkableHandle<YieldTermStructure> collRelinkableHandle_ = new RelinkableHandle<YieldTermStructure>();
+        private BusinessDayConvention conv_;
+        private bool eom_;
+        private int fixingDays_;
+        private bool isFxBaseCurrencyCollateralCurrency_;
+        private Handle<Quote> spot_;
+        private Period tenor_;
+        private RelinkableHandle<YieldTermStructure> termStructureHandle_ = new RelinkableHandle<YieldTermStructure>();
+
         public FxSwapRateHelper(Handle<Quote> fwdPoint,
             Handle<Quote> spotFx,
             Period tenor,
@@ -30,6 +43,14 @@ namespace QLNet.Termstructures.Yield
             initializeDates();
         }
 
+        public BusinessDayConvention businessDayConvention() => conv_;
+
+        public Calendar calendar() => cal_;
+
+        public bool endOfMonth() => eom_;
+
+        public int fixingDays() => fixingDays_;
+
         // RateHelper interface
         public override double impliedQuote()
         {
@@ -48,8 +69,12 @@ namespace QLNet.Termstructures.Yield
             {
                 return (ratio / collRatio - 1) * spot;
             }
+
             return (collRatio / ratio - 1) * spot;
         }
+
+        public bool isFxBaseCurrencyCollateralCurrency() => isFxBaseCurrencyCollateralCurrency_;
+
         public override void setTermStructure(YieldTermStructure t)
         {
             // do not set the relinkable handle as an observer -
@@ -58,23 +83,12 @@ namespace QLNet.Termstructures.Yield
             termStructureHandle_.linkTo(t, false);
             collRelinkableHandle_.linkTo(collHandle_, false);
             base.setTermStructure(t);
-
         }
 
         // FxSwapRateHelper inspectors
         public double spot() => spot_.link.value();
 
         public Period tenor() => tenor_;
-
-        public int fixingDays() => fixingDays_;
-
-        public Calendar calendar() => cal_;
-
-        public BusinessDayConvention businessDayConvention() => conv_;
-
-        public bool endOfMonth() => eom_;
-
-        public bool isFxBaseCurrencyCollateralCurrency() => isFxBaseCurrencyCollateralCurrency_;
 
         protected override void initializeDates()
         {
@@ -84,17 +98,5 @@ namespace QLNet.Termstructures.Yield
             earliestDate_ = cal_.advance(refDate, new Period(fixingDays_, TimeUnit.Days));
             latestDate_ = cal_.advance(earliestDate_, tenor_, conv_, eom_);
         }
-        private Handle<Quote> spot_;
-        private Period tenor_;
-        private int fixingDays_;
-        private Calendar cal_;
-        private BusinessDayConvention conv_;
-        private bool eom_;
-        private bool isFxBaseCurrencyCollateralCurrency_;
-
-        private RelinkableHandle<YieldTermStructure> termStructureHandle_ = new RelinkableHandle<YieldTermStructure>();
-
-        private Handle<YieldTermStructure> collHandle_;
-        private RelinkableHandle<YieldTermStructure> collRelinkableHandle_ = new RelinkableHandle<YieldTermStructure>();
     }
 }

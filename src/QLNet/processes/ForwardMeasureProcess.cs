@@ -13,8 +13,10 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
-using QLNet.Math;
+
 using System;
+using JetBrains.Annotations;
+using QLNet.Math;
 
 namespace QLNet.processes
 {
@@ -24,32 +26,40 @@ namespace QLNet.processes
 
         \ingroup processes
     */
-    [JetBrains.Annotations.PublicAPI] public class ForwardMeasureProcess : StochasticProcess
+    [PublicAPI]
+    public class ForwardMeasureProcess : StochasticProcess
     {
+        protected double T_;
+
+        protected ForwardMeasureProcess()
+        {
+        }
+
+        protected ForwardMeasureProcess(double T)
+        {
+            T_ = T;
+        }
+
+        protected ForwardMeasureProcess(IDiscretization disc)
+            : base(disc)
+        {
+        }
+
+        public override Matrix diffusion(double t, Vector x) => throw new NotImplementedException();
+
+        public override Vector drift(double t, Vector x) => throw new NotImplementedException();
+
+        public double getForwardMeasureTime() => T_;
+
+        public override Vector initialValues() => throw new NotImplementedException();
+
         public virtual void setForwardMeasureTime(double T)
         {
             T_ = T;
             notifyObservers();
         }
-        public double getForwardMeasureTime() => T_;
 
-        protected ForwardMeasureProcess() { }
-        protected ForwardMeasureProcess(double T)
-        {
-            T_ = T;
-        }
-        protected ForwardMeasureProcess(IDiscretization disc)
-           : base(disc)
-        { }
-
-        protected double T_;
         public override int size() => throw new NotImplementedException();
-
-        public override Vector initialValues() => throw new NotImplementedException();
-
-        public override Vector drift(double t, Vector x) => throw new NotImplementedException();
-
-        public override Matrix diffusion(double t, Vector x) => throw new NotImplementedException();
     }
 
     //! forward-measure 1-D stochastic process

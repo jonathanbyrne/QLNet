@@ -1,13 +1,16 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet.Termstructures.Inflation
 {
-    [JetBrains.Annotations.PublicAPI] public class KerkhofSeasonality : MultiplicativePriceSeasonality
+    [PublicAPI]
+    public class KerkhofSeasonality : MultiplicativePriceSeasonality
     {
         public KerkhofSeasonality(Date seasonalityBaseDate, List<double> seasonalityFactors)
             : base(seasonalityBaseDate, Frequency.Monthly, seasonalityFactors)
-        { }
+        {
+        }
 
         public override double seasonalityFactor(Date to)
         {
@@ -43,7 +46,6 @@ namespace QLNet.Termstructures.Inflation
             }
 
             return seasonalCorrection;
-
         }
 
         protected override double seasonalityCorrection(double rate, Date atDate, DayCounter dc, Date curveBaseDate, bool isZeroRate)

@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet.Instruments.Bonds
 {
     /// <summary>
-    /// Callable zero coupon bond class.
+    ///     Callable zero coupon bond class.
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class CallableZeroCouponBond : CallableFixedRateBond
+    [PublicAPI]
+    public class CallableZeroCouponBond : CallableFixedRateBond
     {
         public CallableZeroCouponBond(int settlementDays,
             double faceAmount,
@@ -24,7 +26,8 @@ namespace QLNet.Instruments.Bonds
                     paymentConvention,
                     DateGeneration.Rule.Backward,
                     false),
-                new List<double>() { 0.0 }, dayCounter, paymentConvention, redemption, issueDate, putCallSchedule)
-        { }
+                new List<double> { 0.0 }, dayCounter, paymentConvention, redemption, issueDate, putCallSchedule)
+        {
+        }
     }
 }

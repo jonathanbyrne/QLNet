@@ -93,6 +93,7 @@ namespace QLNet.Tests
                         if (endCriteriaResult == EndCriteria.Type.None ||
                             endCriteriaResult == EndCriteria.Type.MaxIterations ||
                             endCriteriaResult == EndCriteria.Type.Unknown)
+                        {
                             QAssert.Fail("function evaluations: " + problem.functionEvaluation() +
                                          " gradient evaluations: " + problem.gradientEvaluation() +
                                          " x expected:           " + xMinExpected_[i] +
@@ -104,6 +105,7 @@ namespace QLNet.Tests
                                          " y difference:         " + (yMinExpected_[i] - yMinCalculated) +
                                          " functionEpsilon:      " + endCriteria.functionEpsilon() +
                                          " endCriteriaResult:    " + endCriteriaResult);
+                        }
                     }
                 }
             }
@@ -267,7 +269,9 @@ namespace QLNet.Tests
             public override void gradient(ref Vector grad, Vector x)
             {
                 for (var i = 0; i < grad.Count; i++)
+                {
                     grad[i] = 2 * x[i];
+                }
             }
         }
 

@@ -6,9 +6,9 @@ namespace QLNet.Termstructures
         /*! These alternatives specify the determination of the pillar date. */
         public enum Choice
         {
-            MaturityDate,     //! instruments maturity date
+            MaturityDate, //! instruments maturity date
             LastRelevantDate, //! last date relevant for instrument pricing
-            CustomDate        //! custom choice
+            CustomDate //! custom choice
         }
     }
 }

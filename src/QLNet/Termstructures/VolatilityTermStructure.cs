@@ -17,8 +17,8 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using QLNet.Time;
-using System;
 
 namespace QLNet.Termstructures
 {
@@ -29,32 +29,13 @@ namespace QLNet.Termstructures
     */
     public abstract class VolatilityTermStructure : TermStructure
     {
-        #region Constructors
+        private readonly BusinessDayConvention bdc_;
 
-        /*! \warning term structures initialized by means of this
-                     constructor must manage their own reference date
-                     by overriding the referenceDate() method.
-        */
+        //! the maximum strike for which the term structure can return vols
+        public abstract double maxStrike();
 
-        protected VolatilityTermStructure(BusinessDayConvention bdc, DayCounter dc = null)
-           : base(dc)
-        {
-            bdc_ = bdc;
-        }
-        //! initialize with a fixed reference date
-        protected VolatilityTermStructure(Date referenceDate, Calendar cal, BusinessDayConvention bdc, DayCounter dc = null)
-           : base(referenceDate, cal, dc)
-        {
-            bdc_ = bdc;
-        }
-        //! calculate the reference date based on the global evaluation date
-        protected VolatilityTermStructure(int settlementDays, Calendar cal, BusinessDayConvention bdc, DayCounter dc = null)
-           : base(settlementDays, cal, dc)
-        {
-            bdc_ = bdc;
-        }
-
-        #endregion
+        //! the minimum strike for which the term structure can return vols
+        public abstract double minStrike();
 
         //! the business day convention used in tenor to date conversion
         public virtual BusinessDayConvention businessDayConvention() => bdc_;
@@ -64,22 +45,42 @@ namespace QLNet.Termstructures
             // swaption style
             calendar().advance(referenceDate(), p, businessDayConvention());
 
-        //! the minimum strike for which the term structure can return vols
-        public abstract double minStrike();
-
-        //! the maximum strike for which the term structure can return vols
-        public abstract double maxStrike();
-
         //! strike-range check
         protected void checkStrike(double k, bool extrapolate)
         {
             Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() ||
                              k >= minStrike() && k <= maxStrike(), () =>
-                             "strike (" + k + ") is outside the curve domain ["
-                             + minStrike() + "," + maxStrike() + "]");
+                "strike (" + k + ") is outside the curve domain ["
+                + minStrike() + "," + maxStrike() + "]");
         }
 
-        private BusinessDayConvention bdc_;
+        #region Constructors
 
+        /*! \warning term structures initialized by means of this
+                     constructor must manage their own reference date
+                     by overriding the referenceDate() method.
+        */
+
+        protected VolatilityTermStructure(BusinessDayConvention bdc, DayCounter dc = null)
+            : base(dc)
+        {
+            bdc_ = bdc;
+        }
+
+        //! initialize with a fixed reference date
+        protected VolatilityTermStructure(Date referenceDate, Calendar cal, BusinessDayConvention bdc, DayCounter dc = null)
+            : base(referenceDate, cal, dc)
+        {
+            bdc_ = bdc;
+        }
+
+        //! calculate the reference date based on the global evaluation date
+        protected VolatilityTermStructure(int settlementDays, Calendar cal, BusinessDayConvention bdc, DayCounter dc = null)
+            : base(settlementDays, cal, dc)
+        {
+            bdc_ = bdc;
+        }
+
+        #endregion
     }
 }

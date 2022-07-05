@@ -17,25 +17,32 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences.Meshers;
 using QLNet.Methods.Finitedifferences.Operators;
-using System.Collections.Generic;
 
 namespace QLNet.Methods.Finitedifferences.Utilities
 {
     /// <summary>
-    /// Dirichlet boundary conditions for differential operators
+    ///     Dirichlet boundary conditions for differential operators
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class FdmDirichletBoundary : BoundaryCondition<FdmLinearOp>
+    [PublicAPI]
+    public class FdmDirichletBoundary : BoundaryCondition<FdmLinearOp>
     {
+        protected List<int> indices_;
+        protected Side side_;
+        protected double valueOnBoundary_;
+        protected double xExtreme_;
+
         public FdmDirichletBoundary(FdmMesher mesher,
-                                    double valueOnBoundary, int direction, Side side)
+            double valueOnBoundary, int direction, Side side)
         {
             side_ = side;
             valueOnBoundary_ = valueOnBoundary;
             indices_ = new FdmIndicesOnBoundary(mesher.layout(),
-                                                direction, side).getIndices();
+                direction, side).getIndices();
             if (side_ == Side.Lower)
             {
                 xExtreme_ = mesher.locations(direction)[0];
@@ -43,7 +50,7 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             else if (side_ == Side.Upper)
             {
                 xExtreme_ = mesher
-                            .locations(direction)[mesher.layout().dim()[direction] - 1];
+                    .locations(direction)[mesher.layout().dim()[direction] - 1];
             }
             else
             {
@@ -51,30 +58,12 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             }
         }
 
-        public override void applyBeforeApplying(IOperator o)
-        {
-            return;
-        }
-
-        public override void applyBeforeSolving(IOperator o, Vector v)
-        {
-            return;
-        }
-
         public override void applyAfterApplying(Vector v)
         {
             foreach (var iter in indices_)
+            {
                 v[iter] = valueOnBoundary_;
-        }
-
-        public override void applyAfterSolving(Vector v)
-        {
-            applyAfterApplying(v);
-        }
-
-        public override void setTime(double t)
-        {
-            return;
+            }
         }
 
         public double applyAfterApplying(double x, double value) =>
@@ -83,9 +72,21 @@ namespace QLNet.Methods.Finitedifferences.Utilities
                 ? valueOnBoundary_
                 : value;
 
-        protected Side side_;
-        protected double valueOnBoundary_;
-        protected List<int> indices_;
-        protected double xExtreme_;
+        public override void applyAfterSolving(Vector v)
+        {
+            applyAfterApplying(v);
+        }
+
+        public override void applyBeforeApplying(IOperator o)
+        {
+        }
+
+        public override void applyBeforeSolving(IOperator o, Vector v)
+        {
+        }
+
+        public override void setTime(double t)
+        {
+        }
     }
 }

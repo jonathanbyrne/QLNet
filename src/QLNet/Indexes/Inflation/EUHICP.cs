@@ -17,23 +17,27 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
-using QLNet.Indexes;
 using QLNet.Time;
 
 namespace QLNet.Indexes.Inflation
 {
     //! EU HICP index
-    [JetBrains.Annotations.PublicAPI] public class EUHICP : ZeroInflationIndex
+    [PublicAPI]
+    public class EUHICP : ZeroInflationIndex
     {
         public EUHICP(bool interpolated)
-           : this(interpolated, new Handle<ZeroInflationTermStructure>()) { }
+            : this(interpolated, new Handle<ZeroInflationTermStructure>())
+        {
+        }
 
         public EUHICP(bool interpolated, Handle<ZeroInflationTermStructure> ts)
-           : base("HICP", new EURegion(), false, interpolated, Frequency.Monthly,
-                  new Period(1, TimeUnit.Months), // availability
-                  new EURCurrency(), ts)
-        { }
+            : base("HICP", new EURegion(), false, interpolated, Frequency.Monthly,
+                new Period(1, TimeUnit.Months), // availability
+                new EURCurrency(), ts)
+        {
+        }
     }
 
     //! Genuine year-on-year EU HICP (i.e. not a ratio of EU HICP)

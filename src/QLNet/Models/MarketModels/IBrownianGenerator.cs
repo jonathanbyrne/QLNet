@@ -15,14 +15,19 @@
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Models.MarketModels
 {
-    [JetBrains.Annotations.PublicAPI] public interface IBrownianGenerator
+    [PublicAPI]
+    public interface IBrownianGenerator
     {
-        double nextStep(List<double> l);
         double nextPath();
+
+        double nextStep(List<double> l);
+
         int numberOfFactors();
+
         int numberOfSteps();
     }
 }

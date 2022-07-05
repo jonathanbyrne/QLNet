@@ -17,8 +17,10 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Math;
 using QLNet.Math.Optimization;
 using QLNet.Models;
 
@@ -39,10 +41,11 @@ namespace QLNet.legacy.libormarketmodels
         (<http://www.business.uts.edu.au/qfrc/conferences/qmf2001/Brigo_D.pdf>)
     */
 
-    [JetBrains.Annotations.PublicAPI] public class LmExtLinearExponentialVolModel : LmLinearExponentialVolatilityModel
+    [PublicAPI]
+    public class LmExtLinearExponentialVolModel : LmLinearExponentialVolatilityModel
     {
         public LmExtLinearExponentialVolModel(List<double> fixingTimes, double a, double b, double c, double d)
-           : base(fixingTimes, a, b, c, d)
+            : base(fixingTimes, a, b, c, d)
         {
             arguments_.Capacity += size_;
             for (var i = 0; i < size_; ++i)
@@ -51,6 +54,8 @@ namespace QLNet.legacy.libormarketmodels
             }
         }
 
+        public override double integratedVariance(int i, int j, double u, Vector x = null) => arguments_[i + 4].value(0.0) * arguments_[j + 4].value(0.0) * base.integratedVariance(i, j, u, x);
+
         public override Vector volatility(double t, Vector x = null)
         {
             var tmp = base.volatility(t, x);
@@ -58,11 +63,10 @@ namespace QLNet.legacy.libormarketmodels
             {
                 tmp[i] *= arguments_[i + 4].value(0.0);
             }
+
             return tmp;
         }
 
         public override double volatility(int i, double t, Vector x = null) => arguments_[i + 4].value(0.0) * base.volatility(i, t, x);
-
-        public override double integratedVariance(int i, int j, double u, Vector x = null) => arguments_[i + 4].value(0.0) * arguments_[j + 4].value(0.0) * base.integratedVariance(i, j, u, x);
     }
 }

@@ -16,18 +16,24 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Math;
-using System;
 
 namespace QLNet.Methods.Finitedifferences
 {
     //! American exercise condition.
     /*! \todo unify the intrinsicValues/Payoff thing */
-    [JetBrains.Annotations.PublicAPI] public class AmericanCondition : CurveDependentStepCondition<Vector>
+    [PublicAPI]
+    public class AmericanCondition : CurveDependentStepCondition<Vector>
     {
-        public AmericanCondition(Option.Type type, double strike) : base(type, strike) { }
+        public AmericanCondition(Option.Type type, double strike) : base(type, strike)
+        {
+        }
 
-        public AmericanCondition(Vector intrinsicValues) : base(intrinsicValues) { }
+        public AmericanCondition(Vector intrinsicValues) : base(intrinsicValues)
+        {
+        }
 
         protected override double applyToValue(double current, double intrinsic) => System.Math.Max(current, intrinsic);
     }

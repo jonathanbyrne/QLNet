@@ -15,8 +15,10 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/using System;
+*/
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 // ===========================================================================
 // NOTE: The following copyright notice applies to the original code,
@@ -38,18 +40,14 @@ namespace QLNet.Methods.montecarlo
 
         \ingroup mcarlo
     */
-    [JetBrains.Annotations.PublicAPI] public class BrownianBridge
+    [PublicAPI]
+    public class BrownianBridge
     {
-        private int size_;
-        public int size() => size_;
-
-        private List<double> t_;
-        public List<double> times() => t_;
-
-        private List<double> sqrtdt_;
         private List<int> bridgeIndex_, leftIndex_, rightIndex_;
         private List<double> leftWeight_, rightWeight_, stdDev_;
-
+        private int size_;
+        private List<double> sqrtdt_;
+        private List<double> t_;
 
         //! unit-time path
         public BrownianBridge(int steps)
@@ -64,7 +62,10 @@ namespace QLNet.Methods.montecarlo
             rightWeight_ = new InitializedList<double>(size_);
             stdDev_ = new InitializedList<double>(size_);
             for (var i = 0; i < size_; ++i)
+            {
                 t_[i] = i + 1;
+            }
+
             initialize();
         }
 
@@ -98,16 +99,62 @@ namespace QLNet.Methods.montecarlo
             rightWeight_ = new InitializedList<double>(size_);
             stdDev_ = new InitializedList<double>(size_);
             for (var i = 0; i < size_; ++i)
+            {
                 t_[i] = timeGrid[i + 1];
+            }
+
             initialize();
         }
 
+        public int size() => size_;
+
+        public List<double> times() => t_;
+
+        // Brownian-bridge constructor
+        public void transform(List<double> begin, List<double> output)
+        {
+            Utils.QL_REQUIRE(begin.Count != 0, () => "invalid sequence");
+            Utils.QL_REQUIRE(begin.Count == size_, () => "incompatible sequence size");
+            // We use output to store the path...
+            output[size_ - 1] = stdDev_[0] * begin[0];
+            for (var i = 1; i < size_; ++i)
+            {
+                var j = leftIndex_[i];
+                var k = rightIndex_[i];
+                var l = bridgeIndex_[i];
+                if (j != 0)
+                {
+                    output[l] =
+                        leftWeight_[i] * output[j - 1] +
+                        rightWeight_[i] * output[k] +
+                        stdDev_[i] * begin[i];
+                }
+                else
+                {
+                    output[l] =
+                        rightWeight_[i] * output[k] +
+                        stdDev_[i] * begin[i];
+                }
+            }
+
+            // ...after which, we calculate the variations and
+            // normalize to unit times
+            for (var i = size_ - 1; i >= 1; --i)
+            {
+                output[i] -= output[i - 1];
+                output[i] /= sqrtdt_[i];
+            }
+
+            output[0] /= sqrtdt_[0];
+        }
 
         private void initialize()
         {
             sqrtdt_[0] = System.Math.Sqrt(t_[0]);
             for (var i = 1; i < size_; ++i)
+            {
                 sqrtdt_[i] = System.Math.Sqrt(t_[i] - t_[i - 1]);
+            }
 
             // map is used to indicate which points are already constructed.
             // If map[i] is zero, path point i is yet unconstructed.
@@ -127,11 +174,17 @@ namespace QLNet.Methods.montecarlo
             {
                 // Find the next unpopulated entry in the map.
                 while (map[j] != 0)
+                {
                     ++j;
+                }
+
                 var k = j;
                 // Find the next populated entry in the map from there.
                 while (map[k] == 0)
+                {
                     ++k;
+                }
+
                 // l-1 is now the index of the point to be constructed next.
                 var l = j + (k - 1 - j >> 1);
                 map[l] = i;
@@ -144,8 +197,8 @@ namespace QLNet.Methods.montecarlo
                     leftWeight_[i] = (t_[k] - t_[l]) / (t_[k] - t_[j - 1]);
                     rightWeight_[i] = (t_[l] - t_[j - 1]) / (t_[k] - t_[j - 1]);
                     stdDev_[i] =
-                       System.Math.Sqrt((t_[l] - t_[j - 1]) * (t_[k] - t_[l])
-                                 / (t_[k] - t_[j - 1]));
+                        System.Math.Sqrt((t_[l] - t_[j - 1]) * (t_[k] - t_[l])
+                                         / (t_[k] - t_[j - 1]));
                 }
                 else
                 {
@@ -153,46 +206,13 @@ namespace QLNet.Methods.montecarlo
                     rightWeight_[i] = t_[l] / t_[k];
                     stdDev_[i] = System.Math.Sqrt(t_[l] * (t_[k] - t_[l]) / t_[k]);
                 }
+
                 j = k + 1;
                 if (j >= size_)
-                    j = 0;  //  wrap around
-            }
-        }
-
-        // Brownian-bridge constructor
-        public void transform(List<double> begin, List<double> output)
-        {
-            Utils.QL_REQUIRE(begin.Count != 0, () => "invalid sequence");
-            Utils.QL_REQUIRE(begin.Count == size_, () => "incompatible sequence size");
-            // We use output to store the path...
-            output[size_ - 1] = stdDev_[0] * begin[0];
-            for (var i = 1; i < size_; ++i)
-            {
-                var j = leftIndex_[i];
-                var k = rightIndex_[i];
-                var l = bridgeIndex_[i];
-                if (j != 0)
                 {
-                    output[l] =
-                       leftWeight_[i] * output[j - 1] +
-                       rightWeight_[i] * output[k] +
-                       stdDev_[i] * begin[i];
-                }
-                else
-                {
-                    output[l] =
-                       rightWeight_[i] * output[k] +
-                       stdDev_[i] * begin[i];
+                    j = 0; //  wrap around
                 }
             }
-            // ...after which, we calculate the variations and
-            // normalize to unit times
-            for (var i = size_ - 1; i >= 1; --i)
-            {
-                output[i] -= output[i - 1];
-                output[i] /= sqrtdt_[i];
-            }
-            output[0] /= sqrtdt_[0];
         }
     }
 }

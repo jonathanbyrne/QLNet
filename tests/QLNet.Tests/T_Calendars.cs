@@ -97,41 +97,52 @@ namespace QLNet.Tests
                      b4 = c4.isBusinessDay(d);
 
                 if ((b1 && b2) != c12h.isBusinessDay(d))
+                {
                     QAssert.Fail("At date " + d + ":\n"
                                  + "    inconsistency between joint calendar "
                                  + c12h.name() + " (joining holidays)\n"
                                  + "    and its components");
+                }
 
                 if ((b1 || b2) != c12b.isBusinessDay(d))
+                {
                     QAssert.Fail("At date " + d + ":\n"
                                  + "    inconsistency between joint calendar "
                                  + c12b.name() + " (joining business days)\n"
                                  + "    and its components");
+                }
 
                 if ((b1 && b2 && b3) != c123h.isBusinessDay(d))
+                {
                     QAssert.Fail("At date " + d + ":\n"
                                  + "    inconsistency between joint calendar "
                                  + c123h.name() + " (joining holidays)\n"
                                  + "    and its components");
+                }
 
                 if ((b1 || b2 || b3) != c123b.isBusinessDay(d))
+                {
                     QAssert.Fail("At date " + d + ":\n"
                                  + "    inconsistency between joint calendar "
                                  + c123b.name() + " (joining business days)\n"
                                  + "    and its components");
+                }
 
                 if ((b1 && b2 && b3 && b4) != c1234h.isBusinessDay(d))
+                {
                     QAssert.Fail("At date " + d + ":\n"
                                  + "    inconsistency between joint calendar "
                                  + c1234h.name() + " (joining holidays)\n"
                                  + "    and its components");
+                }
 
                 if ((b1 || b2 || b3 || b4) != c1234b.isBusinessDay(d))
+                {
                     QAssert.Fail("At date " + d + ":\n"
                                  + "    inconsistency between joint calendar "
                                  + c1234b.name() + " (joining business days)\n"
                                  + "    and its components");
-
+                }
             }
         }
 
@@ -167,14 +178,18 @@ namespace QLNet.Tests
             var hol = Calendar.holidayList(c, new Date(1, Month.January, 2004),
                                                   new Date(31, Month.December, 2005));
             if (hol.Count != expectedHol.Count)
+            {
                 QAssert.Fail("there were " + expectedHol.Count
-                             + " expected holidays, while there are " + hol.Count
-                             + " calculated holidays");
+                                           + " expected holidays, while there are " + hol.Count
+                                           + " calculated holidays");
+            }
 
             for (var i = 0; i < hol.Count; i++)
             {
                 if (hol[i] != expectedHol[i])
+                {
                     QAssert.Fail("expected holiday was " + expectedHol[i] + " while calculated holiday is " + hol[i]);
+                }
             }
 
             // before Uniform Monday Holiday Act
@@ -191,15 +206,19 @@ namespace QLNet.Tests
             hol = Calendar.holidayList(c, new Date(1, Month.January, 1961), new Date(31, Month.December, 1961));
 
             if (hol.Count != expectedHol.Count)
+            {
                 QAssert.Fail("there were " + expectedHol.Count +
                              " expected holidays, while there are " + hol.Count +
                              " calculated holidays");
+            }
 
             for (var i = 0; i < hol.Count; i++)
             {
                 if (hol[i] != expectedHol[i])
+                {
                     QAssert.Fail("expected holiday was " + expectedHol[i]
-                                 + " while calculated holiday is " + hol[i]);
+                                                         + " while calculated holiday is " + hol[i]);
+                }
             }
         }
 
@@ -227,12 +246,16 @@ namespace QLNet.Tests
             for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
+                {
                     QAssert.Fail("expected holiday was " + expectedHol[i] + " while calculated holiday is " + hol[i]);
+                }
             }
             if (hol.Count != expectedHol.Count)
+            {
                 QAssert.Fail("there were " + expectedHol.Count +
                              " expected holidays, while there are " + hol.Count +
                              " calculated holidays");
+            }
         }
 
         [Fact]
@@ -277,12 +300,16 @@ namespace QLNet.Tests
             for (i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
+                {
                     QAssert.Fail("expected holiday was " + expectedHol[i] + " while calculated holiday is " + hol[i]);
+                }
             }
             if (hol.Count != expectedHol.Count)
+            {
                 QAssert.Fail("there were " + expectedHol.Count +
                              " expected holidays, while there are " + hol.Count +
                              " calculated holidays");
+            }
 
             var histClose = new List<Date>();
             histClose.Add(new Date(30, Month.October, 2012));  // Hurricane Sandy
@@ -331,7 +358,9 @@ namespace QLNet.Tests
             for (i = 0; i < histClose.Count; i++)
             {
                 if (!c.isHoliday(histClose[i]))
+                {
                     QAssert.Fail(histClose[i] + " should be holiday (historical close)");
+                }
             }
 
         }
@@ -391,14 +420,17 @@ namespace QLNet.Tests
             for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
+                {
                     QAssert.Fail("expected holiday was " + expectedHol[i]
-                                 + " while calculated holiday is " + hol[i]);
+                                                         + " while calculated holiday is " + hol[i]);
+                }
             }
             if (hol.Count != expectedHol.Count)
+            {
                 QAssert.Fail("there were " + expectedHol.Count
-                             + " expected holidays, while there are " + hol.Count
-                             + " calculated holidays");
-
+                                           + " expected holidays, while there are " + hol.Count
+                                           + " calculated holidays");
+            }
         }
 
         [Fact]
@@ -424,13 +456,17 @@ namespace QLNet.Tests
             for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
+                {
                     QAssert.Fail("expected holiday was " + expectedHol[i]
-                                 + " while calculated holiday is " + hol[i]);
+                                                         + " while calculated holiday is " + hol[i]);
+                }
             }
             if (hol.Count != expectedHol.Count)
+            {
                 QAssert.Fail("there were " + expectedHol.Count
-                             + " expected holidays, while there are " + hol.Count
-                             + " calculated holidays");
+                                           + " expected holidays, while there are " + hol.Count
+                                           + " calculated holidays");
+            }
         }
 
         [Fact]
@@ -459,13 +495,17 @@ namespace QLNet.Tests
             for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
+                {
                     QAssert.Fail("expected holiday was " + expectedHol[i]
-                                 + " while calculated holiday is " + hol[i]);
+                                                         + " while calculated holiday is " + hol[i]);
+                }
             }
             if (hol.Count != expectedHol.Count)
+            {
                 QAssert.Fail("there were " + expectedHol.Count
-                             + " expected holidays, while there are " + hol.Count
-                             + " calculated holidays");
+                                           + " expected holidays, while there are " + hol.Count
+                                           + " calculated holidays");
+            }
         }
 
         [Fact]
@@ -491,12 +531,16 @@ namespace QLNet.Tests
             for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
+                {
                     QAssert.Fail("expected holiday was " + expectedHol[i] + " while calculated holiday is " + hol[i]);
+                }
             }
             if (hol.Count != expectedHol.Count)
+            {
                 QAssert.Fail("there were " + expectedHol.Count
-                             + " expected holidays, while there are " + hol.Count
-                             + " calculated holidays");
+                                           + " expected holidays, while there are " + hol.Count
+                                           + " calculated holidays");
+            }
         }
 
         [Fact]
@@ -547,13 +591,17 @@ namespace QLNet.Tests
             for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
+                {
                     QAssert.Fail("expected holiday was " + expectedHol[i]
-                                 + " while calculated holiday is " + hol[i]);
+                                                         + " while calculated holiday is " + hol[i]);
+                }
             }
             if (hol.Count != expectedHol.Count)
+            {
                 QAssert.Fail("there were " + expectedHol.Count
-                             + " expected holidays, while there are " + hol.Count
-                             + " calculated holidays");
+                                           + " expected holidays, while there are " + hol.Count
+                                           + " calculated holidays");
+            }
         }
 
         [Fact]
@@ -604,13 +652,17 @@ namespace QLNet.Tests
             for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
+                {
                     QAssert.Fail("expected holiday was " + expectedHol[i]
-                                 + " while calculated holiday is " + hol[i]);
+                                                         + " while calculated holiday is " + hol[i]);
+                }
             }
             if (hol.Count != expectedHol.Count)
+            {
                 QAssert.Fail("there were " + expectedHol.Count
-                             + " expected holidays, while there are " + hol.Count
-                             + " calculated holidays");
+                                           + " expected holidays, while there are " + hol.Count
+                                           + " calculated holidays");
+            }
         }
 
         [Fact]
@@ -661,13 +713,17 @@ namespace QLNet.Tests
             for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
+                {
                     QAssert.Fail("expected holiday was " + expectedHol[i]
-                                 + " while calculated holiday is " + hol[i]);
+                                                         + " while calculated holiday is " + hol[i]);
+                }
             }
             if (hol.Count != expectedHol.Count)
+            {
                 QAssert.Fail("there were " + expectedHol.Count
-                             + " expected holidays, while there are " + hol.Count
-                             + " calculated holidays");
+                                           + " expected holidays, while there are " + hol.Count
+                                           + " calculated holidays");
+            }
         }
 
         [Fact]
@@ -708,13 +764,17 @@ namespace QLNet.Tests
             for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
+                {
                     QAssert.Fail("expected holiday was " + expectedHol[i]
-                                 + " while calculated holiday is " + hol[i]);
+                                                         + " while calculated holiday is " + hol[i]);
+                }
             }
             if (hol.Count != expectedHol.Count)
+            {
                 QAssert.Fail("there were " + expectedHol.Count
-                             + " expected holidays, while there are " + hol.Count
-                             + " calculated holidays");
+                                           + " expected holidays, while there are " + hol.Count
+                                           + " calculated holidays");
+            }
         }
 
         [Fact]
@@ -755,13 +815,17 @@ namespace QLNet.Tests
             for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
+                {
                     QAssert.Fail("expected holiday was " + expectedHol[i]
-                                 + " while calculated holiday is " + hol[i]);
+                                                         + " while calculated holiday is " + hol[i]);
+                }
             }
             if (hol.Count != expectedHol.Count)
+            {
                 QAssert.Fail("there were " + expectedHol.Count
-                             + " expected holidays, while there are " + hol.Count
-                             + " calculated holidays");
+                                           + " expected holidays, while there are " + hol.Count
+                                           + " calculated holidays");
+            }
         }
 
         [Fact]
@@ -847,12 +911,16 @@ namespace QLNet.Tests
             for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
+                {
                     QAssert.Fail("expected holiday was " + expectedHol[i] + " while calculated holiday is " + hol[i]);
+                }
             }
             if (hol.Count != expectedHol.Count)
+            {
                 QAssert.Fail("there were " + expectedHol.Count
-                             + " expected holidays, while there are " + hol.Count
-                             + " calculated holidays");
+                                           + " expected holidays, while there are " + hol.Count
+                                           + " calculated holidays");
+            }
         }
 
         [Fact]
@@ -943,13 +1011,17 @@ namespace QLNet.Tests
             for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
+                {
                     QAssert.Fail("expected holiday was " + expectedHol[i]
-                                 + " while calculated holiday is " + hol[i]);
+                                                         + " while calculated holiday is " + hol[i]);
+                }
             }
             if (hol.Count != expectedHol.Count)
+            {
                 QAssert.Fail("there were " + expectedHol.Count
-                             + " expected holidays, while there are " + hol.Count
-                             + " calculated holidays");
+                                           + " expected holidays, while there are " + hol.Count
+                                           + " calculated holidays");
+            }
         }
 
         [Fact]
@@ -1120,13 +1192,17 @@ namespace QLNet.Tests
             for (var i = 0; i < System.Math.Min(hol.Count, expectedHol.Count); i++)
             {
                 if (hol[i] != expectedHol[i])
+                {
                     QAssert.Fail("expected holiday was " + expectedHol[i]
-                                 + " while calculated holiday is " + hol[i]);
+                                                         + " while calculated holiday is " + hol[i]);
+                }
             }
             if (hol.Count != expectedHol.Count)
+            {
                 QAssert.Fail("there were " + expectedHol.Count
-                             + " expected holidays, while there are " + hol.Count
-                             + " calculated holidays");
+                                           + " expected holidays, while there are " + hol.Count
+                                           + " calculated holidays");
+            }
         }
 
         [Fact]
@@ -1209,17 +1285,22 @@ namespace QLNet.Tests
                 if (c.isBusinessDay(start) && c.isWeekend(start.DayOfWeek))
                 {
                     if (expectedWorkingWeekEnds[k] != start)
+                    {
                         QAssert.Fail("expected working weekend was " + expectedWorkingWeekEnds[k]
-                                     + " while calculated working weekend is " + start);
+                                                                     + " while calculated working weekend is " + start);
+                    }
+
                     ++k;
                 }
                 ++start;
             }
 
             if (k != expectedWorkingWeekEnds.Count)
+            {
                 QAssert.Fail("there were " + expectedWorkingWeekEnds.Count
-                             + " expected working weekends, while there are " + k
-                             + " calculated holidays");
+                                           + " expected working weekends, while there are " + k
+                                           + " calculated holidays");
+            }
         }
 
         [Fact]
@@ -1237,17 +1318,23 @@ namespace QLNet.Tests
                 eom = c.endOfMonth(counter);
                 // check that eom is eom
                 if (!c.isEndOfMonth(eom))
+                {
                     QAssert.Fail("\n  "
                                  + eom.weekday() + " " + eom
                                  + " is not the last business day in "
                                  + eom.month() + " " + eom.year()
                                  + " according to " + c.name());
+                }
+
                 // check that eom is in the same month as counter
                 if (eom.month() != counter.month())
+                {
                     QAssert.Fail("\n  "
                                  + eom
                                  + " is not in the same month as "
                                  + counter);
+                }
+
                 counter = counter + 1;
             }
         }
@@ -1415,104 +1502,214 @@ namespace QLNet.Tests
             var testDate4 = new Date(7, Month.October, 2008); // Tuesday
 
             if (!a1.isBusinessDay(testDate1))
+            {
                 QAssert.Fail(testDate1 + " erroneously detected as holiday");
+            }
+
             if (!a1.isBusinessDay(testDate2))
+            {
                 QAssert.Fail(testDate2 + " erroneously detected as holiday");
+            }
+
             if (!a1.isBusinessDay(testDate3))
+            {
                 QAssert.Fail(testDate3 + " erroneously detected as holiday");
+            }
+
             if (!a1.isBusinessDay(testDate4))
+            {
                 QAssert.Fail(testDate4 + " erroneously detected as holiday");
+            }
 
             if (!b1.isBusinessDay(testDate1))
+            {
                 QAssert.Fail(testDate1 + " erroneously detected as holiday");
+            }
+
             if (!b1.isBusinessDay(testDate2))
+            {
                 QAssert.Fail(testDate2 + " erroneously detected as holiday");
+            }
+
             if (!b1.isBusinessDay(testDate3))
+            {
                 QAssert.Fail(testDate3 + " erroneously detected as holiday");
+            }
+
             if (!b1.isBusinessDay(testDate4))
+            {
                 QAssert.Fail(testDate4 + " erroneously detected as holiday");
+            }
 
             a1.addWeekend(DayOfWeek.Sunday);
 
             if (!a1.isBusinessDay(testDate1))
+            {
                 QAssert.Fail(testDate1 + " erroneously detected as holiday");
+            }
+
             if (a1.isBusinessDay(testDate2))
+            {
                 QAssert.Fail(testDate2 + " (Sunday) not detected as weekend");
+            }
+
             if (!a1.isBusinessDay(testDate3))
+            {
                 QAssert.Fail(testDate3 + " erroneously detected as holiday");
+            }
+
             if (!a1.isBusinessDay(testDate4))
+            {
                 QAssert.Fail(testDate4 + " erroneously detected as holiday");
+            }
 
             if (!b1.isBusinessDay(testDate1))
+            {
                 QAssert.Fail(testDate1 + " erroneously detected as holiday");
+            }
+
             if (!b1.isBusinessDay(testDate2))
+            {
                 QAssert.Fail(testDate2 + " erroneously detected as holiday");
+            }
+
             if (!b1.isBusinessDay(testDate3))
+            {
                 QAssert.Fail(testDate3 + " erroneously detected as holiday");
+            }
+
             if (!b1.isBusinessDay(testDate4))
+            {
                 QAssert.Fail(testDate4 + " erroneously detected as holiday");
+            }
 
             a1.addHoliday(testDate3);
 
             if (!a1.isBusinessDay(testDate1))
+            {
                 QAssert.Fail(testDate1 + " erroneously detected as holiday");
+            }
+
             if (a1.isBusinessDay(testDate2))
+            {
                 QAssert.Fail(testDate2 + " (Sunday) not detected as weekend");
+            }
+
             if (a1.isBusinessDay(testDate3))
+            {
                 QAssert.Fail(testDate3 + " (marked as holiday) not detected");
+            }
+
             if (!a1.isBusinessDay(testDate4))
+            {
                 QAssert.Fail(testDate4 + " erroneously detected as holiday");
+            }
 
             if (!b1.isBusinessDay(testDate1))
+            {
                 QAssert.Fail(testDate1 + " erroneously detected as holiday");
+            }
+
             if (!b1.isBusinessDay(testDate2))
+            {
                 QAssert.Fail(testDate2 + " erroneously detected as holiday");
+            }
+
             if (!b1.isBusinessDay(testDate3))
+            {
                 QAssert.Fail(testDate3 + " erroneously detected as holiday");
+            }
+
             if (!b1.isBusinessDay(testDate4))
+            {
                 QAssert.Fail(testDate4 + " erroneously detected as holiday");
+            }
 
             var a2 = a1;  // linked to a1
 
             a2.addWeekend(DayOfWeek.Saturday);
 
             if (a1.isBusinessDay(testDate1))
+            {
                 QAssert.Fail(testDate1 + " (Saturday) not detected as weekend");
+            }
+
             if (a1.isBusinessDay(testDate2))
+            {
                 QAssert.Fail(testDate2 + " (Sunday) not detected as weekend");
+            }
+
             if (a1.isBusinessDay(testDate3))
+            {
                 QAssert.Fail(testDate3 + " (marked as holiday) not detected");
+            }
+
             if (!a1.isBusinessDay(testDate4))
+            {
                 QAssert.Fail(testDate4 + " erroneously detected as holiday");
+            }
 
             if (a2.isBusinessDay(testDate1))
+            {
                 QAssert.Fail(testDate1 + " (Saturday) not detected as weekend");
+            }
+
             if (a2.isBusinessDay(testDate2))
+            {
                 QAssert.Fail(testDate2 + " (Sunday) not detected as weekend");
+            }
+
             if (a2.isBusinessDay(testDate3))
+            {
                 QAssert.Fail(testDate3 + " (marked as holiday) not detected");
+            }
+
             if (!a2.isBusinessDay(testDate4))
+            {
                 QAssert.Fail(testDate4 + " erroneously detected as holiday");
+            }
 
             a2.addHoliday(testDate4);
 
             if (a1.isBusinessDay(testDate1))
+            {
                 QAssert.Fail(testDate1 + " (Saturday) not detected as weekend");
+            }
+
             if (a1.isBusinessDay(testDate2))
+            {
                 QAssert.Fail(testDate2 + " (Sunday) not detected as weekend");
+            }
+
             if (a1.isBusinessDay(testDate3))
+            {
                 QAssert.Fail(testDate3 + " (marked as holiday) not detected");
+            }
+
             if (a1.isBusinessDay(testDate4))
+            {
                 QAssert.Fail(testDate4 + " (marked as holiday) not detected");
+            }
 
             if (a2.isBusinessDay(testDate1))
+            {
                 QAssert.Fail(testDate1 + " (Saturday) not detected as weekend");
+            }
+
             if (a2.isBusinessDay(testDate2))
+            {
                 QAssert.Fail(testDate2 + " (Sunday) not detected as weekend");
+            }
+
             if (a2.isBusinessDay(testDate3))
+            {
                 QAssert.Fail(testDate3 + " (marked as holiday) not detected");
+            }
+
             if (a2.isBusinessDay(testDate4))
+            {
                 QAssert.Fail(testDate4 + " (marked as holiday) not detected");
+            }
         }
     }
 }

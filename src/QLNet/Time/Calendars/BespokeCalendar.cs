@@ -16,9 +16,10 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Time;
+
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -31,16 +32,34 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class BespokeCalendar : Calendar
+    [PublicAPI]
+    public class BespokeCalendar : Calendar
     {
+        // here implementation does not follow a singleton pattern
+        private class Impl : WesternImpl
+        {
+            private readonly List<DayOfWeek> weekend_ = new List<DayOfWeek>();
+
+            public void addWeekend(DayOfWeek w)
+            {
+                weekend_.Add(w);
+            }
+
+            public override bool isBusinessDay(Date date) => !isWeekend(date.DayOfWeek);
+
+            public override bool isWeekend(DayOfWeek w) => weekend_.Contains(w);
+        }
+
         private string name_;
-        public override string name() => name_;
 
         /*! \warning different bespoke calendars created with the same
                      name (or different bespoke calendars created with
                      no name) will compare as equal.
         */
-        public BespokeCalendar() : this("") { }
+        public BespokeCalendar() : this("")
+        {
+        }
+
         public BespokeCalendar(string name) : base(new Impl())
         {
             name_ = name;
@@ -51,19 +70,11 @@ namespace QLNet.Time.Calendars
         {
             var impl = calendar_ as Impl;
             if (impl != null)
+            {
                 impl.addWeekend(w);
+            }
         }
 
-        // here implementation does not follow a singleton pattern
-        class Impl : WesternImpl
-        {
-            public override bool isWeekend(DayOfWeek w) => weekend_.Contains(w);
-
-            public override bool isBusinessDay(Date date) => !isWeekend(date.DayOfWeek);
-
-            public void addWeekend(DayOfWeek w) { weekend_.Add(w); }
-
-            private List<DayOfWeek> weekend_ = new List<DayOfWeek>();
-        }
+        public override string name() => name_;
     }
 }

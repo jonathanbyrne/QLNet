@@ -16,8 +16,8 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Time;
-using System;
+
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -35,16 +35,16 @@ namespace QLNet.Time.Calendars
         <li>December 31st (1998, 1999, and 2001)</li>
         </ul>
     */
-    [JetBrains.Annotations.PublicAPI] public class TARGET : Calendar
+    [PublicAPI]
+    public class TARGET : Calendar
     {
-        public TARGET() : base(Impl.Singleton) { }
-
-        class Impl : WesternImpl
+        private class Impl : WesternImpl
         {
             internal static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "TARGET calendar";
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -69,10 +69,18 @@ namespace QLNet.Time.Calendars
                     || d == 26 && m == Month.December && y >= 2000
                     // December 31st, 1998, 1999, and 2001 only
                     || d == 31 && m == Month.December && (y == 1998 || y == 1999 || y == 2001))
+                {
                     return false;
+                }
+
                 return true;
             }
 
+            public override string name() => "TARGET calendar";
+        }
+
+        public TARGET() : base(Impl.Singleton)
+        {
         }
     }
 }

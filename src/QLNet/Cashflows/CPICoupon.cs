@@ -17,9 +17,9 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Cashflows
 {
@@ -42,18 +42,69 @@ namespace QLNet.Cashflows
        to the natural ZCIIS lag that was used to create the
        forward inflation curve.
     */
-    [JetBrains.Annotations.PublicAPI] public class CPICoupon : InflationCoupon
+    [PublicAPI]
+    public class CPICoupon : InflationCoupon
     {
         protected double baseCPI_;
         protected double fixedRate_;
-        protected double spread_;
         protected InterpolationType observationInterpolation_;
+        protected double spread_;
 
-        protected override bool checkPricerImpl(InflationCouponPricer pricer)
+        public CPICoupon(double baseCPI, // user provided, could be arbitrary
+            Date paymentDate,
+            double nominal,
+            Date startDate,
+            Date endDate,
+            int fixingDays,
+            ZeroInflationIndex index,
+            Period observationLag,
+            InterpolationType observationInterpolation,
+            DayCounter dayCounter,
+            double fixedRate, // aka gearing
+            double spread = 0.0,
+            Date refPeriodStart = null,
+            Date refPeriodEnd = null,
+            Date exCouponDate = null)
+            : base(paymentDate, nominal, startDate, endDate, fixingDays, index,
+                observationLag, dayCounter, refPeriodStart, refPeriodEnd, exCouponDate)
         {
-            var p = pricer as CPICouponPricer;
-            return p != null;
+            baseCPI_ = baseCPI;
+            fixedRate_ = fixedRate;
+            spread_ = spread;
+            observationInterpolation_ = observationInterpolation;
+            Utils.QL_REQUIRE(System.Math.Abs(baseCPI_) > 1e-16, () => "|baseCPI_| < 1e-16, future divide-by-zero problem");
         }
+
+        //! adjusted fixing (already divided by the base fixing)
+        public double adjustedFixing() => (rate() - spread()) / fixedRate();
+
+        //! base value for the CPI index
+        /*! \warning make sure that the interpolation used to create
+                    this is what you are using for the fixing,
+                    i.e. the observationInterpolation.
+        */
+        public double baseCPI() => baseCPI_;
+
+        //! index used
+        public ZeroInflationIndex cpiIndex() => index() as ZeroInflationIndex;
+
+        // Inspectors
+        // fixed rate that will be inflated by the index ratio
+        public double fixedRate() => fixedRate_;
+
+        //! allows for a different interpolation from the index
+        public override double indexFixing() => indexFixing(fixingDate());
+
+        //! utility method, calls indexFixing
+        public double indexObservation(Date onDate) => indexFixing(onDate);
+
+        //! how do you observe the index?  as-is, flat, linear?
+        public InterpolationType observationInterpolation() => observationInterpolation_;
+
+        //! spread paid over the fixing of the underlying index
+        public double spread() => spread_;
+
+        protected override bool checkPricerImpl(InflationCouponPricer pricer) => pricer is CPICouponPricer p;
 
         // use to calculate for fixing date, allows change of
         // interpolation w.r.t. index.  Can also be used ahead of time
@@ -78,72 +129,17 @@ namespace QLNet.Cashflows
                     var indexEnd = cpiIndex().fixing(dd.Value + new Period(1, TimeUnit.Days));
                     // linear interpolation
                     I1 = indexStart + (indexEnd - indexStart) * (d - dd.Key)
-                         / (dd.Value + new Period(1, TimeUnit.Days) - dd.Key); // can't get to next period's value within current period
+                        / (dd.Value + new Period(1, TimeUnit.Days) - dd.Key); // can't get to next period's value within current period
                 }
                 else
                 {
                     // no interpolation, i.e. flat = constant, so use start-of-period value
                     I1 = indexStart;
                 }
-
             }
+
             return I1;
         }
-
-        public CPICoupon(double baseCPI, // user provided, could be arbitrary
-                         Date paymentDate,
-                         double nominal,
-                         Date startDate,
-                         Date endDate,
-                         int fixingDays,
-                         ZeroInflationIndex index,
-                         Period observationLag,
-                         InterpolationType observationInterpolation,
-                         DayCounter dayCounter,
-                         double fixedRate, // aka gearing
-                         double spread = 0.0,
-                         Date refPeriodStart = null,
-                         Date refPeriodEnd = null,
-                         Date exCouponDate = null)
-           : base(paymentDate, nominal, startDate, endDate, fixingDays, index,
-                  observationLag, dayCounter, refPeriodStart, refPeriodEnd, exCouponDate)
-        {
-
-            baseCPI_ = baseCPI;
-            fixedRate_ = fixedRate;
-            spread_ = spread;
-            observationInterpolation_ = observationInterpolation;
-            Utils.QL_REQUIRE(System.Math.Abs(baseCPI_) > 1e-16, () => "|baseCPI_| < 1e-16, future divide-by-zero problem");
-        }
-
-        // Inspectors
-        // fixed rate that will be inflated by the index ratio
-        public double fixedRate() => fixedRate_;
-
-        //! spread paid over the fixing of the underlying index
-        public double spread() => spread_;
-
-        //! adjusted fixing (already divided by the base fixing)
-        public double adjustedFixing() => (rate() - spread()) / fixedRate();
-
-        //! allows for a different interpolation from the index
-        public override double indexFixing() => indexFixing(fixingDate());
-
-        //! base value for the CPI index
-        /*! \warning make sure that the interpolation used to create
-                    this is what you are using for the fixing,
-                    i.e. the observationInterpolation.
-        */
-        public double baseCPI() => baseCPI_;
-
-        //! how do you observe the index?  as-is, flat, linear?
-        public InterpolationType observationInterpolation() => observationInterpolation_;
-
-        //! utility method, calls indexFixing
-        public double indexObservation(Date onDate) => indexFixing(onDate);
-
-        //! index used
-        public ZeroInflationIndex cpiIndex() => index() as ZeroInflationIndex;
     }
 
     //! Cash flow paying the performance of a CPI (zero inflation) index

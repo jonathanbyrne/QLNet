@@ -1,19 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Extensions;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class ConvexMonotoneImpl : Interpolation.templateImpl
+    [PublicAPI]
+    public class ConvexMonotoneImpl : Interpolation.templateImpl
     {
-        private Dictionary<double, ISectionHelper> sectionHelpers_ = new Dictionary<double, ISectionHelper>();
-        private Dictionary<double, ISectionHelper> preSectionHelpers_ = new Dictionary<double, ISectionHelper>();
-        private ISectionHelper extrapolationHelper_;
-        private bool forcePositive_, constantLastPeriod_;
-        private double quadraticity_;
-        private double monotonicity_;
-
         public enum SectionType
         {
             EverywhereConstant,
@@ -21,6 +16,13 @@ namespace QLNet.Math.Interpolations
             QuadraticMinimum,
             QuadraticMaximum
         }
+
+        private ISectionHelper extrapolationHelper_;
+        private bool forcePositive_, constantLastPeriod_;
+        private double monotonicity_;
+        private Dictionary<double, ISectionHelper> preSectionHelpers_ = new Dictionary<double, ISectionHelper>();
+        private double quadraticity_;
+        private Dictionary<double, ISectionHelper> sectionHelpers_ = new Dictionary<double, ISectionHelper>();
 
         public ConvexMonotoneImpl(List<double> xBegin, int size, List<double> yBegin,
             double quadraticity, double monotonicity, bool forcePositive, bool constantLastPeriod,
@@ -40,10 +42,49 @@ namespace QLNet.Math.Interpolations
             Utils.QL_REQUIRE(size_ - preExistingHelpers.Count > 1, () => "Too many existing helpers have been supplied");
         }
 
+        public override double derivative(double x) => throw new NotImplementedException("Convex-monotone spline derivative not implemented");
+
+        public Dictionary<double, ISectionHelper> getExistingHelpers()
+        {
+            var retArray = new Dictionary<double, ISectionHelper>(sectionHelpers_);
+            if (constantLastPeriod_)
+            {
+                retArray.Remove(retArray.Keys.Last());
+            }
+
+            return retArray;
+        }
+
+        public override double primitive(double x)
+        {
+            if (x >= xBegin_.Last())
+            {
+                return extrapolationHelper_.primitive(x);
+            }
+
+            double i;
+            if (x >= sectionHelpers_.Keys.Last())
+            {
+                i = sectionHelpers_.Keys.Last();
+            }
+            else if (x <= sectionHelpers_.Keys.First())
+            {
+                i = sectionHelpers_.Keys.First();
+            }
+            else
+            {
+                i = sectionHelpers_.Keys.First(y => x < y);
+            }
+
+            return sectionHelpers_[i].primitive(x);
+        }
+
+        public override double secondDerivative(double x) => throw new NotImplementedException("Convex-monotone spline second derivative not implemented");
+
         public override void update()
         {
             sectionHelpers_.Clear();
-            if (size_ == 2)   //single period
+            if (size_ == 2) //single period
             {
                 ISectionHelper singleHelper = new EverywhereConstantHelper(yBegin_[1], 0.0, xBegin_[0]);
                 sectionHelpers_.Add(xBegin_[1], singleHelper);
@@ -65,27 +106,41 @@ namespace QLNet.Math.Interpolations
             }
 
             if (startPoint > 1)
+            {
                 f[startPoint - 1] = preSectionHelpers_.Last().Value.fNext();
+            }
+
             if (startPoint == 1)
+            {
                 f[0] = 1.5 * yBegin_[1] - 0.5 * f[1];
+            }
 
             f[size_ - 1] = 1.5 * yBegin_[size_ - 1] - 0.5 * f[size_ - 2];
 
             if (forcePositive_)
             {
                 if (f[0] < 0)
+                {
                     f[0] = 0.0;
+                }
+
                 if (f[size_ - 1] < 0.0)
+                {
                     f[size_ - 1] = 0.0;
+                }
             }
 
             var primitive = 0.0;
             for (var i = 0; i < startPoint - 1; ++i)
+            {
                 primitive += yBegin_[i + 1] * (xBegin_[i + 1] - xBegin_[i]);
+            }
 
             var endPoint = size_;
             if (constantLastPeriod_)
+            {
                 endPoint = endPoint - 1;
+            }
 
             for (var i = startPoint; i < endPoint; ++i)
             {
@@ -124,9 +179,9 @@ namespace QLNet.Math.Interpolations
                                 primitive);
                         }
                     }
+
                     if (quadraticity_ < 1.0)
                     {
-
                         if (gPrev > 0.0 && -0.5 * gPrev >= gNext && gNext >= -2.0 * gPrev ||
                             gPrev < 0.0 && -0.5 * gPrev <= gNext && gNext <= -2.0 * gPrev)
                         {
@@ -156,7 +211,6 @@ namespace QLNet.Math.Interpolations
                         else if (gPrev < 0.0 && gNext > -2.0 * gPrev ||
                                  gPrev > 0.0 && gNext < -2.0 * gPrev)
                         {
-
                             var eta = (gNext + 2.0 * gPrev) / (gNext - gPrev);
                             var b2 = (1.0 + monotonicity_) / 2.0;
                             if (eta < b2)
@@ -232,9 +286,15 @@ namespace QLNet.Math.Interpolations
                             var b2 = (1.0 + monotonicity_) / 2.0;
                             var b3 = (1.0 - monotonicity_) / 2.0;
                             if (eta > b2)
+                            {
                                 eta = b2;
+                            }
+
                             if (eta < b3)
+                            {
                                 eta = b3;
+                            }
+
                             if (forcePositive_)
                             {
                                 convMonotoneHelper = new ConvexMonotone4MinHelper(
@@ -269,6 +329,7 @@ namespace QLNet.Math.Interpolations
                         sectionHelpers_.Add(xBegin_[i], new ComboHelper(quadraticHelper, convMonotoneHelper, quadraticity));
                     }
                 }
+
                 primitive += yBegin_[i] * (xBegin_[i] - xBegin_[i - 1]);
             }
 
@@ -293,41 +354,19 @@ namespace QLNet.Math.Interpolations
 
             double i;
             if (x > sectionHelpers_.Keys.Last())
-                i = sectionHelpers_.Keys.Last();
-            else if (x < sectionHelpers_.Keys.First())
-                i = sectionHelpers_.Keys.First();
-            else
-                i = sectionHelpers_.Keys.First(y => x < y);
-            return sectionHelpers_[i].value(x);
-        }
-
-        public override double primitive(double x)
-        {
-            if (x >= xBegin_.Last())
             {
-                return extrapolationHelper_.primitive(x);
+                i = sectionHelpers_.Keys.Last();
+            }
+            else if (x < sectionHelpers_.Keys.First())
+            {
+                i = sectionHelpers_.Keys.First();
+            }
+            else
+            {
+                i = sectionHelpers_.Keys.First(y => x < y);
             }
 
-            double i;
-            if (x >= sectionHelpers_.Keys.Last())
-                i = sectionHelpers_.Keys.Last();
-            else if (x <= sectionHelpers_.Keys.First())
-                i = sectionHelpers_.Keys.First();
-            else
-                i = sectionHelpers_.Keys.First(y => x < y);
-            return sectionHelpers_[i].primitive(x);
-        }
-
-        public override double derivative(double x) => throw new NotImplementedException("Convex-monotone spline derivative not implemented");
-
-        public override double secondDerivative(double x) => throw new NotImplementedException("Convex-monotone spline second derivative not implemented");
-
-        public Dictionary<double, ISectionHelper> getExistingHelpers()
-        {
-            var retArray = new Dictionary<double, ISectionHelper>(sectionHelpers_);
-            if (constantLastPeriod_)
-                retArray.Remove(retArray.Keys.Last());
-            return retArray;
+            return sectionHelpers_[i].value(x);
         }
     }
 }

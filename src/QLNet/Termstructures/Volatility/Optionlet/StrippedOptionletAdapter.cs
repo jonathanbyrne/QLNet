@@ -14,23 +14,27 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-using QLNet.Math;
-using QLNet.Math.Interpolations;
-using QLNet.Termstructures.Volatility;
-using QLNet.Time;
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Math;
+using QLNet.Math.Interpolations;
+using QLNet.Time;
 
 namespace QLNet.Termstructures.Volatility.Optionlet
 {
-    [JetBrains.Annotations.PublicAPI] public class StrippedOptionletAdapter : OptionletVolatilityStructure
+    [PublicAPI]
+    public class StrippedOptionletAdapter : OptionletVolatilityStructure
     {
+        private int nInterpolations_;
+        private StrippedOptionletBase optionletStripper_;
+        private List<Interpolation> strikeInterpolations_;
+
         /*! Adapter class for turning a StrippedOptionletBase object into an
          OptionletVolatilityStructure.
         */
         public StrippedOptionletAdapter(StrippedOptionletBase s)
-           : base(s.settlementDays(), s.calendar(), s.businessDayConvention(), s.dayCounter())
+            : base(s.settlementDays(), s.calendar(), s.businessDayConvention(), s.dayCounter())
         {
             optionletStripper_ = s;
             nInterpolations_ = s.optionletMaturities();
@@ -39,23 +43,26 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             optionletStripper_.registerWith(update);
         }
 
+        public override double displacement() => optionletStripper_.displacement();
+
         // TermStructure interface
 
         public override Date maxDate() => optionletStripper_.optionletFixingDates().Last();
+
+        public override double maxStrike() => optionletStripper_.optionletStrikes(0).Last();
 
         // VolatilityTermStructure interface
 
         public override double minStrike() => optionletStripper_.optionletStrikes(0).First();
 
-        public override double maxStrike() => optionletStripper_.optionletStrikes(0).Last();
-
-        public override VolatilityType volatilityType() => optionletStripper_.volatilityType();
-
-        public override double displacement() => optionletStripper_.displacement();
-
         // LazyObject interface
 
-        public override void update() { base.update(); }
+        public override void update()
+        {
+            base.update();
+        }
+
+        public override VolatilityType volatilityType() => optionletStripper_.volatilityType();
 
         protected override void performCalculations()
         {
@@ -77,28 +84,26 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             {
                 stddevs.Add(volatilityImpl(t, optionletStrikes[i]) * System.Math.Sqrt(t));
             }
+
             // Extrapolation may be a problem with splines, but since minStrike() and maxStrike() are set, we assume that no one will use stddevs for strikes outside these strikes
             var bc = optionletStrikes.Count >= 4 ? CubicInterpolation.BoundaryCondition.Lagrange : CubicInterpolation.BoundaryCondition.SecondDerivative;
             return new InterpolatedSmileSection<Cubic>(t, optionletStrikes, stddevs, 0,
-                                                       new Cubic(CubicInterpolation.DerivativeApprox.Spline, false, bc, 0.0, bc, 0.0));
+                new Cubic(CubicInterpolation.DerivativeApprox.Spline, false, bc, 0.0, bc, 0.0));
         }
+
         protected override double volatilityImpl(double length, double strike)
         {
             calculate();
 
             List<double> vol = new InitializedList<double>(nInterpolations_);
             for (var i = 0; i < nInterpolations_; ++i)
+            {
                 vol[i] = strikeInterpolations_[i].value(strike, true);
+            }
 
             var optionletTimes = new List<double>(optionletStripper_.optionletFixingTimes());
             var timeInterpolator = new LinearInterpolation(optionletTimes, optionletTimes.Count, vol);
             return timeInterpolator.value(length, true);
         }
-
-
-        private StrippedOptionletBase optionletStripper_;
-        private int nInterpolations_;
-        private List<Interpolation> strikeInterpolations_;
-
     }
 }

@@ -17,15 +17,15 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Instruments;
+using QLNet.Math.Distributions;
 using QLNet.Methods.Finitedifferences.Utilities;
 using QLNet.processes;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
-using System.Collections.Generic;
-using System.Linq;
-using QLNet.Math.Distributions;
 using QLNet.Termstructures.Yield;
 using QLNet.Time;
 
@@ -35,54 +35,61 @@ using QLNet.Time;
 
 namespace QLNet.Methods.Finitedifferences.Meshers
 {
-    [JetBrains.Annotations.PublicAPI] public class FdmBlackScholesMesher : Fdm1dMesher
+    [PublicAPI]
+    public class FdmBlackScholesMesher : Fdm1dMesher
     {
         public FdmBlackScholesMesher(int size,
-                                     GeneralizedBlackScholesProcess process,
-                                     double maturity, double strike,
-                                     double? xMinConstraint = null,
-                                     double? xMaxConstraint = null,
-                                     double eps = 0.0001,
-                                     double scaleFactor = 1.5,
-                                     Pair<double?, double?> cPoint
-                                     = null,
-                                     DividendSchedule dividendSchedule = null,
-                                     FdmQuantoHelper fdmQuantoHelper = null,
-                                     double spotAdjustment = 0.0)
-        : base(size)
+            GeneralizedBlackScholesProcess process,
+            double maturity, double strike,
+            double? xMinConstraint = null,
+            double? xMaxConstraint = null,
+            double eps = 0.0001,
+            double scaleFactor = 1.5,
+            Pair<double?, double?> cPoint
+                = null,
+            DividendSchedule dividendSchedule = null,
+            FdmQuantoHelper fdmQuantoHelper = null,
+            double spotAdjustment = 0.0)
+            : base(size)
         {
             var S = process.x0();
             Utils.QL_REQUIRE(S > 0.0, () => "negative or null underlying given");
 
             dividendSchedule = dividendSchedule == null ? new DividendSchedule() : dividendSchedule;
             var intermediateSteps = new List<pair_double>();
-            for (var i = 0; i < dividendSchedule.Count
-                            && process.time(dividendSchedule[i].date()) <= maturity; ++i)
+            for (var i = 0;
+                 i < dividendSchedule.Count
+                 && process.time(dividendSchedule[i].date()) <= maturity;
+                 ++i)
+            {
                 intermediateSteps.Add(
-                   new pair_double(
-                      process.time(dividendSchedule[i].date()),
-                      dividendSchedule[i].amount()
-                   ));
+                    new pair_double(
+                        process.time(dividendSchedule[i].date()),
+                        dividendSchedule[i].amount()
+                    ));
+            }
 
             var intermediateTimeSteps = (int)System.Math.Max(2, 24.0 * maturity);
             for (var i = 0; i < intermediateTimeSteps; ++i)
+            {
                 intermediateSteps.Add(
-                   new pair_double((i + 1) * (maturity / intermediateTimeSteps), 0.0));
+                    new pair_double((i + 1) * (maturity / intermediateTimeSteps), 0.0));
+            }
 
             intermediateSteps.Sort();
 
             var rTS = process.riskFreeRate();
             var qTS = fdmQuantoHelper != null
-                                             ? new Handle<YieldTermStructure>(
-                                                new QuantoTermStructure(process.dividendYield(),
-                                                                        process.riskFreeRate(),
-                                                                        new Handle<YieldTermStructure>(fdmQuantoHelper.foreignTermStructure()),
-                                                                        process.blackVolatility(),
-                                                                        strike,
-                                                                        new Handle<BlackVolTermStructure>(fdmQuantoHelper.fxVolatilityTermStructure()),
-                                                                        fdmQuantoHelper.exchRateATMlevel(),
-                                                                        fdmQuantoHelper.equityFxCorrelation()))
-                                             : process.dividendYield();
+                ? new Handle<YieldTermStructure>(
+                    new QuantoTermStructure(process.dividendYield(),
+                        process.riskFreeRate(),
+                        new Handle<YieldTermStructure>(fdmQuantoHelper.foreignTermStructure()),
+                        process.blackVolatility(),
+                        strike,
+                        new Handle<BlackVolTermStructure>(fdmQuantoHelper.fxVolatilityTermStructure()),
+                        fdmQuantoHelper.exchRateATMlevel(),
+                        fdmQuantoHelper.equityFxCorrelation()))
+                : process.dividendYield();
 
             var lastDivTime = 0.0;
             var fwd = S + spotAdjustment;
@@ -94,13 +101,15 @@ namespace QLNet.Methods.Finitedifferences.Meshers
                 var divAmount = intermediateSteps[i].second;
 
                 fwd = fwd / rTS.currentLink().discount(divTime) * rTS.currentLink().discount(lastDivTime)
-                      * qTS.currentLink().discount(divTime) / qTS.currentLink().discount(lastDivTime);
+                                                                * qTS.currentLink().discount(divTime) / qTS.currentLink().discount(lastDivTime);
 
-                mi = System.Math.Min(mi, fwd); ma = System.Math.Max(ma, fwd);
+                mi = System.Math.Min(mi, fwd);
+                ma = System.Math.Max(ma, fwd);
 
                 fwd -= divAmount;
 
-                mi = System.Math.Min(mi, fwd); ma = System.Math.Max(ma, fwd);
+                mi = System.Math.Min(mi, fwd);
+                ma = System.Math.Max(ma, fwd);
 
                 lastDivTime = divTime;
             }
@@ -108,8 +117,8 @@ namespace QLNet.Methods.Finitedifferences.Meshers
             // Set the grid boundaries
             var normInvEps = new InverseCumulativeNormal().value(1 - eps);
             var sigmaSqrtT
-               = process.blackVolatility().currentLink().blackVol(maturity, strike)
-                 * System.Math.Sqrt(maturity);
+                = process.blackVolatility().currentLink().blackVol(maturity, strike)
+                  * System.Math.Sqrt(maturity);
 
             double? xMin = System.Math.Log(mi) - sigmaSqrtT * normInvEps * scaleFactor;
             double? xMax = System.Math.Log(ma) + sigmaSqrtT * normInvEps * scaleFactor;
@@ -118,6 +127,7 @@ namespace QLNet.Methods.Finitedifferences.Meshers
             {
                 xMin = xMinConstraint;
             }
+
             if (xMaxConstraint != null)
             {
                 xMax = xMaxConstraint;
@@ -128,9 +138,8 @@ namespace QLNet.Methods.Finitedifferences.Meshers
                 && cPoint.first != null
                 && System.Math.Log(cPoint.first.Value) >= xMin && System.Math.Log(cPoint.first.Value) <= xMax)
             {
-
                 helper = new Concentrating1dMesher(xMin.Value, xMax.Value, size,
-                                                   new Pair<double?, double?>(System.Math.Log(cPoint.first.Value), cPoint.second));
+                    new Pair<double?, double?>(System.Math.Log(cPoint.first.Value), cPoint.second));
             }
             else
             {
@@ -146,9 +155,9 @@ namespace QLNet.Methods.Finitedifferences.Meshers
         }
 
         public static GeneralizedBlackScholesProcess processHelper(Handle<Quote> s0,
-                                                                   Handle<YieldTermStructure> rTS,
-                                                                   Handle<YieldTermStructure> qTS,
-                                                                   double vol) =>
+            Handle<YieldTermStructure> rTS,
+            Handle<YieldTermStructure> qTS,
+            double vol) =>
             new GeneralizedBlackScholesProcess(
                 s0, qTS, rTS,
                 new Handle<BlackVolTermStructure>(

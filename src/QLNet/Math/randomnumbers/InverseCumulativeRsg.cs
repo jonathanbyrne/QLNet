@@ -17,9 +17,10 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Methods.montecarlo;
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Methods.montecarlo;
 
 namespace QLNet.Math.randomnumbers
 {
@@ -33,12 +34,13 @@ namespace QLNet.Math.randomnumbers
         The inverse cumulative distribution is supplied by IC.
     */
 
-    [JetBrains.Annotations.PublicAPI] public class InverseCumulativeRsg<USG, IC> : IRNG where USG : IRNG where IC : IValue
+    [PublicAPI]
+    public class InverseCumulativeRsg<USG, IC> : IRNG where USG : IRNG where IC : IValue
     {
-        private USG uniformSequenceGenerator_;
         private int dimension_;
-        private Sample<List<double>> x_;
         private IC ICD_;
+        private USG uniformSequenceGenerator_;
+        private Sample<List<double>> x_;
 
         public InverseCumulativeRsg(USG uniformSequenceGenerator)
         {
@@ -63,6 +65,7 @@ namespace QLNet.Math.randomnumbers
             {
                 x_.value[i] = ICD_.value(sample.value[i]);
             }
+
             return x_;
         }
 

@@ -18,7 +18,6 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using System;
 using System.Collections.Generic;
 
 namespace QLNet.Math.statistics
@@ -30,31 +29,25 @@ namespace QLNet.Math.statistics
 
     public sealed class DiscrepancyStatistics : SequenceStatistics
     {
+        private double adiscr_, cdiscr_;
+        private double bdiscr_, ddiscr_;
+
         // constructor
         public DiscrepancyStatistics(int dimension)
-           : base(dimension)
+            : base(dimension)
         {
             reset(dimension);
         }
 
-        //!  1-dimensional inspectors
-        public double discrepancy()
-        {
-            var N = samples();
-            if (N == 0)
-                return 0;
-            return System.Math.Sqrt(adiscr_ / (N * N) - bdiscr_ / N * cdiscr_ + ddiscr_);
-        }
-
         public override void add
-           (List<double> begin)
+            (List<double> begin)
         {
             add
-               (begin, 1);
+                (begin, 1);
         }
 
         public override void add
-           (List<double> begin, double weight)
+            (List<double> begin, double weight)
         {
             base.add(begin, weight);
             int k, m, N;
@@ -68,6 +61,7 @@ namespace QLNet.Math.statistics
                 r_ik = begin[k]; //i=N
                 temp *= 1.0 - r_ik * r_ik;
             }
+
             cdiscr_ += temp;
 
             for (m = 0; m < N - 1; m++)
@@ -81,6 +75,7 @@ namespace QLNet.Math.statistics
                     r_jk = begin[k];
                     temp *= 1.0 - System.Math.Max(r_ik, r_jk);
                 }
+
                 adiscr_ += temp;
 
                 temp = 1.0;
@@ -92,8 +87,10 @@ namespace QLNet.Math.statistics
                     r_jk = 0;
                     temp *= 1.0 - System.Math.Max(r_ik, r_jk);
                 }
+
                 adiscr_ += temp;
             }
+
             temp = 1.0;
             for (k = 0; k < dimension_; ++k)
             {
@@ -101,13 +98,28 @@ namespace QLNet.Math.statistics
                 r_ik = r_jk = begin[k];
                 temp *= 1.0 - System.Math.Max(r_ik, r_jk);
             }
+
             adiscr_ += temp;
+        }
+
+        //!  1-dimensional inspectors
+        public double discrepancy()
+        {
+            var N = samples();
+            if (N == 0)
+            {
+                return 0;
+            }
+
+            return System.Math.Sqrt(adiscr_ / (N * N) - bdiscr_ / N * cdiscr_ + ddiscr_);
         }
 
         public override void reset(int dimension)
         {
             if (dimension == 0) // if no size given,
+            {
                 dimension = dimension_; // keep the current one
+            }
 
             Utils.QL_REQUIRE(dimension != 1, () => "dimension==1 not allowed");
 
@@ -118,8 +130,5 @@ namespace QLNet.Math.statistics
             cdiscr_ = 0.0;
             ddiscr_ = 1.0 / System.Math.Pow(3.0, dimension);
         }
-
-        private double adiscr_, cdiscr_;
-        private double bdiscr_, ddiscr_;
     }
 }

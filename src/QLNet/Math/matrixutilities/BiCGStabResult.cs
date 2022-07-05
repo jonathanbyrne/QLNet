@@ -4,23 +4,15 @@
     {
         public BiCGStabResult(int i, double e, Vector xx)
         {
-            iterations = i;
-            error = e;
-            x = xx;
+            Iterations = i;
+            Error = e;
+            X = xx;
         }
 
-        private int iterations;
-        private double error;
-        private Vector x;
+        public double Error { get; set; }
 
-        public int Iterations { get => iterations;
-            set => iterations = value;
-        }
-        public double Error { get => error;
-            set => error = value;
-        }
-        public Vector X { get => x;
-            set => x = value;
-        }
+        public int Iterations { get; set; }
+
+        public Vector X { get; set; }
     }
 }

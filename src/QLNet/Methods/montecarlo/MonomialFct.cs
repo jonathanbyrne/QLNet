@@ -1,6 +1,9 @@
-﻿namespace QLNet.Methods.montecarlo
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Methods.montecarlo
 {
-    [JetBrains.Annotations.PublicAPI] public class MonomialFct : IValue
+    [PublicAPI]
+    public class MonomialFct : IValue
     {
         private int order_;
 
@@ -16,6 +19,7 @@
             {
                 ret *= x;
             }
+
             return ret;
         }
     }

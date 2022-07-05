@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class ForwardFlatInterpolationImpl : Interpolation.templateImpl
+    [PublicAPI]
+    public class ForwardFlatInterpolationImpl : Interpolation.templateImpl
     {
         private List<double> primitive_;
 
@@ -10,6 +12,17 @@ namespace QLNet.Math.Interpolations
         {
             primitive_ = new InitializedList<double>(size_);
         }
+
+        public override double derivative(double x) => 0.0;
+
+        public override double primitive(double x)
+        {
+            var i = locate(x);
+            var dx = x - xBegin_[i];
+            return primitive_[i] + dx * yBegin_[i];
+        }
+
+        public override double secondDerivative(double x) => 0.0;
 
         public override void update()
         {
@@ -20,22 +33,16 @@ namespace QLNet.Math.Interpolations
                 primitive_[i] = primitive_[i - 1] + dx * yBegin_[i - 1];
             }
         }
+
         public override double value(double x)
         {
             if (x >= xBegin_[size_ - 1])
+            {
                 return yBegin_[size_ - 1];
+            }
 
             var i = locate(x);
             return yBegin_[i];
         }
-        public override double primitive(double x)
-        {
-            var i = locate(x);
-            var dx = x - xBegin_[i];
-            return primitive_[i] + dx * yBegin_[i];
-        }
-        public override double derivative(double x) => 0.0;
-
-        public override double secondDerivative(double x) => 0.0;
     }
 }

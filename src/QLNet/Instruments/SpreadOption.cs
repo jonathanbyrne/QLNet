@@ -14,22 +14,27 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
+
 namespace QLNet.Instruments
 {
     /// <summary>
-    /// Spread option on two assets
+    ///     Spread option on two assets
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class SpreadOption : MultiAssetOption
+    [PublicAPI]
+    public class SpreadOption : MultiAssetOption
     {
-        public SpreadOption(PlainVanillaPayoff payoff, Exercise exercise)
-           : base(payoff, exercise)
-        { }
-
         /// <summary>
-        /// Spread option engine base class
+        ///     Spread option engine base class
         /// </summary>
         public new class Engine :
-           GenericEngine<Arguments, Results>
-        { }
+            GenericEngine<Arguments, Results>
+        {
+        }
+
+        public SpreadOption(PlainVanillaPayoff payoff, Exercise exercise)
+            : base(payoff, exercise)
+        {
+        }
     }
 }

@@ -18,6 +18,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.processes;
 
@@ -30,15 +31,20 @@ namespace QLNet.Pricingengines.vanilla
         - the correctness of the returned value is tested by reproducing results available in literature.
         - the correctness of the returned greeks is tested by reproducing numerical derivatives.
     */
-    [JetBrains.Annotations.PublicAPI] public class FDAmericanEngine : FDEngineAdapter<FDAmericanCondition<FDStepConditionEngine>, OneAssetOption.Engine>,
-      IFDEngine
+    [PublicAPI]
+    public class FDAmericanEngine : FDEngineAdapter<FDAmericanCondition<FDStepConditionEngine>, OneAssetOption.Engine>,
+        IFDEngine
     {
         // required for generics
-        public FDAmericanEngine() { }
+        public FDAmericanEngine()
+        {
+        }
 
         public FDAmericanEngine(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100,
-                                bool timeDependent = false)
-           : base(process, timeSteps, gridPoints, timeDependent) { }
+            bool timeDependent = false)
+            : base(process, timeSteps, gridPoints, timeDependent)
+        {
+        }
 
         public IFDEngine factory(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100) => new FDAmericanEngine(process, timeSteps, gridPoints);
     }

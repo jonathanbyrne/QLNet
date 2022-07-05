@@ -17,13 +17,14 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Exceptions;
-using System;
 
+using JetBrains.Annotations;
+using QLNet.Exceptions;
 
 namespace QLNet.Math.Solvers1d
 {
-    [JetBrains.Annotations.PublicAPI] public class Brent : Solver1D
+    [PublicAPI]
+    public class Brent : Solver1D
     {
         protected override double solveImpl(ISolver1d f, double xAccuracy)
         {
@@ -42,12 +43,12 @@ namespace QLNet.Math.Solvers1d
                 if (froot > 0.0 && fxMax_ > 0.0 ||
                     froot < 0.0 && fxMax_ < 0.0)
                 {
-
                     // Rename xMin_, root_, xMax_ and adjust bounds
                     xMax_ = xMin_;
                     fxMax_ = fxMin_;
                     e = d = root_ - xMin_;
                 }
+
                 if (System.Math.Abs(fxMax_) < System.Math.Abs(froot))
                 {
                     xMin_ = root_;
@@ -57,15 +58,18 @@ namespace QLNet.Math.Solvers1d
                     froot = fxMax_;
                     fxMax_ = fxMin_;
                 }
+
                 // Convergence check
                 xAcc1 = 2.0 * Const.QL_EPSILON * System.Math.Abs(root_) + 0.5 * xAccuracy;
                 xMid = (xMax_ - root_) / 2.0;
                 if (System.Math.Abs(xMid) <= xAcc1 || Utils.close(froot, 0.0))
+                {
                     return root_;
+                }
+
                 if (System.Math.Abs(e) >= xAcc1 &&
                     System.Math.Abs(fxMin_) > System.Math.Abs(froot))
                 {
-
                     // Attempt inverse quadratic interpolation
                     s = froot / fxMin_;
                     if (Utils.close(xMin_, xMax_))
@@ -80,19 +84,23 @@ namespace QLNet.Math.Solvers1d
                         p = s * (2.0 * xMid * q * (q - r) - (root_ - xMin_) * (r - 1.0));
                         q = (q - 1.0) * (r - 1.0) * (s - 1.0);
                     }
+
                     if (p > 0.0)
-                        q = -q;  // Check whether in bounds
+                    {
+                        q = -q; // Check whether in bounds
+                    }
+
                     p = System.Math.Abs(p);
                     min1 = 3.0 * xMid * q - System.Math.Abs(xAcc1 * q);
                     min2 = System.Math.Abs(e * q);
                     if (2.0 * p < (min1 < min2 ? min1 : min2))
                     {
-                        e = d;                // Accept interpolation
+                        e = d; // Accept interpolation
                         d = p / q;
                     }
                     else
                     {
-                        d = xMid;  // Interpolation failed, use bisection
+                        d = xMid; // Interpolation failed, use bisection
                         e = d;
                     }
                 }
@@ -102,17 +110,24 @@ namespace QLNet.Math.Solvers1d
                     d = xMid;
                     e = d;
                 }
+
                 xMin_ = root_;
                 fxMin_ = froot;
                 if (System.Math.Abs(d) > xAcc1)
+                {
                     root_ += d;
+                }
                 else
+                {
                     root_ += System.Math.Abs(xAcc1) * System.Math.Sign(xMid);
+                }
+
                 froot = f.value(root_);
                 evaluationNumber_++;
             }
+
             Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
-                          QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
+                QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
             return 0;
         }
     }

@@ -14,15 +14,19 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
+
 namespace QLNet.Instruments
 {
     //! Continuous-floating lookback option
-    [JetBrains.Annotations.PublicAPI] public class ContinuousFloatingLookbackOption : OneAssetOption
+    [PublicAPI]
+    public class ContinuousFloatingLookbackOption : OneAssetOption
     {
         //! %Arguments for continuous fixed lookback option calculation
         public new class Arguments : Option.Arguments
         {
             public double? minmax { get; set; }
+
             public override void validate()
             {
                 base.validate();
@@ -34,10 +38,15 @@ namespace QLNet.Instruments
 
         //! %Continuous floating lookback %engine base class
         public new class Engine : GenericEngine<Arguments,
-           Results>
-        { }
+            Results>
+        {
+        }
+
+        // arguments
+        protected double? minmax_;
+
         public ContinuousFloatingLookbackOption(double minmax, TypePayoff payoff, Exercise exercise)
-           : base(payoff, exercise)
+            : base(payoff, exercise)
         {
             minmax_ = minmax;
         }
@@ -50,9 +59,6 @@ namespace QLNet.Instruments
             Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
             moreArgs.minmax = minmax_;
         }
-
-        // arguments
-        protected double? minmax_;
     }
 
     //! Continuous-fixed lookback option

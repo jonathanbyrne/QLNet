@@ -16,9 +16,10 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
-using QLNet.Math.matrixutilities;
+
 using System;
+using JetBrains.Annotations;
+using QLNet.Math.matrixutilities;
 
 namespace QLNet.Math.integrals
 {
@@ -35,8 +36,11 @@ namespace QLNet.Math.integrals
        \test the correctness of the result is tested by checking it
              against known good values.
     */
-    [JetBrains.Annotations.PublicAPI] public class GaussianQuadrature
+    [PublicAPI]
+    public class GaussianQuadrature
     {
+        private Vector x_, w_;
+
         public GaussianQuadrature(int n, GaussianOrthogonalPolynomial orthPoly)
         {
             x_ = new Vector(n);
@@ -51,11 +55,12 @@ namespace QLNet.Math.integrals
                 x_[i] = orthPoly.alpha(i);
                 e[i - 1] = System.Math.Sqrt(orthPoly.beta(i));
             }
+
             x_[0] = orthPoly.alpha(0);
 
             var tqr = new TqrEigenDecomposition(x_, e,
-                                                                  TqrEigenDecomposition.EigenVectorCalculation.OnlyFirstRowEigenVector,
-                                                                  TqrEigenDecomposition.ShiftStrategy.Overrelaxation);
+                TqrEigenDecomposition.EigenVectorCalculation.OnlyFirstRowEigenVector,
+                TqrEigenDecomposition.ShiftStrategy.Overrelaxation);
 
             x_ = tqr.eigenvalues();
             var ev = tqr.eigenvectors();
@@ -67,6 +72,7 @@ namespace QLNet.Math.integrals
             }
         }
 
+        public int order() => x_.size();
 
         public double value(Func<double, double> f)
         {
@@ -75,16 +81,13 @@ namespace QLNet.Math.integrals
             {
                 sum += w_[i] * f(x_[i]);
             }
+
             return sum;
         }
-
-        public int order() => x_.size();
 
         public Vector weights() => w_;
 
         public Vector x() => x_;
-
-        private Vector x_, w_;
     }
 
     //! generalized Gauss-Laguerre integration

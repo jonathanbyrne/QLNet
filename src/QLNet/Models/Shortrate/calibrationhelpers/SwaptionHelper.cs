@@ -18,36 +18,47 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Instruments;
-using QLNet.Models;
+using QLNet.Pricingengines.Swap;
+using QLNet.Pricingengines.swaption;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.Optionlet;
 using QLNet.Time;
-using System.Collections.Generic;
-using QLNet.Pricingengines.Swap;
-using QLNet.Pricingengines.swaption;
 using QLNet.Time.DayCounters;
 
 namespace QLNet.Models.Shortrate.calibrationhelpers
 {
-    [JetBrains.Annotations.PublicAPI] public class SwaptionHelper : CalibrationHelper
+    [PublicAPI]
+    public class SwaptionHelper : CalibrationHelper
     {
+        private Date exerciseDate_, endDate_;
+        private double exerciseRate_;
+        private DayCounter fixedLegDayCounter_, floatingLegDayCounter_;
+        private IborIndex index_;
+        private Period maturity_, length_, fixedLegTenor_;
+        private double nominal_;
+        private double? strike_;
+        private VanillaSwap swap_;
+        private Swaption swaption_;
+
         public SwaptionHelper(Period maturity,
-                              Period length,
-                              Handle<Quote> volatility,
-                              IborIndex index,
-                              Period fixedLegTenor,
-                              DayCounter fixedLegDayCounter,
-                              DayCounter floatingLegDayCounter,
-                              Handle<YieldTermStructure> termStructure,
-                              CalibrationErrorType errorType = CalibrationErrorType.RelativePriceError,
-                              double? strike = null,
-                              double nominal = 1.0,
-                              VolatilityType type = VolatilityType.ShiftedLognormal,
-                              double shift = 0.0)
-        : base(volatility, termStructure, errorType, type, shift)
+            Period length,
+            Handle<Quote> volatility,
+            IborIndex index,
+            Period fixedLegTenor,
+            DayCounter fixedLegDayCounter,
+            DayCounter floatingLegDayCounter,
+            Handle<YieldTermStructure> termStructure,
+            CalibrationErrorType errorType = CalibrationErrorType.RelativePriceError,
+            double? strike = null,
+            double nominal = 1.0,
+            VolatilityType type = VolatilityType.ShiftedLognormal,
+            double shift = 0.0)
+            : base(volatility, termStructure, errorType, type, shift)
         {
             exerciseDate_ = null;
             endDate_ = null;
@@ -64,19 +75,19 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
         }
 
         public SwaptionHelper(Date exerciseDate,
-                              Period length,
-                              Handle<Quote> volatility,
-                              IborIndex index,
-                              Period fixedLegTenor,
-                              DayCounter fixedLegDayCounter,
-                              DayCounter floatingLegDayCounter,
-                              Handle<YieldTermStructure> termStructure,
-                              CalibrationErrorType errorType = CalibrationErrorType.RelativePriceError,
-                              double? strike = null,
-                              double nominal = 1.0,
-                              VolatilityType type = VolatilityType.ShiftedLognormal,
-                              double shift = 0.0)
-        : base(volatility, termStructure, errorType, type, shift)
+            Period length,
+            Handle<Quote> volatility,
+            IborIndex index,
+            Period fixedLegTenor,
+            DayCounter fixedLegDayCounter,
+            DayCounter floatingLegDayCounter,
+            Handle<YieldTermStructure> termStructure,
+            CalibrationErrorType errorType = CalibrationErrorType.RelativePriceError,
+            double? strike = null,
+            double nominal = 1.0,
+            VolatilityType type = VolatilityType.ShiftedLognormal,
+            double shift = 0.0)
+            : base(volatility, termStructure, errorType, type, shift)
         {
             exerciseDate_ = exerciseDate;
             endDate_ = null;
@@ -93,19 +104,19 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
         }
 
         public SwaptionHelper(Date exerciseDate,
-                              Date endDate,
-                              Handle<Quote> volatility,
-                              IborIndex index,
-                              Period fixedLegTenor,
-                              DayCounter fixedLegDayCounter,
-                              DayCounter floatingLegDayCounter,
-                              Handle<YieldTermStructure> termStructure,
-                              CalibrationErrorType errorType = CalibrationErrorType.RelativePriceError,
-                              double? strike = null,
-                              double nominal = 1.0,
-                              VolatilityType type = VolatilityType.ShiftedLognormal,
-                              double shift = 0.0)
-        : base(volatility, termStructure, errorType, type, shift)
+            Date endDate,
+            Handle<Quote> volatility,
+            IborIndex index,
+            Period fixedLegTenor,
+            DayCounter fixedLegDayCounter,
+            DayCounter floatingLegDayCounter,
+            Handle<YieldTermStructure> termStructure,
+            CalibrationErrorType errorType = CalibrationErrorType.RelativePriceError,
+            double? strike = null,
+            double nominal = 1.0,
+            VolatilityType type = VolatilityType.ShiftedLognormal,
+            double shift = 0.0)
+            : base(volatility, termStructure, errorType, type, shift)
         {
             exerciseDate_ = exerciseDate;
             endDate_ = endDate;
@@ -121,7 +132,6 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
             index_.registerWith(update);
         }
 
-
         public override void addTimesTo(List<double> times)
         {
             calculate();
@@ -129,19 +139,14 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
             swaption_.setupArguments(args);
 
             var swaptionTimes =
-               new DiscretizedSwaption(args,
-                                       termStructure_.link.referenceDate(),
-                                       termStructure_.link.dayCounter()).mandatoryTimes();
+                new DiscretizedSwaption(args,
+                    termStructure_.link.referenceDate(),
+                    termStructure_.link.dayCounter()).mandatoryTimes();
 
             for (var i = 0; i < swaptionTimes.Count; i++)
+            {
                 times.Insert(times.Count, swaptionTimes[i]);
-        }
-
-        public override double modelValue()
-        {
-            calculate();
-            swaption_.setPricingEngine(engine_);
-            return swaption_.NPV();
+            }
         }
 
         public override double blackPrice(double sigma)
@@ -172,8 +177,24 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
             return value;
         }
 
-        public VanillaSwap underlyingSwap() { calculate(); return swap_; }
-        public Swaption swaption() { calculate(); return swaption_; }
+        public override double modelValue()
+        {
+            calculate();
+            swaption_.setPricingEngine(engine_);
+            return swaption_.NPV();
+        }
+
+        public Swaption swaption()
+        {
+            calculate();
+            return swaption_;
+        }
+
+        public VanillaSwap underlyingSwap()
+        {
+            calculate();
+            return swap_;
+        }
 
         protected override void performCalculations()
         {
@@ -182,35 +203,39 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
 
             var exerciseDate = exerciseDate_;
             if (exerciseDate == null)
+            {
                 exerciseDate = calendar.advance(termStructure_.link.referenceDate(),
-                                                maturity_,
-                                                index_.businessDayConvention());
+                    maturity_,
+                    index_.businessDayConvention());
+            }
 
             var startDate = calendar.advance(exerciseDate,
-                                              fixingDays, TimeUnit.Days,
-                                              index_.businessDayConvention());
+                fixingDays, TimeUnit.Days,
+                index_.businessDayConvention());
 
             var endDate = endDate_;
             if (endDate == null)
+            {
                 endDate = calendar.advance(startDate, length_,
-                                           index_.businessDayConvention());
+                    index_.businessDayConvention());
+            }
 
             var fixedSchedule = new Schedule(startDate, endDate, fixedLegTenor_, calendar,
-                                                  index_.businessDayConvention(),
-                                                  index_.businessDayConvention(),
-                                                  DateGeneration.Rule.Forward, false);
+                index_.businessDayConvention(),
+                index_.businessDayConvention(),
+                DateGeneration.Rule.Forward, false);
             var floatSchedule = new Schedule(startDate, endDate, index_.tenor(), calendar,
-                                                  index_.businessDayConvention(),
-                                                  index_.businessDayConvention(),
-                                                  DateGeneration.Rule.Forward, false);
+                index_.businessDayConvention(),
+                index_.businessDayConvention(),
+                DateGeneration.Rule.Forward, false);
 
             IPricingEngine swapEngine = new DiscountingSwapEngine(termStructure_, false);
 
             var type = VanillaSwap.Type.Receiver;
 
             var temp = new VanillaSwap(VanillaSwap.Type.Receiver, nominal_,
-                                               fixedSchedule, 0.0, fixedLegDayCounter_,
-                                               floatSchedule, index_, 0.0, floatingLegDayCounter_);
+                fixedSchedule, 0.0, fixedLegDayCounter_,
+                floatSchedule, index_, 0.0, floatingLegDayCounter_);
             temp.setPricingEngine(swapEngine);
             var forward = temp.fairRate();
             if (!strike_.HasValue)
@@ -223,9 +248,10 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
                 type = strike_ <= forward ? VanillaSwap.Type.Receiver : VanillaSwap.Type.Payer;
                 // ensure that calibration instrument is out of the money
             }
+
             swap_ = new VanillaSwap(type, nominal_,
-                                    fixedSchedule, exerciseRate_, fixedLegDayCounter_,
-                                    floatSchedule, index_, 0.0, floatingLegDayCounter_);
+                fixedSchedule, exerciseRate_, fixedLegDayCounter_,
+                floatSchedule, index_, 0.0, floatingLegDayCounter_);
             swap_.setPricingEngine(swapEngine);
 
             Exercise exercise = new EuropeanExercise(exerciseDate);
@@ -234,15 +260,5 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
 
             base.performCalculations();
         }
-
-        private Date exerciseDate_, endDate_;
-        private Period maturity_, length_, fixedLegTenor_;
-        private IborIndex index_;
-        private DayCounter fixedLegDayCounter_, floatingLegDayCounter_;
-        private double? strike_;
-        private double nominal_;
-        private double exerciseRate_;
-        private VanillaSwap swap_;
-        private Swaption swaption_;
     }
 }

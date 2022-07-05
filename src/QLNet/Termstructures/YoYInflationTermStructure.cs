@@ -7,7 +7,8 @@ namespace QLNet
     public abstract class YoYInflationTermStructure : InflationTermStructure
     {
         protected YoYInflationTermStructure()
-        {}
+        {
+        }
 
         // Constructors
         protected YoYInflationTermStructure(DayCounter dayCounter,
@@ -19,7 +20,8 @@ namespace QLNet
             Seasonality seasonality = null)
             : base(baseYoYRate, observationLag, frequency, indexIsInterpolated,
                 yTS, dayCounter, seasonality)
-        {}
+        {
+        }
 
         protected YoYInflationTermStructure(Date referenceDate,
             Calendar calendar,
@@ -32,7 +34,8 @@ namespace QLNet
             Seasonality seasonality = null)
             : base(referenceDate, baseYoYRate, observationLag, frequency, indexIsInterpolated,
                 yTS, calendar, dayCounter, seasonality)
-        {}
+        {
+        }
 
         protected YoYInflationTermStructure(int settlementDays,
             Calendar calendar,
@@ -46,7 +49,8 @@ namespace QLNet
             : base(settlementDays, calendar, baseYoYRate, observationLag,
                 frequency, indexIsInterpolated,
                 yTS, dayCounter, seasonality)
-        {}
+        {
+        }
 
         // Inspectors
         //! year-on-year inflation rate, forceLinearInterpolation
@@ -105,6 +109,7 @@ namespace QLNet
             {
                 yoyRate = seasonality().correctYoYRate(d - useLag, yoyRate, this);
             }
+
             return yoyRate;
         }
 

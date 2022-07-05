@@ -14,6 +14,7 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
 using QLNet.Patterns;
 
 namespace QLNet.Quotes
@@ -22,26 +23,33 @@ namespace QLNet.Quotes
     /*! It includes the various delta quotation types
         in FX markets as well as ATM types.
     */
-    [JetBrains.Annotations.PublicAPI] public class DeltaVolQuote : Quote, IObserver
+    [PublicAPI]
+    public class DeltaVolQuote : Quote, IObserver
     {
-        public enum DeltaType
-        {
-            Spot,        // Spot Delta, e.g. usual Black Scholes delta
-            Fwd,         // Forward Delta
-            PaSpot,      // Premium Adjusted Spot Delta
-            PaFwd        // Premium Adjusted Forward Delta
-        }
-
         public enum AtmType
         {
-            AtmNull,         // Default, if not an atm quote
-            AtmSpot,         // K=S_0
-            AtmFwd,          // K=F
+            AtmNull, // Default, if not an atm quote
+            AtmSpot, // K=S_0
+            AtmFwd, // K=F
             AtmDeltaNeutral, // Call Delta = Put Delta
-            AtmVegaMax,      // K such that Vega is Maximum
-            AtmGammaMax,     // K such that Gamma is Maximum
-            AtmPutCall50     // K such that Call Delta=0.50 (only for Fwd Delta)
+            AtmVegaMax, // K such that Vega is Maximum
+            AtmGammaMax, // K such that Gamma is Maximum
+            AtmPutCall50 // K such that Call Delta=0.50 (only for Fwd Delta)
         }
+
+        public enum DeltaType
+        {
+            Spot, // Spot Delta, e.g. usual Black Scholes delta
+            Fwd, // Forward Delta
+            PaSpot, // Premium Adjusted Spot Delta
+            PaFwd // Premium Adjusted Forward Delta
+        }
+
+        private AtmType atmType_;
+        private double delta_;
+        private DeltaType deltaType_;
+        private double maturity_;
+        private Handle<Quote> vol_;
 
         // Standard constructor delta vs vol.
         public DeltaVolQuote(double delta, Handle<Quote> vol, double maturity, DeltaType deltaType)
@@ -66,25 +74,21 @@ namespace QLNet.Quotes
             vol_.registerWith(update);
         }
 
-        public void update() { notifyObservers(); }
-
-        public override double value() => vol_.link.value();
+        public AtmType atmType() => atmType_;
 
         public double delta() => delta_;
-
-        public double maturity() => maturity_;
-
-        public AtmType atmType() => atmType_;
 
         public DeltaType deltaType() => deltaType_;
 
         public override bool isValid() => !vol_.empty() && vol_.link.isValid();
 
-        private double delta_;
-        private Handle<Quote> vol_;
-        private DeltaType deltaType_;
-        private double maturity_;
-        private AtmType atmType_;
+        public double maturity() => maturity_;
 
+        public void update()
+        {
+            notifyObservers();
+        }
+
+        public override double value() => vol_.link.value();
     }
 }

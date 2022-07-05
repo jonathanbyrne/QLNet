@@ -1,28 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.statistics
 {
-    [JetBrains.Annotations.PublicAPI] public interface IGeneralStatistics
+    [PublicAPI]
+    public interface IGeneralStatistics
     {
-        int samples();
-        double mean();
-        double min();
-        double max();
-        double standardDeviation();
-        double variance();
-        double skewness();
-        double kurtosis();
-        double percentile(double percent);
-        double weightSum();
-        double errorEstimate();
-
-        void reset();
         void add
             (double value, double weight);
+
         void addSequence(List<double> data, List<double> weight);
+
+        double errorEstimate();
 
         KeyValuePair<double, int> expectationValue(Func<KeyValuePair<double, double>, double> f,
             Func<KeyValuePair<double, double>, bool> inRange);
+
+        double kurtosis();
+
+        double max();
+
+        double mean();
+
+        double min();
+
+        double percentile(double percent);
+
+        void reset();
+
+        int samples();
+
+        double skewness();
+
+        double standardDeviation();
+
+        double variance();
+
+        double weightSum();
     }
 }

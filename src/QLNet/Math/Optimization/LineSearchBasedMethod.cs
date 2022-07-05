@@ -19,11 +19,16 @@
 */
 
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Optimization
 {
-    [JetBrains.Annotations.PublicAPI] public class LineSearchBasedMethod : OptimizationMethod
+    [PublicAPI]
+    public class LineSearchBasedMethod : OptimizationMethod
     {
+        //! line search
+        protected LineSearch lineSearch_;
+
         public LineSearchBasedMethod(LineSearch lineSearch = null)
         {
             lineSearch_ = lineSearch ?? new ArmijoLineSearch();
@@ -34,9 +39,9 @@ namespace QLNet.Math.Optimization
             // Initializations
             var ftol = endCriteria.functionEpsilon();
             var maxStationaryStateIterations_ = endCriteria.maxStationaryStateIterations();
-            var ecType = EndCriteria.Type.None;   // reset end criteria
-            P.reset();                                      // reset problem
-            var x_ = P.currentValue();              // store the starting point
+            var ecType = EndCriteria.Type.None; // reset end criteria
+            P.reset(); // reset problem
+            var x_ = P.currentValue(); // store the starting point
             var iterationNumber_ = 0;
             // dimension line search
             lineSearch_.searchDirection = new Vector(x_.size());
@@ -62,7 +67,10 @@ namespace QLNet.Math.Optimization
             {
                 // Linesearch
                 if (!first_time)
+                {
                     prevGradient = lineSearch_.lastGradient();
+                }
+
                 t = lineSearch_.value(P, ref ecType, endCriteria, t);
                 // don't throw: it can fail just because maxIterations exceeded
                 if (lineSearch_.succeed())
@@ -90,7 +98,7 @@ namespace QLNet.Math.Optimization
                     fnew = P.functionValue();
                     fdiff = 2.0 * System.Math.Abs(fnew - fold) /
                             (System.Math.Abs(fnew) + System.Math.Abs(fold) + Const.QL_EPSILON);
-                    P.setCurrentValue(x_);        // update problem current value
+                    P.setCurrentValue(x_); // update problem current value
                     if (fdiff < ftol ||
                         endCriteria.checkMaxIterations(iterationNumber_, ref ecType))
                     {
@@ -98,23 +106,21 @@ namespace QLNet.Math.Optimization
                         endCriteria.checkMaxIterations(iterationNumber_, ref ecType);
                         return ecType;
                     }
-                    ++iterationNumber_;         // Increase iteration number
+
+                    ++iterationNumber_; // Increase iteration number
                     first_time = false;
                 }
                 else
                 {
                     done = true;
                 }
-            }
-            while (!done);
+            } while (!done);
+
             P.setCurrentValue(x_);
             return ecType;
         }
+
         //! computes the new search direction
         protected virtual Vector getUpdatedDirection(Problem P, double gold2, Vector gradient) => throw new NotImplementedException();
-
-        //! line search
-        protected LineSearch lineSearch_;
-
     }
 }

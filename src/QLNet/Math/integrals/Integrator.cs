@@ -18,32 +18,39 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Extensions;
 using System;
+using QLNet.Extensions;
 
 namespace QLNet.Math.integrals
 {
     public abstract class Integrator
     {
+        protected double? absoluteAccuracy_;
+        protected double absoluteError_;
+        protected int evaluations_;
+        protected int maxEvaluations_;
+
         protected Integrator(double? absoluteAccuracy, int maxEvaluations)
         {
             absoluteAccuracy_ = absoluteAccuracy;
             maxEvaluations_ = maxEvaluations;
             if (absoluteAccuracy != null)
+            {
                 Utils.QL_REQUIRE(absoluteAccuracy > double.Epsilon, () =>
-                                 "required tolerance (" + absoluteAccuracy + ") not allowed. It must be > " + double.Epsilon);
+                    "required tolerance (" + absoluteAccuracy + ") not allowed. It must be > " + double.Epsilon);
+            }
         }
 
-        public double value(Func<double, double> f, double a, double b)
-        {
-            evaluations_ = 0;
-            if (a.IsEqual(b))
-                return 0.0;
-            if (b > a)
-                return integrate(f, a, b);
+        // Inspectors
+        public double? absoluteAccuracy() => absoluteAccuracy_;
 
-            return -integrate(f, b, a);
-        }
+        public double absoluteError() => absoluteError_;
+
+        public bool integrationSuccess() => evaluations_ <= maxEvaluations_ && absoluteError_ <= absoluteAccuracy_;
+
+        public int maxEvaluations() => maxEvaluations_;
+
+        public int numberOfEvaluations() => evaluations_;
 
         // Modifiers
         public void setAbsoluteAccuracy(double accuracy)
@@ -56,18 +63,28 @@ namespace QLNet.Math.integrals
             maxEvaluations_ = maxEvaluations;
         }
 
-        // Inspectors
-        public double? absoluteAccuracy() => absoluteAccuracy_;
+        public double value(Func<double, double> f, double a, double b)
+        {
+            evaluations_ = 0;
+            if (a.IsEqual(b))
+            {
+                return 0.0;
+            }
 
-        public int maxEvaluations() => maxEvaluations_;
+            if (b > a)
+            {
+                return integrate(f, a, b);
+            }
 
-        public double absoluteError() => absoluteError_;
-
-        public int numberOfEvaluations() => evaluations_;
-
-        public bool integrationSuccess() => evaluations_ <= maxEvaluations_ && absoluteError_ <= absoluteAccuracy_;
+            return -integrate(f, b, a);
+        }
 
         protected abstract double integrate(Func<double, double> f, double a, double b);
+
+        protected void increaseNumberOfEvaluations(int increase)
+        {
+            evaluations_ += increase;
+        }
 
         protected void setAbsoluteError(double error)
         {
@@ -78,18 +95,5 @@ namespace QLNet.Math.integrals
         {
             evaluations_ = evaluations;
         }
-
-        protected void increaseNumberOfEvaluations(int increase)
-        {
-            evaluations_ += increase;
-        }
-
-        protected double? absoluteAccuracy_;
-        protected double absoluteError_;
-        protected int maxEvaluations_;
-        protected int evaluations_;
-
-
     }
-
 }

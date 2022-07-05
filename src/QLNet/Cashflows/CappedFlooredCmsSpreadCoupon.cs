@@ -1,12 +1,15 @@
-﻿using QLNet.Indexes.swap;
+﻿using JetBrains.Annotations;
+using QLNet.Indexes.swap;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class CappedFlooredCmsSpreadCoupon : CappedFlooredCoupon
+    [PublicAPI]
+    public class CappedFlooredCmsSpreadCoupon : CappedFlooredCoupon
     {
         public CappedFlooredCmsSpreadCoupon()
-        { }
+        {
+        }
 
         public CappedFlooredCmsSpreadCoupon(Date paymentDate,
             double nominal,
@@ -24,6 +27,7 @@ namespace QLNet.Cashflows
             bool isInArrears = false)
             : base(new CmsSpreadCoupon(paymentDate, nominal, startDate, endDate, fixingDays,
                 index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears), cap, floor)
-        { }
+        {
+        }
     }
 }

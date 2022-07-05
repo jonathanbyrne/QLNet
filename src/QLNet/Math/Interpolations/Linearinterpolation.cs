@@ -16,15 +16,17 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
     /* linear interpolation between discrete points */
 
     //! %Linear interpolation between discrete points
-    [JetBrains.Annotations.PublicAPI] public class LinearInterpolation : Interpolation
+    [PublicAPI]
+    public class LinearInterpolation : Interpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public LinearInterpolation(List<double> xBegin, int size, List<double> yBegin)

@@ -14,7 +14,9 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-using QLNet.Cashflows;
+using System;
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Instruments;
 using QLNet.Math;
@@ -22,30 +24,42 @@ using QLNet.Pricingengines.CapFloor;
 using QLNet.Quotes;
 using QLNet.Termstructures.Volatility.CapFloor;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Termstructures.Volatility.Optionlet
 {
     using CapFloorMatrix = List<List<Instruments.CapFloor>>;
+
     /*! Helper class to strip optionlet (i.e. caplet/floorlet) volatilities
          (a.k.a. forward-forward volatilities) from the (cap/floor) term
          volatilities of a CapFloorTermVolSurface.
      */
-    [JetBrains.Annotations.PublicAPI] public class OptionletStripper1 : OptionletStripper
+    [PublicAPI]
+    public class OptionletStripper1 : OptionletStripper
     {
+        private double accuracy_;
+        private bool capFlooMatrixNotInitialized_;
+        private Matrix capFloorPrices_, optionletPrices_;
+        private CapFloorMatrix capFloors_;
+        private Matrix capFloorVols_;
+        private bool dontThrow_;
+        private bool floatingSwitchStrike_;
+        private int maxIter_;
+        private Matrix optionletStDevs_;
+        private double? switchStrike_;
+        private List<List<SimpleQuote>> volQuotes_;
+
         public OptionletStripper1(CapFloorTermVolSurface termVolSurface, IborIndex index,
-                                  double? switchStrike = null,
-                                  double accuracy = 1.0e-6,
-                                  int maxIter = 100,
-                                  Handle<YieldTermStructure> discount = null,
-                                  VolatilityType type = VolatilityType.ShiftedLognormal,
-                                  double displacement = 0.0,
-                                  bool dontThrow = false)
-        : base(termVolSurface, index, discount, type, displacement)
+            double? switchStrike = null,
+            double accuracy = 1.0e-6,
+            int maxIter = 100,
+            Handle<YieldTermStructure> discount = null,
+            VolatilityType type = VolatilityType.ShiftedLognormal,
+            double displacement = 0.0,
+            bool dontThrow = false)
+            : base(termVolSurface, index, discount, type, displacement)
         {
             volQuotes_ = new InitializedList<List<SimpleQuote>>(nOptionletTenors_,
-                                                                new InitializedList<SimpleQuote>(nStrikes_, new SimpleQuote()));
+                new InitializedList<SimpleQuote>(nStrikes_, new SimpleQuote()));
             floatingSwitchStrike_ = switchStrike == null;
             capFlooMatrixNotInitialized_ = true;
             switchStrike_ = switchStrike;
@@ -67,20 +81,26 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             calculate();
             return capFloorPrices_;
         }
+
         public Matrix capFloorVolatilities()
         {
             calculate();
             return capFloorVols_;
         }
+
         public Matrix optionletPrices()
         {
             calculate();
             return optionletPrices_;
         }
+
         public double switchStrike()
         {
             if (floatingSwitchStrike_)
+            {
                 calculate();
+            }
+
             return switchStrike_.Value;
         }
 
@@ -91,21 +111,21 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             var referenceDate = termVolSurface_.referenceDate();
             var dc = termVolSurface_.dayCounter();
             var dummy = new BlackCapFloorEngine( // discounting does not matter here
-               iborIndex_.forwardingTermStructure(), 0.20, dc);
+                iborIndex_.forwardingTermStructure(), 0.20, dc);
             for (var i = 0; i < nOptionletTenors_; ++i)
             {
                 Instruments.CapFloor temp = new MakeCapFloor(CapFloorType.Cap,
-                                                 capFloorLengths_[i],
-                                                 iborIndex_,
-                                                 0.04, // dummy strike
-                                                 new Period(0, TimeUnit.Days))
-                .withPricingEngine(dummy);
+                        capFloorLengths_[i],
+                        iborIndex_,
+                        0.04, // dummy strike
+                        new Period(0, TimeUnit.Days))
+                    .withPricingEngine(dummy);
                 var lFRC = temp.lastFloatingRateCoupon();
                 optionletDates_[i] = lFRC.fixingDate();
                 optionletPaymentDates_[i] = lFRC.date();
                 optionletAccrualPeriods_[i] = lFRC.accrualPeriod();
                 optionletTimes_[i] = dc.yearFraction(referenceDate,
-                                                     optionletDates_[i]);
+                    optionletDates_[i]);
                 atmOptionletRate_[i] = lFRC.indexFixing();
             }
 
@@ -116,41 +136,45 @@ namespace QLNet.Termstructures.Volatility.Optionlet
                 {
                     averageAtmOptionletRate += atmOptionletRate_[i];
                 }
+
                 switchStrike_ = averageAtmOptionletRate / nOptionletTenors_;
             }
 
             var discountCurve = discount_.empty()
-                                                       ? iborIndex_.forwardingTermStructure()
-                                                       : discount_;
+                ? iborIndex_.forwardingTermStructure()
+                : discount_;
 
             var strikes = new List<double>(termVolSurface_.strikes());
             // initialize CapFloorMatrix
             if (capFlooMatrixNotInitialized_)
             {
                 for (var i = 0; i < nOptionletTenors_; ++i)
+                {
                     capFloors_[i] = new List<Instruments.CapFloor>(nStrikes_);
+                }
+
                 // construction might go here
                 for (var j = 0; j < nStrikes_; ++j)
                 {
                     // using out-of-the-money options
                     var capFloorType = strikes[j] < switchStrike_
-                                                ? CapFloorType.Floor
-                                                : CapFloorType.Cap;
+                        ? CapFloorType.Floor
+                        : CapFloorType.Cap;
                     for (var i = 0; i < nOptionletTenors_; ++i)
                     {
                         if (volatilityType_ == VolatilityType.ShiftedLognormal)
                         {
                             var engine = new BlackCapFloorEngine(discountCurve,
-                                                                                 new Handle<Quote>(volQuotes_[i][j]), dc, displacement_);
+                                new Handle<Quote>(volQuotes_[i][j]), dc, displacement_);
                             capFloors_[i].Add(new MakeCapFloor(capFloorType, capFloorLengths_[i], iborIndex_, strikes[j],
-                                                               new Period(0, TimeUnit.Days)).withPricingEngine(engine));
+                                new Period(0, TimeUnit.Days)).withPricingEngine(engine));
                         }
                         else if (volatilityType_ == VolatilityType.Normal)
                         {
                             var engine = new BachelierCapFloorEngine(discountCurve,
-                                                                                         new Handle<Quote>(volQuotes_[i][j]), dc);
+                                new Handle<Quote>(volQuotes_[i][j]), dc);
                             capFloors_[i].Add(new MakeCapFloor(capFloorType, capFloorLengths_[i], iborIndex_, strikes[j],
-                                                               new Period(0, TimeUnit.Days)).withPricingEngine(engine));
+                                new Period(0, TimeUnit.Days)).withPricingEngine(engine));
                         }
                         else
                         {
@@ -158,12 +182,13 @@ namespace QLNet.Termstructures.Volatility.Optionlet
                         }
                     }
                 }
+
                 capFlooMatrixNotInitialized_ = false;
             }
 
             for (var j = 0; j < nStrikes_; ++j)
             {
-                var optionletType = strikes[j] < switchStrike_ ? QLNet.Option.Type.Put : QLNet.Option.Type.Call;
+                var optionletType = strikes[j] < switchStrike_ ? Option.Type.Put : Option.Type.Call;
 
                 var previousCapFloorPrice = 0.0;
                 for (var i = 0; i < nOptionletTenors_; ++i)
@@ -181,16 +206,16 @@ namespace QLNet.Termstructures.Volatility.Optionlet
                         if (volatilityType_ == VolatilityType.ShiftedLognormal)
                         {
                             optionletStDevs_[i, j] = Utils.blackFormulaImpliedStdDev(optionletType, strikes[j], atmOptionletRate_[i],
-                                                                                     optionletPrices_[i, j], optionletAnnuity, displacement_, optionletStDevs_[i, j], accuracy_,
-                                                                                     maxIter_);
+                                optionletPrices_[i, j], optionletAnnuity, displacement_, optionletStDevs_[i, j], accuracy_,
+                                maxIter_);
                         }
                         else if (volatilityType_ == VolatilityType.Normal)
                         {
                             optionletStDevs_[i, j] = System.Math.Sqrt(optionletTimes_[i]) *
                                                      Utils.bachelierBlackFormulaImpliedVol(
-                                                        optionletType, strikes[j], atmOptionletRate_[i],
-                                                        optionletTimes_[i], optionletPrices_[i, j],
-                                                        optionletAnnuity);
+                                                         optionletType, strikes[j], atmOptionletRate_[i],
+                                                         optionletTimes_[i], optionletPrices_[i, j],
+                                                         optionletAnnuity);
                         }
                         else
                         {
@@ -200,8 +225,11 @@ namespace QLNet.Termstructures.Volatility.Optionlet
                     catch (Exception e)
                     {
                         if (dontThrow_)
+                        {
                             optionletStDevs_[i, j] = 0.0;
+                        }
                         else
+                        {
                             Utils.QL_FAIL("could not bootstrap optionlet:" +
                                           "\n ExerciseType:    " + optionletType +
                                           "\n strike:  " + strikes[j] +
@@ -210,24 +238,12 @@ namespace QLNet.Termstructures.Volatility.Optionlet
                                           "\n annuity: " + optionletAnnuity +
                                           "\n expiry:  " + optionletDates_[i] +
                                           "\n error:   " + e.Message);
+                        }
                     }
+
                     optionletVolatilities_[i][j] = optionletStDevs_[i, j] / System.Math.Sqrt(optionletTimes_[i]);
                 }
             }
         }
-
-        private Matrix capFloorPrices_, optionletPrices_;
-        private Matrix capFloorVols_;
-        private Matrix optionletStDevs_;
-
-        private CapFloorMatrix capFloors_;
-        private List<List<SimpleQuote>> volQuotes_;
-        private bool floatingSwitchStrike_;
-        private bool capFlooMatrixNotInitialized_;
-        private double? switchStrike_;
-        private double accuracy_;
-        private int maxIter_;
-        private bool dontThrow_;
-
     }
 }

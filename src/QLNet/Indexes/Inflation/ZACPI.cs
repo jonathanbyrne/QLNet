@@ -17,28 +17,33 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Time;
 
 namespace QLNet.Indexes.Inflation
 {
     //! South African CPI index
-    [JetBrains.Annotations.PublicAPI] public class ZACPI : ZeroInflationIndex
+    [PublicAPI]
+    public class ZACPI : ZeroInflationIndex
     {
         public ZACPI(bool interpolated)
-           : this(interpolated, new Handle<ZeroInflationTermStructure>()) { }
+            : this(interpolated, new Handle<ZeroInflationTermStructure>())
+        {
+        }
 
         public ZACPI(bool interpolated,
-                     Handle<ZeroInflationTermStructure> ts)
-           : base("CPI",
-                  new ZARegion(),
-                  false,
-                  interpolated,
-                  Frequency.Monthly,
-                  new Period(1, TimeUnit.Months),   // availability
-                  new ZARCurrency(),
-                  ts)
-        { }
+            Handle<ZeroInflationTermStructure> ts)
+            : base("CPI",
+                new ZARegion(),
+                false,
+                interpolated,
+                Frequency.Monthly,
+                new Period(1, TimeUnit.Months), // availability
+                new ZARCurrency(),
+                ts)
+        {
+        }
     }
 
     //! Genuine year-on-year South African CPI (i.e. not a ratio of South African CPI)

@@ -1,9 +1,12 @@
-﻿namespace QLNet.Math.Interpolations
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class EverywhereConstantHelper : ISectionHelper
+    [PublicAPI]
+    public class EverywhereConstantHelper : ISectionHelper
     {
-        private double value_;
         private double prevPrimitive_;
+        private double value_;
         private double xPrev_;
 
         public EverywhereConstantHelper(double value, double prevPrimitive, double xPrev)
@@ -13,10 +16,10 @@
             xPrev_ = xPrev;
         }
 
-        public double value(double x) => value_;
+        public double fNext() => value_;
 
         public double primitive(double x) => prevPrimitive_ + (x - xPrev_) * value_;
 
-        public double fNext() => value_;
+        public double value(double x) => value_;
     }
 }

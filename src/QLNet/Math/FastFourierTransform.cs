@@ -20,14 +20,15 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using JetBrains.Annotations;
 
 namespace QLNet.Math
 {
     // FFT implementation
-    [JetBrains.Annotations.PublicAPI] public class FastFourierTransform
+    [PublicAPI]
+    public class FastFourierTransform
     {
-        // the minimum order required for the given input size
-        public static int min_order(int inputSize) => (int)System.Math.Ceiling(System.Math.Log(Convert.ToDouble(inputSize)) / System.Math.Log(2.0));
+        protected Vector cs_, sn_;
 
         public FastFourierTransform(int order)
         {
@@ -44,34 +45,50 @@ namespace QLNet.Math
             }
         }
 
+        public static int bit_reverse(int x, int order)
+        {
+            var n = 0;
+            for (var i = 0; i < order; ++i)
+            {
+                n <<= 1;
+                n |= x & 1;
+                x >>= 1;
+            }
+
+            return n;
+        }
+
+        // the minimum order required for the given input size
+        public static int min_order(int inputSize) => (int)System.Math.Ceiling(System.Math.Log(Convert.ToDouble(inputSize)) / System.Math.Log(2.0));
+
+        // Inverse FFT transform.
+        /* The output sequence must be allocated by the user. */
+        public void inverse_transform(List<Complex> input,
+            int inputBeg,
+            int inputEnd,
+            List<Complex> output)
+        {
+            transform_impl(input, inputBeg, inputEnd, output, true);
+        }
+
         // The required size for the output vector
         public int output_size() => 1 << cs_.size();
 
         // FFT transform.
         /* The output sequence must be allocated by the user */
         public void transform(List<Complex> input,
-                              int inputBeg,
-                              int inputEnd,
-                              List<Complex> output)
+            int inputBeg,
+            int inputEnd,
+            List<Complex> output)
         {
             transform_impl(input, inputBeg, inputEnd, output, false);
         }
 
-        // Inverse FFT transform.
-        /* The output sequence must be allocated by the user. */
-        public void inverse_transform(List<Complex> input,
-                                      int inputBeg,
-                                      int inputEnd,
-                                      List<Complex> output)
-        {
-            transform_impl(input, inputBeg, inputEnd, output, true);
-        }
-
         protected void transform_impl(List<Complex> input,
-                                      int inputBeg,
-                                      int inputEnd,
-                                      List<Complex> output,
-                                      bool inverse)
+            int inputBeg,
+            int inputEnd,
+            List<Complex> output,
+            bool inverse)
         {
             var order = cs_.size();
             var N = 1 << order;
@@ -81,6 +98,7 @@ namespace QLNet.Math
             {
                 output[bit_reverse(i, order)] = new Complex(input[i].Real, input[i].Imaginary);
             }
+
             Utils.QL_REQUIRE(i <= N, () => "FFT order is too small");
             for (var s = 1; s <= order; ++s)
             {
@@ -96,23 +114,10 @@ namespace QLNet.Math
                         output[k] = u + t;
                         output[k + m / 2] = u - t;
                     }
+
                     w *= wm;
                 }
             }
         }
-
-        public static int bit_reverse(int x, int order)
-        {
-            var n = 0;
-            for (var i = 0; i < order; ++i)
-            {
-                n <<= 1;
-                n |= x & 1;
-                x >>= 1;
-            }
-            return n;
-        }
-
-        protected Vector cs_, sn_;
     }
 }

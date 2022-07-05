@@ -16,31 +16,33 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System;
+using JetBrains.Annotations;
 using QLNet.Quotes;
-using QLNet.Termstructures.Volatility;
 using QLNet.Termstructures.Volatility.Optionlet;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Termstructures.Volatility.swaption
 {
     //! Constant swaption volatility, no time-strike dependence
-    [JetBrains.Annotations.PublicAPI] public class ConstantSwaptionVolatility : SwaptionVolatilityStructure
+    [PublicAPI]
+    public class ConstantSwaptionVolatility : SwaptionVolatilityStructure
     {
-        private Handle<Quote> volatility_;
         private Period maxSwapTenor_;
-        private VolatilityType volatilityType_;
         private double? shift_;
+        private Handle<Quote> volatility_;
+        private VolatilityType volatilityType_;
 
         //! floating reference date, floating market data
         public ConstantSwaptionVolatility(int settlementDays,
-                                          Calendar cal,
-                                          BusinessDayConvention bdc,
-                                          Handle<Quote> vol,
-                                          DayCounter dc,
-                                          VolatilityType type = VolatilityType.ShiftedLognormal,
-                                          double? shift = 0.0)
-        : base(settlementDays, cal, bdc, dc)
+            Calendar cal,
+            BusinessDayConvention bdc,
+            Handle<Quote> vol,
+            DayCounter dc,
+            VolatilityType type = VolatilityType.ShiftedLognormal,
+            double? shift = 0.0)
+            : base(settlementDays, cal, bdc, dc)
         {
             volatility_ = vol;
             maxSwapTenor_ = new Period(100, TimeUnit.Years);
@@ -51,14 +53,13 @@ namespace QLNet.Termstructures.Volatility.swaption
 
         //! fixed reference date, floating market data
         public ConstantSwaptionVolatility(Date referenceDate,
-                                          Calendar cal,
-                                          BusinessDayConvention bdc,
-                                          Handle<Quote> vol,
-                                          DayCounter dc,
-                                          VolatilityType type = VolatilityType.ShiftedLognormal,
-                                          double? shift = 0.0)
-
-        : base(referenceDate, cal, bdc, dc)
+            Calendar cal,
+            BusinessDayConvention bdc,
+            Handle<Quote> vol,
+            DayCounter dc,
+            VolatilityType type = VolatilityType.ShiftedLognormal,
+            double? shift = 0.0)
+            : base(referenceDate, cal, bdc, dc)
         {
             volatility_ = vol;
             maxSwapTenor_ = new Period(100, TimeUnit.Years);
@@ -69,13 +70,13 @@ namespace QLNet.Termstructures.Volatility.swaption
 
         //! floating reference date, fixed market data
         public ConstantSwaptionVolatility(int settlementDays,
-                                          Calendar cal,
-                                          BusinessDayConvention bdc,
-                                          double vol,
-                                          DayCounter dc,
-                                          VolatilityType type = VolatilityType.ShiftedLognormal,
-                                          double? shift = 0.0)
-        : base(settlementDays, cal, bdc, dc)
+            Calendar cal,
+            BusinessDayConvention bdc,
+            double vol,
+            DayCounter dc,
+            VolatilityType type = VolatilityType.ShiftedLognormal,
+            double? shift = 0.0)
+            : base(settlementDays, cal, bdc, dc)
         {
             volatility_ = new Handle<Quote>(new SimpleQuote(vol));
             maxSwapTenor_ = new Period(100, TimeUnit.Years);
@@ -85,13 +86,13 @@ namespace QLNet.Termstructures.Volatility.swaption
 
         //! fixed reference date, fixed market data
         public ConstantSwaptionVolatility(Date referenceDate,
-                                          Calendar cal,
-                                          BusinessDayConvention bdc,
-                                          double vol,
-                                          DayCounter dc,
-                                          VolatilityType type = VolatilityType.ShiftedLognormal,
-                                          double? shift = 0.0)
-        : base(referenceDate, cal, bdc, dc)
+            Calendar cal,
+            BusinessDayConvention bdc,
+            double vol,
+            DayCounter dc,
+            VolatilityType type = VolatilityType.ShiftedLognormal,
+            double? shift = 0.0)
+            : base(referenceDate, cal, bdc, dc)
         {
             volatility_ = new Handle<Quote>(new SimpleQuote(vol));
             maxSwapTenor_ = new Period(100, TimeUnit.Years);
@@ -102,15 +103,21 @@ namespace QLNet.Termstructures.Volatility.swaption
         // TermStructure interface
         public override Date maxDate() => Date.maxDate();
 
-        // VolatilityTermStructure interface
-        public override double minStrike() => double.MinValue;
-
         public override double maxStrike() => double.MaxValue;
 
         // SwaptionVolatilityStructure interface
         public override Period maxSwapTenor() => maxSwapTenor_;
 
+        // VolatilityTermStructure interface
+        public override double minStrike() => double.MinValue;
+
         public override VolatilityType volatilityType() => volatilityType_;
+
+        protected override double shiftImpl(double optionTime, double swapLength)
+        {
+            base.shiftImpl(optionTime, swapLength);
+            return Convert.ToDouble(shift_);
+        }
 
         protected new SmileSection smileSectionImpl(Date d, Period p)
         {
@@ -127,11 +134,5 @@ namespace QLNet.Termstructures.Volatility.swaption
         protected new double volatilityImpl(Date date, Period period, double rate) => volatility_.link.value();
 
         protected override double volatilityImpl(double time, double t, double rate) => volatility_.link.value();
-
-        protected override double shiftImpl(double optionTime, double swapLength)
-        {
-            base.shiftImpl(optionTime, swapLength);
-            return Convert.ToDouble(shift_);
-        }
     }
 }

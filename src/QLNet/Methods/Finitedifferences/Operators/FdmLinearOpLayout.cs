@@ -16,15 +16,20 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Methods.Finitedifferences.Utilities;
-using System;
+
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Methods.Finitedifferences.Utilities;
 
 namespace QLNet.Methods.Finitedifferences.Operators
 {
-    [JetBrains.Annotations.PublicAPI] public class FdmLinearOpLayout
+    [PublicAPI]
+    public class FdmLinearOpLayout
     {
+        protected List<int> dim_, spacing_;
+        protected int size_;
+
         public FdmLinearOpLayout(List<int> dim)
         {
             dim_ = dim;
@@ -32,22 +37,42 @@ namespace QLNet.Methods.Finitedifferences.Operators
             spacing_[0] = 1;
 
             for (var i = 0; i < dim.Count - 1; i++)
+            {
                 spacing_[i + 1] = dim[i] * spacing_[i];
+            }
 
             size_ = spacing_.Last() * dim.Last();
         }
 
         public FdmLinearOpIterator begin() => new FdmLinearOpIterator(dim_);
 
-        public FdmLinearOpIterator end() => new FdmLinearOpIterator(size_);
-
         public List<int> dim() => dim_;
 
-        public List<int> spacing() => spacing_;
-
-        public int size() => size_;
+        public FdmLinearOpIterator end() => new FdmLinearOpIterator(size_);
 
         public int index(List<int> coordinates) => coordinates.inner_product(0, coordinates.Count, 0, spacing_, 0);
+
+        public FdmLinearOpIterator iter_neighbourhood(FdmLinearOpIterator iterator, int i, int offset)
+        {
+            var coordinates = iterator.coordinates();
+
+            var coorOffset = coordinates[i] + offset;
+            if (coorOffset < 0)
+            {
+                coorOffset = -coorOffset;
+            }
+            else if (coorOffset >= dim_[i])
+            {
+                coorOffset = 2 * (dim_[i] - 1) - coorOffset;
+            }
+
+            coordinates[i] = coorOffset;
+
+            var retVal = new FdmLinearOpIterator(dim_, coordinates,
+                index(coordinates));
+
+            return retVal;
+        }
 
         public int neighbourhood(FdmLinearOpIterator iterator, int i, int offset)
         {
@@ -63,12 +88,13 @@ namespace QLNet.Methods.Finitedifferences.Operators
             {
                 coorOffset = 2 * (dim_[i] - 1) - coorOffset;
             }
+
             return myIndex + coorOffset * spacing_[i];
         }
 
         public int neighbourhood(FdmLinearOpIterator iterator,
-                                 int i1, int offset1,
-                                 int i2, int offset2)
+            int i1, int offset1,
+            int i2, int offset2)
         {
             var myIndex = iterator.index()
                           - iterator.coordinates()[i1] * spacing_[i1]
@@ -97,28 +123,8 @@ namespace QLNet.Methods.Finitedifferences.Operators
             return myIndex + coorOffset1 * spacing_[i1] + coorOffset2 * spacing_[i2];
         }
 
-        public FdmLinearOpIterator iter_neighbourhood(FdmLinearOpIterator iterator, int i, int offset)
-        {
-            var coordinates = iterator.coordinates();
+        public int size() => size_;
 
-            var coorOffset = coordinates[i] + offset;
-            if (coorOffset < 0)
-            {
-                coorOffset = -coorOffset;
-            }
-            else if (coorOffset >= dim_[i])
-            {
-                coorOffset = 2 * (dim_[i] - 1) - coorOffset;
-            }
-            coordinates[i] = coorOffset;
-
-            var retVal = new FdmLinearOpIterator(dim_, coordinates,
-                                                                 index(coordinates));
-
-            return retVal;
-        }
-
-        protected List<int> dim_, spacing_;
-        protected int size_;
+        public List<int> spacing() => spacing_;
     }
 }

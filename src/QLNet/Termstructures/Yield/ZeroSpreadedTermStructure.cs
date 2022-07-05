@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Quotes;
 using QLNet.Time;
 
@@ -35,13 +36,20 @@ namespace QLNet.Termstructures.Yield
     - observability against changes in the underlying term
        structure and in the added spread is checked.
     */
-    [JetBrains.Annotations.PublicAPI] public class ZeroSpreadedTermStructure : ZeroYieldStructure
+    [PublicAPI]
+    public class ZeroSpreadedTermStructure : ZeroYieldStructure
     {
+        protected Compounding comp_;
+        protected DayCounter dc_;
+        protected Frequency freq_;
+        protected Handle<YieldTermStructure> originalCurve_;
+        protected Handle<Quote> spread_;
+
         public ZeroSpreadedTermStructure(Handle<YieldTermStructure> h,
-                                         Handle<Quote> spread,
-                                         Compounding comp = Compounding.Continuous,
-                                         Frequency freq = Frequency.NoFrequency,
-                                         DayCounter dc = null)
+            Handle<Quote> spread,
+            Compounding comp = Compounding.Continuous,
+            Frequency freq = Frequency.NoFrequency,
+            DayCounter dc = null)
         {
             originalCurve_ = h;
             spread_ = spread;
@@ -53,6 +61,24 @@ namespace QLNet.Termstructures.Yield
             spread_.registerWith(update);
         }
 
+        //! returns the spreaded forward rate
+        /* This method must disappear should the spread become a curve */
+        protected double forwardImpl(double t) =>
+            originalCurve_.link.forwardRate(t, t, comp_, freq_, true).value()
+            + spread_.link.value();
+
+        //! returns the spreaded zero yield rate
+        protected override double zeroYieldImpl(double t)
+        {
+            // to be fixed: user-defined daycounter should be used
+            var zeroRate =
+                originalCurve_.link.zeroRate(t, comp_, freq_, true);
+            var spreadedRate = new InterestRate(zeroRate.value() + spread_.link.value(),
+                zeroRate.dayCounter(),
+                zeroRate.compounding(),
+                zeroRate.frequency());
+            return spreadedRate.equivalentRate(Compounding.Continuous, Frequency.NoFrequency, t).value();
+        }
 
         #region YieldTermStructure interface
 
@@ -69,31 +95,5 @@ namespace QLNet.Termstructures.Yield
         public override double maxTime() => originalCurve_.link.maxTime();
 
         #endregion
-
-
-        //! returns the spreaded zero yield rate
-        protected override double zeroYieldImpl(double t)
-        {
-            // to be fixed: user-defined daycounter should be used
-            var zeroRate =
-               originalCurve_.link.zeroRate(t, comp_, freq_, true);
-            var spreadedRate = new InterestRate(zeroRate.value() + spread_.link.value(),
-                                                         zeroRate.dayCounter(),
-                                                         zeroRate.compounding(),
-                                                         zeroRate.frequency());
-            return spreadedRate.equivalentRate(Compounding.Continuous, Frequency.NoFrequency, t).value();
-        }
-        //! returns the spreaded forward rate
-        /* This method must disappear should the spread become a curve */
-        protected double forwardImpl(double t) =>
-            originalCurve_.link.forwardRate(t, t, comp_, freq_, true).value()
-            + spread_.link.value();
-
-        protected Handle<YieldTermStructure> originalCurve_;
-        protected Handle<Quote> spread_;
-        protected Compounding comp_;
-        protected Frequency freq_;
-        protected DayCounter dc_;
     }
-
 }

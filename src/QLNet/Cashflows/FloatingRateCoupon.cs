@@ -18,39 +18,42 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System;
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Indexes;
 using QLNet.Patterns;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class FloatingRateCoupon : Coupon, IObserver
+    [PublicAPI]
+    public class FloatingRateCoupon : Coupon, IObserver
     {
-        protected InterestRateIndex index_;
         protected DayCounter dayCounter_;
         protected int fixingDays_;
         protected double gearing_;
-        protected double spread_;
+        protected InterestRateIndex index_;
         protected bool isInArrears_;
         protected FloatingRateCouponPricer pricer_;
+        protected double spread_;
 
         // constructors
         public FloatingRateCoupon(Date paymentDate,
-                                  double nominal,
-                                  Date startDate,
-                                  Date endDate,
-                                  int fixingDays,
-                                  InterestRateIndex index,
-                                  double gearing = 1.0,
-                                  double spread = 0.0,
-                                  Date refPeriodStart = null,
-                                  Date refPeriodEnd = null,
-                                  DayCounter dayCounter = null,
-                                  bool isInArrears = false)
-           : base(paymentDate, nominal, startDate, endDate, refPeriodStart, refPeriodEnd)
+            double nominal,
+            Date startDate,
+            Date endDate,
+            int fixingDays,
+            InterestRateIndex index,
+            double gearing = 1.0,
+            double spread = 0.0,
+            Date refPeriodStart = null,
+            Date refPeriodEnd = null,
+            DayCounter dayCounter = null,
+            bool isInArrears = false)
+            : base(paymentDate, nominal, startDate, endDate, refPeriodStart, refPeriodEnd)
         {
             index_ = index;
             dayCounter_ = dayCounter ?? new DayCounter();
@@ -60,10 +63,14 @@ namespace QLNet.Cashflows
             isInArrears_ = isInArrears;
 
             if (gearing_.IsEqual(0))
+            {
                 throw new ArgumentException("Null gearing not allowed");
+            }
 
             if (dayCounter_.empty())
+            {
                 dayCounter_ = index_.dayCounter();
+            }
 
             // add as observer
             index_.registerWith(update);
@@ -71,22 +78,25 @@ namespace QLNet.Cashflows
         }
 
         // need by CashFlowVectors
-        public FloatingRateCoupon() { }
-
-        public virtual void setPricer(FloatingRateCouponPricer pricer)
+        public FloatingRateCoupon()
         {
-            if (pricer_ != null)   // remove from the old observable
-                pricer_.unregisterWith(update);
-
-            pricer_ = pricer;
-
-            if (pricer_ != null)
-                pricer_.registerWith(update);      // add to observers of new pricer
-
-            update();                                   // fire the change event to notify observers of this
         }
 
-        public FloatingRateCouponPricer pricer() => pricer_;
+        //! convexity-adjusted fixing
+        public double adjustedFixing => (rate() - spread()) / gearing();
+
+        public int fixingDays => fixingDays_; //! fixing days
+
+        public override double accruedAmount(Date d)
+        {
+            if (d <= accrualStartDate_ || d > paymentDate_)
+            {
+                return 0;
+            }
+
+            return nominal() * rate() *
+                   dayCounter().yearFraction(accrualStartDate_, Date.Min(d, accrualEndDate_), refPeriodStart_, refPeriodEnd_);
+        }
 
         //////////////////////////////////////////////////////////////////////////////////////
         // CashFlow interface
@@ -96,37 +106,18 @@ namespace QLNet.Cashflows
             return result;
         }
 
+        //! convexity adjustment
+        public virtual double convexityAdjustment() => convexityAdjustmentImpl(indexFixing());
 
-        //////////////////////////////////////////////////////////////////////////////////////
-        // Coupon interface
-        public override double rate()
-        {
-            if (pricer_ == null)
-                throw new ArgumentException("pricer not set");
-            pricer_.initialize(this);
-            var result = pricer_.swapletRate();
-            return result;
-        }
         public override DayCounter dayCounter() => dayCounter_;
 
-        public override double accruedAmount(Date d)
-        {
-            if (d <= accrualStartDate_ || d > paymentDate_)
-            {
-                return 0;
-            }
-            else
-            {
-                return nominal() * rate() *
-                       dayCounter().yearFraction(accrualStartDate_, Date.Min(d, accrualEndDate_), refPeriodStart_, refPeriodEnd_);
-            }
-        }
+        // Factory - for Leg generators
+        public virtual CashFlow factory(double nominal, Date paymentDate, Date startDate, Date endDate, int fixingDays,
+            InterestRateIndex index, double gearing, double spread,
+            Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears) =>
+            new FloatingRateCoupon(paymentDate, nominal, startDate, endDate, fixingDays,
+                index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears);
 
-
-        //////////////////////////////////////////////////////////////////////////////////////
-        // properties
-        public InterestRateIndex index() => index_; //! floating index
-        public int fixingDays => fixingDays_; //! fixing days
         public virtual Date fixingDate()
         {
             //! fixing date
@@ -134,36 +125,65 @@ namespace QLNet.Cashflows
             var refDate = isInArrears_ ? accrualEndDate_ : accrualStartDate_;
             return index_.fixingCalendar().advance(refDate, -fixingDays_, TimeUnit.Days, BusinessDayConvention.Preceding);
         }
-        public double gearing() => gearing_; //! index gearing, i.e. multiplicative coefficient for the index
-        public double spread() => spread_; //! spread paid over the fixing of the underlying index
-                                                                         //! fixing of the underlying index
-        public virtual double indexFixing() => index_.fixing(fixingDate());
 
-        //! convexity-adjusted fixing
-        public double adjustedFixing => (rate() - spread()) / gearing();
+        public double gearing() => gearing_; //! index gearing, i.e. multiplicative coefficient for the index
+
+        //////////////////////////////////////////////////////////////////////////////////////
+        // properties
+        public InterestRateIndex index() => index_; //! floating index
+
+        //! fixing of the underlying index
+        public virtual double indexFixing() => index_.fixing(fixingDate());
 
         //! whether or not the coupon fixes in arrears
         public bool isInArrears() => isInArrears_;
-
-        // Observer interface
-        public void update() { notifyObservers(); }
-
 
         //////////////////////////////////////////////////////////////////////////////////////
         // methods
         public double price(YieldTermStructure yts) => amount() * yts.discount(date());
 
+        public FloatingRateCouponPricer pricer() => pricer_;
+
+        //////////////////////////////////////////////////////////////////////////////////////
+        // Coupon interface
+        public override double rate()
+        {
+            if (pricer_ == null)
+            {
+                throw new ArgumentException("pricer not set");
+            }
+
+            pricer_.initialize(this);
+            var result = pricer_.swapletRate();
+            return result;
+        }
+
+        public virtual void setPricer(FloatingRateCouponPricer pricer)
+        {
+            if (pricer_ != null) // remove from the old observable
+            {
+                pricer_.unregisterWith(update);
+            }
+
+            pricer_ = pricer;
+
+            if (pricer_ != null)
+            {
+                pricer_.registerWith(update); // add to observers of new pricer
+            }
+
+            update(); // fire the change event to notify observers of this
+        }
+
+        public double spread() => spread_; //! spread paid over the fixing of the underlying index
+
+        // Observer interface
+        public void update()
+        {
+            notifyObservers();
+        }
+
         //! convexity adjustment for the given index fixing
         protected double convexityAdjustmentImpl(double f) => gearing().IsEqual(0.0) ? 0.0 : adjustedFixing - f;
-
-        //! convexity adjustment
-        public virtual double convexityAdjustment() => convexityAdjustmentImpl(indexFixing());
-
-        // Factory - for Leg generators
-        public virtual CashFlow factory(double nominal, Date paymentDate, Date startDate, Date endDate, int fixingDays,
-                                        InterestRateIndex index, double gearing, double spread,
-                                        Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears) =>
-            new FloatingRateCoupon(paymentDate, nominal, startDate, endDate, fixingDays,
-                index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears);
     }
 }

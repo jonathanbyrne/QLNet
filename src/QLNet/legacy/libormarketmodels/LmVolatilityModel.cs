@@ -17,30 +17,28 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
 using QLNet.Math;
 using QLNet.Models;
-using System.Collections.Generic;
 
 namespace QLNet.legacy.libormarketmodels
 {
     //! caplet volatility model
     public abstract class LmVolatilityModel
     {
+        protected List<Parameter> arguments_;
+        protected int size_;
+
         protected LmVolatilityModel(int size, int nArguments)
         {
             size_ = size;
             arguments_ = new InitializedList<Parameter>(nArguments);
         }
 
-        public int size() => size_;
-
         public abstract void generateArguments();
 
         public abstract Vector volatility(double t, Vector x = null);
-
-        public virtual double volatility(int i, double t, Vector x = null) =>
-            // inefficient implementation, please overload in derived classes
-            volatility(t, x)[i];
 
         public virtual double integratedVariance(int i, int j, double u, Vector x = null)
         {
@@ -56,7 +54,10 @@ namespace QLNet.legacy.libormarketmodels
             generateArguments();
         }
 
-        protected int size_;
-        protected List<Parameter> arguments_;
+        public int size() => size_;
+
+        public virtual double volatility(int i, double t, Vector x = null) =>
+            // inefficient implementation, please overload in derived classes
+            volatility(t, x)[i];
     }
 }

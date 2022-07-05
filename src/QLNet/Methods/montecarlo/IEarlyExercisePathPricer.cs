@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Methods.montecarlo
 {
-    [JetBrains.Annotations.PublicAPI] public interface IEarlyExercisePathPricer<PathType, StateType> where PathType : IPath
+    [PublicAPI]
+    public interface IEarlyExercisePathPricer<PathType, StateType> where PathType : IPath
     {
-        double value(PathType path, int t);
+        List<Func<StateType, double>> basisSystem();
 
         StateType state(PathType path, int t);
-        List<Func<StateType, double>> basisSystem();
+
+        double value(PathType path, int t);
     }
 }

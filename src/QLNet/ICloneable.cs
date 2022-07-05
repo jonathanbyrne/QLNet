@@ -1,6 +1,9 @@
+using JetBrains.Annotations;
+
 namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public interface ICloneable
+    [PublicAPI]
+    public interface ICloneable
     {
         object Clone();
     }

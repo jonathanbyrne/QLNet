@@ -18,6 +18,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Termstructures;
 using QLNet.Time;
@@ -26,23 +27,24 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.Ibor
 {
-
     //! %GBP %LIBOR rate
     /*! Pound Sterling LIBOR fixed by ICE.
 
         See <https://www.theice.com/marketdata/reports/170>.
     */
-    [JetBrains.Annotations.PublicAPI] public class GBPLibor : Libor
+    [PublicAPI]
+    public class GBPLibor : Libor
     {
         public GBPLibor(Period tenor)
-           : base("GBPLibor", tenor, 0, new GBPCurrency(), new UnitedKingdom(UnitedKingdom.Market.Exchange), new Actual365Fixed(),
-                  new Handle<YieldTermStructure>())
-        { }
+            : base("GBPLibor", tenor, 0, new GBPCurrency(), new UnitedKingdom(UnitedKingdom.Market.Exchange), new Actual365Fixed(),
+                new Handle<YieldTermStructure>())
+        {
+        }
 
         public GBPLibor(Period tenor, Handle<YieldTermStructure> h)
-           : base("GBPLibor", tenor, 0, new GBPCurrency(), new UnitedKingdom(UnitedKingdom.Market.Exchange), new Actual365Fixed(), h)
-        { }
-
+            : base("GBPLibor", tenor, 0, new GBPCurrency(), new UnitedKingdom(UnitedKingdom.Market.Exchange), new Actual365Fixed(), h)
+        {
+        }
     }
 
     //! Base class for the one day deposit ICE %GBP %LIBOR indexes

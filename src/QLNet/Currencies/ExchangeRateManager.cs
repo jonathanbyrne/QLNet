@@ -19,30 +19,21 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Extensions;
-using QLNet.Time;
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Extensions;
+using QLNet.Time;
 
 namespace QLNet.Currencies
 {
-
     // exchange-rate repository
     // test lookup of direct, triangulated, and derived exchange rates is tested
-    [JetBrains.Annotations.PublicAPI] public class ExchangeRateManager
+    [PublicAPI]
+    public class ExchangeRateManager
     {
-        [ThreadStatic] private static ExchangeRateManager instance_;
-
-        public static ExchangeRateManager Instance => instance_ ?? (instance_ = new ExchangeRateManager());
-
-        private ExchangeRateManager()
-        {
-            addKnownRates();
-        }
-
-        private Dictionary<int, List<Entry>> data_ = new Dictionary<int, List<Entry>>();
-
-        [JetBrains.Annotations.PublicAPI] public class Entry
+        [PublicAPI]
+        public class Entry
         {
             public Entry(ExchangeRate r, Date s, Date e)
             {
@@ -51,93 +42,43 @@ namespace QLNet.Currencies
                 endDate = e;
             }
 
-            public ExchangeRate rate { get; set; }
-            public Date startDate { get; set; }
             public Date endDate { get; set; }
+
+            public ExchangeRate rate { get; set; }
+
+            public Date startDate { get; set; }
         }
 
-        private void addKnownRates()
+        [ThreadStatic]
+        private static ExchangeRateManager instance_;
+        private Dictionary<int, List<Entry>> data_ = new Dictionary<int, List<Entry>>();
+
+        private ExchangeRateManager()
         {
-            // currencies obsoleted by Euro
+            addKnownRates();
+        }
+
+        public static ExchangeRateManager Instance => instance_ ?? (instance_ = new ExchangeRateManager());
+
+        public void add
+            (ExchangeRate rate)
+        {
             add
-               (new ExchangeRate(new EURCurrency(), new ATSCurrency(), 13.7603), new Date(1, Month.January, 1999), Date.maxDate());
-            add
-               (new ExchangeRate(new EURCurrency(), new BEFCurrency(), 40.3399), new Date(1, Month.January, 1999), Date.maxDate());
-            add
-               (new ExchangeRate(new EURCurrency(), new DEMCurrency(), 1.95583), new Date(1, Month.January, 1999), Date.maxDate());
-            add
-               (new ExchangeRate(new EURCurrency(), new ESPCurrency(), 166.386), new Date(1, Month.January, 1999), Date.maxDate());
-            add
-               (new ExchangeRate(new EURCurrency(), new FIMCurrency(), 5.94573), new Date(1, Month.January, 1999), Date.maxDate());
-            add
-               (new ExchangeRate(new EURCurrency(), new FRFCurrency(), 6.55957), new Date(1, Month.January, 1999), Date.maxDate());
-            add
-               (new ExchangeRate(new EURCurrency(), new GRDCurrency(), 340.750), new Date(1, Month.January, 2001), Date.maxDate());
-            add
-               (new ExchangeRate(new EURCurrency(), new IEPCurrency(), 0.787564), new Date(1, Month.January, 1999), Date.maxDate());
-            add
-               (new ExchangeRate(new EURCurrency(), new ITLCurrency(), 1936.27), new Date(1, Month.January, 1999), Date.maxDate());
-            add
-               (new ExchangeRate(new EURCurrency(), new LUFCurrency(), 40.3399), new Date(1, Month.January, 1999), Date.maxDate());
-            add
-               (new ExchangeRate(new EURCurrency(), new NLGCurrency(), 2.20371), new Date(1, Month.January, 1999), Date.maxDate());
-            add
-               (new ExchangeRate(new EURCurrency(), new PTECurrency(), 200.482), new Date(1, Month.January, 1999), Date.maxDate());
-            // other obsoleted currencies
-            add
-               (new ExchangeRate(new TRYCurrency(), new TRLCurrency(), 1000000.0), new Date(1, Month.January, 2005), Date.maxDate());
-            add
-               (new ExchangeRate(new RONCurrency(), new ROLCurrency(), 10000.0), new Date(1, Month.July, 2005), Date.maxDate());
-            add
-               (new ExchangeRate(new PENCurrency(), new PEICurrency(), 1000000.0), new Date(1, Month.July, 1991), Date.maxDate());
-            add
-               (new ExchangeRate(new PEICurrency(), new PEHCurrency(), 1000.0), new Date(1, Month.February, 1985), Date.maxDate());
+                (rate, Date.minDate(), Date.maxDate());
         }
 
         public void add
-           (ExchangeRate rate)
+            (ExchangeRate rate, Date startDate)
         {
             add
-               (rate, Date.minDate(), Date.maxDate());
+                (rate, startDate, Date.maxDate());
         }
 
-        public void add
-           (ExchangeRate rate, Date startDate)
+        // remove the added exchange rates
+        public void clear()
         {
-            add
-               (rate, startDate, Date.maxDate());
-        }
-
-        // Add an exchange rate.
-        // The given rate is valid between the given dates.
-        // If two rates are given between the same currencies
-        // and with overlapping date ranges, the latest one
-        // added takes precedence during lookup.
-        private void add
-           (ExchangeRate rate, Date startDate, Date endDate)
-        {
-            var k = hash(rate.source, rate.target);
-            if (data_.ContainsKey(k))
-            {
-                data_[k].Insert(0, new Entry(rate, startDate, endDate));
-            }
-            else
-            {
-                data_[k] = new List<Entry>();
-                data_[k].Add(new Entry(rate, startDate, endDate));
-            }
-        }
-
-        private int hash(Currency c1, Currency c2) =>
-            System.Math.Min(c1.numericCode, c2.numericCode) * 1000
-            + System.Math.Max(c1.numericCode, c2.numericCode);
-
-        private bool hashes(int k, Currency c)
-        {
-            if (c.numericCode == k % 1000 ||
-                c.numericCode == k / 1000)
-                return true;
-            return false;
+            data_.Clear();
+            addKnownRates();
         }
 
         public ExchangeRate lookup(Currency source, Currency target) => lookup(source, target, new Date(), ExchangeRate.Type.Derived);
@@ -154,30 +95,101 @@ namespace QLNet.Currencies
         public ExchangeRate lookup(Currency source, Currency target, Date date, ExchangeRate.Type type)
         {
             if (source == target)
+            {
                 return new ExchangeRate(source, target, 1.0);
+            }
 
             if (date == new Date())
+            {
                 date = Settings.evaluationDate();
+            }
 
             if (type == ExchangeRate.Type.Direct)
             {
                 return directLookup(source, target, date);
             }
+
             if (!source.triangulationCurrency.empty())
             {
                 var link = source.triangulationCurrency;
                 if (link == target)
+                {
                     return directLookup(source, link, date);
+                }
+
                 return ExchangeRate.chain(directLookup(source, link, date), lookup(link, target, date));
             }
+
             if (!target.triangulationCurrency.empty())
             {
                 var link = target.triangulationCurrency;
                 if (source == link)
+                {
                     return directLookup(link, target, date);
+                }
+
                 return ExchangeRate.chain(lookup(source, link, date), directLookup(link, target, date));
             }
+
             return smartLookup(source, target, date);
+        }
+
+        // Add an exchange rate.
+        // The given rate is valid between the given dates.
+        // If two rates are given between the same currencies
+        // and with overlapping date ranges, the latest one
+        // added takes precedence during lookup.
+        private void add
+            (ExchangeRate rate, Date startDate, Date endDate)
+        {
+            var k = hash(rate.source, rate.target);
+            if (data_.ContainsKey(k))
+            {
+                data_[k].Insert(0, new Entry(rate, startDate, endDate));
+            }
+            else
+            {
+                data_[k] = new List<Entry>();
+                data_[k].Add(new Entry(rate, startDate, endDate));
+            }
+        }
+
+        private void addKnownRates()
+        {
+            // currencies obsoleted by Euro
+            add
+                (new ExchangeRate(new EURCurrency(), new ATSCurrency(), 13.7603), new Date(1, Month.January, 1999), Date.maxDate());
+            add
+                (new ExchangeRate(new EURCurrency(), new BEFCurrency(), 40.3399), new Date(1, Month.January, 1999), Date.maxDate());
+            add
+                (new ExchangeRate(new EURCurrency(), new DEMCurrency(), 1.95583), new Date(1, Month.January, 1999), Date.maxDate());
+            add
+                (new ExchangeRate(new EURCurrency(), new ESPCurrency(), 166.386), new Date(1, Month.January, 1999), Date.maxDate());
+            add
+                (new ExchangeRate(new EURCurrency(), new FIMCurrency(), 5.94573), new Date(1, Month.January, 1999), Date.maxDate());
+            add
+                (new ExchangeRate(new EURCurrency(), new FRFCurrency(), 6.55957), new Date(1, Month.January, 1999), Date.maxDate());
+            add
+                (new ExchangeRate(new EURCurrency(), new GRDCurrency(), 340.750), new Date(1, Month.January, 2001), Date.maxDate());
+            add
+                (new ExchangeRate(new EURCurrency(), new IEPCurrency(), 0.787564), new Date(1, Month.January, 1999), Date.maxDate());
+            add
+                (new ExchangeRate(new EURCurrency(), new ITLCurrency(), 1936.27), new Date(1, Month.January, 1999), Date.maxDate());
+            add
+                (new ExchangeRate(new EURCurrency(), new LUFCurrency(), 40.3399), new Date(1, Month.January, 1999), Date.maxDate());
+            add
+                (new ExchangeRate(new EURCurrency(), new NLGCurrency(), 2.20371), new Date(1, Month.January, 1999), Date.maxDate());
+            add
+                (new ExchangeRate(new EURCurrency(), new PTECurrency(), 200.482), new Date(1, Month.January, 1999), Date.maxDate());
+            // other obsoleted currencies
+            add
+                (new ExchangeRate(new TRYCurrency(), new TRLCurrency(), 1000000.0), new Date(1, Month.January, 2005), Date.maxDate());
+            add
+                (new ExchangeRate(new RONCurrency(), new ROLCurrency(), 10000.0), new Date(1, Month.July, 2005), Date.maxDate());
+            add
+                (new ExchangeRate(new PENCurrency(), new PEICurrency(), 1000000.0), new Date(1, Month.July, 1991), Date.maxDate());
+            add
+                (new ExchangeRate(new PEICurrency(), new PEHCurrency(), 1000.0), new Date(1, Month.February, 1985), Date.maxDate());
         }
 
         private ExchangeRate directLookup(Currency source, Currency target, Date date)
@@ -185,9 +197,44 @@ namespace QLNet.Currencies
             var rate = fetch(source, target, date);
 
             if (rate.rate.IsNotEqual(0.0))
+            {
                 return rate;
+            }
+
             Utils.QL_FAIL("no direct conversion available from " + source.code + " to " + target.code + " for " + date);
             return null;
+        }
+
+        private ExchangeRate fetch(Currency source, Currency target, Date date)
+        {
+            if (data_.ContainsKey(hash(source, target)))
+            {
+                var rates = data_[hash(source, target)];
+                foreach (var e in rates)
+                {
+                    if (date >= e.startDate && date <= e.endDate)
+                    {
+                        return e.rate;
+                    }
+                }
+            }
+
+            return new ExchangeRate();
+        }
+
+        private int hash(Currency c1, Currency c2) =>
+            System.Math.Min(c1.numericCode, c2.numericCode) * 1000
+            + System.Math.Max(c1.numericCode, c2.numericCode);
+
+        private bool hashes(int k, Currency c)
+        {
+            if (c.numericCode == k % 1000 ||
+                c.numericCode == k / 1000)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private ExchangeRate smartLookup(Currency source, Currency target, Date date) => smartLookup(source, target, date, new List<int>());
@@ -197,7 +244,9 @@ namespace QLNet.Currencies
             // direct exchange rates are preferred.
             var direct = fetch(source, target, date);
             if (direct.HasValue)
+            {
                 return direct;
+            }
 
             // if none is found, turn to smart lookup. The source currency
             // is forbidden to subsequent lookups in order to avoid cycles.
@@ -233,30 +282,10 @@ namespace QLNet.Currencies
                     }
                 }
             }
+
             // if the loop completed, we have no way to return the requested rate.
             Utils.QL_FAIL("no conversion available from " + source.code + " to " + target.code + " for " + date);
             return null;
-        }
-
-        private ExchangeRate fetch(Currency source, Currency target, Date date)
-        {
-            if (data_.ContainsKey(hash(source, target)))
-            {
-                var rates = data_[hash(source, target)];
-                foreach (var e in rates)
-                {
-                    if (date >= e.startDate && date <= e.endDate)
-                        return e.rate;
-                }
-            }
-            return new ExchangeRate();
-        }
-
-        // remove the added exchange rates
-        public void clear()
-        {
-            data_.Clear();
-            addKnownRates();
         }
     }
 }

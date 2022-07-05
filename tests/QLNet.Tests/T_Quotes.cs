@@ -52,8 +52,9 @@ namespace QLNet.Tests
             me.setValue(3.14);
 
             if (!f.isUp())
+            {
                 QAssert.Fail("Observer was not notified of quote change");
-
+            }
         }
         [Fact]
         public void testObservableHandle()
@@ -71,15 +72,18 @@ namespace QLNet.Tests
             me1.setValue(3.14);
 
             if (!f.isUp())
+            {
                 QAssert.Fail("Observer was not notified of quote change");
+            }
 
             f.lower();
             var me2 = new SimpleQuote(0.0);
             h.linkTo(me2);
 
             if (!f.isUp())
+            {
                 QAssert.Fail("Observer was not notified of quote change");
-
+            }
         }
 
         [Fact]
@@ -99,7 +103,9 @@ namespace QLNet.Tests
                 double x = derived.value(),
                        y = f[i](me.value());
                 if (System.Math.Abs(x - y) > 1.0e-10)
+                {
                     QAssert.Fail("derived quote yields " + x + "function result is " + y);
+                }
             }
 
         }
@@ -122,7 +128,9 @@ namespace QLNet.Tests
                 double x = composite.value(),
                        y = f[i](me1.value(), me2.value());
                 if (System.Math.Abs(x - y) > 1.0e-10)
+                {
                     QAssert.Fail("composite quote yields " + x + "function result is " + y);
+                }
             }
         }
 

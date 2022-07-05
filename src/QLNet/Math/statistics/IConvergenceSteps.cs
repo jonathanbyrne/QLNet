@@ -1,8 +1,12 @@
-﻿namespace QLNet.Math.statistics
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.statistics
 {
-    [JetBrains.Annotations.PublicAPI] public interface IConvergenceSteps
+    [PublicAPI]
+    public interface IConvergenceSteps
     {
         int initialSamples();
+
         int nextSamples(int current);
     }
 }

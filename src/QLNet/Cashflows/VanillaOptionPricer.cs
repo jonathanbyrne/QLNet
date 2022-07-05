@@ -19,14 +19,11 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Indexes;
-using QLNet.Instruments;
-
 namespace QLNet.Cashflows
 {
     public abstract class VanillaOptionPricer
     {
-        public abstract double value(double strike, QLNet.Option.Type optionType, double deflator);
+        public abstract double value(double strike, Option.Type optionType, double deflator);
     }
 
     //===========================================================================//

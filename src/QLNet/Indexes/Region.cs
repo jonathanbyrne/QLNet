@@ -17,21 +17,18 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Indexes
 {
     //! Region class, used for inflation applicability.
-    [JetBrains.Annotations.PublicAPI] public class Region
+    [PublicAPI]
+    public class Region
     {
-        // Inspectors
-        public string name() => data_.name;
-
-        public string code() => data_.code;
-
-        protected Region() { }
         protected struct Data
         {
-            public readonly string name;
             public readonly string code;
+            public readonly string name;
 
             public Data(string Name, string Code)
             {
@@ -39,22 +36,38 @@ namespace QLNet.Indexes
                 code = Code;
             }
         }
+
         protected Data data_;
+
+        protected Region()
+        {
+        }
 
         public static bool operator ==(Region r1, Region r2)
         {
             if (ReferenceEquals(r1, r2))
+            {
                 return true;
+            }
+
             if ((object)r1 == null || (object)r2 == null)
+            {
                 return false;
+            }
+
             return r1.Equals(r2);
         }
 
         public static bool operator !=(Region r1, Region r2) => !(r1 == r2);
 
+        public string code() => data_.code;
+
         public override bool Equals(object o) => name() == ((Region)o).name();
 
         public override int GetHashCode() => 0;
+
+        // Inspectors
+        public string name() => data_.name;
     }
 
     //! Australia as geographical/economic region

@@ -1,4 +1,5 @@
-﻿using QLNet.Currencies;
+﻿using JetBrains.Annotations;
+using QLNet.Currencies;
 using QLNet.Indexes.Ibor;
 using QLNet.Termstructures;
 using QLNet.Time;
@@ -7,10 +8,13 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.swap
 {
-    [JetBrains.Annotations.PublicAPI] public class UsdLiborSwapIsdaFixPm : SwapIndex
+    [PublicAPI]
+    public class UsdLiborSwapIsdaFixPm : SwapIndex
     {
         public UsdLiborSwapIsdaFixPm(Period tenor)
-            : this(tenor, new Handle<YieldTermStructure>()) { }
+            : this(tenor, new Handle<YieldTermStructure>())
+        {
+        }
 
         public UsdLiborSwapIsdaFixPm(Period tenor, Handle<YieldTermStructure> h)
             : base("UsdLiborSwapIsdaFixPm", // familyName
@@ -22,6 +26,7 @@ namespace QLNet.Indexes.swap
                 BusinessDayConvention.ModifiedFollowing, // fixedLegConvention
                 new Thirty360(Thirty360.Thirty360Convention.BondBasis), // fixedLegDaycounter
                 new USDLibor(new Period(3, TimeUnit.Months), h))
-        { }
+        {
+        }
     }
 }

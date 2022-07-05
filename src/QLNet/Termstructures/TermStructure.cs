@@ -26,6 +26,53 @@ namespace QLNet.Termstructures
     //! Basic term-structure functionality
     public abstract class TermStructure : Extrapolator
     {
+        protected Calendar calendar_;
+        protected bool moving_;
+        protected bool updated_;
+        private readonly DayCounter dayCounter_;
+        private Date referenceDate_;
+        private int? settlementDays_;
+
+        #region observable & observer interface
+
+        // observer interface
+        public override void update()
+        {
+            if (moving_)
+            {
+                updated_ = false;
+            }
+
+            // recheck. this is in order to notify observers in the base method of LazyObject
+            calculated_ = true;
+            base.update();
+            // otherwise the following code would be required
+            // the grand reason is that multiple inheritance is not allowed in c# and we need to notify observers in such way
+        }
+
+        #endregion
+
+        //! date-range check
+        protected virtual void checkRange(Date d, bool extrapolate)
+        {
+            Utils.QL_REQUIRE(d >= referenceDate(), () =>
+                "date (" + d + ") before reference date (" +
+                referenceDate() + ")");
+            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || d <= maxDate(), () =>
+                "date (" + d + ") is past max curve date ("
+                + maxDate() + ")");
+        }
+
+        //! time-range check
+        protected void checkRange(double t, bool extrapolate)
+        {
+            Utils.QL_REQUIRE(t >= 0.0, () =>
+                "negative time (" + t + ") given");
+            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation()
+                                         || t <= maxTime() || Utils.close_enough(t, maxTime()), () =>
+                "time (" + t + ") is past max curve time ("
+                + maxTime() + ")");
+        }
 
         #region Constructors
 
@@ -46,7 +93,6 @@ namespace QLNet.Termstructures
         // changes. In the last case, the referenceDate() method must
         // be overridden in derived classes so that it fetches and
         // return the appropriate date.
-
 
         //! default constructor
         /*! \warning term structures initialized by means of this
@@ -85,7 +131,6 @@ namespace QLNet.Termstructures
             Settings.registerWith(update);
         }
 
-
         #endregion
 
         #region Dates and Time
@@ -98,6 +143,7 @@ namespace QLNet.Termstructures
 
         //! the latest date for which the curve can return values
         public abstract Date maxDate();
+
         //! the latest time for which the curve can return values
         public virtual double maxTime() => timeFromReference(maxDate());
 
@@ -110,8 +156,10 @@ namespace QLNet.Termstructures
                 referenceDate_ = calendar().advance(today, settlementDays(), TimeUnit.Days);
                 updated_ = true;
             }
+
             return referenceDate_;
         }
+
         //! the calendar used for reference and/or option date calculation
         public virtual Calendar calendar() => calendar_;
 
@@ -123,53 +171,5 @@ namespace QLNet.Termstructures
         }
 
         #endregion
-
-        #region observable & observer interface
-
-        // observer interface
-        public override void update()
-        {
-            if (moving_)
-                updated_ = false;
-
-            // recheck. this is in order to notify observers in the base method of LazyObject
-            calculated_ = true;
-            base.update();
-            // otherwise the following code would be required
-            // the grand reason is that multiple inheritance is not allowed in c# and we need to notify observers in such way
-        }
-        #endregion
-
-        //! date-range check
-        protected virtual void checkRange(Date d, bool extrapolate)
-        {
-            Utils.QL_REQUIRE(d >= referenceDate(), () =>
-                             "date (" + d + ") before reference date (" +
-                             referenceDate() + ")");
-            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || d <= maxDate(), () =>
-                             "date (" + d + ") is past max curve date ("
-                             + maxDate() + ")");
-        }
-
-        //! time-range check
-        protected void checkRange(double t, bool extrapolate)
-        {
-            Utils.QL_REQUIRE(t >= 0.0, () =>
-                             "negative time (" + t + ") given");
-            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation()
-                             || t <= maxTime() || Utils.close_enough(t, maxTime()), () =>
-                             "time (" + t + ") is past max curve time ("
-                             + maxTime() + ")");
-        }
-
-        protected bool moving_;
-        protected bool updated_;
-        protected Calendar calendar_;
-
-
-        private Date referenceDate_;
-        private int? settlementDays_;
-        private DayCounter dayCounter_;
     }
-
 }

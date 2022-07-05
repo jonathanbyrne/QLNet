@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Extensions;
 using QLNet.Instruments;
@@ -13,14 +14,20 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Pricingengines.swaption
 {
-    [JetBrains.Annotations.PublicAPI] public class BlackStyleSwaptionEngine<Spec> : SwaptionEngine
+    [PublicAPI]
+    public class BlackStyleSwaptionEngine<Spec> : SwaptionEngine
         where Spec : ISwaptionEngineSpec, new()
     {
         public enum CashAnnuityModel
         {
             SwapRate,
             DiscountCurve
-        };
+        }
+
+        private Handle<YieldTermStructure> discountCurve_;
+        private double? displacement_;
+        private CashAnnuityModel model_;
+        private Handle<SwaptionVolatilityStructure> vol_;
 
         public BlackStyleSwaptionEngine(Handle<YieldTermStructure> discountCurve,
             double vol,
@@ -68,7 +75,6 @@ namespace QLNet.Pricingengines.swaption
 
         public override void calculate()
         {
-
             var exerciseDate = arguments_.exercise.date(0);
 
             // the part of the swap preceding exerciseDate should be truncated
@@ -104,6 +110,7 @@ namespace QLNet.Pricingengines.swaption
             {
                 results_.additionalResults["spreadCorrection"] = 0.0;
             }
+
             results_.additionalResults["strike"] = strike;
             results_.additionalResults["atmForward"] = atmForward;
 
@@ -138,6 +145,7 @@ namespace QLNet.Pricingengines.swaption
             {
                 Utils.QL_FAIL("unknown settlement ExerciseType");
             }
+
             results_.additionalResults["annuity"] = annuity;
 
             var swapLength = vol_.link.swapLength(swap.floatingSchedule().dates().First(),
@@ -163,10 +171,5 @@ namespace QLNet.Pricingengines.swaption
         public Handle<YieldTermStructure> termStructure() => discountCurve_;
 
         public Handle<SwaptionVolatilityStructure> volatility() => vol_;
-
-        private Handle<YieldTermStructure> discountCurve_;
-        private Handle<SwaptionVolatilityStructure> vol_;
-        private CashAnnuityModel model_;
-        private double? displacement_;
     }
 }

@@ -16,51 +16,33 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using QLNet.Extensions;
 using QLNet.Math.Optimization;
-using System;
 
 namespace QLNet.Math.matrixutilities
 {
-    public static partial class MatrixUtilitites
+    public static class MatrixUtilitites
     {
         //! algorithm used for matricial pseudo square root
         public enum SalvagingAlgorithm
         {
-            None, Spectral, Hypersphere, LowerDiagonal, Higham
+            None,
+            Spectral,
+            Hypersphere,
+            LowerDiagonal,
+            Higham
         }
-
-        public static void normalizePseudoRoot(Matrix matrix, Matrix pseudo)
-        {
-            var size = matrix.rows();
-            Utils.QL_REQUIRE(size == pseudo.rows(), () =>
-                             "matrix/pseudo mismatch: matrix rows are " + size + " while pseudo rows are " + pseudo.columns());
-            var pseudoCols = pseudo.columns();
-
-            // row normalization
-            for (var i = 0; i < size; ++i)
-            {
-                var norm = 0.0;
-                for (var j = 0; j < pseudoCols; ++j)
-                    norm += pseudo[i, j] * pseudo[i, j];
-                if (norm > 0.0)
-                {
-                    var normAdj = System.Math.Sqrt(matrix[i, i] / norm);
-                    for (var j = 0; j < pseudoCols; ++j)
-                        pseudo[i, j] *= normAdj;
-                }
-            }
-        }
-
 
         //cost function for hypersphere and lower-diagonal algorithm
-        class HypersphereCostFunction : CostFunction
+        private class HypersphereCostFunction : CostFunction
         {
-            private int size_;
-            private bool lowerDiagonal_;
-            private Matrix targetMatrix_;
-            private Vector targetVariance_;
-            private Matrix currentRoot_, tempMatrix_, currentMatrix_;
+            private readonly Matrix currentRoot_;
+            private readonly bool lowerDiagonal_;
+            private readonly int size_;
+            private readonly Matrix targetMatrix_;
+            private readonly Vector targetVariance_;
+            private Matrix tempMatrix_, currentMatrix_;
 
             public HypersphereCostFunction(Matrix targetMatrix, Vector targetVariance, bool lowerDiagonal)
             {
@@ -71,12 +53,6 @@ namespace QLNet.Math.matrixutilities
                 currentRoot_ = new Matrix(size_, size_);
                 tempMatrix_ = new Matrix(size_, size_);
                 currentMatrix_ = new Matrix(size_, size_);
-            }
-
-            public override Vector values(Vector a)
-            {
-                Utils.QL_FAIL("values method not implemented");
-                return null;
             }
 
             public override double value(Vector x)
@@ -98,9 +74,13 @@ namespace QLNet.Math.matrixutilities
                                 for (j = 0; j <= k; j++)
                                 {
                                     if (j == k && k != i)
+                                    {
                                         currentRoot_[i, k] *= System.Math.Cos(x[i * (i - 1) / 2 + j]);
+                                    }
                                     else if (j != i)
+                                    {
                                         currentRoot_[i, k] *= System.Math.Sin(x[i * (i - 1) / 2 + j]);
+                                    }
                                 }
                             }
                         }
@@ -115,13 +95,18 @@ namespace QLNet.Math.matrixutilities
                             for (j = 0; j <= k; j++)
                             {
                                 if (j == k && k != size_ - 1)
+                                {
                                     currentRoot_[i, k] *= System.Math.Cos(x[j * size_ + i]);
+                                }
                                 else if (j != size_ - 1)
+                                {
                                     currentRoot_[i, k] *= System.Math.Sin(x[j * size_ + i]);
+                                }
                             }
                         }
                     }
                 }
+
                 double temp, error = 0;
                 tempMatrix_ = Matrix.transpose(currentRoot_);
                 currentMatrix_ = currentRoot_ * tempMatrix_;
@@ -133,10 +118,295 @@ namespace QLNet.Math.matrixutilities
                         error += temp * temp;
                     }
                 }
+
                 return error;
+            }
+
+            public override Vector values(Vector a)
+            {
+                Utils.QL_FAIL("values method not implemented");
+                return null;
             }
         }
 
+        public static void normalizePseudoRoot(Matrix matrix, Matrix pseudo)
+        {
+            var size = matrix.rows();
+            Utils.QL_REQUIRE(size == pseudo.rows(), () =>
+                "matrix/pseudo mismatch: matrix rows are " + size + " while pseudo rows are " + pseudo.columns());
+            var pseudoCols = pseudo.columns();
+
+            // row normalization
+            for (var i = 0; i < size; ++i)
+            {
+                var norm = 0.0;
+                for (var j = 0; j < pseudoCols; ++j)
+                {
+                    norm += pseudo[i, j] * pseudo[i, j];
+                }
+
+                if (norm > 0.0)
+                {
+                    var normAdj = System.Math.Sqrt(matrix[i, i] / norm);
+                    for (var j = 0; j < pseudoCols; ++j)
+                    {
+                        pseudo[i, j] *= normAdj;
+                    }
+                }
+            }
+        }
+
+        //! Returns the pseudo square root of a real symmetric matrix
+        /*! Given a matrix \f$ M \f$, the result \f$ S \f$ is defined
+            as the matrix such that \f$ S S^T = M. \f$
+            If the matrix is not positive semi definite, it can
+            return an approximation of the pseudo square root
+            using a (user selected) salvaging algorithm.
+
+            For more information see: "The most general methodology to create
+            a valid correlation matrix for risk management and option pricing
+            purposes", by R. Rebonato and P. Jдckel.
+            The Journal of Risk, 2(2), Winter 1999/2000
+            http://www.rebonato.com/correlationmatrix.pdf
+
+            Revised and extended in "Monte Carlo Methods in Finance",
+            by Peter Jдckel, Chapter 6.
+
+            \pre the given matrix must be symmetric.
+
+            \relates Matrix
+
+            \warning Higham algorithm only works for correlation matrices.
+
+            \test
+            - the correctness of the results is tested by reproducing
+              known good data.
+            - the correctness of the results is tested by checking
+              returned values against numerical calculations.
+        */
+        public static Matrix pseudoSqrt(Matrix matrix, SalvagingAlgorithm sa)
+        {
+            var size = matrix.rows();
+
+#if QL_EXTRA_SAFETY_CHECKS
+         checkSymmetry(matrix);
+#else
+            Utils.QL_REQUIRE(size == matrix.columns(), () =>
+                "non square matrix: " + size + " rows, " + matrix.columns() + " columns");
+#endif
+
+            // spectral (a.k.a Principal Component) analysis
+            var jd = new SymmetricSchurDecomposition(matrix);
+            var diagonal = new Matrix(size, size, 0.0);
+
+            // salvaging algorithm
+            var result = new Matrix(size, size);
+            bool negative;
+            switch (sa)
+            {
+                case SalvagingAlgorithm.None:
+                    // eigenvalues are sorted in decreasing order
+                    Utils.QL_REQUIRE(jd.eigenvalues()[size - 1] >= -1e-16, () =>
+                        "negative eigenvalue(s) (" + jd.eigenvalues()[size - 1] + ")");
+                    result = MatrixUtilities.CholeskyDecomposition(matrix, true);
+                    break;
+
+                case SalvagingAlgorithm.Spectral:
+                    // negative eigenvalues set to zero
+                    for (var i = 0; i < size; i++)
+                    {
+                        diagonal[i, i] = System.Math.Sqrt(System.Math.Max(jd.eigenvalues()[i], 0.0));
+                    }
+
+                    result = jd.eigenvectors() * diagonal;
+                    normalizePseudoRoot(matrix, result);
+                    break;
+
+                case SalvagingAlgorithm.Hypersphere:
+                    // negative eigenvalues set to zero
+                    negative = false;
+                    for (var i = 0; i < size; ++i)
+                    {
+                        diagonal[i, i] = System.Math.Sqrt(System.Math.Max(jd.eigenvalues()[i], 0.0));
+                        if (jd.eigenvalues()[i] < 0.0)
+                        {
+                            negative = true;
+                        }
+                    }
+
+                    result = jd.eigenvectors() * diagonal;
+                    normalizePseudoRoot(matrix, result);
+
+                    if (negative)
+                    {
+                        result = hypersphereOptimize(matrix, result, false);
+                    }
+
+                    break;
+
+                case SalvagingAlgorithm.LowerDiagonal:
+                    // negative eigenvalues set to zero
+                    negative = false;
+                    for (var i = 0; i < size; ++i)
+                    {
+                        diagonal[i, i] = System.Math.Sqrt(System.Math.Max(jd.eigenvalues()[i], 0.0));
+                        if (jd.eigenvalues()[i] < 0.0)
+                        {
+                            negative = true;
+                        }
+                    }
+
+                    result = jd.eigenvectors() * diagonal;
+
+                    normalizePseudoRoot(matrix, result);
+
+                    if (negative)
+                    {
+                        result = hypersphereOptimize(matrix, result, true);
+                    }
+
+                    break;
+
+                case SalvagingAlgorithm.Higham:
+                    var maxIterations = 40;
+                    var tol = 1e-6;
+                    result = highamImplementation(matrix, maxIterations, tol);
+                    result = MatrixUtilities.CholeskyDecomposition(result, true);
+                    break;
+
+                default:
+                    Utils.QL_FAIL("unknown salvaging algorithm");
+                    break;
+            }
+
+            return result;
+        }
+
+        public static Matrix rankReducedSqrt(Matrix matrix,
+            int maxRank,
+            double componentRetainedPercentage,
+            SalvagingAlgorithm sa)
+        {
+            var size = matrix.rows();
+
+#if QL_EXTRA_SAFETY_CHECKS
+         checkSymmetry(matrix);
+#else
+            Utils.QL_REQUIRE(size == matrix.columns(), () =>
+                "non square matrix: " + size + " rows, " + matrix.columns() + " columns");
+#endif
+
+            Utils.QL_REQUIRE(componentRetainedPercentage > 0.0, () => "no eigenvalues retained");
+            Utils.QL_REQUIRE(componentRetainedPercentage <= 1.0, () => "percentage to be retained > 100%");
+            Utils.QL_REQUIRE(maxRank >= 1, () => "max rank required < 1");
+
+            // spectral (a.k.a Principal Component) analysis
+            var jd = new SymmetricSchurDecomposition(matrix);
+            var eigenValues = jd.eigenvalues();
+
+            // salvaging algorithm
+            switch (sa)
+            {
+                case SalvagingAlgorithm.None:
+                    // eigenvalues are sorted in decreasing order
+                    Utils.QL_REQUIRE(eigenValues[size - 1] >= -1e-16, () =>
+                        "negative eigenvalue(s) (" + eigenValues[size - 1] + ")");
+                    break;
+                case SalvagingAlgorithm.Spectral:
+                    // negative eigenvalues set to zero
+                    for (var i = 0; i < size; ++i)
+                    {
+                        eigenValues[i] = System.Math.Max(eigenValues[i], 0.0);
+                    }
+
+                    break;
+                case SalvagingAlgorithm.Higham:
+                {
+                    var maxIterations = 40;
+                    var tolerance = 1e-6;
+                    var adjustedMatrix = highamImplementation(matrix, maxIterations, tolerance);
+                    jd = new SymmetricSchurDecomposition(adjustedMatrix);
+                    eigenValues = jd.eigenvalues();
+                }
+                    break;
+                default:
+                    Utils.QL_FAIL("unknown or invalid salvaging algorithm");
+                    break;
+            }
+
+            // factor reduction
+            double accumulate = 0;
+            eigenValues.ForEach((ii, vv) => accumulate += eigenValues[ii]);
+            var enough = componentRetainedPercentage * accumulate;
+
+            if (componentRetainedPercentage.IsEqual(1.0))
+            {
+                // numerical glitches might cause some factors to be discarded
+                enough *= 1.1;
+            }
+
+            // retain at least one factor
+            var components = eigenValues[0];
+            var retainedFactors = 1;
+            for (var i = 1; components < enough && i < size; ++i)
+            {
+                components += eigenValues[i];
+                retainedFactors++;
+            }
+
+            // output is granted to have a rank<=maxRank
+            retainedFactors = System.Math.Min(retainedFactors, maxRank);
+
+            var diagonal = new Matrix(size, retainedFactors, 0.0);
+            for (var i = 0; i < retainedFactors; ++i)
+            {
+                diagonal[i, i] = System.Math.Sqrt(eigenValues[i]);
+            }
+
+            var result = jd.eigenvectors() * diagonal;
+
+            normalizePseudoRoot(matrix, result);
+            return result;
+        }
+
+        // implementation of the Higham algorithm to find the nearest correlation matrix.
+        private static Matrix highamImplementation(Matrix A, int maxIterations, double tolerance)
+        {
+            var size = A.rows();
+            Matrix R, Y = new Matrix(A), X = new Matrix(A), deltaS = new Matrix(size, size, 0.0);
+
+            var lastX = new Matrix(X);
+            var lastY = new Matrix(Y);
+
+            for (var i = 0; i < maxIterations; ++i)
+            {
+                R = Y - deltaS;
+                X = projectToPositiveSemidefiniteMatrix(R);
+                deltaS = X - R;
+                Y = projectToUnitDiagonalMatrix(X);
+
+                // convergence test
+                if (System.Math.Max(normInf(X - lastX) / normInf(X),
+                        System.Math.Max(normInf(Y - lastY) / normInf(Y),
+                            normInf(Y - X) / normInf(Y)))
+                    <= tolerance)
+                {
+                    break;
+                }
+
+                lastX = X;
+                lastY = Y;
+            }
+
+            // ensure we return a symmetric matrix
+            for (var i = 0; i < size; ++i)
+            for (var j = 0; j < i; ++j)
+            {
+                Y[i, j] = Y[j, i];
+            }
+
+            return Y;
+        }
 
         // Optimization function for hypersphere and lower-diagonal algorithm
         private static Matrix hypersphereOptimize(Matrix targetMatrix, Matrix currentRoot, bool lowerDiagonal)
@@ -148,6 +418,7 @@ namespace QLNet.Math.matrixutilities
             {
                 variance[i] = System.Math.Sqrt(targetMatrix[i, i]);
             }
+
             if (lowerDiagonal)
             {
                 var approxMatrix = result * Matrix.transpose(result);
@@ -188,25 +459,40 @@ namespace QLNet.Math.matrixutilities
                     {
                         theta[i * (i - 1) / 2 + j] = result[i, j];
                         if (theta[i * (i - 1) / 2 + j] > 1 - eps)
+                        {
                             theta[i * (i - 1) / 2 + j] = 1 - eps;
+                        }
+
                         if (theta[i * (i - 1) / 2 + j] < -1 + eps)
+                        {
                             theta[i * (i - 1) / 2 + j] = -1 + eps;
+                        }
+
                         for (k = 0; k < j; k++)
                         {
                             theta[i * (i - 1) / 2 + j] /= System.Math.Sin(theta[i * (i - 1) / 2 + k]);
                             if (theta[i * (i - 1) / 2 + j] > 1 - eps)
+                            {
                                 theta[i * (i - 1) / 2 + j] = 1 - eps;
+                            }
+
                             if (theta[i * (i - 1) / 2 + j] < -1 + eps)
+                            {
                                 theta[i * (i - 1) / 2 + j] = -1 + eps;
+                            }
                         }
+
                         theta[i * (i - 1) / 2 + j] = System.Math.Acos(theta[i * (i - 1) / 2 + j]);
                         if (j == i - 1)
                         {
                             if (result[i, i] < 0)
+                            {
                                 theta[i * (i - 1) / 2 + j] = -theta[i * (i - 1) / 2 + j];
+                            }
                         }
                     }
                 }
+
                 var p = new Problem(costFunction, constraint, theta);
                 optimize.minimize(p, endCriteria);
                 theta = p.currentValue();
@@ -224,9 +510,13 @@ namespace QLNet.Math.matrixutilities
                             for (j = 0; j <= k; j++)
                             {
                                 if (j == k && k != i)
+                                {
                                     result[i, k] *= System.Math.Cos(theta[i * (i - 1) / 2 + j]);
+                                }
                                 else if (j != i)
+                                {
                                     result[i, k] *= System.Math.Sin(theta[i * (i - 1) / 2 + j]);
+                                }
                             }
                         }
                     }
@@ -242,25 +532,40 @@ namespace QLNet.Math.matrixutilities
                     {
                         theta[j * size + i] = result[i, j];
                         if (theta[j * size + i] > 1 - eps)
+                        {
                             theta[j * size + i] = 1 - eps;
+                        }
+
                         if (theta[j * size + i] < -1 + eps)
+                        {
                             theta[j * size + i] = -1 + eps;
+                        }
+
                         for (k = 0; k < j; k++)
                         {
                             theta[j * size + i] /= System.Math.Sin(theta[k * size + i]);
                             if (theta[j * size + i] > 1 - eps)
+                            {
                                 theta[j * size + i] = 1 - eps;
+                            }
+
                             if (theta[j * size + i] < -1 + eps)
+                            {
                                 theta[j * size + i] = -1 + eps;
+                            }
                         }
+
                         theta[j * size + i] = System.Math.Acos(theta[j * size + i]);
                         if (j == size - 2)
                         {
                             if (result[i, j + 1] < 0)
+                            {
                                 theta[j * size + i] = -theta[j * size + i];
+                            }
                         }
                     }
                 }
+
                 var p = new Problem(costFunction, constraint, theta);
                 optimize.minimize(p, endCriteria);
                 theta = p.currentValue();
@@ -272,9 +577,13 @@ namespace QLNet.Math.matrixutilities
                         for (j = 0; j <= k; j++)
                         {
                             if (j == k && k != size - 1)
+                            {
                                 result[i, k] *= System.Math.Cos(theta[j * size + i]);
+                            }
                             else if (j != size - 1)
+                            {
                                 result[i, k] *= System.Math.Sin(theta[j * size + i]);
+                            }
                         }
                     }
                 }
@@ -287,9 +596,9 @@ namespace QLNet.Math.matrixutilities
                     result[i, j] *= variance[i];
                 }
             }
+
             return result;
         }
-
 
         // Matrix infinity norm. See Golub and van Loan (2.3.10) or
         // <http://en.wikipedia.org/wiki/Matrix_norm>
@@ -302,26 +611,15 @@ namespace QLNet.Math.matrixutilities
             {
                 var colSum = 0.0;
                 for (var j = 0; j < cols; ++j)
+                {
                     colSum += System.Math.Abs(M[i, j]);
+                }
+
                 norm = System.Math.Max(norm, colSum);
             }
+
             return norm;
         }
-
-
-        // Take a matrix and make all the diagonal entries 1.
-        private static Matrix projectToUnitDiagonalMatrix(Matrix M)
-        {
-            var size = M.rows();
-            Utils.QL_REQUIRE(size == M.columns(), () => "matrix not square");
-
-            var result = new Matrix(M);
-            for (var i = 0; i < size; ++i)
-                result[i, i] = 1.0;
-
-            return result;
-        }
-
 
         // Take a matrix and make all the eigenvalues non-negative
         private static Matrix projectToPositiveSemidefiniteMatrix(Matrix M)
@@ -332,238 +630,26 @@ namespace QLNet.Math.matrixutilities
             var diagonal = new Matrix(size, size);
             var jd = new SymmetricSchurDecomposition(M);
             for (var i = 0; i < size; ++i)
+            {
                 diagonal[i, i] = System.Math.Max(jd.eigenvalues()[i], 0.0);
+            }
 
             var result = jd.eigenvectors() * diagonal * Matrix.transpose(jd.eigenvectors());
             return result;
         }
 
-
-        // implementation of the Higham algorithm to find the nearest correlation matrix.
-        private static Matrix highamImplementation(Matrix A, int maxIterations, double tolerance)
+        // Take a matrix and make all the diagonal entries 1.
+        private static Matrix projectToUnitDiagonalMatrix(Matrix M)
         {
-            var size = A.rows();
-            Matrix R, Y = new Matrix(A), X = new Matrix(A), deltaS = new Matrix(size, size, 0.0);
+            var size = M.rows();
+            Utils.QL_REQUIRE(size == M.columns(), () => "matrix not square");
 
-            var lastX = new Matrix(X);
-            var lastY = new Matrix(Y);
-
-            for (var i = 0; i < maxIterations; ++i)
-            {
-                R = Y - deltaS;
-                X = projectToPositiveSemidefiniteMatrix(R);
-                deltaS = X - R;
-                Y = projectToUnitDiagonalMatrix(X);
-
-                // convergence test
-                if (System.Math.Max(normInf(X - lastX) / normInf(X),
-                             System.Math.Max(normInf(Y - lastY) / normInf(Y),
-                                      normInf(Y - X) / normInf(Y)))
-                    <= tolerance)
-                {
-                    break;
-                }
-                lastX = X;
-                lastY = Y;
-            }
-
-            // ensure we return a symmetric matrix
+            var result = new Matrix(M);
             for (var i = 0; i < size; ++i)
-                for (var j = 0; j < i; ++j)
-                    Y[i, j] = Y[j, i];
-
-            return Y;
-        }
-
-
-        //! Returns the pseudo square root of a real symmetric matrix
-        /*! Given a matrix \f$ M \f$, the result \f$ S \f$ is defined
-            as the matrix such that \f$ S S^T = M. \f$
-            If the matrix is not positive semi definite, it can
-            return an approximation of the pseudo square root
-            using a (user selected) salvaging algorithm.
-
-            For more information see: "The most general methodology to create
-            a valid correlation matrix for risk management and option pricing
-            purposes", by R. Rebonato and P. Jдckel.
-            The Journal of Risk, 2(2), Winter 1999/2000
-            http://www.rebonato.com/correlationmatrix.pdf
-
-            Revised and extended in "Monte Carlo Methods in Finance",
-            by Peter Jдckel, Chapter 6.
-
-            \pre the given matrix must be symmetric.
-
-            \relates Matrix
-
-            \warning Higham algorithm only works for correlation matrices.
-
-            \test
-            - the correctness of the results is tested by reproducing
-              known good data.
-            - the correctness of the results is tested by checking
-              returned values against numerical calculations.
-        */
-        public static Matrix pseudoSqrt(Matrix matrix, SalvagingAlgorithm sa)
-        {
-            var size = matrix.rows();
-
-#if QL_EXTRA_SAFETY_CHECKS
-         checkSymmetry(matrix);
-#else
-            Utils.QL_REQUIRE(size == matrix.columns(), () =>
-                             "non square matrix: " + size + " rows, " + matrix.columns() + " columns");
-#endif
-
-            // spectral (a.k.a Principal Component) analysis
-            var jd = new SymmetricSchurDecomposition(matrix);
-            var diagonal = new Matrix(size, size, 0.0);
-
-            // salvaging algorithm
-            var result = new Matrix(size, size);
-            bool negative;
-            switch (sa)
             {
-                case SalvagingAlgorithm.None:
-                    // eigenvalues are sorted in decreasing order
-                    Utils.QL_REQUIRE(jd.eigenvalues()[size - 1] >= -1e-16, () =>
-                                     "negative eigenvalue(s) (" + jd.eigenvalues()[size - 1] + ")");
-                    result = MatrixUtilities.CholeskyDecomposition(matrix, true);
-                    break;
-
-                case SalvagingAlgorithm.Spectral:
-                    // negative eigenvalues set to zero
-                    for (var i = 0; i < size; i++)
-                        diagonal[i, i] = System.Math.Sqrt(System.Math.Max(jd.eigenvalues()[i], 0.0));
-
-                    result = jd.eigenvectors() * diagonal;
-                    normalizePseudoRoot(matrix, result);
-                    break;
-
-                case SalvagingAlgorithm.Hypersphere:
-                    // negative eigenvalues set to zero
-                    negative = false;
-                    for (var i = 0; i < size; ++i)
-                    {
-                        diagonal[i, i] = System.Math.Sqrt(System.Math.Max(jd.eigenvalues()[i], 0.0));
-                        if (jd.eigenvalues()[i] < 0.0)
-                            negative = true;
-                    }
-                    result = jd.eigenvectors() * diagonal;
-                    normalizePseudoRoot(matrix, result);
-
-                    if (negative)
-                        result = hypersphereOptimize(matrix, result, false);
-                    break;
-
-                case SalvagingAlgorithm.LowerDiagonal:
-                    // negative eigenvalues set to zero
-                    negative = false;
-                    for (var i = 0; i < size; ++i)
-                    {
-                        diagonal[i, i] = System.Math.Sqrt(System.Math.Max(jd.eigenvalues()[i], 0.0));
-                        if (jd.eigenvalues()[i] < 0.0)
-                            negative = true;
-                    }
-                    result = jd.eigenvectors() * diagonal;
-
-                    normalizePseudoRoot(matrix, result);
-
-                    if (negative)
-                        result = hypersphereOptimize(matrix, result, true);
-                    break;
-
-                case SalvagingAlgorithm.Higham:
-                    var maxIterations = 40;
-                    var tol = 1e-6;
-                    result = highamImplementation(matrix, maxIterations, tol);
-                    result = MatrixUtilities.CholeskyDecomposition(result, true);
-                    break;
-
-                default:
-                    Utils.QL_FAIL("unknown salvaging algorithm");
-                    break;
+                result[i, i] = 1.0;
             }
 
-            return result;
-        }
-
-        public static Matrix rankReducedSqrt(Matrix matrix,
-                                             int maxRank,
-                                             double componentRetainedPercentage,
-                                             SalvagingAlgorithm sa)
-        {
-            var size = matrix.rows();
-
-#if QL_EXTRA_SAFETY_CHECKS
-         checkSymmetry(matrix);
-#else
-            Utils.QL_REQUIRE(size == matrix.columns(), () =>
-                             "non square matrix: " + size + " rows, " + matrix.columns() + " columns");
-#endif
-
-            Utils.QL_REQUIRE(componentRetainedPercentage > 0.0, () => "no eigenvalues retained");
-            Utils.QL_REQUIRE(componentRetainedPercentage <= 1.0, () => "percentage to be retained > 100%");
-            Utils.QL_REQUIRE(maxRank >= 1, () => "max rank required < 1");
-
-            // spectral (a.k.a Principal Component) analysis
-            var jd = new SymmetricSchurDecomposition(matrix);
-            var eigenValues = jd.eigenvalues();
-
-            // salvaging algorithm
-            switch (sa)
-            {
-                case SalvagingAlgorithm.None:
-                    // eigenvalues are sorted in decreasing order
-                    Utils.QL_REQUIRE(eigenValues[size - 1] >= -1e-16, () =>
-                                     "negative eigenvalue(s) (" + eigenValues[size - 1] + ")");
-                    break;
-                case SalvagingAlgorithm.Spectral:
-                    // negative eigenvalues set to zero
-                    for (var i = 0; i < size; ++i)
-                        eigenValues[i] = System.Math.Max(eigenValues[i], 0.0);
-                    break;
-                case SalvagingAlgorithm.Higham:
-                    {
-                        var maxIterations = 40;
-                        var tolerance = 1e-6;
-                        var adjustedMatrix = highamImplementation(matrix, maxIterations, tolerance);
-                        jd = new SymmetricSchurDecomposition(adjustedMatrix);
-                        eigenValues = jd.eigenvalues();
-                    }
-                    break;
-                default:
-                    Utils.QL_FAIL("unknown or invalid salvaging algorithm");
-                    break;
-            }
-
-            // factor reduction
-            double accumulate = 0;
-            eigenValues.ForEach((ii, vv) => accumulate += eigenValues[ii]);
-            var enough = componentRetainedPercentage * accumulate;
-
-            if (componentRetainedPercentage.IsEqual(1.0))
-            {
-                // numerical glitches might cause some factors to be discarded
-                enough *= 1.1;
-            }
-            // retain at least one factor
-            var components = eigenValues[0];
-            var retainedFactors = 1;
-            for (var i = 1; components < enough && i < size; ++i)
-            {
-                components += eigenValues[i];
-                retainedFactors++;
-            }
-            // output is granted to have a rank<=maxRank
-            retainedFactors = System.Math.Min(retainedFactors, maxRank);
-
-            var diagonal = new Matrix(size, retainedFactors, 0.0);
-            for (var i = 0; i < retainedFactors; ++i)
-                diagonal[i, i] = System.Math.Sqrt(eigenValues[i]);
-            var result = jd.eigenvectors() * diagonal;
-
-            normalizePseudoRoot(matrix, result);
             return result;
         }
     }

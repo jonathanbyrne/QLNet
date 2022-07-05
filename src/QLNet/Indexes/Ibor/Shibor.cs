@@ -17,8 +17,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
-using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time;
 using QLNet.Time.Calendars;
@@ -26,8 +26,21 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.Ibor
 {
-    [JetBrains.Annotations.PublicAPI] public class Shibor : IborIndex
+    [PublicAPI]
+    public class Shibor : IborIndex
     {
+        public Shibor(Period tenor)
+            : this(tenor, new Handle<YieldTermStructure>())
+        {
+        }
+
+        public Shibor(Period tenor, Handle<YieldTermStructure> h)
+            : base("Shibor", tenor, tenor == new Period(1, TimeUnit.Days) ? 0 : 1, new CNYCurrency(),
+                new China(China.Market.IB), shiborConvention(tenor), false,
+                new Actual360(), h)
+        {
+        }
+
         private static BusinessDayConvention shiborConvention(Period p)
         {
             switch (p.units())
@@ -43,14 +56,5 @@ namespace QLNet.Indexes.Ibor
                     return BusinessDayConvention.Unadjusted;
             }
         }
-
-        public Shibor(Period tenor)
-           : this(tenor, new Handle<YieldTermStructure>()) { }
-
-        public Shibor(Period tenor, Handle<YieldTermStructure> h)
-           : base("Shibor", tenor, tenor == new Period(1, TimeUnit.Days) ? 0 : 1, new CNYCurrency(),
-                  new China(China.Market.IB), shiborConvention(tenor), false,
-                  new Actual360(), h)
-        { }
     }
 }

@@ -16,11 +16,12 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
-using QLNet.Instruments;
 using QLNet.Time;
-using System.Collections.Generic;
 
 namespace QLNet.Instruments.Bonds
 {
@@ -29,26 +30,35 @@ namespace QLNet.Instruments.Bonds
     /*! \ingroup instruments
 
      */
-    [JetBrains.Annotations.PublicAPI] public class CPIBond : Bond
+    [PublicAPI]
+    public class CPIBond : Bond
     {
+        protected double baseCPI_;
+        protected ZeroInflationIndex cpiIndex_;
+        protected DayCounter dayCounter_;
+        protected Frequency frequency_;
+        protected bool growthOnly_;
+        protected InterpolationType observationInterpolation_;
+        protected Period observationLag_;
+
         public CPIBond(int settlementDays,
-                       double faceAmount,
-                       bool growthOnly,
-                       double baseCPI,
-                       Period observationLag,
-                       ZeroInflationIndex cpiIndex,
-                       InterpolationType observationInterpolation,
-                       Schedule schedule,
-                       List<double> fixedRate,
-                       DayCounter accrualDayCounter,
-                       BusinessDayConvention paymentConvention = BusinessDayConvention.ModifiedFollowing,
-                       Date issueDate = null,
-                       Calendar paymentCalendar = null,
-                       Period exCouponPeriod = null,
-                       Calendar exCouponCalendar = null,
-                       BusinessDayConvention exCouponConvention = BusinessDayConvention.Unadjusted,
-                       bool exCouponEndOfMonth = false)
-           : base(settlementDays, paymentCalendar ?? schedule.calendar(), issueDate)
+            double faceAmount,
+            bool growthOnly,
+            double baseCPI,
+            Period observationLag,
+            ZeroInflationIndex cpiIndex,
+            InterpolationType observationInterpolation,
+            Schedule schedule,
+            List<double> fixedRate,
+            DayCounter accrualDayCounter,
+            BusinessDayConvention paymentConvention = BusinessDayConvention.ModifiedFollowing,
+            Date issueDate = null,
+            Calendar paymentCalendar = null,
+            Period exCouponPeriod = null,
+            Calendar exCouponCalendar = null,
+            BusinessDayConvention exCouponConvention = BusinessDayConvention.Unadjusted,
+            bool exCouponEndOfMonth = false)
+            : base(settlementDays, paymentCalendar ?? schedule.calendar(), issueDate)
         {
             frequency_ = schedule.tenor().frequency();
             dayCounter_ = accrualDayCounter;
@@ -62,48 +72,41 @@ namespace QLNet.Instruments.Bonds
 
             // a CPIleg know about zero legs and inclusion of base inflation notional
             cashflows_ = new CPILeg(schedule, cpiIndex_,
-                                    baseCPI_, observationLag_)
-            .withSubtractInflationNominal(growthOnly_)
-            .withObservationInterpolation(observationInterpolation_)
-            .withPaymentDayCounter(accrualDayCounter)
-            .withFixedRates(fixedRate)
-            .withPaymentCalendar(calendar_)
-            .withExCouponPeriod(exCouponPeriod,
-                                exCouponCalendar,
-                                exCouponConvention,
-                                exCouponEndOfMonth)
-            .withNotionals(faceAmount)
-            .withPaymentAdjustment(paymentConvention);
-
+                    baseCPI_, observationLag_)
+                .withSubtractInflationNominal(growthOnly_)
+                .withObservationInterpolation(observationInterpolation_)
+                .withPaymentDayCounter(accrualDayCounter)
+                .withFixedRates(fixedRate)
+                .withPaymentCalendar(calendar_)
+                .withExCouponPeriod(exCouponPeriod,
+                    exCouponCalendar,
+                    exCouponConvention,
+                    exCouponEndOfMonth)
+                .withNotionals(faceAmount)
+                .withPaymentAdjustment(paymentConvention);
 
             calculateNotionalsFromCashflows();
 
             cpiIndex_.registerWith(update);
 
             foreach (var i in cashflows_)
+            {
                 i.registerWith(update);
+            }
         }
-
-        public Frequency frequency() => frequency_;
-
-        public DayCounter dayCounter() => dayCounter_;
-
-        public bool growthOnly() => growthOnly_;
 
         public double baseCPI() => baseCPI_;
 
-        public Period observationLag() => observationLag_;
-
         public ZeroInflationIndex cpiIndex() => cpiIndex_;
+
+        public DayCounter dayCounter() => dayCounter_;
+
+        public Frequency frequency() => frequency_;
+
+        public bool growthOnly() => growthOnly_;
 
         public InterpolationType observationInterpolation() => observationInterpolation_;
 
-        protected Frequency frequency_;
-        protected DayCounter dayCounter_;
-        protected bool growthOnly_;
-        protected double baseCPI_;
-        protected Period observationLag_;
-        protected ZeroInflationIndex cpiIndex_;
-        protected InterpolationType observationInterpolation_;
+        public Period observationLag() => observationLag_;
     }
 }

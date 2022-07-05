@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Math;
 using QLNet.Pricingengines.swaption;
@@ -9,14 +10,14 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class ImpliedVolHelper_ : ISolver1d
+    [PublicAPI]
+    public class ImpliedVolHelper_ : ISolver1d
     {
-
-        private IPricingEngine engine_;
         private Handle<YieldTermStructure> discountCurve_;
+        private IPricingEngine engine_;
+        private Instrument.Results results_;
         private double targetValue_;
         private SimpleQuote vol_;
-        private Instrument.Results results_;
 
         public ImpliedVolHelper_(Swaption swaption,
             Handle<YieldTermStructure> discountCurve,
@@ -39,21 +40,12 @@ namespace QLNet.Instruments
                     engine_ = new BachelierSwaptionEngine(discountCurve_, h, new Actual365Fixed());
                     break;
                 default:
-                    Utils.QL_FAIL("unknown VolatilityType (" + type.ToString() + ")");
+                    Utils.QL_FAIL("unknown VolatilityType (" + type + ")");
                     break;
             }
+
             swaption.setupArguments(engine_.getArguments());
             results_ = engine_.getResults() as Instrument.Results;
-        }
-
-        public override double value(double x)
-        {
-            if (x.IsNotEqual(vol_.value()))
-            {
-                vol_.setValue(x);
-                engine_.calculate();
-            }
-            return results_.value.Value - targetValue_;
         }
 
         public override double derivative(double x)
@@ -63,8 +55,20 @@ namespace QLNet.Instruments
                 vol_.setValue(x);
                 engine_.calculate();
             }
+
             Utils.QL_REQUIRE(results_.additionalResults.Keys.Contains("vega"), () => "vega not provided");
             return (double)results_.additionalResults["vega"];
+        }
+
+        public override double value(double x)
+        {
+            if (x.IsNotEqual(vol_.value()))
+            {
+                vol_.setValue(x);
+                engine_.calculate();
+            }
+
+            return results_.value.Value - targetValue_;
         }
     }
 }

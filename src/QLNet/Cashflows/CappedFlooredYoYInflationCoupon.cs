@@ -16,9 +16,10 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Cashflows
 {
@@ -57,25 +58,32 @@ namespace QLNet.Cashflows
         R = (a L + b) + |a| \min(\frac{C - b}{|a|} - \xi L, 0)
         \f]
      */
-    [JetBrains.Annotations.PublicAPI] public class CappedFlooredYoYInflationCoupon : YoYInflationCoupon
+    [PublicAPI]
+    public class CappedFlooredYoYInflationCoupon : YoYInflationCoupon
     {
+        protected double cap_, floor_;
+        protected bool isFloored_, isCapped_;
+
+        // data, we only use underlying_ if it was constructed that way,
+        // generally we use the shared_ptr conversion to boolean to test
+        protected YoYInflationCoupon underlying_;
+
         // we may watch an underlying coupon ...
         public CappedFlooredYoYInflationCoupon(YoYInflationCoupon underlying,
-                                               double? cap = null,
-                                               double? floor = null)
-        : base(underlying.date(),
-               underlying.nominal(),
-               underlying.accrualStartDate(),
-               underlying.accrualEndDate(),
-               underlying.fixingDays(),
-               underlying.yoyIndex(),
-               underlying.observationLag(),
-               underlying.dayCounter(),
-               underlying.gearing(),
-               underlying.spread(),
-               underlying.referencePeriodStart,
-               underlying.referencePeriodEnd)
-
+            double? cap = null,
+            double? floor = null)
+            : base(underlying.date(),
+                underlying.nominal(),
+                underlying.accrualStartDate(),
+                underlying.accrualEndDate(),
+                underlying.fixingDays(),
+                underlying.yoyIndex(),
+                underlying.observationLag(),
+                underlying.dayCounter(),
+                underlying.gearing(),
+                underlying.spread(),
+                underlying.referencePeriodStart,
+                underlying.referencePeriodEnd)
         {
             underlying_ = underlying;
             isFloored_ = false;
@@ -84,30 +92,71 @@ namespace QLNet.Cashflows
             underlying.registerWith(update);
         }
 
-
         // ... or not
         public CappedFlooredYoYInflationCoupon(Date paymentDate,
-                                               double nominal,
-                                               Date startDate,
-                                               Date endDate,
-                                               int fixingDays,
-                                               YoYInflationIndex index,
-                                               Period observationLag,
-                                               DayCounter dayCounter,
-                                               double gearing = 1.0,
-                                               double spread = 0.0,
-                                               double? cap = null,
-                                               double? floor = null,
-                                               Date refPeriodStart = null,
-                                               Date refPeriodEnd = null)
-        : base(paymentDate, nominal, startDate, endDate,
-               fixingDays, index, observationLag, dayCounter,
-               gearing, spread, refPeriodStart, refPeriodEnd)
+            double nominal,
+            Date startDate,
+            Date endDate,
+            int fixingDays,
+            YoYInflationIndex index,
+            Period observationLag,
+            DayCounter dayCounter,
+            double gearing = 1.0,
+            double spread = 0.0,
+            double? cap = null,
+            double? floor = null,
+            Date refPeriodStart = null,
+            Date refPeriodEnd = null)
+            : base(paymentDate, nominal, startDate, endDate,
+                fixingDays, index, observationLag, dayCounter,
+                gearing, spread, refPeriodStart, refPeriodEnd)
         {
             isFloored_ = false;
             isCapped_ = false;
             setCommon(cap, floor);
         }
+
+        //! cap
+        public double? cap()
+        {
+            if (gearing_ > 0 && isCapped_)
+            {
+                return cap_;
+            }
+
+            if (gearing_ < 0 && isFloored_)
+            {
+                return floor_;
+            }
+
+            return null;
+        }
+
+        //! effective cap of fixing
+        public double effectiveCap() => (cap_ - spread()) / gearing();
+
+        //! effective floor of fixing
+        public double effectiveFloor() => (floor_ - spread()) / gearing();
+
+        //! floor
+        public double? floor()
+        {
+            if (gearing_ > 0 && isFloored_)
+            {
+                return floor_;
+            }
+
+            if (gearing_ < 0 && isCapped_)
+            {
+                return cap_;
+            }
+
+            return null;
+        }
+
+        public bool isCapped() => isCapped_;
+
+        public bool isFloored() => isFloored_;
 
         // augmented Coupon interface
         // swap(let) rate
@@ -131,61 +180,28 @@ namespace QLNet.Cashflows
             if (isFloored_)
             {
                 floorletRate =
-                   underlying_ != null ?
-                   underlying_.pricer().floorletRate(effectiveFloor()) :
-                   pricer().floorletRate(effectiveFloor())
-                   ;
+                    underlying_ != null ? underlying_.pricer().floorletRate(effectiveFloor()) : pricer().floorletRate(effectiveFloor())
+                    ;
             }
+
             var capletRate = 0.0;
             if (isCapped_)
             {
                 capletRate =
-                   underlying_ != null ?
-                   underlying_.pricer().capletRate(effectiveCap()) :
-                   pricer().capletRate(effectiveCap())
-                   ;
+                    underlying_ != null ? underlying_.pricer().capletRate(effectiveCap()) : pricer().capletRate(effectiveCap())
+                    ;
             }
 
             return swapletRate + floorletRate - capletRate;
-
         }
-        //! cap
-        public double? cap()
-        {
-            if (gearing_ > 0 && isCapped_)
-                return cap_;
-
-            if (gearing_ < 0 && isFloored_)
-                return floor_;
-
-            return null;
-        }
-        //! floor
-        public double? floor()
-        {
-            if (gearing_ > 0 && isFloored_)
-                return floor_;
-
-            if (gearing_ < 0 && isCapped_)
-                return cap_;
-
-            return null;
-        }
-        //! effective cap of fixing
-        public double effectiveCap() => (cap_ - spread()) / gearing();
-
-        //! effective floor of fixing
-        public double effectiveFloor() => (floor_ - spread()) / gearing();
-
-        public bool isCapped() => isCapped_;
-
-        public bool isFloored() => isFloored_;
 
         public void setPricer(YoYInflationCouponPricer pricer)
         {
             base.setPricer(pricer);
             if (underlying_ != null)
+            {
                 underlying_.setPricer(pricer);
+            }
         }
 
         protected virtual void setCommon(double? cap, double? floor)
@@ -200,6 +216,7 @@ namespace QLNet.Cashflows
                     isCapped_ = true;
                     cap_ = cap.Value;
                 }
+
                 if (floor != null)
                 {
                     floor_ = floor.Value;
@@ -213,6 +230,7 @@ namespace QLNet.Cashflows
                     floor_ = cap.Value;
                     isFloored_ = true;
                 }
+
                 if (floor != null)
                 {
                     isCapped_ = true;
@@ -224,13 +242,6 @@ namespace QLNet.Cashflows
             {
                 Utils.QL_REQUIRE(cap >= floor, () => "cap level (" + cap + ") less than floor level (" + floor + ")");
             }
-
         }
-
-        // data, we only use underlying_ if it was constructed that way,
-        // generally we use the shared_ptr conversion to boolean to test
-        protected YoYInflationCoupon underlying_;
-        protected bool isFloored_, isCapped_;
-        protected double cap_, floor_;
     }
 }

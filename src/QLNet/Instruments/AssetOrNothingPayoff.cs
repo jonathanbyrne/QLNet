@@ -1,10 +1,14 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class AssetOrNothingPayoff : StrikedTypePayoff
+    [PublicAPI]
+    public class AssetOrNothingPayoff : StrikedTypePayoff
     {
-        public AssetOrNothingPayoff(Option.Type type, double strike) : base(type, strike) { }
+        public AssetOrNothingPayoff(Option.Type type, double strike) : base(type, strike)
+        {
+        }
 
         // Payoff interface
         public override string name() => "AssetOrNothing";
@@ -13,9 +17,9 @@ namespace QLNet.Instruments
         {
             switch (type_)
             {
-                case QLNet.Option.Type.Call:
+                case Option.Type.Call:
                     return price - strike_ > 0.0 ? price : 0.0;
-                case QLNet.Option.Type.Put:
+                case Option.Type.Put:
                     return strike_ - price > 0.0 ? price : 0.0;
                 default:
                     throw new ArgumentException("unknown/illegal option ExerciseType");

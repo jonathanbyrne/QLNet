@@ -14,15 +14,16 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
 using QLNet.Instruments;
+using QLNet.Pricingengines.swaption;
 using QLNet.Quotes;
 using QLNet.Termstructures;
-using QLNet.Time;
-using System.Linq;
-using QLNet.Pricingengines.swaption;
 using QLNet.Termstructures.Credit;
+using QLNet.Time;
 
 namespace QLNet.Pricingengines.Swap
 {
@@ -43,8 +44,17 @@ namespace QLNet.Pricingengines.Swap
      to do: write Issuer based constructors (event ExerciseType)
      to do: Check consistency between option engine discount and the one given
     */
-    [JetBrains.Annotations.PublicAPI] public class CounterpartyAdjSwapEngine : VanillaSwap.Engine
+    [PublicAPI]
+    public class CounterpartyAdjSwapEngine : VanillaSwap.Engine
     {
+        private Handle<IPricingEngine> baseSwapEngine_;
+        private double ctptyRecoveryRate_;
+        private Handle<DefaultProbabilityTermStructure> defaultTS_;
+        private Handle<YieldTermStructure> discountCurve_;
+        private Handle<DefaultProbabilityTermStructure> invstDTS_;
+        private double invstRecoveryRate_;
+        private Handle<IPricingEngine> swaptionletEngine_;
+
         // Constructors
         //!
         /*! Creates the engine from an arbitrary swaption engine.
@@ -59,8 +69,8 @@ namespace QLNet.Pricingengines.Swap
           @param invstRecoveryRate Investor recovery rate.
          */
         public CounterpartyAdjSwapEngine(Handle<YieldTermStructure> discountCurve,
-                                         Handle<IPricingEngine> swaptionEngine, Handle<DefaultProbabilityTermStructure> ctptyDTS, double ctptyRecoveryRate,
-                                         Handle<DefaultProbabilityTermStructure> invstDTS = null, double invstRecoveryRate = 0.999)
+            Handle<IPricingEngine> swaptionEngine, Handle<DefaultProbabilityTermStructure> ctptyDTS, double ctptyRecoveryRate,
+            Handle<DefaultProbabilityTermStructure> invstDTS = null, double invstRecoveryRate = 0.999)
         {
             baseSwapEngine_ = new Handle<IPricingEngine>(new DiscountingSwapEngine(discountCurve));
             swaptionletEngine_ = swaptionEngine;
@@ -68,7 +78,7 @@ namespace QLNet.Pricingengines.Swap
             defaultTS_ = ctptyDTS;
             ctptyRecoveryRate_ = ctptyRecoveryRate;
             invstDTS_ = invstDTS ?? new Handle<DefaultProbabilityTermStructure>(
-                           new FlatHazardRate(0, ctptyDTS.link.calendar(), 1.0E-12, ctptyDTS.link.dayCounter()));
+                new FlatHazardRate(0, ctptyDTS.link.calendar(), 1.0E-12, ctptyDTS.link.dayCounter()));
             invstRecoveryRate_ = invstRecoveryRate;
 
             discountCurve.registerWith(update);
@@ -89,8 +99,8 @@ namespace QLNet.Pricingengines.Swap
           @param invstRecoveryRate Investor recovery rate.
          */
         public CounterpartyAdjSwapEngine(Handle<YieldTermStructure> discountCurve, double blackVol,
-                                         Handle<DefaultProbabilityTermStructure> ctptyDTS, double ctptyRecoveryRate,
-                                         Handle<DefaultProbabilityTermStructure> invstDTS = null, double invstRecoveryRate = 0.999)
+            Handle<DefaultProbabilityTermStructure> ctptyDTS, double ctptyRecoveryRate,
+            Handle<DefaultProbabilityTermStructure> invstDTS = null, double invstRecoveryRate = 0.999)
         {
             baseSwapEngine_ = new Handle<IPricingEngine>(new DiscountingSwapEngine(discountCurve));
             swaptionletEngine_ = new Handle<IPricingEngine>(new BlackSwaptionEngine(discountCurve, blackVol));
@@ -98,7 +108,7 @@ namespace QLNet.Pricingengines.Swap
             defaultTS_ = ctptyDTS;
             ctptyRecoveryRate_ = ctptyRecoveryRate;
             invstDTS_ = invstDTS ?? new Handle<DefaultProbabilityTermStructure>(
-                           new FlatHazardRate(0, ctptyDTS.link.calendar(), 1.0e-12, ctptyDTS.link.dayCounter()));
+                new FlatHazardRate(0, ctptyDTS.link.calendar(), 1.0e-12, ctptyDTS.link.dayCounter()));
             invstRecoveryRate_ = invstRecoveryRate;
 
             discountCurve.registerWith(update);
@@ -118,8 +128,8 @@ namespace QLNet.Pricingengines.Swap
           @param invstRecoveryRate Investor recovery rate.
         */
         public CounterpartyAdjSwapEngine(Handle<YieldTermStructure> discountCurve, Handle<Quote> blackVol,
-                                         Handle<DefaultProbabilityTermStructure> ctptyDTS, double ctptyRecoveryRate,
-                                         Handle<DefaultProbabilityTermStructure> invstDTS = null, double invstRecoveryRate = 0.999)
+            Handle<DefaultProbabilityTermStructure> ctptyDTS, double ctptyRecoveryRate,
+            Handle<DefaultProbabilityTermStructure> invstDTS = null, double invstRecoveryRate = 0.999)
         {
             baseSwapEngine_ = new Handle<IPricingEngine>(new DiscountingSwapEngine(discountCurve));
             swaptionletEngine_ = new Handle<IPricingEngine>(new BlackSwaptionEngine(discountCurve, blackVol));
@@ -127,7 +137,7 @@ namespace QLNet.Pricingengines.Swap
             defaultTS_ = ctptyDTS;
             ctptyRecoveryRate_ = ctptyRecoveryRate;
             invstDTS_ = invstDTS ?? new Handle<DefaultProbabilityTermStructure>(
-                           new FlatHazardRate(0, ctptyDTS.link.calendar(), 1.0e-12, ctptyDTS.link.dayCounter()));
+                new FlatHazardRate(0, ctptyDTS.link.calendar(), 1.0e-12, ctptyDTS.link.dayCounter()));
             invstRecoveryRate_ = invstRecoveryRate;
 
             discountCurve.registerWith(update);
@@ -158,10 +168,9 @@ namespace QLNet.Pricingengines.Swap
                 nextFD = arguments_.fixedPayDates[index];
             }
 
-
             // Compute fair spread for strike value:
             // copy args into the non risky engine
-            var noCVAArgs = baseSwapEngine_.link.getArguments() as QLNet.Instruments.Swap.Arguments;
+            var noCVAArgs = baseSwapEngine_.link.getArguments() as Instruments.Swap.Arguments;
 
             noCVAArgs.legs = arguments_.legs;
             noCVAArgs.payer = arguments_.payer;
@@ -170,14 +179,14 @@ namespace QLNet.Pricingengines.Swap
 
             var baseSwapRate = ((FixedRateCoupon)arguments_.legs[0][0]).rate();
 
-            var vSResults = baseSwapEngine_.link.getResults() as QLNet.Instruments.Swap.Results;
+            var vSResults = baseSwapEngine_.link.getResults() as Instruments.Swap.Results;
 
             var baseSwapFairRate = -baseSwapRate * vSResults.legNPV[1] / vSResults.legNPV[0];
             var baseSwapNPV = vSResults.value;
 
             var reversedType = arguments_.type == VanillaSwap.Type.Payer
-                                            ? VanillaSwap.Type.Receiver
-                                            : VanillaSwap.Type.Payer;
+                ? VanillaSwap.Type.Receiver
+                : VanillaSwap.Type.Payer;
 
             // Swaplet options summatory:
             while (nextFD != arguments_.fixedPayDates.Last())
@@ -189,16 +198,16 @@ namespace QLNet.Pricingengines.Swap
                 var baseSwapsTenor = new Period(arguments_.fixedPayDates.Last().serialNumber()
                                                 - swapletStart.serialNumber(), TimeUnit.Days);
                 var swaplet = new MakeVanillaSwap(baseSwapsTenor, swapIndex, baseSwapFairRate)
-                .withType(arguments_.type)
-                .withNominal(arguments_.nominal)
-                .withEffectiveDate(swapletStart)
-                .withTerminationDate(arguments_.fixedPayDates.Last()).value();
+                    .withType(arguments_.type)
+                    .withNominal(arguments_.nominal)
+                    .withEffectiveDate(swapletStart)
+                    .withTerminationDate(arguments_.fixedPayDates.Last()).value();
 
                 var revSwaplet = new MakeVanillaSwap(baseSwapsTenor, swapIndex, baseSwapFairRate)
-                .withType(reversedType)
-                .withNominal(arguments_.nominal)
-                .withEffectiveDate(swapletStart)
-                .withTerminationDate(arguments_.fixedPayDates.Last()).value();
+                    .withType(reversedType)
+                    .withNominal(arguments_.nominal)
+                    .withEffectiveDate(swapletStart)
+                    .withTerminationDate(arguments_.fixedPayDates.Last()).value();
 
                 var swaptionlet = new Swaption(swaplet, new EuropeanExercise(swapletStart));
                 var putSwaplet = new Swaption(revSwaplet, new EuropeanExercise(swapletStart));
@@ -208,7 +217,7 @@ namespace QLNet.Pricingengines.Swap
                 // atm underlying swap means that the value of put = value
                 // call so this double pricing is not needed
                 cumOptVal += swaptionlet.NPV() * defaultTS_.link.defaultProbability(
-                                swapletStart, nextFD);
+                    swapletStart, nextFD);
                 cumPutVal += putSwaplet.NPV() * invstDTS_.link.defaultProbability(swapletStart, nextFD);
 
                 swapletStart = nextFD;
@@ -219,16 +228,6 @@ namespace QLNet.Pricingengines.Swap
             results_.value = baseSwapNPV - (1.0 - ctptyRecoveryRate_) * cumOptVal + (1.0 - invstRecoveryRate_) * cumPutVal;
             results_.fairRate = -baseSwapRate * (vSResults.legNPV[1] - (1.0 - ctptyRecoveryRate_) * cumOptVal +
                                                  (1.0 - invstRecoveryRate_) * cumPutVal) / vSResults.legNPV[0];
-
         }
-
-        private Handle<IPricingEngine> baseSwapEngine_;
-        private Handle<IPricingEngine> swaptionletEngine_;
-        private Handle<YieldTermStructure> discountCurve_;
-        private Handle<DefaultProbabilityTermStructure> defaultTS_;
-        private double ctptyRecoveryRate_;
-        private Handle<DefaultProbabilityTermStructure> invstDTS_;
-        private double invstRecoveryRate_;
-
     }
 }

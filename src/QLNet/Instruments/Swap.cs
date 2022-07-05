@@ -18,17 +18,94 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Cashflows;
-using QLNet.Time;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Cashflows;
+using QLNet.Time;
 
 namespace QLNet.Instruments
 {
     // Interest rate swap
     // The cash flows belonging to the first leg are paid; the ones belonging to the second leg are received.
-    [JetBrains.Annotations.PublicAPI] public class Swap : Instrument
+    [PublicAPI]
+    public class Swap : Instrument
     {
+        ////////////////////////////////////////////////////////////////
+        // arguments, results, pricing engine
+        [PublicAPI]
+        public class Arguments : IPricingEngineArguments
+        {
+            public List<List<CashFlow>> legs { get; set; }
+
+            public List<double> payer { get; set; }
+
+            public virtual void validate()
+            {
+                Utils.QL_REQUIRE(legs.Count == payer.Count, () => "number of legs and multipliers differ");
+            }
+        }
+
+        public new class Results : Instrument.Results
+        {
+            public List<double?> endDiscounts { get; set; }
+
+            public List<double?> legBPS { get; set; }
+
+            public List<double?> legNPV { get; set; }
+
+            public double? npvDateDiscount { get; set; }
+
+            public List<double?> startDiscounts { get; set; }
+
+            public override void reset()
+            {
+                base.reset();
+                // clear all previous results
+                if (legNPV == null)
+                {
+                    legNPV = new List<double?>();
+                }
+                else
+                {
+                    legNPV.Clear();
+                }
+
+                if (legBPS == null)
+                {
+                    legBPS = new List<double?>();
+                }
+                else
+                {
+                    legBPS.Clear();
+                }
+
+                if (startDiscounts == null)
+                {
+                    startDiscounts = new List<double?>();
+                }
+                else
+                {
+                    startDiscounts.Clear();
+                }
+
+                if (endDiscounts == null)
+                {
+                    endDiscounts = new List<double?>();
+                }
+                else
+                {
+                    endDiscounts.Clear();
+                }
+
+                npvDateDiscount = null;
+            }
+        }
+
+        public abstract class SwapEngine : GenericEngine<Arguments, Results>
+        {
+        }
+
         #region Data members
 
         protected List<List<CashFlow>> legs_;
@@ -40,7 +117,9 @@ namespace QLNet.Instruments
         protected double? npvDateDiscount_;
 
         public Arguments arguments { get; set; }
+
         public Results results { get; set; }
+
         public SwapEngine engine { get; set; }
 
         #endregion
@@ -65,8 +144,10 @@ namespace QLNet.Instruments
             npvDateDiscount_ = 0.0;
 
             for (var i = 0; i < legs_.Count; i++)
-                for (var j = 0; j < legs_[i].Count; j++)
-                    legs_[i][j].registerWith(update);
+            for (var j = 0; j < legs_[i].Count; j++)
+            {
+                legs_[i][j].registerWith(update);
+            }
         }
 
         // Multi leg constructor.
@@ -81,13 +162,18 @@ namespace QLNet.Instruments
             npvDateDiscount_ = 0.0;
 
             Utils.QL_REQUIRE(payer.Count == legs_.Count, () => "size mismatch between payer (" + payer.Count +
-                             ") and legs (" + legs_.Count + ")");
+                                                               ") and legs (" + legs_.Count + ")");
             for (var i = 0; i < legs_.Count; ++i)
             {
                 if (payer[i])
+                {
                     payer_[i] = -1;
+                }
+
                 for (var j = 0; j < legs_[i].Count; j++)
+                {
                     legs_[i][j].registerWith(update);
+                }
             }
         }
 
@@ -104,6 +190,7 @@ namespace QLNet.Instruments
             endDiscounts_ = new InitializedList<double?>(legs, 0.0);
             npvDateDiscount_ = 0.0;
         }
+
         #endregion
 
         #region Instrument interface
@@ -253,54 +340,5 @@ namespace QLNet.Instruments
         }
 
         #endregion
-
-        ////////////////////////////////////////////////////////////////
-        // arguments, results, pricing engine
-        [JetBrains.Annotations.PublicAPI] public class Arguments : IPricingEngineArguments
-        {
-            public List<List<CashFlow>> legs { get; set; }
-            public List<double> payer { get; set; }
-            public virtual void validate()
-            {
-                Utils.QL_REQUIRE(legs.Count == payer.Count, () => "number of legs and multipliers differ");
-            }
-        }
-
-        public new class Results : Instrument.Results
-        {
-            public List<double?> legNPV { get; set; }
-            public List<double?> legBPS { get; set; }
-            public List<double?> startDiscounts { get; set; }
-            public List<double?> endDiscounts { get; set; }
-            public double? npvDateDiscount { get; set; }
-            public override void reset()
-            {
-                base.reset();
-                // clear all previous results
-                if (legNPV == null)
-                    legNPV = new List<double?>();
-                else
-                    legNPV.Clear();
-
-                if (legBPS == null)
-                    legBPS = new List<double?>();
-                else
-                    legBPS.Clear();
-
-                if (startDiscounts == null)
-                    startDiscounts = new List<double?>();
-                else
-                    startDiscounts.Clear();
-
-                if (endDiscounts == null)
-                    endDiscounts = new List<double?>();
-                else
-                    endDiscounts.Clear();
-
-                npvDateDiscount = null;
-            }
-        }
-
-        public abstract class SwapEngine : GenericEngine<Arguments, Results> { }
     }
 }

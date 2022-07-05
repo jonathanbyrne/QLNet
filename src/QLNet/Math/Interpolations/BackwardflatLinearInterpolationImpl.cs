@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Extensions;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class BackwardflatLinearInterpolationImpl : Interpolation2D.templateImpl
+    [PublicAPI]
+    public class BackwardflatLinearInterpolationImpl : Interpolation2D.templateImpl
     {
         public BackwardflatLinearInterpolationImpl(List<double> xBegin, int xEnd, List<double> yBegin, int yEnd,
             Matrix zData)
@@ -12,7 +14,9 @@ namespace QLNet.Math.Interpolations
             calculate();
         }
 
-        public override void calculate() { }
+        public override void calculate()
+        {
+        }
 
         public override double value(double x, double y)
         {
@@ -41,8 +45,6 @@ namespace QLNet.Math.Interpolations
             var u = (y - yBegin_[j]) / (yBegin_[j + 1] - yBegin_[j]);
 
             return (1.0 - u) * z1 + u * z2;
-
         }
-
     }
 }

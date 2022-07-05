@@ -18,10 +18,12 @@
 */
 
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Quotes
 {
-    [JetBrains.Annotations.PublicAPI] public class DerivedQuote : Quote
+    [PublicAPI]
+    public class DerivedQuote : Quote
     {
         //! market quote whose value depends on another quote
         /*! \test the correctness of the returned values is tested by
@@ -38,14 +40,6 @@ namespace QLNet.Quotes
             element_.registerWith(update);
         }
 
-        //! Quote interface
-        public override double value()
-        {
-            if (!isValid())
-                throw new ArgumentException("invalid DerivedQuote");
-            return f_(element_.link.value());
-        }
-
         public override bool isValid() => element_.link.isValid();
 
         public void update()
@@ -53,5 +47,15 @@ namespace QLNet.Quotes
             notifyObservers();
         }
 
+        //! Quote interface
+        public override double value()
+        {
+            if (!isValid())
+            {
+                throw new ArgumentException("invalid DerivedQuote");
+            }
+
+            return f_(element_.link.value());
+        }
     }
 }

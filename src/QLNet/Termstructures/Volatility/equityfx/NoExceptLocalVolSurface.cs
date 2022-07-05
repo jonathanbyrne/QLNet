@@ -17,32 +17,36 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Quotes;
 
 namespace QLNet.Termstructures.Volatility.equityfx
 {
     /// <summary>
-    /// wrapper around Dupire local volatility surface,
-    /// which does not throw exception if local volatility becomes negative
+    ///     wrapper around Dupire local volatility surface,
+    ///     which does not throw exception if local volatility becomes negative
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class NoExceptLocalVolSurface : LocalVolSurface
+    [PublicAPI]
+    public class NoExceptLocalVolSurface : LocalVolSurface
     {
+        protected double illegalLocalVolOverwrite_;
+
         public NoExceptLocalVolSurface(Handle<BlackVolTermStructure> blackTS,
-                                       Handle<YieldTermStructure> riskFreeTS,
-                                       Handle<YieldTermStructure> dividendTS,
-                                       Handle<Quote> underlying,
-                                       double illegalLocalVolOverwrite)
-           : base(blackTS, riskFreeTS, dividendTS, underlying)
+            Handle<YieldTermStructure> riskFreeTS,
+            Handle<YieldTermStructure> dividendTS,
+            Handle<Quote> underlying,
+            double illegalLocalVolOverwrite)
+            : base(blackTS, riskFreeTS, dividendTS, underlying)
         {
             illegalLocalVolOverwrite_ = illegalLocalVolOverwrite;
         }
 
         public NoExceptLocalVolSurface(Handle<BlackVolTermStructure> blackTS,
-                                       Handle<YieldTermStructure> riskFreeTS,
-                                       Handle<YieldTermStructure> dividendTS,
-                                       double underlying,
-                                       double illegalLocalVolOverwrite)
-           : base(blackTS, riskFreeTS, dividendTS, underlying)
+            Handle<YieldTermStructure> riskFreeTS,
+            Handle<YieldTermStructure> dividendTS,
+            double underlying,
+            double illegalLocalVolOverwrite)
+            : base(blackTS, riskFreeTS, dividendTS, underlying)
         {
             illegalLocalVolOverwrite_ = illegalLocalVolOverwrite;
         }
@@ -61,7 +65,5 @@ namespace QLNet.Termstructures.Volatility.equityfx
 
             return vol;
         }
-
-        protected double illegalLocalVolOverwrite_;
     }
 }

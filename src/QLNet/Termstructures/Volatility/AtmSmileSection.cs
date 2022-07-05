@@ -14,44 +14,48 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
 using QLNet.Termstructures.Volatility.Optionlet;
 using QLNet.Time;
 
 namespace QLNet.Termstructures.Volatility
 {
-    [JetBrains.Annotations.PublicAPI] public class AtmSmileSection : SmileSection
+    [PublicAPI]
+    public class AtmSmileSection : SmileSection
     {
+        private double? f_;
+        private SmileSection source_;
+
         public AtmSmileSection(SmileSection source, double? atm = null)
         {
             source_ = source;
             f_ = atm;
             if (f_ == null)
+            {
                 f_ = source_.atmLevel();
+            }
         }
 
-        public override double minStrike() => source_.minStrike();
-
-        public override double maxStrike() => source_.maxStrike();
-
         public override double? atmLevel() => f_;
+
+        public override DayCounter dayCounter() => source_.dayCounter();
 
         public override Date exerciseDate() => source_.exerciseDate();
 
         public override double exerciseTime() => source_.exerciseTime();
 
-        public override DayCounter dayCounter() => source_.dayCounter();
+        public override double maxStrike() => source_.maxStrike();
+
+        public override double minStrike() => source_.minStrike();
 
         public override Date referenceDate() => source_.referenceDate();
 
-        public override VolatilityType volatilityType() => source_.volatilityType();
-
         public override double shift() => source_.shift();
 
-        protected override double volatilityImpl(double strike) => source_.volatility(strike);
+        public override VolatilityType volatilityType() => source_.volatilityType();
 
         protected override double varianceImpl(double strike) => source_.variance(strike);
 
-        private SmileSection source_;
-        private double? f_;
+        protected override double volatilityImpl(double strike) => source_.volatility(strike);
     }
 }

@@ -19,8 +19,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Time;
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -44,16 +44,16 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class Australia : Calendar
+    [PublicAPI]
+    public class Australia : Calendar
     {
-        public Australia() : base(Impl.Singleton) { }
-
-        class Impl : WesternImpl
+        private class Impl : WesternImpl
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "Australia";
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -68,7 +68,7 @@ namespace QLNet.Time.Calendars
                     || d == 1 && m == Month.January
                     // Australia Day, January 26th (possibly moved to Monday)
                     || (d == 26 || (d == 27 || d == 28) && w == DayOfWeek.Monday) &&
-                        m == Month.January
+                    m == Month.January
                     // Good Friday
                     || dd == em - 3
                     // Easter Monday
@@ -83,18 +83,22 @@ namespace QLNet.Time.Calendars
                     || d <= 7 && w == DayOfWeek.Monday && m == Month.October
                     // Christmas, December 25th (possibly Monday or Tuesday)
                     || (d == 25 || d == 27 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday))
-                        && m == Month.December
+                    && m == Month.December
                     // Boxing Day, December 26th (possibly Monday or Tuesday)
                     || (d == 26 || d == 28 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday))
-                        && m == Month.December)
+                    && m == Month.December)
+                {
                     return false;
+                }
+
                 return true;
             }
+
+            public override string name() => "Australia";
+        }
+
+        public Australia() : base(Impl.Singleton)
+        {
         }
     }
-
 }
-
-
-
-

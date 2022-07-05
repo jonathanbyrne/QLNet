@@ -18,7 +18,10 @@ namespace QLNet.Tests;
     {
         var prefix = start_ ? "random-start " : "";
         if (shift_)
+        {
             prefix += "random-shift ";
+        }
+
         return prefix + "Halton";
     }
 

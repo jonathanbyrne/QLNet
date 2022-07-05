@@ -13,32 +13,33 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Math;
 using QLNet.Quotes;
-using QLNet.Termstructures;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Termstructures.Credit
 {
     /// <summary>
-    /// DefaultProbabilityTermStructure based on interpolation of survival probabilities
+    ///     DefaultProbabilityTermStructure based on interpolation of survival probabilities
     /// </summary>
     /// <typeparam name="Interpolator"></typeparam>
-    [JetBrains.Annotations.PublicAPI] public class InterpolatedSurvivalProbabilityCurve<Interpolator> : SurvivalProbabilityStructure,
-      InterpolatedCurve where Interpolator : IInterpolationFactory, new()
+    [PublicAPI]
+    public class InterpolatedSurvivalProbabilityCurve<Interpolator> : SurvivalProbabilityStructure,
+        InterpolatedCurve where Interpolator : IInterpolationFactory, new()
     {
         public InterpolatedSurvivalProbabilityCurve(List<Date> dates,
-                                                    List<double> probabilities,
-                                                    DayCounter dayCounter,
-                                                    Calendar calendar = null,
-                                                    List<Handle<Quote>> jumps = null,
-                                                    List<Date> jumpDates = null,
-                                                    Interpolator interpolator = default)
-           : base(dates[0], calendar, dayCounter, jumps, jumpDates)
+            List<double> probabilities,
+            DayCounter dayCounter,
+            Calendar calendar = null,
+            List<Handle<Quote>> jumps = null,
+            List<Date> jumpDates = null,
+            Interpolator interpolator = default)
+            : base(dates[0], calendar, dayCounter, jumps, jumpDates)
         {
             dates_ = dates;
 
@@ -51,39 +52,61 @@ namespace QLNet.Termstructures.Credit
             for (var i = 1; i < dates_.Count; ++i)
             {
                 Utils.QL_REQUIRE(dates_[i] > dates_[i - 1], () =>
-                                 "invalid date (" + dates_[i] + ", vs " + dates_[i - 1] + ")");
+                    "invalid date (" + dates_[i] + ", vs " + dates_[i - 1] + ")");
                 times_[i] = dayCounter.yearFraction(dates_[0], dates_[i]);
                 Utils.QL_REQUIRE(!Utils.close(times_[i], times_[i - 1]), () =>
-                                 "two dates correspond to the same time under this curve's day count convention");
+                    "two dates correspond to the same time under this curve's day count convention");
                 Utils.QL_REQUIRE(data_[i] > 0.0, () => "negative probability");
                 Utils.QL_REQUIRE(data_[i] <= data_[i - 1], () =>
-                                 "negative hazard rate implied by the survival probability " +
-                                 data_[i] + " at " + dates_[i] +
-                                 " (t=" + times_[i] + ") after the survival probability " +
-                                 data_[i - 1] + " at " + dates_[i - 1] +
-                                 " (t=" + times_[i - 1] + ")");
+                    "negative hazard rate implied by the survival probability " +
+                    data_[i] + " at " + dates_[i] +
+                    " (t=" + times_[i] + ") after the survival probability " +
+                    data_[i - 1] + " at " + dates_[i - 1] +
+                    " (t=" + times_[i - 1] + ")");
             }
 
             interpolation_ = interpolator_.interpolate(times_,
-                                                                 times_.Count,
-                                                                 data_);
+                times_.Count,
+                data_);
             interpolation_.update();
-
         }
-        /// <summary>
-        /// TermStructure interface
-        /// </summary>
-        /// <returns></returns>
-        public override Date maxDate() => dates_.Last();
 
-        // other inspectors
-        public List<double> times() => times_;
+        protected InterpolatedSurvivalProbabilityCurve(DayCounter dc,
+            List<Handle<Quote>> jumps = null,
+            List<Date> jumpDates = null,
+            Interpolator interpolator = default)
+            : base(dc, jumps, jumpDates)
+        {
+        }
 
-        public List<Date> dates() => dates_;
+        protected InterpolatedSurvivalProbabilityCurve(Date referenceDate,
+            DayCounter dc,
+            List<Handle<Quote>> jumps = null,
+            List<Date> jumpDates = null,
+            Interpolator interpolator = default)
+            : base(referenceDate, new Calendar(), dc, jumps, jumpDates)
+        {
+        }
+
+        protected InterpolatedSurvivalProbabilityCurve(int settlementDays,
+            Calendar cal,
+            DayCounter dc,
+            List<Handle<Quote>> jumps = null,
+            List<Date> jumpDates = null,
+            Interpolator interpolator = default)
+            : base(settlementDays, cal, dc, jumps, jumpDates)
+        {
+        }
 
         public List<double> data() => data_;
 
-        public List<double> survivalProbabilities() => data_;
+        public List<Date> dates() => dates_;
+
+        /// <summary>
+        ///     TermStructure interface
+        /// </summary>
+        /// <returns></returns>
+        public override Date maxDate() => dates_.Last();
 
         public Dictionary<Date, double> nodes()
         {
@@ -92,48 +115,17 @@ namespace QLNet.Termstructures.Credit
             return results;
         }
 
-        protected InterpolatedSurvivalProbabilityCurve(DayCounter dc,
-                                                       List<Handle<Quote>> jumps = null,
-                                                       List<Date> jumpDates = null,
-                                                       Interpolator interpolator = default)
-           : base(dc, jumps, jumpDates) { }
+        public List<double> survivalProbabilities() => data_;
 
-        protected InterpolatedSurvivalProbabilityCurve(Date referenceDate,
-                                                       DayCounter dc,
-                                                       List<Handle<Quote>> jumps = null,
-                                                       List<Date> jumpDates = null,
-                                                       Interpolator interpolator = default)
-           : base(referenceDate, new Calendar(), dc, jumps, jumpDates) { }
-
-        protected InterpolatedSurvivalProbabilityCurve(int settlementDays,
-                                                       Calendar cal,
-                                                       DayCounter dc,
-                                                       List<Handle<Quote>> jumps = null,
-                                                       List<Date> jumpDates = null,
-                                                       Interpolator interpolator = default)
-           : base(settlementDays, cal, dc, jumps, jumpDates) { }
-
-        /// <summary>
-        /// DefaultProbabilityTermStructure implementation
-        /// </summary>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        protected override double survivalProbabilityImpl(double t)
-        {
-            if (t <= times_.Last())
-                return interpolation_.value(t, true);
-
-            // flat hazard rate extrapolation
-            var tMax = times_.Last();
-            var sMax = data_.Last();
-            var hazardMax = -interpolation_.derivative(tMax) / sMax;
-            return sMax * System.Math.Exp(-hazardMax * (t - tMax));
-        }
+        // other inspectors
+        public List<double> times() => times_;
 
         protected override double defaultDensityImpl(double t)
         {
             if (t <= times_.Last())
+            {
                 return -interpolation_.derivative(t, true);
+            }
 
             // flat hazard rate extrapolation
             var tMax = times_.Last();
@@ -142,18 +134,39 @@ namespace QLNet.Termstructures.Credit
             return sMax * hazardMax * System.Math.Exp(-hazardMax * (t - tMax));
         }
 
+        /// <summary>
+        ///     DefaultProbabilityTermStructure implementation
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        protected override double survivalProbabilityImpl(double t)
+        {
+            if (t <= times_.Last())
+            {
+                return interpolation_.value(t, true);
+            }
+
+            // flat hazard rate extrapolation
+            var tMax = times_.Last();
+            var sMax = data_.Last();
+            var hazardMax = -interpolation_.derivative(tMax) / sMax;
+            return sMax * System.Math.Exp(-hazardMax * (t - tMax));
+        }
 
         #region InterpolatedCurve
 
         public List<double> times_ { get; set; }
 
         public List<Date> dates_ { get; set; }
+
         public Date maxDate_ { get; set; }
 
         public List<double> data_ { get; set; }
+
         public List<double> discounts() => data_;
 
         public Interpolation interpolation_ { get; set; }
+
         public IInterpolationFactory interpolator_ { get; set; }
 
         public void setupInterpolation()
@@ -170,6 +183,7 @@ namespace QLNet.Termstructures.Credit
             copy.setupInterpolation();
             return copy;
         }
+
         #endregion
     }
 }

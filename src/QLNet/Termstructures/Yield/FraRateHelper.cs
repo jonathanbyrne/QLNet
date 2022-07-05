@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Indexes;
 using QLNet.Quotes;
@@ -5,8 +6,15 @@ using QLNet.Time;
 
 namespace QLNet.Termstructures.Yield
 {
-    [JetBrains.Annotations.PublicAPI] public class FraRateHelper : RelativeDateRateHelper
+    [PublicAPI]
+    public class FraRateHelper : RelativeDateRateHelper
     {
+        private Date fixingDate_;
+        private IborIndex iborIndex_;
+        private Period periodToStart_;
+        private Pillar.Choice pillarChoice_;
+        // need to init this because it is used before the handle has any link, i.e. setTermStructure will be used after ctor
+        private RelinkableHandle<YieldTermStructure> termStructureHandle_ = new RelinkableHandle<YieldTermStructure>();
 
         public FraRateHelper(Handle<Quote> rate,
             int monthsToStart,
@@ -132,7 +140,7 @@ namespace QLNet.Termstructures.Yield
             pillarChoice_ = pillarChoice;
             // no way to take fixing into account,
             // even if we would like to for FRA over today
-            iborIndex_ = new IborIndex("no-fix",  // correct family name would be needed
+            iborIndex_ = new IborIndex("no-fix", // correct family name would be needed
                 new Period(lengthInMonths, TimeUnit.Months),
                 fixingDays,
                 new Currency(), calendar, convention,
@@ -175,17 +183,17 @@ namespace QLNet.Termstructures.Yield
             initializeDates();
         }
 
+        public override double impliedQuote()
+        {
+            Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
+            return iborIndex_.fixing(fixingDate_, true);
+        }
+
         public override void setTermStructure(YieldTermStructure t)
         {
             // no need to register---the index is not lazy
             termStructureHandle_.linkTo(t, false);
             base.setTermStructure(t);
-        }
-
-        public override double impliedQuote()
-        {
-            Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
-            return iborIndex_.fixing(fixingDate_, true);
         }
 
         protected override void initializeDates()
@@ -232,13 +240,5 @@ namespace QLNet.Termstructures.Yield
             latestDate_ = pillarDate_; // backward compatibility
             fixingDate_ = iborIndex_.fixingDate(earliestDate_);
         }
-
-        private Date fixingDate_;
-        private Period periodToStart_;
-        private Pillar.Choice pillarChoice_;
-        private IborIndex iborIndex_;
-        // need to init this because it is used before the handle has any link, i.e. setTermStructure will be used after ctor
-        RelinkableHandle<YieldTermStructure> termStructureHandle_ = new RelinkableHandle<YieldTermStructure>();
-
     }
 }

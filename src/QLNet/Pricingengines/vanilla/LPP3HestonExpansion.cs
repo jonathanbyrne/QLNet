@@ -1,7 +1,13 @@
-﻿namespace QLNet.Pricingengines.vanilla
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Pricingengines.vanilla
 {
-    [JetBrains.Annotations.PublicAPI] public class LPP3HestonExpansion : HestonExpansion
+    [PublicAPI]
+    public class LPP3HestonExpansion : HestonExpansion
     {
+        private double[] coeffs = new double[4];
+        private double ekt, e2kt, e3kt, e4kt;
+
         public LPP3HestonExpansion(double kappa, double theta, double sigma, double v0, double rho, double term)
         {
             ekt = System.Math.Exp(kappa * term);
@@ -13,6 +19,7 @@
             coeffs[2] = z2(term, kappa, theta, sigma, v0, rho);
             coeffs[3] = z3(term, kappa, theta, sigma, v0, rho);
         }
+
         public override double impliedVolatility(double strike, double forward)
         {
             var x = System.Math.Log(strike / forward);
@@ -20,8 +27,6 @@
             return System.Math.Max(1e-8, vol);
         }
 
-        private double[] coeffs = new double[4];
-        private double ekt, e2kt, e3kt, e4kt;
         private double z0(double t, double kappa, double theta, double delta, double y, double rho) =>
             (96 * System.Math.Pow(delta, 2) * ekt * System.Math.Pow(kappa, 3) *
              (-theta - 4 * ekt * (theta + kappa * t * (theta - y)) +

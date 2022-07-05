@@ -17,11 +17,12 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Time;
-using QLNet.Time.DayCounters;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math;
+using QLNet.Time;
 using QLNet.Time.Calendars;
+using QLNet.Time.DayCounters;
 
 namespace QLNet.Instruments.Bonds
 {
@@ -36,30 +37,34 @@ namespace QLNet.Instruments.Bonds
     /*! \ingroup instruments
 
     */
-    [JetBrains.Annotations.PublicAPI] public class BTP : FixedRateBond
+    [PublicAPI]
+    public class BTP : FixedRateBond
     {
         public BTP(Date maturityDate, double fixedRate, Date startDate = null, Date issueDate = null)
-           : base(2, 100.0, new Schedule(startDate,
-                                         maturityDate, new Period(6, TimeUnit.Months),
-                                         new NullCalendar(), BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
-                                         DateGeneration.Rule.Backward, true),
-                  new List<double> { fixedRate },
-        new ActualActual(ActualActual.Convention.ISMA),
-        BusinessDayConvention.ModifiedFollowing, 100.0, issueDate, new TARGET())
-        { }
+            : base(2, 100.0, new Schedule(startDate,
+                    maturityDate, new Period(6, TimeUnit.Months),
+                    new NullCalendar(), BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
+                    DateGeneration.Rule.Backward, true),
+                new List<double> { fixedRate },
+                new ActualActual(ActualActual.Convention.ISMA),
+                BusinessDayConvention.ModifiedFollowing, 100.0, issueDate, new TARGET())
+        {
+        }
 
         /*! constructor needed for legacy non-par redemption BTPs.
             As of today the only remaining one is IT123456789012
             that will redeem 99.999 on xx-may-2037 */
         public BTP(Date maturityDate, double fixedRate, double redemption, Date startDate = null, Date issueDate = null)
-           : base(2, 100.0, new Schedule(startDate,
-                                         maturityDate, new Period(6, TimeUnit.Months),
-                                         new NullCalendar(), BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
-                                         DateGeneration.Rule.Backward, true),
-                  new List<double> { fixedRate },
-        new ActualActual(ActualActual.Convention.ISMA),
-        BusinessDayConvention.ModifiedFollowing, redemption, issueDate, new TARGET())
-        { }
+            : base(2, 100.0, new Schedule(startDate,
+                    maturityDate, new Period(6, TimeUnit.Months),
+                    new NullCalendar(), BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
+                    DateGeneration.Rule.Backward, true),
+                new List<double> { fixedRate },
+                new ActualActual(ActualActual.Convention.ISMA),
+                BusinessDayConvention.ModifiedFollowing, redemption, issueDate, new TARGET())
+        {
+        }
+
         #region Bond interface
 
         //! accrued amount at a given date

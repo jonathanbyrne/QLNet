@@ -17,26 +17,30 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math;
-using QLNet.Methods.Finitedifferences;
 using QLNet.Methods.Finitedifferences.Meshers;
-using QLNet.Methods.Finitedifferences.Operators;
 using QLNet.Methods.Finitedifferences.Utilities;
 using QLNet.Time;
-using System.Collections.Generic;
 
 namespace QLNet.Methods.Finitedifferences.StepConditions
 {
     /// <summary>
-    /// bermudan step condition for multi dimensional problems
+    ///     bermudan step condition for multi dimensional problems
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class FdmBermudanStepCondition : IStepCondition<Vector>
+    [PublicAPI]
+    public class FdmBermudanStepCondition : IStepCondition<Vector>
     {
+        protected FdmInnerValueCalculator calculator_;
+        protected List<double> exerciseTimes_;
+        protected FdmMesher mesher_;
+
         public FdmBermudanStepCondition(List<Date> exerciseDates,
-                                        Date referenceDate,
-                                        DayCounter dayCounter,
-                                        FdmMesher mesher,
-                                        FdmInnerValueCalculator calculator)
+            Date referenceDate,
+            DayCounter dayCounter,
+            FdmMesher mesher,
+            FdmInnerValueCalculator calculator)
         {
             mesher_ = mesher;
             calculator_ = calculator;
@@ -45,7 +49,7 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
             foreach (var iter in exerciseDates)
             {
                 exerciseTimes_.Add(
-                   dayCounter.yearFraction(referenceDate, iter));
+                    dayCounter.yearFraction(referenceDate, iter));
             }
         }
 
@@ -65,7 +69,9 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
                      ++iter)
                 {
                     for (var i = 0; i < dims; ++i)
+                    {
                         locations[i] = mesher_.location(iter, i);
+                    }
 
                     var innerValue = calculator_.innerValue(iter, t);
                     if (innerValue > a[iter.index()])
@@ -77,9 +83,5 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
         }
 
         public List<double> exerciseTimes() => exerciseTimes_;
-
-        protected List<double> exerciseTimes_;
-        protected FdmMesher mesher_;
-        protected FdmInnerValueCalculator calculator_;
     }
 }

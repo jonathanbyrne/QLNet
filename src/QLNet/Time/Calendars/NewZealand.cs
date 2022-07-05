@@ -20,6 +20,7 @@
 */
 
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -48,16 +49,16 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class NewZealand : Calendar
+    [PublicAPI]
+    public class NewZealand : Calendar
     {
-        public NewZealand() : base(Impl.Singleton) { }
-
-        class Impl : WesternImpl
+        private class Impl : WesternImpl
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "New Zealand";
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -69,10 +70,10 @@ namespace QLNet.Time.Calendars
                 if (isWeekend(w)
                     // New Year's Day (possibly moved to Monday or Tuesday)
                     || (d == 1 || d == 3 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday)) &&
-                        m == Month.January
+                    m == Month.January
                     // Day after New Year's Day (possibly moved to Mon or Tuesday)
                     || (d == 2 || d == 4 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday)) &&
-                        m == Month.January
+                    m == Month.January
                     // Anniversary Day, Monday nearest January 22nd
                     || d >= 19 && d <= 25 && w == DayOfWeek.Monday && m == Month.January
                     // Waitangi Day. February 6th ("Mondayised" since 2013)
@@ -90,13 +91,22 @@ namespace QLNet.Time.Calendars
                     || d >= 22 && d <= 28 && w == DayOfWeek.Monday && m == Month.October
                     // Christmas, December 25th (possibly Monday or Tuesday)
                     || (d == 25 || d == 27 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday))
-                        && m == Month.December
+                    && m == Month.December
                     // Boxing Day, December 26th (possibly Monday or Tuesday)
                     || (d == 26 || d == 28 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday))
-                        && m == Month.December)
+                    && m == Month.December)
+                {
                     return false;
+                }
+
                 return true;
             }
+
+            public override string name() => "New Zealand";
+        }
+
+        public NewZealand() : base(Impl.Singleton)
+        {
         }
     }
 }

@@ -58,7 +58,9 @@ namespace QLNet.Tests
             List<double> f2 = new InitializedList<double>(size);
 
             for (var i = 0; i < v.Count; i++)
+            {
                 f2[i] = v[i] * v[i];
+            }
 
             // numeric integral of f^2
             var I = h * (f2.Sum() - 0.5 * f2.First() - 0.5 * f2.Last());
@@ -68,10 +70,14 @@ namespace QLNet.Tests
         public static double relativeError(double x1, double x2, double reference)
         {
             if (reference.IsNotEqual(0.0))
+            {
                 return System.Math.Abs(x1 - x2) / reference;
+            }
             else
                 // fall back to absolute error
+            {
                 return System.Math.Abs(x1 - x2);
+            }
         }
 
         public static string exerciseTypeToString(Exercise h)
@@ -80,15 +86,21 @@ namespace QLNet.Tests
 
             hd = h as EuropeanExercise;
             if (hd != null)
+            {
                 return "European";
+            }
 
             hd = h as AmericanExercise;
             if (hd != null)
+            {
                 return "American";
+            }
 
             hd = h as BermudanExercise;
             if (hd != null)
+            {
                 return "Bermudan";
+            }
 
             Utils.QL_FAIL("unknown exercise ExerciseType");
             return string.Empty;
@@ -99,28 +111,51 @@ namespace QLNet.Tests
             object hd = null;
             hd = h as PlainVanillaPayoff;
             if (hd != null)
+            {
                 return "plain-vanilla";
+            }
+
             hd = h as CashOrNothingPayoff;
             if (hd != null)
+            {
                 return "cash-or-nothing";
+            }
+
             hd = h as AssetOrNothingPayoff;
             if (hd != null)
+            {
                 return "asset-or-nothing";
+            }
+
             hd = h as SuperSharePayoff;
             if (hd != null)
+            {
                 return "super-share";
+            }
+
             hd = h as SuperFundPayoff;
             if (hd != null)
+            {
                 return "super-fund";
+            }
+
             hd = h as PercentageStrikePayoff;
             if (hd != null)
+            {
                 return "percentage-strike";
+            }
+
             hd = h as GapPayoff;
             if (hd != null)
+            {
                 return "gap";
+            }
+
             hd = h as FloatingTypePayoff;
             if (hd != null)
+            {
                 return "floating-ExerciseType";
+            }
 
             Utils.QL_FAIL("unknown payoff ExerciseType");
             return string.Empty;

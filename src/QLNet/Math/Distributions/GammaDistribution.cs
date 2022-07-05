@@ -16,11 +16,13 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using System;
+
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Distributions
 {
-    [JetBrains.Annotations.PublicAPI] public class GammaDistribution
+    [PublicAPI]
+    public class GammaDistribution
     {
         private double a_;
 
@@ -33,7 +35,9 @@ namespace QLNet.Math.Distributions
         public double value(double x)
         {
             if (x <= 0.0)
+            {
                 return 0.0;
+            }
 
             var gln = GammaFunction.logValue(a_);
 
@@ -48,7 +52,9 @@ namespace QLNet.Math.Distributions
                     del *= x / ap;
                     sum += del;
                     if (System.Math.Abs(del) < System.Math.Abs(sum) * 3.0e-7)
+                    {
                         return sum * System.Math.Exp(-x + a_ * System.Math.Log(x) - gln);
+                    }
                 }
             }
             else
@@ -63,17 +69,26 @@ namespace QLNet.Math.Distributions
                     b += 2.0;
                     d = an * d + b;
                     if (System.Math.Abs(d) < Const.QL_EPSILON)
+                    {
                         d = Const.QL_EPSILON;
+                    }
+
                     c = b + an / c;
                     if (System.Math.Abs(c) < Const.QL_EPSILON)
+                    {
                         c = Const.QL_EPSILON;
+                    }
+
                     d = 1.0 / d;
                     var del = d * c;
                     h *= del;
                     if (System.Math.Abs(del - 1.0) < Const.QL_EPSILON)
+                    {
                         return h * System.Math.Exp(-x + a_ * System.Math.Log(x) - gln);
+                    }
                 }
             }
+
             Utils.QL_FAIL("too few iterations");
             return 0;
         }

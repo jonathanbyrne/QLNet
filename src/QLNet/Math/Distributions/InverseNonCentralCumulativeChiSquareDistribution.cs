@@ -1,13 +1,29 @@
-﻿using QLNet.Math.Solvers1d;
+﻿using JetBrains.Annotations;
+using QLNet.Math.Solvers1d;
 
 namespace QLNet.Math.Distributions
 {
-    [JetBrains.Annotations.PublicAPI] public class InverseNonCentralCumulativeChiSquareDistribution
+    [PublicAPI]
+    public class InverseNonCentralCumulativeChiSquareDistribution
     {
-        protected NonCentralCumulativeChiSquareDistribution nonCentralDist_;
+        protected class MinFinder : ISolver1d
+        {
+            protected NonCentralCumulativeChiSquareDistribution nonCentralDist_;
+            protected double x_;
+
+            public MinFinder(NonCentralCumulativeChiSquareDistribution nonCentralDist, double x)
+            {
+                nonCentralDist_ = nonCentralDist;
+                x_ = x;
+            }
+
+            public override double value(double y) => x_ - nonCentralDist_.value(y);
+        }
+
+        protected double accuracy_;
         protected double guess_;
         protected int maxEvaluations_;
-        protected double accuracy_;
+        protected NonCentralCumulativeChiSquareDistribution nonCentralDist_;
 
         public InverseNonCentralCumulativeChiSquareDistribution(double df, double ncp,
             int maxEvaluations = 10,
@@ -39,20 +55,6 @@ namespace QLNet.Math.Distributions
                 accuracy_, 0.75 * upper,
                 evaluations == maxEvaluations_ ? 0.0 : 0.5 * upper,
                 upper);
-        }
-
-        protected class MinFinder : ISolver1d
-        {
-            protected NonCentralCumulativeChiSquareDistribution nonCentralDist_;
-            protected double x_;
-
-            public MinFinder(NonCentralCumulativeChiSquareDistribution nonCentralDist, double x)
-            {
-                nonCentralDist_ = nonCentralDist;
-                x_ = x;
-            }
-
-            public override double value(double y) => x_ - nonCentralDist_.value(y);
         }
     }
 }

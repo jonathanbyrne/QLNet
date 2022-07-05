@@ -1,10 +1,12 @@
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class IborLeg : FloatingLegBase
+    [PublicAPI]
+    public class IborLeg : FloatingLegBase
     {
         // constructor
         public IborLeg(Schedule schedule, IborIndex index)
@@ -27,6 +29,7 @@ namespace QLNet.Cashflows
             {
                 Utils.setCouponPricer(cashflows, new BlackIborCouponPricer());
             }
+
             return cashflows;
         }
     }

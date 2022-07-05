@@ -17,25 +17,27 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Time;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.DayCounters
 {
     //! Simple day counter for reproducing theoretical calculations.
     /*! This day counter tries to ensure that whole-month distances are returned as a simple fraction, i.e., 1 year = 1.0, 6 months = 0.5, 3 months = 0.25 and so forth.
       this day counter should be used together with NullCalendar, which ensures that dates at whole-month distances share the same day of month. It is <b>not</b> guaranteed to work with any other calendar. */
-    [JetBrains.Annotations.PublicAPI] public class SimpleDayCounter : DayCounter
+    [PublicAPI]
+    public class SimpleDayCounter : DayCounter
     {
-        public SimpleDayCounter() : base(Impl.Singleton) { }
-
-        class Impl : DayCounter
+        private class Impl : DayCounter
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "Simple";
+            private Impl()
+            {
+            }
 
             public override int dayCount(Date d1, Date d2) => Thirty360.US_Impl.Singleton.dayCount(d1, d2);
+
+            public override string name() => "Simple";
 
             public override double yearFraction(Date d1, Date d2, Date d3, Date d4)
             {
@@ -48,12 +50,15 @@ namespace QLNet.Time.DayCounters
                     // e.g., Feb 28 -> Aug 30 ?
                     dm1 < dm2 && Date.isEndOfMonth(d1))
                 {
-
                     return d2.Year - d1.Year + (d2.Month - d1.Month) / 12.0;
                 }
-                else
-                    return Thirty360.US_Impl.Singleton.yearFraction(d1, d2, d3, d4);
+
+                return Thirty360.US_Impl.Singleton.yearFraction(d1, d2, d3, d4);
             }
+        }
+
+        public SimpleDayCounter() : base(Impl.Singleton)
+        {
         }
     }
 }

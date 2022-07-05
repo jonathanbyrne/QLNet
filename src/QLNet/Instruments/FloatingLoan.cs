@@ -1,27 +1,28 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
 using QLNet.Time;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class FloatingLoan : Loan
+    [PublicAPI]
+    public class FloatingLoan : Loan
     {
-        private Type type_;
-        private double nominal_;
+        private DayCounter floatingDayCount_;
         private Schedule floatingSchedule_;
         private double floatingSpread_;
-        private DayCounter floatingDayCount_;
-        private Schedule principalSchedule_;
-        private BusinessDayConvention paymentConvention_;
         private IborIndex iborIndex_;
+        private double nominal_;
+        private BusinessDayConvention paymentConvention_;
+        private Schedule principalSchedule_;
+        private Type type_;
 
         public FloatingLoan(Type type, double nominal,
             Schedule floatingSchedule, double floatingSpread, DayCounter floatingDayCount,
             Schedule principalSchedule, BusinessDayConvention? paymentConvention, IborIndex index) :
             base(2)
         {
-
             type_ = type;
             nominal_ = nominal;
             floatingSchedule_ = floatingSchedule;
@@ -31,9 +32,13 @@ namespace QLNet.Instruments
             iborIndex_ = index;
 
             if (paymentConvention.HasValue)
+            {
                 paymentConvention_ = paymentConvention.Value;
+            }
             else
+            {
                 paymentConvention_ = floatingSchedule_.businessDayConvention();
+            }
 
             List<CashFlow> principalLeg = new PricipalLeg(principalSchedule, floatingDayCount)
                 .withNotionals(nominal)
@@ -52,7 +57,6 @@ namespace QLNet.Instruments
                 .withSpreads(floatingSpread_)
                 .withPaymentAdjustment(paymentConvention_)
                 .withNotionals(notionals_);
-
 
             legs_[0] = floatingLeg;
             legs_[1] = principalLeg;

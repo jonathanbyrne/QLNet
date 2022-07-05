@@ -17,15 +17,15 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Patterns;
-using QLNet.Time;
 using System;
 using System.Linq;
+using QLNet.Patterns;
+using QLNet.Time;
 
 namespace QLNet.Quotes
 {
     //! Quote adapter for the last fixing available of a given Index
-    class LastFixingQuote : Quote, IObserver
+    internal class LastFixingQuote : Quote, IObserver
     {
         protected Index index_;
 
@@ -33,14 +33,6 @@ namespace QLNet.Quotes
         {
             index_ = index;
             index_.registerWith(update);
-        }
-
-        //! Quote interface
-        public override double value()
-        {
-            if (!isValid())
-                throw new ArgumentException(index_.name() + " has no fixing");
-            return index_.fixing(referenceDate());
         }
 
         public override bool isValid() => index_.timeSeries().Count > 0;
@@ -52,5 +44,15 @@ namespace QLNet.Quotes
             notifyObservers();
         }
 
+        //! Quote interface
+        public override double value()
+        {
+            if (!isValid())
+            {
+                throw new ArgumentException(index_.name() + " has no fixing");
+            }
+
+            return index_.fixing(referenceDate());
+        }
     }
 }

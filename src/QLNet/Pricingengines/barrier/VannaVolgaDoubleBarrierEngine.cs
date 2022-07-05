@@ -13,39 +13,50 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Math.Distributions;
 using QLNet.Math.Interpolations;
-using QLNet.Pricingengines;
 using QLNet.processes;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
-using System;
-using System.Collections.Generic;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
 
 namespace QLNet.Pricingengines.barrier
 {
-    [JetBrains.Annotations.PublicAPI] public class VannaVolgaDoubleBarrierEngine : GenericEngine<DoubleBarrierOption.Arguments, OneAssetOption.Results>
+    [PublicAPI]
+    public class VannaVolgaDoubleBarrierEngine : GenericEngine<DoubleBarrierOption.Arguments, OneAssetOption.Results>
     {
         public delegate IPricingEngine GetOriginalEngine(GeneralizedBlackScholesProcess process, int series);
 
-        public VannaVolgaDoubleBarrierEngine(Handle<DeltaVolQuote> atmVol,
-                                             Handle<DeltaVolQuote> vol25Put,
-                                             Handle<DeltaVolQuote> vol25Call,
-                                             Handle<Quote> spotFX,
-                                             Handle<YieldTermStructure> domesticTS,
-                                             Handle<YieldTermStructure> foreignTS,
-                                             GetOriginalEngine getEngine,
-                                             bool adaptVanDelta = false,
-                                             double bsPriceWithSmile = 0.0,
-                                             int series = 5)
-           : base()
+        private bool adaptVanDelta_;
+        private Handle<DeltaVolQuote> atmVol_;
+        private double bsPriceWithSmile_;
+        private Handle<YieldTermStructure> domesticTS_;
+        private Handle<YieldTermStructure> foreignTS_;
+        private GetOriginalEngine getOriginalEngine_;
+        private int series_;
+        private Handle<Quote> spotFX_;
+        private double T_;
+        private Handle<DeltaVolQuote> vol25Call_;
+        private Handle<DeltaVolQuote> vol25Put_;
 
+        public VannaVolgaDoubleBarrierEngine(Handle<DeltaVolQuote> atmVol,
+            Handle<DeltaVolQuote> vol25Put,
+            Handle<DeltaVolQuote> vol25Call,
+            Handle<Quote> spotFX,
+            Handle<YieldTermStructure> domesticTS,
+            Handle<YieldTermStructure> foreignTS,
+            GetOriginalEngine getEngine,
+            bool adaptVanDelta = false,
+            double bsPriceWithSmile = 0.0,
+            int series = 5)
         {
             atmVol_ = atmVol;
             vol25Put_ = vol25Put;
@@ -64,7 +75,7 @@ namespace QLNet.Pricingengines.barrier
 
             Utils.QL_REQUIRE(vol25Put_.link.maturity().IsEqual(vol25Call_.link.maturity()) &&
                              vol25Put_.link.maturity().IsEqual(atmVol_.link.maturity()), () =>
-                             "Maturity of 3 vols are not the same");
+                "Maturity of 3 vols are not the same");
 
             Utils.QL_REQUIRE(!domesticTS_.empty(), () => "domestic yield curve is not defined");
             Utils.QL_REQUIRE(!foreignTS_.empty(), () => "foreign yield curve is not defined");
@@ -86,37 +97,37 @@ namespace QLNet.Pricingengines.barrier
 
             Utils.QL_REQUIRE(arguments_.barrierType == DoubleBarrier.Type.KnockIn ||
                              arguments_.barrierType == DoubleBarrier.Type.KnockOut, () =>
-                             "Only same ExerciseType barrier supported");
+                "Only same ExerciseType barrier supported");
 
             var x0Quote = new Handle<Quote>(new SimpleQuote(spotFX_.link.value()));
             var atmVolQuote = new Handle<Quote>(new SimpleQuote(atmVol_.link.value()));
 
             BlackVolTermStructure blackVolTS = new BlackConstantVol(Settings.evaluationDate(),
-                                                                    new NullCalendar(), atmVolQuote, new Actual365Fixed());
+                new NullCalendar(), atmVolQuote, new Actual365Fixed());
 
             var stochProcess = new BlackScholesMertonProcess(x0Quote, foreignTS_, domesticTS_,
-                                                                                   new Handle<BlackVolTermStructure>(blackVolTS));
+                new Handle<BlackVolTermStructure>(blackVolTS));
 
             var engineBS = getOriginalEngine_(stochProcess, series_);
 
             var blackDeltaCalculatorAtm = new BlackDeltaCalculator(
-               QLNet.Option.Type.Call, atmVol_.link.deltaType(), x0Quote.link.value(),
-               domesticTS_.link.discount(T_), foreignTS_.link.discount(T_),
-               atmVol_.link.value() * System.Math.Sqrt(T_));
+                QLNet.Option.Type.Call, atmVol_.link.deltaType(), x0Quote.link.value(),
+                domesticTS_.link.discount(T_), foreignTS_.link.discount(T_),
+                atmVol_.link.value() * System.Math.Sqrt(T_));
 
             var atmStrike = blackDeltaCalculatorAtm.atmStrike(atmVol_.link.atmType());
 
             var call25Vol = vol25Call_.link.value();
             var put25Vol = vol25Put_.link.value();
             var blackDeltaCalculatorPut25 = new BlackDeltaCalculator(
-               QLNet.Option.Type.Put, vol25Put_.link.deltaType(), x0Quote.link.value(),
-               domesticTS_.link.discount(T_), foreignTS_.link.discount(T_),
-               put25Vol * System.Math.Sqrt(T_));
+                QLNet.Option.Type.Put, vol25Put_.link.deltaType(), x0Quote.link.value(),
+                domesticTS_.link.discount(T_), foreignTS_.link.discount(T_),
+                put25Vol * System.Math.Sqrt(T_));
             var put25Strike = blackDeltaCalculatorPut25.strikeFromDelta(-0.25);
             var blackDeltaCalculatorCall25 = new BlackDeltaCalculator(
-               QLNet.Option.Type.Call, vol25Call_.link.deltaType(), x0Quote.link.value(),
-               domesticTS_.link.discount(T_), foreignTS_.link.discount(T_),
-               call25Vol * System.Math.Sqrt(T_));
+                QLNet.Option.Type.Call, vol25Call_.link.deltaType(), x0Quote.link.value(),
+                domesticTS_.link.discount(T_), foreignTS_.link.discount(T_),
+                call25Vol * System.Math.Sqrt(T_));
             var call25Strike = blackDeltaCalculatorCall25.strikeFromDelta(0.25);
 
             //here use vanna volga interpolated smile to price vanilla
@@ -129,7 +140,7 @@ namespace QLNet.Pricingengines.barrier
             strikes.Add(call25Strike);
             vols.Add(call25Vol);
             var vannaVolga = new VannaVolga(x0Quote.link.value(), foreignTS_.link.discount(T_),
-                                                   foreignTS_.link.discount(T_), T_);
+                foreignTS_.link.discount(T_), T_);
             var interpolation = vannaVolga.interpolate(strikes, strikes.Count, vols);
             interpolation.enableExtrapolation();
             var payoff = arguments_.payoff as StrikedTypePayoff;
@@ -137,9 +148,9 @@ namespace QLNet.Pricingengines.barrier
             var strikeVol = interpolation.value(payoff.strike());
             // Vanilla option price
             var vanillaOption = Utils.blackFormula(payoff.optionType(), payoff.strike(),
-                                                      x0Quote.link.value() * foreignTS_.link.discount(T_) / domesticTS_.link.discount(T_),
-                                                      strikeVol * System.Math.Sqrt(T_),
-                                                      domesticTS_.link.discount(T_));
+                x0Quote.link.value() * foreignTS_.link.discount(T_) / domesticTS_.link.discount(T_),
+                strikeVol * System.Math.Sqrt(T_),
+                domesticTS_.link.discount(T_));
 
             //already out
             if ((x0Quote.link.value() > arguments_.barrier_hi || x0Quote.link.value() < arguments_.barrier_lo)
@@ -165,12 +176,12 @@ namespace QLNet.Pricingengines.barrier
                 //only calculate out barrier option price
                 // in barrier price = vanilla - out barrier
                 var doubleBarrierOption = new DoubleBarrierOption(
-                   DoubleBarrier.Type.KnockOut,
-                   arguments_.barrier_lo.GetValueOrDefault(),
-                   arguments_.barrier_hi.GetValueOrDefault(),
-                   arguments_.rebate.GetValueOrDefault(),
-                   payoff,
-                   arguments_.exercise);
+                    DoubleBarrier.Type.KnockOut,
+                    arguments_.barrier_lo.GetValueOrDefault(),
+                    arguments_.barrier_hi.GetValueOrDefault(),
+                    arguments_.rebate.GetValueOrDefault(),
+                    payoff,
+                    arguments_.exercise);
 
                 doubleBarrierOption.setPricingEngine(engineBS);
 
@@ -178,31 +189,31 @@ namespace QLNet.Pricingengines.barrier
                 var priceBS = doubleBarrierOption.NPV();
 
                 var priceAtmCallBS = Utils.blackFormula(QLNet.Option.Type.Call, atmStrike,
-                                                           x0Quote.link.value() * foreignTS_.link.discount(T_) / domesticTS_.link.discount(T_),
-                                                           atmVol_.link.value() * System.Math.Sqrt(T_),
-                                                           domesticTS_.link.discount(T_));
+                    x0Quote.link.value() * foreignTS_.link.discount(T_) / domesticTS_.link.discount(T_),
+                    atmVol_.link.value() * System.Math.Sqrt(T_),
+                    domesticTS_.link.discount(T_));
                 var price25CallBS = Utils.blackFormula(QLNet.Option.Type.Call, call25Strike,
-                                                          x0Quote.link.value() * foreignTS_.link.discount(T_) / domesticTS_.link.discount(T_),
-                                                          atmVol_.link.value() * System.Math.Sqrt(T_),
-                                                          domesticTS_.link.discount(T_));
+                    x0Quote.link.value() * foreignTS_.link.discount(T_) / domesticTS_.link.discount(T_),
+                    atmVol_.link.value() * System.Math.Sqrt(T_),
+                    domesticTS_.link.discount(T_));
                 var price25PutBS = Utils.blackFormula(QLNet.Option.Type.Put, put25Strike,
-                                                         x0Quote.link.value() * foreignTS_.link.discount(T_) / domesticTS_.link.discount(T_),
-                                                         atmVol_.link.value() * System.Math.Sqrt(T_),
-                                                         domesticTS_.link.discount(T_));
+                    x0Quote.link.value() * foreignTS_.link.discount(T_) / domesticTS_.link.discount(T_),
+                    atmVol_.link.value() * System.Math.Sqrt(T_),
+                    domesticTS_.link.discount(T_));
 
                 //market price
                 var priceAtmCallMkt = Utils.blackFormula(QLNet.Option.Type.Call, atmStrike,
-                                                            x0Quote.link.value() * foreignTS_.link.discount(T_) / domesticTS_.link.discount(T_),
-                                                            atmVol_.link.value() * System.Math.Sqrt(T_),
-                                                            domesticTS_.link.discount(T_));
+                    x0Quote.link.value() * foreignTS_.link.discount(T_) / domesticTS_.link.discount(T_),
+                    atmVol_.link.value() * System.Math.Sqrt(T_),
+                    domesticTS_.link.discount(T_));
                 var price25CallMkt = Utils.blackFormula(QLNet.Option.Type.Call, call25Strike,
-                                                           x0Quote.link.value() * foreignTS_.link.discount(T_) / domesticTS_.link.discount(T_),
-                                                           call25Vol * System.Math.Sqrt(T_),
-                                                           domesticTS_.link.discount(T_));
+                    x0Quote.link.value() * foreignTS_.link.discount(T_) / domesticTS_.link.discount(T_),
+                    call25Vol * System.Math.Sqrt(T_),
+                    domesticTS_.link.discount(T_));
                 var price25PutMkt = Utils.blackFormula(QLNet.Option.Type.Put, put25Strike,
-                                                          x0Quote.link.value() * foreignTS_.link.discount(T_) / domesticTS_.link.discount(T_),
-                                                          put25Vol * System.Math.Sqrt(T_),
-                                                          domesticTS_.link.discount(T_));
+                    x0Quote.link.value() * foreignTS_.link.discount(T_) / domesticTS_.link.discount(T_),
+                    put25Vol * System.Math.Sqrt(T_),
+                    domesticTS_.link.discount(T_));
 
                 //Analytical Black Scholes formula
                 var norm = new NormalDistribution();
@@ -224,12 +235,11 @@ namespace QLNet.Pricingengines.barrier
                 var vanna25Put_Analytical = vega25Put_Analytical / x0Quote.link.value() * (1.0 - d125Put / (atmVolQuote.link.value() * System.Math.Sqrt(T_)));
                 var volga25Put_Analytical = vega25Put_Analytical * d125Put * (d125Put - atmVolQuote.link.value() * System.Math.Sqrt(T_)) / atmVolQuote.link.value();
 
-
                 //BS vega
                 ((SimpleQuote)atmVolQuote.currentLink()).setValue(atmVolQuote.link.value() + sigmaShift_vega);
                 doubleBarrierOption.recalculate();
                 var vegaBarBS = (doubleBarrierOption.NPV() - priceBS) / sigmaShift_vega;
-                ((SimpleQuote)atmVolQuote.currentLink()).setValue(atmVolQuote.link.value() - sigmaShift_vega);//setback
+                ((SimpleQuote)atmVolQuote.currentLink()).setValue(atmVolQuote.link.value() - sigmaShift_vega); //setback
 
                 //BS volga
 
@@ -246,38 +256,38 @@ namespace QLNet.Pricingengines.barrier
                 var volgaBarBS = (vegaBarBS2 - vegaBarBS) / sigmaShift_volga;
                 ((SimpleQuote)atmVolQuote.currentLink()).setValue(atmVolQuote.link.value()
                                                                   - sigmaShift_volga
-                                                                  - sigmaShift_vega);//setback
+                                                                  - sigmaShift_vega); //setback
 
                 //BS Delta
                 //base delta
-                ((SimpleQuote)x0Quote.currentLink()).setValue(x0Quote.link.value() + spotShift_delta);//shift forth
+                ((SimpleQuote)x0Quote.currentLink()).setValue(x0Quote.link.value() + spotShift_delta); //shift forth
                 doubleBarrierOption.recalculate();
                 var priceBS_delta1 = doubleBarrierOption.NPV();
 
-                ((SimpleQuote)x0Quote.currentLink()).setValue(x0Quote.link.value() - 2 * spotShift_delta);//shift back
+                ((SimpleQuote)x0Quote.currentLink()).setValue(x0Quote.link.value() - 2 * spotShift_delta); //shift back
                 doubleBarrierOption.recalculate();
                 var priceBS_delta2 = doubleBarrierOption.NPV();
 
-                ((SimpleQuote)x0Quote.currentLink()).setValue(x0Quote.link.value() + spotShift_delta);//set back
+                ((SimpleQuote)x0Quote.currentLink()).setValue(x0Quote.link.value() + spotShift_delta); //set back
                 var deltaBar1 = (priceBS_delta1 - priceBS_delta2) / (2.0 * spotShift_delta);
 
                 //shifted vanna
-                ((SimpleQuote)atmVolQuote.currentLink()).setValue(atmVolQuote.link.value() + sigmaShift_vanna);//shift sigma
-                                                                                                               //shifted delta
-                ((SimpleQuote)x0Quote.currentLink()).setValue(x0Quote.link.value() + spotShift_delta);//shift forth
+                ((SimpleQuote)atmVolQuote.currentLink()).setValue(atmVolQuote.link.value() + sigmaShift_vanna); //shift sigma
+                //shifted delta
+                ((SimpleQuote)x0Quote.currentLink()).setValue(x0Quote.link.value() + spotShift_delta); //shift forth
                 doubleBarrierOption.recalculate();
                 priceBS_delta1 = doubleBarrierOption.NPV();
 
-                ((SimpleQuote)x0Quote.currentLink()).setValue(x0Quote.link.value() - 2 * spotShift_delta);//shift back
+                ((SimpleQuote)x0Quote.currentLink()).setValue(x0Quote.link.value() - 2 * spotShift_delta); //shift back
                 doubleBarrierOption.recalculate();
                 priceBS_delta2 = doubleBarrierOption.NPV();
 
-                ((SimpleQuote)x0Quote.currentLink()).setValue(x0Quote.link.value() + spotShift_delta);//set back
+                ((SimpleQuote)x0Quote.currentLink()).setValue(x0Quote.link.value() + spotShift_delta); //set back
                 var deltaBar2 = (priceBS_delta1 - priceBS_delta2) / (2.0 * spotShift_delta);
 
                 var vannaBarBS = (deltaBar2 - deltaBar1) / sigmaShift_vanna;
 
-                ((SimpleQuote)atmVolQuote.currentLink()).setValue(atmVolQuote.link.value() - sigmaShift_vanna);//set back
+                ((SimpleQuote)atmVolQuote.currentLink()).setValue(atmVolQuote.link.value() - sigmaShift_vanna); //set back
 
                 //Matrix
                 var A = new Matrix(3, 3, 0.0);
@@ -303,7 +313,7 @@ namespace QLNet.Pricingengines.barrier
                 var L = arguments_.barrier_lo.GetValueOrDefault();
                 var theta_tilt_minus = ((domesticTS_.link.zeroRate(T_, Compounding.Continuous).value() -
                                          foreignTS_.link.zeroRate(T_, Compounding.Continuous).value()) /
-                                           atmVol_.link.value() - atmVol_.link.value() / 2.0) * System.Math.Sqrt(T_);
+                    atmVol_.link.value() - atmVol_.link.value() / 2.0) * System.Math.Sqrt(T_);
                 var h = 1.0 / atmVol_.link.value() * System.Math.Log(H / x0Quote.link.value()) / System.Math.Sqrt(T_);
                 var l = 1.0 / atmVol_.link.value() * System.Math.Log(L / x0Quote.link.value()) / System.Math.Sqrt(T_);
                 var cnd = new CumulativeNormalDistribution();
@@ -327,7 +337,7 @@ namespace QLNet.Pricingengines.barrier
                 double inPrice;
 
                 //adapt Vanilla delta
-                if (adaptVanDelta_ == true)
+                if (adaptVanDelta_)
                 {
                     outPrice += lambda * (bsPriceWithSmile_ - vanillaOption);
                     //capfloored by (0, vanilla)
@@ -342,28 +352,19 @@ namespace QLNet.Pricingengines.barrier
                 }
 
                 if (arguments_.barrierType == DoubleBarrier.Type.KnockOut)
+                {
                     results_.value = outPrice;
+                }
                 else
+                {
                     results_.value = inPrice;
+                }
 
                 results_.additionalResults["VanillaPrice"] = vanillaOption;
                 results_.additionalResults["BarrierInPrice"] = inPrice;
                 results_.additionalResults["BarrierOutPrice"] = outPrice;
                 results_.additionalResults["lambda"] = lambda;
-
             }
         }
-
-        private Handle<DeltaVolQuote> atmVol_;
-        private Handle<DeltaVolQuote> vol25Put_;
-        private Handle<DeltaVolQuote> vol25Call_;
-        private double T_;
-        private Handle<Quote> spotFX_;
-        private Handle<YieldTermStructure> domesticTS_;
-        private Handle<YieldTermStructure> foreignTS_;
-        private bool adaptVanDelta_;
-        private double bsPriceWithSmile_;
-        private int series_;
-        private GetOriginalEngine getOriginalEngine_;
     }
 }

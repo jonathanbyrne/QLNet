@@ -18,7 +18,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Math;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Optimization
 {
@@ -33,11 +33,13 @@ namespace QLNet.Math.Optimization
 
         \ingroup optimizers
     */
-    [JetBrains.Annotations.PublicAPI] public class ConjugateGradient : LineSearchBasedMethod
+    [PublicAPI]
+    public class ConjugateGradient : LineSearchBasedMethod
     {
         public ConjugateGradient(LineSearch lineSearch = null)
-           : base(lineSearch)
-        { }
+            : base(lineSearch)
+        {
+        }
 
         protected override Vector getUpdatedDirection(Problem P, double gold2, Vector gradient) =>
             lineSearch_.lastGradient() * -1 +

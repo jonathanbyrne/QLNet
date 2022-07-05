@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet.Termstructures.Yield
@@ -33,25 +34,26 @@ namespace QLNet.Termstructures.Yield
         - the correctness of the returned values is tested by checking them against numerical calculations.
         - observability against changes in the underlying term structure is checked.
     */
-    [JetBrains.Annotations.PublicAPI] public class ImpliedTermStructure : YieldTermStructure
+    [PublicAPI]
+    public class ImpliedTermStructure : YieldTermStructure
     {
         private Handle<YieldTermStructure> originalCurve_;
 
         public ImpliedTermStructure(Handle<YieldTermStructure> h, Date referenceDate)
-           : base(referenceDate)
+            : base(referenceDate)
         {
             originalCurve_ = h;
             originalCurve_.registerWith(update);
         }
 
+        public override Calendar calendar() => originalCurve_.link.calendar();
+
         // YieldTermStructure interface
         public override DayCounter dayCounter() => originalCurve_.link.dayCounter();
 
-        public override Calendar calendar() => originalCurve_.link.calendar();
+        public override Date maxDate() => originalCurve_.link.maxDate();
 
         public override int settlementDays() => originalCurve_.link.settlementDays();
-
-        public override Date maxDate() => originalCurve_.link.maxDate();
 
         //! returns the discount factor as seen from the evaluation date
         /* t is relative to the current reference date and needs to be converted to the time relative

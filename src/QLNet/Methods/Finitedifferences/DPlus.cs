@@ -18,6 +18,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Methods.Finitedifferences
 {
     //! \f$ D_{+} \f$ matricial representation
@@ -29,14 +31,15 @@ namespace QLNet.Methods.Finitedifferences
 
         \ingroup findiff
     */
-    [JetBrains.Annotations.PublicAPI] public class DPlus : TridiagonalOperator
+    [PublicAPI]
+    public class DPlus : TridiagonalOperator
     {
         public DPlus(int gridPoints, double h)
-           : base(gridPoints)
+            : base(gridPoints)
         {
             setFirstRow(-1.0 / h, 1.0 / h);
             setMidRows(0.0, -1.0 / h, 1.0 / h);
-            setLastRow(-1.0 / h, 1.0 / h);                    // linear extrapolation
+            setLastRow(-1.0 / h, 1.0 / h); // linear extrapolation
         }
     }
 }

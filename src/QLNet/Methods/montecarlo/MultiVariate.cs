@@ -1,4 +1,6 @@
 ﻿namespace QLNet.Methods.montecarlo
 {
-    public struct MultiVariate { }
+    public struct MultiVariate
+    {
+    }
 }

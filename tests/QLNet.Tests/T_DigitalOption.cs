@@ -433,9 +433,13 @@ namespace QLNet.Tests
 
                 IPricingEngine engine;
                 if (values[i].knockin)
+                {
                     engine = new AnalyticDigitalAmericanEngine(stochProcess);
+                }
                 else
+                {
                     engine = new AnalyticDigitalAmericanKOEngine(stochProcess);
+                }
 
                 var opt = new VanillaOption(payoff, amExercise);
                 opt.setPricingEngine(engine);
@@ -507,9 +511,13 @@ namespace QLNet.Tests
 
                 IPricingEngine engine;
                 if (values[i].knockin)
+                {
                     engine = new AnalyticDigitalAmericanEngine(stochProcess);
+                }
                 else
+                {
                     engine = new AnalyticDigitalAmericanKOEngine(stochProcess);
+                }
 
                 var opt = new VanillaOption(payoff, amExercise);
                 opt.setPricingEngine(engine);

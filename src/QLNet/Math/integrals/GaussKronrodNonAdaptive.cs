@@ -1,13 +1,18 @@
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.integrals
 {
-    [JetBrains.Annotations.PublicAPI] public class GaussKronrodNonAdaptive : Integrator
+    [PublicAPI]
+    public class GaussKronrodNonAdaptive : Integrator
     {
+        private double relativeAccuracy_;
+
         public GaussKronrodNonAdaptive(double absoluteAccuracy, int maxEvaluations, double relativeAccuracy) : base(absoluteAccuracy, maxEvaluations)
         {
             relativeAccuracy_ = relativeAccuracy;
         }
+
         public double relativeAccuracy() => relativeAccuracy_;
 
         protected override double integrate(Func<double, double> f, double a, double b)
@@ -72,7 +77,9 @@ namespace QLNet.Math.integrals
             resasc = KronrodintegralArrays.w21b[5] * System.Math.Abs(fCenter - mean);
 
             for (k = 0; k < 5; k++)
+            {
                 resasc += KronrodintegralArrays.w21a[k] * (System.Math.Abs(fv1[k] - mean) + System.Math.Abs(fv2[k] - mean)) + KronrodintegralArrays.w21b[k] * (System.Math.Abs(fv3[k] - mean) + System.Math.Abs(fv4[k] - mean));
+            }
 
             err = KronrodintegralArrays.rescaleError((res21 - res10) * halfLength, resAbs, resasc);
             resasc *= halfLength;
@@ -90,7 +97,9 @@ namespace QLNet.Math.integrals
             res43 = KronrodintegralArrays.w43b[11] * fCenter;
 
             for (k = 0; k < 10; k++)
+            {
                 res43 += savfun[k] * KronrodintegralArrays.w43a[k];
+            }
 
             for (k = 0; k < 11; k++)
             {
@@ -117,7 +126,9 @@ namespace QLNet.Math.integrals
             res87 = KronrodintegralArrays.w87b[22] * fCenter;
 
             for (k = 0; k < 21; k++)
+            {
                 res87 += savfun[k] * KronrodintegralArrays.w87a[k];
+            }
 
             for (k = 0; k < 22; k++)
             {
@@ -133,6 +144,5 @@ namespace QLNet.Math.integrals
             setNumberOfEvaluations(87);
             return result;
         }
-        private double relativeAccuracy_;
     }
 }

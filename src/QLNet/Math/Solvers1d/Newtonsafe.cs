@@ -17,13 +17,16 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System;
+using JetBrains.Annotations;
 using QLNet.Exceptions;
 using QLNet.Extensions;
-using System;
 
 namespace QLNet.Math.Solvers1d
 {
-    [JetBrains.Annotations.PublicAPI] public class NewtonSafe : Solver1D
+    [PublicAPI]
+    public class NewtonSafe : Solver1D
     {
         //! safe %Newton 1-D solver
         /*! \note This solver requires that the passed function object
@@ -60,17 +63,19 @@ namespace QLNet.Math.Solvers1d
             froot = f.value(root_);
             dfroot = f.derivative(root_);
             if (dfroot.IsEqual(default))
+            {
                 throw new ArgumentException("Newton requires function's derivative");
+            }
+
             ++evaluationNumber_;
 
             while (evaluationNumber_ <= maxEvaluations_)
             {
                 // Bisect if (out of range || not decreasing fast enough)
                 if (((root_ - xh) * dfroot - froot) *
-                     ((root_ - xl) * dfroot - froot) > 0.0
+                    ((root_ - xl) * dfroot - froot) > 0.0
                     || System.Math.Abs(2.0 * froot) > System.Math.Abs(dxold * dfroot))
                 {
-
                     dxold = dx;
                     dx = (xh - xl) / 2.0;
                     root_ = xl + dx;
@@ -81,20 +86,28 @@ namespace QLNet.Math.Solvers1d
                     dx = froot / dfroot;
                     root_ -= dx;
                 }
+
                 // Convergence criterion
                 if (System.Math.Abs(dx) < xAccuracy)
+                {
                     return root_;
+                }
+
                 froot = f.value(root_);
                 dfroot = f.derivative(root_);
                 evaluationNumber_++;
                 if (froot < 0.0)
+                {
                     xl = root_;
+                }
                 else
+                {
                     xh = root_;
+                }
             }
 
             Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
-                          QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
+                QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
             return 0;
         }
     }

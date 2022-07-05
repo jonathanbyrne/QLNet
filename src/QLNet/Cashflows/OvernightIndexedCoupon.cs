@@ -17,41 +17,47 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Indexes;
-using QLNet.Termstructures;
-using QLNet.Time;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Indexes;
+using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class OvernightIndexedCoupon : FloatingRateCoupon
+    [PublicAPI]
+    public class OvernightIndexedCoupon : FloatingRateCoupon
     {
+        private List<double> dt_;
+        private List<double> fixings_;
+        private int n_;
+        private List<Date> valueDates_, fixingDates_;
+
         public OvernightIndexedCoupon(
-           Date paymentDate,
-           double nominal,
-           Date startDate,
-           Date endDate,
-           OvernightIndex overnightIndex,
-           double gearing = 1.0,
-           double spread = 0.0,
-           Date refPeriodStart = null,
-           Date refPeriodEnd = null,
-           DayCounter dayCounter = null)
-           : base(paymentDate, nominal, startDate, endDate,
-                  overnightIndex.fixingDays(), overnightIndex,
-                  gearing, spread,
-                  refPeriodStart, refPeriodEnd,
-                  dayCounter, false)
+            Date paymentDate,
+            double nominal,
+            Date startDate,
+            Date endDate,
+            OvernightIndex overnightIndex,
+            double gearing = 1.0,
+            double spread = 0.0,
+            Date refPeriodStart = null,
+            Date refPeriodEnd = null,
+            DayCounter dayCounter = null)
+            : base(paymentDate, nominal, startDate, endDate,
+                overnightIndex.fixingDays(), overnightIndex,
+                gearing, spread,
+                refPeriodStart, refPeriodEnd,
+                dayCounter)
         {
             // value dates
             var sch = new MakeSchedule()
-            .from(startDate)
-            .to(endDate)
-            .withTenor(new Period(1, TimeUnit.Days))
-            .withCalendar(overnightIndex.fixingCalendar())
-            .withConvention(overnightIndex.businessDayConvention())
-            .backwards()
-            .value();
+                .from(startDate)
+                .to(endDate)
+                .withTenor(new Period(1, TimeUnit.Days))
+                .withCalendar(overnightIndex.fixingCalendar())
+                .withConvention(overnightIndex.businessDayConvention())
+                .backwards()
+                .value();
 
             valueDates_ = sch.dates();
             Utils.QL_REQUIRE(valueDates_.Count >= 2, () => "degenerate schedule");
@@ -66,41 +72,41 @@ namespace QLNet.Cashflows
             {
                 fixingDates_ = new InitializedList<Date>(n_);
                 for (var i = 0; i < n_; ++i)
+                {
                     fixingDates_[i] = overnightIndex.fixingDate(valueDates_[i]);
+                }
             }
 
             // accrual (compounding) periods
             dt_ = new List<double>(n_);
             var dc = overnightIndex.dayCounter();
             for (var i = 0; i < n_; ++i)
+            {
                 dt_.Add(dc.yearFraction(valueDates_[i], valueDates_[i + 1]));
+            }
 
             setPricer(new OvernightIndexedCouponPricer());
-
         }
+
+        //! accrual (compounding) periods
+        public List<double> dt() => dt_;
+
+        //! fixing dates for the rates to be compounded
+        public List<Date> fixingDates() => fixingDates_;
 
         public List<double> indexFixings()
         {
             fixings_ = new InitializedList<double>(n_);
             for (var i = 0; i < n_; ++i)
+            {
                 fixings_[i] = index_.fixing(fixingDates_[i]);
+            }
+
             return fixings_;
         }
 
-
-        //! fixing dates for the rates to be compounded
-        public List<Date> fixingDates() => fixingDates_;
-
-        //! accrual (compounding) periods
-        public List<double> dt() => dt_;
-
         //! value dates for the rates to be compounded
         public List<Date> valueDates() => valueDates_;
-
-        private List<Date> valueDates_, fixingDates_;
-        private List<double> fixings_;
-        int n_;
-        List<double> dt_;
     }
 
     //! helper class building a sequence of overnight coupons

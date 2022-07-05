@@ -16,9 +16,10 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
-using System;
+
 using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Math;
 
 namespace QLNet.Methods.montecarlo
 {
@@ -28,49 +29,42 @@ namespace QLNet.Methods.montecarlo
         \note the path includes the initial asset value as its first point.
     */
 
-    [JetBrains.Annotations.PublicAPI] public class Path : IPath
+    [PublicAPI]
+    public class Path : IPath
     {
         private TimeGrid timeGrid_;
         private Vector values_;
 
         // required for generics
-        public Path() { }
+        public Path()
+        {
+        }
 
-        public Path(TimeGrid timeGrid) : this(timeGrid, new Vector()) { }
+        public Path(TimeGrid timeGrid) : this(timeGrid, new Vector())
+        {
+        }
+
         public Path(TimeGrid timeGrid, Vector values)
         {
             timeGrid_ = timeGrid;
             values_ = values.Clone();
             if (values_.empty())
+            {
                 values_ = new Vector(timeGrid_.size());
+            }
 
             Utils.QL_REQUIRE(values_.size() == timeGrid_.size(), () => "different number of times and asset values");
         }
 
-        // inspectors
-        public bool empty() => timeGrid_.empty();
-
-        public int length() => timeGrid_.size();
-
         //! asset value at the \f$ i \f$-th point
-        public double this[int i] { get => values_[i];
+        public double this[int i]
+        {
+            get => values_[i];
             set => values_[i] = value;
         }
-        public double value(int i) => values_[i];
-
-        //! time at the \f$ i \f$-th point
-        public double time(int i) => timeGrid_[i];
-
-        //! initial asset value
-        public double front() => values_.First();
-
-        public void setFront(double value) { values_[0] = value; }
 
         //! final asset value
         public double back() => values_.Last();
-
-        //! time grid
-        public TimeGrid timeGrid() => timeGrid_;
 
         // ICloneable interface
         public object Clone()
@@ -79,5 +73,26 @@ namespace QLNet.Methods.montecarlo
             temp.values_ = new Vector(values_);
             return temp;
         }
+
+        // inspectors
+        public bool empty() => timeGrid_.empty();
+
+        //! initial asset value
+        public double front() => values_.First();
+
+        public int length() => timeGrid_.size();
+
+        public void setFront(double value)
+        {
+            values_[0] = value;
+        }
+
+        //! time at the \f$ i \f$-th point
+        public double time(int i) => timeGrid_[i];
+
+        //! time grid
+        public TimeGrid timeGrid() => timeGrid_;
+
+        public double value(int i) => values_[i];
     }
 }

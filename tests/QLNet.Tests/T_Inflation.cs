@@ -170,9 +170,11 @@ namespace QLNet.Tests
                     if (d < Utils.inflationPeriod(todayMinusLag, iir.frequency()).Key)
                     {
                         if (System.Math.Abs(iir.fixing(d) - fixData[i]) > eps)
+                        {
                             QAssert.Fail("Fixings not constant within a period: "
                                          + iir.fixing(d)
                                          + ", should be " + fixData[i]);
+                        }
                     }
                 }
             }
@@ -295,18 +297,26 @@ namespace QLNet.Tests
                     var z = hz.link.zeroRate(d, new Period(0, TimeUnit.Days));
                     var t = hz.link.dayCounter().yearFraction(bd, d);
                     if (!ii.interpolated()) // because fixing constant over period
+                    {
                         t = hz.link.dayCounter().yearFraction(bd,
-                                                              Utils.inflationPeriod(d, ii.frequency()).Key);
+                            Utils.inflationPeriod(d, ii.frequency()).Key);
+                    }
+
                     var calc = bf * System.Math.Pow(1 + z, t);
                     if (t <= 0)
+                    {
                         calc = ii.fixing(d, false); // still historical
+                    }
+
                     if (System.Math.Abs(calc - ii.fixing(d, true)) / 10000.0 > eps)
+                    {
                         QAssert.Fail("ZC index does not forecast correctly for date " + d
-                                     + " from base date " + bd
-                                     + " with fixing " + bf
-                                     + ", correct:  " + calc
-                                     + ", fix: " + ii.fixing(d, true)
-                                     + ", t " + t);
+                                                                                      + " from base date " + bd
+                                                                                      + " with fixing " + bf
+                                                                                      + ", correct:  " + calc
+                                                                                      + ", fix: " + ii.fixing(d, true)
+                                                                                      + ", t " + t);
+                    }
                 }
 
                 //===========================================================================================
@@ -332,7 +342,7 @@ namespace QLNet.Tests
 
                 // first make one ...
 
-                var zii = ii as ZeroInflationIndex;
+                var zii = ii;
                 Utils.QL_REQUIRE(zii != null, () => "dynamic_pointer_cast to ZeroInflationIndex from UKRPI failed");
                 var nzcis =
                    new ZeroCouponInflationSwap(ZeroCouponInflationSwap.Type.Payer,
@@ -577,21 +587,26 @@ namespace QLNet.Tests
                     var t = hz.link.dayCounter().yearFraction(bd, d);
                     var calc = bf * System.Math.Pow(1 + z, t);
                     if (t <= 0)
+                    {
                         calc = iiyes.fixing(d); // still historical
+                    }
+
                     if (System.Math.Abs(calc - iiyes.fixing(d)) > eps)
+                    {
                         QAssert.Fail("ZC INTERPOLATED index does not forecast correctly for date " + d
-                                     + " from base date " + bd
-                                     + " with fixing " + bf
-                                     + ", correct:  " + calc
-                                     + ", fix: " + iiyes.fixing(d)
-                                     + ", t " + t
-                                     + ", zero " + z);
+                                                                                                   + " from base date " + bd
+                                                                                                   + " with fixing " + bf
+                                                                                                   + ", correct:  " + calc
+                                                                                                   + ", fix: " + iiyes.fixing(d)
+                                                                                                   + ", t " + t
+                                                                                                   + ", zero " + z);
+                    }
                 }
 
                 //===========================================================================================
                 // Test zero coupon swap
 
-                var ziiyes = iiyes as ZeroInflationIndex;
+                var ziiyes = iiyes;
                 Utils.QL_REQUIRE(ziiyes != null, () => "dynamic_pointer_cast to ZeroInflationIndex from UKRPI-I failed");
                 var nzcisyes = new ZeroCouponInflationSwap(ZeroCouponInflationSwap.Type.Payer,
                                                                                1000000.0,

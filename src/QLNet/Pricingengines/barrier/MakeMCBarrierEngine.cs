@@ -1,13 +1,21 @@
-﻿using QLNet.Math.randomnumbers;
+﻿using JetBrains.Annotations;
+using QLNet.Math.randomnumbers;
 using QLNet.Math.statistics;
 using QLNet.processes;
 
 namespace QLNet.Pricingengines.barrier
 {
-    [JetBrains.Annotations.PublicAPI] public class MakeMCBarrierEngine<RNG, S>
+    [PublicAPI]
+    public class MakeMCBarrierEngine<RNG, S>
         where RNG : IRSG, new()
         where S : IGeneralStatistics, new()
     {
+        protected bool brownianBridge_, antithetic_, biased_;
+        protected GeneralizedBlackScholesProcess process_;
+        protected int? steps_, stepsPerYear_, samples_, maxSamples_;
+        protected double? tolerance_;
+        private ulong seed_;
+
         public MakeMCBarrierEngine(GeneralizedBlackScholesProcess process)
         {
             process_ = process;
@@ -21,55 +29,7 @@ namespace QLNet.Pricingengines.barrier
             tolerance_ = null;
             seed_ = 0;
         }
-        // named parameters
-        public MakeMCBarrierEngine<RNG, S> withSteps(int steps)
-        {
-            steps_ = steps;
-            return this;
-        }
-        public MakeMCBarrierEngine<RNG, S> withStepsPerYear(int steps)
-        {
-            stepsPerYear_ = steps;
-            return this;
-        }
-        public MakeMCBarrierEngine<RNG, S> withBrownianBridge(bool b = true)
-        {
-            brownianBridge_ = b;
-            return this;
-        }
-        public MakeMCBarrierEngine<RNG, S> withAntitheticVariate(bool b = true)
-        {
-            antithetic_ = b;
-            return this;
-        }
-        public MakeMCBarrierEngine<RNG, S> withSamples(int samples)
-        {
-            Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
-            samples_ = samples;
-            return this;
-        }
-        public MakeMCBarrierEngine<RNG, S> withAbsoluteTolerance(double tolerance)
-        {
-            Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
-            Utils.QL_REQUIRE(new RNG().allowsErrorEstimate > 0, () => "chosen random generator policy does not allow an error estimate");
-            tolerance_ = tolerance;
-            return this;
-        }
-        public MakeMCBarrierEngine<RNG, S> withMaxSamples(int samples)
-        {
-            maxSamples_ = samples;
-            return this;
-        }
-        public MakeMCBarrierEngine<RNG, S> withBias(bool b = true)
-        {
-            biased_ = b;
-            return this;
-        }
-        public MakeMCBarrierEngine<RNG, S> withSeed(ulong seed)
-        {
-            seed_ = seed;
-            return this;
-        }
+
         // conversion to pricing engine
         public IPricingEngine getAsPricingEngine()
         {
@@ -87,10 +47,62 @@ namespace QLNet.Pricingengines.barrier
                 seed_);
         }
 
-        protected GeneralizedBlackScholesProcess process_;
-        protected bool brownianBridge_, antithetic_, biased_;
-        protected int? steps_, stepsPerYear_, samples_, maxSamples_;
-        ulong seed_;
-        protected double? tolerance_;
+        public MakeMCBarrierEngine<RNG, S> withAbsoluteTolerance(double tolerance)
+        {
+            Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
+            Utils.QL_REQUIRE(new RNG().allowsErrorEstimate > 0, () => "chosen random generator policy does not allow an error estimate");
+            tolerance_ = tolerance;
+            return this;
+        }
+
+        public MakeMCBarrierEngine<RNG, S> withAntitheticVariate(bool b = true)
+        {
+            antithetic_ = b;
+            return this;
+        }
+
+        public MakeMCBarrierEngine<RNG, S> withBias(bool b = true)
+        {
+            biased_ = b;
+            return this;
+        }
+
+        public MakeMCBarrierEngine<RNG, S> withBrownianBridge(bool b = true)
+        {
+            brownianBridge_ = b;
+            return this;
+        }
+
+        public MakeMCBarrierEngine<RNG, S> withMaxSamples(int samples)
+        {
+            maxSamples_ = samples;
+            return this;
+        }
+
+        public MakeMCBarrierEngine<RNG, S> withSamples(int samples)
+        {
+            Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
+            samples_ = samples;
+            return this;
+        }
+
+        public MakeMCBarrierEngine<RNG, S> withSeed(ulong seed)
+        {
+            seed_ = seed;
+            return this;
+        }
+
+        // named parameters
+        public MakeMCBarrierEngine<RNG, S> withSteps(int steps)
+        {
+            steps_ = steps;
+            return this;
+        }
+
+        public MakeMCBarrierEngine<RNG, S> withStepsPerYear(int steps)
+        {
+            stepsPerYear_ = steps;
+            return this;
+        }
     }
 }

@@ -19,8 +19,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Time;
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -44,16 +44,16 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class Mexico : Calendar
+    [PublicAPI]
+    public class Mexico : Calendar
     {
-        public Mexico() : base(Impl.Singleton) { }
-
-        class Impl : WesternImpl
+        private class Impl : WesternImpl
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "Mexican stock exchange";
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -88,9 +88,18 @@ namespace QLNet.Time.Calendars
                     || d == 12 && m == Month.December
                     // Christmas
                     || d == 25 && m == Month.December)
+                {
                     return false;
+                }
+
                 return true;
             }
+
+            public override string name() => "Mexican stock exchange";
+        }
+
+        public Mexico() : base(Impl.Singleton)
+        {
         }
     }
 }

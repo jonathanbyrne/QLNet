@@ -1,6 +1,9 @@
-﻿namespace QLNet.Math.Distributions
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.Distributions
 {
-    [JetBrains.Annotations.PublicAPI] public class NonCentralCumulativeChiSquareSankaranApprox
+    [PublicAPI]
+    public class NonCentralCumulativeChiSquareSankaranApprox
     {
         protected double df_, ncp_;
 
@@ -10,7 +13,7 @@
             ncp_ = ncp;
         }
 
-        double value(double x)
+        private double value(double x)
         {
             var h = 1 - 2 * (df_ + ncp_) * (df_ + 3 * ncp_) / (3 * System.Math.Pow(df_ + 2 * ncp_, 2));
             var p = (df_ + 2 * ncp_) / System.Math.Pow(df_ + ncp_, 2);

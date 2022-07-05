@@ -2,6 +2,10 @@
 {
     public struct Protection
     {
-        public enum Side { Buyer, Seller }
+        public enum Side
+        {
+            Buyer,
+            Seller
+        }
     }
 }

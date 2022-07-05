@@ -20,6 +20,7 @@
 */
 
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -39,18 +40,16 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class Turkey : Calendar
+    [PublicAPI]
+    public class Turkey : Calendar
     {
-        public Turkey() : base(Impl.Singleton) { }
-
-        class Impl : Calendar
+        private class Impl : Calendar
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "Turkey";
-
-            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -72,7 +71,9 @@ namespace QLNet.Time.Calendars
                     || d == 30 && m == Month.August
                     // 29 ekim  National Holiday
                     || d == 29 && m == Month.October)
+                {
                     return false;
+                }
 
                 // Local Holidays
                 if (y == 2004)
@@ -81,7 +82,9 @@ namespace QLNet.Time.Calendars
                     if (m == Month.February && d <= 4
                         // Ramadan
                         || m == Month.November && d >= 14 && d <= 16)
+                    {
                         return false;
+                    }
                 }
                 else if (y == 2005)
                 {
@@ -89,7 +92,9 @@ namespace QLNet.Time.Calendars
                     if (m == Month.January && d >= 19 && d <= 21
                         // Ramadan
                         || m == Month.November && d >= 2 && d <= 5)
+                    {
                         return false;
+                    }
                 }
                 else if (y == 2006)
                 {
@@ -99,7 +104,9 @@ namespace QLNet.Time.Calendars
                         || m == Month.October && d >= 23 && d <= 25
                         // Kurban
                         || m == Month.December && d == 31)
+                    {
                         return false;
+                    }
                 }
                 else if (y == 2007)
                 {
@@ -109,7 +116,9 @@ namespace QLNet.Time.Calendars
                         || m == Month.October && d >= 12 && d <= 14
                         // Kurban
                         || m == Month.December && d >= 20 && d <= 23)
+                    {
                         return false;
+                    }
                 }
                 else if (y == 2008)
                 {
@@ -118,7 +127,9 @@ namespace QLNet.Time.Calendars
                         || m == Month.October && d <= 2
                         // Kurban
                         || m == Month.December && d >= 8 && d <= 11)
+                    {
                         return false;
+                    }
                 }
                 else if (y == 2009)
                 {
@@ -126,7 +137,9 @@ namespace QLNet.Time.Calendars
                     if (m == Month.September && d >= 20 && d <= 22
                         // Kurban
                         || m == Month.November && d >= 27 && d <= 30)
+                    {
                         return false;
+                    }
                 }
                 else if (y == 2010)
                 {
@@ -134,14 +147,18 @@ namespace QLNet.Time.Calendars
                     if (m == Month.September && d >= 9 && d <= 11
                         // Kurban
                         || m == Month.November && d >= 16 && d <= 19)
+                    {
                         return false;
+                    }
                 }
                 else if (y == 2011)
                 {
                     // not clear from borsainstanbul.com
                     if (m == Month.October && d == 1
                         || m == Month.November && d >= 9 && d <= 13)
+                    {
                         return false;
+                    }
                 }
                 else if (y == 2012)
                 {
@@ -149,7 +166,9 @@ namespace QLNet.Time.Calendars
                     if (m == Month.August && d >= 18 && d <= 21
                         // Kurban
                         || m == Month.October && d >= 24 && d <= 28)
+                    {
                         return false;
+                    }
                 }
                 else if (y == 2013)
                 {
@@ -159,7 +178,9 @@ namespace QLNet.Time.Calendars
                         || m == Month.October && d >= 14 && d <= 18
                         // additional holiday for Republic Day
                         || m == Month.October && d == 28)
+                    {
                         return false;
+                    }
                 }
                 else if (y == 2014)
                 {
@@ -169,14 +190,21 @@ namespace QLNet.Time.Calendars
                         || m == Month.October && d >= 4 && d <= 7
                         // additional holiday for Republic Day
                         || m == Month.October && d == 29)
+                    {
                         return false;
+                    }
                 }
+
                 return true;
             }
+
+            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
+
+            public override string name() => "Turkey";
+        }
+
+        public Turkey() : base(Impl.Singleton)
+        {
         }
     }
 }
-
-
-
-

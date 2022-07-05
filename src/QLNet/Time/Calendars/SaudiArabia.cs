@@ -20,6 +20,7 @@
 */
 
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -41,18 +42,16 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class SaudiArabia : Calendar
+    [PublicAPI]
+    public class SaudiArabia : Calendar
     {
-        public SaudiArabia() : base(Impl.Singleton) { }
-
-        class Impl : Calendar
+        private class Impl : Calendar
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "Tadawul";
-
-            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Thursday || w == DayOfWeek.Friday;
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -79,9 +78,20 @@ namespace QLNet.Time.Calendars
                     || d == 26 && m == Month.February && y == 2011
                     || d == 19 && m == Month.March && y == 2011
                    )
+                {
                     return false;
+                }
+
                 return true;
             }
+
+            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Thursday || w == DayOfWeek.Friday;
+
+            public override string name() => "Tadawul";
+        }
+
+        public SaudiArabia() : base(Impl.Singleton)
+        {
         }
     }
 }

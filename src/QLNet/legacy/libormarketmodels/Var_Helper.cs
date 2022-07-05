@@ -23,9 +23,9 @@ namespace QLNet.legacy.libormarketmodels
 {
     internal class Var_Helper
     {
-        public LfmCovarianceParameterization param_;
         public int i_;
         public int j_;
+        public LfmCovarianceParameterization param_;
 
         public Var_Helper(LfmCovarianceParameterization param, int i, int j)
         {

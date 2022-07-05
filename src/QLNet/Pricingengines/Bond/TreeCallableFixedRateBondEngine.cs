@@ -16,37 +16,38 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Instruments.Bonds;
 using QLNet.Models;
-using QLNet.Pricingengines;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System.Collections.Generic;
 
 // Numerical lattice engines for callable/puttable bonds
 namespace QLNet.Pricingengines.Bond
 {
     //! Numerical lattice engine for callable fixed rate bonds
     /*! \ingroup callablebondengines */
-    [JetBrains.Annotations.PublicAPI] public class TreeCallableFixedRateBondEngine : LatticeShortRateModelEngine<CallableBond.Arguments, CallableBond.Results>
+    [PublicAPI]
+    public class TreeCallableFixedRateBondEngine : LatticeShortRateModelEngine<CallableBond.Arguments, CallableBond.Results>
     {
+        private Handle<YieldTermStructure> termStructure_;
+
         /* Constructors
             \note the term structure is only needed when the short-rate
                   model cannot provide one itself.
         */
         public TreeCallableFixedRateBondEngine(ShortRateModel model, int timeSteps,
-                                               Handle<YieldTermStructure> termStructure)
-           : base(model, timeSteps)
-
+            Handle<YieldTermStructure> termStructure)
+            : base(model, timeSteps)
         {
             termStructure_ = termStructure;
             termStructure_.registerWith(update);
         }
 
-
         public TreeCallableFixedRateBondEngine(ShortRateModel model, TimeGrid timeGrid,
-                                               Handle<YieldTermStructure> termStructure)
-           : base(model, timeGrid)
+            Handle<YieldTermStructure> termStructure)
+            : base(model, timeGrid)
         {
             termStructure_ = termStructure;
             termStructure_.registerWith(update);
@@ -90,7 +91,5 @@ namespace QLNet.Pricingengines.Bond
             callableBond.rollback(0.0);
             results_.value = results_.settlementValue = callableBond.presentValue();
         }
-
-        private Handle<YieldTermStructure> termStructure_;
     }
 }

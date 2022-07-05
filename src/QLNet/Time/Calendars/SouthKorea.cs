@@ -20,6 +20,7 @@
 */
 
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -62,40 +63,57 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class SouthKorea : Calendar
+    [PublicAPI]
+    public class SouthKorea : Calendar
     {
         public enum Market
         {
-            Settlement,  //!< Public holidays
-            KRX          //!< Korea exchange
+            Settlement, //!< Public holidays
+            KRX //!< Korea exchange
         }
 
-        public SouthKorea() : this(Market.KRX) { }
-        public SouthKorea(Market m)
-           : base()
+        private class KRX : Settlement
         {
-            // all calendar instances on the same market share the same
-            // implementation instance
-            switch (m)
+            public new static readonly KRX Singleton = new KRX();
+
+            public override bool isBusinessDay(Date date)
             {
-                case Market.Settlement:
-                    calendar_ = Settlement.Singleton;
-                    break;
-                case Market.KRX:
-                    calendar_ = KRX.Singleton;
-                    break;
-                default:
-                    throw new ArgumentException("Unknown market: " + m);
+                // public holidays
+                if (!base.isBusinessDay(date))
+                {
+                    return false;
+                }
+
+                var d = date.Day;
+                var w = date.DayOfWeek;
+                var m = (Month)date.Month;
+                var y = date.Year;
+
+                if ( // Year-end closing
+                    ((d == 29 || d == 30) && w == DayOfWeek.Friday || d == 31)
+                    && m == Month.December
+                   )
+                {
+                    return false;
+                }
+
+                if ( // occasional closing days (KRX day)
+                    d == 6 && m == Month.May && y == 2016 ||
+                    d == 2 && m == Month.October && y == 2017
+                   )
+                {
+                    return false;
+                }
+
+                return true;
             }
+
+            public override string name() => "South-Korea exchange";
         }
 
-        class Settlement : Calendar
+        private class Settlement : Calendar
         {
             public static readonly Settlement Singleton = new Settlement();
-
-            public override string name() => "South-Korean settlement";
-
-            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
 
             public override bool isBusinessDay(Date date)
             {
@@ -148,7 +166,7 @@ namespace QLNet.Time.Calendars
                     || d >= 24 && d <= 27 && m == Month.January && y == 2020
                     || (d == 11 || d == 12 || d == 13) && m == Month.February && y == 2021
                     || (d == 31 && m == Month.January || (d == 1 || d == 2)
-                                                             && m == Month.February) && y == 2022
+                        && m == Month.February) && y == 2022
                     || (d == 21 || d == 22 || d == 23) && m == Month.January && y == 2023
                     || (d == 9 || d == 10 || d == 11) && m == Month.February && y == 2024
                     || (d == 28 || d == 29 || d == 30) && m == Month.January && y == 2025
@@ -161,19 +179,19 @@ namespace QLNet.Time.Calendars
                     || (d == 22 || d == 23 || d == 24) && m == Month.January && y == 2031
                     || (d == 10 || d == 11 || d == 12) && m == Month.February && y == 2032
                     // Election Days
-                    || d == 15 && m == Month.April && y == 2004    // National Assembly
-                    || d == 31 && m == Month.May && y == 2006      // Regional election
+                    || d == 15 && m == Month.April && y == 2004 // National Assembly
+                    || d == 31 && m == Month.May && y == 2006 // Regional election
                     || d == 19 && m == Month.December && y == 2007 // Presidency
-                    || d == 9 && m == Month.April && y == 2008    // National Assembly
-                    || d == 2 && m == Month.June && y == 2010     // Local election
-                    || d == 11 && m == Month.April && y == 2012    // National Assembly
+                    || d == 9 && m == Month.April && y == 2008 // National Assembly
+                    || d == 2 && m == Month.June && y == 2010 // Local election
+                    || d == 11 && m == Month.April && y == 2012 // National Assembly
                     || d == 19 && m == Month.December && y == 2012 // Presidency
-                    || d == 4 && m == Month.June && y == 2014        // Local election
-                    || d == 13 && m == Month.April && y == 2016   // National Assembly
+                    || d == 4 && m == Month.June && y == 2014 // Local election
+                    || d == 13 && m == Month.April && y == 2016 // National Assembly
                     || d == 9 && m == Month.May && y == 2017 // Presidency
                     || d == 13 && m == Month.June && y == 2018 // Local election
                     || d == 15 && m == Month.April && y == 2020 // National Assembly
-                                                                // Buddha's birthday
+                    // Buddha's birthday
                     || d == 26 && m == Month.May && y == 2004
                     || d == 15 && m == Month.May && y == 2005
                     || d == 24 && m == Month.May && y == 2007
@@ -224,7 +242,7 @@ namespace QLNet.Time.Calendars
                     || d >= 23 && d <= 26 && m == Month.September && y == 2018
                     || (d == 12 || d == 13 || d == 14) && m == Month.September && y == 2019
                     || (d == 30 && m == Month.September || (d == 1 || d == 2)
-                                                               && m == Month.October) && y == 2020
+                        && m == Month.October) && y == 2020
                     || (d == 20 || d == 21 || d == 22) && m == Month.September && y == 2021
                     || (d == 9 || d == 10 || d == 11) && m == Month.September && y == 2022
                     || (d == 28 || d == 29 || d == 30) && m == Month.September && y == 2023
@@ -236,52 +254,42 @@ namespace QLNet.Time.Calendars
                     || (d == 21 || d == 22 || d == 23) && m == Month.September && y == 2029
                     || (d == 11 || d == 12 || d == 13) && m == Month.September && y == 2030
                     || (d == 30 && m == Month.September || (d == 1 || d == 2)
-                                                               && m == Month.October) && y == 2031
+                        && m == Month.October) && y == 2031
                     || (d == 18 || d == 19 || d == 20) && m == Month.September && y == 2032
                     // Hangul Proclamation of Korea
                     || d == 9 && m == Month.October && y >= 2013
                    )
+                {
                     return false;
+                }
 
                 return true;
             }
+
+            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
+
+            public override string name() => "South-Korean settlement";
         }
 
-        class KRX : Settlement
+        public SouthKorea() : this(Market.KRX)
         {
-            public new static readonly KRX Singleton = new KRX();
+        }
 
-            public override string name() => "South-Korea exchange";
-
-            public override bool isBusinessDay(Date date)
+        public SouthKorea(Market m)
+        {
+            // all calendar instances on the same market share the same
+            // implementation instance
+            switch (m)
             {
-                // public holidays
-                if (!base.isBusinessDay(date))
-                    return false;
-
-                var d = date.Day;
-                var w = date.DayOfWeek;
-                var m = (Month)date.Month;
-                var y = date.Year;
-
-                if ( // Year-end closing
-                   ((d == 29 || d == 30) && w == DayOfWeek.Friday || d == 31)
-                    && m == Month.December
-                )
-                    return false;
-
-                if (// occasional closing days (KRX day)
-                   d == 6 && m == Month.May && y == 2016 ||
-                   d == 2 && m == Month.October && y == 2017
-                )
-                    return false;
-
-                return true;
+                case Market.Settlement:
+                    calendar_ = Settlement.Singleton;
+                    break;
+                case Market.KRX:
+                    calendar_ = KRX.Singleton;
+                    break;
+                default:
+                    throw new ArgumentException("Unknown market: " + m);
             }
         }
     }
 }
-
-
-
-

@@ -1,7 +1,10 @@
-﻿using QLNet.Termstructures.Yield;
+﻿using JetBrains.Annotations;
+using QLNet.Termstructures.Yield;
 
 namespace QLNet.Termstructures
 {
-    [JetBrains.Annotations.PublicAPI] public class LocalBootstrapForYield : LocalBootstrap<PiecewiseYieldCurve, YieldTermStructure>
-    { }
+    [PublicAPI]
+    public class LocalBootstrapForYield : LocalBootstrap<PiecewiseYieldCurve, YieldTermStructure>
+    {
+    }
 }

@@ -16,8 +16,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Math;
-using System;
 
 namespace QLNet.Methods.Finitedifferences
 {
@@ -27,21 +28,22 @@ namespace QLNet.Methods.Finitedifferences
         during the option's life. The minimum value is the option's
         intrinsic value at the shout time.
     */
-    [JetBrains.Annotations.PublicAPI] public class ShoutCondition : CurveDependentStepCondition<Vector>
+    [PublicAPI]
+    public class ShoutCondition : CurveDependentStepCondition<Vector>
     {
-        double resTime_;
-        double rate_;
-        double disc_;
+        private double disc_;
+        private double rate_;
+        private double resTime_;
 
         public ShoutCondition(Option.Type type, double strike, double resTime, double rate)
-           : base(type, strike)
+            : base(type, strike)
         {
             resTime_ = resTime;
             rate_ = rate;
         }
 
         public ShoutCondition(Vector intrinsicValues, double resTime, double rate)
-           : base(intrinsicValues)
+            : base(intrinsicValues)
         {
             resTime_ = resTime;
             rate_ = rate;

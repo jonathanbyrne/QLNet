@@ -20,6 +20,7 @@
 */
 
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -49,16 +50,16 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class Singapore : Calendar
+    [PublicAPI]
+    public class Singapore : Calendar
     {
-        public Singapore() : base(Impl.Singleton) { }
-
-        class Impl : WesternImpl
+        private class Impl : WesternImpl
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "Singapore exchange";
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -143,11 +144,18 @@ namespace QLNet.Time.Calendars
                     || d == 8 && m == Month.August && y == 2013
                     || d == 28 && m == Month.July && y == 2014
                    )
+                {
                     return false;
+                }
+
                 return true;
             }
+
+            public override string name() => "Singapore exchange";
+        }
+
+        public Singapore() : base(Impl.Singleton)
+        {
         }
     }
 }
-
-

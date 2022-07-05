@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Pricingengines.barrier;
 using QLNet.processes;
 using QLNet.Quotes;
@@ -28,7 +29,8 @@ namespace QLNet.Instruments
     //
     //        \ingroup instruments
     //
-    [JetBrains.Annotations.PublicAPI] public class BarrierOption : OneAssetOption
+    [PublicAPI]
+    public class BarrierOption : OneAssetOption
     {
         public new class Arguments : Option.Arguments
         {
@@ -38,8 +40,11 @@ namespace QLNet.Instruments
                 barrier = null;
                 rebate = null;
             }
-            public Barrier.Type barrierType { get; set; }
+
             public double? barrier { get; set; }
+
+            public Barrier.Type barrierType { get; set; }
+
             public double? rebate { get; set; }
 
             public override void validate()
@@ -81,6 +86,13 @@ namespace QLNet.Instruments
                 }
             }
         }
+
+        protected double? barrier_;
+
+        // Arguments
+        protected Barrier.Type barrierType_;
+        protected double? rebate_;
+
         public BarrierOption(Barrier.Type barrierType, double barrier, double rebate, StrikedTypePayoff payoff, Exercise exercise) : base(payoff, exercise)
         {
             barrierType_ = barrierType;
@@ -88,22 +100,11 @@ namespace QLNet.Instruments
             rebate_ = rebate;
         }
 
-        public override void setupArguments(IPricingEngineArguments args)
-        {
-            base.setupArguments(args);
-
-            var moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
-
-            moreArgs.barrierType = barrierType_;
-            moreArgs.barrier = barrier_;
-            moreArgs.rebate = rebate_;
-        }
         //        ! \warning see VanillaOption for notes on implied-volatility
         //                     calculation.
         //
         public double impliedVolatility(double targetValue, GeneralizedBlackScholesProcess process, double accuracy = 1.0e-4,
-                                        int maxEvaluations = 100, double minVol = 1.0e-7, double maxVol = 4.0)
+            int maxEvaluations = 100, double minVol = 1.0e-7, double maxVol = 4.0)
         {
             Utils.QL_REQUIRE(!isExpired(), () => "option expired");
 
@@ -130,9 +131,16 @@ namespace QLNet.Instruments
             return ImpliedVolatilityHelper.calculate(this, engine, volQuote, targetValue, accuracy, maxEvaluations, minVol, maxVol);
         }
 
-        // Arguments
-        protected Barrier.Type barrierType_;
-        protected double? barrier_;
-        protected double? rebate_;
+        public override void setupArguments(IPricingEngineArguments args)
+        {
+            base.setupArguments(args);
+
+            var moreArgs = args as Arguments;
+            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
+
+            moreArgs.barrierType = barrierType_;
+            moreArgs.barrier = barrier_;
+            moreArgs.rebate = rebate_;
+        }
     }
 }

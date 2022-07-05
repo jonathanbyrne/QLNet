@@ -16,39 +16,54 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences;
 using QLNet.processes;
-using System;
 
 namespace QLNet.Pricingengines.vanilla
 {
     // this is template version to serve as base for FDStepConditionEngine and FDMultiPeriodEngine
-    [JetBrains.Annotations.PublicAPI] public class FDConditionEngineTemplate : FDVanillaEngine
+    [PublicAPI]
+    public class FDConditionEngineTemplate : FDVanillaEngine
     {
+        // required for generics
+        public FDConditionEngineTemplate()
+        {
+        }
+
+        public FDConditionEngineTemplate(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
+            : base(process, timeSteps, gridPoints, timeDependent)
+        {
+        }
+
         #region Common definitions for deriving classes
+
         protected IStepCondition<Vector> stepCondition_;
         protected SampledCurve prices_;
+
         protected virtual void initializeStepCondition()
         {
             if (stepConditionImpl_ == null)
+            {
                 stepCondition_ = new NullCondition<Vector>();
+            }
             else
+            {
                 stepCondition_ = stepConditionImpl_();
+            }
         }
 
         protected Func<IStepCondition<Vector>> stepConditionImpl_;
+
         public void setStepCondition(Func<IStepCondition<Vector>> impl)
         {
             stepConditionImpl_ = impl;
         }
+
         #endregion
-
-        // required for generics
-        public FDConditionEngineTemplate() { }
-
-        public FDConditionEngineTemplate(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
-           : base(process, timeSteps, gridPoints, timeDependent) { }
     }
 
     // this is template version to serve as base for FDAmericanCondition and FDShoutCondition

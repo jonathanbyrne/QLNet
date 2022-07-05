@@ -1,11 +1,19 @@
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Instruments;
 using QLNet.Time;
 
 namespace QLNet.Indexes
 {
-    [JetBrains.Annotations.PublicAPI] public class OvernightIndexedSwapIndex : SwapIndex
+    [PublicAPI]
+    public class OvernightIndexedSwapIndex : SwapIndex
     {
+        protected new Date lastFixingDate_;
+        // cache data to avoid swap recreation when the same fixing date
+        // is used multiple time to forecast changing fixing
+        protected new OvernightIndexedSwap lastSwap_;
+        protected OvernightIndex overnightIndex_;
+
         public OvernightIndexedSwapIndex(string familyName,
             Period tenor,
             int settlementDays,
@@ -18,6 +26,7 @@ namespace QLNet.Indexes
         {
             overnightIndex_ = overnightIndex;
         }
+
         // Inspectors
         public OvernightIndex overnightIndex() => overnightIndex_;
 
@@ -35,13 +44,8 @@ namespace QLNet.Indexes
                     .withFixedLegDayCount(dayCounter_);
                 lastFixingDate_ = fixingDate;
             }
+
             return lastSwap_;
         }
-
-        protected OvernightIndex overnightIndex_;
-        // cache data to avoid swap recreation when the same fixing date
-        // is used multiple time to forecast changing fixing
-        protected new OvernightIndexedSwap lastSwap_;
-        protected new Date lastFixingDate_;
     }
 }

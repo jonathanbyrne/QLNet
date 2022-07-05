@@ -14,31 +14,32 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
 using QLNet.Math.randomnumbers;
 using QLNet.Math.statistics;
 using QLNet.Methods.montecarlo;
 using QLNet.Models.Equity;
 using QLNet.Models.Shortrate.Onefactormodels;
 using QLNet.processes;
-using System;
 
 namespace QLNet.Pricingengines.vanilla
 {
-    [JetBrains.Annotations.PublicAPI] public class MCHestonHullWhiteEngine<RNG, S> : MCVanillaEngine<MultiVariate, RNG, S>
-      where RNG : IRSG, new()
-      where S : IGeneralStatistics, new()
+    [PublicAPI]
+    public class MCHestonHullWhiteEngine<RNG, S> : MCVanillaEngine<MultiVariate, RNG, S>
+        where RNG : IRSG, new()
+        where S : IGeneralStatistics, new()
     {
         public MCHestonHullWhiteEngine(HybridHestonHullWhiteProcess process,
-                                       int? timeSteps,
-                                       int? timeStepsPerYear,
-                                       bool antitheticVariate,
-                                       bool controlVariate,
-                                       int? requiredSamples,
-                                       double? requiredTolerance,
-                                       int? maxSamples,
-                                       ulong seed)
-        : base(process, timeSteps, timeStepsPerYear, false, antitheticVariate, controlVariate, requiredSamples,
-               requiredTolerance, maxSamples, seed)
+            int? timeSteps,
+            int? timeStepsPerYear,
+            bool antitheticVariate,
+            bool controlVariate,
+            int? requiredSamples,
+            double? requiredTolerance,
+            int? maxSamples,
+            ulong seed)
+            : base(process, timeSteps, timeStepsPerYear, false, antitheticVariate, controlVariate, requiredSamples,
+                requiredTolerance, maxSamples, seed)
         {
             process_ = process;
         }
@@ -55,15 +56,17 @@ namespace QLNet.Pricingengines.vanilla
             }
         }
 
-        protected override PathPricer<IPath> pathPricer()
+        protected override IPathGenerator<IRNG> controlPathGenerator()
         {
-            var exercise = arguments_.exercise;
+            var dimensions = process_.factors();
+            var grid = timeGrid();
+            var generator = new RNG().make_sequence_generator(dimensions * (grid.size() - 1), seed_);
+            var process = process_ as HybridHestonHullWhiteProcess;
+            Utils.QL_REQUIRE(process != null, () => "invalid process");
+            var cvProcess = new HybridHestonHullWhiteProcess(process.hestonProcess(),
+                process.hullWhiteProcess(), 0.0, process.discretization());
 
-            Utils.QL_REQUIRE(exercise.ExerciseType() == Exercise.Type.European, () => "only european exercise is supported");
-
-            var exerciseTime = process_.time(exercise.lastDate());
-
-            return new HestonHullWhitePathPricer(exerciseTime, arguments_.payoff, (HybridHestonHullWhiteProcess)process_);
+            return new MultiPathGenerator<IRNG>(cvProcess, grid, generator, false);
         }
 
         protected override PathPricer<IPath> controlPathPricer()
@@ -74,7 +77,7 @@ namespace QLNet.Pricingengines.vanilla
             var hestonProcess = process.hestonProcess();
 
             Utils.QL_REQUIRE(hestonProcess != null, () =>
-                             "first constituent of the joint stochastic process need to be of ExerciseType HestonProcess");
+                "first constituent of the joint stochastic process need to be of ExerciseType HestonProcess");
 
             var exercise = arguments_.exercise;
 
@@ -83,8 +86,8 @@ namespace QLNet.Pricingengines.vanilla
             var exerciseTime = process.time(exercise.lastDate());
 
             return new HestonHullWhitePathPricer(exerciseTime, arguments_.payoff, process);
-
         }
+
         protected override IPricingEngine controlPricingEngine()
         {
             var process = process_ as HybridHestonHullWhiteProcess;
@@ -97,23 +100,21 @@ namespace QLNet.Pricingengines.vanilla
             var hestonModel = new HestonModel(hestonProcess);
 
             var hwModel = new HullWhite(hestonProcess.riskFreeRate(),
-                                              hullWhiteProcess.a(),
-                                              hullWhiteProcess.sigma());
+                hullWhiteProcess.a(),
+                hullWhiteProcess.sigma());
 
-            return new AnalyticHestonHullWhiteEngine(hestonModel, hwModel, 144);
+            return new AnalyticHestonHullWhiteEngine(hestonModel, hwModel);
         }
 
-        protected override IPathGenerator<IRNG> controlPathGenerator()
+        protected override PathPricer<IPath> pathPricer()
         {
-            var dimensions = process_.factors();
-            var grid = timeGrid();
-            var generator = new RNG().make_sequence_generator(dimensions * (grid.size() - 1), seed_);
-            var process = process_ as HybridHestonHullWhiteProcess;
-            Utils.QL_REQUIRE(process != null, () => "invalid process");
-            var cvProcess = new HybridHestonHullWhiteProcess(process.hestonProcess(),
-                                                                                      process.hullWhiteProcess(), 0.0, process.discretization());
+            var exercise = arguments_.exercise;
 
-            return new MultiPathGenerator<IRNG>(cvProcess, grid, generator, false);
+            Utils.QL_REQUIRE(exercise.ExerciseType() == Exercise.Type.European, () => "only european exercise is supported");
+
+            var exerciseTime = process_.time(exercise.lastDate());
+
+            return new HestonHullWhitePathPricer(exerciseTime, arguments_.payoff, (HybridHestonHullWhiteProcess)process_);
         }
     }
 

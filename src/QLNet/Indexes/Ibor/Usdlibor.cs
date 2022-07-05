@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Termstructures;
 using QLNet.Time;
@@ -30,15 +31,17 @@ namespace QLNet.Indexes.Ibor
 
         See <https://www.theice.com/marketdata/reports/170>.
     */
-    [JetBrains.Annotations.PublicAPI] public class USDLibor : Libor
+    [PublicAPI]
+    public class USDLibor : Libor
     {
         public USDLibor(Period tenor) : this(tenor, new Handle<YieldTermStructure>())
-        { }
+        {
+        }
 
         public USDLibor(Period tenor, Handle<YieldTermStructure> h)
-           : base("USDLibor", tenor, 2, new USDCurrency(), new UnitedStates(UnitedStates.Market.Settlement), new Actual360(), h)
-        { }
-
+            : base("USDLibor", tenor, 2, new USDCurrency(), new UnitedStates(UnitedStates.Market.Settlement), new Actual360(), h)
+        {
+        }
     }
 
     //! base class for the one day deposit ICE %USD %LIBOR indexes

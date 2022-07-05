@@ -18,31 +18,39 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Cashflows;
 using QLNet.Indexes;
 using QLNet.Instruments;
-using QLNet.Models;
+using QLNet.Pricingengines.CapFloor;
+using QLNet.Pricingengines.Swap;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System.Collections.Generic;
-using QLNet.Cashflows;
-using QLNet.Pricingengines.CapFloor;
-using QLNet.Pricingengines.Swap;
 
 namespace QLNet.Models.Shortrate.calibrationhelpers
 {
-    [JetBrains.Annotations.PublicAPI] public class CapHelper : CalibrationHelper
+    [PublicAPI]
+    public class CapHelper : CalibrationHelper
     {
+        private Cap cap_;
+        private DayCounter fixedLegDayCounter_;
+        private Frequency fixedLegFrequency_;
+        private bool includeFirstSwaplet_;
+        private IborIndex index_;
+        private Period length_;
+
         public CapHelper(Period length,
-                         Handle<Quote> volatility,
-                         IborIndex index,
-                         // data for ATM swap-rate calculation
-                         Frequency fixedLegFrequency,
-                         DayCounter fixedLegDayCounter,
-                         bool includeFirstSwaplet,
-                         Handle<YieldTermStructure> termStructure,
-                         CalibrationErrorType errorType = CalibrationErrorType.RelativePriceError)
-           : base(volatility, termStructure, errorType)
+            Handle<Quote> volatility,
+            IborIndex index,
+            // data for ATM swap-rate calculation
+            Frequency fixedLegFrequency,
+            DayCounter fixedLegDayCounter,
+            bool includeFirstSwaplet,
+            Handle<YieldTermStructure> termStructure,
+            CalibrationErrorType errorType = CalibrationErrorType.RelativePriceError)
+            : base(volatility, termStructure, errorType)
         {
             length_ = length;
             index_ = index;
@@ -59,18 +67,12 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
             var args = new CapFloor.Arguments();
             cap_.setupArguments(args);
             var capTimes = new DiscretizedCapFloor(args,
-                                                            termStructure_.link.referenceDate(),
-                                                            termStructure_.link.dayCounter()).mandatoryTimes();
+                termStructure_.link.referenceDate(),
+                termStructure_.link.dayCounter()).mandatoryTimes();
             for (var i = 0; i < capTimes.Count; i++)
+            {
                 times.Insert(times.Count, capTimes[i]);
-
-        }
-
-        public override double modelValue()
-        {
-            calculate();
-            cap_.setPricingEngine(engine_);
-            return cap_.NPV();
+            }
         }
 
         public override double blackPrice(double sigma)
@@ -78,11 +80,18 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
             calculate();
             Quote vol = new SimpleQuote(sigma);
             IPricingEngine black = new BlackCapFloorEngine(termStructure_,
-                                                           new Handle<Quote>(vol));
+                new Handle<Quote>(vol));
             cap_.setPricingEngine(black);
             var value = cap_.NPV();
             cap_.setPricingEngine(engine_);
             return value;
+        }
+
+        public override double modelValue()
+        {
+            calculate();
+            cap_.setPricingEngine(engine_);
+            return cap_.NPV();
         }
 
         protected override void performCalculations()
@@ -100,36 +109,37 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
                 startDate = termStructure_.link.referenceDate() + indexTenor;
                 maturity = termStructure_.link.referenceDate() + length_;
             }
+
             var dummyIndex = new IborIndex("dummy",
-                                                 indexTenor,
-                                                 index_.fixingDays(),
-                                                 index_.currency(),
-                                                 index_.fixingCalendar(),
-                                                 index_.businessDayConvention(),
-                                                 index_.endOfMonth(),
-                                                 termStructure_.link.dayCounter(),
-                                                 termStructure_);
+                indexTenor,
+                index_.fixingDays(),
+                index_.currency(),
+                index_.fixingCalendar(),
+                index_.businessDayConvention(),
+                index_.endOfMonth(),
+                termStructure_.link.dayCounter(),
+                termStructure_);
 
             List<double> nominals = new InitializedList<double>(1, 1.0);
 
             var floatSchedule = new Schedule(startDate, maturity,
-                                                  index_.tenor(), index_.fixingCalendar(),
-                                                  index_.businessDayConvention(),
-                                                  index_.businessDayConvention(),
-                                                  DateGeneration.Rule.Forward, false);
+                index_.tenor(), index_.fixingCalendar(),
+                index_.businessDayConvention(),
+                index_.businessDayConvention(),
+                DateGeneration.Rule.Forward, false);
             List<CashFlow> floatingLeg = new IborLeg(floatSchedule, index_)
-            .withFixingDays(0)
-            .withNotionals(nominals)
-            .withPaymentAdjustment(index_.businessDayConvention());
+                .withFixingDays(0)
+                .withNotionals(nominals)
+                .withPaymentAdjustment(index_.businessDayConvention());
 
             var fixedSchedule = new Schedule(startDate, maturity, new Period(fixedLegFrequency_),
-                                                  index_.fixingCalendar(),
-                                                  BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
-                                                  DateGeneration.Rule.Forward, false);
+                index_.fixingCalendar(),
+                BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
+                DateGeneration.Rule.Forward, false);
             List<CashFlow> fixedLeg = new FixedRateLeg(fixedSchedule)
-            .withCouponRates(fixedRate, fixedLegDayCounter_)
-            .withNotionals(nominals)
-            .withPaymentAdjustment(index_.businessDayConvention());
+                .withCouponRates(fixedRate, fixedLegDayCounter_)
+                .withNotionals(nominals)
+                .withPaymentAdjustment(index_.businessDayConvention());
 
             var swap = new Swap(floatingLeg, fixedLeg);
             swap.setPricingEngine(new DiscountingSwapEngine(termStructure_, false));
@@ -137,14 +147,6 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
             cap_ = new Cap(floatingLeg, new InitializedList<double>(1, fairRate));
 
             base.performCalculations();
-
         }
-
-        private Cap cap_;
-        private Period length_;
-        private IborIndex index_;
-        private Frequency fixedLegFrequency_;
-        private DayCounter fixedLegDayCounter_;
-        private bool includeFirstSwaplet_;
     }
 }

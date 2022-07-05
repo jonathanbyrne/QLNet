@@ -14,38 +14,43 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.Optionlet;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
 
 namespace QLNet.Pricingengines.CapFloor
 {
-    [JetBrains.Annotations.PublicAPI] public class BachelierCapFloorEngine : CapFloorEngine
+    [PublicAPI]
+    public class BachelierCapFloorEngine : CapFloorEngine
     {
+        private Handle<YieldTermStructure> discountCurve_;
+        private Handle<OptionletVolatilityStructure> vol_;
+
         public BachelierCapFloorEngine(Handle<YieldTermStructure> discountCurve, double vol, DayCounter dc = null) // new Actual365Fixed()
         {
-
             discountCurve_ = discountCurve;
             vol_ = new Handle<OptionletVolatilityStructure>(
-               new ConstantOptionletVolatility(0, new NullCalendar(), BusinessDayConvention.Following, vol,
-                                               dc ?? new Actual365Fixed()));
+                new ConstantOptionletVolatility(0, new NullCalendar(), BusinessDayConvention.Following, vol,
+                    dc ?? new Actual365Fixed()));
             discountCurve_.registerWith(update);
         }
+
         public BachelierCapFloorEngine(Handle<YieldTermStructure> discountCurve, Handle<Quote> vol, DayCounter dc = null)
         {
             discountCurve_ = discountCurve;
             vol_ = new Handle<OptionletVolatilityStructure>(
-               new ConstantOptionletVolatility(0, new NullCalendar(), BusinessDayConvention.Following, vol,
-                                               dc ?? new Actual365Fixed()));
+                new ConstantOptionletVolatility(0, new NullCalendar(), BusinessDayConvention.Following, vol,
+                    dc ?? new Actual365Fixed()));
             discountCurve_.registerWith(update);
             vol_.registerWith(update);
         }
+
         public BachelierCapFloorEngine(Handle<YieldTermStructure> discountCurve, Handle<OptionletVolatilityStructure> vol)
         {
             discountCurve_ = discountCurve;
@@ -84,7 +89,9 @@ namespace QLNet.Pricingengines.CapFloor
                     var fixingDate = arguments_.fixingDates[i];
                     var sqrtTime = 0.0;
                     if (fixingDate > today)
+                    {
                         sqrtTime = System.Math.Sqrt(vol_.link.timeFromReference(fixingDate));
+                    }
 
                     if (type == CapFloorType.Cap || type == CapFloorType.Collar)
                     {
@@ -94,9 +101,11 @@ namespace QLNet.Pricingengines.CapFloor
                             stdDevs[i] = System.Math.Sqrt(vol_.link.blackVariance(fixingDate, strike));
                             vegas[i] = Utils.bachelierBlackFormulaStdDevDerivative(strike, forward, stdDevs[i], d) * sqrtTime;
                         }
+
                         // include caplets with past fixing date
                         values[i] = Utils.bachelierBlackFormula(QLNet.Option.Type.Call, strike, forward, stdDevs[i], d);
                     }
+
                     if (type == CapFloorType.Floor || type == CapFloorType.Collar)
                     {
                         var strike = arguments_.floorRates[i].Value;
@@ -106,6 +115,7 @@ namespace QLNet.Pricingengines.CapFloor
                             stdDevs[i] = System.Math.Sqrt(vol_.link.blackVariance(fixingDate, strike));
                             floorletVega = Utils.bachelierBlackFormulaStdDevDerivative(strike, forward, stdDevs[i], d) * sqrtTime;
                         }
+
                         var floorlet = Utils.bachelierBlackFormula(QLNet.Option.Type.Put, strike, forward, stdDevs[i], d);
                         if (type == CapFloorType.Floor)
                         {
@@ -119,10 +129,12 @@ namespace QLNet.Pricingengines.CapFloor
                             vegas[i] -= floorletVega;
                         }
                     }
+
                     value += values[i];
                     vega += vegas[i];
                 }
             }
+
             results_.value = value;
             results_.additionalResults["vega"] = vega;
 
@@ -130,15 +142,13 @@ namespace QLNet.Pricingengines.CapFloor
             results_.additionalResults["optionletsVega"] = vegas;
             results_.additionalResults["optionletsAtmForward"] = arguments_.forwards;
             if (type != CapFloorType.Collar)
+            {
                 results_.additionalResults["optionletsStdDev"] = stdDevs;
+            }
         }
-
 
         public Handle<YieldTermStructure> termStructure() => discountCurve_;
 
         public Handle<OptionletVolatilityStructure> volatility() => vol_;
-
-        private Handle<YieldTermStructure> discountCurve_;
-        private Handle<OptionletVolatilityStructure> vol_;
     }
 }

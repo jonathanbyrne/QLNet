@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Instruments;
 using QLNet.Quotes;
@@ -5,8 +6,25 @@ using QLNet.Time;
 
 namespace QLNet.Termstructures.Yield
 {
-    [JetBrains.Annotations.PublicAPI] public class SwapRateHelper : RelativeDateRateHelper
+    [PublicAPI]
+    public class SwapRateHelper : RelativeDateRateHelper
     {
+        protected Calendar calendar_;
+        protected Handle<YieldTermStructure> discountHandle_;
+        protected RelinkableHandle<YieldTermStructure> discountRelinkableHandle_ = new RelinkableHandle<YieldTermStructure>();
+        protected BusinessDayConvention fixedConvention_;
+        protected DayCounter fixedDayCount_;
+        protected Frequency fixedFrequency_;
+        protected Period fwdStart_;
+        protected IborIndex iborIndex_;
+        protected Pillar.Choice pillarChoice_;
+        protected int? settlementDays_;
+        protected Handle<Quote> spread_;
+        protected VanillaSwap swap_;
+        protected Period tenor_;
+        // need to init this because it is used before the handle has any link, i.e. setTermStructure will be used after ctor
+        protected RelinkableHandle<YieldTermStructure> termStructureHandle_ = new RelinkableHandle<YieldTermStructure>();
+
         public SwapRateHelper(Handle<Quote> rate,
             SwapIndex swapIndex,
             Handle<Quote> spread = null,
@@ -44,7 +62,6 @@ namespace QLNet.Termstructures.Yield
             initializeDates();
         }
 
-
         public SwapRateHelper(Handle<Quote> rate,
             Period tenor,
             Calendar calendar,
@@ -73,7 +90,9 @@ namespace QLNet.Termstructures.Yield
             discountHandle_ = discount ?? new Handle<YieldTermStructure>();
 
             if (settlementDays_ == null)
+            {
                 settlementDays_ = iborIndex.fixingDays();
+            }
 
             // take fixing into account
             iborIndex_ = iborIndex.clone(termStructureHandle_);
@@ -122,7 +141,6 @@ namespace QLNet.Termstructures.Yield
             initializeDates();
         }
 
-
         public SwapRateHelper(double rate,
             Period tenor,
             Calendar calendar,
@@ -151,7 +169,9 @@ namespace QLNet.Termstructures.Yield
             discountHandle_ = discount ?? new Handle<YieldTermStructure>();
 
             if (settlementDays_ == null)
+            {
                 settlementDays_ = iborIndex.fixingDays();
+            }
 
             // take fixing into account
             iborIndex_ = iborIndex.clone(termStructureHandle_);
@@ -166,7 +186,35 @@ namespace QLNet.Termstructures.Yield
             initializeDates();
         }
 
+        public Period forwardStart() => fwdStart_;
 
+        public override double impliedQuote()
+        {
+            Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
+            // we didn't register as observers - force calculation
+            swap_.recalculate(); // it is from lazy objects
+            // weak implementation... to be improved
+            var floatingLegNPV = swap_.floatingLegNPV();
+            var spread = this.spread();
+            var spreadNPV = swap_.floatingLegBPS() / Const.BASIS_POINT * spread;
+            var totNPV = -(floatingLegNPV + spreadNPV);
+            var result = totNPV / (swap_.fixedLegBPS() / Const.BASIS_POINT);
+            return result;
+        }
+
+        public override void setTermStructure(YieldTermStructure t)
+        {
+            // do not set the relinkable handle as an observer -
+            // force recalculation when needed
+            termStructureHandle_.linkTo(t, false);
+            base.setTermStructure(t);
+            discountRelinkableHandle_.linkTo(discountHandle_.empty() ? t : discountHandle_, false);
+        }
+
+        // SwapRateHelper inspectors
+        public double spread() => spread_.empty() ? 0.0 : spread_.link.value();
+
+        public VanillaSwap swap() => swap_;
 
         protected override void initializeDates()
         {
@@ -222,54 +270,6 @@ namespace QLNet.Termstructures.Yield
             }
 
             latestDate_ = pillarDate_; // backward compatibility
-
         }
-
-        public override void setTermStructure(YieldTermStructure t)
-        {
-            // do not set the relinkable handle as an observer -
-            // force recalculation when needed
-            termStructureHandle_.linkTo(t, false);
-            base.setTermStructure(t);
-            discountRelinkableHandle_.linkTo(discountHandle_.empty() ? t : discountHandle_, false);
-        }
-
-        public override double impliedQuote()
-        {
-            Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
-            // we didn't register as observers - force calculation
-            swap_.recalculate();                // it is from lazy objects
-            // weak implementation... to be improved
-            var floatingLegNPV = swap_.floatingLegNPV();
-            var spread = this.spread();
-            var spreadNPV = swap_.floatingLegBPS() / Const.BASIS_POINT * spread;
-            var totNPV = -(floatingLegNPV + spreadNPV);
-            var result = totNPV / (swap_.fixedLegBPS() / Const.BASIS_POINT);
-            return result;
-        }
-
-        // SwapRateHelper inspectors
-        public double spread() => spread_.empty() ? 0.0 : spread_.link.value();
-
-        public VanillaSwap swap() => swap_;
-
-        public Period forwardStart() => fwdStart_;
-
-        protected int? settlementDays_;
-        protected Period tenor_;
-        protected Pillar.Choice pillarChoice_;
-        protected Calendar calendar_;
-        protected BusinessDayConvention fixedConvention_;
-        protected Frequency fixedFrequency_;
-        protected DayCounter fixedDayCount_;
-        protected IborIndex iborIndex_;
-        protected VanillaSwap swap_;
-        // need to init this because it is used before the handle has any link, i.e. setTermStructure will be used after ctor
-        protected RelinkableHandle<YieldTermStructure> termStructureHandle_ = new RelinkableHandle<YieldTermStructure>();
-        protected Handle<Quote> spread_;
-        protected Period fwdStart_;
-        protected Handle<YieldTermStructure> discountHandle_;
-        protected RelinkableHandle<YieldTermStructure> discountRelinkableHandle_ = new RelinkableHandle<YieldTermStructure>();
-
     }
 }

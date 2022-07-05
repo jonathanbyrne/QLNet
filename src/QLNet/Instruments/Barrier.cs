@@ -19,7 +19,6 @@
 
 namespace QLNet.Instruments
 {
-
     //! Placeholder for enumerated barrier types
     public struct Barrier
     {
@@ -32,5 +31,4 @@ namespace QLNet.Instruments
             NULL
         }
     }
-
 }

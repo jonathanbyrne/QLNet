@@ -133,9 +133,11 @@ namespace QLNet.Tests
                 for (var j = 0; j < size; ++j)
                 {
                     if (System.Math.Abs(recon[i, j]) > tolerance)
+                    {
                         QAssert.Fail("Failed to reproduce correlation matrix"
                                      + "\n    calculated: " + recon[i, j]
                                      + "\n    expected:   " + 0);
+                    }
                 }
             }
 
@@ -168,9 +170,11 @@ namespace QLNet.Tests
                     for (var j = 0; j < size; ++j)
                     {
                         if (System.Math.Abs(recon[k, j]) > tolerance)
+                        {
                             QAssert.Fail("Failed to reproduce correlation matrix"
                                          + "\n    calculated: " + recon[k, j]
                                          + "\n    expected:   " + 0);
+                        }
                     }
                 }
 
@@ -186,9 +190,11 @@ namespace QLNet.Tests
                     }
 
                     if (System.Math.Abs(expected - volatility[k]) > tolerance)
+                    {
                         QAssert.Fail("Failed to reproduce volatities"
                                      + "\n    calculated: " + volatility[k]
                                      + "\n    expected:   " + expected);
+                    }
                 }
             }
         }
@@ -230,9 +236,11 @@ namespace QLNet.Tests
             var calculated = cap1.NPV();
 
             if (System.Math.Abs(expected - calculated) > tolerance)
+            {
                 QAssert.Fail("Failed to reproduce npv"
                              + "\n    calculated: " + calculated
                              + "\n    expected:   " + expected);
+            }
         }
 
         [Fact(Skip = "LongRun")]
@@ -333,9 +341,11 @@ namespace QLNet.Tests
             }
 
             if (System.Math.Sqrt(calculated) > tolerance)
+            {
                 QAssert.Fail("Failed to calibrate libor forward model"
                              + "\n    calculated diff: " + System.Math.Sqrt(calculated)
                              + "\n    expected : smaller than  " + tolerance);
+            }
         }
 
         [Fact(Skip = "LongRun")]
@@ -426,9 +436,11 @@ namespace QLNet.Tests
                     var calculated = liborModel.S_0(i - 1, i + j - 1);
 
                     if (System.Math.Abs(expected - calculated) > tolerance)
+                    {
                         QAssert.Fail("Failed to reproduce fair forward swap rate"
                                      + "\n    calculated: " + calculated
                                      + "\n    expected:   " + expected);
+                    }
 
                     swapRate = forwardSwap.fairRate();
                     forwardSwap =
@@ -476,9 +488,11 @@ namespace QLNet.Tests
 
                         if (System.Math.Abs(swaption.NPV() - stat.mean())
                             > stat.errorEstimate() * 2.35)
+                        {
                             QAssert.Fail("Failed to reproduce swaption npv"
                                          + "\n    calculated: " + stat.mean()
                                          + "\n    expected:   " + swaption.NPV());
+                        }
                     }
                 }
             }

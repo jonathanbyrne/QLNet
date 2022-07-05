@@ -18,6 +18,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Indexes;
 using QLNet.Pricingengines.Swap;
@@ -29,28 +30,27 @@ namespace QLNet.Instruments
 {
     // helper class
     // This class provides a more comfortable way to instantiate standard market swap.
-    [JetBrains.Annotations.PublicAPI] public class MakeVanillaSwap
+    [PublicAPI]
+    public class MakeVanillaSwap
     {
-        private Period forwardStart_, swapTenor_;
-        private IborIndex iborIndex_;
-        private double? fixedRate_;
-        private int settlementDays_;
         private Date effectiveDate_, terminationDate_;
+        private IPricingEngine engine_;
         private Calendar fixedCalendar_, floatCalendar_;
-
-        private VanillaSwap.Type type_;
-        private double nominal_;
-        private Period fixedTenor_, floatTenor_;
         private BusinessDayConvention fixedConvention_, fixedTerminationDateConvention_;
-        private BusinessDayConvention floatConvention_, floatTerminationDateConvention_;
-        private DateGeneration.Rule fixedRule_, floatRule_;
+        private DayCounter fixedDayCount_, floatDayCount_;
         private bool fixedEndOfMonth_, floatEndOfMonth_;
         private Date fixedFirstDate_, fixedNextToLastDate_;
+        private double? fixedRate_;
+        private DateGeneration.Rule fixedRule_, floatRule_;
+        private Period fixedTenor_, floatTenor_;
+        private BusinessDayConvention floatConvention_, floatTerminationDateConvention_;
         private Date floatFirstDate_, floatNextToLastDate_;
         private double floatSpread_;
-        private DayCounter fixedDayCount_, floatDayCount_;
-
-        IPricingEngine engine_;
+        private Period forwardStart_, swapTenor_;
+        private IborIndex iborIndex_;
+        private double nominal_;
+        private int settlementDays_;
+        private VanillaSwap.Type type_;
 
         public MakeVanillaSwap(Period swapTenor, IborIndex index, double? fixedRate = null, Period forwardStart = null)
         {
@@ -73,25 +73,172 @@ namespace QLNet.Instruments
             floatDayCount_ = index.dayCounter();
         }
 
+        // swap creator
+        public static implicit operator VanillaSwap(MakeVanillaSwap o) => o.value();
+
         public MakeVanillaSwap receiveFixed(bool flag = true)
         {
             type_ = flag ? VanillaSwap.Type.Receiver : VanillaSwap.Type.Payer;
             return this;
         }
-        public MakeVanillaSwap withType(VanillaSwap.Type type)
+
+        public VanillaSwap value()
         {
-            type_ = type;
-            return this;
+            Date startDate;
+
+            if (effectiveDate_ != null)
+            {
+                startDate = effectiveDate_;
+            }
+            else
+            {
+                var refDate = Settings.evaluationDate();
+                // if the evaluation date is not a business day
+                // then move to the next business day
+                refDate = floatCalendar_.adjust(refDate);
+                var spotDate = floatCalendar_.advance(refDate, new Period(settlementDays_, TimeUnit.Days));
+                startDate = spotDate + forwardStart_;
+                if (forwardStart_.length() < 0)
+                {
+                    startDate = floatCalendar_.adjust(startDate, BusinessDayConvention.Preceding);
+                }
+                else
+                {
+                    startDate = floatCalendar_.adjust(startDate);
+                }
+            }
+
+            var endDate = terminationDate_;
+            if (endDate == null)
+            {
+                if (floatEndOfMonth_)
+                {
+                    endDate = floatCalendar_.advance(startDate,
+                        swapTenor_,
+                        BusinessDayConvention.ModifiedFollowing,
+                        floatEndOfMonth_);
+                }
+                else
+                {
+                    endDate = startDate + swapTenor_;
+                }
+            }
+
+            var curr = iborIndex_.currency();
+            Period fixedTenor = null;
+            if (fixedTenor_ != null)
+            {
+                fixedTenor = fixedTenor_;
+            }
+            else
+            {
+                if (curr == new EURCurrency() ||
+                    curr == new USDCurrency() ||
+                    curr == new CHFCurrency() ||
+                    curr == new SEKCurrency() ||
+                    curr == new GBPCurrency() && swapTenor_ <= new Period(1, TimeUnit.Years))
+                {
+                    fixedTenor = new Period(1, TimeUnit.Years);
+                }
+                else if (curr == new GBPCurrency() && swapTenor_ > new Period(1, TimeUnit.Years) ||
+                         curr == new JPYCurrency() ||
+                         curr == new AUDCurrency() && swapTenor_ >= new Period(4, TimeUnit.Years))
+                {
+                    fixedTenor = new Period(6, TimeUnit.Months);
+                }
+                else if (curr == new HKDCurrency() ||
+                         curr == new AUDCurrency() && swapTenor_ < new Period(4, TimeUnit.Years))
+                {
+                    fixedTenor = new Period(3, TimeUnit.Months);
+                }
+                else
+                {
+                    Utils.QL_FAIL("unknown fixed leg default tenor for " + curr);
+                }
+            }
+
+            var fixedSchedule = new Schedule(startDate, endDate,
+                fixedTenor, fixedCalendar_,
+                fixedConvention_, fixedTerminationDateConvention_,
+                fixedRule_, fixedEndOfMonth_,
+                fixedFirstDate_, fixedNextToLastDate_);
+
+            var floatSchedule = new Schedule(startDate, endDate,
+                floatTenor_, floatCalendar_,
+                floatConvention_, floatTerminationDateConvention_,
+                floatRule_, floatEndOfMonth_,
+                floatFirstDate_, floatNextToLastDate_);
+
+            DayCounter fixedDayCount = null;
+            if (fixedDayCount_ != null)
+            {
+                fixedDayCount = fixedDayCount_;
+            }
+            else
+            {
+                if (curr == new USDCurrency())
+                {
+                    fixedDayCount = new Actual360();
+                }
+                else if (curr == new EURCurrency() || curr == new CHFCurrency() || curr == new SEKCurrency())
+                {
+                    fixedDayCount = new Thirty360(Thirty360.Thirty360Convention.BondBasis);
+                }
+                else if (curr == new GBPCurrency() || curr == new JPYCurrency() || curr == new AUDCurrency() ||
+                         curr == new HKDCurrency())
+                {
+                    fixedDayCount = new Actual365Fixed();
+                }
+                else
+                {
+                    Utils.QL_FAIL("unknown fixed leg day counter for " + curr);
+                }
+            }
+
+            var usedFixedRate = fixedRate_;
+            if (fixedRate_ == null)
+            {
+                var temp = new VanillaSwap(type_, nominal_, fixedSchedule, 0.0, fixedDayCount,
+                    floatSchedule, iborIndex_, floatSpread_, floatDayCount_);
+
+                if (engine_ == null)
+                {
+                    var disc = iborIndex_.forwardingTermStructure();
+                    Utils.QL_REQUIRE(!disc.empty(), () =>
+                        "null term structure set to this instance of " + iborIndex_.name());
+                    var includeSettlementDateFlows = false;
+                    IPricingEngine engine = new DiscountingSwapEngine(disc, includeSettlementDateFlows);
+                    temp.setPricingEngine(engine);
+                }
+                else
+                {
+                    temp.setPricingEngine(engine_);
+                }
+
+                usedFixedRate = temp.fairRate();
+            }
+
+            var swap = new VanillaSwap(type_, nominal_, fixedSchedule, usedFixedRate.Value, fixedDayCount,
+                floatSchedule, iborIndex_, floatSpread_, floatDayCount_);
+
+            if (engine_ == null)
+            {
+                var disc = iborIndex_.forwardingTermStructure();
+                var includeSettlementDateFlows = false;
+                IPricingEngine engine = new DiscountingSwapEngine(disc, includeSettlementDateFlows);
+                swap.setPricingEngine(engine);
+            }
+            else
+            {
+                swap.setPricingEngine(engine_);
+            }
+
+            return swap;
         }
-        public MakeVanillaSwap withNominal(double n)
+
+        public MakeVanillaSwap withDiscountingTermStructure(Handle<YieldTermStructure> discountingTermStructure)
         {
-            nominal_ = n;
-            return this;
-        }
-        public MakeVanillaSwap withSettlementDays(int settlementDays)
-        {
-            settlementDays_ = settlementDays;
-            effectiveDate_ = null;
+            engine_ = new DiscountingSwapEngine(discountingTermStructure, false);
             return this;
         }
 
@@ -101,10 +248,129 @@ namespace QLNet.Instruments
             return this;
         }
 
-        public MakeVanillaSwap withTerminationDate(Date terminationDate)
+        public MakeVanillaSwap withFixedLegCalendar(Calendar cal)
         {
-            terminationDate_ = terminationDate;
-            swapTenor_ = null;
+            fixedCalendar_ = cal;
+            return this;
+        }
+
+        public MakeVanillaSwap withFixedLegConvention(BusinessDayConvention bdc)
+        {
+            fixedConvention_ = bdc;
+            return this;
+        }
+
+        public MakeVanillaSwap withFixedLegDayCount(DayCounter dc)
+        {
+            fixedDayCount_ = dc;
+            return this;
+        }
+
+        public MakeVanillaSwap withFixedLegEndOfMonth(bool flag = true)
+        {
+            fixedEndOfMonth_ = flag;
+            return this;
+        }
+
+        public MakeVanillaSwap withFixedLegFirstDate(Date d)
+        {
+            fixedFirstDate_ = d;
+            return this;
+        }
+
+        public MakeVanillaSwap withFixedLegNextToLastDate(Date d)
+        {
+            fixedNextToLastDate_ = d;
+            return this;
+        }
+
+        public MakeVanillaSwap withFixedLegRule(DateGeneration.Rule r)
+        {
+            fixedRule_ = r;
+            return this;
+        }
+
+        public MakeVanillaSwap withFixedLegTenor(Period t)
+        {
+            fixedTenor_ = t;
+            return this;
+        }
+
+        public MakeVanillaSwap withFixedLegTerminationDateConvention(BusinessDayConvention bdc)
+        {
+            fixedTerminationDateConvention_ = bdc;
+            return this;
+        }
+
+        public MakeVanillaSwap withFloatingLegCalendar(Calendar cal)
+        {
+            floatCalendar_ = cal;
+            return this;
+        }
+
+        public MakeVanillaSwap withFloatingLegConvention(BusinessDayConvention bdc)
+        {
+            floatConvention_ = bdc;
+            return this;
+        }
+
+        public MakeVanillaSwap withFloatingLegDayCount(DayCounter dc)
+        {
+            floatDayCount_ = dc;
+            return this;
+        }
+
+        public MakeVanillaSwap withFloatingLegEndOfMonth(bool flag = true)
+        {
+            floatEndOfMonth_ = flag;
+            return this;
+        }
+
+        public MakeVanillaSwap withFloatingLegFirstDate(Date d)
+        {
+            floatFirstDate_ = d;
+            return this;
+        }
+
+        public MakeVanillaSwap withFloatingLegNextToLastDate(Date d)
+        {
+            floatNextToLastDate_ = d;
+            return this;
+        }
+
+        public MakeVanillaSwap withFloatingLegRule(DateGeneration.Rule r)
+        {
+            floatRule_ = r;
+            return this;
+        }
+
+        public MakeVanillaSwap withFloatingLegSpread(double sp)
+        {
+            floatSpread_ = sp;
+            return this;
+        }
+
+        public MakeVanillaSwap withFloatingLegTenor(Period t)
+        {
+            floatTenor_ = t;
+            return this;
+        }
+
+        public MakeVanillaSwap withFloatingLegTerminationDateConvention(BusinessDayConvention bdc)
+        {
+            floatTerminationDateConvention_ = bdc;
+            return this;
+        }
+
+        public MakeVanillaSwap withNominal(double n)
+        {
+            nominal_ = n;
+            return this;
+        }
+
+        public MakeVanillaSwap withPricingEngine(IPricingEngine engine)
+        {
+            engine_ = engine;
             return this;
         }
 
@@ -115,236 +381,24 @@ namespace QLNet.Instruments
             return this;
         }
 
-        public MakeVanillaSwap withDiscountingTermStructure(Handle<YieldTermStructure> discountingTermStructure)
+        public MakeVanillaSwap withSettlementDays(int settlementDays)
         {
-            engine_ = new DiscountingSwapEngine(discountingTermStructure, false);
+            settlementDays_ = settlementDays;
+            effectiveDate_ = null;
             return this;
         }
 
-        public MakeVanillaSwap withPricingEngine(IPricingEngine engine)
+        public MakeVanillaSwap withTerminationDate(Date terminationDate)
         {
-            engine_ = engine;
-            return this;
-        }
-        public MakeVanillaSwap withFixedLegTenor(Period t)
-        {
-            fixedTenor_ = t;
-            return this;
-        }
-        public MakeVanillaSwap withFixedLegCalendar(Calendar cal)
-        {
-            fixedCalendar_ = cal;
-            return this;
-        }
-        public MakeVanillaSwap withFixedLegConvention(BusinessDayConvention bdc)
-        {
-            fixedConvention_ = bdc;
-            return this;
-        }
-        public MakeVanillaSwap withFixedLegTerminationDateConvention(BusinessDayConvention bdc)
-        {
-            fixedTerminationDateConvention_ = bdc;
-            return this;
-        }
-        public MakeVanillaSwap withFixedLegRule(DateGeneration.Rule r)
-        {
-            fixedRule_ = r;
+            terminationDate_ = terminationDate;
+            swapTenor_ = null;
             return this;
         }
 
-        public MakeVanillaSwap withFixedLegEndOfMonth(bool flag = true)
+        public MakeVanillaSwap withType(VanillaSwap.Type type)
         {
-            fixedEndOfMonth_ = flag;
+            type_ = type;
             return this;
-        }
-        public MakeVanillaSwap withFixedLegFirstDate(Date d)
-        {
-            fixedFirstDate_ = d;
-            return this;
-        }
-        public MakeVanillaSwap withFixedLegNextToLastDate(Date d)
-        {
-            fixedNextToLastDate_ = d;
-            return this;
-        }
-        public MakeVanillaSwap withFixedLegDayCount(DayCounter dc)
-        {
-            fixedDayCount_ = dc;
-            return this;
-        }
-
-        public MakeVanillaSwap withFloatingLegTenor(Period t)
-        {
-            floatTenor_ = t;
-            return this;
-        }
-        public MakeVanillaSwap withFloatingLegCalendar(Calendar cal)
-        {
-            floatCalendar_ = cal;
-            return this;
-        }
-        public MakeVanillaSwap withFloatingLegConvention(BusinessDayConvention bdc)
-        {
-            floatConvention_ = bdc;
-            return this;
-        }
-        public MakeVanillaSwap withFloatingLegTerminationDateConvention(BusinessDayConvention bdc)
-        {
-            floatTerminationDateConvention_ = bdc;
-            return this;
-        }
-        public MakeVanillaSwap withFloatingLegRule(DateGeneration.Rule r)
-        {
-            floatRule_ = r;
-            return this;
-        }
-
-        public MakeVanillaSwap withFloatingLegEndOfMonth(bool flag = true)
-        {
-            floatEndOfMonth_ = flag;
-            return this;
-        }
-        public MakeVanillaSwap withFloatingLegFirstDate(Date d)
-        {
-            floatFirstDate_ = d;
-            return this;
-        }
-        public MakeVanillaSwap withFloatingLegNextToLastDate(Date d)
-        {
-            floatNextToLastDate_ = d;
-            return this;
-        }
-        public MakeVanillaSwap withFloatingLegDayCount(DayCounter dc)
-        {
-            floatDayCount_ = dc;
-            return this;
-        }
-        public MakeVanillaSwap withFloatingLegSpread(double sp)
-        {
-            floatSpread_ = sp;
-            return this;
-        }
-
-
-        // swap creator
-        public static implicit operator VanillaSwap(MakeVanillaSwap o) => o.value();
-
-        public VanillaSwap value()
-        {
-            Date startDate;
-
-            if (effectiveDate_ != null)
-                startDate = effectiveDate_;
-            else
-            {
-                var refDate = Settings.evaluationDate();
-                // if the evaluation date is not a business day
-                // then move to the next business day
-                refDate = floatCalendar_.adjust(refDate);
-                var spotDate = floatCalendar_.advance(refDate, new Period(settlementDays_, TimeUnit.Days));
-                startDate = spotDate + forwardStart_;
-                if (forwardStart_.length() < 0)
-                    startDate = floatCalendar_.adjust(startDate, BusinessDayConvention.Preceding);
-                else
-                    startDate = floatCalendar_.adjust(startDate, BusinessDayConvention.Following);
-            }
-
-            var endDate = terminationDate_;
-            if (endDate == null)
-                if (floatEndOfMonth_)
-                    endDate = floatCalendar_.advance(startDate,
-                                                     swapTenor_,
-                                                     BusinessDayConvention.ModifiedFollowing,
-                                                     floatEndOfMonth_);
-                else
-                    endDate = startDate + swapTenor_;
-
-            var curr = iborIndex_.currency();
-            Period fixedTenor = null;
-            if (fixedTenor_ != null)
-                fixedTenor = fixedTenor_;
-            else
-            {
-                if (curr == new EURCurrency() ||
-                    curr == new USDCurrency() ||
-                    curr == new CHFCurrency() ||
-                    curr == new SEKCurrency() ||
-                    curr == new GBPCurrency() && swapTenor_ <= new Period(1, TimeUnit.Years))
-                    fixedTenor = new Period(1, TimeUnit.Years);
-                else if (curr == new GBPCurrency() && swapTenor_ > new Period(1, TimeUnit.Years) ||
-                curr == new JPYCurrency() ||
-                curr == new AUDCurrency() && swapTenor_ >= new Period(4, TimeUnit.Years))
-                    fixedTenor = new Period(6, TimeUnit.Months);
-                else if (curr == new HKDCurrency() ||
-                curr == new AUDCurrency() && swapTenor_ < new Period(4, TimeUnit.Years))
-                    fixedTenor = new Period(3, TimeUnit.Months);
-                else
-                    Utils.QL_FAIL("unknown fixed leg default tenor for " + curr);
-            }
-
-            var fixedSchedule = new Schedule(startDate, endDate,
-                                                  fixedTenor, fixedCalendar_,
-                                                  fixedConvention_, fixedTerminationDateConvention_,
-                                                  fixedRule_, fixedEndOfMonth_,
-                                                  fixedFirstDate_, fixedNextToLastDate_);
-
-            var floatSchedule = new Schedule(startDate, endDate,
-                                                  floatTenor_, floatCalendar_,
-                                                  floatConvention_, floatTerminationDateConvention_,
-                                                  floatRule_, floatEndOfMonth_,
-                                                  floatFirstDate_, floatNextToLastDate_);
-
-            DayCounter fixedDayCount = null;
-            if (fixedDayCount_ != null)
-                fixedDayCount = fixedDayCount_;
-            else
-            {
-                if (curr == new USDCurrency())
-                    fixedDayCount = new Actual360();
-                else if (curr == new EURCurrency() || curr == new CHFCurrency() || curr == new SEKCurrency())
-                    fixedDayCount = new Thirty360(Thirty360.Thirty360Convention.BondBasis);
-                else if (curr == new GBPCurrency() || curr == new JPYCurrency() || curr == new AUDCurrency() ||
-                curr == new HKDCurrency())
-                    fixedDayCount = new Actual365Fixed();
-                else
-                    Utils.QL_FAIL("unknown fixed leg day counter for " + curr);
-            }
-
-            var usedFixedRate = fixedRate_;
-            if (fixedRate_ == null)
-            {
-                var temp = new VanillaSwap(type_, nominal_, fixedSchedule, 0.0, fixedDayCount,
-                                                   floatSchedule, iborIndex_, floatSpread_, floatDayCount_);
-
-                if (engine_ == null)
-                {
-                    var disc = iborIndex_.forwardingTermStructure();
-                    Utils.QL_REQUIRE(!disc.empty(), () =>
-                                     "null term structure set to this instance of " + iborIndex_.name());
-                    var includeSettlementDateFlows = false;
-                    IPricingEngine engine = new DiscountingSwapEngine(disc, includeSettlementDateFlows);
-                    temp.setPricingEngine(engine);
-                }
-                else
-                    temp.setPricingEngine(engine_);
-
-                usedFixedRate = temp.fairRate();
-            }
-
-            var swap = new VanillaSwap(type_, nominal_, fixedSchedule, usedFixedRate.Value, fixedDayCount,
-                                               floatSchedule, iborIndex_, floatSpread_, floatDayCount_);
-
-            if (engine_ == null)
-            {
-                var disc = iborIndex_.forwardingTermStructure();
-                var includeSettlementDateFlows = false;
-                IPricingEngine engine = new DiscountingSwapEngine(disc, includeSettlementDateFlows);
-                swap.setPricingEngine(engine);
-            }
-            else
-                swap.setPricingEngine(engine_);
-
-            return swap;
         }
     }
 }

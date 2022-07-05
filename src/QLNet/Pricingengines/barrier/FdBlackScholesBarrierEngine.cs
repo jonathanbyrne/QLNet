@@ -17,32 +17,40 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences;
 using QLNet.Methods.Finitedifferences.Meshers;
+using QLNet.Methods.Finitedifferences.Operators;
 using QLNet.Methods.Finitedifferences.Solvers;
 using QLNet.Methods.Finitedifferences.StepConditions;
 using QLNet.Methods.Finitedifferences.Utilities;
-using QLNet.processes;
-using System;
-using System.Collections.Generic;
 using QLNet.Pricingengines.vanilla;
+using QLNet.processes;
 
 namespace QLNet.Pricingengines.barrier
 {
     /// <summary>
-    /// Finite-Differences Black Scholes barrier option engine
+    ///     Finite-Differences Black Scholes barrier option engine
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class FdBlackScholesBarrierEngine : DividendBarrierOption.Engine
+    [PublicAPI]
+    public class FdBlackScholesBarrierEngine : DividendBarrierOption.Engine
     {
+        protected double? illegalLocalVolOverwrite_;
+        protected bool localVol_;
+        protected GeneralizedBlackScholesProcess process_;
+        protected FdmSchemeDesc schemeDesc_;
+        protected int tGrid_, xGrid_, dampingSteps_;
+
         // Constructor
         public FdBlackScholesBarrierEngine(
-           GeneralizedBlackScholesProcess process,
-           int tGrid = 100, int xGrid = 100, int dampingSteps = 0,
-           FdmSchemeDesc schemeDesc = null,
-           bool localVol = false,
-           double? illegalLocalVolOverwrite = null)
+            GeneralizedBlackScholesProcess process,
+            int tGrid = 100, int xGrid = 100, int dampingSteps = 0,
+            FdmSchemeDesc schemeDesc = null,
+            bool localVol = false,
+            double? illegalLocalVolOverwrite = null)
         {
             process_ = process;
             tGrid_ = tGrid;
@@ -68,6 +76,7 @@ namespace QLNet.Pricingengines.barrier
             {
                 xMin = System.Math.Log(arguments_.barrier.Value);
             }
+
             if (arguments_.barrierType == Barrier.Type.UpIn
                 || arguments_.barrierType == Barrier.Type.UpOut)
             {
@@ -75,17 +84,17 @@ namespace QLNet.Pricingengines.barrier
             }
 
             Fdm1dMesher equityMesher =
-               new FdmBlackScholesMesher(xGrid_, process_, maturity,
-                                         payoff.strike(), xMin, xMax, 0.0001, 1.5,
-                                         new Pair<double?, double?>(),
-                                         arguments_.cashFlow);
+                new FdmBlackScholesMesher(xGrid_, process_, maturity,
+                    payoff.strike(), xMin, xMax, 0.0001, 1.5,
+                    new Pair<double?, double?>(),
+                    arguments_.cashFlow);
 
             FdmMesher mesher =
-               new FdmMesherComposite(equityMesher);
+                new FdmMesherComposite(equityMesher);
 
             // 2. Calculator
             FdmInnerValueCalculator calculator =
-               new FdmLogInnerValue(payoff, mesher, 0);
+                new FdmLogInnerValue(payoff, mesher, 0);
 
             // 3. Step conditions
             var stepConditions = new List<IStepCondition<Vector>>();
@@ -93,9 +102,9 @@ namespace QLNet.Pricingengines.barrier
 
             // 3.1 Step condition if discrete dividends
             var dividendCondition =
-               new FdmDividendHandler(arguments_.cashFlow, mesher,
-                                      process_.riskFreeRate().currentLink().referenceDate(),
-                                      process_.riskFreeRate().currentLink().dayCounter(), 0);
+                new FdmDividendHandler(arguments_.cashFlow, mesher,
+                    process_.riskFreeRate().currentLink().referenceDate(),
+                    process_.riskFreeRate().currentLink().dayCounter(), 0);
 
             if (!arguments_.cashFlow.empty())
             {
@@ -104,10 +113,10 @@ namespace QLNet.Pricingengines.barrier
             }
 
             Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European,
-                             () => "only european style option are supported");
+                () => "only european style option are supported");
 
             var conditions =
-               new FdmStepConditionComposite(stoppingTimes, stepConditions);
+                new FdmStepConditionComposite(stoppingTimes, stepConditions);
 
             // 4. Boundary conditions
             var boundaries = new FdmBoundaryConditionSet();
@@ -115,16 +124,16 @@ namespace QLNet.Pricingengines.barrier
                 || arguments_.barrierType == Barrier.Type.DownOut)
             {
                 boundaries.Add(
-                   new FdmDirichletBoundary(mesher, arguments_.rebate.Value, 0,
-                                            FdmDirichletBoundary.Side.Lower));
+                    new FdmDirichletBoundary(mesher, arguments_.rebate.Value, 0,
+                        BoundaryCondition<FdmLinearOp>.Side.Lower));
             }
 
             if (arguments_.barrierType == Barrier.Type.UpIn
                 || arguments_.barrierType == Barrier.Type.UpOut)
             {
                 boundaries.Add(
-                   new FdmDirichletBoundary(mesher, arguments_.rebate.Value, 0,
-                                            FdmDirichletBoundary.Side.Upper));
+                    new FdmDirichletBoundary(mesher, arguments_.rebate.Value, 0,
+                        BoundaryCondition<FdmLinearOp>.Side.Upper));
             }
 
             // 5. Solver
@@ -138,10 +147,10 @@ namespace QLNet.Pricingengines.barrier
             solverDesc.timeSteps = tGrid_;
 
             var solver =
-               new FdmBlackScholesSolver(
-               new Handle<GeneralizedBlackScholesProcess>(process_),
-               payoff.strike(), solverDesc, schemeDesc_,
-               localVol_, illegalLocalVolOverwrite_);
+                new FdmBlackScholesSolver(
+                    new Handle<GeneralizedBlackScholesProcess>(process_),
+                    payoff.strike(), solverDesc, schemeDesc_,
+                    localVol_, illegalLocalVolOverwrite_);
 
             var spot = process_.x0();
             results_.value = solver.valueAt(spot);
@@ -158,33 +167,33 @@ namespace QLNet.Pricingengines.barrier
 
                 // Calculate the vanilla option
                 var vanillaOption =
-                   new DividendVanillaOption(castedPayoff, arguments_.exercise,
-                                             dividendCondition.dividendDates(),
-                                             dividendCondition.dividends());
+                    new DividendVanillaOption(castedPayoff, arguments_.exercise,
+                        dividendCondition.dividendDates(),
+                        dividendCondition.dividends());
 
                 vanillaOption.setPricingEngine(
-                   new FdBlackScholesVanillaEngine(
-                      process_, tGrid_, xGrid_,
-                      0, // dampingSteps
-                      schemeDesc_, localVol_, illegalLocalVolOverwrite_));
+                    new FdBlackScholesVanillaEngine(
+                        process_, tGrid_, xGrid_,
+                        0, // dampingSteps
+                        schemeDesc_, localVol_, illegalLocalVolOverwrite_));
 
                 // Calculate the rebate value
                 var rebateOption =
-                   new DividendBarrierOption(arguments_.barrierType,
-                                             arguments_.barrier.Value,
-                                             arguments_.rebate.Value,
-                                             castedPayoff, arguments_.exercise,
-                                             dividendCondition.dividendDates(),
-                                             dividendCondition.dividends());
+                    new DividendBarrierOption(arguments_.barrierType,
+                        arguments_.barrier.Value,
+                        arguments_.rebate.Value,
+                        castedPayoff, arguments_.exercise,
+                        dividendCondition.dividendDates(),
+                        dividendCondition.dividends());
 
                 var min_grid_size = 50;
                 var rebateDampingSteps
-                   = dampingSteps_ > 0 ? System.Math.Min(1, dampingSteps_ / 2) : 0;
+                    = dampingSteps_ > 0 ? System.Math.Min(1, dampingSteps_ / 2) : 0;
 
                 rebateOption.setPricingEngine(new FdBlackScholesRebateEngine(
-                                                 process_, tGrid_, System.Math.Max(min_grid_size, xGrid_ / 5),
-                                                 rebateDampingSteps, schemeDesc_, localVol_,
-                                                 illegalLocalVolOverwrite_));
+                    process_, tGrid_, System.Math.Max(min_grid_size, xGrid_ / 5),
+                    rebateDampingSteps, schemeDesc_, localVol_,
+                    illegalLocalVolOverwrite_));
 
                 results_.value = vanillaOption.NPV() + rebateOption.NPV()
                                  - results_.value;
@@ -196,11 +205,5 @@ namespace QLNet.Pricingengines.barrier
                                  - results_.theta;
             }
         }
-
-        protected GeneralizedBlackScholesProcess process_;
-        protected int tGrid_, xGrid_, dampingSteps_;
-        protected FdmSchemeDesc schemeDesc_;
-        protected bool localVol_;
-        protected double? illegalLocalVolOverwrite_;
     }
 }

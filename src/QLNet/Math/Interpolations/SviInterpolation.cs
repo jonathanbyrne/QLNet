@@ -17,69 +17,71 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
-using QLNet.Math.Optimization;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Math.Optimization;
 
 namespace QLNet.Math.Interpolations
 {
     //! %SABR smile interpolation between discrete volatility points.
-    [JetBrains.Annotations.PublicAPI] public class SviInterpolation : Interpolation
+    [PublicAPI]
+    public class SviInterpolation : Interpolation
     {
-        public SviInterpolation(List<double> xBegin,  // x = strikes
-                                int size,
-                                List<double> yBegin,  // y = volatilities
-                                double t,             // option expiry
-                                double forward,
-                                double? a,
-                                double? b,
-                                double? sigma,
-                                double? rho,
-                                double? m,
-                                bool aIsFixed,
-                                bool bIsFixed,
-                                bool sigmaIsFixed,
-                                bool rhoIsFixed,
-                                bool mIsFixed, bool vegaWeighted = true,
-                                EndCriteria endCriteria = null,
-                                OptimizationMethod optMethod = null,
-                                double errorAccept = 0.0020,
-                                bool useMaxError = false,
-                                int maxGuesses = 50,
-                                List<double?> addParams = null)
-        {
+        private XABRCoeffHolder<SVISpecs> coeffs_;
 
+        public SviInterpolation(List<double> xBegin, // x = strikes
+            int size,
+            List<double> yBegin, // y = volatilities
+            double t, // option expiry
+            double forward,
+            double? a,
+            double? b,
+            double? sigma,
+            double? rho,
+            double? m,
+            bool aIsFixed,
+            bool bIsFixed,
+            bool sigmaIsFixed,
+            bool rhoIsFixed,
+            bool mIsFixed, bool vegaWeighted = true,
+            EndCriteria endCriteria = null,
+            OptimizationMethod optMethod = null,
+            double errorAccept = 0.0020,
+            bool useMaxError = false,
+            int maxGuesses = 50,
+            List<double?> addParams = null)
+        {
             impl_ = new XABRInterpolationImpl<SVISpecs>(
-               xBegin, size, yBegin, t, forward,
-            new List<double?>() { a, b, sigma, rho, m },
-            new List<bool>() { aIsFixed, bIsFixed, sigmaIsFixed, rhoIsFixed, mIsFixed },
-            vegaWeighted, endCriteria, optMethod, errorAccept, useMaxError,
-            maxGuesses, addParams);
+                xBegin, size, yBegin, t, forward,
+                new List<double?> { a, b, sigma, rho, m },
+                new List<bool> { aIsFixed, bIsFixed, sigmaIsFixed, rhoIsFixed, mIsFixed },
+                vegaWeighted, endCriteria, optMethod, errorAccept, useMaxError,
+                maxGuesses, addParams);
             coeffs_ = (impl_ as XABRInterpolationImpl<SVISpecs>).coeff_;
         }
-        public double expiry() => coeffs_.t_;
-
-        public double forward() => coeffs_.forward_;
 
         public double a() => coeffs_.params_[0].Value;
 
         public double b() => coeffs_.params_[1].Value;
 
-        public double sigma() => coeffs_.params_[2].Value;
+        public EndCriteria.Type endCriteria() => coeffs_.XABREndCriteria_;
 
-        public double rho() => coeffs_.params_[3].Value;
+        public double expiry() => coeffs_.t_;
 
-        public double m() => coeffs_.params_[4].Value;
-
-        public double rmsError() => coeffs_.error_.Value;
-
-        public double maxError() => coeffs_.maxError_.Value;
+        public double forward() => coeffs_.forward_;
 
         public List<double> interpolationWeights() => coeffs_.weights_;
 
-        public EndCriteria.Type endCriteria() => coeffs_.XABREndCriteria_;
+        public double m() => coeffs_.params_[4].Value;
 
-        private XABRCoeffHolder<SVISpecs> coeffs_;
+        public double maxError() => coeffs_.maxError_.Value;
+
+        public double rho() => coeffs_.params_[3].Value;
+
+        public double rmsError() => coeffs_.error_.Value;
+
+        public double sigma() => coeffs_.params_[2].Value;
     }
 
     //! %SABR interpolation factory and traits

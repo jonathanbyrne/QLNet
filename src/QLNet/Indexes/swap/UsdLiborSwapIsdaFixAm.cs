@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Indexes.Ibor;
 using QLNet.Termstructures;
@@ -26,21 +27,25 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.swap
 {
-    [JetBrains.Annotations.PublicAPI] public class UsdLiborSwapIsdaFixAm : SwapIndex
+    [PublicAPI]
+    public class UsdLiborSwapIsdaFixAm : SwapIndex
     {
         public UsdLiborSwapIsdaFixAm(Period tenor)
-           : this(tenor, new Handle<YieldTermStructure>()) { }
+            : this(tenor, new Handle<YieldTermStructure>())
+        {
+        }
 
         public UsdLiborSwapIsdaFixAm(Period tenor, Handle<YieldTermStructure> h)
-           : base("UsdLiborSwapIsdaFixAm", // familyName
-                  tenor,
-                  2, // settlementDays
-                  new USDCurrency(),
-                  new TARGET(),
-                  new Period(6, TimeUnit.Months), // fixedLegTenor
-                  BusinessDayConvention.ModifiedFollowing, // fixedLegConvention
-                  new Thirty360(Thirty360.Thirty360Convention.BondBasis), // fixedLegDaycounter
-                  new USDLibor(new Period(3, TimeUnit.Months), h))
-        { }
+            : base("UsdLiborSwapIsdaFixAm", // familyName
+                tenor,
+                2, // settlementDays
+                new USDCurrency(),
+                new TARGET(),
+                new Period(6, TimeUnit.Months), // fixedLegTenor
+                BusinessDayConvention.ModifiedFollowing, // fixedLegConvention
+                new Thirty360(Thirty360.Thirty360Convention.BondBasis), // fixedLegDaycounter
+                new USDLibor(new Period(3, TimeUnit.Months), h))
+        {
+        }
     }
 }

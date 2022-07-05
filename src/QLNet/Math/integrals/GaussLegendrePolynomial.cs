@@ -1,7 +1,12 @@
-﻿namespace QLNet.Math.integrals
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.integrals
 {
-    [JetBrains.Annotations.PublicAPI] public class GaussLegendrePolynomial : GaussJacobiPolynomial
+    [PublicAPI]
+    public class GaussLegendrePolynomial : GaussJacobiPolynomial
     {
-        public GaussLegendrePolynomial() : base(0.0, 0.0) { }
+        public GaussLegendrePolynomial() : base(0.0, 0.0)
+        {
+        }
     }
 }

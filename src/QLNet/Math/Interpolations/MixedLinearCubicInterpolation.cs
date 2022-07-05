@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class MixedLinearCubicInterpolation : Interpolation
+    [PublicAPI]
+    public class MixedLinearCubicInterpolation : Interpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public MixedLinearCubicInterpolation(List<double> xBegin, int xEnd,

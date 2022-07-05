@@ -15,18 +15,18 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-using QLNet.Time;
-using System;
 using System.Collections.Generic;
-using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Time;
 
 namespace QLNet.Termstructures.Volatility
 {
-    [JetBrains.Annotations.PublicAPI] public class SviSmileSection : SmileSection
+    [PublicAPI]
+    public class SviSmileSection : SmileSection
     {
         public SviSmileSection(double timeToExpiry, double forward,
-                               List<double> sviParameters)
-           : base(timeToExpiry, null)
+            List<double> sviParameters)
+            : base(timeToExpiry)
         {
             forward_ = forward;
             param_ = sviParameters;
@@ -34,40 +34,43 @@ namespace QLNet.Termstructures.Volatility
         }
 
         public SviSmileSection(Date d, double forward,
-                               List<double> sviParameters,
-                               DayCounter dc = null)
-           : base(d, dc)
+            List<double> sviParameters,
+            DayCounter dc = null)
+            : base(d, dc)
         {
             forward_ = forward;
             param_ = sviParameters;
             init();
         }
 
+        public override double? atmLevel() => forward_;
+
+        public override double maxStrike() => double.MaxValue;
+
+        public override double minStrike() => 0.0;
+
         protected override double volatilityImpl(double strike)
         {
             var k = System.Math.Log(System.Math.Max(strike, 1E-6) / forward_);
             var totalVariance = Utils.sviTotalVariance(param_[0], param_[1], param_[2],
-                                                          param_[3], param_[4], k);
+                param_[3], param_[4], k);
             return System.Math.Sqrt(System.Math.Max(0.0, totalVariance / exerciseTime()));
         }
-        public override double minStrike() => 0.0;
-
-        public override double maxStrike() => double.MaxValue;
-
-        public override double? atmLevel() => forward_;
 
         #region svi smile section
+
         protected double forward_;
         protected List<double> param_;
+
         public void init()
         {
             Utils.QL_REQUIRE(param_.Count == 5,
-                             () => "svi expects 5 parameters (a,b,sigma,rho,s,m) but ("
-                             + param_.Count + ") given");
+                () => "svi expects 5 parameters (a,b,sigma,rho,s,m) but ("
+                      + param_.Count + ") given");
 
             Utils.checkSviParameters(param_[0], param_[1], param_[2], param_[3], param_[4]);
-            return;
         }
+
         #endregion
     }
 }

@@ -1,10 +1,14 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class YoYInflationCollar : YoYInflationCapFloor
+    [PublicAPI]
+    public class YoYInflationCollar : YoYInflationCapFloor
     {
         public YoYInflationCollar(List<CashFlow> yoyLeg, List<double> capRates, List<double> floorRates)
-            : base(CapFloorType.Collar, yoyLeg, capRates, floorRates) { }
+            : base(CapFloorType.Collar, yoyLeg, capRates, floorRates)
+        {
+        }
     }
 }

@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math.Distributions;
 
 namespace QLNet.Math
@@ -28,8 +29,13 @@ namespace QLNet.Math
     */
 
     //! Gaussian kernel function
-    [JetBrains.Annotations.PublicAPI] public class GaussianKernel : IKernelFunction
+    [PublicAPI]
+    public class GaussianKernel : IKernelFunction
     {
+        private CumulativeNormalDistribution cnd_;
+        private NormalDistribution nd_;
+        private double normFact_;
+
         public GaussianKernel(double average, double sigma)
         {
             nd_ = new NormalDistribution(average, sigma);
@@ -38,16 +44,10 @@ namespace QLNet.Math
             normFact_ = Const.M_SQRT2 * Const.M_SQRTPI;
         }
 
-        public double value(double x) => nd_.value(x) * normFact_;
-
         public double derivative(double x) => nd_.derivative(x) * normFact_;
 
         public double primitive(double x) => cnd_.value(x) * normFact_;
 
-        private NormalDistribution nd_;
-        private CumulativeNormalDistribution cnd_;
-        private double normFact_;
-
+        public double value(double x) => nd_.value(x) * normFact_;
     }
-
 }

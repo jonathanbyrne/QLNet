@@ -16,11 +16,10 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Methods.Finitedifferences;
-using QLNet.Methods.Finitedifferences.Operators;
-using System;
+
 using System.Collections.Generic;
-using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Methods.Finitedifferences.Operators;
 
 namespace QLNet.Methods.Finitedifferences.Schemes
 {
@@ -28,16 +27,23 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         Douglas scheme and in higher dimensions it is usually inferior to
         operator splitting methods like Craig-Sneyd or Hundsdorfer-Verwer.
     */
-    [JetBrains.Annotations.PublicAPI] public class CrankNicolsonScheme : IMixedScheme, ISchemeFactory
+    [PublicAPI]
+    public class CrankNicolsonScheme : IMixedScheme, ISchemeFactory
     {
+        protected double? dt_;
+        protected ExplicitEulerScheme explicit_;
+        protected ImplicitEulerScheme implicit_;
+        protected double theta_;
+
         public CrankNicolsonScheme()
-        { }
+        {
+        }
 
         public CrankNicolsonScheme(double theta,
-                                   FdmLinearOpComposite map,
-                                   List<BoundaryCondition<FdmLinearOp>> bcSet = null,
-                                   double relTol = 1E-8,
-                                   ImplicitEulerScheme.SolverType solverType = ImplicitEulerScheme.SolverType.BiCGstab)
+            FdmLinearOpComposite map,
+            List<BoundaryCondition<FdmLinearOp>> bcSet = null,
+            double relTol = 1E-8,
+            ImplicitEulerScheme.SolverType solverType = ImplicitEulerScheme.SolverType.BiCGstab)
         {
             dt_ = null;
             theta_ = theta;
@@ -53,20 +59,12 @@ namespace QLNet.Methods.Finitedifferences.Schemes
             var relTol = additionalInputs[1] as double?;
             var solverType = additionalInputs[2] as ImplicitEulerScheme.SolverType?;
             return new CrankNicolsonScheme(theta.Value, L as FdmLinearOpComposite,
-                                           bcs as List<BoundaryCondition<FdmLinearOp>>, relTol.Value, solverType.Value);
+                bcs as List<BoundaryCondition<FdmLinearOp>>, relTol.Value, solverType.Value);
         }
 
         #endregion
 
-        public void step(ref object a, double t, double theta = 1.0)
-        {
-            Utils.QL_REQUIRE(t - dt_ > -1e-8, () => "a step towards negative time given");
-            if (theta_ != 1.0)
-                explicit_.step(ref a, t, 1.0 - theta_);
-
-            if (theta_ != 0.0)
-                implicit_.step(ref a, t, theta_);
-        }
+        public int numberOfIterations() => implicit_.numberOfIterations();
 
         public void setStep(double dt)
         {
@@ -75,11 +73,18 @@ namespace QLNet.Methods.Finitedifferences.Schemes
             implicit_.setStep(dt_.Value);
         }
 
-        public int numberOfIterations() => implicit_.numberOfIterations();
+        public void step(ref object a, double t, double theta = 1.0)
+        {
+            Utils.QL_REQUIRE(t - dt_ > -1e-8, () => "a step towards negative time given");
+            if (theta_ != 1.0)
+            {
+                explicit_.step(ref a, t, 1.0 - theta_);
+            }
 
-        protected double? dt_;
-        protected double theta_;
-        protected ExplicitEulerScheme explicit_;
-        protected ImplicitEulerScheme implicit_;
+            if (theta_ != 0.0)
+            {
+                implicit_.step(ref a, t, theta_);
+            }
+        }
     }
 }

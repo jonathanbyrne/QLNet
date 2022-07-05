@@ -19,11 +19,10 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
-
     //! Swiss calendar
     /*! Holidays:
         <ul>
@@ -43,16 +42,16 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class Switzerland : Calendar
+    [PublicAPI]
+    public class Switzerland : Calendar
     {
-        public Switzerland() : base(Impl.Singleton) { }
-
-        class Impl : WesternImpl
+        private class Impl : WesternImpl
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "Switzerland";
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -83,11 +82,18 @@ namespace QLNet.Time.Calendars
                     || d == 25 && m == Month.December
                     // St. Stephen's Day
                     || d == 26 && m == Month.December)
+                {
                     return false;
+                }
+
                 return true;
             }
+
+            public override string name() => "Switzerland";
+        }
+
+        public Switzerland() : base(Impl.Singleton)
+        {
         }
     }
 }
-
-

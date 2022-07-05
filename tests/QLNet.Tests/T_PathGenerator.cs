@@ -72,7 +72,9 @@ namespace QLNet.Tests
                                                                     brownianBridge);
             int i;
             for (i = 0; i < 100; i++)
+            {
                 generator.next();
+            }
 
             var sample = generator.next();
             var value = sample.value as Path;
@@ -133,7 +135,9 @@ namespace QLNet.Tests
                                                                               rsg, false);
             int i;
             for (i = 0; i < 100; i++)
+            {
                 generator.next();
+            }
 
             var sample = generator.next();
             var value = sample.value as MultiPath;
@@ -142,7 +146,9 @@ namespace QLNet.Tests
             double error, tolerance = 2.0e-7;
 
             for (var j = 0; j < assets; j++)
+            {
                 calculated[j] = value[j].back();
+            }
 
             for (var j = 0; j < assets; j++)
             {
@@ -163,7 +169,10 @@ namespace QLNet.Tests
             value = sample.value as MultiPath;
             Utils.QL_REQUIRE(value != null, () => "Invalid Path");
             for (var j = 0; j < assets; j++)
+            {
                 calculated[j] = value[j].back();
+            }
+
             for (var j = 0; j < assets; j++)
             {
                 error = System.Math.Abs(calculated[j] - antithetic[j]);

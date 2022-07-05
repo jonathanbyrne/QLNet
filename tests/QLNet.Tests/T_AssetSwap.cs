@@ -1811,11 +1811,13 @@ namespace QLNet.Tests
                         100 * fixedBondParAssetSwapSpread1 / fixedBondMktFullPrice1);
 
             if (error1 > tolerance)
+            {
                 QAssert.Fail("wrong asset swap spreads for fixed bond:" +
                              "\n  market asset swap spread: " + fixedBondMktAssetSwapSpread1 +
                              "\n  par asset swap spread:    " + fixedBondParAssetSwapSpread1 +
                              "\n  error:                    " + error1 +
                              "\n  tolerance:                " + tolerance);
+            }
 
             // Fixed Underlying bond (Isin: IT0006527060 IBRD 5 02/05/19)
             // maturity occurs on a business day
@@ -1858,11 +1860,13 @@ namespace QLNet.Tests
                                          100 * fixedBondParAssetSwapSpread2 / fixedBondMktFullPrice2);
 
             if (error2 > tolerance)
+            {
                 QAssert.Fail("wrong asset swap spreads for fixed bond:" +
                              "\n  market asset swap spread: " + fixedBondMktAssetSwapSpread2 +
                              "\n  par asset swap spread:    " + fixedBondParAssetSwapSpread2 +
                              "\n  error:                    " + error2 +
                              "\n  tolerance:                " + tolerance);
+            }
 
             // FRN Underlying bond (Isin: IT0003543847 ISPIM 0 09/29/13)
             // maturity doesn't occur on a business day
@@ -1915,11 +1919,13 @@ namespace QLNet.Tests
                                          100 * floatingBondParAssetSwapSpread1 / floatingBondMktFullPrice1);
 
             if (error3 > tolerance)
+            {
                 QAssert.Fail("wrong asset swap spreads for floating bond:" +
                              "\n  market asset swap spread: " + floatingBondMktAssetSwapSpread1 +
                              "\n  par asset swap spread:    " + floatingBondParAssetSwapSpread1 +
                              "\n  error:                    " + error3 +
                              "\n  tolerance:                " + tolerance);
+            }
 
             // FRN Underlying bond (Isin: XS0090566539 COE 0 09/24/18)
             // maturity occurs on a business day
@@ -1973,11 +1979,13 @@ namespace QLNet.Tests
                                          100 * floatingBondParAssetSwapSpread2 / floatingBondMktFullPrice2);
 
             if (error4 > tolerance)
+            {
                 QAssert.Fail("wrong asset swap spreads for floating bond:" +
                              "\n  market asset swap spread: " + floatingBondMktAssetSwapSpread2 +
                              "\n  par asset swap spread:    " + floatingBondParAssetSwapSpread2 +
                              "\n  error:                    " + error4 +
                              "\n  tolerance:                " + tolerance);
+            }
 
             // CMS Underlying bond (Isin: XS0228052402 CRDIT 0 8/22/20)
             // maturity doesn't occur on a business day
@@ -2027,11 +2035,13 @@ namespace QLNet.Tests
                         100 * cmsBondParAssetSwapSpread1 / cmsBondMktFullPrice1);
 
             if (error5 > tolerance)
+            {
                 QAssert.Fail("wrong asset swap spreads for cms bond:" +
                              "\n  market asset swap spread: " + cmsBondMktAssetSwapSpread1 +
                              "\n  par asset swap spread:    " + cmsBondParAssetSwapSpread1 +
                              "\n  error:                    " + error5 +
                              "\n  tolerance:                " + tolerance);
+            }
 
             // CMS Underlying bond (Isin: XS0218766664 ISPIM 0 5/6/15)
             // maturity occurs on a business day
@@ -2080,11 +2090,13 @@ namespace QLNet.Tests
                         100 * cmsBondParAssetSwapSpread2 / cmsBondMktFullPrice2);
 
             if (error6 > tolerance)
+            {
                 QAssert.Fail("wrong asset swap spreads for cms bond:" +
                              "\n  market asset swap spread: " + cmsBondMktAssetSwapSpread2 +
                              "\n  par asset swap spread:    " + cmsBondParAssetSwapSpread2 +
                              "\n  error:                    " + error6 +
                              "\n  tolerance:                " + tolerance);
+            }
 
             // Zero Coupon bond (Isin: DE0004771662 IBRD 0 12/20/15)
             // maturity doesn't occur on a business day
@@ -2123,11 +2135,13 @@ namespace QLNet.Tests
                         100 * zeroCpnBondParAssetSwapSpread1 / zeroCpnBondMktFullPrice1);
 
             if (error7 > tolerance)
+            {
                 QAssert.Fail("wrong asset swap spreads for zero cpn bond:" +
                              "\n  market asset swap spread: " + zeroCpnBondMktAssetSwapSpread1 +
                              "\n  par asset swap spread:    " + zeroCpnBondParAssetSwapSpread1 +
                              "\n  error:                    " + error7 +
                              "\n  tolerance:                " + tolerance);
+            }
 
             // Zero Coupon bond (Isin: IT0001200390 ISPIM 0 02/17/28)
             // maturity occurs on a business day
@@ -2167,11 +2181,13 @@ namespace QLNet.Tests
                         100 * zeroCpnBondParAssetSwapSpread2 / zeroCpnBondMktFullPrice2);
 
             if (error8 > tolerance)
+            {
                 QAssert.Fail("wrong asset swap spreads for zero cpn bond:" +
                              "\n  market asset swap spread: " + zeroCpnBondMktAssetSwapSpread2 +
                              "\n  par asset swap spread:    " + zeroCpnBondParAssetSwapSpread2 +
                              "\n  error:                    " + error8 +
                              "\n  tolerance:                " + tolerance);
+            }
         }
 
         [Fact]

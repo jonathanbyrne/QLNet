@@ -16,19 +16,18 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Math.Optimization
 {
-
     //! Base class for least square problem
     public abstract class LeastSquareProblem
     {
         //! size of the problem ie size of target vector
         public abstract int size();
+
         //! compute the target vector and the values of the function to fit
         public abstract void targetAndValue(Vector x, ref Vector target, ref Vector fct2fit);
+
         //        ! compute the target vector, the values of the function to fit
         //            and the matrix of derivatives
         //

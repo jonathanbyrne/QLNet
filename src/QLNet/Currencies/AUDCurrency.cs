@@ -17,20 +17,23 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
 
 namespace QLNet.Currencies
 {
-
     //! Australian dollar
     //    ! The ISO three-letter code is AUD; the numeric code is 36.
     //        It is divided into 100 cents.
     //
     //        \ingroup currencies
     //
-    [JetBrains.Annotations.PublicAPI] public class AUDCurrency : Currency
+    [PublicAPI]
+    public class AUDCurrency : Currency
     {
-        public AUDCurrency() : base("Australian dollar", "AUD", 36, "A$", "", 100, new Rounding(), "%3% %1$.2f") { }
+        public AUDCurrency() : base("Australian dollar", "AUD", 36, "A$", "", 100, new Rounding(), "%3% %1$.2f")
+        {
+        }
     }
 
     //! New Zealand dollar

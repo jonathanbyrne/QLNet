@@ -17,35 +17,44 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.Interpolations;
-using QLNet.Methods.Finitedifferences.Meshers;
 using QLNet.Methods.Finitedifferences.Operators;
 using QLNet.Methods.Finitedifferences.StepConditions;
 using QLNet.Patterns;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Solvers
 {
-    [JetBrains.Annotations.PublicAPI] public class Fdm1DimSolver : LazyObject
+    [PublicAPI]
+    public class Fdm1DimSolver : LazyObject
     {
+        protected FdmStepConditionComposite conditions_;
+        protected CubicInterpolation interpolation_;
+        protected FdmLinearOpComposite op_;
+        protected Vector resultValues_;
+        protected FdmSchemeDesc schemeDesc_;
+        protected FdmSolverDesc solverDesc_;
+        protected FdmSnapshotCondition thetaCondition_;
+        protected List<double> x_, initialValues_;
+
         public Fdm1DimSolver(FdmSolverDesc solverDesc,
-                             FdmSchemeDesc schemeDesc,
-                             FdmLinearOpComposite op)
+            FdmSchemeDesc schemeDesc,
+            FdmLinearOpComposite op)
         {
             solverDesc_ = solverDesc;
             schemeDesc_ = schemeDesc;
             op_ = op;
             thetaCondition_ = new FdmSnapshotCondition(
-               0.99 * System.Math.Min(1.0 / 365.0,
-                               solverDesc.condition.stoppingTimes().empty()
-                               ? solverDesc.maturity
-                               : solverDesc.condition.stoppingTimes().First()));
+                0.99 * System.Math.Min(1.0 / 365.0,
+                    solverDesc.condition.stoppingTimes().empty()
+                        ? solverDesc.maturity
+                        : solverDesc.condition.stoppingTimes().First()));
 
             conditions_ = FdmStepConditionComposite.joinConditions(thetaCondition_,
-                                                                   solverDesc.condition);
+                solverDesc.condition);
             x_ = new InitializedList<double>(solverDesc.mesher.layout().size());
             initialValues_ = new InitializedList<double>(solverDesc.mesher.layout().size());
             resultValues_ = new Vector(solverDesc.mesher.layout().size());
@@ -54,14 +63,27 @@ namespace QLNet.Methods.Finitedifferences.Solvers
             var layout = mesher.layout();
 
             var endIter = layout.end();
-            for (var iter = layout.begin(); iter != endIter;
+            for (var iter = layout.begin();
+                 iter != endIter;
                  ++iter)
             {
                 initialValues_[iter.index()]
-                   = solverDesc_.calculator.avgInnerValue(iter,
-                                                          solverDesc.maturity);
+                    = solverDesc_.calculator.avgInnerValue(iter,
+                        solverDesc.maturity);
                 x_[iter.index()] = mesher.location(iter, 0);
             }
+        }
+
+        public double derivativeX(double x)
+        {
+            calculate();
+            return interpolation_.derivative(x);
+        }
+
+        public double derivativeXX(double x)
+        {
+            calculate();
+            return interpolation_.secondDerivative(x);
         }
 
         public double interpolateAt(double x)
@@ -69,52 +91,39 @@ namespace QLNet.Methods.Finitedifferences.Solvers
             calculate();
             return interpolation_.value(x);
         }
+
         public double thetaAt(double x)
         {
             Utils.QL_REQUIRE(conditions_.stoppingTimes().First() > 0.0,
-                             () => "stopping time at zero-> can't calculate theta");
+                () => "stopping time at zero-> can't calculate theta");
 
             calculate();
             var thetaValues = new Vector(resultValues_.size());
             thetaValues = thetaCondition_.getValues();
 
             var temp = new MonotonicCubicNaturalSpline(
-               x_, x_.Count, thetaValues).value(x);
+                x_, x_.Count, thetaValues).value(x);
             return (temp - interpolateAt(x)) / thetaCondition_.getTime();
         }
-        public double derivativeX(double x)
-        {
-            calculate();
-            return interpolation_.derivative(x);
-        }
-        public double derivativeXX(double x)
-        {
-            calculate();
-            return interpolation_.secondDerivative(x);
-        }
+
         protected override void performCalculations()
         {
             object rhs = new Vector(initialValues_.Count);
             for (var i = 0; i < initialValues_.Count; i++)
+            {
                 (rhs as Vector)[i] = initialValues_[i];
+            }
 
             new FdmBackwardSolver(op_, solverDesc_.bcSet, conditions_, schemeDesc_)
-            .rollback(ref rhs, solverDesc_.maturity, 0.0,
-                      solverDesc_.timeSteps, solverDesc_.dampingSteps);
+                .rollback(ref rhs, solverDesc_.maturity, 0.0,
+                    solverDesc_.timeSteps, solverDesc_.dampingSteps);
 
             for (var i = 0; i < initialValues_.Count; i++)
+            {
                 resultValues_[i] = (rhs as Vector)[i];
+            }
 
             interpolation_ = new MonotonicCubicNaturalSpline(x_, x_.Count, resultValues_);
         }
-
-        protected FdmSolverDesc solverDesc_;
-        protected FdmSchemeDesc schemeDesc_;
-        protected FdmLinearOpComposite op_;
-        protected FdmSnapshotCondition thetaCondition_;
-        protected FdmStepConditionComposite conditions_;
-        protected List<double> x_, initialValues_;
-        protected Vector resultValues_;
-        protected CubicInterpolation interpolation_;
     }
 }

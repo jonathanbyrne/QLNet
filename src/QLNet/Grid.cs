@@ -16,37 +16,39 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using QLNet.Math;
-using System;
 
 namespace QLNet
 {
     public partial class Utils
-   {
+    {
+        public static Vector BoundedGrid(double xMin, double xMax, int steps) => new Vector(steps + 1, xMin, (xMax - xMin) / steps);
 
-      public static Vector CenteredGrid(double center, double dx, int steps)
-      {
-         var result = new Vector(steps + 1);
-         for (var i = 0; i < steps + 1; i++)
-            result[i] = center + (i - steps / 2.0) * dx;
-         return result;
-      }
+        public static Vector BoundedLogGrid(double xMin, double xMax, int steps)
+        {
+            var result = new Vector(steps + 1);
+            var gridLogSpacing = (System.Math.Log(xMax) - System.Math.Log(xMin)) /
+                                 (steps);
+            var edx = System.Math.Exp(gridLogSpacing);
+            result[0] = xMin;
+            for (var j = 1; j < steps + 1; j++)
+            {
+                result[j] = result[j - 1] * edx;
+            }
 
-      public static Vector BoundedGrid(double xMin, double xMax, int steps) => new Vector(steps + 1, xMin, (xMax - xMin) / steps);
+            return result;
+        }
 
-      public static Vector BoundedLogGrid(double xMin, double xMax, int steps)
-      {
-         var result = new Vector(steps + 1);
-         var gridLogSpacing = (System.Math.Log(xMax) - System.Math.Log(xMin)) /
-                              (steps);
-         var edx = System.Math.Exp(gridLogSpacing);
-         result[0] = xMin;
-         for (var j = 1; j < steps + 1; j++)
-         {
-            result[j] = result[j - 1] * edx;
-         }
-         return result;
-      }
+        public static Vector CenteredGrid(double center, double dx, int steps)
+        {
+            var result = new Vector(steps + 1);
+            for (var i = 0; i < steps + 1; i++)
+            {
+                result[i] = center + (i - steps / 2.0) * dx;
+            }
 
-   }
+            return result;
+        }
+    }
 }

@@ -16,46 +16,56 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
-using QLNet.Termstructures.Yield;
-using QLNet.Time;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Math;
+using QLNet.Termstructures.Yield;
+using QLNet.Time;
 
 namespace QLNet.Termstructures.Credit
 {
     /// <summary>
-    /// Survival-Probability-curve traits
+    ///     Survival-Probability-curve traits
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class SurvivalProbability : ITraits<DefaultProbabilityTermStructure>
+    [PublicAPI]
+    public class SurvivalProbability : ITraits<DefaultProbabilityTermStructure>
     {
-        const double avgHazardRate = 0.01;
-        const double maxHazardRate = 1.0;
-
-        public Date initialDate(DefaultProbabilityTermStructure c) => c.referenceDate(); // start of curve data
-        public double initialValue(DefaultProbabilityTermStructure c) => 1; // value at reference date
-        public void updateGuess(List<double> data, double discount, int i) { data[i] = discount; }
-        public int maxIterations() => 50; // upper bound for convergence loop
+        private const double avgHazardRate = 0.01;
+        private const double maxHazardRate = 1.0;
 
         public double discountImpl(Interpolation i, double t) => i.value(t, true);
-
-        public double zeroYieldImpl(Interpolation i, double t) => throw new NotSupportedException();
 
         public double forwardImpl(Interpolation i, double t) => throw new NotSupportedException();
 
         public double guess(int i, InterpolatedCurve c, bool validData, int f)
         {
             if (validData) // previous iteration value
+            {
                 return c.data()[i];
+            }
 
             if (i == 1) // first pillar
+            {
                 return 1.0 / (1.0 + avgHazardRate * 0.25);
+            }
 
             // extrapolate
             var d = c.dates()[i];
             return ((DefaultProbabilityTermStructure)c).survivalProbability(d, true);
         }
+
+        public Date initialDate(DefaultProbabilityTermStructure c) => c.referenceDate(); // start of curve data
+
+        public double initialValue(DefaultProbabilityTermStructure c) => 1; // value at reference date
+
+        public int maxIterations() => 50; // upper bound for convergence loop
+
+        public double maxValueAfter(int i, InterpolatedCurve c, bool validData, int f) =>
+            // survival probability cannot increase
+            c.data()[i - 1];
 
         public double minValueAfter(int i, InterpolatedCurve c, bool validData, int f)
         {
@@ -63,12 +73,16 @@ namespace QLNet.Termstructures.Credit
             {
                 return c.data().Last() / 2.0;
             }
+
             var dt = c.times()[i] - c.times()[i - 1];
             return c.data()[i - 1] * System.Math.Exp(-maxHazardRate * dt);
         }
 
-        public double maxValueAfter(int i, InterpolatedCurve c, bool validData, int f) =>
-            // survival probability cannot increase
-            c.data()[i - 1];
+        public void updateGuess(List<double> data, double discount, int i)
+        {
+            data[i] = discount;
+        }
+
+        public double zeroYieldImpl(Interpolation i, double t) => throw new NotSupportedException();
     }
 }

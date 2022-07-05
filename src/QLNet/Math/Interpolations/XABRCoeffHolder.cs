@@ -18,18 +18,18 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Math.Optimization;
-using QLNet.Methods.montecarlo;
-using QLNet.Patterns;
-using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Math.Optimization;
+using QLNet.Patterns;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class XABRCoeffHolder<Model> where Model : IModel, new()
+    [PublicAPI]
+    public class XABRCoeffHolder<Model> where Model : IModel, new()
     {
         public XABRCoeffHolder(double t, double forward, List<double?> _params, List<bool> paramIsFixed,
-                               List<double?> addParams)
+            List<double?> addParams)
         {
             t_ = t;
             forward_ = forward;
@@ -44,48 +44,54 @@ namespace QLNet.Math.Interpolations
 
             Utils.QL_REQUIRE(t > 0.0, () => "expiry time must be positive: " + t + " not allowed");
             Utils.QL_REQUIRE(_params.Count == model_.dimension(), () =>
-                             "wrong number of parameters (" + _params.Count + "), should be " + model_.dimension());
+                "wrong number of parameters (" + _params.Count + "), should be " + model_.dimension());
             Utils.QL_REQUIRE(paramIsFixed.Count == model_.dimension(), () =>
-                             "wrong number of fixed parameters flags (" + paramIsFixed.Count + "), should be " +
-                             model_.dimension());
+                "wrong number of fixed parameters flags (" + paramIsFixed.Count + "), should be " +
+                model_.dimension());
 
             for (var i = 0; i < _params.Count; ++i)
             {
                 if (_params[i] != null)
+                {
                     paramIsFixed_[i] = paramIsFixed[i];
+                }
             }
 
             model_.defaultValues(params_, paramIsFixed_, forward_, t_, addParams_);
             updateModelInstance();
         }
 
+        public List<double?> addParams_ { get; set; }
+
+        /*! Interpolation results */
+        public double? error_ { get; set; }
+
+        public double forward_ { get; set; }
+
+        public double? maxError_ { get; set; }
+
+        public IModel model_ { get; set; }
+
+        /*! Model instance (if required) */
+        public IWrapper modelInstance_ { get; set; }
+
+        public List<bool> paramIsFixed_ { get; set; }
+
+        /*! Parameters */
+        public List<double?> params_ { get; set; }
+
+        /*! Expiry, Forward */
+        public double t_ { get; set; }
+
+        public List<double> weights_ { get; set; }
+
+        public EndCriteria.Type XABREndCriteria_ { get; set; }
+
         public void updateModelInstance()
         {
             // forward might have changed
             modelInstance_ = model_.instance(t_, forward_, params_, addParams_);
         }
-
-        /*! Expiry, Forward */
-        public double t_ { get; set; }
-
-        public double forward_ { get; set; }
-
-        /*! Parameters */
-        public List<double?> params_ { get; set; }
-        public List<bool> paramIsFixed_ { get; set; }
-        public List<double?> addParams_ { get; set; }
-
-        public List<double> weights_ { get; set; }
-
-        /*! Interpolation results */
-        public double? error_ { get; set; }
-        public double? maxError_ { get; set; }
-
-        public EndCriteria.Type XABREndCriteria_ { get; set; }
-
-        /*! Model instance (if required) */
-        public IWrapper modelInstance_ { get; set; }
-        public IModel model_ { get; set; }
     }
 
     //template <class I1, class I2, typename Model>

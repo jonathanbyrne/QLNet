@@ -1,14 +1,68 @@
 ﻿using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class AverageBmaCouponPricer : FloatingRateCouponPricer
+    [PublicAPI]
+    public class AverageBmaCouponPricer : FloatingRateCouponPricer
     {
+        // recheck
+        //protected override double optionletPrice( QLNet.Option.Type t, double d )
+        //{
+        //   throw new Exception( "not available" );
+        //}
+        private AverageBmaCoupon coupon_;
+
+        /// <summary>
+        ///     not applicable here
+        /// </summary>
+        public override double capletPrice(double d)
+        {
+            Utils.QL_FAIL("not available");
+            return 0;
+        }
+
+        /// <summary>
+        ///     not applicable here
+        /// </summary>
+        public override double capletRate(double d)
+        {
+            Utils.QL_FAIL("not available");
+            return 0;
+        }
+
+        /// <summary>
+        ///     not applicable here
+        /// </summary>
+        public override double floorletPrice(double d)
+        {
+            Utils.QL_FAIL("not available");
+            return 0;
+        }
+
+        /// <summary>
+        ///     not applicable here
+        /// </summary>
+        public override double floorletRate(double d)
+        {
+            Utils.QL_FAIL("not available");
+            return 0;
+        }
+
         public override void initialize(FloatingRateCoupon coupon)
         {
             coupon_ = coupon as AverageBmaCoupon;
             Utils.QL_REQUIRE(coupon_ != null, () => "wrong coupon ExerciseType");
+        }
+
+        /// <summary>
+        ///     not applicable here
+        /// </summary>
+        public override double swapletPrice()
+        {
+            Utils.QL_FAIL("not available");
+            return 0;
         }
 
         public override double swapletRate()
@@ -16,7 +70,7 @@ namespace QLNet.Cashflows
             var fixingDates = coupon_.FixingDates();
             var index = coupon_.index();
 
-            var cutoffDays = 0; // to be verified
+            const int cutoffDays = 0; // to be verified
             Date startDate = coupon_.accrualStartDate() - cutoffDays,
                 endDate = coupon_.accrualEndDate() - cutoffDays,
                 d1 = startDate;
@@ -33,9 +87,14 @@ namespace QLNet.Cashflows
                 var nextValueDate = index.valueDate(fixingDates[i + 1]);
 
                 if (fixingDates[i] >= endDate || valueDate >= endDate)
+                {
                     break;
+                }
+
                 if (fixingDates[i + 1] < startDate || nextValueDate <= startDate)
+                {
                     continue;
+                }
 
                 var d2 = Date.Min(nextValueDate, endDate);
 
@@ -44,6 +103,7 @@ namespace QLNet.Cashflows
                 days += d2 - d1;
                 d1 = d2;
             }
+
             avgBma /= endDate - startDate;
 
             Utils.QL_REQUIRE(days == endDate - startDate, () =>
@@ -51,58 +111,5 @@ namespace QLNet.Cashflows
 
             return coupon_.gearing() * avgBma + coupon_.spread();
         }
-
-        /// <summary>
-        /// not applicable here
-        /// </summary>
-        public override double swapletPrice()
-        {
-            Utils.QL_FAIL("not available");
-            return 0;
-        }
-
-        /// <summary>
-        /// not applicable here
-        /// </summary>
-        public override double capletPrice(double d)
-        {
-            Utils.QL_FAIL("not available");
-            return 0;
-        }
-
-        /// <summary>
-        /// not applicable here
-        /// </summary>
-        public override double capletRate(double d)
-        {
-            Utils.QL_FAIL("not available");
-            return 0;
-        }
-
-        /// <summary>
-        /// not applicable here
-        /// </summary>
-        public override double floorletPrice(double d)
-        {
-            Utils.QL_FAIL("not available");
-            return 0;
-        }
-
-        /// <summary>
-        /// not applicable here
-        /// </summary>
-        public override double floorletRate(double d)
-        {
-            Utils.QL_FAIL("not available");
-            return 0;
-        }
-
-        // recheck
-        //protected override double optionletPrice( QLNet.Option.Type t, double d )
-        //{
-        //   throw new Exception( "not available" );
-        //}
-
-        private AverageBmaCoupon coupon_;
     }
 }

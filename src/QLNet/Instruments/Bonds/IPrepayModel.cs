@@ -17,13 +17,16 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet.Instruments.Bonds
 {
-    [JetBrains.Annotations.PublicAPI] public interface IPrepayModel
+    [PublicAPI]
+    public interface IPrepayModel
     {
         double getCPR(Date valDate);
+
         double getSMM(Date valDate);
     }
 }

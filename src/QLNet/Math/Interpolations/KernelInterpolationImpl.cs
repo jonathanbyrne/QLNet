@@ -1,9 +1,17 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class KernelInterpolationImpl<Kernel> : Interpolation.templateImpl where Kernel : IKernelFunction
+    [PublicAPI]
+    public class KernelInterpolationImpl<Kernel> : Interpolation.templateImpl where Kernel : IKernelFunction
     {
+        private Vector alphaVec_, yVec_;
+        private double invPrec_;
+        private Kernel kernel_;
+        private Matrix M_;
+        private int xSize_;
+
         public KernelInterpolationImpl(List<double> xBegin, int size, List<double> yBegin, Kernel kernel)
             : base(xBegin, size, yBegin)
         {
@@ -15,30 +23,15 @@ namespace QLNet.Math.Interpolations
             kernel_ = kernel;
         }
 
-        public override void update()
+        public override double derivative(double d)
         {
-            updateAlphaVec();
-        }
-
-        public override double value(double x)
-        {
-            var res = 0.0;
-            for (var i = 0; i < xSize_; ++i)
-            {
-                res += alphaVec_[i] * kernelAbs(x, xBegin_[i]);
-            }
-            return res / gammaFunc(x);
+            Utils.QL_FAIL("First derivative calculation not implemented for kernel interpolation");
+            return 0;
         }
 
         public override double primitive(double d)
         {
             Utils.QL_FAIL("Primitive calculation not implemented for kernel interpolation");
-            return 0;
-        }
-
-        public override double derivative(double d)
-        {
-            Utils.QL_FAIL("First derivative calculation not implemented for kernel interpolation");
             return 0;
         }
 
@@ -53,9 +46,26 @@ namespace QLNet.Math.Interpolations
         // M*a may not give y. Here, a failure will be thrown if
         // |M*a-y|>=invPrec_
 
-        public void setInverseResultPrecision(double invPrec) { invPrec_ = invPrec; }
+        public void setInverseResultPrecision(double invPrec)
+        {
+            invPrec_ = invPrec;
+        }
 
-        private double kernelAbs(double x1, double x2) => kernel_.value(System.Math.Abs(x1 - x2));
+        public override void update()
+        {
+            updateAlphaVec();
+        }
+
+        public override double value(double x)
+        {
+            var res = 0.0;
+            for (var i = 0; i < xSize_; ++i)
+            {
+                res += alphaVec_[i] * kernelAbs(x, xBegin_[i]);
+            }
+
+            return res / gammaFunc(x);
+        }
 
         private double gammaFunc(double x)
         {
@@ -65,8 +75,11 @@ namespace QLNet.Math.Interpolations
             {
                 res += kernelAbs(x, xBegin_[i]);
             }
+
             return res;
         }
+
+        private double kernelAbs(double x1, double x2) => kernel_.value(System.Math.Abs(x1 - x2));
 
         private void updateAlphaVec()
         {
@@ -78,7 +91,6 @@ namespace QLNet.Math.Interpolations
 
             for (var rowIt = 0; rowIt < xSize_; ++rowIt)
             {
-
                 yVec_[rowIt] = yBegin_[rowIt];
                 tmp = 1.0 / gammaFunc(xBegin_[rowIt]);
 
@@ -102,14 +114,6 @@ namespace QLNet.Math.Interpolations
                 Utils.QL_REQUIRE(diffVec[i] < invPrec_, () =>
                     "Inversion failed in 1d kernel interpolation");
             }
-
         }
-
-        private int xSize_;
-        private double invPrec_;
-        private Matrix M_;
-        private Vector alphaVec_, yVec_;
-        private Kernel kernel_;
-
     }
 }

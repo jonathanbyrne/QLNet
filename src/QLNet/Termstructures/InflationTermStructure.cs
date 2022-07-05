@@ -26,149 +26,150 @@ using QLNet.Time;
 namespace QLNet
 {
     //! Interface for inflation term structures.
-   //! \ingroup inflationtermstructures
-   public abstract class InflationTermStructure : TermStructure
-   {
-      protected InflationTermStructure()
-      {}
+    //! \ingroup inflationtermstructures
+    public abstract class InflationTermStructure : TermStructure
+    {
+        protected double baseRate_;
+        protected Frequency frequency_;
+        protected bool indexIsInterpolated_;
+        protected Handle<YieldTermStructure> nominalTermStructure_;
+        protected Period observationLag_;
+        private Seasonality seasonality_;
 
-      // Constructors
-      protected InflationTermStructure(double baseRate,
-                                       Period observationLag,
-                                       Frequency frequency,
-                                       bool indexIsInterpolated,
-                                       Handle<YieldTermStructure> yTS,
-                                       DayCounter dayCounter = null,
-                                       Seasonality seasonality = null)
-         : base(dayCounter)
-      {
-         nominalTermStructure_ = yTS;
-         observationLag_ = observationLag;
-         frequency_ = frequency;
-         indexIsInterpolated_ = indexIsInterpolated;
-         baseRate_ = baseRate;
-         nominalTermStructure_.registerWith(update);
-         setSeasonality(seasonality);
-      }
+        protected InflationTermStructure()
+        {
+        }
 
-      protected InflationTermStructure(Date referenceDate,
-                                       double baseRate,
-                                       Period observationLag,
-                                       Frequency frequency,
-                                       bool indexIsInterpolated,
-                                       Handle<YieldTermStructure> yTS,
-                                       Calendar calendar,
-                                       DayCounter dayCounter = null,
-                                       Seasonality seasonality = null)
-         : base(referenceDate, calendar, dayCounter)
-      {
-         nominalTermStructure_ = yTS;
-         observationLag_ = observationLag;
-         frequency_ = frequency;
-         indexIsInterpolated_ = indexIsInterpolated;
-         baseRate_ = baseRate;
-         nominalTermStructure_.registerWith(update);
-         setSeasonality(seasonality);
-      }
+        // Constructors
+        protected InflationTermStructure(double baseRate,
+            Period observationLag,
+            Frequency frequency,
+            bool indexIsInterpolated,
+            Handle<YieldTermStructure> yTS,
+            DayCounter dayCounter = null,
+            Seasonality seasonality = null)
+            : base(dayCounter)
+        {
+            nominalTermStructure_ = yTS;
+            observationLag_ = observationLag;
+            frequency_ = frequency;
+            indexIsInterpolated_ = indexIsInterpolated;
+            baseRate_ = baseRate;
+            nominalTermStructure_.registerWith(update);
+            setSeasonality(seasonality);
+        }
 
-      protected InflationTermStructure(int settlementDays,
-                                       Calendar calendar,
-                                       double baseRate,
-                                       Period observationLag,
-                                       Frequency frequency,
-                                       bool indexIsInterpolated,
-                                       Handle<YieldTermStructure> yTS,
-                                       DayCounter dayCounter = null,
-                                       Seasonality seasonality = null)
-         : base(settlementDays, calendar, dayCounter)
-      {
-         nominalTermStructure_ = yTS;
-         observationLag_ = observationLag;
-         frequency_ = frequency;
-         indexIsInterpolated_ = indexIsInterpolated;
-         baseRate_ = baseRate;
-         nominalTermStructure_.registerWith(update);
-         setSeasonality(seasonality);
-      }
+        protected InflationTermStructure(Date referenceDate,
+            double baseRate,
+            Period observationLag,
+            Frequency frequency,
+            bool indexIsInterpolated,
+            Handle<YieldTermStructure> yTS,
+            Calendar calendar,
+            DayCounter dayCounter = null,
+            Seasonality seasonality = null)
+            : base(referenceDate, calendar, dayCounter)
+        {
+            nominalTermStructure_ = yTS;
+            observationLag_ = observationLag;
+            frequency_ = frequency;
+            indexIsInterpolated_ = indexIsInterpolated;
+            baseRate_ = baseRate;
+            nominalTermStructure_.registerWith(update);
+            setSeasonality(seasonality);
+        }
 
-      // Inflation interface
-      //! The TS observes with a lag that is usually different from the
-      //! availability lag of the index.  An inflation rate is given,
-      //! by default, for the maturity requested assuming this lag.
-      public virtual Period observationLag() => observationLag_;
+        protected InflationTermStructure(int settlementDays,
+            Calendar calendar,
+            double baseRate,
+            Period observationLag,
+            Frequency frequency,
+            bool indexIsInterpolated,
+            Handle<YieldTermStructure> yTS,
+            DayCounter dayCounter = null,
+            Seasonality seasonality = null)
+            : base(settlementDays, calendar, dayCounter)
+        {
+            nominalTermStructure_ = yTS;
+            observationLag_ = observationLag;
+            frequency_ = frequency;
+            indexIsInterpolated_ = indexIsInterpolated;
+            baseRate_ = baseRate;
+            nominalTermStructure_.registerWith(update);
+            setSeasonality(seasonality);
+        }
 
-      public virtual Frequency frequency() => frequency_;
+        //! minimum (base) date
+        /*! Important in inflation since it starts before nominal
+            reference date.  Changes depending whether index is
+            interpolated or not.  When interpolated the base date
+            is just observation lag before nominal.  When not
+            interpolated it is the beginning of the relevant period
+            (hence it is easy to create interpolated fixings from
+             a not-interpolated curve because interpolation, usually,
+             of fixings is forward looking).
+        */
+        public abstract Date baseDate();
 
-      public virtual bool indexIsInterpolated() => indexIsInterpolated_;
+        public virtual double baseRate() => baseRate_;
 
-      public virtual double baseRate() => baseRate_;
+        public virtual Frequency frequency() => frequency_;
 
-      public virtual Handle<YieldTermStructure> nominalTermStructure() => nominalTermStructure_;
+        public bool hasSeasonality() => seasonality_ != null;
 
-      //! minimum (base) date
-      /*! Important in inflation since it starts before nominal
-          reference date.  Changes depending whether index is
-          interpolated or not.  When interpolated the base date
-          is just observation lag before nominal.  When not
-          interpolated it is the beginning of the relevant period
-          (hence it is easy to create interpolated fixings from
-           a not-interpolated curve because interpolation, usually,
-           of fixings is forward looking).
-      */
-      public abstract Date baseDate();
+        public virtual bool indexIsInterpolated() => indexIsInterpolated_;
 
-      //! Functions to set and get seasonality.
-      /*! Calling setSeasonality with no arguments means unsetting
-          as the default is used to choose unsetting.
-      */
+        public virtual Handle<YieldTermStructure> nominalTermStructure() => nominalTermStructure_;
 
-      public void setSeasonality(Seasonality seasonality = null)
-      {
-         // always reset, whether with null or new pointer
-         seasonality_ = seasonality;
-         if (seasonality_ != null)
-         {
-            Utils.QL_REQUIRE(seasonality_.isConsistent(this),
-                             () => "Seasonality inconsistent with " + "inflation term structure");
-         }
-         notifyObservers();
-      }
+        // Inflation interface
+        //! The TS observes with a lag that is usually different from the
+        //! availability lag of the index.  An inflation rate is given,
+        //! by default, for the maturity requested assuming this lag.
+        public virtual Period observationLag() => observationLag_;
 
-      public Seasonality seasonality() => seasonality_;
+        public Seasonality seasonality() => seasonality_;
 
-      public bool hasSeasonality() => seasonality_ != null;
+        //! Functions to set and get seasonality.
+        /*! Calling setSeasonality with no arguments means unsetting
+            as the default is used to choose unsetting.
+        */
 
-      protected Handle<YieldTermStructure> nominalTermStructure_;
-      protected Period observationLag_;
-      protected Frequency frequency_;
-      protected bool indexIsInterpolated_;
-      protected double baseRate_;
+        public void setSeasonality(Seasonality seasonality = null)
+        {
+            // always reset, whether with null or new pointer
+            seasonality_ = seasonality;
+            if (seasonality_ != null)
+            {
+                Utils.QL_REQUIRE(seasonality_.isConsistent(this),
+                    () => "Seasonality inconsistent with " + "inflation term structure");
+            }
 
-      // This next part is required for piecewise- constructors
-      // because, for inflation, they need more than just the
-      // instruments to build the term structure, since the rate at
-      // time 0-lag is non-zero, since we deal (effectively) with
-      // "forwards".
-      protected virtual void setBaseRate(double r)
-      {
-         baseRate_ = r;
-      }
+            notifyObservers();
+        }
 
-      // range-checking
-      protected override void checkRange(Date d, bool extrapolate)
-      {
-         Utils.QL_REQUIRE(d >= baseDate(), () => "date (" + d + ") is before base date");
+        // range-checking
+        protected override void checkRange(Date d, bool extrapolate)
+        {
+            Utils.QL_REQUIRE(d >= baseDate(), () => "date (" + d + ") is before base date");
 
-         Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || d <= maxDate(), () =>
-                          "date (" + d + ") is past max curve date (" + maxDate() + ")");
-      }
+            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || d <= maxDate(), () =>
+                "date (" + d + ") is past max curve date (" + maxDate() + ")");
+        }
 
-      private Seasonality seasonality_;
-   }
+        // This next part is required for piecewise- constructors
+        // because, for inflation, they need more than just the
+        // instruments to build the term structure, since the rate at
+        // time 0-lag is non-zero, since we deal (effectively) with
+        // "forwards".
+        protected virtual void setBaseRate(double r)
+        {
+            baseRate_ = r;
+        }
+    }
 
-   //! Interface for zero inflation term structures.
-   // Child classes use templates but do not want that exposed to
-   // general users.
+    //! Interface for zero inflation term structures.
+    // Child classes use templates but do not want that exposed to
+    // general users.
 
-   //! Base class for year-on-year inflation term structures.
+    //! Base class for year-on-year inflation term structures.
 }

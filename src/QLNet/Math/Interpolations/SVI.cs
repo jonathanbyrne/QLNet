@@ -1,10 +1,25 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math.Optimization;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class SVI
+    [PublicAPI]
+    public class SVI
     {
+        public const bool global = true;
+        private double a_, b_, sigma_, rho_, m_;
+        private List<double?> addParams_;
+        private bool aIsFixed_, bIsFixed_, sigmaIsFixed_, rhoIsFixed_, mIsFixed_;
+        private EndCriteria endCriteria_;
+        private double errorAccept_;
+        private double forward_;
+        private int maxGuesses_;
+        private OptimizationMethod optMethod_;
+        private double t_;
+        private bool useMaxError_;
+        private bool vegaWeighted_;
+
         public SVI(double t, double forward, double a, double b, double sigma, double rho, double m,
             bool aIsFixed, bool bIsFixed, bool sigmaIsFixed, bool rhoIsFixed, bool mIsFixed,
             bool vegaWeighted = false,
@@ -37,19 +52,5 @@ namespace QLNet.Math.Interpolations
             new SviInterpolation(xBegin, xEnd, yBegin, t_, forward_, a_, b_, sigma_, rho_, m_,
                 aIsFixed_, bIsFixed_, sigmaIsFixed_, rhoIsFixed_, mIsFixed_, vegaWeighted_,
                 endCriteria_, optMethod_, errorAccept_, useMaxError_, maxGuesses_);
-
-        public const bool global = true;
-
-        private double t_;
-        private double forward_;
-        private double a_, b_, sigma_, rho_, m_;
-        private bool aIsFixed_, bIsFixed_, sigmaIsFixed_, rhoIsFixed_, mIsFixed_;
-        private bool vegaWeighted_;
-        private EndCriteria endCriteria_;
-        private OptimizationMethod optMethod_;
-        private double errorAccept_;
-        private bool useMaxError_;
-        private int maxGuesses_;
-        private List<double?> addParams_;
     }
 }

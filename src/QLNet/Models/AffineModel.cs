@@ -16,9 +16,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using QLNet.Math;
 using QLNet.Patterns;
-using System;
 
 namespace QLNet.Models
 {
@@ -29,23 +29,34 @@ namespace QLNet.Models
     */
     public abstract class AffineModel : IObservable
     {
+        private readonly WeakEventSource eventSource = new WeakEventSource();
+
         //! Implied discount curve
         public abstract double discount(double t);
+
         public abstract double discountBond(double now, double maturity, Vector factors);
+
         public abstract double discountBondOption(Option.Type type, double strike, double maturity, double bondMaturity);
 
-        private readonly WeakEventSource eventSource = new WeakEventSource();
+        public void registerWith(Callback handler)
+        {
+            notifyObserversEvent += handler;
+        }
+
+        public void unregisterWith(Callback handler)
+        {
+            notifyObserversEvent -= handler;
+        }
+
+        protected void notifyObservers()
+        {
+            eventSource.Raise();
+        }
+
         public event Callback notifyObserversEvent
         {
             add => eventSource.Subscribe(value);
             remove => eventSource.Unsubscribe(value);
-        }
-
-        public void registerWith(Callback handler) { notifyObserversEvent += handler; }
-        public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
-        protected void notifyObservers()
-        {
-            eventSource.Raise();
         }
     }
 

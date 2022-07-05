@@ -16,14 +16,15 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
-using System.Collections.Generic;
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
     //! Forward-flat interpolation between discrete points
-    [JetBrains.Annotations.PublicAPI] public class ForwardFlatInterpolation : Interpolation
+    [PublicAPI]
+    public class ForwardFlatInterpolation : Interpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public ForwardFlatInterpolation(List<double> xBegin, int size, List<double> yBegin)

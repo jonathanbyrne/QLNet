@@ -17,10 +17,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.integrals;
 using QLNet.processes;
-using System;
 
 namespace QLNet.Pricingengines.vanilla
 {
@@ -29,7 +30,8 @@ namespace QLNet.Pricingengines.vanilla
     //
     //        \ingroup vanillaengines
     //
-    [JetBrains.Annotations.PublicAPI] public class IntegralEngine : OneAssetOption.Engine
+    [PublicAPI]
+    public class IntegralEngine : OneAssetOption.Engine
     {
         private GeneralizedBlackScholesProcess process_;
 
@@ -63,5 +65,4 @@ namespace QLNet.Pricingengines.vanilla
                              integrator.value(f.value, drift - infinity, drift + infinity);
         }
     }
-
 }

@@ -16,13 +16,14 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.Interpolations;
 using QLNet.Patterns;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Termstructures.Volatility.equityfx
 {
@@ -40,22 +41,20 @@ namespace QLNet.Termstructures.Volatility.equityfx
         \todo check time extrapolation
 
     */
-    [JetBrains.Annotations.PublicAPI] public class BlackVarianceCurve : BlackVarianceTermStructure
+    [PublicAPI]
+    public class BlackVarianceCurve : BlackVarianceTermStructure
     {
-        DayCounter dayCounter_;
-        public override DayCounter dayCounter() => dayCounter_;
-
-        Date maxDate_;
-        List<double> times_;
-        List<double> variances_;
-        Interpolation varianceCurve_;
+        private DayCounter dayCounter_;
+        private Date maxDate_;
+        private List<double> times_;
+        private Interpolation varianceCurve_;
+        private List<double> variances_;
 
         // required for Handle
         public BlackVarianceCurve(Date referenceDate, List<Date> dates, List<double> blackVolCurve, DayCounter dayCounter,
-                                  bool forceMonotoneVariance)
-           : base(referenceDate)
+            bool forceMonotoneVariance)
+            : base(referenceDate)
         {
-
             dayCounter_ = dayCounter;
             maxDate_ = dates.Last();
 
@@ -83,23 +82,19 @@ namespace QLNet.Termstructures.Volatility.equityfx
             setInterpolation<Linear>();
         }
 
-        protected override double blackVarianceImpl(double t, double x)
-        {
-            if (t <= times_.Last())
-            {
-                return varianceCurve_.value(t, true);
-            }
-            else
-            {
-                // extrapolate with flat vol
-                return varianceCurve_.value(times_.Last(), true) * t / times_.Last();
-            }
-        }
+        public override DayCounter dayCounter() => dayCounter_;
+
+        public override Date maxDate() => maxDate_;
+
+        public override double maxStrike() => double.MaxValue;
+
+        public override double minStrike() => double.MinValue;
 
         public void setInterpolation<Interpolator>() where Interpolator : IInterpolationFactory, new()
         {
             setInterpolation(FastActivator<Interpolator>.Create());
         }
+
         public void setInterpolation<Interpolator>(Interpolator i) where Interpolator : IInterpolationFactory, new()
         {
             varianceCurve_ = i.interpolate(times_, times_.Count, variances_);
@@ -107,10 +102,15 @@ namespace QLNet.Termstructures.Volatility.equityfx
             notifyObservers();
         }
 
-        public override Date maxDate() => maxDate_;
+        protected override double blackVarianceImpl(double t, double x)
+        {
+            if (t <= times_.Last())
+            {
+                return varianceCurve_.value(t, true);
+            }
 
-        public override double minStrike() => double.MinValue;
-
-        public override double maxStrike() => double.MaxValue;
+            // extrapolate with flat vol
+            return varianceCurve_.value(times_.Last(), true) * t / times_.Last();
+        }
     }
 }

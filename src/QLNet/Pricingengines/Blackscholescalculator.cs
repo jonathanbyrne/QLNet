@@ -16,20 +16,21 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
-using System;
 
 namespace QLNet.Pricingengines
 {
-
     //! Black-Scholes 1973 calculator class
-    [JetBrains.Annotations.PublicAPI] public class BlackScholesCalculator : BlackCalculator
+    [PublicAPI]
+    public class BlackScholesCalculator : BlackCalculator
     {
-        protected double spot_;
         protected double growth_;
+        protected double spot_;
 
         public BlackScholesCalculator(StrikedTypePayoff payoff, double spot, double growth, double stdDev, double discount)
-           : base(payoff, spot * growth / discount, stdDev, discount)
+            : base(payoff, spot * growth / discount, stdDev, discount)
         {
             spot_ = spot;
             growth_ = growth;

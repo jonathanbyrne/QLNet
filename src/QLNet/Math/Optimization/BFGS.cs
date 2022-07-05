@@ -13,8 +13,8 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
-using QLNet.Math;
-using System;
+
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Optimization
 {
@@ -25,10 +25,14 @@ namespace QLNet.Math.Optimization
 
         User has to provide line-search method and optimization end criteria.
     */
-    [JetBrains.Annotations.PublicAPI] public class BFGS : LineSearchBasedMethod
+    [PublicAPI]
+    public class BFGS : LineSearchBasedMethod
     {
+        // inverse of hessian matrix
+        private Matrix inverseHessian_;
+
         public BFGS(LineSearch lineSearch = null)
-           : base(lineSearch)
+            : base(lineSearch)
         {
             inverseHessian_ = new Matrix();
         }
@@ -41,7 +45,9 @@ namespace QLNet.Math.Optimization
                 // first time in this update, we create needed structures
                 inverseHessian_ = new Matrix(P.currentValue().size(), P.currentValue().size(), 0.0);
                 for (var i = 0; i < P.currentValue().size(); ++i)
+                {
                     inverseHessian_[i, i] = 1.0;
+                }
             }
 
             var diffGradient = new Vector();
@@ -49,8 +55,10 @@ namespace QLNet.Math.Optimization
 
             diffGradient = lineSearch_.lastGradient() - oldGradient;
             for (var i = 0; i < P.currentValue().size(); ++i)
-                for (var j = 0; j < P.currentValue().size(); ++j)
-                    diffGradientWithHessianApplied[i] += inverseHessian_[i, j] * diffGradient[j];
+            for (var j = 0; j < P.currentValue().size(); ++j)
+            {
+                diffGradientWithHessianApplied[i] += inverseHessian_[i, j] * diffGradient[j];
+            }
 
             double fac, fae, fad;
             double sumdg, sumxi;
@@ -64,21 +72,23 @@ namespace QLNet.Math.Optimization
                 sumxi += System.Math.Pow(lineSearch_.searchDirection[i], 2.0);
             }
 
-            if (fac > System.Math.Sqrt(1e-8 * sumdg * sumxi))  // skip update if fac not sufficiently positive
+            if (fac > System.Math.Sqrt(1e-8 * sumdg * sumxi)) // skip update if fac not sufficiently positive
             {
                 fac = 1.0 / fac;
                 fad = 1.0 / fae;
 
                 for (var i = 0; i < P.currentValue().size(); ++i)
+                {
                     diffGradient[i] = fac * lineSearch_.searchDirection[i] - fad * diffGradientWithHessianApplied[i];
+                }
 
                 for (var i = 0; i < P.currentValue().size(); ++i)
-                    for (var j = 0; j < P.currentValue().size(); ++j)
-                    {
-                        inverseHessian_[i, j] += fac * lineSearch_.searchDirection[i] * lineSearch_.searchDirection[j];
-                        inverseHessian_[i, j] -= fad * diffGradientWithHessianApplied[i] * diffGradientWithHessianApplied[j];
-                        inverseHessian_[i, j] += fae * diffGradient[i] * diffGradient[j];
-                    }
+                for (var j = 0; j < P.currentValue().size(); ++j)
+                {
+                    inverseHessian_[i, j] += fac * lineSearch_.searchDirection[i] * lineSearch_.searchDirection[j];
+                    inverseHessian_[i, j] -= fad * diffGradientWithHessianApplied[i] * diffGradientWithHessianApplied[j];
+                    inverseHessian_[i, j] += fae * diffGradient[i] * diffGradient[j];
+                }
             }
 
             var direction = new Vector(P.currentValue().size());
@@ -86,14 +96,12 @@ namespace QLNet.Math.Optimization
             {
                 direction[i] = 0.0;
                 for (var j = 0; j < P.currentValue().size(); ++j)
+                {
                     direction[i] -= inverseHessian_[i, j] * lineSearch_.lastGradient()[j];
+                }
             }
 
             return direction;
-
         }
-
-        // inverse of hessian matrix
-        private Matrix inverseHessian_;
     }
 }

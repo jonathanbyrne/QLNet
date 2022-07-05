@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class BilinearInterpolationImpl : Interpolation2D.templateImpl
+    [PublicAPI]
+    public class BilinearInterpolationImpl : Interpolation2D.templateImpl
     {
         public BilinearInterpolationImpl(List<double> xBegin, int xSize,
             List<double> yBegin, int ySize,
@@ -13,7 +15,8 @@ namespace QLNet.Math.Interpolations
         }
 
         public override void calculate()
-        { }
+        {
+        }
 
         public override double value(double x, double y)
         {

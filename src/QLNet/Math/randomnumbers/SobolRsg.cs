@@ -17,10 +17,10 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
 using QLNet.Math.randomnumbers;
 using QLNet.Methods.montecarlo;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet
 {
@@ -97,408 +97,445 @@ namespace QLNet
           their discrepancy against known good values.
     */
     public partial class SobolRsg : IRNG
-   {
-      const int bits_ = 8 * sizeof(int);
-      // 1/(2^bits_) (written as (1/2)/(2^(bits_-1)) to avoid long overflow)
-      const double normalizationFactor_ = 0.5 / (1UL << (bits_ - 1));
+    {
+        public enum DirectionIntegers
+        {
+            Unit,
+            Jaeckel,
+            SobolLevitan,
+            SobolLevitanLemieux,
+            JoeKuoD5,
+            JoeKuoD6,
+            JoeKuoD7,
+            Kuo,
+            Kuo2,
+            Kuo3
+        }
 
-      private int dimensionality_;
-      private ulong sequenceCounter_;
-      private bool firstDraw_;
-      private Sample<List<double>> sequence_;
-      private List<ulong> integerSequence_;
-      private List<List<ulong>> directionIntegers_;
+        private const int bits_ = 8 * sizeof(int);
+        // 1/(2^bits_) (written as (1/2)/(2^(bits_-1)) to avoid long overflow)
+        private const double normalizationFactor_ = 0.5 / (1UL << (bits_ - 1));
+        private readonly int dimensionality_;
+        private readonly List<List<ulong>> directionIntegers_;
+        private readonly List<ulong> integerSequence_;
+        private readonly Sample<List<double>> sequence_;
+        private bool firstDraw_;
+        private ulong sequenceCounter_;
 
-      public enum DirectionIntegers
-      {
-         Unit, Jaeckel, SobolLevitan, SobolLevitanLemieux,
-         JoeKuoD5, JoeKuoD6, JoeKuoD7,
-         Kuo, Kuo2, Kuo3
-      }
+        // required for generics
+        public SobolRsg()
+        {
+        }
 
-      // required for generics
-      public SobolRsg() { }
+        /*! \pre dimensionality must be <= PPMT_MAX_DIM */
+        public SobolRsg(int dimensionality) : this(dimensionality, 0, DirectionIntegers.Jaeckel)
+        {
+        }
 
-      /*! \pre dimensionality must be <= PPMT_MAX_DIM */
-      public SobolRsg(int dimensionality) : this(dimensionality, 0, DirectionIntegers.Jaeckel) { }
-      public SobolRsg(int dimensionality, ulong seed) : this(dimensionality, seed, DirectionIntegers.Jaeckel) { }
-      public SobolRsg(int dimensionality, ulong seed, DirectionIntegers directionIntegers)
-      {
-         dimensionality_ = dimensionality;
-         sequenceCounter_ = 0;
-         firstDraw_ = true;
+        public SobolRsg(int dimensionality, ulong seed) : this(dimensionality, seed, DirectionIntegers.Jaeckel)
+        {
+        }
 
-         sequence_ = new Sample<List<double>>(new InitializedList<double>(dimensionality), 1.0);
-         integerSequence_ = new InitializedList<ulong>(dimensionality);
+        public SobolRsg(int dimensionality, ulong seed, DirectionIntegers directionIntegers)
+        {
+            dimensionality_ = dimensionality;
+            sequenceCounter_ = 0;
+            firstDraw_ = true;
 
-         directionIntegers_ = new InitializedList<List<ulong>>(dimensionality);
-         for (var i = 0; i < dimensionality; i++)
-            directionIntegers_[i] = new InitializedList<ulong>(bits_);
+            sequence_ = new Sample<List<double>>(new InitializedList<double>(dimensionality), 1.0);
+            integerSequence_ = new InitializedList<ulong>(dimensionality);
 
-         Utils.QL_REQUIRE(dimensionality > 0, () => "dimensionality must be greater than 0");
-         Utils.QL_REQUIRE(dimensionality <= PPMT_MAX_DIM, () =>
-                          "dimensionality " + dimensionality + " exceeds the number of available " +
-                          "primitive polynomials modulo two (" + PPMT_MAX_DIM + ")");
-
-         // initializes coefficient array of the k-th primitive polynomial
-         // and degree of the k-th primitive polynomial
-         List<uint> degree = new InitializedList<uint>(dimensionality_);
-         List<long> ppmt = new InitializedList<long>(dimensionality_);
-
-         var useAltPolynomials = false;
-
-         if (directionIntegers == DirectionIntegers.Kuo || directionIntegers == DirectionIntegers.Kuo2
-             || directionIntegers == DirectionIntegers.Kuo3 || directionIntegers == DirectionIntegers.SobolLevitan
-             || directionIntegers == DirectionIntegers.SobolLevitanLemieux)
-            useAltPolynomials = true;
-
-         // degree 0 is not used
-         ppmt[0] = 0;
-         degree[0] = 0;
-         int k, index;
-         uint currentDegree = 1;
-         k = 1;
-         index = 0;
-
-         var altDegree = useAltPolynomials ? maxAltDegree : 0;
-
-         for (; k < System.Math.Min(dimensionality_, altDegree); k++, index++)
-         {
-            ppmt[k] = AltPrimitivePolynomials[currentDegree - 1][index];
-            if (ppmt[k] == -1)
+            directionIntegers_ = new InitializedList<List<ulong>>(dimensionality);
+            for (var i = 0; i < dimensionality; i++)
             {
-               ++currentDegree;
-               index = 0;
-               ppmt[k] = AltPrimitivePolynomials[currentDegree - 1][index];
+                directionIntegers_[i] = new InitializedList<ulong>(bits_);
             }
 
-            degree[k] = currentDegree;
-         }
+            Utils.QL_REQUIRE(dimensionality > 0, () => "dimensionality must be greater than 0");
+            Utils.QL_REQUIRE(dimensionality <= PPMT_MAX_DIM, () =>
+                "dimensionality " + dimensionality + " exceeds the number of available " +
+                "primitive polynomials modulo two (" + PPMT_MAX_DIM + ")");
 
-         for (; k < dimensionality_; k++, index++)
-         {
-            ppmt[k] = PrimitivePolynomials[currentDegree - 1][index];
-            if (ppmt[k] == -1)
+            // initializes coefficient array of the k-th primitive polynomial
+            // and degree of the k-th primitive polynomial
+            List<uint> degree = new InitializedList<uint>(dimensionality_);
+            List<long> ppmt = new InitializedList<long>(dimensionality_);
+
+            var useAltPolynomials = false;
+
+            if (directionIntegers == DirectionIntegers.Kuo || directionIntegers == DirectionIntegers.Kuo2
+                                                           || directionIntegers == DirectionIntegers.Kuo3 || directionIntegers == DirectionIntegers.SobolLevitan
+                                                           || directionIntegers == DirectionIntegers.SobolLevitanLemieux)
             {
-               ++currentDegree;
-               index = 0;
-               ppmt[k] = PrimitivePolynomials[currentDegree - 1][index];
+                useAltPolynomials = true;
             }
-            degree[k] = currentDegree;
 
-         }
+            // degree 0 is not used
+            ppmt[0] = 0;
+            degree[0] = 0;
+            int k, index;
+            uint currentDegree = 1;
+            k = 1;
+            index = 0;
 
-         // initializes bits_ direction integers for each dimension
-         // and store them into directionIntegers_[dimensionality_][bits_]
-         //
-         // In each dimension k with its associated primitive polynomial,
-         // the first degree_[k] direction integers can be chosen freely
-         // provided that only the l leftmost bits can be non-zero, and
-         // that the l-th leftmost bit must be set
+            var altDegree = useAltPolynomials ? maxAltDegree : 0;
 
-         // degenerate (no free direction integers) first dimension
-         int j;
-         for (j = 0; j < bits_; j++)
-            directionIntegers_[0][j] = (1UL << (bits_ - j - 1));
-
-         var maxTabulated = 0;
-         // dimensions from 2 (k=1) to maxTabulated (k=maxTabulated-1) included
-         // are initialized from tabulated coefficients
-         switch (directionIntegers)
-         {
-            case DirectionIntegers.Unit:
-               maxTabulated = dimensionality_;
-               for (k = 1; k < maxTabulated; k++)
-               {
-                  for (var l = 1; l <= degree[k]; l++)
-                  {
-                     directionIntegers_[k][l - 1] = 1UL;
-                     directionIntegers_[k][l - 1] <<= (bits_ - l);
-                  }
-               }
-               break;
-            case DirectionIntegers.Jaeckel:
-               // maxTabulated=32
-               maxTabulated = initializers.Length + 1;
-               for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
-               {
-                  j = 0;
-                  // 0UL marks coefficients' end for a given dimension
-                  while (initializers[k - 1][j] != 0UL)
-                  {
-                     directionIntegers_[k][j] = initializers[k - 1][j];
-                     directionIntegers_[k][j] <<= (bits_ - j - 1);
-                     j++;
-                  }
-               }
-               break;
-            case DirectionIntegers.SobolLevitan:
-               // maxTabulated=40
-               maxTabulated = SLinitializers.Length + 1;
-               for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
-               {
-                  j = 0;
-                  // 0UL marks coefficients' end for a given dimension
-                  while (SLinitializers[k - 1][j] != 0UL)
-                  {
-                     directionIntegers_[k][j] = SLinitializers[k - 1][j];
-                     directionIntegers_[k][j] <<= (bits_ - j - 1);
-                     j++;
-                  }
-               }
-               break;
-            case DirectionIntegers.SobolLevitanLemieux:
-               // maxTabulated=360
-               maxTabulated = Linitializers.Length + 1;
-               for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
-               {
-                  j = 0;
-                  // 0UL marks coefficients' end for a given dimension
-                  while (Linitializers[k - 1][j] != 0UL)
-                  {
-                     directionIntegers_[k][j] = Linitializers[k - 1][j];
-                     directionIntegers_[k][j] <<= (bits_ - j - 1);
-                     j++;
-                  }
-               }
-               break;
-            case DirectionIntegers.JoeKuoD5:
-               // maxTabulated=1898
-               maxTabulated = JoeKuoD5initializers.Length + 1;
-               for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
-               {
-                  j = 0;
-                  // 0UL marks coefficients' end for a given dimension
-                  while (JoeKuoD5initializers[k - 1][j] != 0UL)
-                  {
-                     directionIntegers_[k][j] = JoeKuoD5initializers[k - 1][j];
-                     directionIntegers_[k][j] <<= (bits_ - j - 1);
-                     j++;
-                  }
-               }
-               break;
-            case DirectionIntegers.JoeKuoD6:
-               // maxTabulated=1799
-               maxTabulated = JoeKuoD6initializers.Length + 1;
-               for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
-               {
-                  j = 0;
-                  // 0UL marks coefficients' end for a given dimension
-                  while (JoeKuoD6initializers[k - 1][j] != 0UL)
-                  {
-                     directionIntegers_[k][j] = JoeKuoD6initializers[k - 1][j];
-                     directionIntegers_[k][j] <<= (bits_ - j - 1);
-                     j++;
-                  }
-               }
-               break;
-            case DirectionIntegers.JoeKuoD7:
-               // maxTabulated=1898
-               maxTabulated = JoeKuoD7initializers.Length + 1;
-               for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
-               {
-                  j = 0;
-                  // 0UL marks coefficients' end for a given dimension
-                  while (JoeKuoD7initializers[k - 1][j] != 0UL)
-                  {
-                     directionIntegers_[k][j] = JoeKuoD7initializers[k - 1][j];
-                     directionIntegers_[k][j] <<= (bits_ - j - 1);
-                     j++;
-                  }
-               }
-               break;
-
-
-
-            case DirectionIntegers.Kuo:
-               // maxTabulated=4925
-               maxTabulated = Kuoinitializers.Length + 1;
-               for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
-               {
-                  j = 0;
-                  // 0UL marks coefficients' end for a given dimension
-                  while (Kuoinitializers[k - 1][j] != 0UL)
-                  {
-                     directionIntegers_[k][j] = Kuoinitializers[k - 1][j];
-                     directionIntegers_[k][j] <<= (bits_ - j - 1);
-                     j++;
-                  }
-               }
-               break;
-            case DirectionIntegers.Kuo2:
-               // maxTabulated=3946
-               maxTabulated = Kuo2initializers.Length + 1;
-               for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
-               {
-                  j = 0;
-                  // 0UL marks coefficients' end for a given dimension
-                  while (Kuo2initializers[k - 1][j] != 0UL)
-                  {
-                     directionIntegers_[k][j] = Kuo2initializers[k - 1][j];
-                     directionIntegers_[k][j] <<= (bits_ - j - 1);
-                     j++;
-                  }
-               }
-               break;
-
-            case DirectionIntegers.Kuo3:
-               // maxTabulated=4585
-               maxTabulated = Kuo3initializers.Length + 1;
-               for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
-               {
-                  j = 0;
-                  // 0UL marks coefficients' end for a given dimension
-                  while (Kuo3initializers[k - 1][j] != 0UL)
-                  {
-                     directionIntegers_[k][j] = Kuo3initializers[k - 1][j];
-                     directionIntegers_[k][j] <<= (bits_ - j - 1);
-                     j++;
-                  }
-               }
-               break;
-
-            default:
-               break;
-         }
-
-         // random initialization for higher dimensions
-         if (dimensionality_ > maxTabulated)
-         {
-            var uniformRng = new MersenneTwisterUniformRng(seed);
-            for (k = maxTabulated; k < dimensionality_; k++)
+            for (; k < System.Math.Min(dimensionality_, altDegree); k++, index++)
             {
-               for (var l = 1; l <= degree[k]; l++)
-               {
-                  do
-                  {
-                     // u is in (0,1)
-                     var u = uniformRng.next().value;
-                     // the direction integer has at most the
-                     // rightmost l bits non-zero
-                     directionIntegers_[k][l - 1] = (ulong)(u * (1UL << l));
-                  }
-                  while ((directionIntegers_[k][l - 1] & 1UL) == 0);
-                  // iterate until the direction integer is odd
-                  // that is it has the rightmost bit set
+                ppmt[k] = AltPrimitivePolynomials[currentDegree - 1][index];
+                if (ppmt[k] == -1)
+                {
+                    ++currentDegree;
+                    index = 0;
+                    ppmt[k] = AltPrimitivePolynomials[currentDegree - 1][index];
+                }
 
-                  // shifting bits_-l bits to the left
-                  // we are guaranteed that the l-th leftmost bit
-                  // is set, and only the first l leftmost bit
-                  // can be non-zero
-                  directionIntegers_[k][l - 1] <<= (bits_ - l);
-               }
+                degree[k] = currentDegree;
             }
-         }
 
-         // computation of directionIntegers_[k][l] for l>=degree_[k]
-         // by recurrence relation
-         for (k = 1; k < dimensionality_; k++)
-         {
-            var gk = degree[k];
-            for (var l = (int)gk; l < bits_; l++)
+            for (; k < dimensionality_; k++, index++)
             {
-               // eq. 8.19 "Monte Carlo Methods in Finance" by P. Jдckel
-               var n = (directionIntegers_[k][(int)(l - gk)] >> (int)gk);
-               // a[k][j] are the coefficients of the monomials in ppmt[k]
-               // The highest order coefficient a[k][0] is not actually
-               // used in the recurrence relation, and the lowest order
-               // coefficient a[k][gk] is always set: this is the reason
-               // why the highest and lowest coefficient of
-               // the polynomial ppmt[k] are not included in its encoding,
-               // provided that its degree is known.
-               // That is: a[k][j] = ppmt[k] >> (gk-j-1)
-               for (uint z = 1; z < gk; z++)
-               {
-                  // XORed with a selection of (unshifted) direction
-                  // integers controlled by which of the a[k][j] are set
-                  if ((((ulong)ppmt[k] >> (int)(gk - z - 1)) & 1UL) != 0)
-                     n ^= directionIntegers_[k][(int)(l - z)];
-               }
-               // a[k][gk] is always set, so directionIntegers_[k][l-gk]
-               // will always enter
-               n ^= directionIntegers_[k][(int)(l - gk)];
-               directionIntegers_[k][l] = n;
+                ppmt[k] = PrimitivePolynomials[currentDegree - 1][index];
+                if (ppmt[k] == -1)
+                {
+                    ++currentDegree;
+                    index = 0;
+                    ppmt[k] = PrimitivePolynomials[currentDegree - 1][index];
+                }
+
+                degree[k] = currentDegree;
             }
-         }
 
-         // initialize the Sobol integer/double vectors
-         // first draw
-         for (k = 0; k < dimensionality_; k++)
-         {
-            integerSequence_[k] = directionIntegers_[k][0];
-         }
-      }
+            // initializes bits_ direction integers for each dimension
+            // and store them into directionIntegers_[dimensionality_][bits_]
+            //
+            // In each dimension k with its associated primitive polynomial,
+            // the first degree_[k] direction integers can be chosen freely
+            // provided that only the l leftmost bits can be non-zero, and
+            // that the l-th leftmost bit must be set
 
-      /*! skip to the n-th sample in the low-discrepancy sequence */
-      public void skipTo(ulong skip)
-      {
-         var N = skip + 1;
-         var ops = (uint)(System.Math.Log((double)N) / Const.M_LN2) + 1;
-
-         // Convert to Gray code
-         var G = N ^ (N >> 1);
-         for (var k = 0; k < dimensionality_; k++)
-         {
-            integerSequence_[k] = 0;
-            for (var index = 0; index < ops; index++)
+            // degenerate (no free direction integers) first dimension
+            int j;
+            for (j = 0; j < bits_; j++)
             {
-               if ((G >> index & 1) != 0)
-                  integerSequence_[k] ^= directionIntegers_[k][index];
+                directionIntegers_[0][j] = (1UL << (bits_ - j - 1));
             }
-         }
-         sequenceCounter_ = skip;
-      }
 
-      public List<ulong> nextInt32Sequence()
-      {
-         if (firstDraw_)
-         {
-            // it was precomputed in the constructor
-            firstDraw_ = false;
+            var maxTabulated = 0;
+            // dimensions from 2 (k=1) to maxTabulated (k=maxTabulated-1) included
+            // are initialized from tabulated coefficients
+            switch (directionIntegers)
+            {
+                case DirectionIntegers.Unit:
+                    maxTabulated = dimensionality_;
+                    for (k = 1; k < maxTabulated; k++)
+                    {
+                        for (var l = 1; l <= degree[k]; l++)
+                        {
+                            directionIntegers_[k][l - 1] = 1UL;
+                            directionIntegers_[k][l - 1] <<= (bits_ - l);
+                        }
+                    }
+
+                    break;
+                case DirectionIntegers.Jaeckel:
+                    // maxTabulated=32
+                    maxTabulated = initializers.Length + 1;
+                    for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
+                    {
+                        j = 0;
+                        // 0UL marks coefficients' end for a given dimension
+                        while (initializers[k - 1][j] != 0UL)
+                        {
+                            directionIntegers_[k][j] = initializers[k - 1][j];
+                            directionIntegers_[k][j] <<= (bits_ - j - 1);
+                            j++;
+                        }
+                    }
+
+                    break;
+                case DirectionIntegers.SobolLevitan:
+                    // maxTabulated=40
+                    maxTabulated = SLinitializers.Length + 1;
+                    for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
+                    {
+                        j = 0;
+                        // 0UL marks coefficients' end for a given dimension
+                        while (SLinitializers[k - 1][j] != 0UL)
+                        {
+                            directionIntegers_[k][j] = SLinitializers[k - 1][j];
+                            directionIntegers_[k][j] <<= (bits_ - j - 1);
+                            j++;
+                        }
+                    }
+
+                    break;
+                case DirectionIntegers.SobolLevitanLemieux:
+                    // maxTabulated=360
+                    maxTabulated = Linitializers.Length + 1;
+                    for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
+                    {
+                        j = 0;
+                        // 0UL marks coefficients' end for a given dimension
+                        while (Linitializers[k - 1][j] != 0UL)
+                        {
+                            directionIntegers_[k][j] = Linitializers[k - 1][j];
+                            directionIntegers_[k][j] <<= (bits_ - j - 1);
+                            j++;
+                        }
+                    }
+
+                    break;
+                case DirectionIntegers.JoeKuoD5:
+                    // maxTabulated=1898
+                    maxTabulated = JoeKuoD5initializers.Length + 1;
+                    for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
+                    {
+                        j = 0;
+                        // 0UL marks coefficients' end for a given dimension
+                        while (JoeKuoD5initializers[k - 1][j] != 0UL)
+                        {
+                            directionIntegers_[k][j] = JoeKuoD5initializers[k - 1][j];
+                            directionIntegers_[k][j] <<= (bits_ - j - 1);
+                            j++;
+                        }
+                    }
+
+                    break;
+                case DirectionIntegers.JoeKuoD6:
+                    // maxTabulated=1799
+                    maxTabulated = JoeKuoD6initializers.Length + 1;
+                    for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
+                    {
+                        j = 0;
+                        // 0UL marks coefficients' end for a given dimension
+                        while (JoeKuoD6initializers[k - 1][j] != 0UL)
+                        {
+                            directionIntegers_[k][j] = JoeKuoD6initializers[k - 1][j];
+                            directionIntegers_[k][j] <<= (bits_ - j - 1);
+                            j++;
+                        }
+                    }
+
+                    break;
+                case DirectionIntegers.JoeKuoD7:
+                    // maxTabulated=1898
+                    maxTabulated = JoeKuoD7initializers.Length + 1;
+                    for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
+                    {
+                        j = 0;
+                        // 0UL marks coefficients' end for a given dimension
+                        while (JoeKuoD7initializers[k - 1][j] != 0UL)
+                        {
+                            directionIntegers_[k][j] = JoeKuoD7initializers[k - 1][j];
+                            directionIntegers_[k][j] <<= (bits_ - j - 1);
+                            j++;
+                        }
+                    }
+
+                    break;
+
+                case DirectionIntegers.Kuo:
+                    // maxTabulated=4925
+                    maxTabulated = Kuoinitializers.Length + 1;
+                    for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
+                    {
+                        j = 0;
+                        // 0UL marks coefficients' end for a given dimension
+                        while (Kuoinitializers[k - 1][j] != 0UL)
+                        {
+                            directionIntegers_[k][j] = Kuoinitializers[k - 1][j];
+                            directionIntegers_[k][j] <<= (bits_ - j - 1);
+                            j++;
+                        }
+                    }
+
+                    break;
+                case DirectionIntegers.Kuo2:
+                    // maxTabulated=3946
+                    maxTabulated = Kuo2initializers.Length + 1;
+                    for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
+                    {
+                        j = 0;
+                        // 0UL marks coefficients' end for a given dimension
+                        while (Kuo2initializers[k - 1][j] != 0UL)
+                        {
+                            directionIntegers_[k][j] = Kuo2initializers[k - 1][j];
+                            directionIntegers_[k][j] <<= (bits_ - j - 1);
+                            j++;
+                        }
+                    }
+
+                    break;
+
+                case DirectionIntegers.Kuo3:
+                    // maxTabulated=4585
+                    maxTabulated = Kuo3initializers.Length + 1;
+                    for (k = 1; k < System.Math.Min(dimensionality_, maxTabulated); k++)
+                    {
+                        j = 0;
+                        // 0UL marks coefficients' end for a given dimension
+                        while (Kuo3initializers[k - 1][j] != 0UL)
+                        {
+                            directionIntegers_[k][j] = Kuo3initializers[k - 1][j];
+                            directionIntegers_[k][j] <<= (bits_ - j - 1);
+                            j++;
+                        }
+                    }
+
+                    break;
+            }
+
+            // random initialization for higher dimensions
+            if (dimensionality_ > maxTabulated)
+            {
+                var uniformRng = new MersenneTwisterUniformRng(seed);
+                for (k = maxTabulated; k < dimensionality_; k++)
+                {
+                    for (var l = 1; l <= degree[k]; l++)
+                    {
+                        do
+                        {
+                            // u is in (0,1)
+                            var u = uniformRng.next().value;
+                            // the direction integer has at most the
+                            // rightmost l bits non-zero
+                            directionIntegers_[k][l - 1] = (ulong)(u * (1UL << l));
+                        } while ((directionIntegers_[k][l - 1] & 1UL) == 0);
+                        // iterate until the direction integer is odd
+                        // that is it has the rightmost bit set
+
+                        // shifting bits_-l bits to the left
+                        // we are guaranteed that the l-th leftmost bit
+                        // is set, and only the first l leftmost bit
+                        // can be non-zero
+                        directionIntegers_[k][l - 1] <<= (bits_ - l);
+                    }
+                }
+            }
+
+            // computation of directionIntegers_[k][l] for l>=degree_[k]
+            // by recurrence relation
+            for (k = 1; k < dimensionality_; k++)
+            {
+                var gk = degree[k];
+                for (var l = (int)gk; l < bits_; l++)
+                {
+                    // eq. 8.19 "Monte Carlo Methods in Finance" by P. Jдckel
+                    var n = (directionIntegers_[k][(int)(l - gk)] >> (int)gk);
+                    // a[k][j] are the coefficients of the monomials in ppmt[k]
+                    // The highest order coefficient a[k][0] is not actually
+                    // used in the recurrence relation, and the lowest order
+                    // coefficient a[k][gk] is always set: this is the reason
+                    // why the highest and lowest coefficient of
+                    // the polynomial ppmt[k] are not included in its encoding,
+                    // provided that its degree is known.
+                    // That is: a[k][j] = ppmt[k] >> (gk-j-1)
+                    for (uint z = 1; z < gk; z++)
+                    {
+                        // XORed with a selection of (unshifted) direction
+                        // integers controlled by which of the a[k][j] are set
+                        if ((((ulong)ppmt[k] >> (int)(gk - z - 1)) & 1UL) != 0)
+                        {
+                            n ^= directionIntegers_[k][(int)(l - z)];
+                        }
+                    }
+
+                    // a[k][gk] is always set, so directionIntegers_[k][l-gk]
+                    // will always enter
+                    n ^= directionIntegers_[k][(int)(l - gk)];
+                    directionIntegers_[k][l] = n;
+                }
+            }
+
+            // initialize the Sobol integer/double vectors
+            // first draw
+            for (k = 0; k < dimensionality_; k++)
+            {
+                integerSequence_[k] = directionIntegers_[k][0];
+            }
+        }
+
+        public List<ulong> nextInt32Sequence()
+        {
+            if (firstDraw_)
+            {
+                // it was precomputed in the constructor
+                firstDraw_ = false;
+                return integerSequence_;
+            }
+
+            // increment the counter
+            sequenceCounter_++;
+            // did we overflow?
+            Utils.QL_REQUIRE(sequenceCounter_ != 0, () => "period exceeded");
+
+            // instead of using the counter n as new unique generating integer
+            // for the n-th draw use the Gray code G(n) as proposed
+            // by Antonov and Saleev
+            var n = sequenceCounter_;
+            // Find rightmost zero bit of n
+            var j = 0;
+            while ((n & 1) != 0)
+            {
+                n >>= 1;
+                j++;
+            }
+
+            for (var k = 0; k < dimensionality_; k++)
+            {
+                // XOR the appropriate direction number into each component of
+                // the integer sequence to obtain a new Sobol integer for that
+                // component
+                integerSequence_[k] ^= directionIntegers_[k][j];
+            }
+
             return integerSequence_;
-         }
-         // increment the counter
-         sequenceCounter_++;
-         // did we overflow?
-         Utils.QL_REQUIRE(sequenceCounter_ != 0, () => "period exceeded");
+        }
 
-         // instead of using the counter n as new unique generating integer
-         // for the n-th draw use the Gray code G(n) as proposed
-         // by Antonov and Saleev
-         var n = sequenceCounter_;
-         // Find rightmost zero bit of n
-         var j = 0;
-         while ((n & 1) != 0)
-         {
-            n >>= 1;
-            j++;
-         }
-         for (var k = 0; k < dimensionality_; k++)
-         {
-            // XOR the appropriate direction number into each component of
-            // the integer sequence to obtain a new Sobol integer for that
-            // component
-            integerSequence_[k] ^= directionIntegers_[k][j];
-         }
-         return integerSequence_;
-      }
+        /*! skip to the n-th sample in the low-discrepancy sequence */
+        public void skipTo(ulong skip)
+        {
+            var N = skip + 1;
+            var ops = (uint)(System.Math.Log(N) / Const.M_LN2) + 1;
 
-      #region IRNG interface
-      public Sample<List<double>> nextSequence()
-      {
-         var v = nextInt32Sequence();
-         // normalize to get a double in (0,1)
-         for (var k = 0; k < dimensionality_; ++k)
-            sequence_.value[k] = v[k] * normalizationFactor_;
-         return sequence_;
-      }
+            // Convert to Gray code
+            var G = N ^ (N >> 1);
+            for (var k = 0; k < dimensionality_; k++)
+            {
+                integerSequence_[k] = 0;
+                for (var index = 0; index < ops; index++)
+                {
+                    if ((G >> index & 1) != 0)
+                    {
+                        integerSequence_[k] ^= directionIntegers_[k][index];
+                    }
+                }
+            }
 
-      public Sample<List<double>> lastSequence() => sequence_;
+            sequenceCounter_ = skip;
+        }
 
-      public int dimension() => dimensionality_;
+        #region IRNG interface
 
-      public IRNG factory(int dimensionality, ulong seed) => new SobolRsg(dimensionality, seed);
+        public Sample<List<double>> nextSequence()
+        {
+            var v = nextInt32Sequence();
+            // normalize to get a double in (0,1)
+            for (var k = 0; k < dimensionality_; ++k)
+            {
+                sequence_.value[k] = v[k] * normalizationFactor_;
+            }
 
-      #endregion
-   }
+            return sequence_;
+        }
+
+        public Sample<List<double>> lastSequence() => sequence_;
+
+        public int dimension() => dimensionality_;
+
+        public IRNG factory(int dimensionality, ulong seed) => new SobolRsg(dimensionality, seed);
+
+        #endregion
+    }
 }

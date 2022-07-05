@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class AkimaCubicInterpolation : CubicInterpolation
+    [PublicAPI]
+    public class AkimaCubicInterpolation : CubicInterpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public AkimaCubicInterpolation(List<double> xBegin, int size, List<double> yBegin)
@@ -10,6 +12,7 @@ namespace QLNet.Math.Interpolations
                 DerivativeApprox.Akima, false,
                 BoundaryCondition.SecondDerivative, 0.0,
                 BoundaryCondition.SecondDerivative, 0.0)
-        { }
+        {
+        }
     }
 }

@@ -754,7 +754,9 @@ namespace QLNet.Tests
                         // extract n samples
                         var rsg1 = new SobolRsg(dimensionality[j], seed, integers[i]);
                         for (var l = 0; l < (int)skip[k]; l++)
+                        {
                             rsg1.nextInt32Sequence();
+                        }
 
                         // skip n samples at once
                         var rsg2 = new SobolRsg(dimensionality[j], seed, integers[i]);

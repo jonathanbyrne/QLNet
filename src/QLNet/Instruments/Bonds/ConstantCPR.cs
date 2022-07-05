@@ -16,21 +16,24 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Instruments.Bonds
 {
-    [JetBrains.Annotations.PublicAPI] public class ConstantCPR : IPrepayModel
+    [PublicAPI]
+    public class ConstantCPR : IPrepayModel
     {
+        private double _cpr;
+
         public ConstantCPR(double cpr)
         {
             _cpr = cpr;
         }
+
         public double getCPR(Date valDate) => _cpr;
 
         public double getSMM(Date valDate) => 1 - System.Math.Pow(1 - getCPR(valDate), 1 / 12d);
-
-        private double _cpr;
     }
 }

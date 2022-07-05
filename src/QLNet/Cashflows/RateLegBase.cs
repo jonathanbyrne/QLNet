@@ -18,17 +18,17 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Time;
 using System.Collections.Generic;
+using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
     public abstract class RateLegBase
     {
-        protected Schedule schedule_;
         protected List<double> notionals_;
-        protected DayCounter paymentDayCounter_;
         protected BusinessDayConvention paymentAdjustment_;
+        protected DayCounter paymentDayCounter_;
+        protected Schedule schedule_;
 
         public static implicit operator List<CashFlow>(RateLegBase o) => o.value();
 
@@ -37,7 +37,7 @@ namespace QLNet.Cashflows
         // initializers
         public RateLegBase withNotionals(double notional)
         {
-            notionals_ = new List<double>() { notional };
+            notionals_ = new List<double> { notional };
             return this;
         }
 

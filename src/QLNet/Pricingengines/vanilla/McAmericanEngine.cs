@@ -17,12 +17,13 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.randomnumbers;
 using QLNet.Math.statistics;
 using QLNet.Methods.montecarlo;
 using QLNet.Patterns;
-using QLNet.Pricingengines;
 using QLNet.processes;
 
 namespace QLNet.Pricingengines.vanilla
@@ -35,34 +36,33 @@ namespace QLNet.Pricingengines.vanilla
         \test the correctness of the returned value is tested by
               reproducing results available in web/literature
     */
-    [JetBrains.Annotations.PublicAPI] public class MCAmericanEngine<RNG, S> : MCLongstaffSchwartzEngine<OneAssetOption.Engine, SingleVariate, RNG, S>
-      where RNG : IRSG, new()
-      where S : IGeneralStatistics, new()
+    [PublicAPI]
+    public class MCAmericanEngine<RNG, S> : MCLongstaffSchwartzEngine<OneAssetOption.Engine, SingleVariate, RNG, S>
+        where RNG : IRSG, new()
+        where S : IGeneralStatistics, new()
     {
-
         private int polynomOrder_;
         private LsmBasisSystem.PolynomType polynomType_;
 
         //     int nCalibrationSamples = Null<Size>())
         public MCAmericanEngine(GeneralizedBlackScholesProcess process,
-                                int? timeSteps,
-                                int? timeStepsPerYear,
-                                bool antitheticVariate,
-                                bool controlVariate,
-                                int? requiredSamples,
-                                double? requiredTolerance,
-                                int? maxSamples,
-                                ulong seed,
-                                int polynomOrder,
-                                LsmBasisSystem.PolynomType polynomType,
-                                int nCalibrationSamples)
-        : base(process, timeSteps, timeStepsPerYear, false, antitheticVariate, controlVariate, requiredSamples,
-               requiredTolerance, maxSamples, seed, nCalibrationSamples)
+            int? timeSteps,
+            int? timeStepsPerYear,
+            bool antitheticVariate,
+            bool controlVariate,
+            int? requiredSamples,
+            double? requiredTolerance,
+            int? maxSamples,
+            ulong seed,
+            int polynomOrder,
+            LsmBasisSystem.PolynomType polynomType,
+            int nCalibrationSamples)
+            : base(process, timeSteps, timeStepsPerYear, false, antitheticVariate, controlVariate, requiredSamples,
+                requiredTolerance, maxSamples, seed, nCalibrationSamples)
         {
             polynomOrder_ = polynomOrder;
             polynomType_ = polynomType;
         }
-
 
         public override void calculate()
         {
@@ -75,18 +75,24 @@ namespace QLNet.Pricingengines.vanilla
             }
         }
 
-        protected override LongstaffSchwartzPathPricer<IPath> lsmPathPricer()
+        protected override PathPricer<IPath> controlPathPricer()
+        {
+            var payoff = arguments_.payoff as StrikedTypePayoff;
+            Utils.QL_REQUIRE(payoff != null, () => "StrikedTypePayoff needed for control variate");
+
+            var process = process_ as GeneralizedBlackScholesProcess;
+            Utils.QL_REQUIRE(process != null, () => "generalized Black-Scholes process required");
+
+            return new EuropeanPathPricer(payoff.optionType(), payoff.strike(),
+                process.riskFreeRate().link.discount(timeGrid().Last()));
+        }
+
+        protected override IPricingEngine controlPricingEngine()
         {
             var process = process_ as GeneralizedBlackScholesProcess;
             Utils.QL_REQUIRE(process != null, () => "generalized Black-Scholes process required");
 
-            var exercise = arguments_.exercise as EarlyExercise;
-            Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
-            Utils.QL_REQUIRE(!exercise.payoffAtExpiry(), () => "payoff at expiry not handled");
-
-            var earlyExercisePathPricer = new AmericanPathPricer(arguments_.payoff, polynomOrder_, polynomType_);
-
-            return new LongstaffSchwartzPathPricer<IPath>(timeGrid(), earlyExercisePathPricer, process.riskFreeRate());
+            return new AnalyticEuropeanEngine(process);
         }
 
         protected override double? controlVariateValue()
@@ -106,44 +112,38 @@ namespace QLNet.Pricingengines.vanilla
             return controlResults.value;
         }
 
-        protected override IPricingEngine controlPricingEngine()
+        protected override LongstaffSchwartzPathPricer<IPath> lsmPathPricer()
         {
             var process = process_ as GeneralizedBlackScholesProcess;
             Utils.QL_REQUIRE(process != null, () => "generalized Black-Scholes process required");
 
-            return new AnalyticEuropeanEngine(process);
-        }
+            var exercise = arguments_.exercise as EarlyExercise;
+            Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
+            Utils.QL_REQUIRE(!exercise.payoffAtExpiry(), () => "payoff at expiry not handled");
 
-        protected override PathPricer<IPath> controlPathPricer()
-        {
-            var payoff = arguments_.payoff as StrikedTypePayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "StrikedTypePayoff needed for control variate");
+            var earlyExercisePathPricer = new AmericanPathPricer(arguments_.payoff, polynomOrder_, polynomType_);
 
-            var process = process_ as GeneralizedBlackScholesProcess;
-            Utils.QL_REQUIRE(process != null, () => "generalized Black-Scholes process required");
-
-            return new EuropeanPathPricer(payoff.optionType(), payoff.strike(),
-                                          process.riskFreeRate().link.discount(timeGrid().Last()));
+            return new LongstaffSchwartzPathPricer<IPath>(timeGrid(), earlyExercisePathPricer, process.riskFreeRate());
         }
     }
 
     //! Monte Carlo American engine factory
     //template <class RNG = PseudoRandom, class S = Statistics>
 
-    [JetBrains.Annotations.PublicAPI] public class MakeMCAmericanEngine<RNG, S>
-       where RNG : IRSG, new()
-       where S : IGeneralStatistics, new()
+    [PublicAPI]
+    public class MakeMCAmericanEngine<RNG, S>
+        where RNG : IRSG, new()
+        where S : IGeneralStatistics, new()
     {
-
-        private GeneralizedBlackScholesProcess process_;
         private bool antithetic_, controlVariate_;
-        private int? steps_, stepsPerYear_;
-        private int? samples_, maxSamples_;
         private int calibrationSamples_;
-        private double? tolerance_;
-        private ulong seed_;
         private int polynomOrder_;
         private LsmBasisSystem.PolynomType polynomType_;
+        private GeneralizedBlackScholesProcess process_;
+        private int? samples_, maxSamples_;
+        private ulong seed_;
+        private int? steps_, stepsPerYear_;
+        private double? tolerance_;
 
         public MakeMCAmericanEngine(GeneralizedBlackScholesProcess process)
         {
@@ -161,23 +161,16 @@ namespace QLNet.Pricingengines.vanilla
             polynomType_ = LsmBasisSystem.PolynomType.Monomial;
         }
 
-        // named parameters
-        public MakeMCAmericanEngine<RNG, S> withSteps(int steps)
+        // conversion to pricing engine
+        public IPricingEngine value()
         {
-            steps_ = steps;
-            return this;
+            Utils.QL_REQUIRE(steps_ != null || stepsPerYear_ != null, () => "number of steps not given");
+            Utils.QL_REQUIRE(steps_ == null || stepsPerYear_ == null, () => "number of steps overspecified");
+
+            return new MCAmericanEngine<RNG, S>(process_, steps_, stepsPerYear_, antithetic_, controlVariate_, samples_, tolerance_,
+                maxSamples_, seed_, polynomOrder_, polynomType_, calibrationSamples_);
         }
-        public MakeMCAmericanEngine<RNG, S> withStepsPerYear(int steps)
-        {
-            stepsPerYear_ = steps;
-            return this;
-        }
-        public MakeMCAmericanEngine<RNG, S> withSamples(int samples)
-        {
-            Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
-            samples_ = samples;
-            return this;
-        }
+
         public MakeMCAmericanEngine<RNG, S> withAbsoluteTolerance(double tolerance)
         {
             Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
@@ -186,16 +179,7 @@ namespace QLNet.Pricingengines.vanilla
             tolerance_ = tolerance;
             return this;
         }
-        public MakeMCAmericanEngine<RNG, S> withMaxSamples(int samples)
-        {
-            maxSamples_ = samples;
-            return this;
-        }
-        public MakeMCAmericanEngine<RNG, S> withSeed(ulong seed)
-        {
-            seed_ = seed;
-            return this;
-        }
+
         public MakeMCAmericanEngine<RNG, S> withAntitheticVariate() => withAntitheticVariate(true);
 
         public MakeMCAmericanEngine<RNG, S> withAntitheticVariate(bool b)
@@ -204,35 +188,60 @@ namespace QLNet.Pricingengines.vanilla
             return this;
         }
 
-        public MakeMCAmericanEngine<RNG, S> withControlVariate(bool b)
-        {
-            controlVariate_ = b;
-            return this;
-        }
-        public MakeMCAmericanEngine<RNG, S> withPolynomOrder(int polynomOrder)
-        {
-            polynomOrder_ = polynomOrder;
-            return this;
-        }
         public MakeMCAmericanEngine<RNG, S> withBasisSystem(LsmBasisSystem.PolynomType polynomType)
         {
             polynomType_ = polynomType;
             return this;
         }
+
         public MakeMCAmericanEngine<RNG, S> withCalibrationSamples(int samples)
         {
             calibrationSamples_ = samples;
             return this;
         }
 
-        // conversion to pricing engine
-        public IPricingEngine value()
+        public MakeMCAmericanEngine<RNG, S> withControlVariate(bool b)
         {
-            Utils.QL_REQUIRE(steps_ != null || stepsPerYear_ != null, () => "number of steps not given");
-            Utils.QL_REQUIRE(steps_ == null || stepsPerYear_ == null, () => "number of steps overspecified");
+            controlVariate_ = b;
+            return this;
+        }
 
-            return new MCAmericanEngine<RNG, S>(process_, steps_, stepsPerYear_, antithetic_, controlVariate_, samples_, tolerance_,
-                                                maxSamples_, seed_, polynomOrder_, polynomType_, calibrationSamples_);
+        public MakeMCAmericanEngine<RNG, S> withMaxSamples(int samples)
+        {
+            maxSamples_ = samples;
+            return this;
+        }
+
+        public MakeMCAmericanEngine<RNG, S> withPolynomOrder(int polynomOrder)
+        {
+            polynomOrder_ = polynomOrder;
+            return this;
+        }
+
+        public MakeMCAmericanEngine<RNG, S> withSamples(int samples)
+        {
+            Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
+            samples_ = samples;
+            return this;
+        }
+
+        public MakeMCAmericanEngine<RNG, S> withSeed(ulong seed)
+        {
+            seed_ = seed;
+            return this;
+        }
+
+        // named parameters
+        public MakeMCAmericanEngine<RNG, S> withSteps(int steps)
+        {
+            steps_ = steps;
+            return this;
+        }
+
+        public MakeMCAmericanEngine<RNG, S> withStepsPerYear(int steps)
+        {
+            stepsPerYear_ = steps;
+            return this;
         }
     }
 }

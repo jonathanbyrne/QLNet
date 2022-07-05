@@ -17,33 +17,37 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Time;
 
 namespace QLNet.Indexes.Inflation
 {
     //! AU CPI index (either quarterly or annual)
-    [JetBrains.Annotations.PublicAPI] public class AUCPI : ZeroInflationIndex
+    [PublicAPI]
+    public class AUCPI : ZeroInflationIndex
     {
         public AUCPI(Frequency frequency,
-                     bool revised,
-                     bool interpolated)
-           : this(frequency, revised, interpolated, new Handle<ZeroInflationTermStructure>()) { }
+            bool revised,
+            bool interpolated)
+            : this(frequency, revised, interpolated, new Handle<ZeroInflationTermStructure>())
+        {
+        }
 
         public AUCPI(Frequency frequency,
-                     bool revised,
-                     bool interpolated,
-                     Handle<ZeroInflationTermStructure> ts)
-           : base("CPI",
-                  new AustraliaRegion(),
-                  revised,
-                  interpolated,
-                  frequency,
-                  new Period(2, TimeUnit.Months),
-                  new AUDCurrency(),
-                  ts)
-        { }
-
+            bool revised,
+            bool interpolated,
+            Handle<ZeroInflationTermStructure> ts)
+            : base("CPI",
+                new AustraliaRegion(),
+                revised,
+                interpolated,
+                frequency,
+                new Period(2, TimeUnit.Months),
+                new AUDCurrency(),
+                ts)
+        {
+        }
     }
 
     //! Genuine year-on-year AU CPI (i.e. not a ratio)

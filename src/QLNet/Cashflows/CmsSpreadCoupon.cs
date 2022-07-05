@@ -14,47 +14,51 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
 using QLNet.Indexes.swap;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
     /// <summary>
-    /// CMS spread coupon class
-    /// <remarks>
-    /// This class does not perform any date adjustment,
-    /// i.e., the start and end date passed upon construction
-    /// should be already rolled to a business day.
-    /// </remarks>
+    ///     CMS spread coupon class
+    ///     <remarks>
+    ///         This class does not perform any date adjustment,
+    ///         i.e., the start and end date passed upon construction
+    ///         should be already rolled to a business day.
+    ///     </remarks>
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class CmsSpreadCoupon : FloatingRateCoupon
+    [PublicAPI]
+    public class CmsSpreadCoupon : FloatingRateCoupon
     {
+        private new SwapSpreadIndex index_;
+
         // need by CashFlowVectors
-        public CmsSpreadCoupon() { }
+        public CmsSpreadCoupon()
+        {
+        }
 
         public CmsSpreadCoupon(Date paymentDate,
-                               double nominal,
-                               Date startDate,
-                               Date endDate,
-                               int fixingDays,
-                               SwapSpreadIndex index,
-                               double gearing = 1.0,
-                               double spread = 0.0,
-                               Date refPeriodStart = null,
-                               Date refPeriodEnd = null,
-                               DayCounter dayCounter = null,
-                               bool isInArrears = false)
-           : base(paymentDate, nominal, startDate, endDate,
-                  fixingDays, index, gearing, spread,
-                  refPeriodStart, refPeriodEnd, dayCounter,
-                  isInArrears)
+            double nominal,
+            Date startDate,
+            Date endDate,
+            int fixingDays,
+            SwapSpreadIndex index,
+            double gearing = 1.0,
+            double spread = 0.0,
+            Date refPeriodStart = null,
+            Date refPeriodEnd = null,
+            DayCounter dayCounter = null,
+            bool isInArrears = false)
+            : base(paymentDate, nominal, startDate, endDate,
+                fixingDays, index, gearing, spread,
+                refPeriodStart, refPeriodEnd, dayCounter,
+                isInArrears)
         {
             index_ = index;
         }
 
         // Inspectors
         public SwapSpreadIndex swapSpreadIndex() => index_;
-
-        private new SwapSpreadIndex index_;
     }
 }

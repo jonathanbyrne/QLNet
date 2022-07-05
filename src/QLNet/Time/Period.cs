@@ -17,28 +17,68 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time
 {
-    [JetBrains.Annotations.PublicAPI] public class Period : IComparable
+    [PublicAPI]
+    public class Period : IComparable
     {
+        // required by operator <
+        private struct pair
+        {
+            public readonly int lo;
+            public readonly int hi;
+
+            public pair(Period p)
+            {
+                switch (p.units())
+                {
+                    case TimeUnit.Days:
+                        lo = hi = p.length();
+                        break;
+                    case TimeUnit.Weeks:
+                        lo = hi = 7 * p.length();
+                        break;
+                    case TimeUnit.Months:
+                        lo = 28 * p.length();
+                        hi = 31 * p.length();
+                        break;
+                    case TimeUnit.Years:
+                        lo = 365 * p.length();
+                        hi = 366 * p.length();
+                        break;
+                    default:
+                        Utils.QL_FAIL("Unknown TimeUnit: " + p.units());
+                        lo = hi = 0;
+                        break;
+                }
+            }
+        }
+
         private int length_;
         private TimeUnit unit_;
 
-        // properties
-        public int length() => length_;
+        public Period()
+        {
+            length_ = 0;
+            unit_ = TimeUnit.Days;
+        }
 
-        public TimeUnit units() => unit_;
+        public Period(int n, TimeUnit u)
+        {
+            length_ = n;
+            unit_ = u;
+        }
 
-        public Period() { length_ = 0; unit_ = TimeUnit.Days; }
-        public Period(int n, TimeUnit u) { length_ = n; unit_ = u; }
         public Period(Frequency f)
         {
             switch (f)
             {
                 case Frequency.NoFrequency:
-                    unit_ = TimeUnit.Days;   // same as Period()
+                    unit_ = TimeUnit.Days; // same as Period()
                     length_ = 0;
                     break;
                 case Frequency.Once:
@@ -101,68 +141,6 @@ namespace QLNet.Time
             }
         }
 
-        public Frequency frequency()
-        {
-            var length = System.Math.Abs(length_); // unsigned version
-
-            if (length == 0)
-            {
-                if (unit_ == TimeUnit.Years)
-                    return Frequency.Once;
-                return Frequency.NoFrequency;
-            }
-            switch (unit_)
-            {
-                case TimeUnit.Years:
-                    return length == 1 ? Frequency.Annual : Frequency.OtherFrequency;
-                case TimeUnit.Months:
-                    if (12 % length == 0 && length <= 12)
-                        return (Frequency)(12 / length);
-                    else
-                        return Frequency.OtherFrequency;
-                case TimeUnit.Weeks:
-                    if (length == 1)
-                        return Frequency.Weekly;
-                    else if (length == 2)
-                        return Frequency.Biweekly;
-                    else if (length == 4)
-                        return Frequency.EveryFourthWeek;
-                    else
-                        return Frequency.OtherFrequency;
-                case TimeUnit.Days:
-                    return length == 1 ? Frequency.Daily : Frequency.OtherFrequency;
-                default:
-                    throw new ArgumentException("Unknown TimeUnit: " + unit_);
-            }
-        }
-
-        public void normalize()
-        {
-            if (length_ != 0)
-                switch (unit_)
-                {
-                    case TimeUnit.Days:
-                        if (length_ % 7 == 0)
-                        {
-                            length_ /= 7;
-                            unit_ = TimeUnit.Weeks;
-                        }
-                        break;
-                    case TimeUnit.Months:
-                        if (length_ % 12 == 0)
-                        {
-                            length_ /= 12;
-                            unit_ = TimeUnit.Years;
-                        }
-                        break;
-                    case TimeUnit.Weeks:
-                    case TimeUnit.Years:
-                        break;
-                    default:
-                        throw new ArgumentException("Unknown TimeUnit: " + unit_);
-                }
-        }
-
         public static Period operator +(Period p1, Period p2)
         {
             var length_ = p1.length();
@@ -197,6 +175,7 @@ namespace QLNet.Time
                                 Utils.QL_FAIL("unknown time unit (" + p2.units() + ")");
                                 break;
                         }
+
                         break;
 
                     case TimeUnit.Months:
@@ -213,6 +192,7 @@ namespace QLNet.Time
                                 Utils.QL_FAIL("unknown time unit (" + p2.units() + ")");
                                 break;
                         }
+
                         break;
 
                     case TimeUnit.Weeks:
@@ -230,6 +210,7 @@ namespace QLNet.Time
                                 Utils.QL_FAIL("unknown time unit (" + p2.units() + ")");
                                 break;
                         }
+
                         break;
 
                     case TimeUnit.Days:
@@ -246,6 +227,7 @@ namespace QLNet.Time
                                 Utils.QL_FAIL("unknown time unit (" + p2.units() + ")");
                                 break;
                         }
+
                         break;
 
                     default:
@@ -253,91 +235,192 @@ namespace QLNet.Time
                         break;
                 }
             }
+
             return new Period(length_, units_);
         }
-        public static Period operator -(Period p1, Period p2) => p1 + -p2;
-
-        public static Period operator -(Period p) => new Period(-p.length(), p.units());
-
-        public static Period operator *(int n, Period p) => new Period(n * p.length(), p.units());
-
-        public static Period operator *(Period p, int n) => new Period(n * p.length(), p.units());
 
         public static bool operator ==(Period p1, Period p2)
         {
             if ((object)p1 == null && (object)p2 == null)
+            {
                 return true;
+            }
 
             if ((object)p1 == null || (object)p2 == null)
+            {
                 return false;
+            }
 
             return !(p1 < p2 || p2 < p1);
         }
-        public static bool operator !=(Period p1, Period p2) => !(p1 == p2);
 
-        public static bool operator <=(Period p1, Period p2) => !(p1 > p2);
+        public static bool operator >(Period p1, Period p2) => p2 < p1;
 
         public static bool operator >=(Period p1, Period p2) => !(p1 < p2);
 
-        public static bool operator >(Period p1, Period p2) => p2 < p1;
+        public static bool operator !=(Period p1, Period p2) => !(p1 == p2);
 
         public static bool operator <(Period p1, Period p2)
         {
             // special cases
             if (p1.length() == 0)
+            {
                 return p2.length() > 0;
+            }
+
             if (p2.length() == 0)
+            {
                 return p1.length() < 0;
+            }
 
             // exact comparisons
             if (p1.units() == p2.units())
+            {
                 return p1.length() < p2.length();
+            }
+
             if (p1.units() == TimeUnit.Months && p2.units() == TimeUnit.Years)
+            {
                 return p1.length() < 12 * p2.length();
+            }
+
             if (p1.units() == TimeUnit.Years && p2.units() == TimeUnit.Months)
+            {
                 return 12 * p1.length() < p2.length();
+            }
+
             if (p1.units() == TimeUnit.Days && p2.units() == TimeUnit.Weeks)
+            {
                 return p1.length() < 7 * p2.length();
+            }
+
             if (p1.units() == TimeUnit.Weeks && p2.units() == TimeUnit.Days)
+            {
                 return 7 * p1.length() < p2.length();
+            }
 
             // inexact comparisons (handled by converting to days and using limits)
             pair p1lim = new pair(p1), p2lim = new pair(p2);
             if (p1lim.hi < p2lim.lo || p2lim.hi < p1lim.lo)
+            {
                 return p1lim.hi < p2lim.lo;
-            Utils.QL_FAIL("Undecidable comparison between " + p1.ToString() + " and " + p2.ToString());
+            }
+
+            Utils.QL_FAIL("Undecidable comparison between " + p1 + " and " + p2);
             return false;
         }
 
-        // required by operator <
-        struct pair
+        public static bool operator <=(Period p1, Period p2) => !(p1 > p2);
+
+        public static Period operator *(int n, Period p) => new Period(n * p.length(), p.units());
+
+        public static Period operator *(Period p, int n) => new Period(n * p.length(), p.units());
+
+        public static Period operator -(Period p1, Period p2) => p1 + -p2;
+
+        public static Period operator -(Period p) => new Period(-p.length(), p.units());
+
+        public int CompareTo(object obj)
         {
-            public int lo, hi;
-            public pair(Period p)
+            if (this < (Period)obj)
             {
-                switch (p.units())
-                {
-                    case TimeUnit.Days:
-                        lo = hi = p.length(); break;
-                    case TimeUnit.Weeks:
-                        lo = hi = 7 * p.length(); break;
-                    case TimeUnit.Months:
-                        lo = 28 * p.length(); hi = 31 * p.length(); break;
-                    case TimeUnit.Years:
-                        lo = 365 * p.length(); hi = 366 * p.length(); break;
-                    default:
-                        Utils.QL_FAIL("Unknown TimeUnit: " + p.units());
-                        lo = hi = 0;
-                        break;
-                }
+                return -1;
             }
+
+            if (this == (Period)obj)
+            {
+                return 0;
+            }
+
+            return 1;
         }
 
         public override bool Equals(object o) => this == (Period)o;
 
+        public Frequency frequency()
+        {
+            var length = System.Math.Abs(length_); // unsigned version
+
+            if (length == 0)
+            {
+                if (unit_ == TimeUnit.Years)
+                {
+                    return Frequency.Once;
+                }
+
+                return Frequency.NoFrequency;
+            }
+
+            switch (unit_)
+            {
+                case TimeUnit.Years:
+                    return length == 1 ? Frequency.Annual : Frequency.OtherFrequency;
+                case TimeUnit.Months:
+                    if (12 % length == 0 && length <= 12)
+                    {
+                        return (Frequency)(12 / length);
+                    }
+
+                    return Frequency.OtherFrequency;
+                case TimeUnit.Weeks:
+                    if (length == 1)
+                    {
+                        return Frequency.Weekly;
+                    }
+
+                    if (length == 2)
+                    {
+                        return Frequency.Biweekly;
+                    }
+
+                    if (length == 4)
+                    {
+                        return Frequency.EveryFourthWeek;
+                    }
+
+                    return Frequency.OtherFrequency;
+                case TimeUnit.Days:
+                    return length == 1 ? Frequency.Daily : Frequency.OtherFrequency;
+                default:
+                    throw new ArgumentException("Unknown TimeUnit: " + unit_);
+            }
+        }
+
         public override int GetHashCode() => 0;
 
-        public override string ToString() => "TimeUnit: " + unit_.ToString() + ", length: " + length_.ToString();
+        // properties
+        public int length() => length_;
+
+        public void normalize()
+        {
+            if (length_ != 0)
+            {
+                switch (unit_)
+                {
+                    case TimeUnit.Days:
+                        if (length_ % 7 == 0)
+                        {
+                            length_ /= 7;
+                            unit_ = TimeUnit.Weeks;
+                        }
+
+                        break;
+                    case TimeUnit.Months:
+                        if (length_ % 12 == 0)
+                        {
+                            length_ /= 12;
+                            unit_ = TimeUnit.Years;
+                        }
+
+                        break;
+                    case TimeUnit.Weeks:
+                    case TimeUnit.Years:
+                        break;
+                    default:
+                        throw new ArgumentException("Unknown TimeUnit: " + unit_);
+                }
+            }
+        }
 
         public string ToShortString()
         {
@@ -353,10 +436,13 @@ namespace QLNet.Time
                         result += m + "W";
                         n = n % 7;
                     }
+
                     if (n != 0 || m == 0)
+                    {
                         return result + n + "D";
-                    else
-                        return result;
+                    }
+
+                    return result;
                 case TimeUnit.Weeks:
                     return result + n + "W";
                 case TimeUnit.Months:
@@ -366,10 +452,13 @@ namespace QLNet.Time
                         result += n / 12 + "Y";
                         n = n % 12;
                     }
+
                     if (n != 0 || m == 0)
+                    {
                         return result + n + "M";
-                    else
-                        return result;
+                    }
+
+                    return result;
                 case TimeUnit.Years:
                     return result + n + "Y";
                 default:
@@ -378,13 +467,8 @@ namespace QLNet.Time
             }
         }
 
-        public int CompareTo(object obj)
-        {
-            if (this < (Period)obj)
-                return -1;
-            if (this == (Period)obj)
-                return 0;
-            return 1;
-        }
+        public override string ToString() => "TimeUnit: " + unit_ + ", length: " + length_;
+
+        public TimeUnit units() => unit_;
     }
 }

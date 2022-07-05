@@ -16,49 +16,54 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Indexes;
-using QLNet.Instruments;
-using QLNet.Time;
-using System;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
+using QLNet.Indexes;
+using QLNet.Time;
 
 namespace QLNet.Instruments.Bonds
 {
     //! floating-rate bond (possibly capped and/or floored)
     //! \test calculations are tested by checking results against cached values.
-    [JetBrains.Annotations.PublicAPI] public class FloatingRateBond : Bond
+    [PublicAPI]
+    public class FloatingRateBond : Bond
     {
         public FloatingRateBond(int settlementDays, double faceAmount, Schedule schedule, IborIndex index,
-                                DayCounter paymentDayCounter)
-           : this(settlementDays, faceAmount, schedule, index, paymentDayCounter, BusinessDayConvention.Following,
-                  0, new List<double>() { 1 }, new List<double>() { 0 }, new List<double?>(), new List<double?>(),
-        false, 100, null)
-        { }
+            DayCounter paymentDayCounter)
+            : this(settlementDays, faceAmount, schedule, index, paymentDayCounter, BusinessDayConvention.Following,
+                0, new List<double> { 1 }, new List<double> { 0 }, new List<double?>(), new List<double?>(),
+                false, 100, null)
+        {
+        }
+
         public FloatingRateBond(int settlementDays, double faceAmount, Schedule schedule, IborIndex index,
-                                DayCounter paymentDayCounter, BusinessDayConvention paymentConvention, int fixingDays,
-                                List<double> gearings, List<double> spreads)
-           : this(settlementDays, faceAmount, schedule, index, paymentDayCounter, BusinessDayConvention.Following,
-                  fixingDays, gearings, spreads, new List<double?>(), new List<double?>(), false, 100, null)
-        { }
+            DayCounter paymentDayCounter, BusinessDayConvention paymentConvention, int fixingDays,
+            List<double> gearings, List<double> spreads)
+            : this(settlementDays, faceAmount, schedule, index, paymentDayCounter, BusinessDayConvention.Following,
+                fixingDays, gearings, spreads, new List<double?>(), new List<double?>(), false, 100, null)
+        {
+        }
+
         public FloatingRateBond(int settlementDays, double faceAmount, Schedule schedule, IborIndex index, DayCounter paymentDayCounter,
-                                BusinessDayConvention paymentConvention, int fixingDays, List<double> gearings, List<double> spreads,
-                                List<double?> caps, List<double?> floors, bool inArrears, double redemption, Date issueDate)
-        : base(settlementDays, schedule.calendar(), issueDate)
+            BusinessDayConvention paymentConvention, int fixingDays, List<double> gearings, List<double> spreads,
+            List<double?> caps, List<double?> floors, bool inArrears, double redemption, Date issueDate)
+            : base(settlementDays, schedule.calendar(), issueDate)
         {
             maturityDate_ = schedule.endDate();
             cashflows_ = new IborLeg(schedule, index)
-            .withPaymentDayCounter(paymentDayCounter)
-            .withFixingDays(fixingDays)
-            .withGearings(gearings)
-            .withSpreads(spreads)
-            .withCaps(caps)
-            .withFloors(floors)
-            .inArrears(inArrears)
-            .withNotionals(faceAmount)
-            .withPaymentAdjustment(paymentConvention);
+                .withPaymentDayCounter(paymentDayCounter)
+                .withFixingDays(fixingDays)
+                .withGearings(gearings)
+                .withSpreads(spreads)
+                .withCaps(caps)
+                .withFloors(floors)
+                .inArrears(inArrears)
+                .withNotionals(faceAmount)
+                .withPaymentAdjustment(paymentConvention);
 
-            addRedemptionsToCashflows(new List<double>() { redemption });
+            addRedemptionsToCashflows(new List<double> { redemption });
 
             Utils.QL_REQUIRE(cashflows().Count != 0, () => "bond with no cashflows!");
             Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
@@ -82,14 +87,13 @@ namespace QLNet.Instruments.Bonds
         //                        DateGeneration.Rule rule = DateGeneration::Backward,
         //                        bool endOfMonth = false)
         public FloatingRateBond(int settlementDays, double faceAmount, Date startDate, Date maturityDate, Frequency couponFrequency,
-                                Calendar calendar, IborIndex index, DayCounter accrualDayCounter,
-                                BusinessDayConvention accrualConvention, BusinessDayConvention paymentConvention,
-                                int fixingDays, List<double> gearings, List<double> spreads, List<double?> caps,
-                                List<double?> floors, bool inArrears, double redemption, Date issueDate,
-                                Date stubDate, DateGeneration.Rule rule, bool endOfMonth)
-        : base(settlementDays, calendar, issueDate)
+            Calendar calendar, IborIndex index, DayCounter accrualDayCounter,
+            BusinessDayConvention accrualConvention, BusinessDayConvention paymentConvention,
+            int fixingDays, List<double> gearings, List<double> spreads, List<double?> caps,
+            List<double?> floors, bool inArrears, double redemption, Date issueDate,
+            Date stubDate, DateGeneration.Rule rule, bool endOfMonth)
+            : base(settlementDays, calendar, issueDate)
         {
-
             maturityDate_ = maturityDate;
 
             Date firstDate = null, nextToLastDate = null;
@@ -115,26 +119,25 @@ namespace QLNet.Instruments.Bonds
             }
 
             var schedule = new Schedule(startDate, maturityDate_, new Period(couponFrequency), calendar_,
-                                             accrualConvention, accrualConvention, rule, endOfMonth, firstDate, nextToLastDate);
+                accrualConvention, accrualConvention, rule, endOfMonth, firstDate, nextToLastDate);
 
             cashflows_ = new IborLeg(schedule, index)
-            .withPaymentDayCounter(accrualDayCounter)
-            .withFixingDays(fixingDays)
-            .withGearings(gearings)
-            .withSpreads(spreads)
-            .withCaps(caps)
-            .withFloors(floors)
-            .inArrears(inArrears)
-            .withNotionals(faceAmount)
-            .withPaymentAdjustment(paymentConvention);
+                .withPaymentDayCounter(accrualDayCounter)
+                .withFixingDays(fixingDays)
+                .withGearings(gearings)
+                .withSpreads(spreads)
+                .withCaps(caps)
+                .withFloors(floors)
+                .inArrears(inArrears)
+                .withNotionals(faceAmount)
+                .withPaymentAdjustment(paymentConvention);
 
-            addRedemptionsToCashflows(new List<double>() { redemption });
+            addRedemptionsToCashflows(new List<double> { redemption });
 
             Utils.QL_REQUIRE(cashflows().Count != 0, () => "bond with no cashflows!");
             Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
 
             index.registerWith(update);
         }
-
     }
 }

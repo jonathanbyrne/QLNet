@@ -16,39 +16,41 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using System;
-using System.Collections.Generic;
+
 using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Math.Distributions;
 
 namespace QLNet.Methods.Finitedifferences.Meshers
 {
     /// <summary>
-    /// One-dimensional grid mesher
+    ///     One-dimensional grid mesher
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class FdmSimpleProcess1DMesher : Fdm1dMesher
+    [PublicAPI]
+    public class FdmSimpleProcess1DMesher : Fdm1dMesher
     {
         public FdmSimpleProcess1DMesher(int size,
-                                        StochasticProcess1D process,
-                                        double maturity, int tAvgSteps = 10,
-                                        double epsilon = 0.0001,
-                                        double? mandatoryPoint = null)
-        : base(size)
+            StochasticProcess1D process,
+            double maturity, int tAvgSteps = 10,
+            double epsilon = 0.0001,
+            double? mandatoryPoint = null)
+            : base(size)
         {
             locations_ = new InitializedList<double>(locations_.Count, 0.0);
             for (var l = 1; l <= tAvgSteps; ++l)
             {
                 var t = maturity * l / tAvgSteps;
 
-                var mp = mandatoryPoint != null ? mandatoryPoint.Value
-                            : process.x0();
+                var mp = mandatoryPoint != null
+                    ? mandatoryPoint.Value
+                    : process.x0();
 
                 var qMin = System.Math.Min(System.Math.Min(mp, process.x0()),
-                                       process.evolve(0, process.x0(), t,
-                                                      new InverseCumulativeNormal().value(epsilon)));
+                    process.evolve(0, process.x0(), t,
+                        new InverseCumulativeNormal().value(epsilon)));
                 var qMax = System.Math.Max(System.Math.Max(mp, process.x0()),
-                                       process.evolve(0, process.x0(), t,
-                                                      new InverseCumulativeNormal().value(1 - epsilon)));
+                    process.evolve(0, process.x0(), t,
+                        new InverseCumulativeNormal().value(1 - epsilon)));
 
                 var dp = (1 - 2 * epsilon) / (size - 1);
                 var p = epsilon;
@@ -58,10 +60,12 @@ namespace QLNet.Methods.Finitedifferences.Meshers
                 {
                     p += dp;
                     locations_[i] += process.evolve(0, process.x0(), t,
-                                                    new InverseCumulativeNormal().value(p));
+                        new InverseCumulativeNormal().value(p));
                 }
+
                 locations_[locations_.Count - 1] += qMax;
             }
+
             locations_ = locations_.Select(x => x / tAvgSteps).ToList();
             for (var i = 0; i < size - 1; ++i)
             {

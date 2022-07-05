@@ -17,30 +17,32 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Methods.Finitedifferences.Meshers;
 using QLNet.Methods.Finitedifferences.Solvers;
 using QLNet.Methods.Finitedifferences.StepConditions;
 using QLNet.Methods.Finitedifferences.Utilities;
 using QLNet.Models.Shortrate.Onefactormodels;
-using QLNet.Pricingengines;
 using QLNet.processes;
-using QLNet.Termstructures;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Pricingengines.vanilla
 {
-    [JetBrains.Annotations.PublicAPI] public class FdHullWhiteSwaptionEngine : GenericModelEngine<HullWhite, Swaption.Arguments, Instrument.Results>
+    [PublicAPI]
+    public class FdHullWhiteSwaptionEngine : GenericModelEngine<HullWhite, Swaption.Arguments, Instrument.Results>
     {
+        protected double invEps_;
+        protected FdmSchemeDesc schemeDesc_;
+        protected int tGrid_, xGrid_, dampingSteps_;
+
         public FdHullWhiteSwaptionEngine(
-           HullWhite model,
-           int tGrid = 100, int xGrid = 100,
-           int dampingSteps = 0, double invEps = 1e-5,
-           FdmSchemeDesc schemeDesc = null)
-           : base(model)
+            HullWhite model,
+            int tGrid = 100, int xGrid = 100,
+            int dampingSteps = 0, double invEps = 1e-5,
+            FdmSchemeDesc schemeDesc = null)
+            : base(model)
         {
             tGrid_ = tGrid;
             xGrid_ = xGrid;
@@ -58,13 +60,12 @@ namespace QLNet.Pricingengines.vanilla
             var dc = ts.currentLink().dayCounter();
             var referenceDate = ts.currentLink().referenceDate();
             var maturity = dc.yearFraction(referenceDate,
-                                              arguments_.exercise.lastDate());
-
+                arguments_.exercise.lastDate());
 
             var process = new OrnsteinUhlenbeckProcess(model_.currentLink().a(), model_.currentLink().sigma());
 
             Fdm1dMesher shortRateMesher =
-               new FdmSimpleProcess1DMesher(xGrid_, process, maturity, 1, invEps_);
+                new FdmSimpleProcess1DMesher(xGrid_, process, maturity, 1, invEps_);
 
             FdmMesher mesher = new FdmMesherComposite(shortRateMesher);
 
@@ -82,26 +83,26 @@ namespace QLNet.Pricingengines.vanilla
 
             var disTs = model_.currentLink().termStructure();
             var fwdTs
-               = arguments_.swap.iborIndex().forwardingTermStructure();
+                = arguments_.swap.iborIndex().forwardingTermStructure();
 
             Utils.QL_REQUIRE(fwdTs.currentLink().dayCounter() == disTs.currentLink().dayCounter(),
-                             () => "day counter of forward and discount curve must match");
+                () => "day counter of forward and discount curve must match");
             Utils.QL_REQUIRE(fwdTs.currentLink().referenceDate() == disTs.currentLink().referenceDate(),
-                             () => "reference date of forward and discount curve must match");
+                () => "reference date of forward and discount curve must match");
 
             var fwdModel =
-               new HullWhite(fwdTs, model_.currentLink().a(), model_.currentLink().sigma());
+                new HullWhite(fwdTs, model_.currentLink().a(), model_.currentLink().sigma());
 
             FdmInnerValueCalculator calculator =
-               new FdmAffineModelSwapInnerValue<HullWhite>(
-               model_.currentLink(), fwdModel,
-               arguments_.swap, t2d, mesher, 0);
+                new FdmAffineModelSwapInnerValue<HullWhite>(
+                    model_.currentLink(), fwdModel,
+                    arguments_.swap, t2d, mesher, 0);
 
             // 4. Step conditions
             var conditions =
-               FdmStepConditionComposite.vanillaComposite(
-                  new DividendSchedule(), arguments_.exercise,
-                  mesher, calculator, referenceDate, dc);
+                FdmStepConditionComposite.vanillaComposite(
+                    new DividendSchedule(), arguments_.exercise,
+                    mesher, calculator, referenceDate, dc);
 
             // 5. Boundary conditions
             var boundaries = new FdmBoundaryConditionSet();
@@ -117,13 +118,9 @@ namespace QLNet.Pricingengines.vanilla
             solverDesc.dampingSteps = dampingSteps_;
 
             var solver =
-               new FdmHullWhiteSolver(model_, solverDesc, schemeDesc_);
+                new FdmHullWhiteSolver(model_, solverDesc, schemeDesc_);
 
             results_.value = solver.valueAt(0.0);
         }
-
-        protected int tGrid_, xGrid_, dampingSteps_;
-        protected FdmSchemeDesc schemeDesc_;
-        protected double invEps_;
     }
 }

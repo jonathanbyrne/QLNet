@@ -16,9 +16,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Patterns;
+
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Patterns;
 
 namespace QLNet.Math.statistics
 {
@@ -40,24 +42,31 @@ namespace QLNet.Math.statistics
 
         \test results are tested against known good values.
     */
-    [JetBrains.Annotations.PublicAPI] public class ConvergenceStatistics<T> : ConvergenceStatistics<T, DoublingConvergenceSteps>
-       where T : IGeneralStatistics, new()
+    [PublicAPI]
+    public class ConvergenceStatistics<T> : ConvergenceStatistics<T, DoublingConvergenceSteps>
+        where T : IGeneralStatistics, new()
     {
-        public ConvergenceStatistics(T stats, DoublingConvergenceSteps rule) : base(stats, rule) { }
-        public ConvergenceStatistics() : base(new DoublingConvergenceSteps()) { }
-        public ConvergenceStatistics(DoublingConvergenceSteps rule) : base(rule) { }
+        public ConvergenceStatistics(T stats, DoublingConvergenceSteps rule) : base(stats, rule)
+        {
+        }
+
+        public ConvergenceStatistics() : base(new DoublingConvergenceSteps())
+        {
+        }
+
+        public ConvergenceStatistics(DoublingConvergenceSteps rule) : base(rule)
+        {
+        }
     }
 
-    [JetBrains.Annotations.PublicAPI] public class ConvergenceStatistics<T, U> : IGeneralStatistics
-       where T : IGeneralStatistics, new()
-       where U : IConvergenceSteps, new()
+    [PublicAPI]
+    public class ConvergenceStatistics<T, U> : IGeneralStatistics
+        where T : IGeneralStatistics, new()
+        where U : IConvergenceSteps, new()
     {
-
-        private List<KeyValuePair<int, double>> table_ = new List<KeyValuePair<int, double>>();
-        public List<KeyValuePair<int, double>> convergenceTable() => table_;
-
-        private U samplingRule_;
         private int nextSampleSize_;
+        private U samplingRule_;
+        private List<KeyValuePair<int, double>> table_ = new List<KeyValuePair<int, double>>();
 
         public ConvergenceStatistics(T stats, U rule)
         {
@@ -67,25 +76,24 @@ namespace QLNet.Math.statistics
             reset();
         }
 
-        public ConvergenceStatistics() : this(FastActivator<U>.Create()) { }
+        public ConvergenceStatistics() : this(FastActivator<U>.Create())
+        {
+        }
+
         public ConvergenceStatistics(U rule)
         {
             samplingRule_ = rule;
             reset();
         }
 
-        public void reset()
+        public void add
+            (double value)
         {
-            impl_.reset();
-            nextSampleSize_ = samplingRule_.initialSamples();
-            table_.Clear();
+            add(value, 1);
         }
 
         public void add
-           (double value)
-        { add(value, 1); }
-        public void add
-           (double value, double weight)
+            (double value, double weight)
         {
             impl_.add(value, weight);
             if (samples() == nextSampleSize_)
@@ -99,18 +107,33 @@ namespace QLNet.Math.statistics
         public void addSequence(List<double> list)
         {
             foreach (var v in list)
+            {
                 add
-                   (v, 1);
+                    (v, 1);
+            }
         }
+
         //! adds a sequence of data to the set, each with its weight
         public void addSequence(List<double> data, List<double> weight)
         {
             for (var i = 0; i < data.Count; i++)
+            {
                 add
-                   (data[i], weight[i]);
+                    (data[i], weight[i]);
+            }
+        }
+
+        public List<KeyValuePair<int, double>> convergenceTable() => table_;
+
+        public void reset()
+        {
+            impl_.reset();
+            nextSampleSize_ = samplingRule_.initialSamples();
+            table_.Clear();
         }
 
         #region wrap-up Stat
+
         protected T impl_ = FastActivator<T>.Create();
 
         public int samples() => impl_.samples();
@@ -136,7 +159,7 @@ namespace QLNet.Math.statistics
         public double errorEstimate() => impl_.errorEstimate();
 
         public KeyValuePair<double, int> expectationValue(Func<KeyValuePair<double, double>, double> f,
-                                                          Func<KeyValuePair<double, double>, bool> inRange) =>
+            Func<KeyValuePair<double, double>, bool> inRange) =>
             impl_.expectationValue(f, inRange);
 
         #endregion

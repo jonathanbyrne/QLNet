@@ -57,15 +57,24 @@ namespace QLNet.Tests
             diff = new Vector(N);
 
             for (var i = 0; i < N; i++)
+            {
                 x[i] = xMin + h * i;
+            }
 
             for (var i = 0; i < x.Count; i++)
+            {
                 y[i] = normal.value(x[i]);
+            }
+
             for (var i = 0; i < x.Count; i++)
+            {
                 yi[i] = cum.value(x[i]);
+            }
 
             for (var i = 0; i < x.size(); i++)
+            {
                 yd[i] = normal.derivative(x[i]);
+            }
 
             // define the differential operators
             var D = new DZero(N, h);
@@ -75,7 +84,10 @@ namespace QLNet.Tests
             temp = D.applyTo(yi);
 
             for (var i = 0; i < y.Count; i++)
+            {
                 diff[i] = y[i] - temp[i];
+            }
+
             var e = Utilities.norm(diff, diff.size(), h);
             if (e > 1.0e-6)
             {
@@ -86,7 +98,9 @@ namespace QLNet.Tests
             temp = D2.applyTo(yi);
 
             for (var i = 0; i < yd.Count; i++)
+            {
                 diff[i] = yd[i] - temp[i];
+            }
 
             e = Utilities.norm(diff, diff.size(), h);
             if (e > 1.0e-4)

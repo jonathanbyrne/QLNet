@@ -10,9 +10,13 @@ namespace QLNet.Math.integrals
             var dx = (b - a) / N;
             var x = a + dx / 2.0;
             for (var i = 0; i < N; x += dx, ++i)
+            {
                 sum += f(x);
+            }
+
             return (I + dx * sum) / 2.0;
         }
+
         public int nbEvalutions() => 2;
     }
 }

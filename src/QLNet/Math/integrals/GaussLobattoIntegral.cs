@@ -13,8 +13,10 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
-using QLNet.Extensions;
+
 using System;
+using JetBrains.Annotations;
+using QLNet.Extensions;
 
 namespace QLNet.Math.integrals
 {
@@ -34,27 +36,25 @@ namespace QLNet.Math.integrals
        The original MATLAB version can be downloaded here
        http://www.inf.ethz.ch/personal/gander/adaptlob.m
     */
-    [JetBrains.Annotations.PublicAPI] public class GaussLobattoIntegral : Integrator
+    [PublicAPI]
+    public class GaussLobattoIntegral : Integrator
     {
-
+        protected static readonly double alpha_ = System.Math.Sqrt(2.0 / 3.0);
+        protected static readonly double beta_ = 1.0 / System.Math.Sqrt(5.0);
+        protected static readonly double x1_ = 0.94288241569547971906;
+        protected static readonly double x2_ = 0.64185334234578130578;
+        protected static readonly double x3_ = 0.23638319966214988028;
+        protected double? relAccuracy_;
+        protected bool useConvergenceEstimate_;
 
         public GaussLobattoIntegral(int maxIterations,
-                                    double? absAccuracy,
-                                    double? relAccuracy = null,
-                                    bool useConvergenceEstimate = true)
-        : base(absAccuracy, maxIterations)
+            double? absAccuracy,
+            double? relAccuracy = null,
+            bool useConvergenceEstimate = true)
+            : base(absAccuracy, maxIterations)
         {
             relAccuracy_ = relAccuracy;
             useConvergenceEstimate_ = useConvergenceEstimate;
-        }
-
-        protected override double integrate(Func<double, double> f, double a, double b)
-        {
-            setNumberOfEvaluations(0);
-            var calcAbsTolerance = calculateAbsTolerance(f, a, b);
-
-            increaseNumberOfEvaluations(2);
-            return adaptivGaussLobattoStep(f, a, b, f(a), f(b), calcAbsTolerance);
         }
 
         protected double adaptivGaussLobattoStep(Func<double, double> f, double a, double b, double fa, double fb, double acc)
@@ -87,16 +87,13 @@ namespace QLNet.Math.integrals
                 Utils.QL_REQUIRE(m > a && b > m, () => "Interval contains no more machine number");
                 return integral1;
             }
-            else
-            {
-                return adaptivGaussLobattoStep(f, a, mll, fa, fmll, acc)
-                        + adaptivGaussLobattoStep(f, mll, ml, fmll, fml, acc)
-                        + adaptivGaussLobattoStep(f, ml, m, fml, fm, acc)
-                        + adaptivGaussLobattoStep(f, m, mr, fm, fmr, acc)
-                        + adaptivGaussLobattoStep(f, mr, mrr, fmr, fmrr, acc)
-                        + adaptivGaussLobattoStep(f, mrr, b, fmrr, fb, acc);
-            }
 
+            return adaptivGaussLobattoStep(f, a, mll, fa, fmll, acc)
+                   + adaptivGaussLobattoStep(f, mll, ml, fmll, fml, acc)
+                   + adaptivGaussLobattoStep(f, ml, m, fml, fm, acc)
+                   + adaptivGaussLobattoStep(f, m, mr, fm, fmr, acc)
+                   + adaptivGaussLobattoStep(f, mr, mrr, fmr, fmrr, acc)
+                   + adaptivGaussLobattoStep(f, mrr, b, fmrr, fb, acc);
         }
 
         protected double calculateAbsTolerance(Func<double, double> f, double a, double b)
@@ -143,27 +140,36 @@ namespace QLNet.Math.integrals
                                             625 * (y5 + y9) + 672 * y7);
 
                 if (System.Math.Abs(integral2 - acc).IsNotEqual(0.0))
+                {
                     r = System.Math.Abs(integral1 - acc) / System.Math.Abs(integral2 - acc);
+                }
+
                 if (r.IsEqual(0.0) || r > 1.0)
+                {
                     r = 1.0;
+                }
             }
 
             if (relAccuracy_ != null)
+            {
                 if (absoluteAccuracy() != null)
+                {
                     return System.Math.Min(absoluteAccuracy().GetValueOrDefault(), acc * relTol) / (r * Const.QL_EPSILON);
-                else
-                    return acc * relTol / (r * Const.QL_EPSILON);
-            else
-                return absoluteAccuracy().GetValueOrDefault() / (r * Const.QL_EPSILON);
+                }
 
+                return acc * relTol / (r * Const.QL_EPSILON);
+            }
+
+            return absoluteAccuracy().GetValueOrDefault() / (r * Const.QL_EPSILON);
         }
 
-        protected double? relAccuracy_;
-        protected bool useConvergenceEstimate_;
-        protected static readonly double alpha_ = System.Math.Sqrt(2.0 / 3.0);
-        protected static readonly double beta_ = 1.0 / System.Math.Sqrt(5.0);
-        protected static readonly double x1_ = 0.94288241569547971906;
-        protected static readonly double x2_ = 0.64185334234578130578;
-        protected static readonly double x3_ = 0.23638319966214988028;
+        protected override double integrate(Func<double, double> f, double a, double b)
+        {
+            setNumberOfEvaluations(0);
+            var calcAbsTolerance = calculateAbsTolerance(f, a, b);
+
+            increaseNumberOfEvaluations(2);
+            return adaptivGaussLobattoStep(f, a, b, f(a), f(b), calcAbsTolerance);
+        }
     }
 }

@@ -16,14 +16,14 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet;
-using QLNet.Math;
-using QLNet.Math.randomnumbers;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using QLNet.Extensions;
+using QLNet.Math;
 using QLNet.Math.integrals;
+using QLNet.Math.randomnumbers;
 
 namespace QLNet.Methods.montecarlo
 {
@@ -31,54 +31,21 @@ namespace QLNet.Methods.montecarlo
     {
         public enum PolynomType
         {
-            Monomial, Laguerre, Hermite, Hyperbolic,
-            Legendre, Chebyshev, Chebyshev2th
+            Monomial,
+            Laguerre,
+            Hermite,
+            Hyperbolic,
+            Legendre,
+            Chebyshev,
+            Chebyshev2th
         }
-
-        public static List<Func<double, double>> pathBasisSystem(int order, PolynomType polynomType)
-        {
-            var ret = new List<Func<double, double>>();
-            for (var i = 0; i <= order; ++i)
-            {
-                switch (polynomType)
-                {
-                    case PolynomType.Monomial:
-                        ret.Add(new MonomialFct(i).value);
-                        break;
-                    case PolynomType.Laguerre:
-                        ret.Add((x) => new GaussLaguerrePolynomial().weightedValue(i, x));
-                        break;
-                    case PolynomType.Hermite:
-                        ret.Add((x) => new GaussHermitePolynomial().weightedValue(i, x));
-                        break;
-                    case PolynomType.Hyperbolic:
-                        ret.Add((x) => new GaussHyperbolicPolynomial().weightedValue(i, x));
-                        break;
-                    case PolynomType.Legendre:
-                        ret.Add((x) => new GaussLegendrePolynomial().weightedValue(i, x));
-                        break;
-                    case PolynomType.Chebyshev:
-                        ret.Add((x) => new GaussChebyshevPolynomial().weightedValue(i, x));
-                        break;
-                    case PolynomType.Chebyshev2th:
-                        ret.Add((x) => new GaussChebyshev2ndPolynomial().weightedValue(i, x));
-                        break;
-                    default:
-                        Utils.QL_FAIL("unknown regression ExerciseType");
-                        break;
-                }
-            }
-            return ret;
-        }
-
 
         public static List<Func<Vector, double>> multiPathBasisSystem(int dim, int order, PolynomType polynomType)
         {
-
             var b = pathBasisSystem(order, polynomType);
 
             var ret = new List<Func<Vector, double>>();
-            ret.Add((xx) => 1.0);
+            ret.Add(xx => 1.0);
 
             for (var i = 1; i <= order; ++i)
             {
@@ -141,9 +108,45 @@ namespace QLNet.Methods.montecarlo
             return ret;
         }
 
+        public static List<Func<double, double>> pathBasisSystem(int order, PolynomType polynomType)
+        {
+            var ret = new List<Func<double, double>>();
+            for (var i = 0; i <= order; ++i)
+            {
+                switch (polynomType)
+                {
+                    case PolynomType.Monomial:
+                        ret.Add(new MonomialFct(i).value);
+                        break;
+                    case PolynomType.Laguerre:
+                        ret.Add(x => new GaussLaguerrePolynomial().weightedValue(i, x));
+                        break;
+                    case PolynomType.Hermite:
+                        ret.Add(x => new GaussHermitePolynomial().weightedValue(i, x));
+                        break;
+                    case PolynomType.Hyperbolic:
+                        ret.Add(x => new GaussHyperbolicPolynomial().weightedValue(i, x));
+                        break;
+                    case PolynomType.Legendre:
+                        ret.Add(x => new GaussLegendrePolynomial().weightedValue(i, x));
+                        break;
+                    case PolynomType.Chebyshev:
+                        ret.Add(x => new GaussChebyshevPolynomial().weightedValue(i, x));
+                        break;
+                    case PolynomType.Chebyshev2th:
+                        ret.Add(x => new GaussChebyshev2ndPolynomial().weightedValue(i, x));
+                        break;
+                    default:
+                        Utils.QL_FAIL("unknown regression ExerciseType");
+                        break;
+                }
+            }
+
+            return ret;
+        }
+
         private static List<Func<Vector, double>> w(int dim, int order, PolynomType polynomType, List<Func<double, double>> b)
         {
-
             var ret = new List<Func<Vector, double>>();
 
             for (var i = order; i >= 1; --i)
@@ -155,12 +158,19 @@ namespace QLNet.Methods.montecarlo
                     Func<Vector, double> a = xx => b[i](xx[j]);
 
                     if (i == order)
+                    {
                         ret.Add(a);
+                    }
                     else // add linear combinations
+                    {
                         for (j = 0; j < left.Count; ++j)
+                        {
                             ret.Add(xx => a(xx * left[j](xx)));
+                        }
+                    }
                 }
             }
+
             return ret;
         }
     }

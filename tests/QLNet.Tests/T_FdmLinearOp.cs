@@ -628,7 +628,9 @@ namespace QLNet.Tests
 
             var u = new Vector(layout.size());
             for (var i = 0; i < layout.size(); ++i)
+            {
                 u[i] = System.Math.Sin(0.1 * i) + System.Math.Cos(0.35 * i);
+            }
 
             var t = new Vector(dy.solve_splitting(copyOfDy.apply(u), 1.0, 0.0));
             for (var i = 0; i < u.size(); ++i)

@@ -1,12 +1,15 @@
-﻿namespace QLNet.Math.Interpolations
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class QuadraticMinHelper : ISectionHelper
+    [PublicAPI]
+    public class QuadraticMinHelper : ISectionHelper
     {
+        private double a_, b_, c_;
+        private double fAverage_, fPrev_, fNext_, xScaling_, xRatio_;
+        private double primitive1_, primitive2_;
         private bool splitRegion_;
         private double x1_, x2_, x3_, x4_;
-        private double a_, b_, c_;
-        private double primitive1_, primitive2_;
-        private double fAverage_, fPrev_, fNext_, xScaling_, xRatio_;
 
         public QuadraticMinHelper(double xPrev, double xNext, double fPrev, double fNext, double fAverage, double prevPrimitive)
         {
@@ -49,6 +52,30 @@
             }
         }
 
+        public double fNext() => fNext_;
+
+        public double primitive(double x)
+        {
+            var xVal = (x - x1_) / (x4_ - x1_);
+            if (splitRegion_)
+            {
+                if (x < x2_)
+                {
+                    xVal /= xRatio_;
+                }
+                else if (x < x3_)
+                {
+                    return primitive2_;
+                }
+                else
+                {
+                    xVal = 1.0 - (1.0 - xVal) / xRatio_;
+                }
+            }
+
+            return primitive1_ + xScaling_ * (a_ / 3 * xVal * xVal + b_ / 2 * xVal + c_) * xVal;
+        }
+
         public double value(double x)
         {
             var xVal = (x - x1_) / (x4_ - x1_);
@@ -70,28 +97,5 @@
 
             return c_ + b_ * xVal + a_ * xVal * xVal;
         }
-
-        public double primitive(double x)
-        {
-            var xVal = (x - x1_) / (x4_ - x1_);
-            if (splitRegion_)
-            {
-                if (x < x2_)
-                {
-                    xVal /= xRatio_;
-                }
-                else if (x < x3_)
-                {
-                    return primitive2_;
-                }
-                else
-                {
-                    xVal = 1.0 - (1.0 - xVal) / xRatio_;
-                }
-            }
-            return primitive1_ + xScaling_ * (a_ / 3 * xVal * xVal + b_ / 2 * xVal + c_) * xVal;
-        }
-
-        public double fNext() => fNext_;
     }
 }

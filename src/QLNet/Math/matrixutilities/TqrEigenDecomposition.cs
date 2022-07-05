@@ -16,10 +16,10 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Extensions;
-using QLNet.Math;
-using System;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Extensions;
 
 namespace QLNet.Math.matrixutilities
 {
@@ -35,9 +35,9 @@ namespace QLNet.Math.matrixutilities
        \test the correctness of the result is tested by checking it
              against known good values.
     */
-    [JetBrains.Annotations.PublicAPI] public class TqrEigenDecomposition
+    [PublicAPI]
+    public class TqrEigenDecomposition
     {
-
         public enum EigenVectorCalculation
         {
             WithEigenVector,
@@ -52,14 +52,18 @@ namespace QLNet.Math.matrixutilities
             CloseEigenValue
         }
 
+        private Vector d_;
+        private Matrix ev_;
+        private int iter_;
+
         public TqrEigenDecomposition(Vector diag, Vector sub, EigenVectorCalculation calc = EigenVectorCalculation.WithEigenVector,
-                                     ShiftStrategy strategy = ShiftStrategy.CloseEigenValue)
+            ShiftStrategy strategy = ShiftStrategy.CloseEigenValue)
         {
             iter_ = 0;
             d_ = new Vector(diag);
 
             var row = calc == EigenVectorCalculation.WithEigenVector ? d_.size() :
-                      calc == EigenVectorCalculation.WithoutEigenVector ? 0 : 1;
+                calc == EigenVectorCalculation.WithoutEigenVector ? 0 : 1;
 
             ev_ = new Matrix(row, d_.size(), 0.0);
 
@@ -74,7 +78,6 @@ namespace QLNet.Math.matrixutilities
                 e[i] = sub[i - 1];
             }
 
-
             for (i = 0; i < ev_.rows(); ++i)
             {
                 ev_[i, i] = 1.0;
@@ -85,7 +88,11 @@ namespace QLNet.Math.matrixutilities
                 while (!offDiagIsZero(k, e))
                 {
                     var l = k;
-                    while (--l > 0 && !offDiagIsZero(l, e)) ;
+                    while (--l > 0 && !offDiagIsZero(l, e))
+                    {
+                        ;
+                    }
+
                     iter_++;
 
                     var q = d_[l];
@@ -97,12 +104,11 @@ namespace QLNet.Math.matrixutilities
                         // which is closer to d_[k+1].
                         // FLOATING_POINT_EXCEPTION
                         var t1 = System.Math.Sqrt(
-                                       0.25 * (d_[k] * d_[k] + d_[k - 1] * d_[k - 1])
-                                       - 0.5 * d_[k - 1] * d_[k] + e[k] * e[k]);
+                            0.25 * (d_[k] * d_[k] + d_[k - 1] * d_[k - 1])
+                            - 0.5 * d_[k - 1] * d_[k] + e[k] * e[k]);
                         var t2 = 0.5 * (d_[k] + d_[k - 1]);
 
-                        var lambda = System.Math.Abs(t2 + t1 - d_[k]) < System.Math.Abs(t2 - t1 - d_[k]) ?
-                                        t2 + t1 : t2 - t1;
+                        var lambda = System.Math.Abs(t2 + t1 - d_[k]) < System.Math.Abs(t2 - t1 - d_[k]) ? t2 + t1 : t2 - t1;
 
                         if (strategy == ShiftStrategy.CloseEigenValue)
                         {
@@ -170,7 +176,9 @@ namespace QLNet.Math.matrixutilities
             for (i = 0; i < n; i++)
             {
                 if (ev_.rows() > 0)
+                {
                     eigenVector = ev_.column(i);
+                }
 
                 temp[i] = new KeyValuePair<double, List<double>>(d_[i], eigenVector);
             }
@@ -183,16 +191,18 @@ namespace QLNet.Math.matrixutilities
                 d_[i] = temp[i].Key;
                 var sign = 1.0;
                 if (ev_.rows() > 0 && temp[i].Value[0] < 0.0)
+                {
                     sign = -1.0;
+                }
+
                 for (var j = 0; j < ev_.rows(); ++j)
                 {
                     ev_[j, i] = sign * temp[i].Value[j];
                 }
             }
-
         }
 
-        static int KeyValuePairCompare(KeyValuePair<double, List<double>> a, KeyValuePair<double, List<double>> b) => a.Key.CompareTo(b.Key);
+        private static int KeyValuePairCompare(KeyValuePair<double, List<double>> a, KeyValuePair<double, List<double>> b) => a.Key.CompareTo(b.Key);
 
         public Vector eigenvalues() => d_;
 
@@ -201,9 +211,5 @@ namespace QLNet.Math.matrixutilities
         public int iterations() => iter_;
 
         private bool offDiagIsZero(int k, Vector e) => (System.Math.Abs(d_[k - 1]) + System.Math.Abs(d_[k])).IsEqual(System.Math.Abs(d_[k - 1]) + System.Math.Abs(d_[k]) + System.Math.Abs(e[k]));
-
-        private int iter_;
-        private Vector d_;
-        private Matrix ev_;
     }
 }

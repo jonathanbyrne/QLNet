@@ -1,17 +1,33 @@
-﻿namespace QLNet.Math.Optimization
-{
-    [JetBrains.Annotations.PublicAPI] public class CompositeConstraint : Constraint
-    {
-        public CompositeConstraint(Constraint c1, Constraint c2) : base(new Impl(c1, c2)) { }
+﻿using JetBrains.Annotations;
 
+namespace QLNet.Math.Optimization
+{
+    [PublicAPI]
+    public class CompositeConstraint : Constraint
+    {
         private class Impl : IConstraint
         {
-            private Constraint c1_, c2_;
+            private readonly Constraint c1_;
+            private readonly Constraint c2_;
 
             public Impl(Constraint c1, Constraint c2)
             {
                 c1_ = c1;
                 c2_ = c2;
+            }
+
+            public Vector lowerBound(Vector parameters)
+            {
+                var c1lb = c1_.lowerBound(parameters);
+                var c2lb = c2_.lowerBound(parameters);
+                var rtrnArray = new Vector(c1lb.size(), 0.0);
+
+                for (var iter = 0; iter < c1lb.size(); iter++)
+                {
+                    rtrnArray[iter] = System.Math.Max(c1lb[iter], c2lb[iter]);
+                }
+
+                return rtrnArray;
             }
 
             public bool test(Vector p) => c1_.test(p) && c2_.test(p);
@@ -29,21 +45,10 @@
 
                 return rtrnArray;
             }
+        }
 
-            public Vector lowerBound(Vector parameters)
-            {
-                var c1lb = c1_.lowerBound(parameters);
-                var c2lb = c2_.lowerBound(parameters);
-                var rtrnArray = new Vector(c1lb.size(), 0.0);
-
-                for (var iter = 0; iter < c1lb.size(); iter++)
-                {
-                    rtrnArray[iter] = System.Math.Max(c1lb[iter], c2lb[iter]);
-
-                }
-
-                return rtrnArray;
-            }
+        public CompositeConstraint(Constraint c1, Constraint c2) : base(new Impl(c1, c2))
+        {
         }
     }
 }

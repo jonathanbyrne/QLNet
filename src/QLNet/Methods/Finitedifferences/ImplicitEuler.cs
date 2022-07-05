@@ -17,7 +17,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Methods.Finitedifferences
 {
@@ -48,12 +50,17 @@ namespace QLNet.Methods.Finitedifferences
 
         \ingroup findiff
     */
-    [JetBrains.Annotations.PublicAPI] public class ImplicitEuler<Operator> : MixedScheme<Operator> where Operator : IOperator
+    [PublicAPI]
+    public class ImplicitEuler<Operator> : MixedScheme<Operator> where Operator : IOperator
     {
         // constructors
-        public ImplicitEuler() { }  // required for generics
+        public ImplicitEuler()
+        {
+        } // required for generics
+
         public ImplicitEuler(Operator L, List<BoundaryCondition<IOperator>> bcs)
-           : base(L, 1.0, bcs)
-        { }
+            : base(L, 1.0, bcs)
+        {
+        }
     }
 }

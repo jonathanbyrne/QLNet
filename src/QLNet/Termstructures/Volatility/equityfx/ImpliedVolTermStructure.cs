@@ -13,9 +13,10 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.Patterns;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Termstructures.Volatility.equityfx
 {
@@ -30,32 +31,41 @@ namespace QLNet.Termstructures.Volatility.equityfx
                  class should be used with term structures that are
                  time dependant only.
     */
-    [JetBrains.Annotations.PublicAPI] public class ImpliedVolTermStructure : BlackVarianceTermStructure
+    [PublicAPI]
+    public class ImpliedVolTermStructure : BlackVarianceTermStructure
     {
+        private Handle<BlackVolTermStructure> originalTS_;
+
         public ImpliedVolTermStructure(Handle<BlackVolTermStructure> originalTS, Date referenceDate)
-           : base(referenceDate)
+            : base(referenceDate)
         {
             originalTS_ = originalTS;
             originalTS_.registerWith(update);
         }
-        // TermStructure interface
-        public override DayCounter dayCounter() => originalTS_.link.dayCounter();
-
-        public override Date maxDate() => originalTS_.link.maxDate();
-
-        // VolatilityTermStructure interface
-        public override double minStrike() => originalTS_.link.minStrike();
-
-        public override double maxStrike() => originalTS_.link.maxStrike();
 
         // Visitability
         public virtual void accept(IAcyclicVisitor v)
         {
             if (v != null)
+            {
                 v.visit(this);
+            }
             else
+            {
                 Utils.QL_FAIL("not an event visitor");
+            }
         }
+
+        // TermStructure interface
+        public override DayCounter dayCounter() => originalTS_.link.dayCounter();
+
+        public override Date maxDate() => originalTS_.link.maxDate();
+
+        public override double maxStrike() => originalTS_.link.maxStrike();
+
+        // VolatilityTermStructure interface
+        public override double minStrike() => originalTS_.link.minStrike();
+
         protected override double blackVarianceImpl(double t, double strike)
         {
             /* timeShift (and/or variance) variance at evaluation date
@@ -67,8 +77,5 @@ namespace QLNet.Termstructures.Volatility.equityfx
                to the reference date of the original curve */
             return originalTS_.link.blackForwardVariance(timeShift, timeShift + t, strike, true);
         }
-
-        private Handle<BlackVolTermStructure> originalTS_;
-
     }
 }

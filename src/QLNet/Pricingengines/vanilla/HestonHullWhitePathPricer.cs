@@ -1,11 +1,17 @@
-﻿using QLNet.Math;
+﻿using JetBrains.Annotations;
+using QLNet.Math;
 using QLNet.Methods.montecarlo;
 using QLNet.processes;
 
 namespace QLNet.Pricingengines.vanilla
 {
-    [JetBrains.Annotations.PublicAPI] public class HestonHullWhitePathPricer : PathPricer<IPath>
+    [PublicAPI]
+    public class HestonHullWhitePathPricer : PathPricer<IPath>
     {
+        private double exerciseTime_;
+        private Payoff payoff_;
+        private HybridHestonHullWhiteProcess process_;
+
         public HestonHullWhitePathPricer(double exerciseTime, Payoff payoff, HybridHestonHullWhiteProcess process)
         {
             exerciseTime_ = exerciseTime;
@@ -29,9 +35,5 @@ namespace QLNet.Pricingengines.vanilla
             var df = 1.0 / process_.numeraire(exerciseTime_, states);
             return payoff_.value(states[0]) * df;
         }
-
-        private double exerciseTime_;
-        private Payoff payoff_;
-        private HybridHestonHullWhiteProcess process_;
     }
 }

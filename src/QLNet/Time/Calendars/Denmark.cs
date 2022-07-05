@@ -19,7 +19,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -42,16 +42,16 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class Denmark : Calendar
+    [PublicAPI]
+    public class Denmark : Calendar
     {
-        public Denmark() : base(Impl.Singleton) { }
-
-        class Impl : WesternImpl
+        private class Impl : WesternImpl
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "Denmark";
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -87,10 +87,18 @@ namespace QLNet.Time.Calendars
                     || d == 26 && m == Month.December
                     // New Year's Eve (bank holiday from 2003)
                     || d == 31 && m == Month.December && date.Year >= 2003)
+                {
                     return false;
+                }
+
                 return true;
             }
+
+            public override string name() => "Denmark";
+        }
+
+        public Denmark() : base(Impl.Singleton)
+        {
         }
     }
 }
-

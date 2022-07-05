@@ -13,28 +13,39 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.Models;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Models.Equity
 {
     //! calibration helper for Heston model
-    [JetBrains.Annotations.PublicAPI] public class HestonModelHelper : CalibrationHelper
+    [PublicAPI]
+    public class HestonModelHelper : CalibrationHelper
     {
+        private Calendar calendar_;
+        private Handle<YieldTermStructure> dividendYield_;
+        private Date exerciseDate_;
+        private Period maturity_;
+        private VanillaOption option_;
+        private Handle<Quote> s0_;
+        private double strikePrice_;
+        private double tau_;
+        private Option.Type type_;
+
         public HestonModelHelper(Period maturity,
-                                 Calendar calendar,
-                                 double s0,
-                                 double strikePrice,
-                                 Handle<Quote> volatility,
-                                 Handle<YieldTermStructure> riskFreeRate,
-                                 Handle<YieldTermStructure> dividendYield,
-                                 CalibrationErrorType errorType = CalibrationErrorType.RelativePriceError)
-           : base(volatility, riskFreeRate, errorType)
+            Calendar calendar,
+            double s0,
+            double strikePrice,
+            Handle<Quote> volatility,
+            Handle<YieldTermStructure> riskFreeRate,
+            Handle<YieldTermStructure> dividendYield,
+            CalibrationErrorType errorType = CalibrationErrorType.RelativePriceError)
+            : base(volatility, riskFreeRate, errorType)
         {
             maturity_ = maturity;
             calendar_ = calendar;
@@ -46,14 +57,14 @@ namespace QLNet.Models.Equity
         }
 
         public HestonModelHelper(Period maturity,
-                                 Calendar calendar,
-                                 Handle<Quote> s0,
-                                 double strikePrice,
-                                 Handle<Quote> volatility,
-                                 Handle<YieldTermStructure> riskFreeRate,
-                                 Handle<YieldTermStructure> dividendYield,
-                                 CalibrationErrorType errorType = CalibrationErrorType.RelativePriceError)
-           : base(volatility, riskFreeRate, errorType)
+            Calendar calendar,
+            Handle<Quote> s0,
+            double strikePrice,
+            Handle<Quote> volatility,
+            Handle<YieldTermStructure> riskFreeRate,
+            Handle<YieldTermStructure> dividendYield,
+            CalibrationErrorType errorType = CalibrationErrorType.RelativePriceError)
+            : base(volatility, riskFreeRate, errorType)
         {
             maturity_ = maturity;
             calendar_ = calendar;
@@ -65,20 +76,22 @@ namespace QLNet.Models.Equity
             dividendYield.registerWith(update);
         }
 
-        public override void addTimesTo(List<double> t) { }
-
-        protected override void performCalculations()
+        public override void addTimesTo(List<double> t)
         {
-            exerciseDate_ = calendar_.advance(termStructure_.link.referenceDate(), maturity_);
-            tau_ = termStructure_.link.timeFromReference(exerciseDate_);
-            type_ = strikePrice_ * termStructure_.link.discount(tau_) >=
-                    s0_.link.value() * dividendYield_.link.discount(tau_)
-                    ? QLNet.Option.Type.Call
-                    : QLNet.Option.Type.Put;
-            StrikedTypePayoff payoff = new PlainVanillaPayoff(type_, strikePrice_);
-            Exercise exercise = new EuropeanExercise(exerciseDate_);
-            option_ = new VanillaOption(payoff, exercise);
-            base.performCalculations();
+        }
+
+        public override double blackPrice(double volatility)
+        {
+            calculate();
+            var stdDev = volatility * System.Math.Sqrt(maturity());
+            return Utils.blackFormula(type_, strikePrice_ * termStructure_.link.discount(tau_),
+                s0_.link.value() * dividendYield_.link.discount(tau_), stdDev);
+        }
+
+        public double maturity()
+        {
+            calculate();
+            return tau_;
         }
 
         public override double modelValue()
@@ -88,28 +101,26 @@ namespace QLNet.Models.Equity
             return option_.NPV();
         }
 
-        public override double blackPrice(double volatility)
+        public Option.Type optionType()
         {
             calculate();
-            var stdDev = volatility * System.Math.Sqrt(maturity());
-            return Utils.blackFormula(type_, strikePrice_ * termStructure_.link.discount(tau_),
-                                      s0_.link.value() * dividendYield_.link.discount(tau_), stdDev);
+            return type_;
         }
 
-        public double maturity() { calculate(); return tau_; }
-        public QLNet.Option.Type optionType() { calculate(); return type_; }
         public double strike() => strikePrice_;
 
-        private Period maturity_;
-        private Calendar calendar_;
-        private Handle<Quote> s0_;
-        private double strikePrice_;
-        private Handle<YieldTermStructure> dividendYield_;
-        private Date exerciseDate_;
-        private double tau_;
-        private QLNet.Option.Type type_;
-        private VanillaOption option_;
+        protected override void performCalculations()
+        {
+            exerciseDate_ = calendar_.advance(termStructure_.link.referenceDate(), maturity_);
+            tau_ = termStructure_.link.timeFromReference(exerciseDate_);
+            type_ = strikePrice_ * termStructure_.link.discount(tau_) >=
+                    s0_.link.value() * dividendYield_.link.discount(tau_)
+                ? Option.Type.Call
+                : Option.Type.Put;
+            StrikedTypePayoff payoff = new PlainVanillaPayoff(type_, strikePrice_);
+            Exercise exercise = new EuropeanExercise(exerciseDate_);
+            option_ = new VanillaOption(payoff, exercise);
+            base.performCalculations();
+        }
     }
-
-
 }

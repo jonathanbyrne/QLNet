@@ -13,11 +13,12 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
 using QLNet.processes;
-using System;
 
 namespace QLNet.Pricingengines.Lookback
 {
@@ -25,13 +26,18 @@ namespace QLNet.Pricingengines.Lookback
     /*! Formula from "Option Pricing Formulas, Second Edition",
         E.G. Haug, 2006, p.148
     */
-    [JetBrains.Annotations.PublicAPI] public class AnalyticContinuousPartialFixedLookbackEngine : ContinuousPartialFixedLookbackOption.Engine
+    [PublicAPI]
+    public class AnalyticContinuousPartialFixedLookbackEngine : ContinuousPartialFixedLookbackOption.Engine
     {
+        private CumulativeNormalDistribution f_ = new CumulativeNormalDistribution();
+        private GeneralizedBlackScholesProcess process_;
+
         public AnalyticContinuousPartialFixedLookbackEngine(GeneralizedBlackScholesProcess process)
         {
             process_ = process;
             process_.registerWith(update);
         }
+
         public override void calculate()
         {
             var payoff = arguments_.payoff as PlainVanillaPayoff;
@@ -54,37 +60,6 @@ namespace QLNet.Pricingengines.Lookback
                     break;
             }
         }
-
-        private GeneralizedBlackScholesProcess process_;
-        private CumulativeNormalDistribution f_ = new CumulativeNormalDistribution();
-        // helper methods
-        private double underlying() => process_.x0();
-
-        private double strike()
-        {
-            var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "Non-plain payoff given");
-            return payoff.strike();
-        }
-        private double residualTime() => process_.time(arguments_.exercise.lastDate());
-
-        private double volatility() => process_.blackVolatility().link.blackVol(residualTime(), strike());
-
-        private double lookbackPeriodStartTime() => process_.time(arguments_.lookbackPeriodStart);
-
-        private double stdDeviation() => volatility() * System.Math.Sqrt(residualTime());
-
-        private double riskFreeRate() =>
-            process_.riskFreeRate().link.zeroRate(residualTime(),
-                Compounding.Continuous, Frequency.NoFrequency).value();
-
-        private double riskFreeDiscount() => process_.riskFreeRate().link.discount(residualTime());
-
-        private double dividendYield() =>
-            process_.dividendYield().link.zeroRate(residualTime(),
-                Compounding.Continuous, Frequency.NoFrequency).value();
-
-        private double dividendDiscount() => process_.dividendYield().link.discount(residualTime());
 
         private double A(double eta)
         {
@@ -112,8 +87,8 @@ namespace QLNet.Pricingengines.Lookback
             var n2 = f_.value(eta * d2);
 
             BivariateCumulativeNormalDistributionWe04DP cnbn1 = new BivariateCumulativeNormalDistributionWe04DP(-1),
-            cnbn2 = new BivariateCumulativeNormalDistributionWe04DP(0),
-            cnbn3 = new BivariateCumulativeNormalDistributionWe04DP(0);
+                cnbn2 = new BivariateCumulativeNormalDistributionWe04DP(0),
+                cnbn3 = new BivariateCumulativeNormalDistributionWe04DP(0);
             if (differentStartOfLookback)
             {
                 cnbn1 = new BivariateCumulativeNormalDistributionWe04DP(-System.Math.Sqrt(lookbackPeriodStartTime() / residualTime()));
@@ -137,8 +112,38 @@ namespace QLNet.Pricingengines.Lookback
                           - underlying() * dividendDiscount() * n5
                           - strike() * riskFreeDiscount() * n6
                           + carryDiscount * dividendDiscount()
-                          * (1 - 0.5 * vol * vol / carry) *
-                          underlying() * n7 * n8);
+                                          * (1 - 0.5 * vol * vol / carry) *
+                                          underlying() * n7 * n8);
         }
+
+        private double dividendDiscount() => process_.dividendYield().link.discount(residualTime());
+
+        private double dividendYield() =>
+            process_.dividendYield().link.zeroRate(residualTime(),
+                Compounding.Continuous, Frequency.NoFrequency).value();
+
+        private double lookbackPeriodStartTime() => process_.time(arguments_.lookbackPeriodStart);
+
+        private double residualTime() => process_.time(arguments_.exercise.lastDate());
+
+        private double riskFreeDiscount() => process_.riskFreeRate().link.discount(residualTime());
+
+        private double riskFreeRate() =>
+            process_.riskFreeRate().link.zeroRate(residualTime(),
+                Compounding.Continuous, Frequency.NoFrequency).value();
+
+        private double stdDeviation() => volatility() * System.Math.Sqrt(residualTime());
+
+        private double strike()
+        {
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
+            Utils.QL_REQUIRE(payoff != null, () => "Non-plain payoff given");
+            return payoff.strike();
+        }
+
+        // helper methods
+        private double underlying() => process_.x0();
+
+        private double volatility() => process_.blackVolatility().link.blackVol(residualTime(), strike());
     }
 }

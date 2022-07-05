@@ -17,18 +17,18 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Exceptions;
 using QLNet.Extensions;
-using QLNet.Math;
-using System;
 
 namespace QLNet.Math.Solvers1d
 {
-    [JetBrains.Annotations.PublicAPI] public class Ridder : Solver1D
+    [PublicAPI]
+    public class Ridder : Solver1D
     {
         protected override double solveImpl(ISolver1d f, double xAcc)
         {
-
             /* The implementation of the algorithm was inspired by
                Press, Teukolsky, Vetterling, and Flannery,
                "Numerical Recipes in C", 2nd edition, Cambridge
@@ -53,19 +53,26 @@ namespace QLNet.Math.Solvers1d
                 ++evaluationNumber_;
                 s = System.Math.Sqrt(fxMid * fxMid - fxMin_ * fxMax_);
                 if (Utils.close(s, 0.0))
+                {
                     return root_;
+                }
+
                 // Updating formula
                 nextRoot = xMid + (xMid - xMin_) *
-                           ((fxMin_ >= fxMax_ ? 1.0 : -1.0) * fxMid / s);
+                    ((fxMin_ >= fxMax_ ? 1.0 : -1.0) * fxMid / s);
                 if (System.Math.Abs(nextRoot - root_) <= xAccuracy)
+                {
                     return root_;
+                }
 
                 root_ = nextRoot;
                 // Second of two function evaluations per iteration
                 froot = f.value(root_);
                 ++evaluationNumber_;
                 if (Utils.close(froot, 0.0))
+                {
                     return root_;
+                }
 
                 // Bookkeeping to keep the root bracketed on next iteration
                 if (sign(fxMid, froot).IsNotEqual(fxMid))
@@ -91,13 +98,16 @@ namespace QLNet.Math.Solvers1d
                 }
 
                 if (System.Math.Abs(xMax_ - xMin_) <= xAccuracy)
+                {
                     return root_;
+                }
             }
 
             Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
-                          QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
+                QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
             return 0;
         }
+
         private double sign(double a, double b) => b >= 0.0 ? System.Math.Abs(a) : -System.Math.Abs(a);
     }
 }

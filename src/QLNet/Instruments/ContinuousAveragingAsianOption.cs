@@ -18,15 +18,17 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Instruments
 {
-
     //! Continuous-averaging Asian option
     //    ! \todo add running average
     //
     //        \ingroup instruments
     //
-    [JetBrains.Annotations.PublicAPI] public class ContinuousAveragingAsianOption : OneAssetOption
+    [PublicAPI]
+    public class ContinuousAveragingAsianOption : OneAssetOption
     {
         public new class Arguments : Option.Arguments
         {
@@ -34,32 +36,35 @@ namespace QLNet.Instruments
             {
                 averageType = Average.Type.NULL;
             }
+
+            public Average.Type averageType { get; set; }
+
             public override void validate()
             {
                 base.validate();
                 Utils.QL_REQUIRE(averageType != Average.Type.NULL, () => "unspecified average ExerciseType");
             }
-            public Average.Type averageType { get; set; }
         }
 
         public new class Engine : GenericEngine<Arguments, Results>
         {
         }
 
+        protected Average.Type averageType_;
+
         public ContinuousAveragingAsianOption(Average.Type averageType, StrikedTypePayoff payoff, Exercise exercise) : base(payoff, exercise)
         {
             averageType_ = averageType;
         }
+
         public override void setupArguments(IPricingEngineArguments args)
         {
-
             base.setupArguments(args);
 
             var moreArgs = args as Arguments;
             Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
             moreArgs.averageType = averageType_;
         }
-        protected Average.Type averageType_;
     }
 
     //! Discrete-averaging Asian option

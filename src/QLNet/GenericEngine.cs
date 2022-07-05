@@ -17,8 +17,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Patterns;
 using System;
+using QLNet.Patterns;
 
 namespace QLNet
 {
@@ -26,59 +26,59 @@ namespace QLNet
     // these interfaces replace the abstract PricingEngine class below
 
     // template base class for option pricing engines
-   // Derived engines only need to implement the <tt>calculate()</tt> method.
-   public abstract class GenericEngine<ArgumentsType, ResultsType> : IGenericEngine
-      where ArgumentsType : IPricingEngineArguments, new ()
-      where ResultsType : IPricingEngineResults, new ()
-   {
-      protected ArgumentsType arguments_ = FastActivator<ArgumentsType>.Create();
-      protected ResultsType results_ = FastActivator<ResultsType>.Create();
+    // Derived engines only need to implement the <tt>calculate()</tt> method.
+    public abstract class GenericEngine<ArgumentsType, ResultsType> : IGenericEngine
+        where ArgumentsType : IPricingEngineArguments, new()
+        where ResultsType : IPricingEngineResults, new()
+    {
+        protected ArgumentsType arguments_ = FastActivator<ArgumentsType>.Create();
+        protected ResultsType results_ = FastActivator<ResultsType>.Create();
 
-      public IPricingEngineArguments getArguments() => arguments_;
+        public virtual void calculate()
+        {
+            throw new NotSupportedException();
+        }
 
-      public IPricingEngineResults getResults() => results_;
+        public IPricingEngineArguments getArguments() => arguments_;
 
-      public void reset()
-      {
-         results_.reset();
-      }
+        public IPricingEngineResults getResults() => results_;
 
-      public virtual void calculate()
-      {
-         throw new NotSupportedException();
-      }
+        public void reset()
+        {
+            results_.reset();
+        }
 
-      #region Observer & Observable
+        #region Observer & Observable
 
-      // observable interface
-      private readonly WeakEventSource eventSource = new WeakEventSource();
+        // observable interface
+        private readonly WeakEventSource eventSource = new WeakEventSource();
 
-      public event Callback notifyObserversEvent
-      {
-         add => eventSource.Subscribe(value);
-         remove => eventSource.Unsubscribe(value);
-      }
+        public event Callback notifyObserversEvent
+        {
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
+        }
 
-      public void registerWith(Callback handler)
-      {
-         notifyObserversEvent += handler;
-      }
+        public void registerWith(Callback handler)
+        {
+            notifyObserversEvent += handler;
+        }
 
-      public void unregisterWith(Callback handler)
-      {
-         notifyObserversEvent -= handler;
-      }
+        public void unregisterWith(Callback handler)
+        {
+            notifyObserversEvent -= handler;
+        }
 
-      protected void notifyObservers()
-      {
-         eventSource.Raise();
-      }
+        protected void notifyObservers()
+        {
+            eventSource.Raise();
+        }
 
-      public virtual void update()
-      {
-         notifyObservers();
-      }
+        public virtual void update()
+        {
+            notifyObservers();
+        }
 
-      #endregion
-   }
+        #endregion
+    }
 }

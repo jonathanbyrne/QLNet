@@ -18,19 +18,41 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using System;
 
 namespace QLNet.Pricingengines
 {
     //! Analytic formula for American exercise payoff at-expiry options
     //! \todo calculate greeks
-    [JetBrains.Annotations.PublicAPI] public class AmericanPayoffAtExpiry
+    [PublicAPI]
+    public class AmericanPayoffAtExpiry
     {
+        private double cum_d1_;
+        private double cum_d2_;
+        private double D1_;
+        private double D2_;
+        private double discount_;
+        private double dividendDiscount_;
+        private double forward_;
+        private bool inTheMoney_;
+        private double K_;
+        private bool knock_in_;
+        private double log_H_S_;
+        private double mu_;
+        private double n_d1_;
+        private double n_d2_;
+        private double spot_;
+        private double stdDev_;
+        private double strike_;
+        private double variance_;
+        private double X_;
+        private double Y_;
+
         public AmericanPayoffAtExpiry(double spot, double discount, double dividendDiscount, double variance,
-                                      StrikedTypePayoff payoff, bool knock_in = true)
+            StrikedTypePayoff payoff, bool knock_in = true)
         {
             spot_ = spot;
             discount_ = discount;
@@ -51,20 +73,17 @@ namespace QLNet.Pricingengines
             mu_ = System.Math.Log(dividendDiscount_ / discount_) / variance_ - 0.5;
 
             // binary cash-or-nothing payoff?
-            var coo = payoff as CashOrNothingPayoff;
-            if (coo != null)
+            if (payoff is CashOrNothingPayoff coo)
             {
                 K_ = coo.cashPayoff();
             }
 
             // binary asset-or-nothing payoff?
-            var aoo = payoff as AssetOrNothingPayoff;
-            if (aoo != null)
+            if (payoff is AssetOrNothingPayoff aoo)
             {
                 K_ = forward_;
                 mu_ += 1.0;
             }
-
 
             log_H_S_ = System.Math.Log(strike_ / spot_);
             var log_S_H_ = System.Math.Log(spot_ / strike_);
@@ -88,6 +107,7 @@ namespace QLNet.Pricingengines
                         eta = -1.0;
                         phi = -1.0;
                     }
+
                     break;
                 case QLNet.Option.Type.Put:
                     if (knock_in_)
@@ -103,12 +123,12 @@ namespace QLNet.Pricingengines
                         eta = 1.0;
                         phi = 1.0;
                     }
+
                     break;
                 default:
                     Utils.QL_FAIL("invalid option ExerciseType");
                     break;
             }
-
 
             if (variance_ >= Const.QL_EPSILON)
             {
@@ -123,14 +143,22 @@ namespace QLNet.Pricingengines
             else
             {
                 if (log_S_H_ * phi > 0)
+                {
                     cum_d1_ = 1.0;
+                }
                 else
+                {
                     cum_d1_ = 0.0;
+                }
 
                 if (log_H_S_ * eta > 0)
+                {
                     cum_d2_ = 1.0;
+                }
                 else
+                {
                     cum_d2_ = 0.0;
+                }
 
                 n_d1_ = 0.0;
                 n_d2_ = 0.0;
@@ -155,9 +183,11 @@ namespace QLNet.Pricingengines
                             cum_d1_ = 0.0;
                             cum_d2_ = 0.0;
                         }
+
                         n_d1_ = 0.0;
                         n_d2_ = 0.0;
                     }
+
                     break;
                 case QLNet.Option.Type.Put:
                     if (strike_ >= spot_)
@@ -176,15 +206,16 @@ namespace QLNet.Pricingengines
                             cum_d1_ = 0.0;
                             cum_d2_ = 0.0;
                         }
+
                         n_d1_ = 0.0;
                         n_d2_ = 0.0;
                     }
+
                     break;
                 default:
                     Utils.QL_FAIL("invalid option ExerciseType");
                     break;
             }
-
 
             inTheMoney_ = type == QLNet.Option.Type.Call && strike_ < spot_ ||
                           type == QLNet.Option.Type.Put && strike_ > spot_;
@@ -197,42 +228,21 @@ namespace QLNet.Pricingengines
             {
                 X_ = 1.0;
                 if (cum_d2_.IsEqual(0.0))
+                {
                     Y_ = 0.0; // check needed on some extreme cases
+                }
                 else
+                {
                     Y_ = System.Math.Pow(strike_ / spot_, 2.0 * mu_);
+                }
             }
+
             if (!knock_in_)
+            {
                 Y_ *= -1.0;
+            }
         }
 
         public double value() => discount_ * K_ * (X_ * cum_d1_ + Y_ * cum_d2_);
-
-        private double spot_;
-        private double discount_;
-        private double dividendDiscount_;
-        private double variance_;
-
-        private double forward_;
-        private double stdDev_;
-
-        private double strike_;
-        private double K_;
-
-        private double mu_;
-        private double log_H_S_;
-
-        private double D1_;
-        private double D2_;
-
-        private double cum_d1_;
-        private double cum_d2_;
-        private double n_d1_;
-        private double n_d2_;
-
-        private bool inTheMoney_;
-        private double Y_;
-        private double X_;
-        bool knock_in_;
-
     }
 }

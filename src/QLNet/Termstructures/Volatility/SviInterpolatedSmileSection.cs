@@ -15,36 +15,41 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Math.Interpolations;
 using QLNet.Math.Optimization;
 using QLNet.Quotes;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Termstructures.Volatility
 {
-    [JetBrains.Annotations.PublicAPI] public class SviInterpolatedSmileSection : SmileSection
+    [PublicAPI]
+    public class SviInterpolatedSmileSection : SmileSection
     {
+        private List<double> strikes_;
+        private List<double> vols_;
+
         //! \name Constructors
         //@{
         //! all market data are quotes
         public SviInterpolatedSmileSection(
-           Date optionDate,
-           Handle<Quote> forward,
-           List<double> strikes,
-           bool hasFloatingStrikes,
-           Handle<Quote> atmVolatility,
-           List<Handle<Quote>> volHandles,
-           double a, double b, double sigma, double rho, double m,
-           bool isAFixed, bool isBFixed, bool isSigmaFixed, bool isRhoFixed, bool isMFixed,
-           bool vegaWeighted,
-           EndCriteria endCriteria = null,
-           OptimizationMethod method = null,
-           DayCounter dc = null)
-           : base(optionDate, dc)
+            Date optionDate,
+            Handle<Quote> forward,
+            List<double> strikes,
+            bool hasFloatingStrikes,
+            Handle<Quote> atmVolatility,
+            List<Handle<Quote>> volHandles,
+            double a, double b, double sigma, double rho, double m,
+            bool isAFixed, bool isBFixed, bool isSigmaFixed, bool isRhoFixed, bool isMFixed,
+            bool vegaWeighted,
+            EndCriteria endCriteria = null,
+            OptimizationMethod method = null,
+            DayCounter dc = null)
+            : base(optionDate, dc)
         {
             forward_ = forward;
             atmVolatility_ = atmVolatility;
@@ -70,23 +75,25 @@ namespace QLNet.Termstructures.Volatility
             atmVolatility_.registerWith(update);
 
             for (var i = 0; i < volHandles_.Count; ++i)
+            {
                 volHandles_[i].registerWith(update);
+            }
         }
 
         public SviInterpolatedSmileSection(
-           Date optionDate,
-           double forward,
-           List<double> strikes,
-           bool hasFloatingStrikes,
-           double atmVolatility,
-           List<double> volHandles,
-           double a, double b, double sigma, double rho, double m,
-           bool isAFixed, bool isBFixed, bool isSigmaFixed, bool isRhoFixed, bool isMFixed,
-           bool vegaWeighted,
-           EndCriteria endCriteria = null,
-           OptimizationMethod method = null,
-           DayCounter dc = null)
-           : base(optionDate, dc)
+            Date optionDate,
+            double forward,
+            List<double> strikes,
+            bool hasFloatingStrikes,
+            double atmVolatility,
+            List<double> volHandles,
+            double a, double b, double sigma, double rho, double m,
+            bool isAFixed, bool isBFixed, bool isSigmaFixed, bool isRhoFixed, bool isMFixed,
+            bool vegaWeighted,
+            EndCriteria endCriteria = null,
+            OptimizationMethod method = null,
+            DayCounter dc = null)
+            : base(optionDate, dc)
         {
             forward_ = new Handle<Quote>(new SimpleQuote(forward));
             atmVolatility_ = new Handle<Quote>(new SimpleQuote(atmVolatility));
@@ -109,9 +116,40 @@ namespace QLNet.Termstructures.Volatility
             method_ = method;
 
             for (var i = 0; i < volHandles_.Count; ++i)
+            {
                 volHandles_[i] = new Handle<Quote>(new SimpleQuote(volHandles[i]));
+            }
         }
 
+        public override double? atmLevel() => throw new NotImplementedException();
+
+        public override double maxStrike()
+        {
+            calculate();
+            return strikes_.Last();
+        }
+
+        public override double minStrike()
+        {
+            calculate();
+            return strikes_.First();
+        }
+
+        public override void update()
+        {
+            base.update();
+        }
+
+        protected void createInterpolation()
+        {
+            var tmp = new SviInterpolation(actualStrikes_.Where(x => actualStrikes_.First().IsEqual(x)).ToList(),
+                actualStrikes_.Count,
+                vols_.Where(x => vols_.First().IsEqual(x)).ToList(),
+                exerciseTime(), forwardValue_, a_, b_, sigma_, rho_, m_, isAFixed_,
+                isBFixed_, isSigmaFixed_, isRhoFixed_, isMFixed_, vegaWeighted_,
+                endCriteria_, method_);
+            Utils.swap(ref tmp, ref sviInterpolation_);
+        }
 
         protected override void performCalculations()
         {
@@ -136,22 +174,11 @@ namespace QLNet.Termstructures.Volatility
                     }
                 }
             }
+
             // we are recreating the sabrinterpolation object unconditionnaly to
             // avoid iterator invalidation
             createInterpolation();
             sviInterpolation_.update();
-        }
-
-
-        protected void createInterpolation()
-        {
-            var tmp = new SviInterpolation(actualStrikes_.Where(x => actualStrikes_.First().IsEqual(x)).ToList(),
-                                                        actualStrikes_.Count,
-                                                        vols_.Where(x => vols_.First().IsEqual(x)).ToList(),
-                                                        exerciseTime(), forwardValue_, a_, b_, sigma_, rho_, m_, isAFixed_,
-                                                        isBFixed_, isSigmaFixed_, isRhoFixed_, isMFixed_, vegaWeighted_,
-                                                        endCriteria_, method_);
-            Utils.swap(ref tmp, ref sviInterpolation_);
         }
 
         protected override double varianceImpl(double strike)
@@ -166,42 +193,77 @@ namespace QLNet.Termstructures.Volatility
             calculate();
             return sviInterpolation_.value(strike, true);
         }
-        public override double minStrike() { calculate(); return strikes_.First(); }
-        public override double maxStrike() { calculate(); return strikes_.Last(); }
-        public override double? atmLevel() => throw new NotImplementedException();
-
-        public override void update() { base.update(); }
-
-        private List<double> strikes_;
-        private List<double> vols_;
 
         #region svi
+
         //! Svi parameters
         private double a_, b_, sigma_, rho_, m_;
         //! Svi interpolation settings
-        bool isAFixed_, isBFixed_, isSigmaFixed_, isRhoFixed_, isMFixed_;
-        bool vegaWeighted_;
-        EndCriteria endCriteria_;
-        OptimizationMethod method_;
-        SviInterpolation sviInterpolation_;
+        private bool isAFixed_, isBFixed_, isSigmaFixed_, isRhoFixed_, isMFixed_;
+        private bool vegaWeighted_;
+        private EndCriteria endCriteria_;
+        private OptimizationMethod method_;
+        private SviInterpolation sviInterpolation_;
 
-        public double a() { calculate(); return a_; }
-        public double b() { calculate(); return b_; }
-        public double sigma() { calculate(); return sigma_; }
-        public double rho() { calculate(); return rho_; }
-        public double m() { calculate(); return m_; }
-        public double rmsError() { calculate(); return sviInterpolation_.rmsError(); }
-        public double maxError() { calculate(); return sviInterpolation_.maxError(); }
-        public EndCriteria.Type endCriteria() { calculate(); return sviInterpolation_.endCriteria(); }
+        public double a()
+        {
+            calculate();
+            return a_;
+        }
+
+        public double b()
+        {
+            calculate();
+            return b_;
+        }
+
+        public double sigma()
+        {
+            calculate();
+            return sigma_;
+        }
+
+        public double rho()
+        {
+            calculate();
+            return rho_;
+        }
+
+        public double m()
+        {
+            calculate();
+            return m_;
+        }
+
+        public double rmsError()
+        {
+            calculate();
+            return sviInterpolation_.rmsError();
+        }
+
+        public double maxError()
+        {
+            calculate();
+            return sviInterpolation_.maxError();
+        }
+
+        public EndCriteria.Type endCriteria()
+        {
+            calculate();
+            return sviInterpolation_.endCriteria();
+        }
+
         #endregion
 
         #region svi smile section
+
         protected Handle<Quote> forward_;
         protected Handle<Quote> atmVolatility_;
         protected List<Handle<Quote>> volHandles_;
         protected List<double> actualStrikes_;
         protected bool hasFloatingStrikes_;
         protected double forwardValue_;
+
         #endregion
     }
 }

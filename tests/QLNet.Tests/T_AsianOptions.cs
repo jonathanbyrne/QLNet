@@ -75,11 +75,17 @@ namespace QLNet.Tests
         {
 
             if (averageType == Average.Type.Geometric)
+            {
                 return "Geometric Averaging";
+            }
             else if (averageType == Average.Type.Arithmetic)
+            {
                 return "Arithmetic Averaging";
+            }
             else
+            {
                 Utils.QL_FAIL("unknown averaging");
+            }
 
             return string.Empty;
         }
@@ -365,7 +371,9 @@ namespace QLNet.Tests
             var dt = (int)(360 / futureFixings + 0.5);
             fixingDates[0] = today + dt;
             for (var j = 1; j < futureFixings; j++)
+            {
                 fixingDates[j] = fixingDates[j - 1] + dt;
+            }
 
             var option = new DiscreteAveragingAsianOption(averageType, runningAccumulator,
                                                                                    pastFixings, fixingDates, payoff, exercise);
@@ -421,7 +429,9 @@ namespace QLNet.Tests
             var dt = (int)(360 / futureFixings + 0.5);
             fixingDates[0] = today + dt;
             for (var j = 1; j < futureFixings; j++)
+            {
                 fixingDates[j] = fixingDates[j - 1] + dt;
+            }
 
             var option = new DiscreteAveragingAsianOption(averageType, runningAccumulator,
                                                                                    pastFixings, fixingDates, payoff, exercise);
@@ -488,7 +498,9 @@ namespace QLNet.Tests
             var dt = (int)(360 / futureFixings + 0.5);
             fixingDates[0] = today + dt;
             for (var j = 1; j < futureFixings; j++)
+            {
                 fixingDates[j] = fixingDates[j - 1] + dt;
+            }
 
             var option =
                new DiscreteAveragingAsianOption(averageType, runningAccumulator,
@@ -568,8 +580,9 @@ namespace QLNet.Tests
                             for (var d = today + new Period(3, TimeUnit.Months);
                                  d <= maturity.lastDate();
                                  d += new Period(3, TimeUnit.Months))
+                            {
                                 fixingDates.Add(d);
-
+                            }
 
                             IPricingEngine engine = new AnalyticDiscreteGeometricAveragePriceAsianEngine(process);
 

@@ -379,9 +379,13 @@ namespace QLNet.Tests
 
                 Exercise exercise;
                 if (values[i].exType == Exercise.Type.European)
+                {
                     exercise = new EuropeanExercise(exDate);
+                }
                 else
+                {
                     exercise = new AmericanExercise(exDate);
+                }
 
                 var barrierOption = new BarrierOption(values[i].barrierType, values[i].barrier, values[i].rebate,
                                                                 payoff, exercise);

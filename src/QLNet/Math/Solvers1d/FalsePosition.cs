@@ -17,13 +17,14 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Exceptions;
-using QLNet.Math;
-using System;
 
 namespace QLNet.Math.Solvers1d
 {
-    [JetBrains.Annotations.PublicAPI] public class FalsePosition : Solver1D
+    [PublicAPI]
+    public class FalsePosition : Solver1D
     {
         protected override double solveImpl(ISolver1d f, double xAccuracy)
         {
@@ -50,6 +51,7 @@ namespace QLNet.Math.Solvers1d
                 xh = xMin_;
                 fh = fxMin_;
             }
+
             dx = xh - xl;
 
             while (evaluationNumber_ <= maxEvaluations_)
@@ -58,7 +60,7 @@ namespace QLNet.Math.Solvers1d
                 root_ = xl + dx * fl / (fl - fh);
                 froot = f.value(root_);
                 evaluationNumber_++;
-                if (froot < 0.0)         // Replace appropriate limit
+                if (froot < 0.0) // Replace appropriate limit
                 {
                     del = xl - root_;
                     xl = root_;
@@ -70,6 +72,7 @@ namespace QLNet.Math.Solvers1d
                     xh = root_;
                     fh = froot;
                 }
+
                 dx = xh - xl;
                 // Convergence criterion
                 if (System.Math.Abs(del) < xAccuracy || Utils.close(froot, 0.0))
@@ -77,8 +80,9 @@ namespace QLNet.Math.Solvers1d
                     return root_;
                 }
             }
+
             Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
-                          QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
+                QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
             return 0;
         }
     }

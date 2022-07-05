@@ -16,31 +16,38 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Patterns;
+
 using System;
+using JetBrains.Annotations;
+using QLNet.Patterns;
 
 namespace QLNet
 {
     //! Abstract base class for option payoffs
-    [JetBrains.Annotations.PublicAPI] public class Payoff
-   {
-      // Payoff interface
-      /*! \warning This method is used for output and comparison between
-              payoffs. It is <b>not</b> meant to be used for writing
-              switch-on-ExerciseType code.
-      */
-      public virtual string name() => throw new NotImplementedException();
+    [PublicAPI]
+    public class Payoff
+    {
+        public virtual void accept(IAcyclicVisitor v)
+        {
+            if (v != null)
+            {
+                v.visit(this);
+            }
+            else
+            {
+                Utils.QL_FAIL("not an event visitor");
+            }
+        }
 
-      public virtual string description() => throw new NotImplementedException();
+        public virtual string description() => throw new NotImplementedException();
 
-      public virtual double value(double price) => throw new NotImplementedException();
+        // Payoff interface
+        /*! \warning This method is used for output and comparison between
+                payoffs. It is <b>not</b> meant to be used for writing
+                switch-on-ExerciseType code.
+        */
+        public virtual string name() => throw new NotImplementedException();
 
-      public virtual void accept(IAcyclicVisitor v)
-      {
-         if (v != null)
-            v.visit(this);
-         else
-            Utils.QL_FAIL("not an event visitor");
-      }
-   }
+        public virtual double value(double price) => throw new NotImplementedException();
+    }
 }

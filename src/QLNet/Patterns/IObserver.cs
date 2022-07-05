@@ -1,6 +1,9 @@
+using JetBrains.Annotations;
+
 namespace QLNet.Patterns
 {
-    [JetBrains.Annotations.PublicAPI] public interface IObserver
+    [PublicAPI]
+    public interface IObserver
     {
         void update();
     }

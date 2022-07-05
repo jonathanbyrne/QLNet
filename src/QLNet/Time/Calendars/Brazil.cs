@@ -16,8 +16,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Time;
+
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -66,85 +67,23 @@ namespace QLNet.Time.Calendars
         \test the correctness of the returned results is tested
               against a list of known holidays.
     */
-    [JetBrains.Annotations.PublicAPI] public class Brazil : Calendar
+    [PublicAPI]
+    public class Brazil : Calendar
     {
         //! Brazilian calendars
         public enum Market
         {
-            Settlement,            //!< generic settlement calendar
-            Exchange               //!< BOVESPA calendar
-        }
-
-        public Brazil() : this(Market.Settlement) { }
-        public Brazil(Market market)
-        {
-            // all calendar instances on the same market share the same implementation instance
-            switch (market)
-            {
-                case Market.Settlement:
-                    calendar_ = SettlementImpl.Singleton;
-                    break;
-                case Market.Exchange:
-                    calendar_ = ExchangeImpl.Singleton;
-                    break;
-                default:
-                    Utils.QL_FAIL("unknown market");
-                    break;
-            }
-        }
-
-
-        private class SettlementImpl : WesternImpl
-        {
-            public static readonly SettlementImpl Singleton = new SettlementImpl();
-            private SettlementImpl() { }
-
-            public override string name() => "Brazil";
-
-            public override bool isBusinessDay(Date date)
-            {
-                var w = date.DayOfWeek;
-                var d = date.Day;
-                var m = (Month)date.Month;
-                var y = date.Year;
-                var dd = date.DayOfYear;
-                var em = easterMonday(y);
-
-                if (isWeekend(w)
-                    // New Year's Day
-                    || d == 1 && m == Month.January
-                    // Tiradentes Day
-                    || d == 21 && m == Month.April
-                    // Labor Day
-                    || d == 1 && m == Month.May
-                    // Independence Day
-                    || d == 7 && m == Month.September
-                    // Nossa Sra. Aparecida Day
-                    || d == 12 && m == Month.October
-                    // All Souls Day
-                    || d == 2 && m == Month.November
-                    // Republic Day
-                    || d == 15 && m == Month.November
-                    // Christmas
-                    || d == 25 && m == Month.December
-                    // Passion of Christ
-                    || dd == em - 3
-                    // Carnival
-                    || dd == em - 49 || dd == em - 48
-                    // Corpus Christi
-                    || dd == em + 59
-                   )
-                    return false;
-                return true;
-            }
+            Settlement, //!< generic settlement calendar
+            Exchange //!< BOVESPA calendar
         }
 
         private class ExchangeImpl : WesternImpl
         {
             public static readonly ExchangeImpl Singleton = new ExchangeImpl();
-            private ExchangeImpl() { }
 
-            public override string name() => "BOVESPA";
+            private ExchangeImpl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -189,10 +128,86 @@ namespace QLNet.Time.Calendars
                     // last business day of the year
                     || m == Month.December && (d == 31 || d >= 29 && w == DayOfWeek.Friday)
                    )
+                {
                     return false;
+                }
+
                 return true;
             }
+
+            public override string name() => "BOVESPA";
         }
 
+        private class SettlementImpl : WesternImpl
+        {
+            public static readonly SettlementImpl Singleton = new SettlementImpl();
+
+            private SettlementImpl()
+            {
+            }
+
+            public override bool isBusinessDay(Date date)
+            {
+                var w = date.DayOfWeek;
+                var d = date.Day;
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var dd = date.DayOfYear;
+                var em = easterMonday(y);
+
+                if (isWeekend(w)
+                    // New Year's Day
+                    || d == 1 && m == Month.January
+                    // Tiradentes Day
+                    || d == 21 && m == Month.April
+                    // Labor Day
+                    || d == 1 && m == Month.May
+                    // Independence Day
+                    || d == 7 && m == Month.September
+                    // Nossa Sra. Aparecida Day
+                    || d == 12 && m == Month.October
+                    // All Souls Day
+                    || d == 2 && m == Month.November
+                    // Republic Day
+                    || d == 15 && m == Month.November
+                    // Christmas
+                    || d == 25 && m == Month.December
+                    // Passion of Christ
+                    || dd == em - 3
+                    // Carnival
+                    || dd == em - 49 || dd == em - 48
+                    // Corpus Christi
+                    || dd == em + 59
+                   )
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            public override string name() => "Brazil";
+        }
+
+        public Brazil() : this(Market.Settlement)
+        {
+        }
+
+        public Brazil(Market market)
+        {
+            // all calendar instances on the same market share the same implementation instance
+            switch (market)
+            {
+                case Market.Settlement:
+                    calendar_ = SettlementImpl.Singleton;
+                    break;
+                case Market.Exchange:
+                    calendar_ = ExchangeImpl.Singleton;
+                    break;
+                default:
+                    Utils.QL_FAIL("unknown market");
+                    break;
+            }
+        }
     }
 }

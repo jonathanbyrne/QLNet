@@ -19,16 +19,17 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
 
 namespace QLNet.Termstructures
 {
     //! bootstrap error
-    [JetBrains.Annotations.PublicAPI] public class BootstrapError<T, U> : ISolver1d
-      where T : Curve<U>
-      where U : TermStructure
+    [PublicAPI]
+    public class BootstrapError<T, U> : ISolver1d
+        where T : Curve<U>
+        where U : TermStructure
     {
-
         private T curve_;
         private BootstrapHelper<U> helper_;
         private int segment_;

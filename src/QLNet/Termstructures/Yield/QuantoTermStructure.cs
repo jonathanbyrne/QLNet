@@ -16,11 +16,10 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Termstructures;
+
+using JetBrains.Annotations;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Time;
-using System;
-using System.Linq;
 
 namespace QLNet.Termstructures.Yield
 {
@@ -32,19 +31,23 @@ namespace QLNet.Termstructures.Yield
               structures, i.e., any changes in the latters will be
               reflected in this structure as well.
     */
-    [JetBrains.Annotations.PublicAPI] public class QuantoTermStructure : ZeroYieldStructure
+    [PublicAPI]
+    public class QuantoTermStructure : ZeroYieldStructure
     {
+        protected Handle<BlackVolTermStructure> underlyingBlackVolTS_, exchRateBlackVolTS_;
+        protected Handle<YieldTermStructure> underlyingDividendTS_, riskFreeTS_, foreignRiskFreeTS_;
+        protected double underlyingExchRateCorrelation_, strike_, exchRateATMlevel_;
 
         public QuantoTermStructure(
-           Handle<YieldTermStructure> underlyingDividendTS,
-           Handle<YieldTermStructure> riskFreeTS,
-           Handle<YieldTermStructure> foreignRiskFreeTS,
-           Handle<BlackVolTermStructure> underlyingBlackVolTS,
-           double strike,
-           Handle<BlackVolTermStructure> exchRateBlackVolTS,
-           double exchRateATMlevel,
-           double underlyingExchRateCorrelation)
-           : base(underlyingDividendTS.currentLink().dayCounter())
+            Handle<YieldTermStructure> underlyingDividendTS,
+            Handle<YieldTermStructure> riskFreeTS,
+            Handle<YieldTermStructure> foreignRiskFreeTS,
+            Handle<BlackVolTermStructure> underlyingBlackVolTS,
+            double strike,
+            Handle<BlackVolTermStructure> exchRateBlackVolTS,
+            double exchRateATMlevel,
+            double underlyingExchRateCorrelation)
+            : base(underlyingDividendTS.currentLink().dayCounter())
         {
             underlyingDividendTS_ = underlyingDividendTS;
             riskFreeTS_ = riskFreeTS;
@@ -61,23 +64,23 @@ namespace QLNet.Termstructures.Yield
             exchRateBlackVolTS_.registerWith(update);
         }
 
-        public override DayCounter dayCounter() => underlyingDividendTS_.currentLink().dayCounter();
-
         public override Calendar calendar() => underlyingDividendTS_.currentLink().calendar();
 
-        public override int settlementDays() => underlyingDividendTS_.currentLink().settlementDays();
-
-        public override Date referenceDate() => underlyingDividendTS_.currentLink().referenceDate();
+        public override DayCounter dayCounter() => underlyingDividendTS_.currentLink().dayCounter();
 
         public override Date maxDate()
         {
             var maxDate = Date.Min(underlyingDividendTS_.currentLink().maxDate(),
-                                    riskFreeTS_.currentLink().maxDate());
+                riskFreeTS_.currentLink().maxDate());
             maxDate = Date.Min(maxDate, foreignRiskFreeTS_.currentLink().maxDate());
             maxDate = Date.Min(maxDate, underlyingBlackVolTS_.currentLink().maxDate());
             maxDate = Date.Min(maxDate, exchRateBlackVolTS_.currentLink().maxDate());
             return maxDate;
         }
+
+        public override Date referenceDate() => underlyingDividendTS_.currentLink().referenceDate();
+
+        public override int settlementDays() => underlyingDividendTS_.currentLink().settlementDays();
 
         protected override double zeroYieldImpl(double t) =>
             // warning: here it is assumed that all TS have the same daycount.
@@ -88,9 +91,5 @@ namespace QLNet.Termstructures.Yield
             + underlyingExchRateCorrelation_
             * underlyingBlackVolTS_.currentLink().blackVol(t, strike_, true)
             * exchRateBlackVolTS_.currentLink().blackVol(t, exchRateATMlevel_, true);
-
-        protected Handle<YieldTermStructure> underlyingDividendTS_, riskFreeTS_, foreignRiskFreeTS_;
-        protected Handle<BlackVolTermStructure> underlyingBlackVolTS_, exchRateBlackVolTS_;
-        protected double underlyingExchRateCorrelation_, strike_, exchRateATMlevel_;
     }
 }

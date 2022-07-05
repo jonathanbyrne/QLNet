@@ -23,20 +23,19 @@ using QLNet.processes;
 namespace QLNet
 {
     public static partial class Utils
-   {
-      //! default theta calculation for Black-Scholes options
-      public static double blackScholesTheta(GeneralizedBlackScholesProcess p, double value, double delta, double gamma)
-      {
+    {
+        //! default theta calculation for Black-Scholes options
+        public static double blackScholesTheta(GeneralizedBlackScholesProcess p, double value, double delta, double gamma)
+        {
+            var u = p.stateVariable().currentLink().value();
+            var r = p.riskFreeRate().currentLink().zeroRate(0.0, Compounding.Continuous).rate();
+            var q = p.dividendYield().currentLink().zeroRate(0.0, Compounding.Continuous).rate();
+            var v = p.localVolatility().currentLink().localVol(0.0, u);
 
-         var u = p.stateVariable().currentLink().value();
-         var r = p.riskFreeRate().currentLink().zeroRate(0.0, Compounding.Continuous).rate();
-         var q = p.dividendYield().currentLink().zeroRate(0.0, Compounding.Continuous).rate();
-         var v = p.localVolatility().currentLink().localVol(0.0, u, false);
+            return r * value - (r - q) * u * delta - 0.5 * v * v * u * u * gamma;
+        }
 
-         return r * value - (r - q) * u * delta - 0.5 * v * v * u * u * gamma;
-      }
-
-      //! default theta-per-day calculation
-      public static double defaultThetaPerDay(double theta) => theta / 365.0;
-   }
+        //! default theta-per-day calculation
+        public static double defaultThetaPerDay(double theta) => theta / 365.0;
+    }
 }

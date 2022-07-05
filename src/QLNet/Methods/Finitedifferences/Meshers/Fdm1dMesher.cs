@@ -18,14 +18,19 @@
 */
 
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Methods.Finitedifferences.Meshers
 {
     /// <summary>
-    /// One-dimensional simple FDM mesher object working on an index
+    ///     One-dimensional simple FDM mesher object working on an index
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class Fdm1dMesher
+    [PublicAPI]
+    public class Fdm1dMesher
     {
+        protected List<double?> dplus_, dminus_;
+        protected List<double> locations_;
+
         public Fdm1dMesher(int size)
         {
             locations_ = new InitializedList<double>(size);
@@ -33,17 +38,14 @@ namespace QLNet.Methods.Finitedifferences.Meshers
             dminus_ = new InitializedList<double?>(size);
         }
 
-        public int size() => locations_.Count;
+        public double? dminus(int index) => dminus_[index];
 
         public double? dplus(int index) => dplus_[index];
-
-        public double? dminus(int index) => dminus_[index];
 
         public double location(int index) => locations_[index];
 
         public List<double> locations() => locations_;
 
-        protected List<double> locations_;
-        protected List<double?> dplus_, dminus_;
+        public int size() => locations_.Count;
     }
 }

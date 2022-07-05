@@ -13,13 +13,11 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
+using QLNet.Math.Optimization;
 using QLNet.Quotes;
 using QLNet.Termstructures;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using QLNet.Math.Optimization;
 
 namespace QLNet.Models.Equity
 {
@@ -35,18 +33,24 @@ namespace QLNet.Models.Equity
         transform methods: application to Heston’s model,
         http://arxiv.org/pdf/0708.2020
     */
-    [JetBrains.Annotations.PublicAPI] public class PiecewiseTimeDependentHestonModel : CalibratedModel
+    [PublicAPI]
+    public class PiecewiseTimeDependentHestonModel : CalibratedModel
     {
+        protected Handle<YieldTermStructure> dividendYield_;
+        protected Handle<YieldTermStructure> riskFreeRate_;
+        protected Handle<Quote> s0_;
+        protected TimeGrid timeGrid_;
+
         public PiecewiseTimeDependentHestonModel(Handle<YieldTermStructure> riskFreeRate,
-                                                 Handle<YieldTermStructure> dividendYield,
-                                                 Handle<Quote> s0,
-                                                 double v0,
-                                                 Parameter theta,
-                                                 Parameter kappa,
-                                                 Parameter sigma,
-                                                 Parameter rho,
-                                                 TimeGrid timeGrid)
-           : base(5)
+            Handle<YieldTermStructure> dividendYield,
+            Handle<Quote> s0,
+            double v0,
+            Parameter theta,
+            Parameter kappa,
+            Parameter sigma,
+            Parameter rho,
+            TimeGrid timeGrid)
+            : base(5)
         {
             s0_ = s0;
             riskFreeRate_ = riskFreeRate;
@@ -64,34 +68,28 @@ namespace QLNet.Models.Equity
             dividendYield.registerWith(update);
         }
 
-        // variance mean version level
-        public double theta(double t) => arguments_[0].value(t);
+        public Handle<YieldTermStructure> dividendYield() => dividendYield_;
 
         // variance mean reversion speed
         public double kappa(double t) => arguments_[1].value(t);
 
-        // volatility of the volatility
-        public double sigma(double t) => arguments_[2].value(t);
-
         // correlation
         public double rho(double t) => arguments_[3].value(t);
 
-        // spot variance
-        public double v0() => arguments_[4].value(0.0);
+        public Handle<YieldTermStructure> riskFreeRate() => riskFreeRate_;
 
         // spot
         public double s0() => s0_.link.value();
 
+        // volatility of the volatility
+        public double sigma(double t) => arguments_[2].value(t);
+
+        // variance mean version level
+        public double theta(double t) => arguments_[0].value(t);
+
         public TimeGrid timeGrid() => timeGrid_;
 
-        public Handle<YieldTermStructure> dividendYield() => dividendYield_;
-
-        public Handle<YieldTermStructure> riskFreeRate() => riskFreeRate_;
-
-        protected Handle<Quote> s0_;
-        protected Handle<YieldTermStructure> riskFreeRate_;
-        protected Handle<YieldTermStructure> dividendYield_;
-        protected TimeGrid timeGrid_;
-
+        // spot variance
+        public double v0() => arguments_[4].value(0.0);
     }
 }

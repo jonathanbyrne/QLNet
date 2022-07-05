@@ -17,13 +17,12 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using QLNet.Instruments;
 using QLNet.Math.randomnumbers;
 using QLNet.Math.statistics;
 using QLNet.Methods.montecarlo;
 using QLNet.Patterns;
-using QLNet.Time;
-using System;
 
 namespace QLNet.Pricingengines
 {
@@ -38,59 +37,58 @@ namespace QLNet.Pricingengines
               reproducing results available in web/literature
     */
     public abstract class MCLongstaffSchwartzEngine<GenericEngine, MC, RNG>
-      : MCLongstaffSchwartzEngine<GenericEngine, MC, RNG, Statistics>
+        : MCLongstaffSchwartzEngine<GenericEngine, MC, RNG, Statistics>
         where GenericEngine : IPricingEngine, new()
         where RNG : IRSG, new()
     {
         protected MCLongstaffSchwartzEngine(StochasticProcess process,
-                                            int? timeSteps,
-                                            int? timeStepsPerYear,
-                                            bool brownianBridge,
-                                            bool antitheticVariate,
-                                            bool controlVariate,
-                                            int? requiredSamples,
-                                            double? requiredTolerance,
-                                            int? maxSamples,
-                                            ulong seed,
-                                            int nCalibrationSamples) :
-        base(process, timeSteps, timeStepsPerYear, brownianBridge, antitheticVariate, controlVariate,
-             requiredSamples, requiredTolerance, maxSamples, seed, nCalibrationSamples)
-        { }
+            int? timeSteps,
+            int? timeStepsPerYear,
+            bool brownianBridge,
+            bool antitheticVariate,
+            bool controlVariate,
+            int? requiredSamples,
+            double? requiredTolerance,
+            int? maxSamples,
+            ulong seed,
+            int nCalibrationSamples) :
+            base(process, timeSteps, timeStepsPerYear, brownianBridge, antitheticVariate, controlVariate,
+                requiredSamples, requiredTolerance, maxSamples, seed, nCalibrationSamples)
+        {
+        }
     }
 
     public abstract class MCLongstaffSchwartzEngine<GenericEngine, MC, RNG, S> : McSimulation<MC, RNG, S>, IPricingEngine
-       where GenericEngine : IPricingEngine, new()
-       where RNG : IRSG, new()
-          where S : IGeneralStatistics, new()
+        where GenericEngine : IPricingEngine, new()
+        where RNG : IRSG, new()
+        where S : IGeneralStatistics, new()
     {
-        protected StochasticProcess process_;
-        protected int? timeSteps_;
-        protected int? timeStepsPerYear_;
+        protected bool antitheticVariateCalibration_;
         protected bool brownianBridge_;
+        protected bool brownianBridgeCalibration_;
+        protected int? maxSamples_;
+        protected int nCalibrationSamples_;
+        protected LongstaffSchwartzPathPricer<IPath> pathPricer_;
+        protected StochasticProcess process_;
         protected int? requiredSamples_;
         protected double? requiredTolerance_;
-        protected int? maxSamples_;
         protected ulong seed_;
-        protected int nCalibrationSamples_;
-        protected bool brownianBridgeCalibration_;
-        protected bool antitheticVariateCalibration_;
         protected ulong seedCalibration_;
-
-        protected LongstaffSchwartzPathPricer<IPath> pathPricer_;
-
+        protected int? timeSteps_;
+        protected int? timeStepsPerYear_;
 
         protected MCLongstaffSchwartzEngine(StochasticProcess process,
-                                            int? timeSteps,
-                                            int? timeStepsPerYear,
-                                            bool brownianBridge,
-                                            bool antitheticVariate,
-                                            bool controlVariate,
-                                            int? requiredSamples,
-                                            double? requiredTolerance,
-                                            int? maxSamples,
-                                            ulong seed,
-                                            int? nCalibrationSamples)
-        : base(antitheticVariate, controlVariate)
+            int? timeSteps,
+            int? timeStepsPerYear,
+            bool brownianBridge,
+            bool antitheticVariate,
+            bool controlVariate,
+            int? requiredSamples,
+            double? requiredTolerance,
+            int? maxSamples,
+            ulong seed,
+            int? nCalibrationSamples)
+            : base(antitheticVariate, controlVariate)
         {
             process_ = process;
             timeSteps_ = timeSteps;
@@ -102,15 +100,14 @@ namespace QLNet.Pricingengines
             seed_ = seed;
             nCalibrationSamples_ = nCalibrationSamples ?? 2048;
 
-
             Utils.QL_REQUIRE(timeSteps != null ||
                              timeStepsPerYear != null, () => "no time steps provided");
             Utils.QL_REQUIRE(timeSteps == null ||
                              timeStepsPerYear == null, () => "both time steps and time steps per year were provided");
             Utils.QL_REQUIRE(timeSteps != 0, () =>
-                             "timeSteps must be positive, " + timeSteps + " not allowed");
+                "timeSteps must be positive, " + timeSteps + " not allowed");
             Utils.QL_REQUIRE(timeStepsPerYear != 0, () =>
-                             "timeStepsPerYear must be positive, " + timeStepsPerYear + " not allowed");
+                "timeStepsPerYear must be positive, " + timeStepsPerYear + " not allowed");
 
             process_.registerWith(update);
         }
@@ -131,24 +128,19 @@ namespace QLNet.Pricingengines
             }
         }
 
-        protected override TimeGrid timeGrid()
+        protected abstract LongstaffSchwartzPathPricer<IPath> lsmPathPricer();
+
+        protected override IPathGenerator<IRNG> pathGenerator()
         {
-            var lastExerciseDate = arguments_.exercise.lastDate();
-            var t = process_.time(lastExerciseDate);
-            if (timeSteps_ != null)
+            var dimensions = process_.factors();
+            var grid = timeGrid();
+            var generator = FastActivator<RNG>.Create().make_sequence_generator(dimensions * (grid.size() - 1), seed_);
+            if (typeof(MC) == typeof(SingleVariate))
             {
-                return new TimeGrid(t, timeSteps_.Value);
+                return new PathGenerator<IRNG>(process_, grid, generator, brownianBridge_);
             }
-            else if (timeStepsPerYear_ != null)
-            {
-                var steps = (int)(timeStepsPerYear_.Value * t);
-                return new TimeGrid(t, System.Math.Max(steps, 1));
-            }
-            else
-            {
-                Utils.QL_FAIL("time steps not specified");
-                return null;
-            }
+
+            return new MultiPathGenerator<IRNG>(process_, grid, generator, brownianBridge_);
         }
 
         protected override PathPricer<IPath> pathPricer()
@@ -157,21 +149,27 @@ namespace QLNet.Pricingengines
             return pathPricer_;
         }
 
-        protected override IPathGenerator<IRNG> pathGenerator()
+        protected override TimeGrid timeGrid()
         {
-            var dimensions = process_.factors();
-            var grid = timeGrid();
-            var generator = FastActivator<RNG>.Create().make_sequence_generator(dimensions * (grid.size() - 1), seed_);
-            if (typeof(MC) == typeof(SingleVariate))
-                return new PathGenerator<IRNG>(process_, grid, generator, brownianBridge_);
-            else
-                return new MultiPathGenerator<IRNG>(process_, grid, generator, brownianBridge_);
+            var lastExerciseDate = arguments_.exercise.lastDate();
+            var t = process_.time(lastExerciseDate);
+            if (timeSteps_ != null)
+            {
+                return new TimeGrid(t, timeSteps_.Value);
+            }
 
+            if (timeStepsPerYear_ != null)
+            {
+                var steps = (int)(timeStepsPerYear_.Value * t);
+                return new TimeGrid(t, System.Math.Max(steps, 1));
+            }
+
+            Utils.QL_FAIL("time steps not specified");
+            return null;
         }
 
-        protected abstract LongstaffSchwartzPathPricer<IPath> lsmPathPricer();
-
         #region PricingEngine
+
         protected QLNet.Option.Arguments arguments_ = new QLNet.Option.Arguments();
         protected OneAssetOption.Results results_ = new OneAssetOption.Results();
 
@@ -179,26 +177,44 @@ namespace QLNet.Pricingengines
 
         public IPricingEngineResults getResults() => results_;
 
-        public void reset() { results_.reset(); }
+        public void reset()
+        {
+            results_.reset();
+        }
 
         #region Observer & Observable
+
         // observable interface
         private readonly WeakEventSource eventSource = new WeakEventSource();
+
         public event Callback notifyObserversEvent
         {
             add => eventSource.Subscribe(value);
             remove => eventSource.Unsubscribe(value);
         }
 
-        public void registerWith(Callback handler) { notifyObserversEvent += handler; }
-        public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
+        public void registerWith(Callback handler)
+        {
+            notifyObserversEvent += handler;
+        }
+
+        public void unregisterWith(Callback handler)
+        {
+            notifyObserversEvent -= handler;
+        }
+
         protected void notifyObservers()
         {
             eventSource.Raise();
         }
 
-        public void update() { notifyObservers(); }
+        public void update()
+        {
+            notifyObservers();
+        }
+
         #endregion
+
         #endregion
     }
 }

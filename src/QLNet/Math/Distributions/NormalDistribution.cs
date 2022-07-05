@@ -16,7 +16,8 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using System;
+
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Distributions
 {
@@ -30,11 +31,15 @@ namespace QLNet.Math.Distributions
               CumulativeNormalDistribution and InverseCumulativeNormal
               classes.
     */
-    [JetBrains.Annotations.PublicAPI] public class NormalDistribution : IValue
+    [PublicAPI]
+    public class NormalDistribution : IValue
     {
         private double average_, sigma_, normalizationFactor_, denominator_, derNormalizationFactor_;
 
-        public NormalDistribution() : this(0.0, 1.0) { }
+        public NormalDistribution() : this(0.0, 1.0)
+        {
+        }
+
         public NormalDistribution(double average, double sigma)
         {
             average_ = average;
@@ -47,19 +52,20 @@ namespace QLNet.Math.Distributions
             denominator_ = 2.0 * derNormalizationFactor_;
         }
 
+        public double derivative(double x) => value(x) * (average_ - x) / derNormalizationFactor_;
+
         // function
         public double value(double x)
         {
             var deltax = x - average_;
             var exponent = -(deltax * deltax) / denominator_;
             // debian alpha had some strange problem in the very-low range
-            return exponent <= -690.0 ? 0.0 :  // exp(x) < 1.0e-300 anyway
-                   normalizationFactor_ * System.Math.Exp(exponent);
+            return exponent <= -690.0
+                ? 0.0
+                : // exp(x) < 1.0e-300 anyway
+                normalizationFactor_ * System.Math.Exp(exponent);
         }
-
-        public double derivative(double x) => value(x) * (average_ - x) / derNormalizationFactor_;
     }
-
 
     //! Cumulative normal distribution function
     /*! Given x it provides an approximation to the

@@ -1,11 +1,18 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.Optimization;
 
 namespace QLNet.Termstructures.Yield
 {
-    [JetBrains.Annotations.PublicAPI] public class CubicBSplinesFitting : FittedBondDiscountCurve.FittingMethod
+    [PublicAPI]
+    public class CubicBSplinesFitting : FittedBondDiscountCurve.FittingMethod
     {
+        //! N_th basis function coefficient to solve for when d(0)=1
+        private int N_;
+        private int size_;
+        private BSpline splines_;
+
         public CubicBSplinesFitting(List<double> knots, bool constrainAtZero = true, Vector weights = null,
             OptimizationMethod optimizationMethod = null)
             : base(constrainAtZero, weights, optimizationMethod)
@@ -31,7 +38,6 @@ namespace QLNet.Termstructures.Yield
                 size_ = basisFunctions;
                 N_ = 0;
             }
-
         }
 
         //! cubic B-spline basis functions
@@ -69,18 +75,13 @@ namespace QLNet.Termstructures.Yield
                         sum += x[i] * splines_.value(i + 1, T);
                     }
                 }
+
                 var coeff = 1.0 - sum;
                 coeff /= splines_.value(N_, T);
                 d += coeff * splines_.value(N_, t);
             }
 
             return d;
-
         }
-
-        private BSpline splines_;
-        private int size_;
-        //! N_th basis function coefficient to solve for when d(0)=1
-        private int N_;
     }
 }

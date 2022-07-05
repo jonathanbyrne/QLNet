@@ -26,59 +26,75 @@ namespace QLNet
     //! Base class for event
     //! This class acts as a base class for the actual event implementations.
     public abstract class Event : IObservable
-   {
-      #region Event interface
+    {
+        #region Visitability
 
-      //! returns the date at which the event occurs
-      public abstract Date date();
+        public virtual void accept(IAcyclicVisitor v)
+        {
+            if (v != null)
+            {
+                v.visit(this);
+            }
+            else
+            {
+                Utils.QL_FAIL("not an event visitor");
+            }
+        }
 
-      //! returns true if an event has already occurred before a date
-      /*! If includeRefDate is true, then an event has not occurred if its
-          date is the same as the refDate, i.e. this method returns false if
-          the event date is the same as the refDate.
-      */
-      public virtual bool hasOccurred(Date d = null, bool? includeRefDate = null)
-      {
-         var refDate = d ?? Settings.evaluationDate();
-         var includeRefDateEvent = includeRefDate ?? Settings.includeReferenceDateEvents;
-         if (includeRefDateEvent)
-            return date() < refDate;
-         else
+        #endregion
+
+        #region Event interface
+
+        //! returns the date at which the event occurs
+        public abstract Date date();
+
+        //! returns true if an event has already occurred before a date
+        /*! If includeRefDate is true, then an event has not occurred if its
+            date is the same as the refDate, i.e. this method returns false if
+            the event date is the same as the refDate.
+        */
+        public virtual bool hasOccurred(Date d = null, bool? includeRefDate = null)
+        {
+            var refDate = d ?? Settings.evaluationDate();
+            var includeRefDateEvent = includeRefDate ?? Settings.includeReferenceDateEvents;
+            if (includeRefDateEvent)
+            {
+                return date() < refDate;
+            }
+
             return date() <= refDate;
-      }
+        }
 
-      #endregion
+        #endregion
 
-      #region  Observable interface
+        #region Observable interface
 
-      private readonly WeakEventSource eventSource = new WeakEventSource();
-      public event Callback notifyObserversEvent
-      {
-         add => eventSource.Subscribe(value);
-         remove => eventSource.Unsubscribe(value);
-      }
+        private readonly WeakEventSource eventSource = new WeakEventSource();
 
-      public void registerWith(Callback handler) { notifyObserversEvent += handler; }
-      public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
-      protected void notifyObservers()
-      {
-         eventSource.Raise();
-      }
-      #endregion
+        public event Callback notifyObserversEvent
+        {
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
+        }
 
-      #region Visitability
+        public void registerWith(Callback handler)
+        {
+            notifyObserversEvent += handler;
+        }
 
-      public virtual void accept(IAcyclicVisitor v)
-      {
-         if (v != null)
-            v.visit(this);
-         else
-            Utils.QL_FAIL("not an event visitor");
-      }
+        public void unregisterWith(Callback handler)
+        {
+            notifyObserversEvent -= handler;
+        }
 
-      #endregion
-   }
+        protected void notifyObservers()
+        {
+            eventSource.Raise();
+        }
 
-   // used to create an Event instance.
-   // to be replaced with specific events as soon as we find out which.
+        #endregion
+    }
+
+    // used to create an Event instance.
+    // to be replaced with specific events as soon as we find out which.
 }

@@ -19,11 +19,12 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Math.Solvers1d;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.Optionlet;
-using System;
-using System.Linq;
 
 namespace QLNet.Instruments
 {
@@ -52,22 +53,37 @@ namespace QLNet.Instruments
         \todo add greeks and explicit exercise lag
     */
 
-    [JetBrains.Annotations.PublicAPI] public class Swaption : Option
+    [PublicAPI]
+    public class Swaption : Option
     {
+        // arguments, pricing engine
+        public new class Arguments : VanillaSwap.Arguments
+        {
+            public Arguments()
+            {
+                settlementType = Settlement.Type.Physical;
+            }
 
-        public Arguments arguments { get; set; }
-        public SwaptionEngine engine { get; set; }
+            public Exercise exercise { get; set; }
+
+            public Settlement.Method settlementMethod { get; set; }
+
+            public Settlement.Type settlementType { get; set; }
+
+            public VanillaSwap swap { get; set; }
+        }
+
+        private Settlement.Method settlementMethod_;
+        private Settlement.Type settlementType_;
 
         // arguments
         private VanillaSwap swap_;
-        private Settlement.Type settlementType_;
-        private Settlement.Method settlementMethod_;
 
         public Swaption(VanillaSwap swap,
-                        Exercise exercise,
-                        Settlement.Type delivery = Settlement.Type.Physical,
-                        Settlement.Method settlementMethod = Settlement.Method.PhysicalOTC)
-           : base(new Payoff(), exercise)
+            Exercise exercise,
+            Settlement.Type delivery = Settlement.Type.Physical,
+            Settlement.Method settlementMethod = Settlement.Method.PhysicalOTC)
+            : base(new Payoff(), exercise)
         {
             settlementType_ = delivery;
             settlementMethod_ = settlementMethod;
@@ -75,78 +91,77 @@ namespace QLNet.Instruments
             swap_.registerWith(update);
         }
 
-        // Instrument interface
-        public override bool isExpired() => new simple_event(exercise_.dates().Last()).hasOccurred();
+        public Arguments arguments { get; set; }
 
-        public override void setupArguments(IPricingEngineArguments args)
-        {
-            swap_.setupArguments(args);
-
-            var arguments = args as Arguments;
-            if (arguments == null)
-                throw new ArgumentException("wrong argument ExerciseType");
-            arguments.swap = swap_;
-            arguments.settlementType = settlementType_;
-            arguments.settlementMethod = settlementMethod_;
-            arguments.exercise = exercise_;
-        }
-
-        public void validate()
-        {
-            arguments.validate();
-            if (arguments.swap == null)
-                throw new ArgumentException("vanilla swap not set");
-            if (arguments.exercise == null)
-                throw new ArgumentException("exercise not set");
-            Settlement.checkTypeAndMethodConsistency(arguments.settlementType,
-                                                     arguments.settlementMethod);
-        }
-
-        // Inspectors
-        public Settlement.Type settlementType() => settlementType_;
-
-        public Settlement.Method settlementMethod() => settlementMethod_;
-
-        public VanillaSwap.Type type() => swap_.swapType;
-
-        public VanillaSwap underlyingSwap() => swap_;
+        public SwaptionEngine engine { get; set; }
 
         //! implied volatility
         public double impliedVolatility(double targetValue,
-                                        Handle<YieldTermStructure> discountCurve,
-                                        double guess,
-                                        double accuracy = 1.0e-4,
-                                        int maxEvaluations = 100,
-                                        double minVol = 1.0e-7,
-                                        double maxVol = 4.0,
-                                        VolatilityType type = VolatilityType.ShiftedLognormal,
-                                        double? displacement = 0.0)
+            Handle<YieldTermStructure> discountCurve,
+            double guess,
+            double accuracy = 1.0e-4,
+            int maxEvaluations = 100,
+            double minVol = 1.0e-7,
+            double maxVol = 4.0,
+            VolatilityType type = VolatilityType.ShiftedLognormal,
+            double? displacement = 0.0)
         {
             calculate();
             if (isExpired())
+            {
                 throw new ArgumentException("instrument expired");
+            }
+
             var f = new ImpliedVolHelper_(this, discountCurve, targetValue, displacement, type);
             var solver = new NewtonSafe();
             solver.setMaxEvaluations(maxEvaluations);
             return solver.solve(f, accuracy, guess, minVol, maxVol);
         }
 
-        // arguments, pricing engine
-        public new class Arguments : VanillaSwap.Arguments
+        // Instrument interface
+        public override bool isExpired() => new simple_event(exercise_.dates().Last()).hasOccurred();
+
+        public Settlement.Method settlementMethod() => settlementMethod_;
+
+        // Inspectors
+        public Settlement.Type settlementType() => settlementType_;
+
+        public override void setupArguments(IPricingEngineArguments args)
         {
-            public Exercise exercise { get; set; }
-            public VanillaSwap swap { get; set; }
-            public Settlement.Type settlementType { get; set; }
-            public Settlement.Method settlementMethod { get; set; }
-            public Arguments()
+            swap_.setupArguments(args);
+
+            if (!(args is Arguments arguments))
             {
-                settlementType = Settlement.Type.Physical;
+                throw new ArgumentException("wrong argument ExerciseType");
             }
+
+            arguments.swap = swap_;
+            arguments.settlementType = settlementType_;
+            arguments.settlementMethod = settlementMethod_;
+            arguments.exercise = exercise_;
+        }
+
+        public VanillaSwap.Type type() => swap_.swapType;
+
+        public VanillaSwap underlyingSwap() => swap_;
+
+        public void validate()
+        {
+            arguments.validate();
+            if (arguments.swap == null)
+            {
+                throw new ArgumentException("vanilla swap not set");
+            }
+
+            if (arguments.exercise == null)
+            {
+                throw new ArgumentException("exercise not set");
+            }
+
+            Settlement.checkTypeAndMethodConsistency(arguments.settlementType,
+                arguments.settlementMethod);
         }
     }
 
     //! base class for swaption engines
 }
-
-
-

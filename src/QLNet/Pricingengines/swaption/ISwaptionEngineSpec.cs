@@ -1,8 +1,10 @@
-﻿using QLNet.Termstructures.Volatility.Optionlet;
+﻿using JetBrains.Annotations;
+using QLNet.Termstructures.Volatility.Optionlet;
 
 namespace QLNet.Pricingengines.swaption
 {
-    [JetBrains.Annotations.PublicAPI] public interface ISwaptionEngineSpec
+    [PublicAPI]
+    public interface ISwaptionEngineSpec
     {
         VolatilityType type();
 

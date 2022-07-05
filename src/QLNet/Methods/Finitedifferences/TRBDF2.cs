@@ -17,9 +17,10 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
-using System;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Math;
 
 namespace QLNet.Methods.Finitedifferences
 {
@@ -60,15 +61,19 @@ namespace QLNet.Methods.Finitedifferences
 
     // NOTE: There is room for performance improvement especially in
     // the array manipulation
-    [JetBrains.Annotations.PublicAPI] public class Trbdf2<Operator> : IMixedScheme where Operator : IOperator
+    [PublicAPI]
+    public class Trbdf2<Operator> : IMixedScheme where Operator : IOperator
     {
-        protected Operator L_, I_, implicitPart_, explicitBDF2PartFull_, explicitTrapezoidalPart_, explicitBDF2PartMid_;
-        protected double dt_, alpha_;
         protected Vector aInit_;
         protected List<BoundaryCondition<IOperator>> bcs_;
+        protected double dt_, alpha_;
+        protected Operator L_, I_, implicitPart_, explicitBDF2PartFull_, explicitTrapezoidalPart_, explicitBDF2PartMid_;
 
         // constructors
-        public Trbdf2() { }  // required for generics
+        public Trbdf2()
+        {
+        } // required for generics
+
         public Trbdf2(Operator L, List<BoundaryCondition<IOperator>> bcs)
         {
             L_ = (Operator)L.Clone();
@@ -76,72 +81,6 @@ namespace QLNet.Methods.Finitedifferences
             dt_ = 0.0;
             bcs_ = bcs;
             alpha_ = 2.0 - System.Math.Sqrt(2.0);
-        }
-
-        public void step(ref object a, double t, double theta = 1.0)
-        {
-            int i;
-            var aInit = new Vector((a as Vector).size());
-            for (i = 0; i < (a as Vector).size(); i++)
-            {
-                aInit[i] = (a as Vector)[i];
-            }
-            aInit_ = aInit;
-            for (i = 0; i < bcs_.Count; i++)
-                bcs_[i].setTime(t);
-            //trapezoidal explicit part
-            if (L_.isTimeDependent())
-            {
-                L_.setTime(t);
-                explicitTrapezoidalPart_ = (Operator)I_.subtract(I_, L_.multiply(-0.5 * alpha_ * dt_, L_));
-            }
-            for (i = 0; i < bcs_.Count; i++)
-                bcs_[i].applyBeforeApplying(explicitTrapezoidalPart_);
-            a = explicitTrapezoidalPart_.applyTo(a as Vector);
-            for (i = 0; i < bcs_.Count; i++)
-                bcs_[i].applyAfterApplying(a as Vector);
-
-            // trapezoidal implicit part
-            if (L_.isTimeDependent())
-            {
-                L_.setTime(t - dt_);
-                implicitPart_ = (Operator)I_.add(I_, L_.multiply(0.5 * alpha_ * dt_, L_));
-            }
-            for (i = 0; i < bcs_.Count; i++)
-                bcs_[i].applyBeforeSolving(implicitPart_, a as Vector);
-            a = implicitPart_.solveFor(a as Vector);
-            for (i = 0; i < bcs_.Count; i++)
-                bcs_[i].applyAfterSolving(a as Vector);
-
-
-            // BDF2 explicit part
-            if (L_.isTimeDependent())
-            {
-                L_.setTime(t);
-            }
-            for (i = 0; i < bcs_.Count; i++)
-            {
-                bcs_[i].applyBeforeApplying(explicitBDF2PartFull_);
-            }
-            var b0 = explicitBDF2PartFull_.applyTo(aInit_);
-            for (i = 0; i < bcs_.Count; i++)
-                bcs_[i].applyAfterApplying(b0);
-
-            for (i = 0; i < bcs_.Count; i++)
-            {
-                bcs_[i].applyBeforeApplying(explicitBDF2PartMid_);
-            }
-            var b1 = explicitBDF2PartMid_.applyTo(a as Vector);
-            for (i = 0; i < bcs_.Count; i++)
-                bcs_[i].applyAfterApplying(b1);
-            a = b0 + b1;
-
-            // reuse implicit part - works only for alpha=2-sqrt(2)
-            for (i = 0; i < bcs_.Count; i++)
-                bcs_[i].applyBeforeSolving(implicitPart_, a as Vector);
-            a = implicitPart_.solveFor(a as Vector);
-            for (i = 0; i < bcs_.Count; i++)
-                bcs_[i].applyAfterSolving(a as Vector);
         }
 
         public void setStep(double dt)
@@ -152,6 +91,100 @@ namespace QLNet.Methods.Finitedifferences
             explicitTrapezoidalPart_ = (Operator)L_.subtract(I_, L_.multiply(0.5 * alpha_ * dt_, L_));
             explicitBDF2PartFull_ = (Operator)I_.multiply(-(1.0 - alpha_) * (1.0 - alpha_) / (alpha_ * (2.0 - alpha_)), I_);
             explicitBDF2PartMid_ = (Operator)I_.multiply(1.0 / (alpha_ * (2.0 - alpha_)), I_);
+        }
+
+        public void step(ref object a, double t, double theta = 1.0)
+        {
+            int i;
+            var aInit = new Vector((a as Vector).size());
+            for (i = 0; i < (a as Vector).size(); i++)
+            {
+                aInit[i] = (a as Vector)[i];
+            }
+
+            aInit_ = aInit;
+            for (i = 0; i < bcs_.Count; i++)
+            {
+                bcs_[i].setTime(t);
+            }
+
+            //trapezoidal explicit part
+            if (L_.isTimeDependent())
+            {
+                L_.setTime(t);
+                explicitTrapezoidalPart_ = (Operator)I_.subtract(I_, L_.multiply(-0.5 * alpha_ * dt_, L_));
+            }
+
+            for (i = 0; i < bcs_.Count; i++)
+            {
+                bcs_[i].applyBeforeApplying(explicitTrapezoidalPart_);
+            }
+
+            a = explicitTrapezoidalPart_.applyTo(a as Vector);
+            for (i = 0; i < bcs_.Count; i++)
+            {
+                bcs_[i].applyAfterApplying(a as Vector);
+            }
+
+            // trapezoidal implicit part
+            if (L_.isTimeDependent())
+            {
+                L_.setTime(t - dt_);
+                implicitPart_ = (Operator)I_.add(I_, L_.multiply(0.5 * alpha_ * dt_, L_));
+            }
+
+            for (i = 0; i < bcs_.Count; i++)
+            {
+                bcs_[i].applyBeforeSolving(implicitPart_, a as Vector);
+            }
+
+            a = implicitPart_.solveFor(a as Vector);
+            for (i = 0; i < bcs_.Count; i++)
+            {
+                bcs_[i].applyAfterSolving(a as Vector);
+            }
+
+            // BDF2 explicit part
+            if (L_.isTimeDependent())
+            {
+                L_.setTime(t);
+            }
+
+            for (i = 0; i < bcs_.Count; i++)
+            {
+                bcs_[i].applyBeforeApplying(explicitBDF2PartFull_);
+            }
+
+            var b0 = explicitBDF2PartFull_.applyTo(aInit_);
+            for (i = 0; i < bcs_.Count; i++)
+            {
+                bcs_[i].applyAfterApplying(b0);
+            }
+
+            for (i = 0; i < bcs_.Count; i++)
+            {
+                bcs_[i].applyBeforeApplying(explicitBDF2PartMid_);
+            }
+
+            var b1 = explicitBDF2PartMid_.applyTo(a as Vector);
+            for (i = 0; i < bcs_.Count; i++)
+            {
+                bcs_[i].applyAfterApplying(b1);
+            }
+
+            a = b0 + b1;
+
+            // reuse implicit part - works only for alpha=2-sqrt(2)
+            for (i = 0; i < bcs_.Count; i++)
+            {
+                bcs_[i].applyBeforeSolving(implicitPart_, a as Vector);
+            }
+
+            a = implicitPart_.solveFor(a as Vector);
+            for (i = 0; i < bcs_.Count; i++)
+            {
+                bcs_[i].applyAfterSolving(a as Vector);
+            }
         }
     }
 }

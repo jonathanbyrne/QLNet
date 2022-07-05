@@ -16,8 +16,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Extensions;
-using System;
 
 namespace QLNet.Math.matrixutilities
 {
@@ -28,12 +29,13 @@ namespace QLNet.Math.matrixutilities
         \test the correctness of the returned values is tested by
               checking their properties.
     */
-    [JetBrains.Annotations.PublicAPI] public class SVD
+    [PublicAPI]
+    public class SVD
     {
-        private Matrix U_, V_;
-        private Vector s_;
         private int m_, n_;
+        private Vector s_;
         private bool transpose_;
+        private Matrix U_, V_;
 
         public SVD(Matrix M)
         {
@@ -84,7 +86,6 @@ namespace QLNet.Math.matrixutilities
             {
                 if (k < nct)
                 {
-
                     // Compute the transformation for the k-th column and
                     // place the k-th diagonal in s[k].
                     // Compute 2-norm of k-th column without under/overflow.
@@ -93,31 +94,36 @@ namespace QLNet.Math.matrixutilities
                     {
                         s_[k] = hypot(s_[k], A[i, k]);
                     }
+
                     if (s_[k].IsNotEqual(0.0))
                     {
                         if (A[k, k] < 0.0)
                         {
                             s_[k] = -s_[k];
                         }
+
                         for (i = k; i < m_; i++)
                         {
                             A[i, k] /= s_[k];
                         }
+
                         A[k, k] += 1.0;
                     }
+
                     s_[k] = -s_[k];
                 }
+
                 for (j = k + 1; j < n_; j++)
                 {
                     if (k < nct && s_[k].IsNotEqual(0.0))
                     {
-
                         // Apply the transformation.
                         double t = 0;
                         for (i = k; i < m_; i++)
                         {
                             t += A[i, k] * A[i, j];
                         }
+
                         t = -t / A[k, k];
                         for (i = k; i < m_; i++)
                         {
@@ -129,6 +135,7 @@ namespace QLNet.Math.matrixutilities
                     // subsequent calculation of the row transformation.
                     e[j] = A[k, j];
                 }
+
                 if (k < nct)
                 {
                     // Place the transformation in U for subsequent back multiplication.
@@ -137,6 +144,7 @@ namespace QLNet.Math.matrixutilities
                         U_[i, k] = A[i, k];
                     }
                 }
+
                 if (k < nrt)
                 {
                     // Compute the k-th row transformation and place the k-th super-diagonal in e[k].
@@ -146,18 +154,22 @@ namespace QLNet.Math.matrixutilities
                     {
                         e[k] = hypot(e[k], e[i]);
                     }
+
                     if (e[k].IsNotEqual(0.0))
                     {
                         if (e[k + 1] < 0.0)
                         {
                             e[k] = -e[k];
                         }
+
                         for (i = k + 1; i < n_; i++)
                         {
                             e[i] /= e[k];
                         }
+
                         e[k + 1] += 1.0;
                     }
+
                     e[k] = -e[k];
                     if (k + 1 < m_ && e[k].IsNotEqual(0.0))
                     {
@@ -166,6 +178,7 @@ namespace QLNet.Math.matrixutilities
                         {
                             work[i] = 0.0;
                         }
+
                         for (j = k + 1; j < n_; j++)
                         {
                             for (i = k + 1; i < m_; i++)
@@ -173,6 +186,7 @@ namespace QLNet.Math.matrixutilities
                                 work[i] += e[j] * A[i, j];
                             }
                         }
+
                         for (j = k + 1; j < n_; j++)
                         {
                             var t = -e[j] / e[k + 1];
@@ -196,10 +210,12 @@ namespace QLNet.Math.matrixutilities
             {
                 s_[nct] = A[nct, nct];
             }
+
             if (nrt + 1 < n_)
             {
                 e[nrt] = A[nrt, n_ - 1];
             }
+
             e[n_ - 1] = 0.0;
 
             // generate U
@@ -209,8 +225,10 @@ namespace QLNet.Math.matrixutilities
                 {
                     U_[i, j] = 0.0;
                 }
+
                 U_[j, j] = 1.0;
             }
+
             for (k = nct - 1; k >= 0; --k)
             {
                 if (s_[k].IsNotEqual(0.0))
@@ -222,16 +240,19 @@ namespace QLNet.Math.matrixutilities
                         {
                             t += U_[i, k] * U_[i, j];
                         }
+
                         t = -t / U_[k, k];
                         for (i = k; i < m_; i++)
                         {
                             U_[i, j] += t * U_[i, k];
                         }
                     }
+
                     for (i = k; i < m_; i++)
                     {
                         U_[i, k] = -U_[i, k];
                     }
+
                     U_[k, k] = 1.0 + U_[k, k];
                     for (i = 0; i < k - 1; i++)
                     {
@@ -244,6 +265,7 @@ namespace QLNet.Math.matrixutilities
                     {
                         U_[i, k] = 0.0;
                     }
+
                     U_[k, k] = 1.0;
                 }
             }
@@ -260,6 +282,7 @@ namespace QLNet.Math.matrixutilities
                         {
                             t += V_[i, k] * V_[i, j];
                         }
+
                         t = -t / V_[k + 1, k];
                         for (i = k + 1; i < n_; i++)
                         {
@@ -267,10 +290,12 @@ namespace QLNet.Math.matrixutilities
                         }
                     }
                 }
+
                 for (i = 0; i < n_; i++)
                 {
                     V_[i, k] = 0.0;
                 }
+
                 V_[k, k] = 1.0;
             }
 
@@ -300,12 +325,14 @@ namespace QLNet.Math.matrixutilities
                     {
                         break;
                     }
+
                     if (System.Math.Abs(e[k]) <= eps * (System.Math.Abs(s_[k]) + System.Math.Abs(s_[k + 1])))
                     {
                         e[k] = 0.0;
                         break;
                     }
                 }
+
                 if (k == p - 2)
                 {
                     kase = 4;
@@ -319,6 +346,7 @@ namespace QLNet.Math.matrixutilities
                         {
                             break;
                         }
+
                         var t = (ks != p ? System.Math.Abs(e[ks]) : 0) +
                                 (ks != k + 1 ? System.Math.Abs(e[ks - 1]) : 0);
                         if (System.Math.Abs(s_[ks]) <= eps * t)
@@ -327,6 +355,7 @@ namespace QLNet.Math.matrixutilities
                             break;
                         }
                     }
+
                     if (ks == k)
                     {
                         kase = 3;
@@ -341,205 +370,194 @@ namespace QLNet.Math.matrixutilities
                         k = ks;
                     }
                 }
+
                 k++;
 
                 // Perform the task indicated by kase.
                 switch (kase)
                 {
-
                     // Deflate negligible s(p).
                     case 1:
+                    {
+                        var f = e[p - 2];
+                        e[p - 2] = 0.0;
+                        for (j = p - 2; j >= k; --j)
                         {
-                            var f = e[p - 2];
-                            e[p - 2] = 0.0;
-                            for (j = p - 2; j >= k; --j)
+                            var t = hypot(s_[j], f);
+                            var cs = s_[j] / t;
+                            var sn = f / t;
+                            s_[j] = t;
+                            if (j != k)
                             {
-                                var t = hypot(s_[j], f);
-                                var cs = s_[j] / t;
-                                var sn = f / t;
-                                s_[j] = t;
-                                if (j != k)
-                                {
-                                    f = -sn * e[j - 1];
-                                    e[j - 1] = cs * e[j - 1];
-                                }
-                                for (i = 0; i < n_; i++)
-                                {
-                                    t = cs * V_[i, j] + sn * V_[i, p - 1];
-                                    V_[i, p - 1] = -sn * V_[i, j] + cs * V_[i, p - 1];
-                                    V_[i, j] = t;
-                                }
+                                f = -sn * e[j - 1];
+                                e[j - 1] = cs * e[j - 1];
+                            }
+
+                            for (i = 0; i < n_; i++)
+                            {
+                                t = cs * V_[i, j] + sn * V_[i, p - 1];
+                                V_[i, p - 1] = -sn * V_[i, j] + cs * V_[i, p - 1];
+                                V_[i, j] = t;
                             }
                         }
+                    }
                         break;
 
                     // Split at negligible s(k).
                     case 2:
+                    {
+                        var f = e[k - 1];
+                        e[k - 1] = 0.0;
+                        for (j = k; j < p; j++)
                         {
-                            var f = e[k - 1];
-                            e[k - 1] = 0.0;
-                            for (j = k; j < p; j++)
+                            var t = hypot(s_[j], f);
+                            var cs = s_[j] / t;
+                            var sn = f / t;
+                            s_[j] = t;
+                            f = -sn * e[j];
+                            e[j] = cs * e[j];
+                            for (i = 0; i < m_; i++)
                             {
-                                var t = hypot(s_[j], f);
-                                var cs = s_[j] / t;
-                                var sn = f / t;
-                                s_[j] = t;
-                                f = -sn * e[j];
-                                e[j] = cs * e[j];
-                                for (i = 0; i < m_; i++)
-                                {
-                                    t = cs * U_[i, j] + sn * U_[i, k - 1];
-                                    U_[i, k - 1] = -sn * U_[i, j] + cs * U_[i, k - 1];
-                                    U_[i, j] = t;
-                                }
+                                t = cs * U_[i, j] + sn * U_[i, k - 1];
+                                U_[i, k - 1] = -sn * U_[i, j] + cs * U_[i, k - 1];
+                                U_[i, j] = t;
                             }
                         }
+                    }
                         break;
 
                     // Perform one qr step.
                     case 3:
+                    {
+                        // Calculate the shift.
+                        var scale = System.Math.Max(
+                            System.Math.Max(
+                                System.Math.Max(
+                                    System.Math.Max(System.Math.Abs(s_[p - 1]),
+                                        System.Math.Abs(s_[p - 2])),
+                                    System.Math.Abs(e[p - 2])),
+                                System.Math.Abs(s_[k])),
+                            System.Math.Abs(e[k]));
+                        var sp = s_[p - 1] / scale;
+                        var spm1 = s_[p - 2] / scale;
+                        var epm1 = e[p - 2] / scale;
+                        var sk = s_[k] / scale;
+                        var ek = e[k] / scale;
+                        var b = ((spm1 + sp) * (spm1 - sp) + epm1 * epm1) / 2.0;
+                        var c = sp * epm1 * (sp * epm1);
+                        var shift = 0.0;
+                        if (b.IsNotEqual(0.0) || c.IsNotEqual(0.0))
                         {
-                            // Calculate the shift.
-                            var scale = System.Math.Max(
-                                              System.Math.Max(
-                                                 System.Math.Max(
-                                                    System.Math.Max(System.Math.Abs(s_[p - 1]),
-                                                             System.Math.Abs(s_[p - 2])),
-                                                    System.Math.Abs(e[p - 2])),
-                                                 System.Math.Abs(s_[k])),
-                                              System.Math.Abs(e[k]));
-                            var sp = s_[p - 1] / scale;
-                            var spm1 = s_[p - 2] / scale;
-                            var epm1 = e[p - 2] / scale;
-                            var sk = s_[k] / scale;
-                            var ek = e[k] / scale;
-                            var b = ((spm1 + sp) * (spm1 - sp) + epm1 * epm1) / 2.0;
-                            var c = sp * epm1 * (sp * epm1);
-                            var shift = 0.0;
-                            if (b.IsNotEqual(0.0) || c.IsNotEqual(0.0))
+                            shift = System.Math.Sqrt(b * b + c);
+                            if (b < 0.0)
                             {
-                                shift = System.Math.Sqrt(b * b + c);
-                                if (b < 0.0)
-                                {
-                                    shift = -shift;
-                                }
-                                shift = c / (b + shift);
+                                shift = -shift;
                             }
-                            var f = (sk + sp) * (sk - sp) + shift;
-                            var g = sk * ek;
 
-                            // Chase zeros.
-                            for (j = k; j < p - 1; j++)
+                            shift = c / (b + shift);
+                        }
+
+                        var f = (sk + sp) * (sk - sp) + shift;
+                        var g = sk * ek;
+
+                        // Chase zeros.
+                        for (j = k; j < p - 1; j++)
+                        {
+                            var t = hypot(f, g);
+                            var cs = f / t;
+                            var sn = g / t;
+                            if (j != k)
                             {
-                                var t = hypot(f, g);
-                                var cs = f / t;
-                                var sn = g / t;
-                                if (j != k)
+                                e[j - 1] = t;
+                            }
+
+                            f = cs * s_[j] + sn * e[j];
+                            e[j] = cs * e[j] - sn * s_[j];
+                            g = sn * s_[j + 1];
+                            s_[j + 1] = cs * s_[j + 1];
+                            for (i = 0; i < n_; i++)
+                            {
+                                t = cs * V_[i, j] + sn * V_[i, j + 1];
+                                V_[i, j + 1] = -sn * V_[i, j] + cs * V_[i, j + 1];
+                                V_[i, j] = t;
+                            }
+
+                            t = hypot(f, g);
+                            cs = f / t;
+                            sn = g / t;
+                            s_[j] = t;
+                            f = cs * e[j] + sn * s_[j + 1];
+                            s_[j + 1] = -sn * e[j] + cs * s_[j + 1];
+                            g = sn * e[j + 1];
+                            e[j + 1] = cs * e[j + 1];
+                            if (j < m_ - 1)
+                            {
+                                for (i = 0; i < m_; i++)
                                 {
-                                    e[j - 1] = t;
-                                }
-                                f = cs * s_[j] + sn * e[j];
-                                e[j] = cs * e[j] - sn * s_[j];
-                                g = sn * s_[j + 1];
-                                s_[j + 1] = cs * s_[j + 1];
-                                for (i = 0; i < n_; i++)
-                                {
-                                    t = cs * V_[i, j] + sn * V_[i, j + 1];
-                                    V_[i, j + 1] = -sn * V_[i, j] + cs * V_[i, j + 1];
-                                    V_[i, j] = t;
-                                }
-                                t = hypot(f, g);
-                                cs = f / t;
-                                sn = g / t;
-                                s_[j] = t;
-                                f = cs * e[j] + sn * s_[j + 1];
-                                s_[j + 1] = -sn * e[j] + cs * s_[j + 1];
-                                g = sn * e[j + 1];
-                                e[j + 1] = cs * e[j + 1];
-                                if (j < m_ - 1)
-                                {
-                                    for (i = 0; i < m_; i++)
-                                    {
-                                        t = cs * U_[i, j] + sn * U_[i, j + 1];
-                                        U_[i, j + 1] = -sn * U_[i, j] + cs * U_[i, j + 1];
-                                        U_[i, j] = t;
-                                    }
+                                    t = cs * U_[i, j] + sn * U_[i, j + 1];
+                                    U_[i, j + 1] = -sn * U_[i, j] + cs * U_[i, j + 1];
+                                    U_[i, j] = t;
                                 }
                             }
-                            e[p - 2] = f;
-                            iter = iter + 1;
                         }
+
+                        e[p - 2] = f;
+                        iter = iter + 1;
+                    }
                         break;
 
                     // Convergence.
                     case 4:
+                    {
+                        // Make the singular values positive.
+                        if (s_[k] <= 0.0)
                         {
-                            // Make the singular values positive.
-                            if (s_[k] <= 0.0)
+                            s_[k] = s_[k] < 0.0 ? -s_[k] : 0.0;
+                            for (i = 0; i <= pp; i++)
                             {
-                                s_[k] = s_[k] < 0.0 ? -s_[k] : 0.0;
-                                for (i = 0; i <= pp; i++)
+                                V_[i, k] = -V_[i, k];
+                            }
+                        }
+
+                        // Order the singular values.
+                        while (k < pp)
+                        {
+                            if (s_[k] >= s_[k + 1])
+                            {
+                                break;
+                            }
+
+                            s_.swap(k, k + 1);
+                            if (k < n_ - 1)
+                            {
+                                for (i = 0; i < n_; i++)
                                 {
-                                    V_[i, k] = -V_[i, k];
+                                    V_.swap(i, k, i, k + 1);
                                 }
                             }
 
-                            // Order the singular values.
-                            while (k < pp)
+                            if (k < m_ - 1)
                             {
-                                if (s_[k] >= s_[k + 1])
+                                for (i = 0; i < m_; i++)
                                 {
-                                    break;
+                                    U_.swap(i, k, i, k + 1);
                                 }
-                                s_.swap(k, k + 1);
-                                if (k < n_ - 1)
-                                {
-                                    for (i = 0; i < n_; i++)
-                                    {
-                                        V_.swap(i, k, i, k + 1);
-                                    }
-                                }
-                                if (k < m_ - 1)
-                                {
-                                    for (i = 0; i < m_; i++)
-                                    {
-                                        U_.swap(i, k, i, k + 1);
-                                    }
-                                }
-                                k++;
                             }
-                            iter = 0;
-                            --p;
+
+                            k++;
                         }
+
+                        iter = 0;
+                        --p;
+                    }
                         break;
                 }
             }
         }
 
-
-        public Matrix U() => transpose_ ? V_ : U_;
-
-        public Matrix V() => transpose_ ? U_ : V_;
-
-        public Matrix S()
-        {
-            var S = new Matrix(n_, n_);
-            for (var i = 0; i < n_; i++)
-            {
-                for (var j = 0; j < n_; j++)
-                {
-                    S[i, j] = 0.0;
-                }
-                S[i, i] = s_[i];
-            }
-            return S;
-        }
-
-        public Vector singularValues() => s_;
+        public double cond() => s_[0] / s_[n_ - 1];
 
         public double norm2() => s_[0];
-
-        public double cond() => s_[0] / s_[n_ - 1];
 
         public int rank()
         {
@@ -553,20 +571,44 @@ namespace QLNet.Math.matrixutilities
                     r++;
                 }
             }
+
             return r;
         }
+
+        public Matrix S()
+        {
+            var S = new Matrix(n_, n_);
+            for (var i = 0; i < n_; i++)
+            {
+                for (var j = 0; j < n_; j++)
+                {
+                    S[i, j] = 0.0;
+                }
+
+                S[i, i] = s_[i];
+            }
+
+            return S;
+        }
+
+        public Vector singularValues() => s_;
 
         public Vector solveFor(Vector b)
         {
             var W = new Matrix(n_, n_, 0.0);
             for (var i = 0; i < n_; i++)
+            {
                 W[i, i] = 1.0 / s_[i];
+            }
 
             var inverse = V() * W * Matrix.transpose(U());
             var result = inverse * b;
             return result;
         }
 
+        public Matrix U() => transpose_ ? V_ : U_;
+
+        public Matrix V() => transpose_ ? U_ : V_;
 
         /*  returns hypotenuse of real (non-complex) scalars a and b by avoiding underflow/overflow
             using (a * sqrt( 1 + (b/a) * (b/a))), rather than sqrt(a*a + b*b). */
@@ -576,11 +618,9 @@ namespace QLNet.Math.matrixutilities
             {
                 return System.Math.Abs(b);
             }
-            else
-            {
-                var c = b / a;
-                return System.Math.Abs(a) * System.Math.Sqrt(1 + c * c);
-            }
+
+            var c = b / a;
+            return System.Math.Abs(a) * System.Math.Sqrt(1 + c * c);
         }
     }
 }

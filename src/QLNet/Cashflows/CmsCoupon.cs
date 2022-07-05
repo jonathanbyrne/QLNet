@@ -19,6 +19,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Time;
 
@@ -29,40 +30,43 @@ namespace QLNet.Cashflows
     //                 i.e., the start and end date passed upon construction
     //                 should be already rolled to a business day.
     //
-    [JetBrains.Annotations.PublicAPI] public class CmsCoupon : FloatingRateCoupon
+    [PublicAPI]
+    public class CmsCoupon : FloatingRateCoupon
     {
+        private SwapIndex swapIndex_;
+
         // need by CashFlowVectors
-        public CmsCoupon() { }
+        public CmsCoupon()
+        {
+        }
 
         public CmsCoupon(double nominal,
-                         Date paymentDate,
-                         Date startDate,
-                         Date endDate,
-                         int fixingDays,
-                         SwapIndex swapIndex,
-                         double gearing = 1.0,
-                         double spread = 0.0,
-                         Date refPeriodStart = null,
-                         Date refPeriodEnd = null,
-                         DayCounter dayCounter = null,
-                         bool isInArrears = false)
-           : base(paymentDate, nominal, startDate, endDate, fixingDays, swapIndex, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears)
+            Date paymentDate,
+            Date startDate,
+            Date endDate,
+            int fixingDays,
+            SwapIndex swapIndex,
+            double gearing = 1.0,
+            double spread = 0.0,
+            Date refPeriodStart = null,
+            Date refPeriodEnd = null,
+            DayCounter dayCounter = null,
+            bool isInArrears = false)
+            : base(paymentDate, nominal, startDate, endDate, fixingDays, swapIndex, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears)
         {
             swapIndex_ = swapIndex;
         }
-        // Inspectors
-        public SwapIndex swapIndex() => swapIndex_;
-
-        private SwapIndex swapIndex_;
 
         // Factory - for Leg generators
         public override CashFlow factory(double nominal, Date paymentDate, Date startDate, Date endDate, int fixingDays,
-                                         InterestRateIndex index, double gearing, double spread,
-                                         Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears) =>
+            InterestRateIndex index, double gearing, double spread,
+            Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears) =>
             new CmsCoupon(nominal, paymentDate, startDate, endDate, fixingDays,
                 (SwapIndex)index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears);
-    }
 
+        // Inspectors
+        public SwapIndex swapIndex() => swapIndex_;
+    }
 
     //! helper class building a sequence of capped/floored cms-rate coupons
 }

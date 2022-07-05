@@ -17,16 +17,16 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.randomnumbers;
 using QLNet.Math.statistics;
 using QLNet.Methods.montecarlo;
 using QLNet.Patterns;
-using QLNet.Pricingengines;
 using QLNet.processes;
-using QLNet.Time;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Pricingengines.asian
 {
@@ -36,31 +36,32 @@ namespace QLNet.Pricingengines.asian
         \ingroup asianengines
     */
 
-    [JetBrains.Annotations.PublicAPI] public class MCDiscreteAveragingAsianEngine<RNG, S> : McSimulation<SingleVariate, RNG, S>, IGenericEngine
-      //DiscreteAveragingAsianOption.Engine,
-      //McSimulation<SingleVariate,RNG,S>
-      where RNG : IRSG, new()
-      where S : IGeneralStatistics, new()
+    [PublicAPI]
+    public class MCDiscreteAveragingAsianEngine<RNG, S> : McSimulation<SingleVariate, RNG, S>, IGenericEngine
+        //DiscreteAveragingAsianOption.Engine,
+        //McSimulation<SingleVariate,RNG,S>
+        where RNG : IRSG, new()
+        where S : IGeneralStatistics, new()
     {
+        protected int maxTimeStepsPerYear_;
         // data members
         protected GeneralizedBlackScholesProcess process_;
-        protected int maxTimeStepsPerYear_;
         protected int requiredSamples_, maxSamples_;
-        double requiredTolerance_;
-        bool brownianBridge_;
-        ulong seed_;
+        private bool brownianBridge_;
+        private double requiredTolerance_;
+        private ulong seed_;
 
         // constructor
         public MCDiscreteAveragingAsianEngine(
-           GeneralizedBlackScholesProcess process,
-           int maxTimeStepsPerYear,
-           bool brownianBridge,
-           bool antitheticVariate,
-           bool controlVariate,
-           int requiredSamples,
-           double requiredTolerance,
-           int maxSamples,
-           ulong seed) : base(antitheticVariate, controlVariate)
+            GeneralizedBlackScholesProcess process,
+            int maxTimeStepsPerYear,
+            bool brownianBridge,
+            bool antitheticVariate,
+            bool controlVariate,
+            int requiredSamples,
+            double requiredTolerance,
+            int maxSamples,
+            ulong seed) : base(antitheticVariate, controlVariate)
         {
             process_ = process;
             maxTimeStepsPerYear_ = maxTimeStepsPerYear;
@@ -77,9 +78,37 @@ namespace QLNet.Pricingengines.asian
             calculate(requiredTolerance_, requiredSamples_, maxSamples_);
             results_.value = mcModel_.sampleAccumulator().mean();
             if (FastActivator<RNG>.Create().allowsErrorEstimate != 0)
+            {
                 results_.errorEstimate =
-                   mcModel_.sampleAccumulator().errorEstimate();
+                    mcModel_.sampleAccumulator().errorEstimate();
+            }
         }
+
+        protected override double? controlVariateValue()
+        {
+            var controlPE = controlPricingEngine();
+            Utils.QL_REQUIRE(controlPE != null, () => "engine does not provide control variation pricing engine");
+
+            var controlArguments =
+                (DiscreteAveragingAsianOption.Arguments)controlPE.getArguments();
+            controlArguments = arguments_;
+            controlPE.calculate();
+
+            var controlResults =
+                (OneAssetOption.Results)controlPE.getResults();
+
+            return controlResults.value;
+        }
+
+        protected override IPathGenerator<IRNG> pathGenerator()
+        {
+            var grid = timeGrid();
+            var gen = new RNG().make_sequence_generator(grid.size() - 1, seed_);
+            return new PathGenerator<IRNG>(process_, grid,
+                gen, brownianBridge_);
+        }
+
+        protected override PathPricer<IPath> pathPricer() => throw new NotImplementedException();
 
         // McSimulation implementation
         protected override TimeGrid timeGrid()
@@ -93,43 +122,17 @@ namespace QLNet.Pricingengines.asian
                 if (arguments_.fixingDates[i] >= referenceDate)
                 {
                     var t = voldc.yearFraction(referenceDate,
-                                                  arguments_.fixingDates[i]);
+                        arguments_.fixingDates[i]);
                     fixingTimes[i] = t;
                 }
             }
+
             // handle here maxStepsPerYear
             return new TimeGrid(fixingTimes.Last(), fixingTimes.Count);
         }
 
-        protected override IPathGenerator<IRNG> pathGenerator()
-        {
-
-            var grid = timeGrid();
-            var gen = new RNG().make_sequence_generator(grid.size() - 1, seed_);
-            return new PathGenerator<IRNG>(process_, grid,
-                                           gen, brownianBridge_);
-        }
-
-        protected override double? controlVariateValue()
-        {
-            var controlPE = controlPricingEngine();
-            Utils.QL_REQUIRE(controlPE != null, () => "engine does not provide control variation pricing engine");
-
-            var controlArguments =
-               (DiscreteAveragingAsianOption.Arguments)controlPE.getArguments();
-            controlArguments = arguments_;
-            controlPE.calculate();
-
-            var controlResults =
-               (OneAssetOption.Results)controlPE.getResults();
-
-            return controlResults.value;
-
-        }
-
-        protected override PathPricer<IPath> pathPricer() => throw new System.NotImplementedException();
-
         #region PricingEngine
+
         protected DiscreteAveragingAsianOption.Arguments arguments_ = new DiscreteAveragingAsianOption.Arguments();
         protected OneAssetOption.Results results_ = new OneAssetOption.Results();
 
@@ -137,26 +140,44 @@ namespace QLNet.Pricingengines.asian
 
         public IPricingEngineResults getResults() => results_;
 
-        public void reset() { results_.reset(); }
+        public void reset()
+        {
+            results_.reset();
+        }
 
         #region Observer & Observable
+
         // observable interface
         private readonly WeakEventSource eventSource = new WeakEventSource();
+
         public event Callback notifyObserversEvent
         {
             add => eventSource.Subscribe(value);
             remove => eventSource.Unsubscribe(value);
         }
 
-        public void registerWith(Callback handler) { notifyObserversEvent += handler; }
-        public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
+        public void registerWith(Callback handler)
+        {
+            notifyObserversEvent += handler;
+        }
+
+        public void unregisterWith(Callback handler)
+        {
+            notifyObserversEvent -= handler;
+        }
+
         protected void notifyObservers()
         {
             eventSource.Raise();
         }
 
-        public void update() { notifyObservers(); }
+        public void update()
+        {
+            notifyObservers();
+        }
+
         #endregion
+
         #endregion
     }
 }

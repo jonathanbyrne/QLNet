@@ -17,8 +17,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Time;
+
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -107,52 +108,153 @@ namespace QLNet.Time.Calendars
         \test the correctness of the returned results is tested
               against a list of known holidays.
     */
-    [JetBrains.Annotations.PublicAPI] public class Germany : Calendar
+    [PublicAPI]
+    public class Germany : Calendar
     {
         //! German calendars
         public enum Market
         {
-            Settlement,             //!< generic settlement calendar
+            Settlement, //!< generic settlement calendar
             FrankfurtStockExchange, //!< Frankfurt stock-exchange
-            Xetra,                  //!< Xetra
-            Eurex,                  //!< Eurex
-            Euwax                   //!< Euwax
+            Xetra, //!< Xetra
+            Eurex, //!< Eurex
+            Euwax //!< Euwax
         }
 
-        public Germany() : this(Market.FrankfurtStockExchange) { }
-        public Germany(Market m)
-           : base()
+        private class Eurex : WesternImpl
         {
-            // all calendar instances on the same market share the same
-            // implementation instance
-            switch (m)
+            public static readonly Eurex Singleton = new Eurex();
+
+            private Eurex()
             {
-                case Market.Settlement:
-                    calendar_ = Settlement.Singleton;
-                    break;
-                case Market.FrankfurtStockExchange:
-                    calendar_ = FrankfurtStockExchange.Singleton;
-                    break;
-                case Market.Xetra:
-                    calendar_ = Xetra.Singleton;
-                    break;
-                case Market.Eurex:
-                    calendar_ = Eurex.Singleton;
-                    break;
-                case Market.Euwax:
-                    calendar_ = Euwax.Singleton;
-                    break;
-                default:
-                    throw new ArgumentException("Unknown market: " + m);
             }
+
+            public override bool isBusinessDay(Date date)
+            {
+                var w = date.DayOfWeek;
+                int d = date.Day, dd = date.DayOfYear;
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
+
+                if (isWeekend(w)
+                    // New Year's Day
+                    || d == 1 && m == Month.January
+                    // Good Friday
+                    || dd == em - 3
+                    // Easter Monday
+                    || dd == em
+                    // Labour Day
+                    || d == 1 && m == Month.May
+                    // Christmas' Eve
+                    || d == 24 && m == Month.December
+                    // Christmas
+                    || d == 25 && m == Month.December
+                    // Christmas Day
+                    || d == 26 && m == Month.December
+                    // New Year's Eve
+                    || d == 31 && m == Month.December)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            public override string name() => "Eurex";
         }
 
-        class Settlement : WesternImpl
+        private class Euwax : WesternImpl
+        {
+            public static readonly Euwax Singleton = new Euwax();
+
+            private Euwax()
+            {
+            }
+
+            public override bool isBusinessDay(Date date)
+            {
+                var w = date.DayOfWeek;
+                int d = date.Day, dd = date.DayOfYear;
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
+
+                if (w == DayOfWeek.Saturday || w == DayOfWeek.Sunday
+                                            // New Year's Day
+                                            || d == 1 && m == Month.January
+                                            // Good Friday
+                                            || dd == em - 3
+                                            // Easter Monday
+                                            || dd == em
+                                            // Labour Day
+                                            || d == 1 && m == Month.May
+                                            // Whit Monday
+                                            || dd == em + 49
+                                            // Christmas' Eve
+                                            || d == 24 && m == Month.December
+                                            // Christmas
+                                            || d == 25 && m == Month.December
+                                            // Christmas Day
+                                            || d == 26 && m == Month.December)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            public override string name() => "Euwax";
+        }
+
+        private class FrankfurtStockExchange : WesternImpl
+        {
+            public static readonly FrankfurtStockExchange Singleton = new FrankfurtStockExchange();
+
+            private FrankfurtStockExchange()
+            {
+            }
+
+            public override bool isBusinessDay(Date date)
+            {
+                var w = date.DayOfWeek;
+                int d = date.Day, dd = date.DayOfYear;
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
+
+                if (isWeekend(w)
+                    // New Year's Day
+                    || d == 1 && m == Month.January
+                    // Good Friday
+                    || dd == em - 3
+                    // Easter Monday
+                    || dd == em
+                    // Labour Day
+                    || d == 1 && m == Month.May
+                    // Christmas' Eve
+                    || d == 24 && m == Month.December
+                    // Christmas
+                    || d == 25 && m == Month.December
+                    // Christmas Day
+                    || d == 26 && m == Month.December)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            public override string name() => "Frankfurt stock exchange";
+        }
+
+        private class Settlement : WesternImpl
         {
             public static readonly Settlement Singleton = new Settlement();
-            private Settlement() { }
 
-            public override string name() => "German settlement";
+            private Settlement()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -185,148 +287,84 @@ namespace QLNet.Time.Calendars
                     || d == 25 && m == Month.December
                     // Boxing Day
                     || d == 26 && m == Month.December)
+                {
                     return false;
+                }
+
                 return true;
             }
+
+            public override string name() => "German settlement";
         }
-        class FrankfurtStockExchange : WesternImpl
-        {
-            public static readonly FrankfurtStockExchange Singleton = new FrankfurtStockExchange();
-            private FrankfurtStockExchange() { }
 
-            public override string name() => "Frankfurt stock exchange";
-
-            public override bool isBusinessDay(Date date)
-            {
-                var w = date.DayOfWeek;
-                int d = date.Day, dd = date.DayOfYear;
-                var m = (Month)date.Month;
-                var y = date.Year;
-                var em = easterMonday(y);
-
-                if (isWeekend(w)
-                    // New Year's Day
-                    || d == 1 && m == Month.January
-                    // Good Friday
-                    || dd == em - 3
-                    // Easter Monday
-                    || dd == em
-                    // Labour Day
-                    || d == 1 && m == Month.May
-                    // Christmas' Eve
-                    || d == 24 && m == Month.December
-                    // Christmas
-                    || d == 25 && m == Month.December
-                    // Christmas Day
-                    || d == 26 && m == Month.December)
-                    return false;
-                return true;
-            }
-        }
-        class Xetra : WesternImpl
+        private class Xetra : WesternImpl
         {
             public static readonly Xetra Singleton = new Xetra();
-            private Xetra() { }
+
+            private Xetra()
+            {
+            }
+
+            public override bool isBusinessDay(Date date)
+            {
+                var w = date.DayOfWeek;
+                int d = date.Day, dd = date.DayOfYear;
+                var m = (Month)date.Month;
+                var y = date.Year;
+                var em = easterMonday(y);
+
+                if (isWeekend(w)
+                    // New Year's Day
+                    || d == 1 && m == Month.January
+                    // Good Friday
+                    || dd == em - 3
+                    // Easter Monday
+                    || dd == em
+                    // Labour Day
+                    || d == 1 && m == Month.May
+                    // Christmas' Eve
+                    || d == 24 && m == Month.December
+                    // Christmas
+                    || d == 25 && m == Month.December
+                    // Christmas Day
+                    || d == 26 && m == Month.December)
+                {
+                    return false;
+                }
+
+                return true;
+            }
 
             public override string name() => "Xetra";
-
-            public override bool isBusinessDay(Date date)
-            {
-                var w = date.DayOfWeek;
-                int d = date.Day, dd = date.DayOfYear;
-                var m = (Month)date.Month;
-                var y = date.Year;
-                var em = easterMonday(y);
-
-                if (isWeekend(w)
-                    // New Year's Day
-                    || d == 1 && m == Month.January
-                    // Good Friday
-                    || dd == em - 3
-                    // Easter Monday
-                    || dd == em
-                    // Labour Day
-                    || d == 1 && m == Month.May
-                    // Christmas' Eve
-                    || d == 24 && m == Month.December
-                    // Christmas
-                    || d == 25 && m == Month.December
-                    // Christmas Day
-                    || d == 26 && m == Month.December)
-                    return false;
-                return true;
-            }
         }
-        class Eurex : WesternImpl
+
+        public Germany() : this(Market.FrankfurtStockExchange)
         {
-            public static readonly Eurex Singleton = new Eurex();
-            private Eurex() { }
-
-            public override string name() => "Eurex";
-
-            public override bool isBusinessDay(Date date)
-            {
-                var w = date.DayOfWeek;
-                int d = date.Day, dd = date.DayOfYear;
-                var m = (Month)date.Month;
-                var y = date.Year;
-                var em = easterMonday(y);
-
-                if (isWeekend(w)
-                    // New Year's Day
-                    || d == 1 && m == Month.January
-                    // Good Friday
-                    || dd == em - 3
-                    // Easter Monday
-                    || dd == em
-                    // Labour Day
-                    || d == 1 && m == Month.May
-                    // Christmas' Eve
-                    || d == 24 && m == Month.December
-                    // Christmas
-                    || d == 25 && m == Month.December
-                    // Christmas Day
-                    || d == 26 && m == Month.December
-                    // New Year's Eve
-                    || d == 31 && m == Month.December)
-                    return false;
-                return true;
-            }
         }
-        class Euwax : WesternImpl
+
+        public Germany(Market m)
         {
-            public static readonly Euwax Singleton = new Euwax();
-            private Euwax() { }
-
-            public override string name() => "Euwax";
-
-            public override bool isBusinessDay(Date date)
+            // all calendar instances on the same market share the same
+            // implementation instance
+            switch (m)
             {
-                var w = date.DayOfWeek;
-                int d = date.Day, dd = date.DayOfYear;
-                var m = (Month)date.Month;
-                var y = date.Year;
-                var em = easterMonday(y);
-
-                if (w == DayOfWeek.Saturday || w == DayOfWeek.Sunday
-                    // New Year's Day
-                    || d == 1 && m == Month.January
-                    // Good Friday
-                    || dd == em - 3
-                    // Easter Monday
-                    || dd == em
-                    // Labour Day
-                    || d == 1 && m == Month.May
-                    // Whit Monday
-                    || dd == em + 49
-                    // Christmas' Eve
-                    || d == 24 && m == Month.December
-                    // Christmas
-                    || d == 25 && m == Month.December
-                    // Christmas Day
-                    || d == 26 && m == Month.December)
-                    return false;
-                return true;
+                case Market.Settlement:
+                    calendar_ = Settlement.Singleton;
+                    break;
+                case Market.FrankfurtStockExchange:
+                    calendar_ = FrankfurtStockExchange.Singleton;
+                    break;
+                case Market.Xetra:
+                    calendar_ = Xetra.Singleton;
+                    break;
+                case Market.Eurex:
+                    calendar_ = Eurex.Singleton;
+                    break;
+                case Market.Euwax:
+                    calendar_ = Euwax.Singleton;
+                    break;
+                default:
+                    throw new ArgumentException("Unknown market: " + m);
             }
         }
     }

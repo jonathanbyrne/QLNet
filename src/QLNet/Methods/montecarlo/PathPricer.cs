@@ -17,6 +17,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Methods.montecarlo
 {
     //! base class for path pricers
@@ -24,7 +26,8 @@ namespace QLNet.Methods.montecarlo
 
         \ingroup mcarlo
     */
-    [JetBrains.Annotations.PublicAPI] public interface PathPricer<PathType>
+    [PublicAPI]
+    public interface PathPricer<PathType>
     {
         double value(PathType pt);
     }

@@ -13,10 +13,11 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Models.Shortrate.Onefactormodels;
 using QLNet.Time;
-using System;
 
 namespace QLNet.processes
 {
@@ -28,20 +29,36 @@ namespace QLNet.processes
 
         \ingroup processes
     */
-    [JetBrains.Annotations.PublicAPI] public class HybridHestonHullWhiteProcess : StochasticProcess
+    [PublicAPI]
+    public class HybridHestonHullWhiteProcess : StochasticProcess
     {
-        public enum Discretization { Euler, BSMHullWhite }
+        public enum Discretization
+        {
+            Euler,
+            BSMHullWhite
+        }
+
+        protected double corrEquityShortRate_;
+        protected Discretization disc_;
+        protected double endDiscount_;
+        protected HestonProcess hestonProcess_;
+
+        //model is used to calculate P(t,T)
+        protected HullWhite hullWhiteModel_;
+        protected HullWhiteForwardProcess hullWhiteProcess_;
+        protected double maxRho_;
+        protected double T_;
 
         public HybridHestonHullWhiteProcess(HestonProcess hestonProcess,
-                                            HullWhiteForwardProcess hullWhiteProcess,
-                                            double corrEquityShortRate,
-                                            Discretization discretization = Discretization.BSMHullWhite)
+            HullWhiteForwardProcess hullWhiteProcess,
+            double corrEquityShortRate,
+            Discretization discretization = Discretization.BSMHullWhite)
         {
             hestonProcess_ = hestonProcess;
             hullWhiteProcess_ = hullWhiteProcess;
             hullWhiteModel_ = new HullWhite(hestonProcess.riskFreeRate(),
-                                            hullWhiteProcess.a(),
-                                            hullWhiteProcess.sigma());
+                hullWhiteProcess.a(),
+                hullWhiteProcess.sigma());
             corrEquityShortRate_ = corrEquityShortRate;
             disc_ = discretization;
             maxRho_ = System.Math.Sqrt(1 - hestonProcess.rho() * hestonProcess.rho())
@@ -51,36 +68,31 @@ namespace QLNet.processes
             endDiscount_ = hestonProcess.riskFreeRate().link.discount(T_);
 
             Utils.QL_REQUIRE(corrEquityShortRate * corrEquityShortRate
-                             + hestonProcess.rho() * hestonProcess.rho() <= 1.0, () =>
-                             "correlation matrix is not positive definite");
+                + hestonProcess.rho() * hestonProcess.rho() <= 1.0, () =>
+                    "correlation matrix is not positive definite");
 
             Utils.QL_REQUIRE(hullWhiteProcess.sigma() > 0.0, () =>
-                             "positive vol of Hull White process is required");
+                "positive vol of Hull White process is required");
         }
 
-        public override int size() => 3;
-
-        public override Vector initialValues()
+        public override Vector apply(Vector x0, Vector dx)
         {
-            var retVal = new Vector(3);
-            retVal[0] = hestonProcess_.s0().link.value();
-            retVal[1] = hestonProcess_.v0();
-            retVal[2] = hullWhiteProcess_.x0();
+            Vector retVal = new Vector(3), xt = new Vector(2), dxt = new Vector(2);
+
+            xt[0] = x0[0];
+            xt[1] = x0[1];
+            dxt[0] = dx[0];
+            dxt[1] = dx[1];
+
+            var yt = hestonProcess_.apply(xt, dxt);
+
+            retVal[0] = yt[0];
+            retVal[1] = yt[1];
+            retVal[2] = hullWhiteProcess_.apply(x0[2], dx[2]);
 
             return retVal;
         }
-        public override Vector drift(double t, Vector x)
-        {
-            Vector retVal = new Vector(3), x0 = new Vector(2);
 
-            x0[0] = x[0]; x0[1] = x[1];
-            var y0 = hestonProcess_.drift(t, x0);
-
-            retVal[0] = y0[0]; retVal[1] = y0[1];
-            retVal[2] = hullWhiteProcess_.drift(t, x[2]);
-
-            return retVal;
-        }
         public override Matrix diffusion(double t, Vector x)
         {
             var retVal = new Matrix(3, 3);
@@ -89,31 +101,40 @@ namespace QLNet.processes
             xt[0] = x[0];
             xt[1] = x[1];
             var m = hestonProcess_.diffusion(t, xt);
-            retVal[0, 0] = m[0, 0]; retVal[0, 1] = 0.0; retVal[0, 2] = 0.0;
-            retVal[1, 0] = m[1, 0]; retVal[1, 1] = m[1, 1]; retVal[1, 2] = 0.0;
+            retVal[0, 0] = m[0, 0];
+            retVal[0, 1] = 0.0;
+            retVal[0, 2] = 0.0;
+            retVal[1, 0] = m[1, 0];
+            retVal[1, 1] = m[1, 1];
+            retVal[1, 2] = 0.0;
 
             var sigma = hullWhiteProcess_.sigma();
             retVal[2, 0] = corrEquityShortRate_ * sigma;
             retVal[2, 1] = -retVal[2, 0] * retVal[1, 0] / retVal[1, 1];
             retVal[2, 2] = System.Math.Sqrt(sigma * sigma - retVal[2, 1] * retVal[2, 1]
-                                     - retVal[2, 0] * retVal[2, 0]);
+                                                          - retVal[2, 0] * retVal[2, 0]);
 
             return retVal;
         }
-        public override Vector apply(Vector x0, Vector dx)
+
+        public Discretization discretization() => disc_;
+
+        public override Vector drift(double t, Vector x)
         {
-            Vector retVal = new Vector(3), xt = new Vector(2), dxt = new Vector(2);
+            Vector retVal = new Vector(3), x0 = new Vector(2);
 
-            xt[0] = x0[0]; xt[1] = x0[1];
-            dxt[0] = dx[0]; dxt[1] = dx[1];
+            x0[0] = x[0];
+            x0[1] = x[1];
+            var y0 = hestonProcess_.drift(t, x0);
 
-            var yt = hestonProcess_.apply(xt, dxt);
-
-            retVal[0] = yt[0]; retVal[1] = yt[1];
-            retVal[2] = hullWhiteProcess_.apply(x0[2], dx[2]);
+            retVal[0] = y0[0];
+            retVal[1] = y0[1];
+            retVal[2] = hullWhiteProcess_.drift(t, x[2]);
 
             return retVal;
         }
+
+        public double eta() => corrEquityShortRate_;
 
         public override Vector evolve(double t0, Vector x0, double dt, Vector dw)
         {
@@ -156,7 +177,7 @@ namespace QLNet.processes
             var nu = hestonProcess_.kappa() * (hestonProcess_.theta() - eta * eta);
 
             retVal[1] = x0[1] + nu * dt + eta2 * System.Math.Sqrt(dt)
-                        * (xi * dw[0] + System.Math.Sqrt(1 - xi * xi) * dw[1]);
+                                               * (xi * dw[0] + System.Math.Sqrt(1 - xi * xi) * dw[1]);
 
             if (disc_ == Discretization.BSMHullWhite)
             {
@@ -172,7 +193,7 @@ namespace QLNet.processes
                 // terminal rho must be between -maxRho and +maxRho
                 var rhoT = System.Math.Min(maxRho_, System.Math.Max(-maxRho_, v12 / System.Math.Sqrt(v1 * v2)));
                 Utils.QL_REQUIRE(rhoT <= 1.0 && rhoT >= -1.0
-                                 && 1 - rhoT * rhoT / (1 - xi * xi) >= 0.0, () => "invalid terminal correlation");
+                                             && 1 - rhoT * rhoT / (1 - xi * xi) >= 0.0, () => "invalid terminal correlation");
 
                 var dw_0 = dw[0];
                 var dw_2 = rhoT * dw[0] - rhoT * xi / System.Math.Sqrt(1 - xi * xi) * dw[1]
@@ -194,36 +215,36 @@ namespace QLNet.processes
                 retVal[0] = x0[0] * System.Math.Exp(mu + vol);
             }
             else
+            {
                 Utils.QL_FAIL("unknown discretization scheme");
+            }
+
+            return retVal;
+        }
+
+        public HestonProcess hestonProcess() => hestonProcess_;
+
+        public HullWhiteForwardProcess hullWhiteProcess() => hullWhiteProcess_;
+
+        public override Vector initialValues()
+        {
+            var retVal = new Vector(3);
+            retVal[0] = hestonProcess_.s0().link.value();
+            retVal[1] = hestonProcess_.v0();
+            retVal[2] = hullWhiteProcess_.x0();
 
             return retVal;
         }
 
         public double numeraire(double t, Vector x) => hullWhiteModel_.discountBond(t, T_, x[2]) / endDiscount_;
 
-        public HestonProcess hestonProcess() => hestonProcess_;
-
-        public HullWhiteForwardProcess hullWhiteProcess() => hullWhiteProcess_;
-
-        public double eta() => corrEquityShortRate_;
+        public override int size() => 3;
 
         public override double time(Date date) => hestonProcess_.time(date);
 
-        public Discretization discretization() => disc_;
-
-        public override void update() { endDiscount_ = hestonProcess_.riskFreeRate().link.discount(T_); }
-
-        protected HestonProcess hestonProcess_;
-        protected HullWhiteForwardProcess hullWhiteProcess_;
-
-        //model is used to calculate P(t,T)
-        protected HullWhite hullWhiteModel_;
-
-        protected double corrEquityShortRate_;
-        protected Discretization disc_;
-        protected double maxRho_;
-        protected double T_;
-        protected double endDiscount_;
-
+        public override void update()
+        {
+            endDiscount_ = hestonProcess_.riskFreeRate().link.discount(T_);
+        }
     }
 }

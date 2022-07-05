@@ -175,7 +175,9 @@ namespace QLNet.Tests
                             for (var d = today + new Period(frequencies[kk]);
                                  d < maturity.lastDate();
                                  d += new Period(frequencies[kk]))
+                            {
                                 reset.Add(d);
+                            }
 
                             var engine = getEngine(process);
 

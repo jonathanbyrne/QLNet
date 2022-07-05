@@ -17,22 +17,26 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Methods.lattices
 {
     //! %Tree approximating a single-factor diffusion
-    [JetBrains.Annotations.PublicAPI] public class Tree<T>
+    [PublicAPI]
+    public class Tree<T>
     {
         private int columns_;
 
-        public int columns() => columns_;
-
         // parameterless constructor is requried for generics
         public Tree()
-        { }
+        {
+        }
 
         public Tree(int columns)
         {
             columns_ = columns;
         }
+
+        public int columns() => columns_;
     }
 }

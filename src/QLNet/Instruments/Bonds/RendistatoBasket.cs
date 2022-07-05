@@ -1,11 +1,19 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Patterns;
 using QLNet.Quotes;
 
 namespace QLNet.Instruments.Bonds
 {
-    [JetBrains.Annotations.PublicAPI] public class RendistatoBasket : IObserver, IObservable
+    [PublicAPI]
+    public class RendistatoBasket : IObserver, IObservable
     {
+        private List<BTP> btps_;
+        private int n_;
+        private double outstanding_;
+        private List<double> outstandings_;
+        private List<Handle<Quote>> quotes_;
+        private List<double> weights_;
 
         public RendistatoBasket(List<BTP> btps, List<double> outstandings, List<Handle<Quote>> cleanPriceQuotes)
         {
@@ -41,7 +49,9 @@ namespace QLNet.Instruments.Bonds
 
             outstanding_ = 0.0;
             for (var i = 0; i < n_; ++i)
+            {
                 outstanding_ += outstandings[i];
+            }
 
             weights_ = new List<double>(n_);
             for (var i = 0; i < n_; ++i)
@@ -49,8 +59,8 @@ namespace QLNet.Instruments.Bonds
                 weights_.Add(outstandings[i] / outstanding_);
                 quotes_[i].registerWith(update);
             }
-
         }
+
         #region Inspectors
 
         public int size() => n_;
@@ -68,30 +78,36 @@ namespace QLNet.Instruments.Bonds
         #endregion
 
         #region Observer & observable
+
         private readonly WeakEventSource eventSource = new WeakEventSource();
+
         public event Callback notifyObserversEvent
         {
             add => eventSource.Subscribe(value);
             remove => eventSource.Unsubscribe(value);
         }
 
-        public void registerWith(Callback handler) { notifyObserversEvent += handler; }
-        public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
+        public void registerWith(Callback handler)
+        {
+            notifyObserversEvent += handler;
+        }
+
+        public void unregisterWith(Callback handler)
+        {
+            notifyObserversEvent -= handler;
+        }
+
         protected void notifyObservers()
         {
             eventSource.Raise();
         }
 
         // observer interface
-        public void update() { notifyObservers(); }
+        public void update()
+        {
+            notifyObservers();
+        }
+
         #endregion
-
-
-        private List<BTP> btps_;
-        private List<double> outstandings_;
-        private List<Handle<Quote>> quotes_;
-        private double outstanding_;
-        private int n_;
-        private List<double> weights_;
     }
 }

@@ -13,11 +13,10 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.processes;
-using QLNet.Time;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Pricingengines.Cliquet
 {
@@ -30,8 +29,11 @@ namespace QLNet.Pricingengines.Cliquet
         - the correctness of the returned greeks is tested by
           reproducing numerical derivatives.
     */
-    [JetBrains.Annotations.PublicAPI] public class AnalyticCliquetEngine : CliquetOption.Engine
+    [PublicAPI]
+    public class AnalyticCliquetEngine : CliquetOption.Engine
     {
+        private GeneralizedBlackScholesProcess process_;
+
         public AnalyticCliquetEngine(GeneralizedBlackScholesProcess process)
         {
             process_ = process;
@@ -42,12 +44,12 @@ namespace QLNet.Pricingengines.Cliquet
         {
             Utils.QL_REQUIRE(arguments_.accruedCoupon == null &&
                              arguments_.lastFixing == null, () =>
-                             "this engine cannot price options already started");
+                "this engine cannot price options already started");
             Utils.QL_REQUIRE(arguments_.localCap == null &&
                              arguments_.localFloor == null &&
                              arguments_.globalCap == null &&
                              arguments_.globalFloor == null, () =>
-                             "this engine cannot price capped/floored options");
+                "this engine cannot price capped/floored options");
 
             Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
 
@@ -90,7 +92,7 @@ namespace QLNet.Pricingengines.Cliquet
                                             black.beta());
                 results_.gamma += 0.0;
                 results_.theta += process_.dividendYield().link.forwardRate(
-                                     resetDates[i - 1], resetDates[i], rfdc, Compounding.Continuous, Frequency.NoFrequency).value() *
+                                      resetDates[i - 1], resetDates[i], rfdc, Compounding.Continuous, Frequency.NoFrequency).value() *
                                   weight * black.value();
 
                 var dt = rfdc.yearFraction(resetDates[i - 1], resetDates[i]);
@@ -105,7 +107,5 @@ namespace QLNet.Pricingengines.Cliquet
                 results_.vega += weight * black.vega(dt);
             }
         }
-
-        private GeneralizedBlackScholesProcess process_;
     }
 }

@@ -13,28 +13,33 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
-using QLNet.Math;
-using System;
+
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
     // mixed interpolation between discrete points
 
-    [JetBrains.Annotations.PublicAPI] public class MixedInterpolationImpl<Interpolator1, Interpolator2> : Interpolation.templateImpl
-       where Interpolator1 : IInterpolationFactory, new()
-       where Interpolator2 : IInterpolationFactory, new()
+    [PublicAPI]
+    public class MixedInterpolationImpl<Interpolator1, Interpolator2> : Interpolation.templateImpl
+        where Interpolator1 : IInterpolationFactory, new()
+        where Interpolator2 : IInterpolationFactory, new()
     {
-        public MixedInterpolationImpl(List<double> xBegin, int xEnd,
-                                      List<double> yBegin, int n,
-                                      Behavior behavior = Behavior.ShareRanges,
-                                      Interpolator1 factory1 = default,
-                                      Interpolator2 factory2 = default)
-           : base(xBegin, xEnd, yBegin,
-                  System.Math.Max(factory1 == null ? (factory1 = new Interpolator1()).requiredPoints : factory1.requiredPoints,
-                           factory2 == null ? (factory2 = new Interpolator2()).requiredPoints : factory2.requiredPoints))
+        private Interpolation interpolation1_, interpolation2_;
+        private int n_;
+        private List<double> xBegin2_;
+        private List<double> yBegin2_;
 
+        public MixedInterpolationImpl(List<double> xBegin, int xEnd,
+            List<double> yBegin, int n,
+            Behavior behavior = Behavior.ShareRanges,
+            Interpolator1 factory1 = default,
+            Interpolator2 factory2 = default)
+            : base(xBegin, xEnd, yBegin,
+                System.Math.Max(factory1 == null ? (factory1 = new Interpolator1()).requiredPoints : factory1.requiredPoints,
+                    factory2 == null ? (factory2 = new Interpolator2()).requiredPoints : factory2.requiredPoints))
         {
             n_ = n;
 
@@ -59,6 +64,39 @@ namespace QLNet.Math.Interpolations
             }
         }
 
+        public override double derivative(double x)
+        {
+            if (x < xBegin2_.First())
+            {
+                return interpolation1_.derivative(x, true);
+            }
+
+            return interpolation2_.derivative(x, true);
+        }
+
+        public override double primitive(double x)
+        {
+            if (x < xBegin2_.First())
+            {
+                return interpolation1_.primitive(x, true);
+            }
+
+            return interpolation2_.primitive(x, true) -
+                   interpolation2_.primitive(xBegin2_.First(), true) +
+                   interpolation1_.primitive(xBegin2_.First(), true);
+        }
+
+        public override double secondDerivative(double x)
+        {
+            if (x < xBegin2_.First())
+            {
+                return interpolation1_.secondDerivative(x, true);
+            }
+
+            return interpolation2_.secondDerivative(x, true);
+        }
+
+        public int switchIndex() => n_;
 
         public override void update()
         {
@@ -69,40 +107,12 @@ namespace QLNet.Math.Interpolations
         public override double value(double x)
         {
             if (x < xBegin2_.First())
+            {
                 return interpolation1_.value(x, true);
+            }
+
             return interpolation2_.value(x, true);
         }
-
-        public override double primitive(double x)
-        {
-            if (x < xBegin2_.First())
-                return interpolation1_.primitive(x, true);
-            return interpolation2_.primitive(x, true) -
-                   interpolation2_.primitive(xBegin2_.First(), true) +
-                   interpolation1_.primitive(xBegin2_.First(), true);
-        }
-
-        public override double derivative(double x)
-        {
-            if (x < xBegin2_.First())
-                return interpolation1_.derivative(x, true);
-            return interpolation2_.derivative(x, true);
-        }
-
-        public override double secondDerivative(double x)
-        {
-            if (x < xBegin2_.First())
-                return interpolation1_.secondDerivative(x, true);
-            return interpolation2_.secondDerivative(x, true);
-        }
-
-        public int switchIndex() => n_;
-
-        private List<double> xBegin2_;
-        private List<double> yBegin2_;
-        private int n_;
-        private Interpolation interpolation1_, interpolation2_;
-
     }
 
     //! mixed linear/cubic interpolation between discrete points

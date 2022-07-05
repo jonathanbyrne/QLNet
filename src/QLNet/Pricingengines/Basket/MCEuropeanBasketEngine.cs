@@ -23,7 +23,7 @@ namespace QLNet.Pricingengines.Basket
                reproducing results available in literature.
 
     */
-    class MCEuropeanBasketEngine
+    internal class MCEuropeanBasketEngine
     {
     }
 }

@@ -50,9 +50,13 @@ namespace QLNet.Tests
             for (var i = 0; i < schedule.Count; i++)
             {
                 if (i <= 29)
+                {
                     QAssert.AreEqual(listCPR[i], psa100.getCPR(schedule[i]) * 100, 0.001);
+                }
                 else
+                {
                     QAssert.AreEqual(6.0000, psa100.getCPR(schedule[i]) * 100);
+                }
             }
 
 

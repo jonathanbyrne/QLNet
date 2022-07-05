@@ -18,6 +18,7 @@
 */
 
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
@@ -39,19 +40,22 @@ namespace QLNet.Math.Interpolations
         produces smoother curves.  Extra enhancement to avoid negative
         values (if required) is in place.
     */
-    [JetBrains.Annotations.PublicAPI] public class ConvexMonotoneInterpolation : Interpolation
+    [PublicAPI]
+    public class ConvexMonotoneInterpolation : Interpolation
     {
         public ConvexMonotoneInterpolation(List<double> xBegin, int size, List<double> yBegin, double quadraticity,
-                                           double monotonicity, bool forcePositive, bool flatFinalPeriod)
-           : this(xBegin, size, yBegin, quadraticity, monotonicity, forcePositive, flatFinalPeriod,
-                  new Dictionary<double, ISectionHelper>())
-        { }
+            double monotonicity, bool forcePositive, bool flatFinalPeriod)
+            : this(xBegin, size, yBegin, quadraticity, monotonicity, forcePositive, flatFinalPeriod,
+                new Dictionary<double, ISectionHelper>())
+        {
+        }
+
         public ConvexMonotoneInterpolation(List<double> xBegin, int size, List<double> yBegin, double quadraticity,
-                                           double monotonicity, bool forcePositive, bool flatFinalPeriod,
-                                           Dictionary<double, ISectionHelper> preExistingHelpers)
+            double monotonicity, bool forcePositive, bool flatFinalPeriod,
+            Dictionary<double, ISectionHelper> preExistingHelpers)
         {
             impl_ = new ConvexMonotoneImpl(xBegin, size, yBegin, quadraticity, monotonicity, forcePositive,
-                                           flatFinalPeriod, preExistingHelpers);
+                flatFinalPeriod, preExistingHelpers);
             impl_.update();
         }
 
@@ -61,7 +65,6 @@ namespace QLNet.Math.Interpolations
             return derived.getExistingHelpers();
         }
     }
-
 
     //! Convex-monotone interpolation factory and traits
 }

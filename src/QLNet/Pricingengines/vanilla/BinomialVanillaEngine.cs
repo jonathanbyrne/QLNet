@@ -16,6 +16,8 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Methods.lattices;
@@ -23,8 +25,6 @@ using QLNet.Patterns;
 using QLNet.processes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
-using QLNet.Time;
-using System;
 using QLNet.Termstructures.Yield;
 
 namespace QLNet.Pricingengines.vanilla
@@ -41,7 +41,8 @@ namespace QLNet.Pricingengines.vanilla
               one, while the two side points would be used for
               estimating partial derivatives.
     */
-    [JetBrains.Annotations.PublicAPI] public class BinomialVanillaEngine<T> : OneAssetOption.Engine where T : ITreeFactory<T>, ITree, new()
+    [PublicAPI]
+    public class BinomialVanillaEngine<T> : OneAssetOption.Engine where T : ITreeFactory<T>, ITree, new()
     {
         private GeneralizedBlackScholesProcess process_;
         private int timeSteps_;
@@ -58,7 +59,6 @@ namespace QLNet.Pricingengines.vanilla
 
         public override void calculate()
         {
-
             var rfdc = process_.riskFreeRate().link.dayCounter();
             var divdc = process_.dividendYield().link.dayCounter();
             var voldc = process_.blackVolatility().link.dayCounter();
@@ -83,7 +83,7 @@ namespace QLNet.Pricingengines.vanilla
             var maturity = rfdc.yearFraction(referenceDate, maturityDate);
 
             StochasticProcess1D bs =
-               new GeneralizedBlackScholesProcess(process_.stateVariable(), flatDividends, flatRiskFree, flatVol);
+                new GeneralizedBlackScholesProcess(process_.stateVariable(), flatDividends, flatRiskFree, flatVol);
 
             var grid = new TimeGrid(maturity, timeSteps_);
 
@@ -119,17 +119,17 @@ namespace QLNet.Pricingengines.vanilla
             var s1 = lattice.underlying(1, 1);
 
             // Calculate partial derivatives
-            var delta0 = (p1 - p0) / (s1 - s0);   // dp/ds
-            var delta1 = (p2h - p1) / (s2 - s1);  // dp/ds
+            var delta0 = (p1 - p0) / (s1 - s0); // dp/ds
+            var delta1 = (p2h - p1) / (s2 - s1); // dp/ds
 
             // Store results
             results_.value = p0;
             results_.delta = delta0;
-            results_.gamma = 2.0 * (delta1 - delta0) / (s2 - s0);    //d(delta)/ds
+            results_.gamma = 2.0 * (delta1 - delta0) / (s2 - s0); //d(delta)/ds
             results_.theta = Utils.blackScholesTheta(process_,
-                                                     results_.value.GetValueOrDefault(),
-                                                     results_.delta.GetValueOrDefault(),
-                                                     results_.gamma.GetValueOrDefault());
+                results_.value.GetValueOrDefault(),
+                results_.delta.GetValueOrDefault(),
+                results_.gamma.GetValueOrDefault());
         }
     }
 }

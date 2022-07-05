@@ -13,13 +13,13 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace QLNet.Instruments
 {
@@ -50,9 +50,15 @@ namespace QLNet.Instruments
         and swap settlement date are outside the scope of the
         instrument.
     */
-    [JetBrains.Annotations.PublicAPI] public class CPISwap : Swap
+    [PublicAPI]
+    public class CPISwap : Swap
     {
-        public enum Type { Receiver = -1, Payer = 1 }
+        public enum Type
+        {
+            Receiver = -1,
+            Payer = 1
+        }
+
         public new class Arguments : Swap.Arguments
         {
             public Arguments()
@@ -61,15 +67,22 @@ namespace QLNet.Instruments
                 nominal = null;
             }
 
-            public Type type { get; set; }
             public double? nominal { get; set; }
 
+            public Type type { get; set; }
+        }
+
+        [PublicAPI]
+        public class Engine : GenericEngine<Arguments, Results>
+        {
         }
 
         public new class Results : Swap.Results
         {
             public double? fairRate { get; set; }
+
             public double? fairSpread { get; set; }
+
             public override void reset()
             {
                 base.reset();
@@ -78,30 +91,53 @@ namespace QLNet.Instruments
             }
         }
 
-        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results>
-        { }
+        private double baseCPI_;
+        private double? fairRate_;
+        // results
+        private double? fairSpread_;
+        private DayCounter fixedDayCount_;
+        private ZeroInflationIndex fixedIndex_;
+        private BusinessDayConvention fixedPaymentRoll_;
+
+        // fixed x inflation leg
+        private double fixedRate_;
+        private Schedule fixedSchedule_;
+        private int fixingDays_;
+        private DayCounter floatDayCount_;
+        private IborIndex floatIndex_;
+        private BusinessDayConvention floatPaymentRoll_;
+        private Schedule floatSchedule_;
+        private double inflationNominal_;
+        private double nominal_;
+        private InterpolationType observationInterpolation_;
+        private Period observationLag_;
+
+        // float+spread leg
+        private double spread_;
+        private bool subtractInflationNominal_;
+        private Type type_;
 
         public CPISwap(Type type,
-                       double nominal,
-                       bool subtractInflationNominal,
-                       // float+spread leg
-                       double spread,
-                       DayCounter floatDayCount,
-                       Schedule floatSchedule,
-                       BusinessDayConvention floatPaymentRoll,
-                       int fixingDays,
-                       IborIndex floatIndex,
-                       // fixed x inflation leg
-                       double fixedRate,
-                       double baseCPI,
-                       DayCounter fixedDayCount,
-                       Schedule fixedSchedule,
-                       BusinessDayConvention fixedPaymentRoll,
-                       Period observationLag,
-                       ZeroInflationIndex fixedIndex,
-                       InterpolationType observationInterpolation = InterpolationType.AsIndex,
-                       double? inflationNominal = null)
-        : base(2)
+            double nominal,
+            bool subtractInflationNominal,
+            // float+spread leg
+            double spread,
+            DayCounter floatDayCount,
+            Schedule floatSchedule,
+            BusinessDayConvention floatPaymentRoll,
+            int fixingDays,
+            IborIndex floatIndex,
+            // fixed x inflation leg
+            double fixedRate,
+            double baseCPI,
+            DayCounter fixedDayCount,
+            Schedule fixedSchedule,
+            BusinessDayConvention fixedPaymentRoll,
+            Period observationLag,
+            ZeroInflationIndex fixedIndex,
+            InterpolationType observationInterpolation = InterpolationType.AsIndex,
+            double? inflationNominal = null)
+            : base(2)
         {
             type_ = type;
             nominal_ = nominal;
@@ -131,14 +167,16 @@ namespace QLNet.Instruments
             if (floatSchedule_.Count > 1)
             {
                 floatingLeg = new IborLeg(floatSchedule_, floatIndex_)
-                .withFixingDays(fixingDays_)
-                .withPaymentDayCounter(floatDayCount_)
-                .withSpreads(spread_)
-                .withNotionals(nominal_)
-                .withPaymentAdjustment(floatPaymentRoll_);
+                    .withFixingDays(fixingDays_)
+                    .withPaymentDayCounter(floatDayCount_)
+                    .withSpreads(spread_)
+                    .withNotionals(nominal_)
+                    .withPaymentAdjustment(floatPaymentRoll_);
             }
             else
+            {
                 floatingLeg = new List<CashFlow>();
+            }
 
             if (floatSchedule_.Count == 1 ||
                 !subtractInflationNominal_ ||
@@ -165,12 +203,12 @@ namespace QLNet.Instruments
 
             // a CPIleg know about zero legs and inclusion of base inflation notional
             List<CashFlow> cpiLeg = new CPILeg(fixedSchedule_, fixedIndex_, baseCPI_, observationLag_)
-            .withFixedRates(fixedRate_)
-            .withPaymentDayCounter(fixedDayCount_)
-            .withObservationInterpolation(observationInterpolation_)
-            .withSubtractInflationNominal(subtractInflationNominal_)
-            .withNotionals(inflationNominal_)
-            .withPaymentAdjustment(fixedPaymentRoll_);
+                .withFixedRates(fixedRate_)
+                .withPaymentDayCounter(fixedDayCount_)
+                .withObservationInterpolation(observationInterpolation_)
+                .withSubtractInflationNominal(subtractInflationNominal_)
+                .withNotionals(inflationNominal_)
+                .withPaymentAdjustment(fixedPaymentRoll_);
 
             foreach (var cashFlow in cpiLeg)
             {
@@ -183,12 +221,10 @@ namespace QLNet.Instruments
                 {
                     cashFlow.registerWith(update);
                 }
-
             }
 
             legs_[0] = cpiLeg;
             legs_[1] = floatingLeg;
-
 
             if (type_ == Type.Payer)
             {
@@ -202,13 +238,16 @@ namespace QLNet.Instruments
             }
         }
 
-        // results
-        // float+spread
-        public virtual double floatLegNPV()
+        public virtual double baseCPI() => baseCPI_;
+
+        // legs
+        public virtual List<CashFlow> cpiLeg() => legs_[0];
+
+        public virtual double fairRate()
         {
             calculate();
-            Utils.QL_REQUIRE(legNPV_[1] != null, () => "result not available");
-            return legNPV_[1].GetValueOrDefault();
+            Utils.QL_REQUIRE(fairRate_ != null, () => "result not available");
+            return fairRate_.GetValueOrDefault();
         }
 
         public virtual double fairSpread()
@@ -217,63 +256,6 @@ namespace QLNet.Instruments
             Utils.QL_REQUIRE(fairSpread_ != null, () => "result not available");
             return fairSpread_.GetValueOrDefault();
         }
-        // fixed rate x inflation
-        public virtual double fixedLegNPV()
-        {
-            calculate();
-            Utils.QL_REQUIRE(legNPV_[0] != null, () => "result not available");
-            return legNPV_[0].GetValueOrDefault();
-        }
-        public virtual double fairRate()
-        {
-            calculate();
-            Utils.QL_REQUIRE(fairRate_ != null, () => "result not available");
-            return fairRate_.GetValueOrDefault();
-        }
-
-        // inspectors
-        public virtual Type type() => type_;
-
-        public virtual double nominal() => nominal_;
-
-        public virtual bool subtractInflationNominal() => subtractInflationNominal_;
-
-        // float+spread
-        public virtual double spread() => spread_;
-
-        public virtual DayCounter floatDayCount() => floatDayCount_;
-
-        public virtual Schedule floatSchedule() => floatSchedule_;
-
-        public virtual BusinessDayConvention floatPaymentRoll() => floatPaymentRoll_;
-
-        public virtual int fixingDays() => fixingDays_;
-
-        public virtual IborIndex floatIndex() => floatIndex_;
-
-        // fixed rate x inflation
-        public virtual double fixedRate() => fixedRate_;
-
-        public virtual double baseCPI() => baseCPI_;
-
-        public virtual DayCounter fixedDayCount() => fixedDayCount_;
-
-        public virtual Schedule fixedSchedule() => fixedSchedule_;
-
-        public virtual BusinessDayConvention fixedPaymentRoll() => fixedPaymentRoll_;
-
-        public virtual Period observationLag() => observationLag_;
-
-        public virtual ZeroInflationIndex fixedIndex() => fixedIndex_;
-
-        public virtual InterpolationType observationInterpolation() => observationInterpolation_;
-
-        public virtual double inflationNominal() => inflationNominal_;
-
-        // legs
-        public virtual List<CashFlow> cpiLeg() => legs_[0];
-
-        public virtual List<CashFlow> floatLeg() => legs_[1];
 
         // other
         public override void fetchResults(IPricingEngineResults r)
@@ -284,9 +266,7 @@ namespace QLNet.Instruments
 
             base.fetchResults(r);
 
-            var results = r as Results;
-
-            if (results != null)
+            if (r is Results results)
             {
                 // might be a swap engine, so no error is thrown
                 fairRate_ = results.fairRate;
@@ -302,15 +282,76 @@ namespace QLNet.Instruments
             {
                 // calculate it from other results
                 if (legBPS_[0] != null)
+                {
                     fairRate_ = fixedRate_ - NPV_ / (legBPS_[0] / Const.BASIS_POINT);
+                }
             }
+
             if (fairSpread_ == null)
             {
                 // ditto
                 if (legBPS_[1] != null)
+                {
                     fairSpread_ = spread_ - NPV_ / (legBPS_[1] / Const.BASIS_POINT);
+                }
             }
         }
+
+        public virtual DayCounter fixedDayCount() => fixedDayCount_;
+
+        public virtual ZeroInflationIndex fixedIndex() => fixedIndex_;
+
+        // fixed rate x inflation
+        public virtual double fixedLegNPV()
+        {
+            calculate();
+            Utils.QL_REQUIRE(legNPV_[0] != null, () => "result not available");
+            return legNPV_[0].GetValueOrDefault();
+        }
+
+        public virtual BusinessDayConvention fixedPaymentRoll() => fixedPaymentRoll_;
+
+        // fixed rate x inflation
+        public virtual double fixedRate() => fixedRate_;
+
+        public virtual Schedule fixedSchedule() => fixedSchedule_;
+
+        public virtual int fixingDays() => fixingDays_;
+
+        public virtual DayCounter floatDayCount() => floatDayCount_;
+
+        public virtual IborIndex floatIndex() => floatIndex_;
+
+        public virtual List<CashFlow> floatLeg() => legs_[1];
+
+        // results
+        // float+spread
+        public virtual double floatLegNPV()
+        {
+            calculate();
+            Utils.QL_REQUIRE(legNPV_[1] != null, () => "result not available");
+            return legNPV_[1].GetValueOrDefault();
+        }
+
+        public virtual BusinessDayConvention floatPaymentRoll() => floatPaymentRoll_;
+
+        public virtual Schedule floatSchedule() => floatSchedule_;
+
+        public virtual double inflationNominal() => inflationNominal_;
+
+        public virtual double nominal() => nominal_;
+
+        public virtual InterpolationType observationInterpolation() => observationInterpolation_;
+
+        public virtual Period observationLag() => observationLag_;
+
+        // float+spread
+        public virtual double spread() => spread_;
+
+        public virtual bool subtractInflationNominal() => subtractInflationNominal_;
+
+        // inspectors
+        public virtual Type type() => type_;
 
         protected override void setupExpired()
         {
@@ -319,31 +360,5 @@ namespace QLNet.Instruments
             fairRate_ = null;
             fairSpread_ = null;
         }
-
-        private Type type_;
-        private double nominal_;
-        private bool subtractInflationNominal_;
-
-        // float+spread leg
-        private double spread_;
-        private DayCounter floatDayCount_;
-        private Schedule floatSchedule_;
-        private BusinessDayConvention floatPaymentRoll_;
-        private int fixingDays_;
-        private IborIndex floatIndex_;
-
-        // fixed x inflation leg
-        private double fixedRate_;
-        private double baseCPI_;
-        private DayCounter fixedDayCount_;
-        private Schedule fixedSchedule_;
-        private BusinessDayConvention fixedPaymentRoll_;
-        private ZeroInflationIndex fixedIndex_;
-        private Period observationLag_;
-        private InterpolationType observationInterpolation_;
-        private double inflationNominal_;
-        // results
-        private double? fairSpread_;
-        private double? fairRate_;
     }
 }

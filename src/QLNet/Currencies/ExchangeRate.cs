@@ -18,62 +18,36 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Currencies
 {
     /// <summary>
-    /// Exchange rate between two currencies
-    /// application of direct and derived exchange rate is
-    /// tested against calculations.
+    ///     Exchange rate between two currencies
+    ///     application of direct and derived exchange rate is
+    ///     tested against calculations.
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class ExchangeRate
+    [PublicAPI]
+    public class ExchangeRate
     {
-        private Currency source_;
-        private Currency target_;
-        private double? rate_;
-        private Type type_;
-        private KeyValuePair<ExchangeRate, ExchangeRate> rateChain_;
-
         /// <summary>
-        /// the source currency.
-        /// </summary>
-        public Currency source => source_;
-
-        /// <summary>
-        /// the target currency.
-        /// </summary>
-        public Currency target => target_;
-
-        /// <summary>
-        /// the ExerciseType
-        /// </summary>
-        /// <returns></returns>
-        public Type type => type_;
-
-        /// <summary>
-        /// the exchange rate (when available)
-        /// </summary>
-        /// <returns></returns>
-        public double rate => rate_.Value;
-
-        public bool HasValue => rate_.HasValue;
-
-        /// <summary>
-        /// given directly by the user
+        ///     given directly by the user
         /// </summary>
         public enum Type
         {
             /// <summary>
-            /// given directly by the user
+            ///     given directly by the user
             /// </summary>
             Direct,
             /// <summary>
-            /// Derived from exchange rates between other currencies
+            ///     Derived from exchange rates between other currencies
             /// </summary>
             Derived
         }
+
+        private double? rate_;
+        private KeyValuePair<ExchangeRate, ExchangeRate> rateChain_;
 
         public ExchangeRate()
         {
@@ -81,53 +55,46 @@ namespace QLNet.Currencies
         }
 
         /// <summary>
-        /// the rate r  is given with the convention that a
-        /// unit of the source is worth r units of the target.
+        ///     the rate r  is given with the convention that a
+        ///     unit of the source is worth r units of the target.
         /// </summary>
         /// <param name="source"></param>
         /// <param name="target"></param>
         /// <param name="rate"></param>
         public ExchangeRate(Currency source, Currency target, double rate)
         {
-            source_ = source;
-            target_ = target;
+            this.source = source;
+            this.target = target;
             rate_ = rate;
-            type_ = Type.Direct;
+            type = Type.Direct;
         }
 
+        public bool HasValue => rate_.HasValue;
+
         /// <summary>
-        /// Utility methods
-        /// apply the exchange rate to a cash amount
+        ///     the exchange rate (when available)
         /// </summary>
-        /// <param name="amount"></param>
         /// <returns></returns>
-        public Money exchange(Money amount)
-        {
-            switch (type_)
-            {
-                case Type.Direct:
-                    if (amount.currency == source_)
-                        return new Money(amount.value * rate_.Value, target_);
-                    if (amount.currency == target_)
-                        return new Money(amount.value / rate_.Value, source_);
-                    Utils.QL_FAIL("exchange rate not applicable");
-                    return null;
-
-                case Type.Derived:
-                    if (amount.currency == rateChain_.Key.source || amount.currency == rateChain_.Key.target)
-                        return rateChain_.Value.exchange(rateChain_.Key.exchange(amount));
-                    if (amount.currency == rateChain_.Value.source || amount.currency == rateChain_.Value.target)
-                        return rateChain_.Key.exchange(rateChain_.Value.exchange(amount));
-                    Utils.QL_FAIL("exchange rate not applicable");
-                    return null;
-                default:
-                    Utils.QL_FAIL("unknown exchange-rate ExerciseType");
-                    return null;
-            }
-        }
+        public double rate => rate_.Value;
 
         /// <summary>
-        /// chain two exchange rates
+        ///     the source currency.
+        /// </summary>
+        public Currency source { get; private set; }
+
+        /// <summary>
+        ///     the target currency.
+        /// </summary>
+        public Currency target { get; private set; }
+
+        /// <summary>
+        ///     the ExerciseType
+        /// </summary>
+        /// <returns></returns>
+        public Type type { get; private set; }
+
+        /// <summary>
+        ///     chain two exchange rates
         /// </summary>
         /// <param name="r1"></param>
         /// <param name="r2"></param>
@@ -135,37 +102,81 @@ namespace QLNet.Currencies
         public static ExchangeRate chain(ExchangeRate r1, ExchangeRate r2)
         {
             var result = new ExchangeRate();
-            result.type_ = Type.Derived;
+            result.type = Type.Derived;
             result.rateChain_ = new KeyValuePair<ExchangeRate, ExchangeRate>(r1, r2);
-            if (r1.source_ == r2.source_)
+            if (r1.source == r2.source)
             {
-                result.source_ = r1.target_;
-                result.target_ = r2.target_;
+                result.source = r1.target;
+                result.target = r2.target;
                 result.rate_ = r2.rate_ / r1.rate_;
             }
-            else if (r1.source_ == r2.target_)
+            else if (r1.source == r2.target)
             {
-                result.source_ = r1.target_;
-                result.target_ = r2.source_;
+                result.source = r1.target;
+                result.target = r2.source;
                 result.rate_ = 1.0 / (r1.rate_ * r2.rate_);
             }
-            else if (r1.target_ == r2.source_)
+            else if (r1.target == r2.source)
             {
-                result.source_ = r1.source_;
-                result.target_ = r2.target_;
+                result.source = r1.source;
+                result.target = r2.target;
                 result.rate_ = r1.rate_ * r2.rate_;
             }
-            else if (r1.target_ == r2.target_)
+            else if (r1.target == r2.target)
             {
-                result.source_ = r1.source_;
-                result.target_ = r2.source_;
+                result.source = r1.source;
+                result.target = r2.source;
                 result.rate_ = r1.rate_ / r2.rate_;
             }
             else
             {
                 Utils.QL_FAIL("exchange rates not chainable");
             }
+
             return result;
+        }
+
+        /// <summary>
+        ///     Utility methods
+        ///     apply the exchange rate to a cash amount
+        /// </summary>
+        /// <param name="amount"></param>
+        /// <returns></returns>
+        public Money exchange(Money amount)
+        {
+            switch (type)
+            {
+                case Type.Direct:
+                    if (amount.currency == source)
+                    {
+                        return new Money(amount.value * rate_.Value, target);
+                    }
+
+                    if (amount.currency == target)
+                    {
+                        return new Money(amount.value / rate_.Value, source);
+                    }
+
+                    Utils.QL_FAIL("exchange rate not applicable");
+                    return null;
+
+                case Type.Derived:
+                    if (amount.currency == rateChain_.Key.source || amount.currency == rateChain_.Key.target)
+                    {
+                        return rateChain_.Value.exchange(rateChain_.Key.exchange(amount));
+                    }
+
+                    if (amount.currency == rateChain_.Value.source || amount.currency == rateChain_.Value.target)
+                    {
+                        return rateChain_.Key.exchange(rateChain_.Value.exchange(amount));
+                    }
+
+                    Utils.QL_FAIL("exchange rate not applicable");
+                    return null;
+                default:
+                    Utils.QL_FAIL("unknown exchange-rate ExerciseType");
+                    return null;
+            }
         }
     }
 }

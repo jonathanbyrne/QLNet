@@ -13,11 +13,12 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.processes;
-using System;
 using QLNet.Pricingengines.vanilla;
+using QLNet.processes;
 
 namespace QLNet.Pricingengines.barrier
 {
@@ -30,8 +31,13 @@ namespace QLNet.Pricingengines.barrier
         \test the correctness of the returned value is tested by
               reproducing results available in literature.
     */
-    [JetBrains.Annotations.PublicAPI] public class WulinYongDoubleBarrierEngine : DoubleBarrierOption.Engine
+    [PublicAPI]
+    public class WulinYongDoubleBarrierEngine : DoubleBarrierOption.Engine
     {
+        private CumulativeNormalDistribution f_;
+        private GeneralizedBlackScholesProcess process_;
+        private int series_;
+
         public WulinYongDoubleBarrierEngine(GeneralizedBlackScholesProcess process, int series = 5)
         {
             process_ = process;
@@ -40,6 +46,7 @@ namespace QLNet.Pricingengines.barrier
 
             process_.registerWith(update);
         }
+
         public override void calculate()
         {
             var payoff = arguments_.payoff as PlainVanillaPayoff;
@@ -54,7 +61,7 @@ namespace QLNet.Pricingengines.barrier
             var barrierType = arguments_.barrierType;
             Utils.QL_REQUIRE(barrierType == DoubleBarrier.Type.KnockOut ||
                              barrierType == DoubleBarrier.Type.KnockIn, () =>
-                             "only KnockIn and KnockOut options supported");
+                "only KnockIn and KnockOut options supported");
 
             var L = arguments_.barrier_lo.GetValueOrDefault();
             var H = arguments_.barrier_hi.GetValueOrDefault();
@@ -125,26 +132,39 @@ namespace QLNet.Pricingengines.barrier
                 var v3 = D(S / L * System.Math.Pow(H / L, 2.0 * n), -mu, vol, T);
                 var v4 = D(S / L * System.Math.Pow(H / L, 2.0 * n), mu, vol, T);
                 rebateIn += dd * R_H * sgn * (System.Math.Pow(L / H, 2.0 * n * mu / (vol * vol)) * f_.value(sgn * v1) - System.Math.Pow(H / S, 2.0 * mu / (vol * vol)) * f_.value(-sgn * v2))
-                             + dd * R_L * sgn * (System.Math.Pow(L / S, 2.0 * mu / (vol * vol)) * f_.value(-sgn * v3) - System.Math.Pow(H / L, 2.0 * n * mu / (vol * vol)) * f_.value(sgn * v4));
+                            + dd * R_L * sgn * (System.Math.Pow(L / S, 2.0 * mu / (vol * vol)) * f_.value(-sgn * v3) - System.Math.Pow(H / L, 2.0 * n * mu / (vol * vol)) * f_.value(sgn * v4));
             }
 
             //rebate paid at maturity
             if (barrierType == DoubleBarrier.Type.KnockOut)
+            {
                 results_.value = barrierOut;
+            }
             else
+            {
                 results_.value = european - barrierOut;
+            }
 
             results_.additionalResults["vanilla"] = european;
             results_.additionalResults["barrierOut"] = barrierOut;
             results_.additionalResults["barrierIn"] = european - barrierOut;
-
         }
 
-        private GeneralizedBlackScholesProcess process_;
-        private int series_;
-        private CumulativeNormalDistribution f_;
-        // helper methods
-        private double underlying() => process_.x0();
+        private double D(double X, double lambda, double sigma, double T) => (System.Math.Log(X) + lambda * T) / (sigma * System.Math.Sqrt(T));
+
+        private double dividendDiscount() => process_.dividendYield().link.discount(residualTime());
+
+        private double dividendYield() =>
+            process_.dividendYield().link.zeroRate(
+                residualTime(), Compounding.Continuous, Frequency.NoFrequency).value();
+
+        private double residualTime() => process_.time(arguments_.exercise.lastDate());
+
+        private double riskFreeDiscount() => process_.riskFreeRate().link.discount(residualTime());
+
+        private double riskFreeRate() =>
+            process_.riskFreeRate().link.zeroRate(
+                residualTime(), Compounding.Continuous, Frequency.NoFrequency).value();
 
         private double strike()
         {
@@ -153,22 +173,9 @@ namespace QLNet.Pricingengines.barrier
             return payoff.strike();
         }
 
-        private double residualTime() => process_.time(arguments_.exercise.lastDate());
+        // helper methods
+        private double underlying() => process_.x0();
 
         private double volatility() => process_.blackVolatility().link.blackVol(residualTime(), strike());
-
-        private double riskFreeRate() =>
-            process_.riskFreeRate().link.zeroRate(
-                residualTime(), Compounding.Continuous, Frequency.NoFrequency).value();
-
-        private double riskFreeDiscount() => process_.riskFreeRate().link.discount(residualTime());
-
-        private double dividendYield() =>
-            process_.dividendYield().link.zeroRate(
-                residualTime(), Compounding.Continuous, Frequency.NoFrequency).value();
-
-        private double dividendDiscount() => process_.dividendYield().link.discount(residualTime());
-
-        private double D(double X, double lambda, double sigma, double T) => (System.Math.Log(X) + lambda * T) / (sigma * System.Math.Sqrt(T));
     }
 }

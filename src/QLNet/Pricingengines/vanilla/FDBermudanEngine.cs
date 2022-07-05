@@ -16,25 +16,29 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
+using QLNet.Methods.Finitedifferences;
 using QLNet.Patterns;
 using QLNet.processes;
-using System;
-using QLNet.Methods.Finitedifferences;
 
 namespace QLNet.Pricingengines.vanilla
 {
     //! Finite-differences Bermudan engine
     /*! \ingroup vanillaengines */
-    [JetBrains.Annotations.PublicAPI] public class FDBermudanEngine : FDMultiPeriodEngine, IGenericEngine
+    [PublicAPI]
+    public class FDBermudanEngine : FDMultiPeriodEngine, IGenericEngine
     {
         protected double extraTermInBermudan;
 
         // constructor
         public FDBermudanEngine(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100,
-                                bool timeDependent = false)
-           : base(process, timeSteps, gridPoints, timeDependent) { }
+            bool timeDependent = false)
+            : base(process, timeSteps, gridPoints, timeDependent)
+        {
+        }
 
         public void calculate()
         {
@@ -42,19 +46,22 @@ namespace QLNet.Pricingengines.vanilla
             base.calculate(results_);
         }
 
+        protected override void executeIntermediateStep(int i)
+        {
+            var size = intrinsicValues_.size();
+            for (var j = 0; j < size; j++)
+            {
+                prices_.setValue(j, System.Math.Max(prices_.value(j), intrinsicValues_.value(j)));
+            }
+        }
+
         protected override void initializeStepCondition()
         {
             stepCondition_ = new NullCondition<Vector>();
         }
 
-        protected override void executeIntermediateStep(int i)
-        {
-            var size = intrinsicValues_.size();
-            for (var j = 0; j < size; j++)
-                prices_.setValue(j, System.Math.Max(prices_.value(j), intrinsicValues_.value(j)));
-        }
-
         #region IGenericEngine copy-cat
+
         protected QLNet.Option.Arguments arguments_ = new QLNet.Option.Arguments();
         protected OneAssetOption.Results results_ = new OneAssetOption.Results();
 
@@ -62,26 +69,44 @@ namespace QLNet.Pricingengines.vanilla
 
         public IPricingEngineResults getResults() => results_;
 
-        public void reset() { results_.reset(); }
+        public void reset()
+        {
+            results_.reset();
+        }
 
         #region Observer & Observable
+
         // observable interface
         private readonly WeakEventSource eventSource = new WeakEventSource();
+
         public event Callback notifyObserversEvent
         {
             add => eventSource.Subscribe(value);
             remove => eventSource.Unsubscribe(value);
         }
 
-        public void registerWith(Callback handler) { notifyObserversEvent += handler; }
-        public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
+        public void registerWith(Callback handler)
+        {
+            notifyObserversEvent += handler;
+        }
+
+        public void unregisterWith(Callback handler)
+        {
+            notifyObserversEvent -= handler;
+        }
+
         protected void notifyObservers()
         {
             eventSource.Raise();
         }
 
-        public void update() { notifyObservers(); }
+        public void update()
+        {
+            notifyObservers();
+        }
+
         #endregion
+
         #endregion
     }
 }

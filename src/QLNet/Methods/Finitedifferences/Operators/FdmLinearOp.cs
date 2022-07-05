@@ -16,32 +16,38 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using QLNet.Math;
 using QLNet.Math.matrixutilities;
-using QLNet.Methods.Finitedifferences;
-using System;
 
 namespace QLNet.Methods.Finitedifferences.Operators
 {
     public abstract class FdmLinearOp : IOperator
     {
+        public abstract IOperator add
+            (IOperator A, IOperator B);
+
         public abstract Vector apply(Vector r);
-        public abstract SparseMatrix toMatrix();
+
+        public abstract Vector applyTo(Vector v);
+
+        public abstract object Clone();
+
+        public abstract IOperator identity(int size);
+
+        public abstract bool isTimeDependent();
+
+        public abstract IOperator multiply(double a, IOperator D);
+
+        public abstract void setTime(double t);
 
         //IOperator interface
         public abstract int size();
-        public abstract IOperator identity(int size);
-        public abstract Vector applyTo(Vector v);
+
         public abstract Vector solveFor(Vector rhs);
 
-        public abstract IOperator multiply(double a, IOperator D);
-        public abstract IOperator add
-           (IOperator A, IOperator B);
         public abstract IOperator subtract(IOperator A, IOperator B);
 
-        public abstract bool isTimeDependent();
-        public abstract void setTime(double t);
-
-        public abstract object Clone();
+        public abstract SparseMatrix toMatrix();
     }
 }

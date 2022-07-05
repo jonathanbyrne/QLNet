@@ -18,57 +18,58 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Time;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Time;
 
 namespace QLNet
 {
     //! Base exercise class
-    [JetBrains.Annotations.PublicAPI] public class Exercise
-   {
-      public enum Type
-      {
-         American,
-         Bermudan,
-         European
-      }
+    [PublicAPI]
+    public class Exercise
+    {
+        public enum Type
+        {
+            American,
+            Bermudan,
+            European
+        }
 
-      protected Type type_;
+        protected List<Date> dates_;
+        protected Type type_;
 
-      public Type ExerciseType() => type_;
+        // constructor
+        public Exercise(Type type)
+        {
+            type_ = type;
+        }
 
-      protected List<Date> dates_;
+        // inspectors
+        public Date date(int index) => dates_[index];
 
-      public List<Date> dates() => dates_;
+        public List<Date> dates() => dates_;
 
-      // constructor
-      public Exercise(Type type)
-      {
-         type_ = type;
-      }
+        public Type ExerciseType() => type_;
 
-      // inspectors
-      public Date date(int index) => dates_[index];
+        public Date lastDate() => dates_.Last();
+    }
 
-      public Date lastDate() => dates_.Last();
-   }
+    //! Early-exercise base class
+    /*! The payoff can be at exercise (the default) or at expiry */
 
-   //! Early-exercise base class
-   /*! The payoff can be at exercise (the default) or at expiry */
+    //! American exercise
+    /*! An American option can be exercised at any time between two
+        predefined dates; the first date might be omitted, in which
+        case the option can be exercised at any time before the expiry.
+ 
+        \todo check that everywhere the American condition is applied
+              from earliestDate and not earlier
+    */
 
-   //! American exercise
-   /*! An American option can be exercised at any time between two
-       predefined dates; the first date might be omitted, in which
-       case the option can be exercised at any time before the expiry.
+    //! Bermudan exercise
+    /*! A Bermudan option can only be exercised at a set of fixed dates. */
 
-       \todo check that everywhere the American condition is applied
-             from earliestDate and not earlier
-   */
-
-   //! Bermudan exercise
-   /*! A Bermudan option can only be exercised at a set of fixed dates. */
-
-   //! European exercise
-   /*! A European option can only be exercised at one (expiry) date. */
+    //! European exercise
+    /*! A European option can only be exercised at one (expiry) date. */
 }

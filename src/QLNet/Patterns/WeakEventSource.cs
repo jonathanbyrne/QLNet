@@ -24,95 +24,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using JetBrains.Annotations;
 
 namespace QLNet.Patterns
 {
-    [JetBrains.Annotations.PublicAPI] public class WeakEventSource
+    [PublicAPI]
+    public class WeakEventSource
     {
-        private readonly List<WeakDelegate> _handlers;
-
-        public WeakEventSource()
-        {
-            _handlers = new List<WeakDelegate>();
-        }
-
-        public void Raise()
-        {
-            lock (_handlers)
-            {
-                _handlers.RemoveAll(h => !h.Invoke());
-            }
-        }
-
-        public void Subscribe(Callback handler)
-        {
-            var weakHandlers = handler
-                               .GetInvocationList()
-                               .Select(d => new WeakDelegate(d))
-                               .ToList();
-
-            lock (_handlers)
-            {
-                _handlers.AddRange(weakHandlers);
-            }
-        }
-
-        public void Unsubscribe(Callback handler)
-        {
-            lock (_handlers)
-            {
-                var index = _handlers.FindIndex(h => h.IsMatch(handler));
-                if (index >= 0)
-                    _handlers.RemoveAt(index);
-            }
-        }
-
-        public void Clear()
-        {
-            lock (_handlers)
-            {
-                _handlers.Clear();
-            }
-        }
-
         private class WeakDelegate
         {
-            #region Open handler generation and cache
-
-            private delegate void OpenEventHandler(object target);
-
-            // ReSharper disable once StaticMemberInGenericType (by design)
-            private static readonly ConcurrentDictionary<MethodInfo, OpenEventHandler> _openHandlerCache =
-               new ConcurrentDictionary<MethodInfo, OpenEventHandler>();
-
-            private static OpenEventHandler CreateOpenHandler(MethodInfo method)
-            {
-                var target = Expression.Parameter(typeof(object), "target");
-
-                if (method.IsStatic)
-                {
-                    var expr = Expression.Lambda<OpenEventHandler>(
-                                  Expression.Call(
-                                     method),
-                                  target);
-                    return expr.Compile();
-                }
-                else
-                {
-                    var expr = Expression.Lambda<OpenEventHandler>(
-                                  Expression.Call(
-                                     Expression.Convert(target, method.DeclaringType),
-                                     method),
-                                  target);
-                    return expr.Compile();
-                }
-            }
-
-            #endregion Open handler generation and cache
-
-            private readonly WeakReference _weakTarget;
             private readonly MethodInfo _method;
             private readonly OpenEventHandler _openHandler;
+            private readonly WeakReference _weakTarget;
 
             public WeakDelegate(Delegate handler)
             {
@@ -133,8 +56,11 @@ namespace QLNet.Patterns
                 {
                     target = _weakTarget.Target;
                     if (target == null)
+                    {
                         return false;
+                    }
                 }
+
                 _openHandler(target);
                 return true;
             }
@@ -146,9 +72,89 @@ namespace QLNet.Patterns
                                                   && handler.Method.Equals(_method));
 #else
                 return _weakTarget.Target != null && ReferenceEquals(handler.Target, _weakTarget.Target)
-                                                      && handler.GetMethodInfo().Equals(_method);
+                                                  && handler.GetMethodInfo().Equals(_method);
 #endif
+            }
 
+            #region Open handler generation and cache
+
+            private delegate void OpenEventHandler(object target);
+
+            // ReSharper disable once StaticMemberInGenericType (by design)
+            private static readonly ConcurrentDictionary<MethodInfo, OpenEventHandler> _openHandlerCache =
+                new ConcurrentDictionary<MethodInfo, OpenEventHandler>();
+
+            private static OpenEventHandler CreateOpenHandler(MethodInfo method)
+            {
+                var target = Expression.Parameter(typeof(object), "target");
+
+                if (method.IsStatic)
+                {
+                    var expr = Expression.Lambda<OpenEventHandler>(
+                        Expression.Call(
+                            method),
+                        target);
+                    return expr.Compile();
+                }
+                else
+                {
+                    var expr = Expression.Lambda<OpenEventHandler>(
+                        Expression.Call(
+                            Expression.Convert(target, method.DeclaringType),
+                            method),
+                        target);
+                    return expr.Compile();
+                }
+            }
+
+            #endregion Open handler generation and cache
+        }
+
+        private readonly List<WeakDelegate> _handlers;
+
+        public WeakEventSource()
+        {
+            _handlers = new List<WeakDelegate>();
+        }
+
+        public void Clear()
+        {
+            lock (_handlers)
+            {
+                _handlers.Clear();
+            }
+        }
+
+        public void Raise()
+        {
+            lock (_handlers)
+            {
+                _handlers.RemoveAll(h => !h.Invoke());
+            }
+        }
+
+        public void Subscribe(Callback handler)
+        {
+            var weakHandlers = handler
+                .GetInvocationList()
+                .Select(d => new WeakDelegate(d))
+                .ToList();
+
+            lock (_handlers)
+            {
+                _handlers.AddRange(weakHandlers);
+            }
+        }
+
+        public void Unsubscribe(Callback handler)
+        {
+            lock (_handlers)
+            {
+                var index = _handlers.FindIndex(h => h.IsMatch(handler));
+                if (index >= 0)
+                {
+                    _handlers.RemoveAt(index);
+                }
             }
         }
     }

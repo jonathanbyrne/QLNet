@@ -13,22 +13,22 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
-using QLNet.Math;
-using System;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class VannaVolgaInterpolation : Interpolation
+    [PublicAPI]
+    public class VannaVolgaInterpolation : Interpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public VannaVolgaInterpolation(List<double> xBegin, int size, List<double> yBegin,
-                                       double spot, double dDiscount, double fDiscount, double T)
+            double spot, double dDiscount, double fDiscount, double T)
         {
             impl_ = new VannaVolgaInterpolationImpl(xBegin, size, yBegin, spot, dDiscount, fDiscount, T);
             impl_.update();
         }
-
     }
 
     //! %VannaVolga-interpolation factory and traits

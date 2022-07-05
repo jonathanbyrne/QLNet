@@ -17,15 +17,14 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.randomnumbers;
 using QLNet.Math.statistics;
 using QLNet.Methods.montecarlo;
 using QLNet.Patterns;
-using QLNet.Pricingengines;
 using QLNet.processes;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Pricingengines.barrier
 {
@@ -48,21 +47,32 @@ namespace QLNet.Pricingengines.barrier
         \test the correctness of the returned value is tested by
               reproducing results available in literature.
     */
-    [JetBrains.Annotations.PublicAPI] public class MCBarrierEngine<RNG, S> : McSimulation<SingleVariate, RNG, S>, IGenericEngine
-      where RNG : IRSG, new()
-      where S : IGeneralStatistics, new()
+    [PublicAPI]
+    public class MCBarrierEngine<RNG, S> : McSimulation<SingleVariate, RNG, S>, IGenericEngine
+        where RNG : IRSG, new()
+        where S : IGeneralStatistics, new()
     {
+        protected bool brownianBridge_;
+        protected bool isBiased_;
+
+        // data members
+        protected GeneralizedBlackScholesProcess process_;
+        protected int? requiredSamples_, maxSamples_;
+        protected double? requiredTolerance_;
+        protected ulong seed_;
+        protected int? timeSteps_, timeStepsPerYear_;
+
         public MCBarrierEngine(GeneralizedBlackScholesProcess process,
-                               int? timeSteps,
-                               int? timeStepsPerYear,
-                               bool brownianBridge,
-                               bool antitheticVariate,
-                               int? requiredSamples,
-                               double? requiredTolerance,
-                               int? maxSamples,
-                               bool isBiased,
-                               ulong seed)
-        : base(antitheticVariate, false)
+            int? timeSteps,
+            int? timeStepsPerYear,
+            bool brownianBridge,
+            bool antitheticVariate,
+            int? requiredSamples,
+            double? requiredTolerance,
+            int? maxSamples,
+            bool isBiased,
+            ulong seed)
+            : base(antitheticVariate, false)
         {
             process_ = process;
             timeSteps_ = timeSteps;
@@ -78,10 +88,14 @@ namespace QLNet.Pricingengines.barrier
             Utils.QL_REQUIRE(timeSteps == null || timeStepsPerYear == null, () => "both time steps and time steps per year were provided");
 
             if (timeSteps != null)
+            {
                 Utils.QL_REQUIRE(timeSteps > 0, () => "timeSteps must be positive, " + timeSteps + " not allowed");
+            }
 
             if (timeStepsPerYear != null)
+            {
                 Utils.QL_REQUIRE(timeStepsPerYear > 0, () => "timeStepsPerYear must be positive, " + timeStepsPerYear + " not allowed");
+            }
 
             process_.registerWith(update);
         }
@@ -92,12 +106,14 @@ namespace QLNet.Pricingengines.barrier
             Utils.QL_REQUIRE(spot >= 0.0, () => "negative or null underlying given");
             Utils.QL_REQUIRE(!triggered(spot), () => "barrier touched");
             calculate(requiredTolerance_,
-                           requiredSamples_,
-                           maxSamples_);
+                requiredSamples_,
+                maxSamples_);
             results_.value = mcModel_.sampleAccumulator().mean();
             if (new RNG().allowsErrorEstimate > 0)
+            {
                 results_.errorEstimate =
-                   mcModel_.sampleAccumulator().errorEstimate();
+                    mcModel_.sampleAccumulator().errorEstimate();
+            }
         }
 
         protected override IPathGenerator<IRNG> pathGenerator()
@@ -105,25 +121,6 @@ namespace QLNet.Pricingengines.barrier
             var grid = timeGrid();
             var gen = new RNG().make_sequence_generator(grid.size() - 1, seed_);
             return new PathGenerator<IRNG>(process_, grid, gen, brownianBridge_);
-        }
-
-        protected override TimeGrid timeGrid()
-        {
-            var residualTime = process_.time(arguments_.exercise.lastDate());
-            if (timeSteps_ > 0)
-            {
-                return new TimeGrid(residualTime, timeSteps_.Value);
-            }
-            else if (timeStepsPerYear_ > 0)
-            {
-                var steps = (int)(timeStepsPerYear_.Value * residualTime);
-                return new TimeGrid(residualTime, System.Math.Max(steps, 1));
-            }
-            else
-            {
-                Utils.QL_FAIL("time steps not specified");
-                return null;
-            }
         }
 
         protected override PathPricer<IPath> pathPricer()
@@ -134,30 +131,48 @@ namespace QLNet.Pricingengines.barrier
             var grid = timeGrid();
             List<double> discounts = new InitializedList<double>(grid.size());
             for (var i = 0; i < grid.size(); i++)
+            {
                 discounts[i] = process_.riskFreeRate().currentLink().discount(grid[i]);
+            }
 
             // do this with template parameters?
             if (isBiased_)
             {
                 return new BiasedBarrierPathPricer(arguments_.barrierType,
-                                                   arguments_.barrier,
-                                                   arguments_.rebate,
-                                                   payoff.optionType(),
-                                                   payoff.strike(),
-                                                   discounts);
+                    arguments_.barrier,
+                    arguments_.rebate,
+                    payoff.optionType(),
+                    payoff.strike(),
+                    discounts);
             }
-            else
+
+            IRNG sequenceGen = new RandomSequenceGenerator<MersenneTwisterUniformRng>(grid.size() - 1, 5);
+            return new BarrierPathPricer(arguments_.barrierType,
+                arguments_.barrier,
+                arguments_.rebate,
+                payoff.optionType(),
+                payoff.strike(),
+                discounts,
+                process_,
+                sequenceGen);
+        }
+
+        protected override TimeGrid timeGrid()
+        {
+            var residualTime = process_.time(arguments_.exercise.lastDate());
+            if (timeSteps_ > 0)
             {
-                IRNG sequenceGen = new RandomSequenceGenerator<MersenneTwisterUniformRng>(grid.size() - 1, 5);
-                return new BarrierPathPricer(arguments_.barrierType,
-                                             arguments_.barrier,
-                                             arguments_.rebate,
-                                             payoff.optionType(),
-                                             payoff.strike(),
-                                             discounts,
-                                             process_,
-                                             sequenceGen);
+                return new TimeGrid(residualTime, timeSteps_.Value);
             }
+
+            if (timeStepsPerYear_ > 0)
+            {
+                var steps = (int)(timeStepsPerYear_.Value * residualTime);
+                return new TimeGrid(residualTime, System.Math.Max(steps, 1));
+            }
+
+            Utils.QL_FAIL("time steps not specified");
+            return null;
         }
 
         protected bool triggered(double underlying)
@@ -176,16 +191,8 @@ namespace QLNet.Pricingengines.barrier
             }
         }
 
-        // data members
-        protected GeneralizedBlackScholesProcess process_;
-        protected int? timeSteps_, timeStepsPerYear_;
-        protected int? requiredSamples_, maxSamples_;
-        protected double? requiredTolerance_;
-        protected bool isBiased_;
-        protected bool brownianBridge_;
-        protected ulong seed_;
-
         #region PricingEngine
+
         protected BarrierOption.Arguments arguments_ = new BarrierOption.Arguments();
         protected OneAssetOption.Results results_ = new OneAssetOption.Results();
 
@@ -193,26 +200,44 @@ namespace QLNet.Pricingengines.barrier
 
         public IPricingEngineResults getResults() => results_;
 
-        public void reset() { results_.reset(); }
+        public void reset()
+        {
+            results_.reset();
+        }
 
         #region Observer & Observable
+
         // observable interface
         private readonly WeakEventSource eventSource = new WeakEventSource();
+
         public event Callback notifyObserversEvent
         {
             add => eventSource.Subscribe(value);
             remove => eventSource.Unsubscribe(value);
         }
 
-        public void registerWith(Callback handler) { notifyObserversEvent += handler; }
-        public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
+        public void registerWith(Callback handler)
+        {
+            notifyObserversEvent += handler;
+        }
+
+        public void unregisterWith(Callback handler)
+        {
+            notifyObserversEvent -= handler;
+        }
+
         protected void notifyObservers()
         {
             eventSource.Raise();
         }
 
-        public void update() { notifyObservers(); }
+        public void update()
+        {
+            notifyObservers();
+        }
+
         #endregion
+
         #endregion
     }
 

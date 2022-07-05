@@ -16,14 +16,15 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Instruments;
-using QLNet.Math;
-using System;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Math;
 
 namespace QLNet.Pricingengines.vanilla
 {
-    [JetBrains.Annotations.PublicAPI] public class DiscretizedVanillaOption : DiscretizedAsset
+    [PublicAPI]
+    public class DiscretizedVanillaOption : DiscretizedAsset
     {
         private QLNet.Option.Arguments arguments_;
         private List<double> stoppingTimes_;
@@ -44,13 +45,13 @@ namespace QLNet.Pricingengines.vanilla
             }
         }
 
+        public override List<double> mandatoryTimes() => stoppingTimes_;
+
         public override void reset(int size)
         {
             values_ = new Vector(size, 0.0);
             adjustValues();
         }
-
-        public override List<double> mandatoryTimes() => stoppingTimes_;
 
         protected override void postAdjustValuesImpl()
         {
@@ -59,18 +60,27 @@ namespace QLNet.Pricingengines.vanilla
             {
                 case Exercise.Type.American:
                     if (now <= stoppingTimes_[1] && now >= stoppingTimes_[0])
+                    {
                         applySpecificCondition();
+                    }
+
                     break;
                 case Exercise.Type.European:
                     if (isOnTime(stoppingTimes_[0]))
+                    {
                         applySpecificCondition();
+                    }
+
                     break;
                 case Exercise.Type.Bermudan:
                     for (var i = 0; i < stoppingTimes_.Count; i++)
                     {
                         if (isOnTime(stoppingTimes_[i]))
+                        {
                             applySpecificCondition();
+                        }
                     }
+
                     break;
                 default:
                     Utils.QL_FAIL("invalid option ExerciseType");

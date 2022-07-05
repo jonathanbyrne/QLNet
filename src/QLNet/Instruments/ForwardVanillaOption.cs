@@ -14,31 +14,43 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class ForwardVanillaOption : OneAssetOption
+    [PublicAPI]
+    public class ForwardVanillaOption : OneAssetOption
     {
+        public new class Arguments : Option.Arguments
+        {
+            public double moneyness { get; set; }
+
+            public Date resetDate { get; set; }
+
+            public override void validate()
+            {
+                Utils.QL_REQUIRE(moneyness > 0.0, () => "negative or zero moneyness given");
+                Utils.QL_REQUIRE(resetDate != null, () => "null reset date given");
+                Utils.QL_REQUIRE(resetDate >= Settings.evaluationDate(), () => "reset date in the past");
+                Utils.QL_REQUIRE(exercise.lastDate() > resetDate, () => "reset date later or equal to maturity");
+            }
+        }
+
+        // arguments
+        private double moneyness_;
+        private Date resetDate_;
+
         public ForwardVanillaOption(double moneyness,
-                                    Date resetDate,
-                                    StrikedTypePayoff payoff,
-                                    Exercise exercise)
-           : base(payoff, exercise)
+            Date resetDate,
+            StrikedTypePayoff payoff,
+            Exercise exercise)
+            : base(payoff, exercise)
         {
             moneyness_ = moneyness;
             resetDate_ = resetDate;
         }
 
-        public override void setupArguments(IPricingEngineArguments args)
-        {
-            base.setupArguments(args);
-            var arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
-
-            arguments.moneyness = moneyness_;
-            arguments.resetDate = resetDate_;
-        }
         public override void fetchResults(IPricingEngineResults r)
         {
             base.fetchResults(r);
@@ -52,22 +64,14 @@ namespace QLNet.Instruments
             dividendRho_ = results.dividendRho;
         }
 
-        // arguments
-        private double moneyness_;
-        private Date resetDate_;
-
-        public new class Arguments : Option.Arguments
+        public override void setupArguments(IPricingEngineArguments args)
         {
-            public override void validate()
-            {
-                Utils.QL_REQUIRE(moneyness > 0.0, () => "negative or zero moneyness given");
-                Utils.QL_REQUIRE(resetDate != null, () => "null reset date given");
-                Utils.QL_REQUIRE(resetDate >= Settings.evaluationDate(), () => "reset date in the past");
-                Utils.QL_REQUIRE(exercise.lastDate() > resetDate, () => "reset date later or equal to maturity");
-            }
-            public double moneyness { get; set; }
-            public Date resetDate { get; set; }
-        }
+            base.setupArguments(args);
+            var arguments = args as Arguments;
+            Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
 
+            arguments.moneyness = moneyness_;
+            arguments.resetDate = resetDate_;
+        }
     }
 }

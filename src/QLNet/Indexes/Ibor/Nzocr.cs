@@ -14,8 +14,8 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
-using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
@@ -27,12 +27,14 @@ namespace QLNet.Indexes.Ibor
 
         See <http://www.rbnz.govt.nz/monetary-policy/official-cash-rate-decisions>.
     */
-    [JetBrains.Annotations.PublicAPI] public class Nzocr : OvernightIndex
+    [PublicAPI]
+    public class Nzocr : OvernightIndex
     {
         public Nzocr(Handle<YieldTermStructure> h = null)
-           : base("Nzocr", 0, new NZDCurrency(),
-                  new NewZealand(),
-                  new Actual365Fixed(), h ?? new Handle<YieldTermStructure>())
-        { }
+            : base("Nzocr", 0, new NZDCurrency(),
+                new NewZealand(),
+                new Actual365Fixed(), h ?? new Handle<YieldTermStructure>())
+        {
+        }
     }
 }

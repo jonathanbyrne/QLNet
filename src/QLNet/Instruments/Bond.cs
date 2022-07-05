@@ -18,12 +18,13 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Extensions;
 using QLNet.Pricingengines.Bond;
 using QLNet.Time;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Instruments
 {
@@ -35,87 +36,54 @@ namespace QLNet.Instruments
         \test
         - price/yield calculations are cross-checked for consistency.
         - price/yield calculations are checked against known good values. */
-    [JetBrains.Annotations.PublicAPI] public class Bond : Instrument
+    [PublicAPI]
+    public class Bond : Instrument
     {
-        #region Constructors
-        //! constructor for amortizing or non-amortizing bonds.
-        /*! Redemptions and maturity are calculated from the coupon
-            data, if available.  Therefore, redemptions must not be
-            included in the passed cash flows.
-        */
-        public Bond(int settlementDays, Calendar calendar, Date issueDate = null, List<CashFlow> coupons = null)
+        [PublicAPI]
+        public class Arguments : IPricingEngineArguments
         {
-            settlementDays_ = settlementDays;
-            calendar_ = calendar;
-            if (coupons == null)
-                cashflows_ = new List<CashFlow>();
-            else
-                cashflows_ = coupons;
-            issueDate_ = issueDate;
+            public Calendar calendar { get; set; }
 
-            if (cashflows_.Count != 0)
+            public List<CashFlow> cashflows { get; set; }
+
+            public Date settlementDate { get; set; }
+
+            public virtual void validate()
             {
-                cashflows_.Sort();
-                if (issueDate_ != null)
+                Utils.QL_REQUIRE(settlementDate != null, () => "no settlement date provided");
+                Utils.QL_REQUIRE(!cashflows.empty(), () => "no cash flow provided");
+                for (var i = 0; i < cashflows.Count; ++i)
                 {
-                    Utils.QL_REQUIRE(issueDate_ < cashflows_[0].date(), () =>
-                                     "issue date (" + issueDate_ +
-                                     ") must be earlier than first payment date (" +
-                                     cashflows_[0].date() + ")");
+                    Utils.QL_REQUIRE(cashflows[i] != null, () => "null cash flow provided");
                 }
-                maturityDate_ = coupons.Last().date();
-                addRedemptionsToCashflows();
             }
-
-            Settings.registerWith(update);
         }
 
-        //! old constructor for non amortizing bonds.
-        /*! \warning The last passed cash flow must be the bond
-                     redemption. No other cash flow can have a date
-                     later than the redemption date.
-        */
-        public Bond(int settlementDays, Calendar calendar, double faceAmount, Date maturityDate, Date issueDate = null,
-                    List<CashFlow> cashflows = null)
+        [PublicAPI]
+        public class Engine : GenericEngine<Arguments, Results>
         {
-            settlementDays_ = settlementDays;
-            calendar_ = calendar;
-            if (cashflows == null)
-                cashflows_ = new List<CashFlow>();
-            else
-                cashflows_ = cashflows;
-            maturityDate_ = maturityDate;
-            issueDate_ = issueDate;
-
-            if (cashflows_.Count != 0)
-            {
-                cashflows_.Sort(0, cashflows_.Count - 1, null);
-
-                if (maturityDate_ == null)
-                    maturityDate_ = CashFlows.maturityDate(cashflows_);
-
-                if (issueDate_ != null)
-                {
-                    Utils.QL_REQUIRE(issueDate_ < cashflows_[0].date(), () =>
-                                     "issue date (" + issueDate_ +
-                                     ") must be earlier than first payment date (" +
-                                     cashflows_[0].date() + ")");
-                }
-
-                notionalSchedule_.Add(new Date());
-                notionals_.Add(faceAmount);
-
-                notionalSchedule_.Add(maturityDate_);
-                notionals_.Add(0.0);
-
-                redemptions_.Add(cashflows.Last());
-
-
-            }
-
-            Settings.registerWith(update);
         }
-        #endregion
+
+        public new class Results : Instrument.Results
+        {
+            public double? settlementValue { get; set; }
+
+            public override void reset()
+            {
+                settlementValue = null;
+                base.reset();
+            }
+        }
+
+        public override void fetchResults(IPricingEngineResults r)
+        {
+            base.fetchResults(r);
+
+            var results = r as Results;
+            Utils.QL_REQUIRE(results != null, () => "wrong result ExerciseType");
+
+            settlementValue_ = results.settlementValue;
+        }
 
         #region Instrument interface
 
@@ -127,170 +95,7 @@ namespace QLNet.Instruments
 
         #endregion
 
-        #region Inspectors
-
-        public int settlementDays() => settlementDays_;
-
-        public Calendar calendar() => calendar_;
-
-        public List<double> notionals() => notionals_;
-
-        public virtual double notional(Date d = null)
-        {
-            if (d == null)
-                d = settlementDate();
-
-            if (d > notionalSchedule_.Last())
-                // after maturity
-                return 0.0;
-
-            // After the check above, d is between the schedule
-            // boundaries.  We search starting from the second notional
-            // date, since the first is null.  After the call to
-            // lower_bound, *i is the earliest date which is greater or
-            // equal than d.  Its index is greater or equal to 1.
-            var index = notionalSchedule_.FindIndex(x => d <= x);
-
-            if (d < notionalSchedule_[index])
-            {
-                // no doubt about what to return
-                return notionals_[index - 1];
-            }
-            else
-            {
-                // d is equal to a redemption date.
-                // As per bond conventions, the payment has occurred
-                // the bond already changed notional.
-                return notionals_[index];
-            }
-        }
-        // \note returns all the cashflows, including the redemptions.
-        public List<CashFlow> cashflows() => cashflows_;
-
-        //! returns just the redemption flows (not interest payments)
-        public List<CashFlow> redemptions() => redemptions_;
-
-        // returns the redemption, if only one is defined
-        public CashFlow redemption()
-        {
-            Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemption cash flows given");
-            return redemptions_.Last();
-        }
-        public Date startDate() => BondFunctions.startDate(this);
-
-        public Date maturityDate() => maturityDate_ ?? BondFunctions.maturityDate(this);
-
-        public Date issueDate() => issueDate_;
-
-        public bool isTradable(Date d = null) => BondFunctions.isTradable(this, d);
-
-        public Date settlementDate(Date date = null)
-        {
-            var d = date ?? Settings.evaluationDate();
-
-            // usually, the settlement is at T+n...
-            var settlement = calendar_.advance(d, settlementDays_, TimeUnit.Days);
-            // ...but the bond won't be traded until the issue date (if given.)
-            if (issueDate_ == null)
-                return settlement;
-            else
-                return Date.Max(settlement, issueDate_);
-        }
-
-        #endregion
-
-        #region Calculations
-
-        //! theoretical clean price
-        /*! The default bond settlement is used for calculation.
-
-            \warning the theoretical price calculated from a flat term structure might differ slightly from the price
-                     calculated from the corresponding yield by means of the other overload of this function. If the
-                     price from a constant yield is desired, it is advisable to use such other overload. */
-        public double cleanPrice() => dirtyPrice() - accruedAmount(settlementDate());
-
-        //! theoretical dirty price
-        /*! The default bond settlement is used for calculation.
-
-            \warning the theoretical price calculated from a flat term structure might differ slightly from the price
-                     calculated from the corresponding yield by means of the other overload of this function. If the
-                     price from a constant yield is desired, it is advisable to use such other overload.
-        */
-        public double dirtyPrice()
-        {
-            var currentNotional = notional(settlementDate());
-            if (currentNotional.IsEqual(0.0))
-                return 0.0;
-            else
-                return settlementValue() * 100 / currentNotional;
-        }
-
-        public double settlementValue()
-        {
-            calculate();
-            Utils.QL_REQUIRE(settlementValue_ != null, () => "settlement value not provided");
-            return settlementValue_.Value;
-        }
-
-        public double settlementValue(double cleanPrice)
-        {
-            var dirtyPrice = cleanPrice + accruedAmount(settlementDate());
-            return dirtyPrice / 100.0 * notional(settlementDate());
-        }
-
-        //! theoretical bond yield
-        /*! The default bond settlement and theoretical price are used for calculation. */
-        public double yield(DayCounter dc, Compounding comp, Frequency freq, double accuracy = 1.0e-8, int maxEvaluations = 100)
-        {
-            var currentNotional = notional(settlementDate());
-
-            if (currentNotional.IsEqual(0.0))
-                return 0.0;
-
-            return BondFunctions.yield(this, cleanPrice(), dc, comp, freq, settlementDate(), accuracy, maxEvaluations);
-        }
-
-        //! clean price given a yield and settlement date
-        /*! The default bond settlement is used if no date is given. */
-        public double cleanPrice(double yield, DayCounter dc, Compounding comp, Frequency freq, Date settlement = null) => BondFunctions.cleanPrice(this, yield, dc, comp, freq, settlement);
-
-        //! dirty price given a yield and settlement date
-        /*! The default bond settlement is used if no date is given. */
-        public double dirtyPrice(double yield, DayCounter dc, Compounding comp, Frequency freq, Date settlement = null)
-        {
-            var currentNotional = notional(settlement);
-            if (currentNotional.IsEqual(0.0))
-                return 0.0;
-
-            return BondFunctions.cleanPrice(this, yield, dc, comp, freq, settlement) + accruedAmount(settlement);
-        }
-
-        //! yield given a (clean) price and settlement date
-        /*! The default bond settlement is used if no date is given. */
-        public double yield(double cleanPrice, DayCounter dc, Compounding comp, Frequency freq, Date settlement = null,
-                            double accuracy = 1.0e-8, int maxEvaluations = 100)
-        {
-            var currentNotional = notional(settlement);
-            if (currentNotional.IsEqual(0.0))
-                return 0.0;
-
-            return BondFunctions.yield(this, cleanPrice, dc, comp, freq, settlement, accuracy, maxEvaluations);
-        }
-
-        //! accrued amount at a given date
-        /*! The default bond settlement is used if no date is given. */
-        public virtual double accruedAmount(Date settlement = null)
-        {
-            var currentNotional = notional(settlement);
-
-            if (currentNotional.IsEqual(0.0))
-                return 0.0;
-
-            return BondFunctions.accruedAmount(this, settlement);
-
-        }
-
-        #endregion
+        public Date nextCashFlowDate(Date settlement = null) => BondFunctions.nextCashFlowDate(this, settlement);
 
         /*! Expected next coupon: depending on (the bond and) the given date
             the coupon can be historic, deterministic or expected in a
@@ -300,6 +105,8 @@ namespace QLNet.Instruments
             The current bond settlement is used if no date is given.
         */
         public virtual double nextCouponRate(Date settlement = null) => BondFunctions.nextCouponRate(this, settlement);
+
+        public Date previousCashFlowDate(Date settlement = null) => BondFunctions.previousCashFlowDate(this, settlement);
 
         //! Previous coupon already paid at a given date
         /*! Expected previous coupon: depending on (the bond and) the given
@@ -311,16 +118,6 @@ namespace QLNet.Instruments
         */
         public double previousCouponRate(Date settlement = null) => BondFunctions.previousCouponRate(this, settlement);
 
-        public Date nextCashFlowDate(Date settlement = null) => BondFunctions.nextCashFlowDate(this, settlement);
-
-        public Date previousCashFlowDate(Date settlement = null) => BondFunctions.previousCashFlowDate(this, settlement);
-
-        protected override void setupExpired()
-        {
-            base.setupExpired();
-            settlementValue_ = 0.0;
-        }
-
         public override void setupArguments(IPricingEngineArguments args)
         {
             var arguments = args as Arguments;
@@ -329,16 +126,6 @@ namespace QLNet.Instruments
             arguments.settlementDate = settlementDate();
             arguments.cashflows = cashflows_;
             arguments.calendar = calendar_;
-        }
-
-        public override void fetchResults(IPricingEngineResults r)
-        {
-            base.fetchResults(r);
-
-            var results = r as Results;
-            Utils.QL_REQUIRE(results != null, () => "wrong result ExerciseType");
-
-            settlementValue_ = results.settlementValue;
         }
 
         /*! This method can be called by derived classes in order to
@@ -358,7 +145,9 @@ namespace QLNet.Instruments
         protected void addRedemptionsToCashflows(List<double> redemptions = null)
         {
             if (redemptions == null)
+            {
                 redemptions = new List<double>();
+            }
 
             // First, we gather the notional information from the cashflows
             calculateNotionalsFromCashflows();
@@ -369,21 +158,79 @@ namespace QLNet.Instruments
             for (var i = 1; i < notionalSchedule_.Count; ++i)
             {
                 var R = i < redemptions.Count ? redemptions[i] :
-                           !redemptions.empty() ? redemptions.Last() :
-                           100.0;
+                    !redemptions.empty() ? redemptions.Last() :
+                    100.0;
                 var amount = R / 100.0 * (notionals_[i - 1] - notionals_[i]);
                 CashFlow payment;
                 if (i < notionalSchedule_.Count - 1)
+                {
                     payment = new AmortizingPayment(amount, notionalSchedule_[i]);
+                }
                 else
+                {
                     payment = new Redemption(amount, notionalSchedule_[i]);
+                }
 
                 cashflows_.Add(payment);
                 redemptions_.Add(payment);
             }
+
             // stable_sort now moves the AmortizingPayment and Redemptions to the right places
             // while ensuring that they follow coupons with the same date.
             cashflows_ = cashflows_.OrderBy(x => x.date()).ToList();
+        }
+
+        /*! used internally to collect notional information from the
+            coupons. It should not be called by derived classes,
+            unless they already provide redemption cash flows (in
+            which case they must set up the redemptions_ data member
+            independently).  It will fill the notionalSchedule_ and
+            notionals_ data members.
+        */
+        protected void calculateNotionalsFromCashflows()
+        {
+            notionalSchedule_.Clear();
+            notionals_.Clear();
+
+            var lastPaymentDate = new Date();
+            notionalSchedule_.Add(new Date());
+            for (var i = 0; i < cashflows_.Count; ++i)
+            {
+                var coupon = cashflows_[i] as Coupon;
+                if (coupon == null)
+                {
+                    continue;
+                }
+
+                var notional = coupon.nominal();
+                // we add the notional only if it is the first one...
+                if (notionals_.empty())
+                {
+                    notionals_.Add(coupon.nominal());
+                    lastPaymentDate = coupon.date();
+                }
+                else if (!Utils.close(notional, notionals_.Last()))
+                {
+                    // ...or if it has changed.
+                    Utils.QL_REQUIRE(notional < notionals_.Last(), () => "increasing coupon notionals");
+                    notionals_.Add(coupon.nominal());
+                    // in this case, we also add the last valid date for
+                    // the previous one...
+                    notionalSchedule_.Add(lastPaymentDate);
+                    // ...and store the candidate for this one.
+                    lastPaymentDate = coupon.date();
+                }
+                else
+                {
+                    // otherwise, we just extend the valid range of dates
+                    // for the current notional.
+                    lastPaymentDate = coupon.date();
+                }
+            }
+
+            Utils.QL_REQUIRE(!notionals_.empty(), () => "no coupons provided");
+            notionals_.Add(0.0);
+            notionalSchedule_.Add(lastPaymentDate);
         }
 
         /*! This method can be called by derived classes in order to
@@ -413,56 +260,284 @@ namespace QLNet.Instruments
             redemptions_.Add(redemption);
         }
 
-        /*! used internally to collect notional information from the
-            coupons. It should not be called by derived classes,
-            unless they already provide redemption cash flows (in
-            which case they must set up the redemptions_ data member
-            independently).  It will fill the notionalSchedule_ and
-            notionals_ data members.
-        */
-        protected void calculateNotionalsFromCashflows()
+        protected override void setupExpired()
         {
-            notionalSchedule_.Clear();
-            notionals_.Clear();
-
-            var lastPaymentDate = new Date();
-            notionalSchedule_.Add(new Date());
-            for (var i = 0; i < cashflows_.Count; ++i)
-            {
-                var coupon = cashflows_[i] as Coupon;
-                if (coupon == null)
-                    continue;
-
-                var notional = coupon.nominal();
-                // we add the notional only if it is the first one...
-                if (notionals_.empty())
-                {
-                    notionals_.Add(coupon.nominal());
-                    lastPaymentDate = coupon.date();
-                }
-                else if (!Utils.close(notional, notionals_.Last()))
-                {
-                    // ...or if it has changed.
-                    Utils.QL_REQUIRE(notional < notionals_.Last(), () => "increasing coupon notionals");
-                    notionals_.Add(coupon.nominal());
-                    // in this case, we also add the last valid date for
-                    // the previous one...
-                    notionalSchedule_.Add(lastPaymentDate);
-                    // ...and store the candidate for this one.
-                    lastPaymentDate = coupon.date();
-                }
-                else
-                {
-                    // otherwise, we just extend the valid range of dates
-                    // for the current notional.
-                    lastPaymentDate = coupon.date();
-                }
-
-            }
-            Utils.QL_REQUIRE(!notionals_.empty(), () => "no coupons provided");
-            notionals_.Add(0.0);
-            notionalSchedule_.Add(lastPaymentDate);
+            base.setupExpired();
+            settlementValue_ = 0.0;
         }
+
+        #region Constructors
+
+        //! constructor for amortizing or non-amortizing bonds.
+        /*! Redemptions and maturity are calculated from the coupon
+            data, if available.  Therefore, redemptions must not be
+            included in the passed cash flows.
+        */
+        public Bond(int settlementDays, Calendar calendar, Date issueDate = null, List<CashFlow> coupons = null)
+        {
+            settlementDays_ = settlementDays;
+            calendar_ = calendar;
+            if (coupons == null)
+            {
+                cashflows_ = new List<CashFlow>();
+            }
+            else
+            {
+                cashflows_ = coupons;
+            }
+
+            issueDate_ = issueDate;
+
+            if (cashflows_.Count != 0)
+            {
+                cashflows_.Sort();
+                if (issueDate_ != null)
+                {
+                    Utils.QL_REQUIRE(issueDate_ < cashflows_[0].date(), () =>
+                        "issue date (" + issueDate_ +
+                        ") must be earlier than first payment date (" +
+                        cashflows_[0].date() + ")");
+                }
+
+                maturityDate_ = coupons.Last().date();
+                addRedemptionsToCashflows();
+            }
+
+            Settings.registerWith(update);
+        }
+
+        //! old constructor for non amortizing bonds.
+        /*! \warning The last passed cash flow must be the bond
+                     redemption. No other cash flow can have a date
+                     later than the redemption date.
+        */
+        public Bond(int settlementDays, Calendar calendar, double faceAmount, Date maturityDate, Date issueDate = null,
+            List<CashFlow> cashflows = null)
+        {
+            settlementDays_ = settlementDays;
+            calendar_ = calendar;
+            if (cashflows == null)
+            {
+                cashflows_ = new List<CashFlow>();
+            }
+            else
+            {
+                cashflows_ = cashflows;
+            }
+
+            maturityDate_ = maturityDate;
+            issueDate_ = issueDate;
+
+            if (cashflows_.Count != 0)
+            {
+                cashflows_.Sort(0, cashflows_.Count - 1, null);
+
+                if (maturityDate_ == null)
+                {
+                    maturityDate_ = CashFlows.maturityDate(cashflows_);
+                }
+
+                if (issueDate_ != null)
+                {
+                    Utils.QL_REQUIRE(issueDate_ < cashflows_[0].date(), () =>
+                        "issue date (" + issueDate_ +
+                        ") must be earlier than first payment date (" +
+                        cashflows_[0].date() + ")");
+                }
+
+                notionalSchedule_.Add(new Date());
+                notionals_.Add(faceAmount);
+
+                notionalSchedule_.Add(maturityDate_);
+                notionals_.Add(0.0);
+
+                redemptions_.Add(cashflows.Last());
+            }
+
+            Settings.registerWith(update);
+        }
+
+        #endregion
+
+        #region Inspectors
+
+        public int settlementDays() => settlementDays_;
+
+        public Calendar calendar() => calendar_;
+
+        public List<double> notionals() => notionals_;
+
+        public virtual double notional(Date d = null)
+        {
+            if (d == null)
+            {
+                d = settlementDate();
+            }
+
+            if (d > notionalSchedule_.Last())
+                // after maturity
+            {
+                return 0.0;
+            }
+
+            // After the check above, d is between the schedule
+            // boundaries.  We search starting from the second notional
+            // date, since the first is null.  After the call to
+            // lower_bound, *i is the earliest date which is greater or
+            // equal than d.  Its index is greater or equal to 1.
+            var index = notionalSchedule_.FindIndex(x => d <= x);
+
+            if (d < notionalSchedule_[index])
+            {
+                // no doubt about what to return
+                return notionals_[index - 1];
+            }
+
+            // d is equal to a redemption date.
+            // As per bond conventions, the payment has occurred
+            // the bond already changed notional.
+            return notionals_[index];
+        }
+
+        // \note returns all the cashflows, including the redemptions.
+        public List<CashFlow> cashflows() => cashflows_;
+
+        //! returns just the redemption flows (not interest payments)
+        public List<CashFlow> redemptions() => redemptions_;
+
+        // returns the redemption, if only one is defined
+        public CashFlow redemption()
+        {
+            Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemption cash flows given");
+            return redemptions_.Last();
+        }
+
+        public Date startDate() => BondFunctions.startDate(this);
+
+        public Date maturityDate() => maturityDate_ ?? BondFunctions.maturityDate(this);
+
+        public Date issueDate() => issueDate_;
+
+        public bool isTradable(Date d = null) => BondFunctions.isTradable(this, d);
+
+        public Date settlementDate(Date date = null)
+        {
+            var d = date ?? Settings.evaluationDate();
+
+            // usually, the settlement is at T+n...
+            var settlement = calendar_.advance(d, settlementDays_, TimeUnit.Days);
+            // ...but the bond won't be traded until the issue date (if given.)
+            if (issueDate_ == null)
+            {
+                return settlement;
+            }
+
+            return Date.Max(settlement, issueDate_);
+        }
+
+        #endregion
+
+        #region Calculations
+
+        //! theoretical clean price
+        /*! The default bond settlement is used for calculation.
+
+            \warning the theoretical price calculated from a flat term structure might differ slightly from the price
+                     calculated from the corresponding yield by means of the other overload of this function. If the
+                     price from a constant yield is desired, it is advisable to use such other overload. */
+        public double cleanPrice() => dirtyPrice() - accruedAmount(settlementDate());
+
+        //! theoretical dirty price
+        /*! The default bond settlement is used for calculation.
+
+            \warning the theoretical price calculated from a flat term structure might differ slightly from the price
+                     calculated from the corresponding yield by means of the other overload of this function. If the
+                     price from a constant yield is desired, it is advisable to use such other overload.
+        */
+        public double dirtyPrice()
+        {
+            var currentNotional = notional(settlementDate());
+            if (currentNotional.IsEqual(0.0))
+            {
+                return 0.0;
+            }
+
+            return settlementValue() * 100 / currentNotional;
+        }
+
+        public double settlementValue()
+        {
+            calculate();
+            Utils.QL_REQUIRE(settlementValue_ != null, () => "settlement value not provided");
+            return settlementValue_.Value;
+        }
+
+        public double settlementValue(double cleanPrice)
+        {
+            var dirtyPrice = cleanPrice + accruedAmount(settlementDate());
+            return dirtyPrice / 100.0 * notional(settlementDate());
+        }
+
+        //! theoretical bond yield
+        /*! The default bond settlement and theoretical price are used for calculation. */
+        public double yield(DayCounter dc, Compounding comp, Frequency freq, double accuracy = 1.0e-8, int maxEvaluations = 100)
+        {
+            var currentNotional = notional(settlementDate());
+
+            if (currentNotional.IsEqual(0.0))
+            {
+                return 0.0;
+            }
+
+            return BondFunctions.yield(this, cleanPrice(), dc, comp, freq, settlementDate(), accuracy, maxEvaluations);
+        }
+
+        //! clean price given a yield and settlement date
+        /*! The default bond settlement is used if no date is given. */
+        public double cleanPrice(double yield, DayCounter dc, Compounding comp, Frequency freq, Date settlement = null) => BondFunctions.cleanPrice(this, yield, dc, comp, freq, settlement);
+
+        //! dirty price given a yield and settlement date
+        /*! The default bond settlement is used if no date is given. */
+        public double dirtyPrice(double yield, DayCounter dc, Compounding comp, Frequency freq, Date settlement = null)
+        {
+            var currentNotional = notional(settlement);
+            if (currentNotional.IsEqual(0.0))
+            {
+                return 0.0;
+            }
+
+            return BondFunctions.cleanPrice(this, yield, dc, comp, freq, settlement) + accruedAmount(settlement);
+        }
+
+        //! yield given a (clean) price and settlement date
+        /*! The default bond settlement is used if no date is given. */
+        public double yield(double cleanPrice, DayCounter dc, Compounding comp, Frequency freq, Date settlement = null,
+            double accuracy = 1.0e-8, int maxEvaluations = 100)
+        {
+            var currentNotional = notional(settlement);
+            if (currentNotional.IsEqual(0.0))
+            {
+                return 0.0;
+            }
+
+            return BondFunctions.yield(this, cleanPrice, dc, comp, freq, settlement, accuracy, maxEvaluations);
+        }
+
+        //! accrued amount at a given date
+        /*! The default bond settlement is used if no date is given. */
+        public virtual double accruedAmount(Date settlement = null)
+        {
+            var currentNotional = notional(settlement);
+
+            if (currentNotional.IsEqual(0.0))
+            {
+                return 0.0;
+            }
+
+            return BondFunctions.accruedAmount(this, settlement);
+        }
+
+        #endregion
 
         #region properties
 
@@ -476,32 +551,5 @@ namespace QLNet.Instruments
         protected double? settlementValue_;
 
         #endregion
-
-        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results> { }
-
-        public new class Results : Instrument.Results
-        {
-            public double? settlementValue { get; set; }
-            public override void reset()
-            {
-                settlementValue = null;
-                base.reset();
-            }
-        }
-
-        [JetBrains.Annotations.PublicAPI] public class Arguments : IPricingEngineArguments
-        {
-            public Date settlementDate { get; set; }
-            public List<CashFlow> cashflows { get; set; }
-            public Calendar calendar { get; set; }
-
-            public virtual void validate()
-            {
-                Utils.QL_REQUIRE(settlementDate != null, () => "no settlement date provided");
-                Utils.QL_REQUIRE(!cashflows.empty(), () => "no cash flow provided");
-                for (var i = 0; i < cashflows.Count; ++i)
-                    Utils.QL_REQUIRE(cashflows[i] != null, () => "null cash flow provided");
-            }
-        }
     }
 }

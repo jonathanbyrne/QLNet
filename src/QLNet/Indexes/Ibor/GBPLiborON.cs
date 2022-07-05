@@ -1,10 +1,13 @@
+using JetBrains.Annotations;
 using QLNet.Termstructures;
 
 namespace QLNet.Indexes.Ibor
 {
-    [JetBrains.Annotations.PublicAPI] public class GBPLiborON : DailyTenorGBPLibor
+    [PublicAPI]
+    public class GBPLiborON : DailyTenorGBPLibor
     {
         public GBPLiborON(Handle<YieldTermStructure> h) : base(0, h)
-        { }
+        {
+        }
     }
 }

@@ -13,14 +13,14 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Math;
 using QLNet.Math.Interpolations;
 using QLNet.Quotes;
-using QLNet.Termstructures.Volatility;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
 using QLNet.Time.DayCounters;
 
 namespace QLNet.Termstructures.Volatility.swaption
@@ -37,47 +37,55 @@ namespace QLNet.Termstructures.Volatility.swaption
         while swap vs 3M Euribor is used for the 1Y length. The
         shortSwapIndexBase is used to identify this second family.
     */
-    [JetBrains.Annotations.PublicAPI] public class SwaptionVolCube2 : SwaptionVolatilityCube
+    [PublicAPI]
+    public class SwaptionVolCube2 : SwaptionVolatilityCube
     {
+        private List<Interpolation2D> volSpreadsInterpolator_;
+        private List<Matrix> volSpreadsMatrix_;
+
         public SwaptionVolCube2(Handle<SwaptionVolatilityStructure> atmVolStructure,
-                                List<Period> optionTenors,
-                                List<Period> swapTenors,
-                                List<double> strikeSpreads,
-                                List<List<Handle<Quote>>> volSpreads,
-                                SwapIndex swapIndexBase,
-                                SwapIndex shortSwapIndexBase,
-                                bool vegaWeightedSmileFit)
-           : base(atmVolStructure, optionTenors, swapTenors, strikeSpreads, volSpreads, swapIndexBase,
-                  shortSwapIndexBase, vegaWeightedSmileFit)
+            List<Period> optionTenors,
+            List<Period> swapTenors,
+            List<double> strikeSpreads,
+            List<List<Handle<Quote>>> volSpreads,
+            SwapIndex swapIndexBase,
+            SwapIndex shortSwapIndexBase,
+            bool vegaWeightedSmileFit)
+            : base(atmVolStructure, optionTenors, swapTenors, strikeSpreads, volSpreads, swapIndexBase,
+                shortSwapIndexBase, vegaWeightedSmileFit)
         {
             volSpreadsInterpolator_ = new List<Interpolation2D>();
             volSpreadsMatrix_ = new List<Matrix>(nStrikes_);
             for (var i = 0; i < nStrikes_; i++)
+            {
                 volSpreadsMatrix_.Add(new Matrix(optionTenors.Count, swapTenors.Count, 0.0));
+            }
         }
+
+        // SwaptionVolatilityCube inspectors
+        public Matrix volSpreads(int i) => volSpreadsMatrix_[i];
+
         // LazyObject interface
         protected override void performCalculations()
         {
             base.performCalculations();
             //! set volSpreadsMatrix_ by volSpreads_ quotes
             for (var i = 0; i < nStrikes_; i++)
-                for (var j = 0; j < nOptionTenors_; j++)
-                    for (var k = 0; k < nSwapTenors_; k++)
-                    {
-                        var p = volSpreadsMatrix_[i];
-                        p[j, k] = volSpreads_[j * nSwapTenors_ + k][i].link.value();
-                    }
+            for (var j = 0; j < nOptionTenors_; j++)
+            for (var k = 0; k < nSwapTenors_; k++)
+            {
+                var p = volSpreadsMatrix_[i];
+                p[j, k] = volSpreads_[j * nSwapTenors_ + k][i].link.value();
+            }
+
             //! create volSpreadsInterpolator_
             for (var i = 0; i < nStrikes_; i++)
             {
                 volSpreadsInterpolator_.Add(new BilinearInterpolation(swapLengths_, swapLengths_.Count,
-                                                                      optionTimes_, optionTimes_.Count, volSpreadsMatrix_[i]));
+                    optionTimes_, optionTimes_.Count, volSpreadsMatrix_[i]));
                 volSpreadsInterpolator_[i].enableExtrapolation();
             }
         }
-
-        // SwaptionVolatilityCube inspectors
-        public Matrix volSpreads(int i) => volSpreadsMatrix_[i];
 
         protected override SmileSection smileSectionImpl(Date optionDate, Period swapTenor)
         {
@@ -95,9 +103,10 @@ namespace QLNet.Termstructures.Volatility.swaption
                 strikes.Add(atmForward + strikeSpreads_[i]);
                 stdDevs.Add(exerciseTimeSqrt * (atmVol + volSpreadsInterpolator_[i].value(length, optionTime)));
             }
+
             var shift = atmVol_.link.shift(optionTime, length);
             return new InterpolatedSmileSection<Linear>(optionTime, strikes, stdDevs, atmForward, new Linear(),
-                                                        new Actual365Fixed(), volatilityType(), shift);
+                new Actual365Fixed(), volatilityType(), shift);
         }
 
         protected override SmileSection smileSectionImpl(double optionTime, double swapLength)
@@ -108,13 +117,10 @@ namespace QLNet.Termstructures.Volatility.swaption
             var swapTenor = new Period((int)rounder.Round(swapLength * 12.0), TimeUnit.Months);
             // ensure that option date is valid fixing date
             optionDate =
-               swapTenor > shortSwapIndexBase_.tenor()
-               ? swapIndexBase_.fixingCalendar().adjust(optionDate, BusinessDayConvention.Following)
-               : shortSwapIndexBase_.fixingCalendar().adjust(optionDate, BusinessDayConvention.Following);
+                swapTenor > shortSwapIndexBase_.tenor()
+                    ? swapIndexBase_.fixingCalendar().adjust(optionDate)
+                    : shortSwapIndexBase_.fixingCalendar().adjust(optionDate);
             return smileSectionImpl(optionDate, swapTenor);
         }
-
-        private List<Interpolation2D> volSpreadsInterpolator_;
-        private List<Matrix> volSpreadsMatrix_;
     }
 }

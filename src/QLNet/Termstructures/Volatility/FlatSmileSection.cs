@@ -18,36 +18,39 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Termstructures.Volatility.Optionlet;
 using QLNet.Time;
 
 namespace QLNet.Termstructures.Volatility
 {
-    [JetBrains.Annotations.PublicAPI] public class FlatSmileSection : SmileSection
+    [PublicAPI]
+    public class FlatSmileSection : SmileSection
     {
-        private double vol_;
         private double? atmLevel_;
-        public override double? atmLevel() => atmLevel_;
+        private double vol_;
 
         public FlatSmileSection(Date d, double vol, DayCounter dc, Date referenceDate = null, double? atmLevel = null,
-                                VolatilityType type = VolatilityType.ShiftedLognormal, double shift = 0.0)
-        : base(d, dc, referenceDate, type, shift)
+            VolatilityType type = VolatilityType.ShiftedLognormal, double shift = 0.0)
+            : base(d, dc, referenceDate, type, shift)
         {
             vol_ = vol;
             atmLevel_ = atmLevel;
         }
 
         public FlatSmileSection(double exerciseTime, double vol, DayCounter dc, double? atmLevel = null,
-                                VolatilityType type = VolatilityType.ShiftedLognormal, double shift = 0.0)
-        : base(exerciseTime, dc, type, shift)
+            VolatilityType type = VolatilityType.ShiftedLognormal, double shift = 0.0)
+            : base(exerciseTime, dc, type, shift)
         {
             vol_ = vol;
             atmLevel_ = atmLevel;
         }
 
-        public override double minStrike() => double.MinValue - shift();
+        public override double? atmLevel() => atmLevel_;
 
         public override double maxStrike() => double.MaxValue;
+
+        public override double minStrike() => double.MinValue - shift();
 
         protected override double volatilityImpl(double d) => vol_;
     }

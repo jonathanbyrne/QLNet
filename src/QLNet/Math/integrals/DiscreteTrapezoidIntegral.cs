@@ -17,8 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using System.Collections.Generic;
-using System.Linq;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.integrals
 {
@@ -26,7 +25,8 @@ namespace QLNet.Math.integrals
         Levy, D. Numerical Integration
         http://www2.math.umd.edu/~dlevy/classes/amsc466/lecture-notes/integration-chap.pdf
     */
-    [JetBrains.Annotations.PublicAPI] public class DiscreteTrapezoidIntegral
+    [PublicAPI]
+    public class DiscreteTrapezoidIntegral
     {
         public double value(Vector x, Vector f)
         {

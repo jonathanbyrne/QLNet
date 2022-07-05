@@ -1,4 +1,8 @@
 namespace QLNet
 {
-    public enum InterestRateType { Fixed, Floating }
+    public enum InterestRateType
+    {
+        Fixed,
+        Floating
+    }
 }

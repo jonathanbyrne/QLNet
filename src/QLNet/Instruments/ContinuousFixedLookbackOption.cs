@@ -1,11 +1,15 @@
-﻿namespace QLNet.Instruments
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class ContinuousFixedLookbackOption : OneAssetOption
+    [PublicAPI]
+    public class ContinuousFixedLookbackOption : OneAssetOption
     {
         //! %Arguments for continuous fixed lookback option calculation
         public new class Arguments : Option.Arguments
         {
             public double? minmax { get; set; }
+
             public override void validate()
             {
                 base.validate();
@@ -19,12 +23,17 @@
         //! %Continuous fixed lookback %engine base class
         public new class Engine : GenericEngine<Arguments,
             Results>
-        { }
+        {
+        }
+
+        protected double minmax_;
+
         public ContinuousFixedLookbackOption(double minmax, StrikedTypePayoff payoff, Exercise exercise)
             : base(payoff, exercise)
         {
             minmax_ = minmax;
         }
+
         public override void setupArguments(IPricingEngineArguments args)
         {
             base.setupArguments(args);
@@ -33,7 +42,5 @@
             Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
             moreArgs.minmax = minmax_;
         }
-
-        protected double minmax_;
     }
 }

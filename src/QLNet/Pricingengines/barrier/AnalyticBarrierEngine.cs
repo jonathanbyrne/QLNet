@@ -16,14 +16,14 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
 using QLNet.processes;
-using System;
 
 namespace QLNet.Pricingengines.barrier
 {
-
     //! Pricing Engine for barrier options using analytical formulae
     //    ! The formulas are taken from "Option pricing formulas",
     //         E.G. Haug, McGraw-Hill, p.69 and following.
@@ -33,16 +33,20 @@ namespace QLNet.Pricingengines.barrier
     //        \test the correctness of the returned value is tested by
     //              reproducing results available in literature.
     //
-    [JetBrains.Annotations.PublicAPI] public class AnalyticBarrierEngine : BarrierOption.Engine
+    [PublicAPI]
+    public class AnalyticBarrierEngine : BarrierOption.Engine
     {
+        private CumulativeNormalDistribution f_ = new CumulativeNormalDistribution();
+        private GeneralizedBlackScholesProcess process_;
+
         public AnalyticBarrierEngine(GeneralizedBlackScholesProcess process)
         {
             process_ = process;
             process_.registerWith(update);
         }
+
         public override void calculate()
         {
-
             var payoff = arguments_.payoff as PlainVanillaPayoff;
 
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
@@ -63,99 +67,106 @@ namespace QLNet.Pricingengines.barrier
                     {
                         case Barrier.Type.DownIn:
                             if (strike >= barrier())
+                            {
                                 results_.value = C(1, 1) + E(1);
+                            }
                             else
+                            {
                                 results_.value = A(1) - B(1) + D(1, 1) + E(1);
+                            }
+
                             break;
                         case Barrier.Type.UpIn:
                             if (strike >= barrier())
+                            {
                                 results_.value = A(1) + E(-1);
+                            }
                             else
+                            {
                                 results_.value = B(1) - C(-1, 1) + D(-1, 1) + E(-1);
+                            }
+
                             break;
                         case Barrier.Type.DownOut:
                             if (strike >= barrier())
+                            {
                                 results_.value = A(1) - C(1, 1) + F(1);
+                            }
                             else
+                            {
                                 results_.value = B(1) - D(1, 1) + F(1);
+                            }
+
                             break;
                         case Barrier.Type.UpOut:
                             if (strike >= barrier())
+                            {
                                 results_.value = F(-1);
+                            }
                             else
+                            {
                                 results_.value = A(1) - B(1) + C(-1, 1) - D(-1, 1) + F(-1);
+                            }
+
                             break;
                     }
+
                     break;
                 case QLNet.Option.Type.Put:
                     switch (barrierType)
                     {
                         case Barrier.Type.DownIn:
                             if (strike >= barrier())
+                            {
                                 results_.value = B(-1) - C(1, -1) + D(1, -1) + E(1);
+                            }
                             else
+                            {
                                 results_.value = A(-1) + E(1);
+                            }
+
                             break;
                         case Barrier.Type.UpIn:
                             if (strike >= barrier())
+                            {
                                 results_.value = A(-1) - B(-1) + D(-1, -1) + E(-1);
+                            }
                             else
+                            {
                                 results_.value = C(-1, -1) + E(-1);
+                            }
+
                             break;
                         case Barrier.Type.DownOut:
                             if (strike >= barrier())
+                            {
                                 results_.value = A(-1) - B(-1) + C(1, -1) - D(1, -1) + F(1);
+                            }
                             else
+                            {
                                 results_.value = F(1);
+                            }
+
                             break;
                         case Barrier.Type.UpOut:
                             if (strike >= barrier())
+                            {
                                 results_.value = B(-1) - D(-1, -1) + F(-1);
+                            }
                             else
+                            {
                                 results_.value = A(-1) - C(-1, -1) + F(-1);
+                            }
+
                             break;
                     }
+
                     break;
                 default:
                     Utils.QL_FAIL("unknown ExerciseType");
                     break;
             }
         }
-        private GeneralizedBlackScholesProcess process_;
-        private CumulativeNormalDistribution f_ = new CumulativeNormalDistribution();
-
-        private double underlying() => process_.x0();
-
-        private double strike()
-        {
-            var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
-            return payoff.strike();
-        }
-        private double residualTime() => process_.time(arguments_.exercise.lastDate());
-
-        private double volatility() => process_.blackVolatility().link.blackVol(residualTime(), strike());
-
-        private double barrier() => arguments_.barrier.GetValueOrDefault();
-
-        private double rebate() => arguments_.rebate.GetValueOrDefault();
-
-        private double stdDeviation() => volatility() * System.Math.Sqrt(residualTime());
-
-        private double riskFreeRate() => process_.riskFreeRate().link.zeroRate(residualTime(), Compounding.Continuous, Frequency.NoFrequency).rate();
-
-        private double riskFreeDiscount() => process_.riskFreeRate().link.discount(residualTime());
-
-        private double dividendYield() => process_.dividendYield().link.zeroRate(residualTime(), Compounding.Continuous, Frequency.NoFrequency).rate();
-
-        private double dividendDiscount() => process_.dividendYield().link.discount(residualTime());
-
-        private double mu()
-        {
-            var vol = volatility();
-            return (riskFreeRate() - dividendYield()) / (vol * vol) - 0.5;
-        }
-        private double muSigma() => (1 + mu()) * stdDeviation();
 
         private double A(double phi)
         {
@@ -164,6 +175,7 @@ namespace QLNet.Pricingengines.barrier
             var N2 = f_.value(phi * (x1 - stdDeviation()));
             return phi * (underlying() * dividendDiscount() * N1 - strike() * riskFreeDiscount() * N2);
         }
+
         private double B(double phi)
         {
             var x2 = System.Math.Log(underlying() / barrier()) / stdDeviation() + muSigma();
@@ -171,6 +183,9 @@ namespace QLNet.Pricingengines.barrier
             var N2 = f_.value(phi * (x2 - stdDeviation()));
             return phi * (underlying() * dividendDiscount() * N1 - strike() * riskFreeDiscount() * N2);
         }
+
+        private double barrier() => arguments_.barrier.GetValueOrDefault();
+
         private double C(double eta, double phi)
         {
             var HS = barrier() / underlying();
@@ -181,6 +196,7 @@ namespace QLNet.Pricingengines.barrier
             var N2 = f_.value(eta * (y1 - stdDeviation()));
             return phi * (underlying() * dividendDiscount() * powHS1 * N1 - strike() * riskFreeDiscount() * powHS0 * N2);
         }
+
         private double D(double eta, double phi)
         {
             var HS = barrier() / underlying();
@@ -191,6 +207,11 @@ namespace QLNet.Pricingengines.barrier
             var N2 = f_.value(eta * (y2 - stdDeviation()));
             return phi * (underlying() * dividendDiscount() * powHS1 * N1 - strike() * riskFreeDiscount() * powHS0 * N2);
         }
+
+        private double dividendDiscount() => process_.dividendYield().link.discount(residualTime());
+
+        private double dividendYield() => process_.dividendYield().link.zeroRate(residualTime(), Compounding.Continuous, Frequency.NoFrequency).rate();
+
         private double E(double eta)
         {
             if (rebate() > 0)
@@ -202,11 +223,10 @@ namespace QLNet.Pricingengines.barrier
                 var N2 = f_.value(eta * (y2 - stdDeviation()));
                 return rebate() * riskFreeDiscount() * (N1 - powHS0 * N2);
             }
-            else
-            {
-                return 0.0;
-            }
+
+            return 0.0;
         }
+
         private double F(double eta)
         {
             if (rebate() > 0)
@@ -225,10 +245,37 @@ namespace QLNet.Pricingengines.barrier
                 var N2 = f_.value(eta * (z - 2.0 * lambda * sigmaSqrtT));
                 return rebate() * (powHSplus * N1 + powHSminus * N2);
             }
-            else
-            {
-                return 0.0;
-            }
+
+            return 0.0;
         }
+
+        private double mu()
+        {
+            var vol = volatility();
+            return (riskFreeRate() - dividendYield()) / (vol * vol) - 0.5;
+        }
+
+        private double muSigma() => (1 + mu()) * stdDeviation();
+
+        private double rebate() => arguments_.rebate.GetValueOrDefault();
+
+        private double residualTime() => process_.time(arguments_.exercise.lastDate());
+
+        private double riskFreeDiscount() => process_.riskFreeRate().link.discount(residualTime());
+
+        private double riskFreeRate() => process_.riskFreeRate().link.zeroRate(residualTime(), Compounding.Continuous, Frequency.NoFrequency).rate();
+
+        private double stdDeviation() => volatility() * System.Math.Sqrt(residualTime());
+
+        private double strike()
+        {
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
+            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            return payoff.strike();
+        }
+
+        private double underlying() => process_.x0();
+
+        private double volatility() => process_.blackVolatility().link.blackVol(residualTime(), strike());
     }
 }

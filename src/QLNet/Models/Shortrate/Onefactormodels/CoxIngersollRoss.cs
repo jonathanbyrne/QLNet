@@ -16,34 +16,76 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Math.Distributions;
 using QLNet.Methods.lattices;
-using QLNet.Models;
-using QLNet.Models.Shortrate;
-using System;
 
 namespace QLNet.Models.Shortrate.Onefactormodels
 {
     /// <summary>
-    /// Cox-Ingersoll-Ross model class.
-    /// <remarks>
-    /// This class implements the Cox-Ingersoll-Ross model defined by
-    /// dr_t = k(\theta - r_t)dt + \sqrt{r_t}\sigma dW_t .
-    /// This class was not tested enough to guarantee its functionality.
-    /// </remarks>
+    ///     Cox-Ingersoll-Ross model class.
+    ///     <remarks>
+    ///         This class implements the Cox-Ingersoll-Ross model defined by
+    ///         dr_t = k(\theta - r_t)dt + \sqrt{r_t}\sigma dW_t .
+    ///         This class was not tested enough to guarantee its functionality.
+    ///     </remarks>
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class CoxIngersollRoss : OneFactorAffineModel
+    [PublicAPI]
+    public class CoxIngersollRoss : OneFactorAffineModel
     {
-        private Parameter theta_;
+        //! %Dynamics of the short-rate under the Cox-Ingersoll-Ross model
+        /*! The state variable \f$ y_t \f$ will here be the square-root of the
+            short-rate.
+        */
+        [PublicAPI]
+        public class Dynamics : ShortRateDynamics
+        {
+            public Dynamics(double theta,
+                double k,
+                double sigma,
+                double x0)
+                : base(new HelperProcess(theta, k, sigma, System.Math.Sqrt(x0)))
+            {
+            }
+
+            public override double shortRate(double d, double y) => y * y;
+
+            public override double variable(double d, double r) => System.Math.Sqrt(r);
+        }
+
+        [PublicAPI]
+        public class HelperProcess : StochasticProcess1D
+        {
+            private double y0_, theta_, k_, sigma_;
+
+            public HelperProcess(double theta, double k, double sigma, double y0)
+            {
+                y0_ = y0;
+                theta_ = theta;
+                k_ = k;
+                sigma_ = sigma;
+            }
+
+            public override double diffusion(double d1, double d2) => 0.5 * sigma_;
+
+            public override double drift(double d, double y) =>
+                (0.5 * theta_ * k_ - 0.125 * sigma_ * sigma_) / y
+                - 0.5 * k_ * y;
+
+            public override double x0() => y0_;
+        }
+
         private Parameter k_;
-        private Parameter sigma_;
         private Parameter r0_;
+        private Parameter sigma_;
+        private Parameter theta_;
 
         public CoxIngersollRoss(double r0 = 0.05,
-                                double theta = 0.1,
-                                double k = 0.1,
-                                double sigma = 0.1)
-           : base(4)
+            double theta = 0.1,
+            double k = 0.1,
+            double sigma = 0.1)
+            : base(4)
         {
             theta_ = arguments_[0];
             k_ = arguments_[1];
@@ -52,9 +94,9 @@ namespace QLNet.Models.Shortrate.Onefactormodels
         }
 
         public override double discountBondOption(Option.Type type,
-                                                  double strike,
-                                                  double maturity,
-                                                  double bondMaturity)
+            double strike,
+            double maturity,
+            double bondMaturity)
         {
             Utils.QL_REQUIRE(strike > 0.0, () => "strike must be positive");
             var discountT = discountBond(0.0, maturity, x0());
@@ -64,15 +106,16 @@ namespace QLNet.Models.Shortrate.Onefactormodels
             {
                 switch (type)
                 {
-                    case QLNet.Option.Type.Call:
+                    case Option.Type.Call:
                         return System.Math.Max(discountS - strike, 0.0);
-                    case QLNet.Option.Type.Put:
+                    case Option.Type.Put:
                         return System.Math.Max(strike - discountS, 0.0);
                     default:
                         Utils.QL_FAIL("unsupported option ExerciseType");
                         break;
                 }
             }
+
             var sigma2 = sigma() * sigma();
             var h = System.Math.Sqrt(k() * k() + 2.0 * sigma2);
             var b = B(maturity, bondMaturity);
@@ -91,10 +134,12 @@ namespace QLNet.Models.Shortrate.Onefactormodels
             var call = discountS * chis.value(2.0 * z * (rho + psi + b)) -
                        strike * discountT * chit.value(2.0 * z * (rho + psi));
 
-            if (type == QLNet.Option.Type.Call)
+            if (type == Option.Type.Call)
+            {
                 return call;
-            else
-                return call - discountS + strike * discountT;
+            }
+
+            return call - discountS + strike * discountT;
         }
 
         public override ShortRateDynamics dynamics() => new Dynamics(theta(), k(), sigma(), x0());
@@ -112,7 +157,7 @@ namespace QLNet.Models.Shortrate.Onefactormodels
             var numerator = 2.0 * h * System.Math.Exp(0.5 * (k() + h) * (T - t));
             var denominator = 2.0 * h + (k() + h) * (System.Math.Exp((T - t) * h) - 1.0);
             var value = System.Math.Log(numerator / denominator) *
-                           2.0 * k() * theta() / sigma2;
+                2.0 * k() * theta() / sigma2;
             return System.Math.Exp(value);
         }
 
@@ -126,51 +171,12 @@ namespace QLNet.Models.Shortrate.Onefactormodels
             return value;
         }
 
-        protected double theta() => theta_.value(0.0);
-
         protected double k() => k_.value(0.0);
 
         protected double sigma() => sigma_.value(0.0);
 
+        protected double theta() => theta_.value(0.0);
+
         protected double x0() => r0_.value(0.0);
-
-        [JetBrains.Annotations.PublicAPI] public class HelperProcess : StochasticProcess1D
-        {
-            private double y0_, theta_, k_, sigma_;
-
-            public HelperProcess(double theta, double k, double sigma, double y0)
-            {
-                y0_ = y0;
-                theta_ = theta;
-                k_ = k;
-                sigma_ = sigma;
-            }
-
-            public override double x0() => y0_;
-
-            public override double drift(double d, double y) =>
-                (0.5 * theta_ * k_ - 0.125 * sigma_ * sigma_) / y
-                - 0.5 * k_ * y;
-
-            public override double diffusion(double d1, double d2) => 0.5 * sigma_;
-        }
-
-        //! %Dynamics of the short-rate under the Cox-Ingersoll-Ross model
-        /*! The state variable \f$ y_t \f$ will here be the square-root of the
-            short-rate.
-        */
-        [JetBrains.Annotations.PublicAPI] public class Dynamics : ShortRateDynamics
-        {
-            public Dynamics(double theta,
-                            double k,
-                            double sigma,
-                            double x0)
-               : base(new HelperProcess(theta, k, sigma, System.Math.Sqrt(x0)))
-            { }
-
-            public override double variable(double d, double r) => System.Math.Sqrt(r);
-
-            public override double shortRate(double d, double y) => y * y;
-        }
     }
 }

@@ -17,20 +17,21 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Math;
-using QLNet.Math.randomnumbers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Math.randomnumbers;
 
 namespace QLNet.Math.Optimization
 {
     /// <summary>
-    /// Class RNG must implement the following interface:
-    /// RNG.sample_type RNG.next();
+    ///     Class RNG must implement the following interface:
+    ///     RNG.sample_type RNG.next();
     /// </summary>
     /// <typeparam name="RNG"></typeparam>
-    [JetBrains.Annotations.PublicAPI] public class SimulatedAnnealing<RNG> : OptimizationMethod where RNG : class, IRNGTraits, new()
+    [PublicAPI]
+    public class SimulatedAnnealing<RNG> : OptimizationMethod where RNG : class, IRNGTraits, new()
     {
         public enum Scheme
         {
@@ -38,8 +39,21 @@ namespace QLNet.Math.Optimization
             ConstantBudget
         }
 
+        protected double fac1_, fac2_, yflu_;
+        protected int i_, ihi_, ilo_, j_, m_, n_;
+        protected int iteration_, iterationT_;
+        protected int K_;
+        protected double lambda_, T0_, epsilon_, alpha_;
+        protected Vector pb_, ptry_;
+        protected RNG rng_;
+        protected double rtol_, swap_, yhi_, ylo_, ynhi_, ysave_, yt_, ytry_, yb_, tt_;
+        protected Scheme scheme_;
+        protected double T_;
+        protected Vector values_, sum_;
+        protected List<Vector> vertices_;
+
         /// <summary>
-        /// reduce temperature T by a factor of  (1-\epsilon) after m moves
+        ///     reduce temperature T by a factor of  (1-\epsilon) after m moves
         /// </summary>
         /// <param name="lambda"></param>
         /// <param name="T0"></param>
@@ -59,11 +73,11 @@ namespace QLNet.Math.Optimization
         }
 
         /// <summary>
-        /// budget a total of K moves, set temperature T to the initial
-        /// temperature times \f$ ( 1 - k/K )^\alpha \f$ with k being the total number
-        /// of moves so far. After K moves the temperature is guaranteed to be
-        /// zero, after that the optimization runs like a deterministic simplex
-        /// algorithm.
+        ///     budget a total of K moves, set temperature T to the initial
+        ///     temperature times \f$ ( 1 - k/K )^\alpha \f$ with k being the total number
+        ///     of moves so far. After K moves the temperature is guaranteed to be
+        ///     zero, after that the optimization runs like a deterministic simplex
+        ///     algorithm.
         /// </summary>
         /// <param name="lambda"></param>
         /// <param name="T0"></param>
@@ -107,9 +121,14 @@ namespace QLNet.Math.Optimization
             for (i_ = 0; i_ <= n_; i_++)
             {
                 if (!P.constraint().test(vertices_[i_]))
+                {
                     values_[i_] = double.MaxValue;
+                }
                 else
+                {
                     values_[i_] = P.value(vertices_[i_]);
+                }
+
                 if (double.IsNaN(ytry_))
                 {
                     // handle NAN
@@ -129,7 +148,10 @@ namespace QLNet.Math.Optimization
                 {
                     sum_ = new Vector(n_, 0.0);
                     for (i_ = 0; i_ <= n_; i_++)
+                    {
                         sum_ += vertices_[i_];
+                    }
+
                     tt_ = -T_;
                     ilo_ = 0;
                     ihi_ = 1;
@@ -171,8 +193,8 @@ namespace QLNet.Math.Optimization
 
                     // GSL end criterion in x (cf. above)
                     if (endCriteria.checkStationaryPoint(simplexSize(), 0.0,
-                                                         ref stationaryStateIterations_,
-                                                         ref ecType) ||
+                            ref stationaryStateIterations_,
+                            ref ecType) ||
                         endCriteria.checkMaxIterations(iteration_, ref ecType))
                     {
                         // no matter what, we return the best ever point !
@@ -212,9 +234,14 @@ namespace QLNet.Math.Optimization
 
                                 iteration_ += n_;
                                 for (i_ = 0; i_ < n_; i_++)
+                                {
                                     sum_[i_] = 0.0;
+                                }
+
                                 for (i_ = 0; i_ <= n_; i_++)
+                                {
                                     sum_ += vertices_[i_];
+                                }
                             }
                         }
                         else
@@ -222,9 +249,8 @@ namespace QLNet.Math.Optimization
                             iteration_ += 1;
                         }
                     }
-                }
-                while (iteration_ <
-                       iterationT_ + (scheme_ == Scheme.ConstantFactor ? m_ : 1));
+                } while (iteration_ <
+                         iterationT_ + (scheme_ == Scheme.ConstantFactor ? m_ : 1));
 
                 switch (scheme_)
                 {
@@ -233,36 +259,18 @@ namespace QLNet.Math.Optimization
                         break;
                     case Scheme.ConstantBudget:
                         if (iteration_ <= K_)
+                        {
                             T_ = T0_ *
                                  System.Math.Pow(1.0 - Convert.ToDouble(iteration_) / Convert.ToDouble(K_), alpha_);
+                        }
                         else
+                        {
                             T_ = 0.0;
+                        }
+
                         break;
                 }
-            }
-            while (true);
-        }
-
-        protected Scheme scheme_;
-        protected double lambda_, T0_, epsilon_, alpha_;
-        protected int K_;
-        protected RNG rng_;
-
-        protected double simplexSize()
-        {
-            var center = new Vector(vertices_.First().size(), 0);
-            for (var i = 0; i < vertices_.Count; ++i)
-                center += vertices_[i];
-
-            center *= 1 / Convert.ToDouble(vertices_.Count);
-            double result = 0;
-            for (var i = 0; i < vertices_.Count; ++i)
-            {
-                var temp = vertices_[i] - center;
-                result += Vector.Norm2(temp);
-            }
-
-            return result / Convert.ToDouble(vertices_.Count);
+            } while (true);
         }
 
         protected void amotsa(Problem P, double fac)
@@ -275,9 +283,14 @@ namespace QLNet.Math.Optimization
             }
 
             if (!P.constraint().test(ptry_))
+            {
                 ytry_ = double.MaxValue;
+            }
             else
+            {
                 ytry_ = P.value(ptry_);
+            }
+
             if (double.IsNaN(ytry_))
             {
                 ytry_ = double.MaxValue;
@@ -304,13 +317,23 @@ namespace QLNet.Math.Optimization
             ytry_ = yflu_;
         }
 
-        protected double T_;
-        protected List<Vector> vertices_;
-        protected Vector values_, sum_;
-        protected int i_, ihi_, ilo_, j_, m_, n_;
-        protected double fac1_, fac2_, yflu_;
-        protected double rtol_, swap_, yhi_, ylo_, ynhi_, ysave_, yt_, ytry_, yb_, tt_;
-        protected Vector pb_, ptry_;
-        protected int iteration_, iterationT_;
+        protected double simplexSize()
+        {
+            var center = new Vector(vertices_.First().size(), 0);
+            for (var i = 0; i < vertices_.Count; ++i)
+            {
+                center += vertices_[i];
+            }
+
+            center *= 1 / Convert.ToDouble(vertices_.Count);
+            double result = 0;
+            for (var i = 0; i < vertices_.Count; ++i)
+            {
+                var temp = vertices_[i] - center;
+                result += Vector.Norm2(temp);
+            }
+
+            return result / Convert.ToDouble(vertices_.Count);
+        }
     }
 }

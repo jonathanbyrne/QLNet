@@ -17,26 +17,29 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Models;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Utilities
 {
-    [JetBrains.Annotations.PublicAPI] public class FdmAffineModelTermStructure : YieldTermStructure
+    [PublicAPI]
+    public class FdmAffineModelTermStructure : YieldTermStructure
     {
+        protected IAffineModel model_;
+        protected Vector r_;
+        protected double t_;
+
         public FdmAffineModelTermStructure(
-           Vector r,
-           Calendar cal,
-           DayCounter dayCounter,
-           Date referenceDate,
-           Date modelReferenceDate,
-           IAffineModel model)
-           : base(referenceDate, cal, dayCounter)
+            Vector r,
+            Calendar cal,
+            DayCounter dayCounter,
+            Date referenceDate,
+            Date modelReferenceDate,
+            IAffineModel model)
+            : base(referenceDate, cal, dayCounter)
         {
             r_ = r;
             t_ = dayCounter.yearFraction(modelReferenceDate, referenceDate);
@@ -53,9 +56,5 @@ namespace QLNet.Methods.Finitedifferences.Utilities
         }
 
         protected override double discountImpl(double d) => model_.discountBond(t_, d + t_, r_);
-
-        protected Vector r_;
-        protected double t_;
-        protected IAffineModel model_;
     }
 }

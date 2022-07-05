@@ -17,7 +17,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -45,16 +47,16 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class Argentina : Calendar
+    [PublicAPI]
+    public class Argentina : Calendar
     {
-        public Argentina() : base(Impl.Singleton) { }
-
-        class Impl : WesternImpl
+        private class Impl : WesternImpl
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "Buenos Aires stock exchange";
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -83,16 +85,25 @@ namespace QLNet.Time.Calendars
                     || d >= 15 && d <= 21 && w == DayOfWeek.Monday && m == Month.August
                     // Columbus Day
                     || (d == 10 || d == 11 || d == 12 || d == 15 || d == 16)
-                        && w == DayOfWeek.Monday && m == Month.October
+                    && w == DayOfWeek.Monday && m == Month.October
                     // Immaculate Conception
                     || d == 8 && m == Month.December
                     // Christmas Eve
                     || d == 24 && m == Month.December
                     // New Year's Eve
                     || (d == 31 || d == 30 && w == DayOfWeek.Friday) && m == Month.December)
+                {
                     return false;
+                }
+
                 return true;
             }
+
+            public override string name() => "Buenos Aires stock exchange";
+        }
+
+        public Argentina() : base(Impl.Singleton)
+        {
         }
     }
 }

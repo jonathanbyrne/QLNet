@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.randomnumbers;
 using QLNet.Math.statistics;
@@ -38,42 +39,26 @@ namespace QLNet.Pricingengines.asian
                reproducing results available in literature.
     */
     //template <class RNG = PseudoRandom, class S = Statistics>
-    [JetBrains.Annotations.PublicAPI] public class MCDiscreteArithmeticAPEngine<RNG, S>
-      : MCDiscreteAveragingAsianEngine<RNG, S>
+    [PublicAPI]
+    public class MCDiscreteArithmeticAPEngine<RNG, S>
+        : MCDiscreteAveragingAsianEngine<RNG, S>
         where RNG : IRSG, new()
         where S : IGeneralStatistics, new()
     {
-
         // constructor
         public MCDiscreteArithmeticAPEngine(
-           GeneralizedBlackScholesProcess process,
-           int maxTimeStepPerYear,
-           bool brownianBridge,
-           bool antitheticVariate,
-           bool controlVariate,
-           int requiredSamples,
-           double requiredTolerance,
-           int maxSamples,
-           ulong seed)
-           : base(process, maxTimeStepPerYear, brownianBridge, antitheticVariate,
-                  controlVariate, requiredSamples, requiredTolerance, maxSamples, seed)
+            GeneralizedBlackScholesProcess process,
+            int maxTimeStepPerYear,
+            bool brownianBridge,
+            bool antitheticVariate,
+            bool controlVariate,
+            int requiredSamples,
+            double requiredTolerance,
+            int maxSamples,
+            ulong seed)
+            : base(process, maxTimeStepPerYear, brownianBridge, antitheticVariate,
+                controlVariate, requiredSamples, requiredTolerance, maxSamples, seed)
         {
-        }
-
-        protected override PathPricer<IPath> pathPricer()
-        {
-            var payoff = (PlainVanillaPayoff)arguments_.payoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
-
-            var exercise = (EuropeanExercise)arguments_.exercise;
-            Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
-
-            return new ArithmeticAPOPathPricer(
-                      payoff.optionType(),
-                      payoff.strike(),
-                      process_.riskFreeRate().link.discount(timeGrid().Last()),
-                      arguments_.runningAccumulator.GetValueOrDefault(),
-                      arguments_.pastFixings.GetValueOrDefault());
         }
 
         protected override PathPricer<IPath> controlPathPricer()
@@ -88,12 +73,28 @@ namespace QLNet.Pricingengines.asian
             // to obtain an equivalent arithmetic strike.
             // Any change applied here MUST be applied to the analytic engine too
             return (PathPricer<IPath>)new GeometricAPOPathPricer(
-                      payoff.optionType(),
-                      payoff.strike(),
-                      process_.riskFreeRate().link.discount(timeGrid().Last()));
+                payoff.optionType(),
+                payoff.strike(),
+                process_.riskFreeRate().link.discount(timeGrid().Last()));
         }
 
         protected override IPricingEngine controlPricingEngine() => new AnalyticDiscreteGeometricAveragePriceAsianEngine(process_);
+
+        protected override PathPricer<IPath> pathPricer()
+        {
+            var payoff = (PlainVanillaPayoff)arguments_.payoff;
+            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+
+            var exercise = (EuropeanExercise)arguments_.exercise;
+            Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
+
+            return new ArithmeticAPOPathPricer(
+                payoff.optionType(),
+                payoff.strike(),
+                process_.riskFreeRate().link.discount(timeGrid().Last()),
+                arguments_.runningAccumulator.GetValueOrDefault(),
+                arguments_.pastFixings.GetValueOrDefault());
+        }
     }
 
     //<class RNG = PseudoRandom, class S = Statistics>

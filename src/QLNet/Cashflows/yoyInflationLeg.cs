@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class yoyInflationLeg : yoyInflationLegBase
+    [PublicAPI]
+    public class yoyInflationLeg : yoyInflationLegBase
     {
         public yoyInflationLeg(Schedule schedule, Calendar cal,
             YoYInflationIndex index,
@@ -16,7 +18,6 @@ namespace QLNet.Cashflows
             paymentAdjustment_ = BusinessDayConvention.ModifiedFollowing;
             paymentCalendar_ = cal;
         }
-
 
         public override List<CashFlow> value() =>
             CashFlowVectors.yoyInflationLeg(notionals_,

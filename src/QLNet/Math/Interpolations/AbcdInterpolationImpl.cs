@@ -1,11 +1,19 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math.Optimization;
 using QLNet.Termstructures.Volatility;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class AbcdInterpolationImpl : Interpolation.templateImpl
+    [PublicAPI]
+    public class AbcdInterpolationImpl : Interpolation.templateImpl
     {
+        private AbcdCalibration abcdCalibrator_;
+        private AbcdCoeffHolder abcdCoeffHolder_;
+        private EndCriteria endCriteria_;
+        private OptimizationMethod optMethod_;
+        private bool vegaWeighted_;
+
         public AbcdInterpolationImpl(List<double> xBegin, int size, List<double> yBegin,
             double a, double b, double c, double d,
             bool aIsFixed,
@@ -23,6 +31,31 @@ namespace QLNet.Math.Interpolations
             vegaWeighted_ = vegaWeighted;
         }
 
+        public AbcdCoeffHolder AbcdCoeffHolder() => abcdCoeffHolder_;
+
+        public override double derivative(double x)
+        {
+            Utils.QL_FAIL("Abcd derivative not implemented");
+            return 0;
+        }
+
+        public double k(double t)
+        {
+            var li = new LinearInterpolation(xBegin_, size_, yBegin_);
+            return li.value(t);
+        }
+
+        public override double primitive(double x)
+        {
+            Utils.QL_FAIL("Abcd primitive not implemented");
+            return 0;
+        }
+
+        public override double secondDerivative(double x)
+        {
+            Utils.QL_FAIL("Abcd secondDerivative not implemented");
+            return 0;
+        }
 
         public override void update()
         {
@@ -62,38 +95,5 @@ namespace QLNet.Math.Interpolations
             Utils.QL_REQUIRE(x >= 0.0, () => "time must be non negative: " + x + " not allowed");
             return abcdCalibrator_.value(x);
         }
-
-        public override double primitive(double x)
-        {
-            Utils.QL_FAIL("Abcd primitive not implemented");
-            return 0;
-        }
-
-        public override double derivative(double x)
-        {
-            Utils.QL_FAIL("Abcd derivative not implemented");
-            return 0;
-        }
-
-        public override double secondDerivative(double x)
-        {
-            Utils.QL_FAIL("Abcd secondDerivative not implemented");
-            return 0;
-        }
-
-        public double k(double t)
-        {
-            var li = new LinearInterpolation(xBegin_, size_, yBegin_);
-            return li.value(t);
-        }
-
-        public AbcdCoeffHolder AbcdCoeffHolder() => abcdCoeffHolder_;
-
-        private EndCriteria endCriteria_;
-        private OptimizationMethod optMethod_;
-        private bool vegaWeighted_;
-        private AbcdCalibration abcdCalibrator_;
-        private AbcdCoeffHolder abcdCoeffHolder_;
-
     }
 }

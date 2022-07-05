@@ -6,8 +6,8 @@
         {
             KnockIn,
             KnockOut,
-            KIKO,     //! lower barrier KI, upper KO
-            KOKI      //! lower barrier KO, upper KI
+            KIKO, //! lower barrier KI, upper KO
+            KOKI //! lower barrier KO, upper KI
         }
     }
 }

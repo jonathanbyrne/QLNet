@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Indexes.Ibor;
 using QLNet.Termstructures;
@@ -26,7 +27,6 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.swap
 {
-
     //! %ChfLiborSwapIsdaFix index base class
     /*! %CHF %Libor %Swap indexes fixed by ISDA in cooperation with
         Reuters and Intercapital Brokers at 11am London.
@@ -37,23 +37,25 @@ namespace QLNet.Indexes.swap
         Reuters page ISDAFIX.
 
     */
-    [JetBrains.Annotations.PublicAPI] public class ChfLiborSwapIsdaFix : SwapIndex
+    [PublicAPI]
+    public class ChfLiborSwapIsdaFix : SwapIndex
     {
         public ChfLiborSwapIsdaFix(Period tenor)
-           : this(tenor, new Handle<YieldTermStructure>()) { }
+            : this(tenor, new Handle<YieldTermStructure>())
+        {
+        }
 
         public ChfLiborSwapIsdaFix(Period tenor, Handle<YieldTermStructure> h)
-           : base("ChfLiborSwapIsdaFix", // familyName
-                  tenor,
-                  2, // settlementDays
-                  new CHFCurrency(),
-                  new TARGET(),
-                  new Period(1, TimeUnit.Years), // fixedLegTenor
-                  BusinessDayConvention.ModifiedFollowing, // fixedLegConvention
-                  new Thirty360(Thirty360.Thirty360Convention.BondBasis), // fixedLegDaycounter
-                  tenor > new Period(1, TimeUnit.Years) ?
-                  new CHFLibor(new Period(6, TimeUnit.Months), h) :
-                  new CHFLibor(new Period(3, TimeUnit.Months), h))
-        { }
+            : base("ChfLiborSwapIsdaFix", // familyName
+                tenor,
+                2, // settlementDays
+                new CHFCurrency(),
+                new TARGET(),
+                new Period(1, TimeUnit.Years), // fixedLegTenor
+                BusinessDayConvention.ModifiedFollowing, // fixedLegConvention
+                new Thirty360(Thirty360.Thirty360Convention.BondBasis), // fixedLegDaycounter
+                tenor > new Period(1, TimeUnit.Years) ? new CHFLibor(new Period(6, TimeUnit.Months), h) : new CHFLibor(new Period(3, TimeUnit.Months), h))
+        {
+        }
     }
 }

@@ -16,31 +16,58 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.matrixutilities;
 using QLNet.Methods.Finitedifferences.Meshers;
-using QLNet.Models.Shortrate;
 using QLNet.Models.Shortrate.Onefactormodels;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Methods.Finitedifferences.Operators
 {
-    [JetBrains.Annotations.PublicAPI] public class FdmHullWhiteOp : FdmLinearOpComposite
+    [PublicAPI]
+    public class FdmHullWhiteOp : FdmLinearOpComposite
     {
+        protected int direction_;
+        protected TripleBandLinearOp dzMap_;
+        protected TripleBandLinearOp mapT_;
+        protected HullWhite model_;
+        protected Vector x_;
+
         public FdmHullWhiteOp(FdmMesher mesher,
-                              HullWhite model,
-                              int direction)
+            HullWhite model,
+            int direction)
         {
             x_ = mesher.locations(direction);
             dzMap_ = new TripleBandLinearOp(new FirstDerivativeOp(direction, mesher).mult(-1.0 * x_ * model.a()).add(
-                                               new SecondDerivativeOp(direction, mesher).mult(0.5 * model.sigma() * model.sigma()
-                                                     * new Vector(mesher.layout().size(), 1.0))));
+                new SecondDerivativeOp(direction, mesher).mult(0.5 * model.sigma() * model.sigma()
+                                                               * new Vector(mesher.layout().size(), 1.0))));
             mapT_ = new TripleBandLinearOp(direction, mesher);
             direction_ = direction;
             model_ = model;
         }
-        public override int size() => 1;
+
+        public override Vector apply(Vector r) => mapT_.apply(r);
+
+        public override Vector apply_direction(int direction, Vector r)
+        {
+            if (direction == direction_)
+            {
+                return mapT_.apply(r);
+            }
+
+            var retVal = new Vector(r.size(), 0.0);
+            return retVal;
+        }
+
+        public override Vector apply_mixed(Vector r)
+        {
+            var retVal = new Vector(r.size(), 0.0);
+            return retVal;
+        }
+
+        public override Vector preconditioner(Vector r, double s) => solve_splitting(direction_, r, s);
 
         //! Time \f$t1 <= t2\f$ is required
         public override void setTime(double t1, double t2)
@@ -53,35 +80,18 @@ namespace QLNet.Methods.Finitedifferences.Operators
             mapT_.axpyb(new Vector(), dzMap_, dzMap_, -1.0 * (x_ + phi));
         }
 
-        public override Vector apply(Vector r) => mapT_.apply(r);
+        public override int size() => 1;
 
-        public override Vector apply_mixed(Vector r)
-        {
-            var retVal = new Vector(r.size(), 0.0);
-            return retVal;
-        }
-
-        public override Vector apply_direction(int direction, Vector r)
-        {
-            if (direction == direction_)
-                return mapT_.apply(r);
-            else
-            {
-                var retVal = new Vector(r.size(), 0.0);
-                return retVal;
-            }
-        }
         public override Vector solve_splitting(int direction, Vector r, double s)
         {
             if (direction == direction_)
-                return mapT_.solve_splitting(r, s, 1.0);
-            else
             {
-                var retVal = new Vector(r.size(), 0.0);
-                return retVal;
+                return mapT_.solve_splitting(r, s);
             }
+
+            var retVal = new Vector(r.size(), 0.0);
+            return retVal;
         }
-        public override Vector preconditioner(Vector r, double s) => solve_splitting(direction_, r, s);
 
         public override List<SparseMatrix> toMatrixDecomp()
         {
@@ -90,6 +100,7 @@ namespace QLNet.Methods.Finitedifferences.Operators
         }
 
         #region IOperator interface
+
         public override IOperator identity(int size) => null;
 
         public override Vector applyTo(Vector v) => new Vector();
@@ -99,22 +110,19 @@ namespace QLNet.Methods.Finitedifferences.Operators
         public override IOperator multiply(double a, IOperator D) => null;
 
         public override IOperator add
-           (IOperator A, IOperator B) =>
+            (IOperator A, IOperator B) =>
             null;
 
         public override IOperator subtract(IOperator A, IOperator B) => null;
 
         public override bool isTimeDependent() => false;
 
-        public override void setTime(double t) { }
+        public override void setTime(double t)
+        {
+        }
+
         public override object Clone() => MemberwiseClone();
 
         #endregion
-
-        protected HullWhite model_;
-        protected Vector x_;
-        protected TripleBandLinearOp dzMap_;
-        protected TripleBandLinearOp mapT_;
-        protected int direction_;
     }
 }

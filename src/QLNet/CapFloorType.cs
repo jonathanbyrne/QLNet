@@ -1,4 +1,9 @@
 namespace QLNet
 {
-    public enum CapFloorType { Cap, Floor, Collar }
+    public enum CapFloorType
+    {
+        Cap,
+        Floor,
+        Collar
+    }
 }

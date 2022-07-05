@@ -16,23 +16,26 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Patterns;
 using QLNet.Time;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Termstructures.Inflation
 {
-    [JetBrains.Annotations.PublicAPI] public class InterpolatedZeroInflationCurve<Interpolator> : ZeroInflationTermStructure, InterpolatedCurve
-       where Interpolator : class, IInterpolationFactory, new()
+    [PublicAPI]
+    public class InterpolatedZeroInflationCurve<Interpolator> : ZeroInflationTermStructure, InterpolatedCurve
+        where Interpolator : class, IInterpolationFactory, new()
     {
         public InterpolatedZeroInflationCurve(Date referenceDate, Calendar calendar, DayCounter dayCounter, Period lag,
-                                              Frequency frequency, bool indexIsInterpolated, Handle<YieldTermStructure> yTS,
-                                              List<Date> dates, List<double> rates,
-                                              Interpolator interpolator = default)
-           : base(referenceDate, calendar, dayCounter, rates[0],
-                  lag, frequency, indexIsInterpolated, yTS)
+            Frequency frequency, bool indexIsInterpolated, Handle<YieldTermStructure> yTS,
+            List<Date> dates, List<double> rates,
+            Interpolator interpolator = default)
+            : base(referenceDate, calendar, dayCounter, rates[0],
+                lag, frequency, indexIsInterpolated, yTS)
         {
             times_ = new List<double>();
             dates_ = dates;
@@ -46,8 +49,8 @@ namespace QLNet.Termstructures.Inflation
             // period
             var lim = Utils.inflationPeriod(yTS.link.referenceDate() - observationLag(), frequency);
             Utils.QL_REQUIRE(lim.Key <= dates_[0] && dates_[0] <= lim.Value, () =>
-                             "first data date is not in base period, date: " + dates_[0]
-                             + " not within [" + lim.Key + "," + lim.Value + "]");
+                "first data date is not in base period, date: " + dates_[0]
+                                                                + " not within [" + lim.Key + "," + lim.Value + "]");
 
             // by convention, if the index is not interpolated we pull all the dates
             // back to the start of their inflationPeriods
@@ -60,11 +63,9 @@ namespace QLNet.Termstructures.Inflation
                 }
             }
 
-
-
             Utils.QL_REQUIRE(data_.Count == dates_.Count, () =>
-                             "indices/dates count mismatch: "
-                             + data_.Count + " vs " + dates_.Count);
+                "indices/dates count mismatch: "
+                + data_.Count + " vs " + dates_.Count);
 
             times_ = new InitializedList<double>(dates_.Count);
             times_[0] = timeFromReference(dates_[0]);
@@ -78,22 +79,55 @@ namespace QLNet.Termstructures.Inflation
                 // this can be negative
                 times_[i] = timeFromReference(dates_[i]);
                 Utils.QL_REQUIRE(!Utils.close(times_[i], times_[i - 1]), () =>
-                                 "two dates correspond to the same time " +
-                                 "under this curve's day count convention");
+                    "two dates correspond to the same time " +
+                    "under this curve's day count convention");
             }
 
             interpolation_ = interpolator_.interpolate(times_, times_.Count, data_);
             interpolation_.update();
         }
 
+        /*! Protected version for use when descendents don't want to
+            (or can't) provide the points for interpolation on
+            construction.
+        */
+        protected InterpolatedZeroInflationCurve(Date referenceDate,
+            Calendar calendar,
+            DayCounter dayCounter,
+            Period lag,
+            Frequency frequency,
+            bool indexIsInterpolated,
+            double baseZeroRate,
+            Handle<YieldTermStructure> yTS,
+            Interpolator interpolator = default)
+            : base(referenceDate, calendar, dayCounter, baseZeroRate, lag, frequency, indexIsInterpolated, yTS)
+        {
+            interpolator_ = interpolator ?? FastActivator<Interpolator>.Create();
+        }
+
+        // InflationTermStructure interface
+        public override Date baseDate() =>
+            // if indexIsInterpolated we fixed the dates in the constructor
+            dates_.First();
+
+        // Inspectors
+        public List<double> rates() => data_;
+
+        // ZeroInflationTermStructure Interface
+        protected override double zeroRateImpl(double t) => interpolation_.value(t, true);
+
         #region InterpolatedCurve
+
         public List<double> times_ { get; set; }
+
         public virtual List<double> times() => times_;
 
         public List<Date> dates_ { get; set; }
+
         public virtual List<Date> dates() => dates_;
 
         public Date maxDate_ { get; set; }
+
         public override Date maxDate()
         {
             Date d;
@@ -105,15 +139,18 @@ namespace QLNet.Termstructures.Inflation
             {
                 d = Utils.inflationPeriod(dates_.Last(), frequency()).Value;
             }
+
             return d;
         }
 
         public List<double> data_ { get; set; }
+
         public List<double> forwards() => data_;
 
         public virtual List<double> data() => forwards();
 
         public Interpolation interpolation_ { get; set; }
+
         public IInterpolationFactory interpolator_ { get; set; }
 
         public virtual Dictionary<Date, double> nodes()
@@ -137,36 +174,7 @@ namespace QLNet.Termstructures.Inflation
             copy.setupInterpolation();
             return copy;
         }
+
         #endregion
-
-        // InflationTermStructure interface
-        public override Date baseDate() =>
-            // if indexIsInterpolated we fixed the dates in the constructor
-            dates_.First();
-
-        // Inspectors
-        public List<double> rates() => data_;
-
-        // ZeroInflationTermStructure Interface
-        protected override double zeroRateImpl(double t) => interpolation_.value(t, true);
-
-        /*! Protected version for use when descendents don't want to
-            (or can't) provide the points for interpolation on
-            construction.
-        */
-        protected InterpolatedZeroInflationCurve(Date referenceDate,
-                                                 Calendar calendar,
-                                                 DayCounter dayCounter,
-                                                 Period lag,
-                                                 Frequency frequency,
-                                                 bool indexIsInterpolated,
-                                                 double baseZeroRate,
-                                                 Handle<YieldTermStructure> yTS,
-                                                 Interpolator interpolator = default)
-           : base(referenceDate, calendar, dayCounter, baseZeroRate, lag, frequency, indexIsInterpolated, yTS)
-        {
-            interpolator_ = interpolator ?? FastActivator<Interpolator>.Create();
-        }
-
     }
 }

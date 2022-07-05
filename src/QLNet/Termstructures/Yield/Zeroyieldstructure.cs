@@ -17,11 +17,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
 using QLNet.Extensions;
 using QLNet.Quotes;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Termstructures.Yield
 {
@@ -38,21 +38,6 @@ namespace QLNet.Termstructures.Yield
     */
     public abstract class ZeroYieldStructure : YieldTermStructure
     {
-        #region Constructors
-
-        protected ZeroYieldStructure(DayCounter dc = null, List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
-           : base(dc, jumps, jumpDates) { }
-
-        protected ZeroYieldStructure(Date referenceDate, Calendar calendar = null, DayCounter dc = null,
-                                     List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
-           : base(referenceDate, calendar, dc, jumps, jumpDates) { }
-
-        protected ZeroYieldStructure(int settlementDays, Calendar calendar, DayCounter dc = null,
-                                     List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
-           : base(settlementDays, calendar, dc, jumps, jumpDates) { }
-
-        #endregion
-
         #region Calculations
 
         // This method must be implemented in derived classes to
@@ -72,11 +57,34 @@ namespace QLNet.Termstructures.Yield
         */
         protected override double discountImpl(double t)
         {
-            if (t.IsEqual(0.0))     // this acts as a safe guard in cases where
-                return 1.0;   // zeroYieldImpl(0.0) would throw.
+            if (t.IsEqual(0.0)) // this acts as a safe guard in cases where
+            {
+                return 1.0; // zeroYieldImpl(0.0) would throw.
+            }
 
             var r = zeroYieldImpl(t);
             return System.Math.Exp(-r * t);
+        }
+
+        #endregion
+
+        #region Constructors
+
+        protected ZeroYieldStructure(DayCounter dc = null, List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
+            : base(dc, jumps, jumpDates)
+        {
+        }
+
+        protected ZeroYieldStructure(Date referenceDate, Calendar calendar = null, DayCounter dc = null,
+            List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
+            : base(referenceDate, calendar, dc, jumps, jumpDates)
+        {
+        }
+
+        protected ZeroYieldStructure(int settlementDays, Calendar calendar, DayCounter dc = null,
+            List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
+            : base(settlementDays, calendar, dc, jumps, jumpDates)
+        {
         }
 
         #endregion

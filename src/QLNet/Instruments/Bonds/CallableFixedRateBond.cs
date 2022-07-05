@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Pricingengines.Bond;
 using QLNet.Quotes;
@@ -7,9 +8,10 @@ using QLNet.Time;
 namespace QLNet.Instruments.Bonds
 {
     /// <summary>
-    /// Callable fixed rate bond class.
+    ///     Callable fixed rate bond class.
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class CallableFixedRateBond : CallableBond
+    [PublicAPI]
+    public class CallableFixedRateBond : CallableBond
     {
         public CallableFixedRateBond(int settlementDays,
             double faceAmount,
@@ -33,7 +35,7 @@ namespace QLNet.Instruments.Bonds
                     .withNotionals(faceAmount)
                     .withPaymentAdjustment(paymentConvention);
 
-                addRedemptionsToCashflows(new List<double>() { redemption });
+                addRedemptionsToCashflows(new List<double> { redemption });
             }
             else
             {
@@ -103,22 +105,24 @@ namespace QLNet.Instruments.Bonds
         }
 
         /// <summary>
-        /// accrued interest used internally
-        /// <remarks>
-        /// accrued interest used internally, where includeToday = false
-        /// same as Bond::accruedAmount() but with enable early
-        /// payments true.  Forces accrued to be calculated in a
-        /// consistent way for future put/ call dates, which can be
-        /// problematic in lattice engines when option dates are also
-        /// coupon dates.
-        /// </remarks>
+        ///     accrued interest used internally
+        ///     <remarks>
+        ///         accrued interest used internally, where includeToday = false
+        ///         same as Bond::accruedAmount() but with enable early
+        ///         payments true.  Forces accrued to be calculated in a
+        ///         consistent way for future put/ call dates, which can be
+        ///         problematic in lattice engines when option dates are also
+        ///         coupon dates.
+        ///     </remarks>
         /// </summary>
         /// <param name="settlement"></param>
         /// <returns></returns>
         private double accrued(Date settlement)
         {
             if (settlement == null)
+            {
                 settlement = settlementDate();
+            }
 
             var IncludeToday = false;
             for (var i = 0; i < cashflows_.Count; ++i)
@@ -129,12 +133,15 @@ namespace QLNet.Instruments.Bonds
                     var coupon = cashflows_[i] as Coupon;
                     if (coupon != null)
                         // !!!
+                    {
                         return coupon.accruedAmount(settlement) /
                             notional(settlement) * 100.0;
-                    else
-                        return 0.0;
+                    }
+
+                    return 0.0;
                 }
             }
+
             return 0.0;
         }
     }

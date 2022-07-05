@@ -17,13 +17,15 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Instruments
 {
     //! Intermediate class for put/call payoffs
-    [JetBrains.Annotations.PublicAPI] public class TypePayoff : Payoff
+    [PublicAPI]
+    public class TypePayoff : Payoff
     {
-        protected QLNet.Option.Type type_;
-        public QLNet.Option.Type optionType() => type_;
+        protected Option.Type type_;
 
         public TypePayoff(Option.Type type)
         {
@@ -32,6 +34,8 @@ namespace QLNet.Instruments
 
         // Payoff interface
         public override string description() => name() + " " + optionType();
+
+        public Option.Type optionType() => type_;
     }
 
     //! %Payoff based on a floating strike
@@ -41,7 +45,6 @@ namespace QLNet.Instruments
     //! Plain-vanilla payoff
 
     //! %Payoff with strike expressed as percentage
-
     /*! Definitions of Binary path-independent payoffs used below,
         can be found in M. Rubinstein, E. Reiner:"Unscrambling The Binary Code", Risk, Vol.4 no.9,1991.
         (see: http://www.in-the-money.com/artandpap/Binary%20Options.doc)

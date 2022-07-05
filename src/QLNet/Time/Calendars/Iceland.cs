@@ -17,7 +17,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -43,16 +45,16 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class Iceland : Calendar
+    [PublicAPI]
+    public class Iceland : Calendar
     {
-        public Iceland() : base(Impl.Singleton) { }
-
-        class Impl : WesternImpl
+        private class Impl : WesternImpl
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "Iceland stock exchange";
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -65,7 +67,7 @@ namespace QLNet.Time.Calendars
                 if (isWeekend(w)
                     // New Year's Day (possibly moved to Monday)
                     || (d == 1 || (d == 2 || d == 3) && w == DayOfWeek.Monday)
-                        && m == Month.January
+                    && m == Month.January
                     // Holy Thursday
                     || dd == em - 4
                     // Good Friday
@@ -88,9 +90,18 @@ namespace QLNet.Time.Calendars
                     || d == 25 && m == Month.December
                     // Boxing Day
                     || d == 26 && m == Month.December)
+                {
                     return false;
+                }
+
                 return true;
             }
+
+            public override string name() => "Iceland stock exchange";
+        }
+
+        public Iceland() : base(Impl.Singleton)
+        {
         }
     }
 }

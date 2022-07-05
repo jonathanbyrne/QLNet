@@ -309,10 +309,12 @@ namespace QLNet.Tests
             var tolerance = 1.0e-11;
 
             if (System.Math.Abs(swap.NPV() - cachedNPV) > tolerance)
+            {
                 QAssert.Fail("\nfailed to reproduce cached swap value:" +
                              "\ncalculated: " + swap.NPV() +
                              "\n  expected: " + cachedNPV +
                              "\n tolerance:" + tolerance);
+            }
         }
 
         [Fact]
@@ -344,9 +346,14 @@ namespace QLNet.Tests
 
 
                 if (term <= new Period(2, TimeUnit.Days))
+                {
                     eoniaHelpers.Add(helper);
+                }
+
                 if (term <= new Period(3, TimeUnit.Months))
+                {
                     swap3mHelpers.Add(helper);
+                }
             }
 
 
@@ -398,7 +405,9 @@ namespace QLNet.Tests
                                                        vars.fixedSwapDayCount,
                                                        euribor3m);
                 if (tenor == new Period(3, TimeUnit.Months))
+                {
                     swap3mHelpers.Add(helper);
+                }
             }
 
 
@@ -423,10 +432,12 @@ namespace QLNet.Tests
                 var calculated = 100.0 * swap.fairRate();
 
                 if (System.Math.Abs(expected - calculated.Value) > tolerance)
+                {
                     QAssert.Fail("curve inconsistency:\n"
                                  + "    swap length:     " + term + "\n"
                                  + "    quoted rate:     " + expected + "\n"
                                  + "    calculated rate: " + calculated);
+                }
             }
         }
     }

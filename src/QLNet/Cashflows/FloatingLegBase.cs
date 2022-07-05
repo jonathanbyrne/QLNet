@@ -6,62 +6,26 @@ namespace QLNet.Cashflows
 {
     public abstract class FloatingLegBase : RateLegBase
     {
-        protected InterestRateIndex index_;
-        protected List<int> fixingDays_;
-
-        protected List<double> gearings_;
-        protected List<double> spreads_;
         protected List<double?> caps_ = new List<double?>();
+        protected List<int> fixingDays_;
         protected List<double?> floors_ = new List<double?>();
+        protected List<double> gearings_;
         protected bool inArrears_;
+        protected InterestRateIndex index_;
+        protected List<double> spreads_;
         protected bool zeroPayments_;
 
-        // initializers
-        public FloatingLegBase withPaymentDayCounter(DayCounter dayCounter)
-        {
-            paymentDayCounter_ = dayCounter;
-            return this;
-        }
+        public FloatingLegBase inArrears() => inArrears(true);
 
-        public FloatingLegBase withFixingDays(int fixingDays)
+        public FloatingLegBase inArrears(bool flag)
         {
-            fixingDays_ = new List<int>() { fixingDays };
-            return this;
-        }
-
-        public FloatingLegBase withFixingDays(List<int> fixingDays)
-        {
-            fixingDays_ = fixingDays;
-            return this;
-        }
-
-        public FloatingLegBase withGearings(double gearing)
-        {
-            gearings_ = new List<double>() { gearing };
-            return this;
-        }
-
-        public FloatingLegBase withGearings(List<double> gearings)
-        {
-            gearings_ = gearings;
-            return this;
-        }
-
-        public FloatingLegBase withSpreads(double spread)
-        {
-            spreads_ = new List<double>() { spread };
-            return this;
-        }
-
-        public FloatingLegBase withSpreads(List<double> spreads)
-        {
-            spreads_ = spreads;
+            inArrears_ = flag;
             return this;
         }
 
         public FloatingLegBase withCaps(double? cap)
         {
-            caps_ = new List<double?>() { cap };
+            caps_ = new List<double?> { cap };
             return this;
         }
 
@@ -71,9 +35,21 @@ namespace QLNet.Cashflows
             return this;
         }
 
+        public FloatingLegBase withFixingDays(int fixingDays)
+        {
+            fixingDays_ = new List<int> { fixingDays };
+            return this;
+        }
+
+        public FloatingLegBase withFixingDays(List<int> fixingDays)
+        {
+            fixingDays_ = fixingDays;
+            return this;
+        }
+
         public FloatingLegBase withFloors(double? floor)
         {
-            floors_ = new List<double?>() { floor };
+            floors_ = new List<double?> { floor };
             return this;
         }
 
@@ -83,11 +59,34 @@ namespace QLNet.Cashflows
             return this;
         }
 
-        public FloatingLegBase inArrears() => inArrears(true);
-
-        public FloatingLegBase inArrears(bool flag)
+        public FloatingLegBase withGearings(double gearing)
         {
-            inArrears_ = flag;
+            gearings_ = new List<double> { gearing };
+            return this;
+        }
+
+        public FloatingLegBase withGearings(List<double> gearings)
+        {
+            gearings_ = gearings;
+            return this;
+        }
+
+        // initializers
+        public FloatingLegBase withPaymentDayCounter(DayCounter dayCounter)
+        {
+            paymentDayCounter_ = dayCounter;
+            return this;
+        }
+
+        public FloatingLegBase withSpreads(double spread)
+        {
+            spreads_ = new List<double> { spread };
+            return this;
+        }
+
+        public FloatingLegBase withSpreads(List<double> spreads)
+        {
+            spreads_ = spreads;
             return this;
         }
 

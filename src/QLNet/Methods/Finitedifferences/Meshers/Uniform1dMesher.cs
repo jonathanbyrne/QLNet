@@ -17,15 +17,18 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Methods.Finitedifferences.Meshers
 {
     /// <summary>
-    ///  One-dimensional simple uniform grid mesher
+    ///     One-dimensional simple uniform grid mesher
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class Uniform1dMesher : Fdm1dMesher
+    [PublicAPI]
+    public class Uniform1dMesher : Fdm1dMesher
     {
         public Uniform1dMesher(double start, double end, int size)
-           : base(size)
+            : base(size)
         {
             Utils.QL_REQUIRE(end > start, () => "end must be large than start");
 

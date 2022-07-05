@@ -1,11 +1,17 @@
-﻿namespace QLNet.Math.Distributions
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.Distributions
 {
-    [JetBrains.Annotations.PublicAPI] public class CumulativeNormalDistribution : IValue
+    [PublicAPI]
+    public class CumulativeNormalDistribution : IValue
     {
         private double average_, sigma_;
         private NormalDistribution gaussian_ = new NormalDistribution();
 
-        public CumulativeNormalDistribution() : this(0.0, 1.0) { }
+        public CumulativeNormalDistribution() : this(0.0, 1.0)
+        {
+        }
+
         public CumulativeNormalDistribution(double average, double sigma)
         {
             average_ = average;
@@ -14,19 +20,31 @@
             Utils.QL_REQUIRE(sigma_ > 0.0, () => "sigma must be greater than 0.0 (" + sigma_ + " not allowed)");
         }
 
+        public double derivative(double x)
+        {
+            var xn = (x - average_) / sigma_;
+            return gaussian_.value(xn) / sigma_;
+        }
+
         // function
         public double value(double z)
         {
             z = (z - average_) / sigma_;
 
             var result = 0.5 * (1.0 + erf(z * Const.M_SQRT_2));
-            if (result <= 1e-8)   //todo: investigate the threshold level
+            if (result <= 1e-8) //todo: investigate the threshold level
             {
                 // Asymptotic expansion for very negative z following (26.2.12)
                 // on page 408 in M. Abramowitz and A. Stegun,
                 // Pocketbook of Mathematical Functions, ISBN 3-87144818-4.
-                double sum = 1.0, zsqr = z * z, i = 1.0, g = 1.0, x, y,
-                    a = double.MaxValue, lasta;
+                double sum = 1.0,
+                    zsqr = z * z,
+                    i = 1.0,
+                    g = 1.0,
+                    x,
+                    y,
+                    a = double.MaxValue,
+                    lasta;
                 do
                 {
                     lasta = a;
@@ -37,20 +55,16 @@
                     g *= y;
                     ++i;
                     a = System.Math.Abs(a);
-                }
-                while (lasta > a && a >= System.Math.Abs(sum * Const.QL_EPSILON));
+                } while (lasta > a && a >= System.Math.Abs(sum * Const.QL_EPSILON));
+
                 result = -gaussian_.value(z) / z * sum;
             }
+
             return result;
         }
 
-        public double derivative(double x)
-        {
-            var xn = (x - average_) / sigma_;
-            return gaussian_.value(xn) / sigma_;
-        }
-
         #region Sun Microsystems method
+
         /*
         * ====================================================
         * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
@@ -61,7 +75,6 @@
         * is preserved.
         * ====================================================
         */
-
         /* double erf(double x)
         * double erfc(double x)
         *                           x
@@ -155,8 +168,7 @@
         *              erfc(0) = 1, erfc(inf) = 0, erfc(-inf) = 2,
         *              erfc/erf(NaN) is NaN
         */
-
-        const double tiny = Const.QL_EPSILON,
+        private const double tiny = Const.QL_EPSILON,
             one = 1.00000000000000000000e+00, /* 0x3FF00000, 0x00000000 */
             /* c = (float)0.84506291151 */
             erx = 8.45062911510467529297e-01, /* 0x3FEB0AC1, 0x60000000 */
@@ -234,48 +246,71 @@
 
             ax = System.Math.Abs(x);
 
-            if (ax < 0.84375)       /* |x|<0.84375 */
+            if (ax < 0.84375) /* |x|<0.84375 */
             {
-                if (ax < 3.7252902984e-09)  /* |x|<2**-28 */
+                if (ax < 3.7252902984e-09) /* |x|<2**-28 */
                 {
                     if (ax < double.MinValue * 16)
+                    {
                         return 0.125 * (8.0 * x + efx8 * x); /*avoid underflow */
+                    }
+
                     return x + efx * x;
                 }
+
                 z = x * x;
                 r = pp0 + z * (pp1 + z * (pp2 + z * (pp3 + z * pp4)));
                 s = one + z * (qq1 + z * (qq2 + z * (qq3 + z * (qq4 + z * qq5))));
                 y = r / s;
                 return x + x * y;
             }
-            if (ax < 1.25)      /* 0.84375 <= |x| < 1.25 */
+
+            if (ax < 1.25) /* 0.84375 <= |x| < 1.25 */
             {
                 s = ax - one;
                 P = pa0 + s * (pa1 + s * (pa2 + s * (pa3 + s * (pa4 + s * (pa5 + s * pa6)))));
                 Q = one + s * (qa1 + s * (qa2 + s * (qa3 + s * (qa4 + s * (qa5 + s * qa6)))));
-                if (x >= 0) return erx + P / Q; else return -erx - P / Q;
+                if (x >= 0)
+                {
+                    return erx + P / Q;
+                }
+
+                return -erx - P / Q;
             }
-            if (ax >= 6)        /* inf>|x|>=6 */
+
+            if (ax >= 6) /* inf>|x|>=6 */
             {
-                if (x >= 0) return one - tiny; else return tiny - one;
+                if (x >= 0)
+                {
+                    return one - tiny;
+                }
+
+                return tiny - one;
             }
 
             /* Starts to lose accuracy when ax~5 */
             s = one / (ax * ax);
 
-            if (ax < 2.85714285714285)  /* |x| < 1/0.35 */
+            if (ax < 2.85714285714285) /* |x| < 1/0.35 */
             {
                 R = ra0 + s * (ra1 + s * (ra2 + s * (ra3 + s * (ra4 + s * (ra5 + s * (ra6 + s * ra7))))));
                 S = one + s * (sa1 + s * (sa2 + s * (sa3 + s * (sa4 + s * (sa5 + s * (sa6 + s * (sa7 + s * sa8)))))));
             }
-            else        /* |x| >= 1/0.35 */
+            else /* |x| >= 1/0.35 */
             {
                 R = rb0 + s * (rb1 + s * (rb2 + s * (rb3 + s * (rb4 + s * (rb5 + s * rb6)))));
                 S = one + s * (sb1 + s * (sb2 + s * (sb3 + s * (sb4 + s * (sb5 + s * (sb6 + s * sb7))))));
             }
+
             r = System.Math.Exp(-ax * ax - 0.5625 + R / S);
-            if (x >= 0) return one - r / ax; else return r / ax - one;
+            if (x >= 0)
+            {
+                return one - r / ax;
+            }
+
+            return r / ax - one;
         }
+
         #endregion
     }
 }

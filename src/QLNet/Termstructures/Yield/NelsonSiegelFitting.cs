@@ -1,13 +1,16 @@
-﻿using QLNet.Math;
+﻿using JetBrains.Annotations;
+using QLNet.Math;
 using QLNet.Math.Optimization;
 
 namespace QLNet.Termstructures.Yield
 {
-    [JetBrains.Annotations.PublicAPI] public class NelsonSiegelFitting : FittedBondDiscountCurve.FittingMethod
+    [PublicAPI]
+    public class NelsonSiegelFitting : FittedBondDiscountCurve.FittingMethod
     {
         public NelsonSiegelFitting(Vector weights = null, OptimizationMethod optimizationMethod = null)
             : base(true, weights, optimizationMethod)
-        { }
+        {
+        }
 
         public override FittedBondDiscountCurve.FittingMethod clone() => MemberwiseClone() as FittedBondDiscountCurve.FittingMethod;
 

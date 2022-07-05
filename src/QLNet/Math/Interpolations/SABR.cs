@@ -1,11 +1,28 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math.Optimization;
 using QLNet.Termstructures.Volatility.Optionlet;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class SABR
+    [PublicAPI]
+    public class SABR
     {
+        public const bool global = true;
+        private double alpha_, beta_, nu_, rho_;
+        private bool alphaIsFixed_, betaIsFixed_, nuIsFixed_, rhoIsFixed_;
+        private SabrApproximationModel approximationModel_;
+        private EndCriteria endCriteria_;
+        private double errorAccept_;
+        private double forward_;
+        private int maxGuesses_;
+        private OptimizationMethod optMethod_;
+        private double shift_;
+        private double t_;
+        private bool useMaxError_;
+        private bool vegaWeighted_;
+        private VolatilityType volatilityType_;
+
         public SABR(double t, double forward, double alpha, double beta, double nu, double rho,
             bool alphaIsFixed, bool betaIsFixed, bool nuIsFixed, bool rhoIsFixed,
             bool vegaWeighted = false,
@@ -41,21 +58,5 @@ namespace QLNet.Math.Interpolations
                 alphaIsFixed_, betaIsFixed_, nuIsFixed_, rhoIsFixed_, vegaWeighted_,
                 endCriteria_, optMethod_, errorAccept_, useMaxError_, maxGuesses_, shift_,
                 volatilityType_, approximationModel_);
-
-        public const bool global = true;
-
-        private double t_;
-        private double shift_;
-        private double forward_;
-        private double alpha_, beta_, nu_, rho_;
-        private bool alphaIsFixed_, betaIsFixed_, nuIsFixed_, rhoIsFixed_;
-        private bool vegaWeighted_;
-        private EndCriteria endCriteria_;
-        private OptimizationMethod optMethod_;
-        private double errorAccept_;
-        private bool useMaxError_;
-        private int maxGuesses_;
-        private VolatilityType volatilityType_;
-        private SabrApproximationModel approximationModel_;
     }
 }

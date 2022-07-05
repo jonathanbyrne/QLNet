@@ -1,10 +1,16 @@
-﻿using QLNet.Instruments;
+﻿using JetBrains.Annotations;
+using QLNet.Instruments;
 using QLNet.processes;
 
 namespace QLNet.Pricingengines.barrier
 {
-    [JetBrains.Annotations.PublicAPI] public class AnalyticDoubleBarrierBinaryEngineHelper
+    [PublicAPI]
+    public class AnalyticDoubleBarrierBinaryEngineHelper
     {
+        protected DoubleBarrierOption.Arguments arguments_;
+        protected CashOrNothingPayoff payoff_;
+        protected GeneralizedBlackScholesProcess process_;
+
         public AnalyticDoubleBarrierBinaryEngineHelper(
             GeneralizedBlackScholesProcess process,
             CashOrNothingPayoff payoff,
@@ -66,16 +72,17 @@ namespace QLNet.Pricingengines.barrier
             Utils.QL_REQUIRE(System.Math.Abs(term) < requiredConvergence, () => "serie did not converge sufficiently fast");
 
             if (barrierType == DoubleBarrier.Type.KnockOut)
-                return System.Math.Max(tot, 0.0); // KO
-            else
             {
-                var discount = process_.riskFreeRate().currentLink().discount(
-                    arguments_.exercise.lastDate());
-                Utils.QL_REQUIRE(discount > 0.0,
-                    () => "positive discount required");
-                return System.Math.Max(cash * discount - tot, 0.0); // KI
+                return System.Math.Max(tot, 0.0); // KO
             }
+
+            var discount = process_.riskFreeRate().currentLink().discount(
+                arguments_.exercise.lastDate());
+            Utils.QL_REQUIRE(discount > 0.0,
+                () => "positive discount required");
+            return System.Math.Max(cash * discount - tot, 0.0); // KI
         }
+
         // helper object methods
         public double payoffKIKO(double spot, double variance,
             DoubleBarrier.Type barrierType,
@@ -96,7 +103,9 @@ namespace QLNet.Pricingengines.barrier
             var barrier_lo = arguments_.barrier_lo.Value;
             var barrier_hi = arguments_.barrier_hi.Value;
             if (barrierType == DoubleBarrier.Type.KOKI)
+            {
                 Utils.swap(ref barrier_lo, ref barrier_hi);
+            }
 
             var sigmaq = variance / residualTime;
             var r = process_.riskFreeRate().currentLink().zeroRate(residualTime, Compounding.Continuous,
@@ -119,6 +128,7 @@ namespace QLNet.Pricingengines.barrier
                 term = 2.0 / (i * Const.M_PI) * term1 * term2;
                 tot += term;
             }
+
             tot += 1 - log_S_L / Z;
             tot *= cash * System.Math.Pow(spot / barrier_lo, alpha);
 
@@ -127,9 +137,5 @@ namespace QLNet.Pricingengines.barrier
 
             return System.Math.Max(tot, 0.0);
         }
-
-        protected GeneralizedBlackScholesProcess process_;
-        protected CashOrNothingPayoff payoff_;
-        protected DoubleBarrierOption.Arguments arguments_;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Indexes;
 using QLNet.Time;
@@ -6,7 +7,8 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class CPILeg : CPILegBase
+    [PublicAPI]
+    public class CPILeg : CPILegBase
     {
         public CPILeg(Schedule schedule,
             ZeroInflationIndex index,
@@ -20,10 +22,10 @@ namespace QLNet.Cashflows
             paymentDayCounter_ = new Thirty360();
             paymentAdjustment_ = BusinessDayConvention.ModifiedFollowing;
             paymentCalendar_ = schedule.calendar();
-            fixingDays_ = new List<int>() { 0 };
+            fixingDays_ = new List<int> { 0 };
             observationInterpolation_ = InterpolationType.AsIndex;
             subtractInflationNominal_ = true;
-            spreads_ = new List<double>() { 0 };
+            spreads_ = new List<double> { 0 };
         }
 
         public override List<CashFlow> value()
@@ -59,11 +61,13 @@ namespace QLNet.Cashflows
                         var bdc = schedule_.businessDayConvention();
                         refStart = schedule_.calendar().adjust(end - schedule_.tenor(), bdc);
                     }
+
                     if (i == n - 1 && !schedule_.isRegular(i + 1))
                     {
                         var bdc = schedule_.businessDayConvention();
                         refEnd = schedule_.calendar().adjust(start + schedule_.tenor(), bdc);
                     }
+
                     if (fixedRates_.Get(i, 1.0).IsEqual(0.0))
                     {
                         // fixed coupon
@@ -79,7 +83,7 @@ namespace QLNet.Cashflows
                             // just swaplet
                             CPICoupon coup;
 
-                            coup = new CPICoupon(baseCPI_,    // all have same base for ratio
+                            coup = new CPICoupon(baseCPI_, // all have same base for ratio
                                 paymentDate,
                                 notionals_.Get(i, 0.0),
                                 start, end,
@@ -96,7 +100,6 @@ namespace QLNet.Cashflows
                             var pricer = new CPICouponPricer();
                             coup.setPricer(pricer);
                             leg.Add(coup);
-
                         }
                         else
                         {

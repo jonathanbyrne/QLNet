@@ -1252,9 +1252,13 @@ namespace QLNet.Tests
             {
                 var d = schedule.date(i);
                 if (d.Month == 2 && d.Day == 29)
+                {
                     dates.Add(new Date(28, Month.February, d.Year));
+                }
                 else
+                {
                     dates.Add(d);
+                }
             }
 
             schedule = new Schedule(dates,
@@ -1329,7 +1333,9 @@ namespace QLNet.Tests
             Date datedDate = Convert.ToDateTime(AccrualDate, new CultureInfo("en-US"));
             Date firstCouponDate = null;
             if (FirstCouponDate != string.Empty)
+            {
                 firstCouponDate = Convert.ToDateTime(FirstCouponDate, new CultureInfo("en-US"));
+            }
 
             Coupon = Coupon / 100;
 
@@ -1350,21 +1356,26 @@ namespace QLNet.Tests
 
             var accruedInterest = CashFlows.accruedAmount(bond.cashflows(), false, settlementDate);
             if (System.Math.Abs(accruedInterest - expectedAccruedInterest) > 1e-2)
+            {
                 QAssert.Fail("Failed to reproduce accrual interest at " + settlementDate
-                             + "\n    calculated: " + accruedInterest
-                             + "\n    expected:   " + expectedAccruedInterest);
+                                                                        + "\n    calculated: " + accruedInterest
+                                                                        + "\n    expected:   " + expectedAccruedInterest);
+            }
 
             var accruedDaysAndAmount = CashFlows.accruedDaysAndAmount(bond.cashflows(), false, settlementDate);
             if (System.Math.Abs(accruedDaysAndAmount.accruedAmount - expectedAccruedInterest) > 1e-2)
+            {
                 QAssert.Fail("Failed to reproduce accrual interest at " + settlementDate
-                             + "\n    calculated: " + accruedInterest
-                             + "\n    expected:   " + expectedAccruedInterest);
+                                                                        + "\n    calculated: " + accruedInterest
+                                                                        + "\n    expected:   " + expectedAccruedInterest);
+            }
 
             if (accruedDaysAndAmount.accruedDays != expectedAccruedDays)
+            {
                 QAssert.Fail("Failed to reproduce accrual days at " + settlementDate
-                            + "\n    calculated: " + accruedDaysAndAmount.accruedDays
-                            + "\n    expected:   " + expectedAccruedDays);
-
+                                                                    + "\n    calculated: " + accruedDaysAndAmount.accruedDays
+                                                                    + "\n    expected:   " + expectedAccruedDays);
+            }
         }
 
         public struct test_case
@@ -1483,48 +1494,60 @@ namespace QLNet.Tests
             {
                 var accrued = bond.accruedAmount(cases[i].settlementDate);
                 if (System.Math.Abs(accrued - cases[i].accruedAmount) > 1e-6)
+                {
                     QAssert.Fail("Failed to reproduce accrued amount at " + cases[i].settlementDate
-                                 + "\n    calculated: " + accrued
-                                 + "\n    expected:   " + cases[i].accruedAmount);
+                                                                          + "\n    calculated: " + accrued
+                                                                          + "\n    expected:   " + cases[i].accruedAmount);
+                }
 
                 var npv = cases[i].testPrice + accrued;
                 if (System.Math.Abs(npv - cases[i].NPV) > 1e-6)
+                {
                     QAssert.Fail("Failed to reproduce NPV at " + cases[i].settlementDate
-                                 + "\n    calculated: " + npv
-                                 + "\n    expected:   " + cases[i].NPV);
+                                                               + "\n    calculated: " + npv
+                                                               + "\n    expected:   " + cases[i].NPV);
+                }
 
                 var yield = CashFlows.yield(leg, npv, dc, comp, freq, false, cases[i].settlementDate);
                 if (System.Math.Abs(yield - cases[i].yield) > 1e-6)
+                {
                     QAssert.Fail("Failed to reproduce yield at " + cases[i].settlementDate
-                                 + "\n    calculated: " + yield
-                                 + "\n    expected:   " + cases[i].yield);
-
+                                                                 + "\n    calculated: " + yield
+                                                                 + "\n    expected:   " + cases[i].yield);
+                }
 
                 var duration = CashFlows.duration(leg, yield, dc, comp, freq, Duration.Type.Modified, false, cases[i].settlementDate);
                 if (System.Math.Abs(duration - cases[i].duration) > 1e-6)
+                {
                     QAssert.Fail("Failed to reproduce duration at " + cases[i].settlementDate
-                                 + "\n    calculated: " + duration
-                                 + "\n    expected:   " + cases[i].duration);
+                                                                    + "\n    calculated: " + duration
+                                                                    + "\n    expected:   " + cases[i].duration);
+                }
 
                 var convexity = CashFlows.convexity(leg, yield, dc, comp, freq, false, cases[i].settlementDate);
                 if (System.Math.Abs(convexity - cases[i].convexity) > 1e-6)
+                {
                     QAssert.Fail("Failed to reproduce convexity at " + cases[i].settlementDate
-                                 + "\n    calculated: " + convexity
-                                 + "\n    expected:   " + cases[i].convexity);
+                                                                     + "\n    calculated: " + convexity
+                                                                     + "\n    expected:   " + cases[i].convexity);
+                }
 
                 var calcnpv = CashFlows.npv(leg, yield, dc, comp, freq, false, cases[i].settlementDate);
                 if (System.Math.Abs(calcnpv - cases[i].NPV) > 1e-6)
+                {
                     QAssert.Fail("Failed to reproduce NPV from yield at " + cases[i].settlementDate
-                                 + "\n    calculated: " + calcnpv
-                                 + "\n    expected:   " + cases[i].NPV);
+                                                                          + "\n    calculated: " + calcnpv
+                                                                          + "\n    expected:   " + cases[i].NPV);
+                }
 
                 var calcprice = calcnpv - accrued;
 
                 if (System.Math.Abs(calcprice - cases[i].testPrice) > 1e-6)
+                {
                     QAssert.Fail("Failed to reproduce price from yield at " + cases[i].settlementDate
-                                 + "\n    calculated: " + calcprice
-                                 + "\n    expected:   " + cases[i].testPrice);
-
+                                                                            + "\n    calculated: " + calcprice
+                                                                            + "\n    expected:   " + cases[i].testPrice);
+                }
             }
         }
 
@@ -1618,46 +1641,59 @@ namespace QLNet.Tests
             {
                 var accrued = bond.accruedAmount(cases[i].settlementDate);
                 if (System.Math.Abs(accrued - cases[i].accruedAmount) > 1e-3)
+                {
                     QAssert.Fail("Failed to reproduce accrued amount at " + cases[i].settlementDate
-                                 + "\n    calculated: " + accrued
-                                 + "\n    expected:   " + cases[i].accruedAmount);
+                                                                          + "\n    calculated: " + accrued
+                                                                          + "\n    expected:   " + cases[i].accruedAmount);
+                }
 
                 var npv = cases[i].testPrice + accrued;
                 if (System.Math.Abs(npv - cases[i].NPV) > 1e-3)
+                {
                     QAssert.Fail("Failed to reproduce NPV at " + cases[i].settlementDate
-                                 + "\n    calculated: " + npv
-                                 + "\n    expected:   " + cases[i].NPV);
-
+                                                               + "\n    calculated: " + npv
+                                                               + "\n    expected:   " + cases[i].NPV);
+                }
 
                 var yield = CashFlows.yield(leg, npv, dc, comp, freq, false, cases[i].settlementDate);
                 if (System.Math.Abs(yield - cases[i].yield) > 1e-3)
+                {
                     QAssert.Fail("Failed to reproduce yield at " + cases[i].settlementDate
-                                 + "\n    calculated: " + yield
-                                 + "\n    expected:   " + cases[i].yield);
+                                                                 + "\n    calculated: " + yield
+                                                                 + "\n    expected:   " + cases[i].yield);
+                }
 
                 var duration = CashFlows.duration(leg, yield, dc, comp, freq, Duration.Type.Modified, false, cases[i].settlementDate);
                 if (System.Math.Abs(duration - cases[i].duration) > 1e-5)
+                {
                     QAssert.Fail("Failed to reproduce duration at " + cases[i].settlementDate
-                                 + "\n    calculated: " + duration
-                                 + "\n    expected:   " + cases[i].duration);
+                                                                    + "\n    calculated: " + duration
+                                                                    + "\n    expected:   " + cases[i].duration);
+                }
 
                 var convexity = CashFlows.convexity(leg, yield, dc, comp, freq, false, cases[i].settlementDate);
                 if (System.Math.Abs(convexity - cases[i].convexity) > 1e-4)
+                {
                     QAssert.Fail("Failed to reproduce convexity at " + cases[i].settlementDate
-                                 + "\n    calculated: " + convexity
-                                 + "\n    expected:   " + cases[i].convexity);
+                                                                     + "\n    calculated: " + convexity
+                                                                     + "\n    expected:   " + cases[i].convexity);
+                }
 
                 var calcnpv = CashFlows.npv(leg, yield, dc, comp, freq, false, cases[i].settlementDate);
                 if (System.Math.Abs(calcnpv - cases[i].NPV) > 1e-3)
+                {
                     QAssert.Fail("Failed to reproduce NPV from yield at " + cases[i].settlementDate
-                                 + "\n    calculated: " + calcnpv
-                                 + "\n    expected:   " + cases[i].NPV);
+                                                                          + "\n    calculated: " + calcnpv
+                                                                          + "\n    expected:   " + cases[i].NPV);
+                }
 
                 var calcprice = calcnpv - accrued;
                 if (System.Math.Abs(calcprice - cases[i].testPrice) > 1e-3)
+                {
                     QAssert.Fail("Failed to reproduce price from yield at " + cases[i].settlementDate
-                                 + "\n    calculated: " + calcprice
-                                 + "\n    expected:   " + cases[i].testPrice);
+                                                                            + "\n    calculated: " + calcprice
+                                                                            + "\n    expected:   " + cases[i].testPrice);
+                }
             }
         }
 
@@ -1686,28 +1722,36 @@ namespace QLNet.Tests
 
             var yield = BondFunctions.yield(fixedRateBond, cleanPrice, dayCounter, compounding, Frequency.Semiannual, settlement);
             if (System.Math.Abs(yield - 0.015) > 1e-4)
+            {
                 QAssert.Fail("Failed to yield at " + settlement
-                             + "\n    calculated: " + yield
-                             + "\n    expected:   " + "0.015");
+                                                   + "\n    calculated: " + yield
+                                                   + "\n    expected:   " + "0.015");
+            }
 
             var duration = BondFunctions.duration(fixedRateBond, new InterestRate(yield, dayCounter, compounding, Frequency.Semiannual),
                                                      Duration.Type.Macaulay, settlement);
             if (System.Math.Abs(duration - 1.022) > 1e-3)
+            {
                 QAssert.Fail("Failed to reproduce duration at " + settlement
-                             + "\n    calculated: " + duration
-                             + "\n    expected:   " + "1.022");
+                                                                + "\n    calculated: " + duration
+                                                                + "\n    expected:   " + "1.022");
+            }
 
             var convexity = BondFunctions.convexity(fixedRateBond, new InterestRate(yield, dayCounter, compounding, Frequency.Semiannual), settlement) / 100;
             if (System.Math.Abs(convexity - 0.015) > 1e-3)
+            {
                 QAssert.Fail("Failed to reproduce convexity at " + settlement
-                             + "\n    calculated: " + convexity
-                             + "\n    expected:   " + "0.015");
+                                                                 + "\n    calculated: " + convexity
+                                                                 + "\n    expected:   " + "0.015");
+            }
 
             var accrued = BondFunctions.accruedAmount(fixedRateBond, settlement);
             if (System.Math.Abs(accrued - 0.7) > 1e-6)
+            {
                 QAssert.Fail("Failed to reproduce accrued at " + settlement
-                             + "\n    calculated: " + accrued
-                             + "\n    expected:   " + "0.7");
+                                                               + "\n    calculated: " + accrued
+                                                               + "\n    expected:   " + "0.7");
+            }
         }
 
         [Theory]
@@ -1757,9 +1801,11 @@ namespace QLNet.Tests
             var duration = BondFunctions.duration(bond, yield, dc, comp, freq, Duration.Type.Modified, settlementDate);
 
             if (System.Math.Abs(duration - ExpectedModifiedDuration) > 1e-3)
+            {
                 QAssert.Fail("Failed to reproduce modified duration for cusip " + Cusip + " at " + SettlementDate
                              + "\n    calculated: " + duration
                              + "\n    expected:   " + ExpectedModifiedDuration);
+            }
         }
 
         public struct SteppedCoupon
@@ -1795,7 +1841,9 @@ namespace QLNet.Tests
             Date datedDate = Convert.ToDateTime(AccrualDate, new CultureInfo("en-US"));
             Date firstCouponDate = null;
             if (FirstCouponDate != string.Empty)
+            {
                 firstCouponDate = Convert.ToDateTime(FirstCouponDate, new CultureInfo("en-US"));
+            }
 
             Coupon = Coupon / 100;
 
@@ -1829,16 +1877,20 @@ namespace QLNet.Tests
             var ytm = bond.yield(Price, dc, comp, freq, settlementDate);
 
             if (System.Math.Abs(ytm - expectedYtm) > 1e-4)
+            {
                 QAssert.Fail("Failed to reproduce ytm  at " + settlementDate
-                             + "\n    calculated: " + ytm
-                             + "\n    expected:   " + expectedYtm);
+                                                            + "\n    calculated: " + ytm
+                                                            + "\n    expected:   " + expectedYtm);
+            }
 
             var accruedInterest = CashFlows.accruedAmount(bond.cashflows(), false, settlementDate);
 
             if (System.Math.Abs(accruedInterest - expectedAccruedInterest) > 1e-2)
+            {
                 QAssert.Fail("Failed to reproduce accrual interest at " + settlementDate
-                             + "\n    calculated: " + accruedInterest
-                             + "\n    expected:   " + expectedAccruedInterest);
+                                                                        + "\n    calculated: " + accruedInterest
+                                                                        + "\n    expected:   " + expectedAccruedInterest);
+            }
 
             // Sample 1 - change settlment date and price
             // same results expected
@@ -1849,16 +1901,20 @@ namespace QLNet.Tests
             ytm = bond.yield(Price, dc, comp, freq, settlementDate);
 
             if (System.Math.Abs(ytm - expectedYtm) > 1e-4)
+            {
                 QAssert.Fail("Failed to reproduce ytm  at " + settlementDate
-                             + "\n    calculated: " + ytm
-                             + "\n    expected:   " + expectedYtm);
+                                                            + "\n    calculated: " + ytm
+                                                            + "\n    expected:   " + expectedYtm);
+            }
 
             accruedInterest = CashFlows.accruedAmount(bond.cashflows(), false, settlementDate);
 
             if (System.Math.Abs(accruedInterest - expectedAccruedInterest) > 1e-2)
+            {
                 QAssert.Fail("Failed to reproduce accrual interest at " + settlementDate
-                             + "\n    calculated: " + accruedInterest
-                             + "\n    expected:   " + expectedAccruedInterest);
+                                                                        + "\n    calculated: " + accruedInterest
+                                                                        + "\n    expected:   " + expectedAccruedInterest);
+            }
 
             // Sample 2
             Coupon = 0.0;
@@ -1876,7 +1932,9 @@ namespace QLNet.Tests
             datedDate = Convert.ToDateTime(AccrualDate, new CultureInfo("en-US"));
             firstCouponDate = null;
             if (FirstCouponDate != string.Empty)
+            {
                 firstCouponDate = Convert.ToDateTime(FirstCouponDate, new CultureInfo("en-US"));
+            }
 
             Coupon = Coupon / 100;
 
@@ -1898,16 +1956,20 @@ namespace QLNet.Tests
             ytm = bond2.yield(Price, dc, comp, freq, settlementDate);
 
             if (System.Math.Abs(ytm - expectedYtm) > 1e-4)
+            {
                 QAssert.Fail("Failed to reproduce ytm  at " + settlementDate
-                             + "\n    calculated: " + ytm
-                             + "\n    expected:   " + expectedYtm);
+                                                            + "\n    calculated: " + ytm
+                                                            + "\n    expected:   " + expectedYtm);
+            }
 
             accruedInterest = CashFlows.accruedAmount(bond2.cashflows(), false, settlementDate);
 
             if (System.Math.Abs(accruedInterest - expectedAccruedInterest) > 1e-2)
+            {
                 QAssert.Fail("Failed to reproduce accrual interest at " + settlementDate
-                             + "\n    calculated: " + accruedInterest
-                             + "\n    expected:   " + expectedAccruedInterest);
+                                                                        + "\n    calculated: " + accruedInterest
+                                                                        + "\n    expected:   " + expectedAccruedInterest);
+            }
         }
 
         [Theory]
@@ -1923,7 +1985,9 @@ namespace QLNet.Tests
             Date datedDate = Convert.ToDateTime(AccrualDate, new CultureInfo("en-US"));
             Date firstCouponDate = null;
             if (FirstCouponDate != string.Empty)
+            {
                 firstCouponDate = Convert.ToDateTime(FirstCouponDate, new CultureInfo("en-US"));
+            }
 
             Coupon = Coupon / 100;
 

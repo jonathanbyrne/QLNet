@@ -17,10 +17,10 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System;
 using QLNet.Math;
 using QLNet.Models.Shortrate;
 using QLNet.processes;
-using System;
 
 namespace QLNet.Methods.Finitedifferences
 {
@@ -33,7 +33,7 @@ namespace QLNet.Methods.Finitedifferences
     public static class OperatorFactory
     {
         public static TridiagonalOperator getOperator(GeneralizedBlackScholesProcess process, Vector grid,
-                                                      double residualTime, bool timeDependent)
+            double residualTime, bool timeDependent)
         {
             if (timeDependent)
                 //! Black-Scholes-Merton differential operator
@@ -41,7 +41,10 @@ namespace QLNet.Methods.Finitedifferences
 
                     \test coefficients are tested against constant BSM operator
                 */
+            {
                 return new PdeOperator<PdeBSM>(grid, process, residualTime);
+            }
+
             return new BSMOperator(grid, process, residualTime);
         }
 

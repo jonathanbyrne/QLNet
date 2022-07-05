@@ -19,42 +19,59 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Math;
-using QLNet.Time;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Math;
+using QLNet.Time;
 
 namespace QLNet.Termstructures.Yield
 {
-    [JetBrains.Annotations.PublicAPI] public class Discount : ITraits<YieldTermStructure>
+    [PublicAPI]
+    public class Discount : ITraits<YieldTermStructure>
     {
-        const double maxRate = 1;
-        const double avgRate = 0.05;
-        public Date initialDate(YieldTermStructure c) => c.referenceDate(); // start of curve data
-        public double initialValue(YieldTermStructure c) => 1; // value at reference date
-                                                                            // update with new guess
-        public void updateGuess(List<double> data, double discount, int i) { data[i] = discount; }
-        public int maxIterations() => 100; // upper bound for convergence loop
+        private const double avgRate = 0.05;
+        private const double maxRate = 1;
 
         public double discountImpl(Interpolation i, double t) => i.value(t, true);
-
-        public double zeroYieldImpl(Interpolation i, double t) => throw new NotSupportedException();
 
         public double forwardImpl(Interpolation i, double t) => throw new NotSupportedException();
 
         public double guess(int i, InterpolatedCurve c, bool validData, int f)
         {
-            if (validData)   // previous iteration value
+            if (validData) // previous iteration value
+            {
                 return c.data()[i];
+            }
 
-            if (i == 1)   // first pillar
+            if (i == 1) // first pillar
+            {
                 return 1.0 / (1.0 + avgRate * c.times()[1]);
+            }
 
             // flat rate extrapolation
             var r = -System.Math.Log(c.data()[i - 1]) / c.times()[i - 1];
             return System.Math.Exp(-r * c.times()[i]);
         }
+
+        public Date initialDate(YieldTermStructure c) => c.referenceDate(); // start of curve data
+
+        public double initialValue(YieldTermStructure c) => 1; // value at reference date
+
+        public int maxIterations() => 100; // upper bound for convergence loop
+
+        public double maxValueAfter(int i, InterpolatedCurve c, bool validData, int f)
+        {
+#if QL_NEGATIVE_RATES
+            var dt = c.times()[i] - c.times()[i - 1];
+            return c.data()[i - 1] * System.Math.Exp(maxRate * dt);
+#else
+         // discounts cannot increase
+         return c.data()[i - 1];
+#endif
+        }
+
         public double minValueAfter(int i, InterpolatedCurve c, bool validData, int f)
         {
             if (validData)
@@ -65,21 +82,18 @@ namespace QLNet.Termstructures.Yield
             return c.data().Last() / 2.0;
 #endif
             }
+
             var dt = c.times()[i] - c.times()[i - 1];
             return c.data()[i - 1] * System.Math.Exp(-maxRate * dt);
         }
-        public double maxValueAfter(int i, InterpolatedCurve c, bool validData, int f)
+
+        // update with new guess
+        public void updateGuess(List<double> data, double discount, int i)
         {
-
-#if QL_NEGATIVE_RATES
-            var dt = c.times()[i] - c.times()[i - 1];
-            return c.data()[i - 1] * System.Math.Exp(maxRate * dt);
-#else
-         // discounts cannot increase
-         return c.data()[i - 1];
-#endif
-
+            data[i] = discount;
         }
+
+        public double zeroYieldImpl(Interpolation i, double t) => throw new NotSupportedException();
     }
 
     //! Zero-curve traits

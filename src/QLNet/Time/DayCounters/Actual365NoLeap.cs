@@ -17,6 +17,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Time.DayCounters
 {
     //! Actual/365 (No Leap) day count convention
@@ -25,23 +27,24 @@ namespace QLNet.Time.DayCounters
 
        \ingroup daycounters
     */
-    [JetBrains.Annotations.PublicAPI] public class Actual365NoLeap : DayCounter
+    [PublicAPI]
+    public class Actual365NoLeap : DayCounter
     {
-        public Actual365NoLeap() : base(Impl.Singleton) { }
-
-        class Impl : DayCounter
+        private class Impl : DayCounter
         {
             public static readonly Impl Singleton = new Impl();
-            private static int[] MonthOffset = { 0,  31,  59,  90, 120, 151,  // Jan - Jun
-                                              181, 212, 243, 273, 304, 334   // Jun - Dec
-                                            };
-            private Impl() { }
+            private static readonly int[] MonthOffset =
+            {
+                0, 31, 59, 90, 120, 151, // Jan - Jun
+                181, 212, 243, 273, 304, 334 // Jun - Dec
+            };
 
-            public override string name() => "Actual/365 (NL)";
+            private Impl()
+            {
+            }
 
             public override int dayCount(Date d1, Date d2)
             {
-
                 int s1, s2;
 
                 s1 = d1.Day + MonthOffset[d1.month() - 1] + d1.year() * 365;
@@ -59,7 +62,14 @@ namespace QLNet.Time.DayCounters
 
                 return s2 - s1;
             }
+
+            public override string name() => "Actual/365 (NL)";
+
             public override double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd) => dayCount(d1, d2) / 365.0;
+        }
+
+        public Actual365NoLeap() : base(Impl.Singleton)
+        {
         }
     }
 }

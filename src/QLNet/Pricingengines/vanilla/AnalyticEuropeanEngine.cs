@@ -16,11 +16,10 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.Pricingengines;
 using QLNet.processes;
-using QLNet.Time;
-using System;
 
 namespace QLNet.Pricingengines.vanilla
 {
@@ -51,7 +50,8 @@ namespace QLNet.Pricingengines.vanilla
           cash-or-nothing digital payoff is tested by reproducing
           numerical derivatives.
     */
-    [JetBrains.Annotations.PublicAPI] public class AnalyticEuropeanEngine : OneAssetOption.Engine
+    [PublicAPI]
+    public class AnalyticEuropeanEngine : OneAssetOption.Engine
     {
         private GeneralizedBlackScholesProcess process_;
 
@@ -64,7 +64,6 @@ namespace QLNet.Pricingengines.vanilla
 
         public override void calculate()
         {
-
             Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
 
             var payoff = arguments_.payoff as StrikedTypePayoff;

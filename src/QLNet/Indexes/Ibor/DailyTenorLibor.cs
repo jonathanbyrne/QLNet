@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Indexes;
 using QLNet.Termstructures;
@@ -6,7 +7,8 @@ using QLNet.Time.Calendars;
 
 namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public class DailyTenorLibor : IborIndex
+    [PublicAPI]
+    public class DailyTenorLibor : IborIndex
     {
         // http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1412 :
         // no o/n or s/n fixings (as the case may be) will take place
@@ -15,7 +17,8 @@ namespace QLNet
         public DailyTenorLibor(string familyName, int settlementDays, Currency currency, Calendar financialCenterCalendar,
             DayCounter dayCounter)
             : this(familyName, settlementDays, currency, financialCenterCalendar, dayCounter, new Handle<YieldTermStructure>())
-        {}
+        {
+        }
 
         public DailyTenorLibor(string familyName, int settlementDays, Currency currency, Calendar financialCenterCalendar,
             DayCounter dayCounter, Handle<YieldTermStructure> h)

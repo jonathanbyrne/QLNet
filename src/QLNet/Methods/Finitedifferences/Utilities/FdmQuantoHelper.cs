@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Patterns;
 using QLNet.Termstructures;
@@ -24,14 +25,19 @@ using QLNet.Termstructures.Volatility.equityfx;
 
 namespace QLNet.Methods.Finitedifferences.Utilities
 {
-    [JetBrains.Annotations.PublicAPI] public class FdmQuantoHelper : IObservable
+    [PublicAPI]
+    public class FdmQuantoHelper : IObservable
     {
+        protected double equityFxCorrelation_, exchRateATMlevel_;
+        protected BlackVolTermStructure fxVolTS_;
+        protected YieldTermStructure rTS_, fTS_;
+
         public FdmQuantoHelper(
-           YieldTermStructure rTS,
-           YieldTermStructure fTS,
-           BlackVolTermStructure fxVolTS,
-           double equityFxCorrelation,
-           double exchRateATMlevel)
+            YieldTermStructure rTS,
+            YieldTermStructure fTS,
+            BlackVolTermStructure fxVolTS,
+            double equityFxCorrelation,
+            double exchRateATMlevel)
         {
             rTS_ = rTS;
             fTS_ = fTS;
@@ -39,6 +45,14 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             equityFxCorrelation_ = equityFxCorrelation;
             exchRateATMlevel_ = exchRateATMlevel;
         }
+
+        public double equityFxCorrelation() => equityFxCorrelation_;
+
+        public double exchRateATMlevel() => exchRateATMlevel_;
+
+        public YieldTermStructure foreignTermStructure() => fTS_;
+
+        public BlackVolTermStructure fxVolatilityTermStructure() => fxVolTS_;
 
         public double quantoAdjustment(double equityVol, double t1, double t2)
         {
@@ -60,22 +74,11 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             {
                 retVal[i] = rDomestic - rForeign + equityVol[i] * fxVol * equityFxCorrelation_;
             }
+
             return retVal;
         }
 
-        public YieldTermStructure foreignTermStructure() => fTS_;
-
         public YieldTermStructure riskFreeTermStructure() => rTS_;
-
-        public BlackVolTermStructure fxVolatilityTermStructure() => fxVolTS_;
-
-        public double equityFxCorrelation() => equityFxCorrelation_;
-
-        public double exchRateATMlevel() => exchRateATMlevel_;
-
-        protected YieldTermStructure rTS_, fTS_;
-        protected BlackVolTermStructure fxVolTS_;
-        protected double equityFxCorrelation_, exchRateATMlevel_;
 
         #region Observer & Observable
 

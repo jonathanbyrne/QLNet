@@ -17,66 +17,73 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
     //! %Coupon paying a fixed interest rate
-    [JetBrains.Annotations.PublicAPI] public class FixedRateCoupon : Coupon
+    [PublicAPI]
+    public class FixedRateCoupon : Coupon
     {
+        private double? amount_;
+        private InterestRate rate_;
+
         // constructors
         public FixedRateCoupon(Date paymentDate, double nominal, double rate, DayCounter dayCounter,
-                               Date accrualStartDate, Date accrualEndDate,
-                               Date refPeriodStart = null, Date refPeriodEnd = null, Date exCouponDate = null)
-           : base(paymentDate, nominal, accrualStartDate, accrualEndDate, refPeriodStart, refPeriodEnd, exCouponDate)
+            Date accrualStartDate, Date accrualEndDate,
+            Date refPeriodStart = null, Date refPeriodEnd = null, Date exCouponDate = null)
+            : base(paymentDate, nominal, accrualStartDate, accrualEndDate, refPeriodStart, refPeriodEnd, exCouponDate)
         {
             rate_ = new InterestRate(rate, dayCounter, Compounding.Simple, Frequency.Annual);
         }
 
         public FixedRateCoupon(Date paymentDate, double nominal, InterestRate interestRate,
-                               Date accrualStartDate, Date accrualEndDate,
-                               Date refPeriodStart = null, Date refPeriodEnd = null, Date exCouponDate = null, double? amount = null)
-        : base(paymentDate, nominal, accrualStartDate, accrualEndDate, refPeriodStart, refPeriodEnd, exCouponDate)
+            Date accrualStartDate, Date accrualEndDate,
+            Date refPeriodStart = null, Date refPeriodEnd = null, Date exCouponDate = null, double? amount = null)
+            : base(paymentDate, nominal, accrualStartDate, accrualEndDate, refPeriodStart, refPeriodEnd, exCouponDate)
         {
             amount_ = amount;
             rate_ = interestRate;
+        }
+
+        public override double accruedAmount(Date d)
+        {
+            if (d <= accrualStartDate_ || d > paymentDate_)
+            {
+                return 0;
+            }
+
+            if (tradingExCoupon(d))
+            {
+                return -nominal() * (rate_.compoundFactor(d,
+                    accrualEndDate_,
+                    refPeriodStart_,
+                    refPeriodEnd_) - 1.0);
+            }
+
+            return nominal() * (rate_.compoundFactor(accrualStartDate_, Date.Min(d, accrualEndDate_),
+                refPeriodStart_, refPeriodEnd_) - 1.0);
         }
 
         //! CashFlow interface
         public override double amount()
         {
             if (amount_ != null)
+            {
                 return amount_.Value;
+            }
 
             return nominal() * (rate_.compoundFactor(accrualStartDate_, accrualEndDate_, refPeriodStart_, refPeriodEnd_) - 1.0);
         }
 
-        //! Coupon interface
-        public override double rate() => rate_.rate();
+        public override DayCounter dayCounter() => rate_.dayCounter();
 
         public InterestRate interestRate() => rate_;
 
-        public override DayCounter dayCounter() => rate_.dayCounter();
-
-        public override double accruedAmount(Date d)
-        {
-            if (d <= accrualStartDate_ || d > paymentDate_)
-                return 0;
-            else if (tradingExCoupon(d))
-            {
-                return -nominal() * (rate_.compoundFactor(d,
-                                                          accrualEndDate_,
-                                                          refPeriodStart_,
-                                                          refPeriodEnd_) - 1.0);
-            }
-            else
-                return nominal() * (rate_.compoundFactor(accrualStartDate_, Date.Min(d, accrualEndDate_),
-                                                         refPeriodStart_, refPeriodEnd_) - 1.0);
-        }
-
-        private InterestRate rate_;
-        private double? amount_;
-
+        //! Coupon interface
+        public override double rate() => rate_.rate();
     }
 
     //! helper class building a sequence of fixed rate coupons

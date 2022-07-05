@@ -14,23 +14,57 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-using QLNet.Time;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Time;
 
 namespace QLNet.Instruments
 {
     //! Single-asset barrier option with discrete dividends
     /*! \ingroup instruments */
-    [JetBrains.Annotations.PublicAPI] public class DividendBarrierOption : BarrierOption
+    [PublicAPI]
+    public class DividendBarrierOption : BarrierOption
     {
+        //! %Arguments for dividend barrier option calculation
+        public new class Arguments : BarrierOption.Arguments
+        {
+            public Arguments()
+            {
+                cashFlow = new DividendSchedule();
+            }
+
+            public DividendSchedule cashFlow { get; set; }
+
+            public override void validate()
+            {
+                base.validate();
+
+                var exerciseDate = exercise.lastDate();
+
+                for (var i = 0; i < cashFlow.Count; i++)
+                {
+                    Utils.QL_REQUIRE(cashFlow[i].date() <= exerciseDate, () =>
+                        "the " + (i + 1) + " dividend date (" + cashFlow[i].date() + ") is later than the exercise date ("
+                        + exerciseDate + ")");
+                }
+            }
+        }
+
+        //! %Dividend-barrier-option %engine base class
+        public new class Engine : GenericEngine<Arguments, Results>
+        {
+        }
+
+        private DividendSchedule cashFlow_;
+
         public DividendBarrierOption(Barrier.Type barrierType,
-                                     double barrier,
-                                     double rebate,
-                                     StrikedTypePayoff payoff,
-                                     Exercise exercise,
-                                     List<Date> dividendDates,
-                                     List<double> dividends)
-           : base(barrierType, barrier, rebate, payoff, exercise)
+            double barrier,
+            double rebate,
+            StrikedTypePayoff payoff,
+            Exercise exercise,
+            List<Date> dividendDates,
+            List<double> dividends)
+            : base(barrierType, barrier, rebate, payoff, exercise)
         {
             cashFlow_ = Utils.DividendVector(dividendDates, dividends);
         }
@@ -44,36 +78,5 @@ namespace QLNet.Instruments
 
             arguments.cashFlow = cashFlow_;
         }
-
-        private DividendSchedule cashFlow_;
-
-
-        //! %Arguments for dividend barrier option calculation
-        public new class Arguments : BarrierOption.Arguments
-        {
-            public DividendSchedule cashFlow { get; set; }
-            public Arguments()
-            {
-                cashFlow = new DividendSchedule();
-            }
-            public override void validate()
-            {
-                base.validate();
-
-                var exerciseDate = exercise.lastDate();
-
-                for (var i = 0; i < cashFlow.Count; i++)
-                {
-                    Utils.QL_REQUIRE(cashFlow[i].date() <= exerciseDate, () =>
-                                     "the " + (i + 1) + " dividend date (" + cashFlow[i].date() + ") is later than the exercise date ("
-                                     + exerciseDate + ")");
-                }
-            }
-        }
-        //! %Dividend-barrier-option %engine base class
-        public new class Engine : GenericEngine<Arguments, Results> { }
-
     }
-
 }
-

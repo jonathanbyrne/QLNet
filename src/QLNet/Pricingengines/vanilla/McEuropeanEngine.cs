@@ -17,13 +17,14 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.randomnumbers;
 using QLNet.Math.statistics;
 using QLNet.Methods.montecarlo;
 using QLNet.Patterns;
 using QLNet.processes;
-using System;
 
 namespace QLNet.Pricingengines.vanilla
 {
@@ -33,23 +34,25 @@ namespace QLNet.Pricingengines.vanilla
         \test the correctness of the returned value is tested by
               checking it against analytic results.
     */
-    [JetBrains.Annotations.PublicAPI] public class MCEuropeanEngine<RNG, S> : MCVanillaEngine<SingleVariate, RNG, S>
-       where RNG : IRSG, new()
-       where S : IGeneralStatistics, new()
+    [PublicAPI]
+    public class MCEuropeanEngine<RNG, S> : MCVanillaEngine<SingleVariate, RNG, S>
+        where RNG : IRSG, new()
+        where S : IGeneralStatistics, new()
     {
         // constructor
         public MCEuropeanEngine(GeneralizedBlackScholesProcess process,
-                                int? timeSteps,
-                                int? timeStepsPerYear,
-                                bool brownianBridge,
-                                bool antitheticVariate,
-                                int? requiredSamples,
-                                double? requiredTolerance,
-                                int? maxSamples,
-                                ulong seed)
-        : base(process, timeSteps, timeStepsPerYear, brownianBridge, antitheticVariate, false,
-               requiredSamples, requiredTolerance, maxSamples, seed)
-        { }
+            int? timeSteps,
+            int? timeStepsPerYear,
+            bool brownianBridge,
+            bool antitheticVariate,
+            int? requiredSamples,
+            double? requiredTolerance,
+            int? maxSamples,
+            ulong seed)
+            : base(process, timeSteps, timeStepsPerYear, brownianBridge, antitheticVariate, false,
+                requiredSamples, requiredTolerance, maxSamples, seed)
+        {
+        }
 
         protected override PathPricer<IPath> pathPricer()
         {
@@ -60,18 +63,24 @@ namespace QLNet.Pricingengines.vanilla
             Utils.QL_REQUIRE(process != null, () => "Black-Scholes process required");
 
             return new EuropeanPathPricer(payoff.optionType(), payoff.strike(),
-                                          process.riskFreeRate().link.discount(timeGrid().Last()));
+                process.riskFreeRate().link.discount(timeGrid().Last()));
         }
     }
-
 
     //! Monte Carlo European engine factory
     // template <class RNG = PseudoRandom, class S = Statistics>
 
-    [JetBrains.Annotations.PublicAPI] public class MakeMCEuropeanEngine<RNG, S>
-       where RNG : IRSG, new()
-       where S : IGeneralStatistics, new()
+    [PublicAPI]
+    public class MakeMCEuropeanEngine<RNG, S>
+        where RNG : IRSG, new()
+        where S : IGeneralStatistics, new()
     {
+        private bool antithetic_;
+        private bool brownianBridge_;
+        private GeneralizedBlackScholesProcess process_;
+        private ulong seed_;
+        private int? steps_, stepsPerYear_, samples_, maxSamples_;
+        private double? tolerance_;
 
         public MakeMCEuropeanEngine(GeneralizedBlackScholesProcess process)
         {
@@ -86,67 +95,66 @@ namespace QLNet.Pricingengines.vanilla
             seed_ = 0;
         }
 
-        // named parameters
-        public MakeMCEuropeanEngine<RNG, S> withSteps(int steps)
-        {
-            steps_ = steps;
-            return this;
-        }
-        public MakeMCEuropeanEngine<RNG, S> withStepsPerYear(int steps)
-        {
-            stepsPerYear_ = steps;
-            return this;
-        }
-        public MakeMCEuropeanEngine<RNG, S> withSamples(int samples)
-        {
-            Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
-            samples_ = samples;
-            return this;
-        }
-        public MakeMCEuropeanEngine<RNG, S> withAbsoluteTolerance(double tolerance)
-        {
-            Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
-            Utils.QL_REQUIRE(FastActivator<RNG>.Create().allowsErrorEstimate != 0, () =>
-                             "chosen random generator policy does not allow an error estimate");
-            tolerance_ = tolerance;
-            return this;
-        }
-        public MakeMCEuropeanEngine<RNG, S> withMaxSamples(int samples)
-        {
-            maxSamples_ = samples;
-            return this;
-        }
-        public MakeMCEuropeanEngine<RNG, S> withSeed(ulong seed)
-        {
-            seed_ = seed;
-            return this;
-        }
-        public MakeMCEuropeanEngine<RNG, S> withBrownianBridge(bool brownianBridge = true)
-        {
-            brownianBridge_ = brownianBridge;
-            return this;
-        }
-        public MakeMCEuropeanEngine<RNG, S> withAntitheticVariate(bool b = true)
-        {
-            antithetic_ = b;
-            return this;
-        }
-
         // conversion to pricing engine
         public IPricingEngine value()
         {
             Utils.QL_REQUIRE(steps_ != null || stepsPerYear_ != null, () => "number of steps not given");
             Utils.QL_REQUIRE(steps_ == null || stepsPerYear_ == null, () => "number of steps overspecified");
             return new MCEuropeanEngine<RNG, S>(process_, steps_, stepsPerYear_, brownianBridge_, antithetic_,
-                                                samples_, tolerance_, maxSamples_, seed_);
+                samples_, tolerance_, maxSamples_, seed_);
         }
 
-        private GeneralizedBlackScholesProcess process_;
-        private bool antithetic_;
-        private int? steps_, stepsPerYear_, samples_, maxSamples_;
-        private double? tolerance_;
-        private bool brownianBridge_;
-        private ulong seed_;
+        public MakeMCEuropeanEngine<RNG, S> withAbsoluteTolerance(double tolerance)
+        {
+            Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
+            Utils.QL_REQUIRE(FastActivator<RNG>.Create().allowsErrorEstimate != 0, () =>
+                "chosen random generator policy does not allow an error estimate");
+            tolerance_ = tolerance;
+            return this;
+        }
 
+        public MakeMCEuropeanEngine<RNG, S> withAntitheticVariate(bool b = true)
+        {
+            antithetic_ = b;
+            return this;
+        }
+
+        public MakeMCEuropeanEngine<RNG, S> withBrownianBridge(bool brownianBridge = true)
+        {
+            brownianBridge_ = brownianBridge;
+            return this;
+        }
+
+        public MakeMCEuropeanEngine<RNG, S> withMaxSamples(int samples)
+        {
+            maxSamples_ = samples;
+            return this;
+        }
+
+        public MakeMCEuropeanEngine<RNG, S> withSamples(int samples)
+        {
+            Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
+            samples_ = samples;
+            return this;
+        }
+
+        public MakeMCEuropeanEngine<RNG, S> withSeed(ulong seed)
+        {
+            seed_ = seed;
+            return this;
+        }
+
+        // named parameters
+        public MakeMCEuropeanEngine<RNG, S> withSteps(int steps)
+        {
+            steps_ = steps;
+            return this;
+        }
+
+        public MakeMCEuropeanEngine<RNG, S> withStepsPerYear(int steps)
+        {
+            stepsPerYear_ = steps;
+            return this;
+        }
     }
 }

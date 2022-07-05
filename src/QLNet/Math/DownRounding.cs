@@ -1,11 +1,19 @@
+using JetBrains.Annotations;
+
 namespace QLNet.Math
 {
     /// <summary>
-    /// Down-rounding.
+    ///     Down-rounding.
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class DownRounding : Rounding
+    [PublicAPI]
+    public class DownRounding : Rounding
     {
-        public DownRounding(int precision) : base(precision, Type.Down, 5) { }
-        public DownRounding(int precision, int digit) : base(precision, Type.Down, digit) { }
+        public DownRounding(int precision) : base(precision, Type.Down, 5)
+        {
+        }
+
+        public DownRounding(int precision, int digit) : base(precision, Type.Down, digit)
+        {
+        }
     }
 }

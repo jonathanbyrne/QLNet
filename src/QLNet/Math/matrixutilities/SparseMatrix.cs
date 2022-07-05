@@ -17,14 +17,15 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.matrixutilities
 {
     //general sparse matrix taken from http://www.blackbeltcoder.com/Articles/algorithms/creating-a-sparse-matrix-in-net and completed for QLNet
-    [JetBrains.Annotations.PublicAPI] public class SparseMatrix
+    [PublicAPI]
+    public class SparseMatrix
     {
         // Master dictionary hold rows of column dictionary
         protected Dictionary<int, Dictionary<int, double>> _rows;
@@ -33,7 +34,7 @@ namespace QLNet.Math.matrixutilities
         protected int rows_, columns_;
 
         /// <summary>
-        /// Constructs a SparseMatrix instance.
+        ///     Constructs a SparseMatrix instance.
         /// </summary>
         public SparseMatrix()
         {
@@ -41,7 +42,7 @@ namespace QLNet.Math.matrixutilities
         }
 
         /// <summary>
-        /// Constructs a SparseMatrix instance.
+        ///     Constructs a SparseMatrix instance.
         /// </summary>
         public SparseMatrix(int rows, int columns)
         {
@@ -51,7 +52,7 @@ namespace QLNet.Math.matrixutilities
         }
 
         /// <summary>
-        /// Constructs a SparseMatrix instance.
+        ///     Constructs a SparseMatrix instance.
         /// </summary>
         public SparseMatrix(SparseMatrix lhs)
         {
@@ -61,18 +62,22 @@ namespace QLNet.Math.matrixutilities
             foreach (var row in lhs._rows)
             {
                 if (!_rows.ContainsKey(row.Key))
+                {
                     _rows.Add(row.Key, new Dictionary<int, double>());
+                }
 
                 foreach (var col in row.Value)
                 {
                     if (!_rows[row.Key].ContainsKey(col.Key))
+                    {
                         _rows[row.Key].Add(col.Key, col.Value);
+                    }
                 }
             }
         }
 
         /// <summary>
-        /// Gets or sets the value at the specified matrix position.
+        ///     Gets or sets the value at the specified matrix position.
         /// </summary>
         /// <param name="row">Matrix row</param>
         /// <param name="col">Matrix column</param>
@@ -82,141 +87,21 @@ namespace QLNet.Math.matrixutilities
             set => SetAt(row, col, value);
         }
 
-        /// <summary>
-        /// Gets the value at the specified matrix position.
-        /// </summary>
-        /// <param name="row">Matrix row</param>
-        /// <param name="col">Matrix column</param>
-        /// <returns>Value at the specified position</returns>
-        public double GetAt(int row, int col)
+        public static SparseMatrix operator +(SparseMatrix m1, SparseMatrix m2)
         {
-            Dictionary<int, double> cols;
-            if (_rows.TryGetValue(row, out cols))
-            {
-                double value = default;
-                if (cols.TryGetValue(col, out value))
-                    return value;
-            }
-            return default;
-        }
+            var result = new SparseMatrix(m1);
 
-        /// <summary>
-        /// Sets the value at the specified matrix position.
-        /// </summary>
-        /// <param name="row">Matrix row</param>
-        /// <param name="col">Matrix column</param>
-        /// <param name="value">New value</param>
-        public void SetAt(int row, int col, double value)
-        {
-            if (EqualityComparer<double>.Default.Equals(value, default))
+            foreach (var row in m2._rows)
             {
-                // Remove any existing object if value is default(T)
-                RemoveAt(row, col);
-            }
-            else
-            {
-                // Set value
-                Dictionary<int, double> cols;
-                if (!_rows.TryGetValue(row, out cols))
+                foreach (var col in row.Value)
                 {
-                    cols = new Dictionary<int, double>();
-                    _rows.Add(row, cols);
-                }
-                cols[col] = value;
-            }
-        }
-
-        /// <summary>
-        /// Removes the value at the specified matrix position.
-        /// </summary>
-        /// <param name="row">Matrix row</param>
-        /// <param name="col">Matrix column</param>
-        public void RemoveAt(int row, int col)
-        {
-            Dictionary<int, double> cols;
-            if (_rows.TryGetValue(row, out cols))
-            {
-                // Remove column from this row
-                cols.Remove(col);
-                // Remove entire row if empty
-                if (cols.Count == 0)
-                    _rows.Remove(row);
-            }
-        }
-
-        /// <summary>
-        /// Returns all items in the specified row.
-        /// </summary>
-        /// <param name="row">Matrix row</param>
-        public IEnumerable<double> GetRowData(int row)
-        {
-            Dictionary<int, double> cols;
-            if (_rows.TryGetValue(row, out cols))
-            {
-                foreach (var pair in cols)
-                {
-                    yield return pair.Value;
+                    var val = result.GetAt(row.Key, col.Key) + col.Value;
+                    result.SetAt(row.Key, col.Key, val);
                 }
             }
-        }
 
-        /// <summary>
-        /// Returns the number of items in the specified row.
-        /// </summary>
-        /// <param name="row">Matrix row</param>
-        public int GetRowDataCount(int row)
-        {
-            Dictionary<int, double> cols;
-            if (_rows.TryGetValue(row, out cols))
-            {
-                return cols.Count;
-            }
-            return 0;
-        }
-
-        /// <summary>
-        /// Returns all items in the specified column.
-        /// This method is less efficent than GetRowData().
-        /// </summary>
-        /// <param name="col">Matrix column</param>
-        /// <returns></returns>
-        public IEnumerable<double> GetColumnData(int col)
-        {
-            foreach (var rowdata in _rows)
-            {
-                double result;
-                if (rowdata.Value.TryGetValue(col, out result))
-                    yield return result;
-            }
-        }
-
-        /// <summary>
-        /// Returns the number of items in the specified column.
-        /// This method is less efficent than GetRowDataCount().
-        /// </summary>
-        /// <param name="col">Matrix column</param>
-        public int GetColumnDataCount(int col)
-        {
-            var result = 0;
-
-            foreach (var cols in _rows)
-            {
-                if (cols.Value.ContainsKey(col))
-                    result++;
-            }
             return result;
         }
-
-        public void Clear()
-        {
-            _rows.Clear();
-        }
-
-        public int rows() => rows_;
-
-        public int columns() => columns_;
-
-        public int values() { return _rows.Sum(x => GetRowDataCount(x.Key)); }
 
         //operator overloads
         public static SparseMatrix operator *(double a, SparseMatrix m)
@@ -243,10 +128,13 @@ namespace QLNet.Math.matrixutilities
             {
                 var val = 0.0;
                 foreach (var col in row.Value)
+                {
                     val += b[col.Key] * col.Value;
+                }
 
                 b[row.Key] = val;
             }
+
             return b;
         }
 
@@ -261,28 +149,166 @@ namespace QLNet.Math.matrixutilities
                 {
                     var val = 0.0;
                     foreach (var col in row.Value)
+                    {
                         val += m2._rows[row.Key][colRight.Key] * col.Value;
+                    }
 
                     result.SetAt(row.Key, colRight.Key, val);
                 }
-
             }
+
             return result;
         }
 
-        public static SparseMatrix operator +(SparseMatrix m1, SparseMatrix m2)
+        public void Clear()
         {
-            var result = new SparseMatrix(m1);
+            _rows.Clear();
+        }
 
-            foreach (var row in m2._rows)
+        public int columns() => columns_;
+
+        /// <summary>
+        ///     Gets the value at the specified matrix position.
+        /// </summary>
+        /// <param name="row">Matrix row</param>
+        /// <param name="col">Matrix column</param>
+        /// <returns>Value at the specified position</returns>
+        public double GetAt(int row, int col)
+        {
+            Dictionary<int, double> cols;
+            if (_rows.TryGetValue(row, out cols))
             {
-                foreach (var col in row.Value)
+                double value = default;
+                if (cols.TryGetValue(col, out value))
                 {
-                    var val = result.GetAt(row.Key, col.Key) + col.Value;
-                    result.SetAt(row.Key, col.Key, val);
+                    return value;
                 }
             }
+
+            return default;
+        }
+
+        /// <summary>
+        ///     Returns all items in the specified column.
+        ///     This method is less efficent than GetRowData().
+        /// </summary>
+        /// <param name="col">Matrix column</param>
+        /// <returns></returns>
+        public IEnumerable<double> GetColumnData(int col)
+        {
+            foreach (var rowdata in _rows)
+            {
+                double result;
+                if (rowdata.Value.TryGetValue(col, out result))
+                {
+                    yield return result;
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Returns the number of items in the specified column.
+        ///     This method is less efficent than GetRowDataCount().
+        /// </summary>
+        /// <param name="col">Matrix column</param>
+        public int GetColumnDataCount(int col)
+        {
+            var result = 0;
+
+            foreach (var cols in _rows)
+            {
+                if (cols.Value.ContainsKey(col))
+                {
+                    result++;
+                }
+            }
+
             return result;
+        }
+
+        /// <summary>
+        ///     Returns all items in the specified row.
+        /// </summary>
+        /// <param name="row">Matrix row</param>
+        public IEnumerable<double> GetRowData(int row)
+        {
+            Dictionary<int, double> cols;
+            if (_rows.TryGetValue(row, out cols))
+            {
+                foreach (var pair in cols)
+                {
+                    yield return pair.Value;
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Returns the number of items in the specified row.
+        /// </summary>
+        /// <param name="row">Matrix row</param>
+        public int GetRowDataCount(int row)
+        {
+            Dictionary<int, double> cols;
+            if (_rows.TryGetValue(row, out cols))
+            {
+                return cols.Count;
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        ///     Removes the value at the specified matrix position.
+        /// </summary>
+        /// <param name="row">Matrix row</param>
+        /// <param name="col">Matrix column</param>
+        public void RemoveAt(int row, int col)
+        {
+            Dictionary<int, double> cols;
+            if (_rows.TryGetValue(row, out cols))
+            {
+                // Remove column from this row
+                cols.Remove(col);
+                // Remove entire row if empty
+                if (cols.Count == 0)
+                {
+                    _rows.Remove(row);
+                }
+            }
+        }
+
+        public int rows() => rows_;
+
+        /// <summary>
+        ///     Sets the value at the specified matrix position.
+        /// </summary>
+        /// <param name="row">Matrix row</param>
+        /// <param name="col">Matrix column</param>
+        /// <param name="value">New value</param>
+        public void SetAt(int row, int col, double value)
+        {
+            if (EqualityComparer<double>.Default.Equals(value, default))
+            {
+                // Remove any existing object if value is default(T)
+                RemoveAt(row, col);
+            }
+            else
+            {
+                // Set value
+                Dictionary<int, double> cols;
+                if (!_rows.TryGetValue(row, out cols))
+                {
+                    cols = new Dictionary<int, double>();
+                    _rows.Add(row, cols);
+                }
+
+                cols[col] = value;
+            }
+        }
+
+        public int values()
+        {
+            return _rows.Sum(x => GetRowDataCount(x.Key));
         }
     }
 }

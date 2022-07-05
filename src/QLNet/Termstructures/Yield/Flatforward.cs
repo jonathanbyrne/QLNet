@@ -17,29 +17,34 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Quotes;
-using QLNet.Termstructures;
 using QLNet.Time;
 
 namespace QLNet.Termstructures.Yield
 {
     //! Flat interest-rate curve
-    [JetBrains.Annotations.PublicAPI] public class FlatForward : YieldTermStructure
+    [PublicAPI]
+    public class FlatForward : YieldTermStructure
     {
-        private Quote forward_;
         private Compounding compounding_;
+        private Quote forward_;
         private Frequency frequency_;
         private InterestRate rate_;
 
         // constructors
         public FlatForward(Date referenceDate, Quote forward, DayCounter dayCounter) :
-           this(referenceDate, forward, dayCounter, Compounding.Continuous, Frequency.Annual)
-        { }
+            this(referenceDate, forward, dayCounter, Compounding.Continuous, Frequency.Annual)
+        {
+        }
+
         public FlatForward(Date referenceDate, Quote forward, DayCounter dayCounter, Compounding compounding) :
-           this(referenceDate, forward, dayCounter, compounding, Frequency.Annual)
-        { }
+            this(referenceDate, forward, dayCounter, compounding, Frequency.Annual)
+        {
+        }
+
         public FlatForward(Date referenceDate, Quote forward, DayCounter dayCounter, Compounding compounding, Frequency frequency) :
-           base(referenceDate, new Calendar(), dayCounter)
+            base(referenceDate, new Calendar(), dayCounter)
         {
             forward_ = forward;
             compounding_ = compounding;
@@ -49,13 +54,17 @@ namespace QLNet.Termstructures.Yield
         }
 
         public FlatForward(Date referenceDate, double forward, DayCounter dayCounter) :
-           this(referenceDate, forward, dayCounter, Compounding.Continuous, Frequency.Annual)
-        { }
+            this(referenceDate, forward, dayCounter, Compounding.Continuous, Frequency.Annual)
+        {
+        }
+
         public FlatForward(Date referenceDate, double forward, DayCounter dayCounter, Compounding compounding) :
-           this(referenceDate, forward, dayCounter, compounding, Frequency.Annual)
-        { }
+            this(referenceDate, forward, dayCounter, compounding, Frequency.Annual)
+        {
+        }
+
         public FlatForward(Date referenceDate, double forward, DayCounter dayCounter, Compounding compounding, Frequency frequency) :
-           base(referenceDate, new Calendar(), dayCounter)
+            base(referenceDate, new Calendar(), dayCounter)
         {
             forward_ = new SimpleQuote(forward);
             compounding_ = compounding;
@@ -63,13 +72,17 @@ namespace QLNet.Termstructures.Yield
         }
 
         public FlatForward(int settlementDays, Calendar calendar, Quote forward, DayCounter dayCounter) :
-           this(settlementDays, calendar, forward, dayCounter, Compounding.Continuous, Frequency.Annual)
-        { }
+            this(settlementDays, calendar, forward, dayCounter, Compounding.Continuous, Frequency.Annual)
+        {
+        }
+
         public FlatForward(int settlementDays, Calendar calendar, Quote forward, DayCounter dayCounter, Compounding compounding) :
-           this(settlementDays, calendar, forward, dayCounter, compounding, Frequency.Annual)
-        { }
+            this(settlementDays, calendar, forward, dayCounter, compounding, Frequency.Annual)
+        {
+        }
+
         public FlatForward(int settlementDays, Calendar calendar, Quote forward, DayCounter dayCounter, Compounding compounding, Frequency frequency) :
-           base(settlementDays, calendar, dayCounter)
+            base(settlementDays, calendar, dayCounter)
         {
             forward_ = forward;
             compounding_ = compounding;
@@ -79,14 +92,18 @@ namespace QLNet.Termstructures.Yield
         }
 
         public FlatForward(int settlementDays, Calendar calendar, double forward, DayCounter dayCounter) :
-           this(settlementDays, calendar, forward, dayCounter, Compounding.Continuous, Frequency.Annual)
-        { }
+            this(settlementDays, calendar, forward, dayCounter, Compounding.Continuous, Frequency.Annual)
+        {
+        }
+
         public FlatForward(int settlementDays, Calendar calendar, double forward, DayCounter dayCounter, Compounding compounding) :
-           this(settlementDays, calendar, forward, dayCounter, compounding, Frequency.Annual)
-        { }
+            this(settlementDays, calendar, forward, dayCounter, compounding, Frequency.Annual)
+        {
+        }
+
         public FlatForward(int settlementDays, Calendar calendar, double forward, DayCounter dayCounter,
-                           Compounding compounding, Frequency frequency) :
-           base(settlementDays, calendar, dayCounter)
+            Compounding compounding, Frequency frequency) :
+            base(settlementDays, calendar, dayCounter)
         {
             forward_ = new SimpleQuote(forward);
             compounding_ = compounding;

@@ -17,10 +17,13 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Patterns
 {
     // to make the objects Visitor-ready
-    [JetBrains.Annotations.PublicAPI] public interface IAcyclicVisitor
+    [PublicAPI]
+    public interface IAcyclicVisitor
     {
         void visit(object o);
     }

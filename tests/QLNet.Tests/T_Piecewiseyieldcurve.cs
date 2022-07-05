@@ -308,7 +308,9 @@ namespace QLNet.Tests
 
             // if rates can be negative it makes no sense to interpolate loglinearly
             if (Utils.is_QL_NEGATIVE_RATES())
+            {
                 return;
+            }
             else
             {
                 var vars = new CommonVars();
@@ -431,17 +433,25 @@ namespace QLNet.Tests
                 f.lower();
                 vars.rates[i].setValue(vars.rates[i].value() * 1.01);
                 if (!f.isUp())
+                {
                     QAssert.Fail("Observer was not notified of underlying rate change");
+                }
+
                 var discount_new = vars.termStructure.discount(testTime, true);
                 if (discount_new == discount)
+                {
                     QAssert.Fail("rate change did not trigger recalculation");
+                }
+
                 vars.rates[i].setValue(vars.rates[i].value() / 1.01);
             }
 
             f.lower();
             Settings.setEvaluationDate(vars.calendar.advance(vars.today, 15, TimeUnit.Days));
             if (!f.isUp())
+            {
                 QAssert.Fail("Observer was not notified of date change");
+            }
         }
 
         [Fact]
@@ -502,7 +512,9 @@ namespace QLNet.Tests
             index.addFixing(vars.today, 0.0425);
 
             if (!f.isUp())
+            {
                 QAssert.Fail("Observer was not notified of rate fixing");
+            }
 
             for (var i = 0; i < vars.swaps; i++)
             {
@@ -545,11 +557,11 @@ namespace QLNet.Tests
             var ir = vars.termStructure.forwardRate(vars.settlement, vars.settlement + 30, d1, Compounding.Simple);
 
             if (ir.dayCounter().name() != d1.name())
+            {
                 QAssert.Fail("PiecewiseYieldCurve forwardRate dayCounter error" +
                              " Actual daycounter : " + vars.termStructure.dayCounter().name() +
                              " Expetced DayCounter : " + d1.name());
-
-
+            }
         }
 
         [Fact]

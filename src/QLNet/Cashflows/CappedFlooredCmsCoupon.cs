@@ -1,12 +1,16 @@
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class CappedFlooredCmsCoupon : CappedFlooredCoupon
+    [PublicAPI]
+    public class CappedFlooredCmsCoupon : CappedFlooredCoupon
     {
         // need by CashFlowVectors
-        public CappedFlooredCmsCoupon() { }
+        public CappedFlooredCmsCoupon()
+        {
+        }
 
         public CappedFlooredCmsCoupon(double nominal,
             Date paymentDate,
@@ -22,7 +26,7 @@ namespace QLNet.Cashflows
             Date refPeriodEnd = null,
             DayCounter dayCounter = null,
             bool isInArrears = false)
-            : base(new CmsCoupon(nominal, paymentDate, startDate, endDate, fixingDays, index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears) as FloatingRateCoupon, cap, floor)
+            : base(new CmsCoupon(nominal, paymentDate, startDate, endDate, fixingDays, index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears), cap, floor)
         {
         }
 

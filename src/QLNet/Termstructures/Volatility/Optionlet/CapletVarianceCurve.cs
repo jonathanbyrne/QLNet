@@ -16,23 +16,24 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Termstructures.Volatility;
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Time;
-using System.Collections.Generic;
 
 namespace QLNet.Termstructures.Volatility.Optionlet
 {
-    [JetBrains.Annotations.PublicAPI] public class CapletVarianceCurve : OptionletVolatilityStructure
+    [PublicAPI]
+    public class CapletVarianceCurve : OptionletVolatilityStructure
     {
-
         private BlackVarianceCurve blackCurve_;
 
         public CapletVarianceCurve(Date referenceDate,
-                                   List<Date> dates,
-                                   List<double> capletVolCurve,
-                                   DayCounter dayCounter)
-           : base(referenceDate, new Calendar(), BusinessDayConvention.Following, new DayCounter())
+            List<Date> dates,
+            List<double> capletVolCurve,
+            DayCounter dayCounter)
+            : base(referenceDate, new Calendar(), BusinessDayConvention.Following, new DayCounter())
         {
             blackCurve_ = new BlackVarianceCurve(referenceDate, dates, capletVolCurve, dayCounter, false);
         }
@@ -41,9 +42,9 @@ namespace QLNet.Termstructures.Volatility.Optionlet
 
         public override Date maxDate() => blackCurve_.maxDate();
 
-        public override double minStrike() => blackCurve_.minStrike();
-
         public override double maxStrike() => blackCurve_.maxStrike();
+
+        public override double minStrike() => blackCurve_.minStrike();
 
         protected override SmileSection smileSectionImpl(double t)
         {

@@ -18,40 +18,50 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Patterns;
 
 namespace QLNet.Pricingengines
 {
-
-    [JetBrains.Annotations.PublicAPI] public class GenericModelEngine<ModelType, ArgumentsType, ResultsType>
-      : GenericEngine<ArgumentsType, ResultsType>
+    [PublicAPI]
+    public class GenericModelEngine<ModelType, ArgumentsType, ResultsType>
+        : GenericEngine<ArgumentsType, ResultsType>
         where ArgumentsType : IPricingEngineArguments, new()
         where ResultsType : IPricingEngineResults, new()
-           where ModelType : IObservable
+        where ModelType : IObservable
     {
-        public GenericModelEngine() { }
+        protected Handle<ModelType> model_;
+
+        public GenericModelEngine()
+        {
+        }
+
         public GenericModelEngine(Handle<ModelType> model)
         {
             model_ = model;
             model_.registerWith(update);
         }
+
         public GenericModelEngine(ModelType model)
         {
             model_ = new Handle<ModelType>(model);
             model_.registerWith(update);
         }
+
         public void setModel(Handle<ModelType> model)
         {
             if (model_ != null)
+            {
                 model_.unregisterWith(update);
+            }
+
             model_ = model;
             if (model_ != null)
+            {
                 model_.registerWith(update);
+            }
+
             update();
         }
-
-        protected Handle<ModelType> model_;
-
-
     }
 }

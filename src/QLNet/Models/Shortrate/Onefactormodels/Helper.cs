@@ -1,14 +1,16 @@
-﻿using QLNet.Math;
+﻿using JetBrains.Annotations;
+using QLNet.Math;
 
 namespace QLNet.Models.Shortrate.Onefactormodels
 {
-    [JetBrains.Annotations.PublicAPI] public class Helper : ISolver1d
+    [PublicAPI]
+    public class Helper : ISolver1d
     {
-        private int size_;
-        private double dt_;
-        private double xMin_, dx_;
-        private Vector statePrices_;
         private double discountBondPrice_;
+        private double dt_;
+        private int size_;
+        private Vector statePrices_;
+        private double xMin_, dx_;
 
         public Helper(int i, double xMin, double dx,
             double discountBondPrice,
@@ -32,6 +34,7 @@ namespace QLNet.Models.Shortrate.Onefactormodels
                 value -= statePrices_[j] * discount;
                 x += dx_;
             }
+
             return value;
         }
     }

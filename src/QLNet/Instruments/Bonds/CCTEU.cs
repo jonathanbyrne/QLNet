@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Termstructures;
 using QLNet.Time;
@@ -7,7 +8,8 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Instruments.Bonds
 {
-    [JetBrains.Annotations.PublicAPI] public class CCTEU : FloatingRateBond
+    [PublicAPI]
+    public class CCTEU : FloatingRateBond
     {
         public CCTEU(Date maturityDate, double spread, Handle<YieldTermStructure> fwdCurve = null,
             Date startDate = null, Date issueDate = null)
@@ -27,7 +29,8 @@ namespace QLNet.Instruments.Bonds
                 false, // in arrears
                 100.0, // redemption
                 issueDate)
-        { }
+        {
+        }
 
         #region Bond interface
 
@@ -40,6 +43,5 @@ namespace QLNet.Instruments.Bonds
         }
 
         #endregion
-
     }
 }

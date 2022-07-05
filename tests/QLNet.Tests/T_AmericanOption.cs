@@ -579,7 +579,9 @@ namespace QLNet.Tests
             const double tolerance = 3.0e-3;
 
             if (System.Math.Abs(impliedVol - volatility) > tolerance)
+            {
                 QAssert.Fail(string.Format("Implied volatility calculation failed. Expected {0}. Actual {1}", volatility, impliedVol));
+            }
         }
 
         [Fact]
@@ -629,8 +631,9 @@ namespace QLNet.Tests
             const double tolerance = 1.0e-5;
 
             if (System.Math.Abs(npv - result) > tolerance)
+            {
                 QAssert.Fail(string.Format("NPV calculation failed. Expected {0}. Actual {1}", result, npv));
-
+            }
         }
 
 

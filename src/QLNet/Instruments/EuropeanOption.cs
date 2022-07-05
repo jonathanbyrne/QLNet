@@ -17,12 +17,17 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Instruments
 {
     //! European option on a single asset
     /*! \ingroup instruments */
-    [JetBrains.Annotations.PublicAPI] public class EuropeanOption : VanillaOption
+    [PublicAPI]
+    public class EuropeanOption : VanillaOption
     {
-        public EuropeanOption(StrikedTypePayoff payoff, Exercise exercise) : base(payoff, exercise) { }
+        public EuropeanOption(StrikedTypePayoff payoff, Exercise exercise) : base(payoff, exercise)
+        {
+        }
     }
 }

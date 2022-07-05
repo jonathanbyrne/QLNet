@@ -16,37 +16,38 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
-using System;
 
+using System;
+using JetBrains.Annotations;
+using QLNet.Math;
 
 namespace QLNet.Methods.lattices
 {
-
     //! Two-dimensional tree-based lattice.
     /*! This lattice is based on two trinomial trees and primarily used
         for the G2 short-rate model.
 
         \ingroup lattices
     */
-    [JetBrains.Annotations.PublicAPI] public class TreeLattice2D<T, Tl> : TreeLattice<T>
-       where T : IGenericLattice
-       where Tl : TrinomialTree
+    [PublicAPI]
+    public class TreeLattice2D<T, Tl> : TreeLattice<T>
+        where T : IGenericLattice
+        where Tl : TrinomialTree
     {
-        Matrix m_;
-        double rho_;
+        public enum Branches
+        {
+            branches = 3
+        }
 
         protected Tl tree1_;
         protected Tl tree2_;
-        public enum Branches { branches = 3 }
-        //// smelly
-
-        public override Vector grid(double t) => throw new NotImplementedException("not implemented");
+        private Matrix m_;
+        private double rho_;
 
         // this is a workaround for CuriouslyRecurringTemplate of TreeLattice
         // recheck it
         public TreeLattice2D(TrinomialTree tree1, TrinomialTree tree2, double correlation)
-           : base(tree1.timeGrid(), (int)Branches.branches * (int)Branches.branches)
+            : base(tree1.timeGrid(), (int)Branches.branches * (int)Branches.branches)
         {
             tree1_ = (Tl)tree1; //le cast à voir!!
             tree2_ = (Tl)tree2; //le cast à voir!!
@@ -80,8 +81,6 @@ namespace QLNet.Methods.lattices
             }
         }
 
-        public int size(int i) => tree1_.size(i) * tree2_.size(i);
-
         public int descendant(int i, int index, int branch)
         {
             var modulo = tree1_.size(i);
@@ -95,6 +94,9 @@ namespace QLNet.Methods.lattices
             return tree1_.descendant(i, index1, branch1) +
                    tree2_.descendant(i, index2, branch2) * modulo;
         }
+        //// smelly
+
+        public override Vector grid(double t) => throw new NotImplementedException("not implemented");
 
         public double probability(int i, int index, int branch)
         {
@@ -110,8 +112,6 @@ namespace QLNet.Methods.lattices
             return prob1 * prob2 + rho_ * m_[branch1, branch2] / 36.0;
         }
 
+        public int size(int i) => tree1_.size(i) * tree2_.size(i);
     }
-
 }
-
-

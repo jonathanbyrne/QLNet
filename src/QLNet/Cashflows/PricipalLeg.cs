@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class PricipalLeg : PrincipalLegBase
+    [PublicAPI]
+    public class PricipalLeg : PrincipalLegBase
     {
         // constructor
         public PricipalLeg(Schedule schedule, DayCounter paymentDayCounter)
@@ -40,7 +42,8 @@ namespace QLNet.Cashflows
                 // regular periods
                 for (var i = 1; i <= schedule_.Count - 1; ++i)
                 {
-                    start = end; end = schedule_[i];
+                    start = end;
+                    end = schedule_[i];
                     paymentDate = calendar.adjust(start, paymentAdjustment_);
                     nominal -= quota;
 

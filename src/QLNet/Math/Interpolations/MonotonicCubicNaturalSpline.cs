@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class MonotonicCubicNaturalSpline : CubicInterpolation
+    [PublicAPI]
+    public class MonotonicCubicNaturalSpline : CubicInterpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public MonotonicCubicNaturalSpline(List<double> xBegin, int size, List<double> yBegin)
@@ -10,6 +12,7 @@ namespace QLNet.Math.Interpolations
                 DerivativeApprox.Spline, true,
                 BoundaryCondition.SecondDerivative, 0.0,
                 BoundaryCondition.SecondDerivative, 0.0)
-        { }
+        {
+        }
     }
 }

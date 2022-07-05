@@ -1,18 +1,25 @@
-﻿using QLNet.Instruments;
+﻿using JetBrains.Annotations;
+using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences.Meshers;
 using QLNet.Methods.Finitedifferences.Operators;
 
 namespace QLNet.Methods.Finitedifferences.Utilities
 {
-    [JetBrains.Annotations.PublicAPI] public class FdmLogBasketInnerValue : FdmInnerValueCalculator
+    [PublicAPI]
+    public class FdmLogBasketInnerValue : FdmInnerValueCalculator
     {
+        protected FdmMesher mesher_;
+        protected BasketPayoff payoff_;
+
         public FdmLogBasketInnerValue(BasketPayoff payoff,
             FdmMesher mesher)
         {
             payoff_ = payoff;
             mesher_ = mesher;
         }
+
+        public override double avgInnerValue(FdmLinearOpIterator iter, double t) => innerValue(iter, t);
 
         public override double innerValue(FdmLinearOpIterator iter, double t)
         {
@@ -24,9 +31,5 @@ namespace QLNet.Methods.Finitedifferences.Utilities
 
             return payoff_.value(x);
         }
-        public override double avgInnerValue(FdmLinearOpIterator iter, double t) => innerValue(iter, t);
-
-        protected BasketPayoff payoff_;
-        protected FdmMesher mesher_;
     }
 }

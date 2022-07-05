@@ -17,8 +17,10 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Optimization
 {
@@ -37,19 +39,20 @@ namespace QLNet.Math.Optimization
         evaluations) compared to the forward
         difference implemented here (order 1).
     */
-    [JetBrains.Annotations.PublicAPI] public class LevenbergMarquardt : OptimizationMethod
+    [PublicAPI]
+    public class LevenbergMarquardt : OptimizationMethod
     {
         private Problem currentProblem_;
+        private double epsfcn_, xtol_, gtol_;
+        private int info_;
         private Vector initCostValues_;
         private Matrix initJacobian_;
         private bool useCostFunctionsJacobian_;
 
-        private int info_;
-        public int getInfo() => info_;
+        public LevenbergMarquardt() : this(1.0e-8, 1.0e-8, 1.0e-8)
+        {
+        }
 
-        private double epsfcn_, xtol_, gtol_;
-
-        public LevenbergMarquardt() : this(1.0e-8, 1.0e-8, 1.0e-8) { }
         public LevenbergMarquardt(double epsfcn, double xtol, double gtol, bool useCostFunctionsJacobian = false)
         {
             info_ = 0;
@@ -57,6 +60,48 @@ namespace QLNet.Math.Optimization
             xtol_ = xtol;
             gtol_ = gtol;
             useCostFunctionsJacobian_ = useCostFunctionsJacobian;
+        }
+
+        public Vector fcn(int m, int n, Vector x, int iflag)
+        {
+            var xt = new Vector(x);
+            Vector fvec;
+            // constraint handling needs some improvement in the future:
+            // starting point should not be close to a constraint violation
+            if (currentProblem_.constraint().test(xt))
+            {
+                fvec = new Vector(currentProblem_.values(xt));
+            }
+            else
+            {
+                fvec = new Vector(initCostValues_);
+            }
+
+            return fvec;
+        }
+
+        public int getInfo() => info_;
+
+        public Matrix jacFcn(int m, int n, Vector x, int iflag)
+        {
+            var xt = new Vector(x);
+            Matrix fjac;
+            // constraint handling needs some improvement in the future:
+            // starting point should not be close to a constraint violation
+            if (currentProblem_.constraint().test(xt))
+            {
+                var tmp = new Matrix(m, n);
+                currentProblem_.costFunction().jacobian(tmp, xt);
+                var tmpT = Matrix.transpose(tmp);
+                fjac = new Matrix(tmpT);
+            }
+            else
+            {
+                var tmpT = Matrix.transpose(initJacobian_);
+                fjac = new Matrix(tmpT);
+            }
+
+            return fjac;
         }
 
         public override EndCriteria.Type minimize(Problem P, EndCriteria endCriteria)
@@ -94,7 +139,9 @@ namespace QLNet.Math.Optimization
             // in n variables by the Levenberg-Marquardt algorithm.
             Func<int, int, Vector, int, Matrix> j = null;
             if (useCostFunctionsJacobian_)
+            {
                 j = jacFcn;
+            }
 
             // requirements; check here to get more detailed error messages.
             Utils.QL_REQUIRE(n > 0, () => "no variables given");
@@ -105,72 +152,37 @@ namespace QLNet.Math.Optimization
             Utils.QL_REQUIRE(endCriteria.maxIterations() > 0, () => "null number of evaluations");
 
             MINPACK.lmdif(m, n, xx, ref fvec,
-                          endCriteria.functionEpsilon(),
-                          xtol_,
-                          gtol_,
-                          endCriteria.maxIterations(),
-                          epsfcn_,
-                          diag, mode, factor,
-                          nprint, ref info, ref nfev, ref fjac,
-                          ldfjac, ref ipvt, ref qtf,
-                          wa1, wa2, wa3, wa4,
-                          fcn, j);
+                endCriteria.functionEpsilon(),
+                xtol_,
+                gtol_,
+                endCriteria.maxIterations(),
+                epsfcn_,
+                diag, mode, factor,
+                nprint, ref info, ref nfev, ref fjac,
+                ldfjac, ref ipvt, ref qtf,
+                wa1, wa2, wa3, wa4,
+                fcn, j);
             info_ = info;
             // check requirements & endCriteria evaluation
             Utils.QL_REQUIRE(info != 0, () => "MINPACK: improper input parameters");
             if (info != 6)
+            {
                 ecType = EndCriteria.Type.StationaryFunctionValue;
+            }
+
             endCriteria.checkMaxIterations(nfev, ref ecType);
             Utils.QL_REQUIRE(info != 7, () => "MINPACK: xtol is too small. no further " +
-                             "improvement in the approximate " +
-                             "solution x is possible.");
+                                              "improvement in the approximate " +
+                                              "solution x is possible.");
             Utils.QL_REQUIRE(info != 8, () => "MINPACK: gtol is too small. fvec is " +
-                             "orthogonal to the columns of the " +
-                             "jacobian to machine precision.");
+                                              "orthogonal to the columns of the " +
+                                              "jacobian to machine precision.");
             // set problem
             x_ = new Vector(xx.GetRange(0, n));
             P.setCurrentValue(x_);
             P.setFunctionValue(P.costFunction().value(x_));
 
             return ecType;
-        }
-
-        public Vector fcn(int m, int n, Vector x, int iflag)
-        {
-            var xt = new Vector(x);
-            Vector fvec;
-            // constraint handling needs some improvement in the future:
-            // starting point should not be close to a constraint violation
-            if (currentProblem_.constraint().test(xt))
-            {
-                fvec = new Vector(currentProblem_.values(xt));
-            }
-            else
-            {
-                fvec = new Vector(initCostValues_);
-            }
-            return fvec;
-        }
-
-        public Matrix jacFcn(int m, int n, Vector x, int iflag)
-        {
-            var xt = new Vector(x);
-            Matrix fjac;
-            // constraint handling needs some improvement in the future:
-            // starting point should not be close to a constraint violation
-            if (currentProblem_.constraint().test(xt))
-            {
-                var tmp = new Matrix(m, n);
-                currentProblem_.costFunction().jacobian(tmp, xt);
-                var tmpT = Matrix.transpose(tmp);
-                fjac = new Matrix(tmpT);
-            }
-            else
-            {
-                var tmpT = Matrix.transpose(initJacobian_);
-                fjac = new Matrix(tmpT);
-            }
-            return fjac;
         }
     }
 }

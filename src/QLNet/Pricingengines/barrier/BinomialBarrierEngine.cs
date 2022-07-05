@@ -13,14 +13,14 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Methods.lattices;
 using QLNet.processes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
-using QLNet.Time;
-using System;
 using QLNet.Termstructures.Yield;
 
 namespace QLNet.Pricingengines.barrier
@@ -35,10 +35,18 @@ namespace QLNet.Pricingengines.barrier
         \test the correctness of the returned values is tested by
               checking it against analytic european results.
     */
-    [JetBrains.Annotations.PublicAPI] public class BinomialBarrierEngine : BarrierOption.Engine
+    [PublicAPI]
+    public class BinomialBarrierEngine : BarrierOption.Engine
     {
-        public delegate ITree GetTree(StochasticProcess1D process, double end, int steps, double strike);
         public delegate DiscretizedAsset GetAsset(BarrierOption.Arguments args, StochasticProcess process, TimeGrid grid = null);
+
+        public delegate ITree GetTree(StochasticProcess1D process, double end, int steps, double strike);
+
+        private GetAsset getAsset_;
+        private GetTree getTree_;
+        private int maxTimeSteps_;
+        private GeneralizedBlackScholesProcess process_;
+        private int timeSteps_;
 
         /*! \param maxTimeSteps is used to limit timeSteps when using Boyle-Lau
                      optimization. If zero (the default) the maximum number of
@@ -49,7 +57,7 @@ namespace QLNet.Pricingengines.barrier
                      disabled and maxTimeSteps ignored.
         */
         public BinomialBarrierEngine(GetTree getTree, GetAsset getAsset,
-                                     GeneralizedBlackScholesProcess process, int timeSteps, int maxTimeSteps = 0)
+            GeneralizedBlackScholesProcess process, int timeSteps, int maxTimeSteps = 0)
         {
             process_ = process;
             timeSteps_ = timeSteps;
@@ -58,11 +66,14 @@ namespace QLNet.Pricingengines.barrier
             getAsset_ = getAsset;
 
             Utils.QL_REQUIRE(timeSteps > 0, () =>
-                             "timeSteps must be positive, " + timeSteps + " not allowed");
+                "timeSteps must be positive, " + timeSteps + " not allowed");
             Utils.QL_REQUIRE(maxTimeSteps == 0 || maxTimeSteps >= timeSteps, () =>
-                             "maxTimeSteps must be zero or greater than or equal to timeSteps, " + maxTimeSteps + " not allowed");
+                "maxTimeSteps must be zero or greater than or equal to timeSteps, " + maxTimeSteps + " not allowed");
             if (maxTimeSteps_ == 0)
+            {
                 maxTimeSteps_ = System.Math.Max(1000, timeSteps_ * 5);
+            }
+
             process_.registerWith(update);
         }
 
@@ -92,7 +103,7 @@ namespace QLNet.Pricingengines.barrier
             var maturity = rfdc.yearFraction(referenceDate, maturityDate);
 
             StochasticProcess1D bs = new GeneralizedBlackScholesProcess(process_.stateVariable(),
-                                                                        flatDividends, flatRiskFree, flatVol);
+                flatDividends, flatRiskFree, flatVol);
 
             // correct timesteps to ensure a (local) minimum, using Boyle and Lau
             // approach. See Journal of Derivatives, 1/1994,
@@ -100,13 +111,18 @@ namespace QLNet.Pricingengines.barrier
             // Note: this approach works only for CoxRossRubinstein lattices, so
             // is disabled if T is not a CoxRossRubinstein or derived from it.
             var optimum_steps = timeSteps_;
-            if (maxTimeSteps_ > timeSteps_ && s0 > 0 && arguments_.barrier > 0)    // boost::is_base_of<CoxRossRubinstein, T>::value &&
+            if (maxTimeSteps_ > timeSteps_ && s0 > 0 && arguments_.barrier > 0) // boost::is_base_of<CoxRossRubinstein, T>::value &&
             {
                 double divisor;
                 if (s0 > arguments_.barrier)
+                {
                     divisor = System.Math.Pow(System.Math.Log(s0 / arguments_.barrier.Value), 2);
+                }
                 else
+                {
                     divisor = System.Math.Pow(System.Math.Log(arguments_.barrier.Value / s0), 2);
+                }
+
                 if (!Utils.close(divisor, 0))
                 {
                     for (var i = 1; i < timeSteps_; ++i)
@@ -121,7 +137,9 @@ namespace QLNet.Pricingengines.barrier
                 }
 
                 if (optimum_steps > maxTimeSteps_)
+                {
                     optimum_steps = maxTimeSteps_; // too high, limit
+                }
             }
 
             var grid = new TimeGrid(maturity, optimum_steps);
@@ -179,12 +197,5 @@ namespace QLNet.Pricingengines.barrier
             // is the same, only time varies.
             results_.theta = (p2m - p0) / grid[2];
         }
-
-        private GeneralizedBlackScholesProcess process_;
-        private int timeSteps_;
-        private int maxTimeSteps_;
-        private GetTree getTree_;
-        private GetAsset getAsset_;
-
     }
 }

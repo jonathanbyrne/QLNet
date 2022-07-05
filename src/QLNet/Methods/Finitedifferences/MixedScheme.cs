@@ -16,9 +16,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Math;
-using System.Collections.Generic;
 
 namespace QLNet.Methods.Finitedifferences
 {
@@ -28,15 +30,19 @@ namespace QLNet.Methods.Finitedifferences
 
         \ingroup findiff
     */
-    [JetBrains.Annotations.PublicAPI] public class MixedScheme<Operator> : IMixedScheme where Operator : IOperator
+    [PublicAPI]
+    public class MixedScheme<Operator> : IMixedScheme where Operator : IOperator
     {
-        protected Operator L_, I_, explicitPart_, implicitPart_;
-        protected double dt_;
-        protected double theta_;
         protected List<BoundaryCondition<IOperator>> bcs_;
+        protected double dt_;
+        protected Operator L_, I_, explicitPart_, implicitPart_;
+        protected double theta_;
 
         // constructors
-        public MixedScheme() { }  // required for generics
+        public MixedScheme()
+        {
+        } // required for generics
+
         public MixedScheme(Operator L, double theta, List<BoundaryCondition<IOperator>> bcs)
         {
             L_ = (Operator)L.Clone();
@@ -46,50 +52,71 @@ namespace QLNet.Methods.Finitedifferences
             bcs_ = bcs;
         }
 
+        public void setStep(double dt)
+        {
+            dt_ = dt;
+            if (theta_.IsNotEqual(1.0)) // there is an explicit part
+            {
+                explicitPart_ = (Operator)L_.subtract(I_, L_.multiply((1.0 - theta_) * dt_, L_));
+            }
+
+            if (theta_.IsNotEqual(0.0)) // there is an implicit part
+            {
+                implicitPart_ = (Operator)L_.add(I_, L_.multiply(theta_ * dt_, L_));
+            }
+        }
+
         public void step(ref object o, double t, double theta = 1.0)
         {
             var a = (Vector)o;
 
             int i;
             for (i = 0; i < bcs_.Count; i++)
+            {
                 bcs_[i].setTime(t);
-            if (theta_.IsNotEqual(1.0))   // there is an explicit part
+            }
+
+            if (theta_.IsNotEqual(1.0)) // there is an explicit part
             {
                 if (L_.isTimeDependent())
                 {
                     L_.setTime(t);
                     explicitPart_ = (Operator)L_.subtract(I_, L_.multiply((1.0 - theta_) * dt_, L_));
                 }
+
                 for (i = 0; i < bcs_.Count; i++)
+                {
                     bcs_[i].applyBeforeApplying(explicitPart_);
+                }
+
                 a = explicitPart_.applyTo(a);
                 for (i = 0; i < bcs_.Count; i++)
+                {
                     bcs_[i].applyAfterApplying(a);
+                }
             }
-            if (theta_.IsNotEqual(0.0))   // there is an implicit part
+
+            if (theta_.IsNotEqual(0.0)) // there is an implicit part
             {
                 if (L_.isTimeDependent())
                 {
                     L_.setTime(t - dt_);
                     implicitPart_ = (Operator)L_.add(I_, L_.multiply(theta_ * dt_, L_));
                 }
+
                 for (i = 0; i < bcs_.Count; i++)
+                {
                     bcs_[i].applyBeforeSolving(implicitPart_, a);
+                }
+
                 a = implicitPart_.solveFor(a);
                 for (i = 0; i < bcs_.Count; i++)
+                {
                     bcs_[i].applyAfterSolving(a);
+                }
             }
 
             o = a;
-        }
-
-        public void setStep(double dt)
-        {
-            dt_ = dt;
-            if (theta_.IsNotEqual(1.0)) // there is an explicit part
-                explicitPart_ = (Operator)L_.subtract(I_, L_.multiply((1.0 - theta_) * dt_, L_));
-            if (theta_.IsNotEqual(0.0)) // there is an implicit part
-                implicitPart_ = (Operator)L_.add(I_, L_.multiply(theta_ * dt_, L_));
         }
     }
 }

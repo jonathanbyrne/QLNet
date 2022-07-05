@@ -17,6 +17,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Math.statistics
 {
     //! Statistics tool for gaussian-assumption risk measures
@@ -27,8 +29,10 @@ namespace QLNet.Math.statistics
     */
 
     //! default gaussian statistic tool
-    [JetBrains.Annotations.PublicAPI] public class GaussianStatistics : GenericGaussianStatistics<GeneralStatistics> { }
-
+    [PublicAPI]
+    public class GaussianStatistics : GenericGaussianStatistics<GeneralStatistics>
+    {
+    }
 
     //! Helper class for precomputed distributions
 }

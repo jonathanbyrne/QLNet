@@ -14,9 +14,9 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.processes;
-using QLNet.Time;
 
 namespace QLNet.Pricingengines.vanilla
 {
@@ -42,8 +42,11 @@ namespace QLNet.Pricingengines.vanilla
           cash-or-nothing at-hit digital payoff is tested by
           reproducing numerical derivatives.
     */
-    [JetBrains.Annotations.PublicAPI] public class AnalyticDigitalAmericanEngine : OneAssetOption.Engine
+    [PublicAPI]
+    public class AnalyticDigitalAmericanEngine : OneAssetOption.Engine
     {
+        private GeneralizedBlackScholesProcess process_;
+
         public AnalyticDigitalAmericanEngine(GeneralizedBlackScholesProcess process)
         {
             process_ = process;
@@ -55,7 +58,7 @@ namespace QLNet.Pricingengines.vanilla
             var ex = arguments_.exercise as AmericanExercise;
             Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
             Utils.QL_REQUIRE(ex.dates()[0] <= process_.blackVolatility().link.referenceDate(), () =>
-                             "American option with window exercise not handled yet");
+                "American option with window exercise not handled yet");
 
             var payoff = arguments_.payoff as StrikedTypePayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
@@ -70,8 +73,8 @@ namespace QLNet.Pricingengines.vanilla
             if (ex.payoffAtExpiry())
             {
                 var pricer = new AmericanPayoffAtExpiry(spot, riskFreeDiscount,
-                                                                           dividendDiscount, variance,
-                                                                           payoff, knock_in());
+                    dividendDiscount, variance,
+                    payoff, knock_in());
                 results_.value = pricer.value();
             }
             else
@@ -83,14 +86,12 @@ namespace QLNet.Pricingengines.vanilla
 
                 var rfdc = process_.riskFreeRate().link.dayCounter();
                 var t = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(),
-                                             arguments_.exercise.lastDate());
+                    arguments_.exercise.lastDate());
                 results_.rho = pricer.rho(t);
             }
-
         }
-        public virtual bool knock_in() => true;
 
-        private GeneralizedBlackScholesProcess process_;
+        public virtual bool knock_in() => true;
     }
 
     //! Analytic pricing engine for American Knock-out options with digital payoff

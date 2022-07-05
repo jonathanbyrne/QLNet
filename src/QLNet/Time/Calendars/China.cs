@@ -21,6 +21,7 @@
 
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -50,39 +51,174 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class China : Calendar
+    [PublicAPI]
+    public class China : Calendar
     {
         public enum Market
         {
-            SSE,    //!< Shanghai stock exchange
-            IB      //!< Interbank calendar
+            SSE, //!< Shanghai stock exchange
+            IB //!< Interbank calendar
         }
 
-        public China(Market market = Market.SSE)
+        private class IbImpl : Calendar
         {
+            public static readonly IbImpl Singleton = new IbImpl();
+            private readonly Calendar sseImpl;
 
-            // all calendar instances on the same market share the same implementation instance
-            switch (market)
+            public IbImpl()
             {
-                case Market.SSE:
-                    calendar_ = SseImpl.Singleton;
-                    break;
-                case Market.IB:
-                    calendar_ = IbImpl.Singleton;
-                    break;
-                default:
-                    Utils.QL_FAIL("unknown market");
-                    break;
+                sseImpl = new China();
             }
+
+            public override bool isBusinessDay(Date date)
+            {
+                var working_weekends = new List<Date>
+                {
+                    // 2005
+                    new Date(5, Month.February, 2005),
+                    new Date(6, Month.February, 2005),
+                    new Date(30, Month.April, 2005),
+                    new Date(8, Month.May, 2005),
+                    new Date(8, Month.October, 2005),
+                    new Date(9, Month.October, 2005),
+                    new Date(31, Month.December, 2005),
+                    //2006
+                    new Date(28, Month.January, 2006),
+                    new Date(29, Month.April, 2006),
+                    new Date(30, Month.April, 2006),
+                    new Date(30, Month.September, 2006),
+                    new Date(30, Month.December, 2006),
+                    new Date(31, Month.December, 2006),
+                    // 2007
+                    new Date(17, Month.February, 2007),
+                    new Date(25, Month.February, 2007),
+                    new Date(28, Month.April, 2007),
+                    new Date(29, Month.April, 2007),
+                    new Date(29, Month.September, 2007),
+                    new Date(30, Month.September, 2007),
+                    new Date(29, Month.December, 2007),
+                    // 2008
+                    new Date(2, Month.February, 2008),
+                    new Date(3, Month.February, 2008),
+                    new Date(4, Month.May, 2008),
+                    new Date(27, Month.September, 2008),
+                    new Date(28, Month.September, 2008),
+                    // 2009
+                    new Date(4, Month.January, 2009),
+                    new Date(24, Month.January, 2009),
+                    new Date(1, Month.February, 2009),
+                    new Date(31, Month.May, 2009),
+                    new Date(27, Month.September, 2009),
+                    new Date(10, Month.October, 2009),
+                    // 2010
+                    new Date(20, Month.February, 2010),
+                    new Date(21, Month.February, 2010),
+                    new Date(12, Month.June, 2010),
+                    new Date(13, Month.June, 2010),
+                    new Date(19, Month.September, 2010),
+                    new Date(25, Month.September, 2010),
+                    new Date(26, Month.September, 2010),
+                    new Date(9, Month.October, 2010),
+                    // 2011
+                    new Date(30, Month.January, 2011),
+                    new Date(12, Month.February, 2011),
+                    new Date(2, Month.April, 2011),
+                    new Date(8, Month.October, 2011),
+                    new Date(9, Month.October, 2011),
+                    new Date(31, Month.December, 2011),
+                    // 2012
+                    new Date(21, Month.January, 2012),
+                    new Date(29, Month.January, 2012),
+                    new Date(31, Month.March, 2012),
+                    new Date(1, Month.April, 2012),
+                    new Date(28, Month.April, 2012),
+                    new Date(29, Month.September, 2012),
+                    // 2013
+                    new Date(5, Month.January, 2013),
+                    new Date(6, Month.January, 2013),
+                    new Date(16, Month.February, 2013),
+                    new Date(17, Month.February, 2013),
+                    new Date(7, Month.April, 2013),
+                    new Date(27, Month.April, 2013),
+                    new Date(28, Month.April, 2013),
+                    new Date(8, Month.June, 2013),
+                    new Date(9, Month.June, 2013),
+                    new Date(22, Month.September, 2013),
+                    new Date(29, Month.September, 2013),
+                    new Date(12, Month.October, 2013),
+                    // 2014
+                    new Date(26, Month.January, 2014),
+                    new Date(8, Month.February, 2014),
+                    new Date(4, Month.May, 2014),
+                    new Date(28, Month.September, 2014),
+                    new Date(11, Month.October, 2014),
+                    // 2015
+                    new Date(4, Month.January, 2015),
+                    new Date(15, Month.February, 2015),
+                    new Date(28, Month.February, 2015),
+                    new Date(6, Month.September, 2015),
+                    new Date(10, Month.October, 2015),
+                    // 2016
+                    new Date(6, Month.February, 2016),
+                    new Date(14, Month.February, 2016),
+                    new Date(12, Month.June, 2016),
+                    new Date(18, Month.September, 2016),
+                    new Date(8, Month.October, 2016),
+                    new Date(9, Month.October, 2016),
+                    // 2017
+                    new Date(22, Month.January, 2017),
+                    new Date(4, Month.February, 2017),
+                    new Date(1, Month.April, 2017),
+                    new Date(27, Month.May, 2017),
+                    new Date(30, Month.September, 2017),
+                    // 2018
+                    new Date(11, Month.February, 2018),
+                    new Date(24, Month.February, 2018),
+                    new Date(8, Month.April, 2018),
+                    new Date(28, Month.April, 2018),
+                    new Date(29, Month.September, 2018),
+                    new Date(30, Month.September, 2018),
+                    new Date(29, Month.December, 2018),
+                    // 2019
+                    new Date(2, Month.February, 2019),
+                    new Date(3, Month.February, 2019),
+                    new Date(28, Month.April, 2019),
+                    new Date(5, Month.May, 2019),
+                    new Date(29, Month.September, 2019),
+                    new Date(12, Month.October, 2019),
+                    // 2020
+                    new Date(19, Month.January, 2020),
+                    new Date(26, Month.April, 2020),
+                    new Date(9, Month.May, 2020),
+                    new Date(28, Month.June, 2020),
+                    new Date(27, Month.September, 2020),
+                    new Date(10, Month.October, 2020),
+                    // 2021
+                    new Date(7, Month.February, 2021),
+                    new Date(20, Month.February, 2021),
+                    new Date(25, Month.April, 2021),
+                    new Date(8, Month.May, 2021),
+                    new Date(18, Month.September, 2021),
+                    new Date(26, Month.September, 2021),
+                    new Date(9, Month.October, 2021)
+                };
+
+                // If it is already a SSE business day, it must be a IB business day
+                return sseImpl.isBusinessDay(date) || working_weekends.Contains(date);
+            }
+
+            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
+
+            public override string name() => "China inter bank market";
         }
 
         private class SseImpl : Calendar
         {
             public static readonly SseImpl Singleton = new SseImpl();
-            private SseImpl() { }
-            public override string name() => "Shanghai stock exchange";
 
-            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
+            private SseImpl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -114,7 +250,7 @@ namespace QLNet.Time.Calendars
                     || y == 2004 && d >= 19 && d <= 28 && m == Month.January
                     || y == 2005 && d >= 7 && d <= 15 && m == Month.February
                     || y == 2006 && (d >= 26 && m == Month.January ||
-                                      d <= 3 && m == Month.February)
+                                     d <= 3 && m == Month.February)
                     || y == 2007 && d >= 17 && d <= 25 && m == Month.February
                     || y == 2008 && d >= 6 && d <= 12 && m == Month.February
                     || y == 2009 && d >= 26 && d <= 30 && m == Month.January
@@ -127,7 +263,7 @@ namespace QLNet.Time.Calendars
                     || y == 2015 && d >= 18 && d <= 24 && m == Month.February
                     || y == 2016 && d >= 8 && d <= 12 && m == Month.February
                     || y == 2017 && (d >= 27 && m == Month.January ||
-                                      d <= 2 && m == Month.February)
+                                     d <= 2 && m == Month.February)
                     || y == 2018 && d >= 15 && d <= 21 && m == Month.February
                     || y == 2019 && d >= 4 && d <= 8 && m == Month.February
                     || y == 2020 && (d == 24 || d >= 27 && d <= 31) && m == Month.January
@@ -154,9 +290,9 @@ namespace QLNet.Time.Calendars
                     || y == 2010 && d == 3 && m == Month.May
                     || y == 2011 && d == 2 && m == Month.May
                     || y == 2012 && (d == 30 && m == Month.April ||
-                                      d == 1 && m == Month.May)
+                                     d == 1 && m == Month.May)
                     || y == 2013 && (d >= 29 && m == Month.April ||
-                                      d == 1 && m == Month.May)
+                                     d == 1 && m == Month.May)
                     || y == 2014 && d >= 1 && d <= 3 && m == Month.May
                     || y == 2015 && d == 1 && m == Month.May
                     || y == 2016 && d >= 1 && d <= 2 && m == Month.May
@@ -195,7 +331,7 @@ namespace QLNet.Time.Calendars
                     // National Day
                     || y <= 2007 && d >= 1 && d <= 7 && m == Month.October
                     || y == 2008 && (d >= 29 && m == Month.September ||
-                                      d <= 3 && m == Month.October)
+                                     d <= 3 && m == Month.October)
                     || y == 2009 && d >= 1 && d <= 8 && m == Month.October
                     || y == 2010 && d >= 1 && d <= 7 && m == Month.October
                     || y == 2011 && d >= 1 && d <= 7 && m == Month.October
@@ -213,168 +349,33 @@ namespace QLNet.Time.Calendars
                     // 70th anniversary of the victory of anti-Japaneses war
                     || y == 2015 && d >= 3 && d <= 4 && m == Month.September
                    )
+                {
                     return false;
+                }
+
                 return true;
-
             }
-        }
-
-        private class IbImpl : Calendar
-        {
-            public static readonly IbImpl Singleton = new IbImpl();
-
-            public IbImpl()
-            {
-                sseImpl = new China(Market.SSE);
-            }
-
-            public override string name() => "China inter bank market";
 
             public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
 
-            public override bool isBusinessDay(Date date)
-            {
-
-                var working_weekends = new List<Date>
-            {
-               // 2005
-               new Date(5, Month.February, 2005),
-               new Date(6, Month.February, 2005),
-               new Date(30, Month.April, 2005),
-               new Date(8, Month.May, 2005),
-               new Date(8, Month.October, 2005),
-               new Date(9, Month.October, 2005),
-               new Date(31, Month.December, 2005),
-               //2006
-               new Date(28, Month.January, 2006),
-               new Date(29, Month.April, 2006),
-               new Date(30, Month.April, 2006),
-               new Date(30, Month.September, 2006),
-               new Date(30, Month.December, 2006),
-               new Date(31, Month.December, 2006),
-               // 2007
-               new Date(17, Month.February, 2007),
-               new Date(25, Month.February, 2007),
-               new Date(28, Month.April, 2007),
-               new Date(29, Month.April, 2007),
-               new Date(29, Month.September, 2007),
-               new Date(30, Month.September, 2007),
-               new Date(29, Month.December, 2007),
-               // 2008
-               new Date(2, Month.February, 2008),
-               new Date(3, Month.February, 2008),
-               new Date(4, Month.May, 2008),
-               new Date(27, Month.September, 2008),
-               new Date(28, Month.September, 2008),
-               // 2009
-               new Date(4, Month.January, 2009),
-               new Date(24, Month.January, 2009),
-               new Date(1, Month.February, 2009),
-               new Date(31, Month.May, 2009),
-               new Date(27, Month.September, 2009),
-               new Date(10, Month.October, 2009),
-               // 2010
-               new Date(20, Month.February, 2010),
-               new Date(21, Month.February, 2010),
-               new Date(12, Month.June, 2010),
-               new Date(13, Month.June, 2010),
-               new Date(19, Month.September, 2010),
-               new Date(25, Month.September, 2010),
-               new Date(26, Month.September, 2010),
-               new Date(9, Month.October, 2010),
-               // 2011
-               new Date(30, Month.January, 2011),
-               new Date(12, Month.February, 2011),
-               new Date(2, Month.April, 2011),
-               new Date(8, Month.October, 2011),
-               new Date(9, Month.October, 2011),
-               new Date(31, Month.December, 2011),
-               // 2012
-               new Date(21, Month.January, 2012),
-               new Date(29, Month.January, 2012),
-               new Date(31, Month.March, 2012),
-               new Date(1, Month.April, 2012),
-               new Date(28, Month.April, 2012),
-               new Date(29, Month.September, 2012),
-               // 2013
-               new Date(5, Month.January, 2013),
-               new Date(6, Month.January, 2013),
-               new Date(16, Month.February, 2013),
-               new Date(17, Month.February, 2013),
-               new Date(7, Month.April, 2013),
-               new Date(27, Month.April, 2013),
-               new Date(28, Month.April, 2013),
-               new Date(8, Month.June, 2013),
-               new Date(9, Month.June, 2013),
-               new Date(22, Month.September, 2013),
-               new Date(29, Month.September, 2013),
-               new Date(12, Month.October, 2013),
-               // 2014
-               new Date(26, Month.January, 2014),
-               new Date(8, Month.February, 2014),
-               new Date(4, Month.May, 2014),
-               new Date(28, Month.September, 2014),
-               new Date(11, Month.October, 2014),
-               // 2015
-               new Date(4, Month.January, 2015),
-               new Date(15, Month.February, 2015),
-               new Date(28, Month.February, 2015),
-               new Date(6, Month.September, 2015),
-               new Date(10, Month.October, 2015),
-               // 2016
-               new Date(6, Month.February, 2016),
-               new Date(14, Month.February, 2016),
-               new Date(12, Month.June, 2016),
-               new Date(18, Month.September, 2016),
-               new Date(8, Month.October, 2016),
-               new Date(9, Month.October, 2016),
-               // 2017
-               new Date(22, Month.January, 2017),
-               new Date(4, Month.February, 2017),
-               new Date(1, Month.April, 2017),
-               new Date(27, Month.May, 2017),
-               new Date(30, Month.September, 2017),
-               // 2018
-               new Date(11, Month.February, 2018),
-               new Date(24, Month.February, 2018),
-               new Date(8, Month.April, 2018),
-               new Date(28, Month.April, 2018),
-               new Date(29, Month.September, 2018),
-               new Date(30, Month.September, 2018),
-               new Date(29, Month.December, 2018),
-               // 2019
-               new Date(2, Month.February, 2019),
-               new Date(3, Month.February, 2019),
-               new Date(28, Month.April, 2019),
-               new Date(5, Month.May, 2019),
-               new Date(29, Month.September, 2019),
-               new Date(12, Month.October, 2019),
-               // 2020
-               new Date(19, Month.January, 2020),
-               new Date(26, Month.April, 2020),
-               new Date(9, Month.May, 2020),
-               new Date(28, Month.June, 2020),
-               new Date(27, Month.September, 2020),
-               new Date(10, Month.October, 2020),
-               // 2021
-               new Date(7, Month.February, 2021),
-               new Date(20, Month.February, 2021),
-               new Date(25, Month.April, 2021),
-               new Date(8, Month.May, 2021),
-               new Date(18, Month.September, 2021),
-               new Date(26, Month.September, 2021),
-               new Date(9, Month.October, 2021)
-            };
-
-                // If it is already a SSE business day, it must be a IB business day
-                return sseImpl.isBusinessDay(date) || working_weekends.Contains(date);
-
-            }
-
-            private Calendar sseImpl;
-
+            public override string name() => "Shanghai stock exchange";
         }
 
+        public China(Market market = Market.SSE)
+        {
+            // all calendar instances on the same market share the same implementation instance
+            switch (market)
+            {
+                case Market.SSE:
+                    calendar_ = SseImpl.Singleton;
+                    break;
+                case Market.IB:
+                    calendar_ = IbImpl.Singleton;
+                    break;
+                default:
+                    Utils.QL_FAIL("unknown market");
+                    break;
+            }
+        }
     }
 }
-

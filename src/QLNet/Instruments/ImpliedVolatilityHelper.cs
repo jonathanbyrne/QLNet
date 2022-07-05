@@ -20,9 +20,7 @@
 using QLNet.Math.Solvers1d;
 using QLNet.processes;
 using QLNet.Quotes;
-using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
-using System;
 
 namespace QLNet.Instruments
 {
@@ -32,9 +30,8 @@ namespace QLNet.Instruments
     public static class ImpliedVolatilityHelper
     {
         public static double calculate(Instrument instrument, IPricingEngine engine, SimpleQuote volQuote,
-                                       double targetValue, double accuracy, int maxEvaluations, double minVol, double maxVol)
+            double targetValue, double accuracy, int maxEvaluations, double minVol, double maxVol)
         {
-
             instrument.setupArguments(engine.getArguments());
             engine.getArguments().validate();
 
@@ -54,8 +51,8 @@ namespace QLNet.Instruments
 
             var blackVol = process.blackVolatility();
             var volatility = new Handle<BlackVolTermStructure>(new BlackConstantVol(blackVol.link.referenceDate(),
-                                                                                    blackVol.link.calendar(), new Handle<Quote>(volQuote),
-                                                                                    blackVol.link.dayCounter()));
+                blackVol.link.calendar(), new Handle<Quote>(volQuote),
+                blackVol.link.dayCounter()));
 
             return new GeneralizedBlackScholesProcess(stateVariable, dividendYield, riskFreeRate, volatility);
         }

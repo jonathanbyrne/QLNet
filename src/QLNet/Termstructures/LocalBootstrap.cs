@@ -18,11 +18,12 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.Interpolations;
 using QLNet.Math.Optimization;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Termstructures
 {
@@ -45,39 +46,28 @@ namespace QLNet.Termstructures
         whilst using a smoother interpolation method. Particularly
         good for the convex-monotone spline method.
     */
-    [JetBrains.Annotations.PublicAPI] public class LocalBootstrap<T, U> : IBootStrap<T>
-       where T : Curve<U>, new()
-       where U : TermStructure
+    [PublicAPI]
+    public class LocalBootstrap<T, U> : IBootStrap<T>
+        where T : Curve<U>, new()
+        where U : TermStructure
     {
-        private bool validCurve_;
+        private bool forcePositive_;
+        private int localisation_;
         private T ts_; // yes, it is a workaround
-        int localisation_;
-        bool forcePositive_;
+        private bool validCurve_;
 
-        public LocalBootstrap() : this(2, true) { }
+        public LocalBootstrap() : this(2, true)
+        {
+        }
+
         public LocalBootstrap(int localisation, bool forcePositive)
         {
             localisation_ = localisation;
             forcePositive_ = forcePositive;
         }
 
-        public void setup(T ts)
-        {
-            ts_ = ts;
-
-            var n = ts_.instruments_.Count;
-            Utils.QL_REQUIRE(n >= ts_.interpolator_.requiredPoints, () =>
-                             "not enough instruments: " + n + " provided, " + ts_.interpolator_.requiredPoints + " required");
-
-            Utils.QL_REQUIRE(n > localisation_, () =>
-                             "not enough instruments: " + n + " provided, " + localisation_ + " required.");
-
-            ts_.instruments_.ForEach((i, x) => ts_.registerWith(x));
-        }
-
         public void calculate()
         {
-
             validCurve_ = false;
             int nInsts = ts_.instruments_.Count, i;
 
@@ -88,13 +78,13 @@ namespace QLNet.Termstructures
             for (i = 1; i < nInsts; ++i)
             {
                 Date m1 = ts_.instruments_[i - 1].latestDate(),
-                     m2 = ts_.instruments_[i].latestDate();
+                    m2 = ts_.instruments_[i].latestDate();
                 Utils.QL_REQUIRE(m1 != m2, () => "two instruments have the same maturity (" + m1 + ")");
             }
 
             // check that there is no instruments with invalid quote
             Utils.QL_REQUIRE((i = ts_.instruments_.FindIndex(x => !x.quoteIsValid())) == -1, () =>
-                             "instrument " + i + " (maturity: " + ts_.instruments_[i].latestDate() + ") has an invalid quote");
+                "instrument " + i + " (maturity: " + ts_.instruments_[i].latestDate() + ") has an invalid quote");
 
             // setup instruments and register with them
             ts_.instruments_.ForEach((x, j) => ts_.setTermStructure(j));
@@ -103,7 +93,7 @@ namespace QLNet.Termstructures
             if (validCurve_)
             {
                 Utils.QL_REQUIRE(ts_.data_.Count == nInsts + 1, () =>
-                                 "dimension mismatch: expected " + nInsts + 1 + ", actual " + ts_.data_.Count);
+                    "dimension mismatch: expected " + nInsts + 1 + ", actual " + ts_.data_.Count);
             }
             else
             {
@@ -121,7 +111,9 @@ namespace QLNet.Termstructures
                 ts_.dates_[i + 1] = ts_.instruments_[i].latestDate();
                 ts_.times_[i + 1] = ts_.timeFromReference(ts_.dates_[i + 1]);
                 if (!validCurve_)
+                {
                     ts_.data_[i + 1] = ts_.data_[i];
+                }
             }
 
             var solver = new LevenbergMarquardt(ts_.accuracy_, ts_.accuracy_, ts_.accuracy_);
@@ -140,7 +132,9 @@ namespace QLNet.Termstructures
                 var initialDataPt = iInst + 1 - localisation_ + dataAdjust;
                 var startArray = new Vector(localisation_ + 1 - dataAdjust);
                 for (var j = 0; j < startArray.size() - 1; ++j)
+                {
                     startArray[j] = ts_.data_[initialDataPt + j];
+                }
 
                 // here we are extending the interpolation a point at a
                 // time... but the local interpolator can make an
@@ -150,7 +144,7 @@ namespace QLNet.Termstructures
                 // instruments... with the local interpolator making
                 // suitable boundary conditions.
                 ts_.interpolation_ = (ts_.interpolator_ as ConvexMonotone).localInterpolate(ts_.times_, iInst + 2, ts_.data_,
-                                                                                            localisation_, ts_.interpolation_ as ConvexMonotoneInterpolation, nInsts + 1);
+                    localisation_, ts_.interpolation_ as ConvexMonotoneInterpolation, nInsts + 1);
 
                 if (iInst >= localisation_)
                 {
@@ -162,19 +156,32 @@ namespace QLNet.Termstructures
                 }
 
                 var currentCost = new PenaltyFunction<T, U>(ts_, initialDataPt, ts_.instruments_,
-                                                            iInst - localisation_ + 1, iInst + 1);
+                    iInst - localisation_ + 1, iInst + 1);
                 var toSolve = new Problem(currentCost, solverConstraint, startArray);
                 var endType = solver.minimize(toSolve, endCriteria);
 
                 // check the end criteria
                 Utils.QL_REQUIRE(endType == EndCriteria.Type.StationaryFunctionAccuracy ||
                                  endType == EndCriteria.Type.StationaryFunctionValue, () =>
-                                 "Unable to strip yieldcurve to required accuracy ");
+                    "Unable to strip yieldcurve to required accuracy ");
                 ++iInst;
-            }
-            while (iInst < nInsts);
+            } while (iInst < nInsts);
 
             validCurve_ = true;
+        }
+
+        public void setup(T ts)
+        {
+            ts_ = ts;
+
+            var n = ts_.instruments_.Count;
+            Utils.QL_REQUIRE(n >= ts_.interpolator_.requiredPoints, () =>
+                "not enough instruments: " + n + " provided, " + ts_.interpolator_.requiredPoints + " required");
+
+            Utils.QL_REQUIRE(n > localisation_, () =>
+                "not enough instruments: " + n + " provided, " + localisation_ + " required.");
+
+            ts_.instruments_.ForEach((i, x) => ts_.registerWith(x));
         }
     }
 }

@@ -17,8 +17,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Extensions;
-using System;
 
 namespace QLNet
 {
@@ -28,51 +28,61 @@ namespace QLNet
         distribution with parameters p and n.
     */
 
-    [JetBrains.Annotations.PublicAPI] public class BinomialDistribution
-   {
-      private int n_;
-      private double logP_, logOneMinusP_;
+    [PublicAPI]
+    public class BinomialDistribution
+    {
+        private double logP_, logOneMinusP_;
+        private int n_;
 
-      public BinomialDistribution(double p, int n)
-      {
-         n_ = n;
+        public BinomialDistribution(double p, int n)
+        {
+            n_ = n;
 
-         if (p.IsEqual(0.0))
-         {
-            logOneMinusP_ = 0.0;
-         }
-         else if (p.IsEqual(1.0))
-         {
-            logP_ = 0.0;
-         }
-         else
-         {
-            Utils.QL_REQUIRE(p > 0, () => "negative p not allowed");
-            Utils.QL_REQUIRE(p < 1.0, () => "p>1.0 not allowed");
+            if (p.IsEqual(0.0))
+            {
+                logOneMinusP_ = 0.0;
+            }
+            else if (p.IsEqual(1.0))
+            {
+                logP_ = 0.0;
+            }
+            else
+            {
+                Utils.QL_REQUIRE(p > 0, () => "negative p not allowed");
+                Utils.QL_REQUIRE(p < 1.0, () => "p>1.0 not allowed");
 
-            logP_ = System.Math.Log(p);
-            logOneMinusP_ = System.Math.Log(1.0 - p);
-         }
-      }
+                logP_ = System.Math.Log(p);
+                logOneMinusP_ = System.Math.Log(1.0 - p);
+            }
+        }
 
-      // function
-      public double value(int k)
-      {
-         if (k > n_) return 0.0;
+        // function
+        public double value(int k)
+        {
+            if (k > n_)
+            {
+                return 0.0;
+            }
 
-         // p==1.0
-         if (logP_.IsEqual(0.0))
-            return (k == n_ ? 1.0 : 0.0);
-         // p==0.0
-         if (logOneMinusP_.IsEqual(0.0))
-            return (k == 0 ? 1.0 : 0.0);
-         return System.Math.Exp(Utils.binomialCoefficientLn(n_, k) + k * logP_ + (n_ - k) * logOneMinusP_);
-      }
-   }
+            // p==1.0
+            if (logP_.IsEqual(0.0))
+            {
+                return (k == n_ ? 1.0 : 0.0);
+            }
 
-   //! Cumulative binomial distribution function
-   /*! Given an integer k it provides the cumulative probability
-       of observing kk<=k:
-       formula here ...
-   */
+            // p==0.0
+            if (logOneMinusP_.IsEqual(0.0))
+            {
+                return (k == 0 ? 1.0 : 0.0);
+            }
+
+            return System.Math.Exp(Utils.binomialCoefficientLn(n_, k) + k * logP_ + (n_ - k) * logOneMinusP_);
+        }
+    }
+
+    //! Cumulative binomial distribution function
+    /*! Given an integer k it provides the cumulative probability
+        of observing kk<=k:
+        formula here ...
+    */
 }

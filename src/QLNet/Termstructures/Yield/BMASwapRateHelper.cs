@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Instruments;
 using QLNet.Pricingengines.Swap;
@@ -7,8 +8,20 @@ using QLNet.Time.Calendars;
 
 namespace QLNet.Termstructures.Yield
 {
-    [JetBrains.Annotations.PublicAPI] public class BMASwapRateHelper : RelativeDateRateHelper
+    [PublicAPI]
+    public class BMASwapRateHelper : RelativeDateRateHelper
     {
+        protected BusinessDayConvention bmaConvention_;
+        protected DayCounter bmaDayCount_;
+        protected BMAIndex bmaIndex_;
+        protected Period bmaPeriod_;
+        protected Calendar calendar_;
+        protected IborIndex iborIndex_;
+        protected int settlementDays_;
+        protected BMASwap swap_;
+        protected Period tenor_;
+        protected RelinkableHandle<YieldTermStructure> termStructureHandle_ = new RelinkableHandle<YieldTermStructure>();
+
         public BMASwapRateHelper(Handle<Quote> liborFraction,
             Period tenor,
             int settlementDays,
@@ -58,7 +71,7 @@ namespace QLNet.Termstructures.Yield
             // then move to the next business day
             var jc = new JointCalendar(calendar_, iborIndex_.fixingCalendar());
             var referenceDate = jc.adjust(evaluationDate_);
-            earliestDate_ = calendar_.advance(referenceDate, new Period(settlementDays_, TimeUnit.Days), BusinessDayConvention.Following);
+            earliestDate_ = calendar_.advance(referenceDate, new Period(settlementDays_, TimeUnit.Days));
 
             var maturity = earliestDate_ + tenor_;
 
@@ -84,26 +97,10 @@ namespace QLNet.Termstructures.Yield
 
             swap_.setPricingEngine(new DiscountingSwapEngine(iborIndex_.forwardingTermStructure()));
 
-            var d = calendar_.adjust(swap_.maturityDate(), BusinessDayConvention.Following);
+            var d = calendar_.adjust(swap_.maturityDate());
             var w = d.weekday();
-            var nextWednesday = w >= 4 ?
-                d + new Period(11 - w, TimeUnit.Days) :
-                d + new Period(4 - w, TimeUnit.Days);
+            var nextWednesday = w >= 4 ? d + new Period(11 - w, TimeUnit.Days) : d + new Period(4 - w, TimeUnit.Days);
             latestDate_ = clonedIndex.valueDate(clonedIndex.fixingCalendar().adjust(nextWednesday));
-
         }
-
-        protected Period tenor_;
-        protected int settlementDays_;
-        protected Calendar calendar_;
-        protected Period bmaPeriod_;
-        protected BusinessDayConvention bmaConvention_;
-        protected DayCounter bmaDayCount_;
-        protected BMAIndex bmaIndex_;
-        protected IborIndex iborIndex_;
-
-        protected BMASwap swap_;
-        protected RelinkableHandle<YieldTermStructure> termStructureHandle_ = new RelinkableHandle<YieldTermStructure>();
-
     }
 }

@@ -172,44 +172,61 @@ namespace QLNet.Tests
             var swaption = new Swaption(itmSwap, exercise);
             swaption.setPricingEngine(treeEngine);
             if (System.Math.Abs(swaption.NPV() - itmValue) > tolerance)
+            {
                 QAssert.Fail("failed to reproduce cached in-the-money swaption value:\n"
                              + "calculated: " + swaption.NPV() + "\n"
                              + "expected:   " + itmValue);
+            }
 
             swaption.setPricingEngine(fdmEngine);
             if (System.Math.Abs(swaption.NPV() - itmValueFdm) > tolerance)
+            {
                 QAssert.Fail("failed to reproduce cached in-the-money swaption value:\n"
                              + "calculated: " + swaption.NPV() + "\n"
                              + "expected:   " + itmValueFdm);
+            }
 
             swaption = new Swaption(atmSwap, exercise);
             swaption.setPricingEngine(treeEngine);
             if (System.Math.Abs(swaption.NPV() - atmValue) > tolerance)
+            {
                 QAssert.Fail("failed to reproduce cached at-the-money swaption value:\n"
                              + "calculated: " + swaption.NPV() + "\n"
                              + "expected:   " + atmValue);
+            }
+
             swaption.setPricingEngine(fdmEngine);
             if (System.Math.Abs(swaption.NPV() - atmValueFdm) > tolerance)
+            {
                 QAssert.Fail("failed to reproduce cached at-the-money swaption value:\n"
                              + "calculated: " + swaption.NPV() + "\n"
                              + "expected:   " + atmValueFdm);
+            }
 
             swaption = new Swaption(otmSwap, exercise);
             swaption.setPricingEngine(treeEngine);
             if (System.Math.Abs(swaption.NPV() - otmValue) > tolerance)
+            {
                 QAssert.Fail("failed to reproduce cached out-of-the-money "
                              + "swaption value:\n"
                              + "calculated: " + swaption.NPV() + "\n"
                              + "expected:   " + otmValue);
+            }
+
             swaption.setPricingEngine(fdmEngine);
             if (System.Math.Abs(swaption.NPV() - otmValueFdm) > tolerance)
+            {
                 QAssert.Fail("failed to reproduce cached out-of-the-money "
                              + "swaption value:\n"
                              + "calculated: " + swaption.NPV() + "\n"
                              + "expected:   " + otmValueFdm);
+            }
 
             for (var j = 0; j < exerciseDates.Count; j++)
+            {
                 exerciseDates[j] = vars.calendar.adjust(exerciseDates[j] - 10);
+            }
+
             exercise = new BermudanExercise(exerciseDates);
 
 #if QL_USE_INDEXED_COUPON
@@ -221,24 +238,30 @@ namespace QLNet.Tests
             swaption = new Swaption(itmSwap, exercise);
             swaption.setPricingEngine(treeEngine);
             if (System.Math.Abs(swaption.NPV() - itmValue) > tolerance)
+            {
                 QAssert.Fail("failed to reproduce cached in-the-money swaption value:\n"
                              + "calculated: " + swaption.NPV() + "\n"
                              + "expected:   " + itmValue);
+            }
 
             swaption = new Swaption(atmSwap, exercise);
             swaption.setPricingEngine(treeEngine);
             if (System.Math.Abs(swaption.NPV() - atmValue) > tolerance)
+            {
                 QAssert.Fail("failed to reproduce cached at-the-money swaption value:\n"
                              + "calculated: " + swaption.NPV() + "\n"
                              + "expected:   " + atmValue);
+            }
 
             swaption = new Swaption(otmSwap, exercise);
             swaption.setPricingEngine(treeEngine);
             if (System.Math.Abs(swaption.NPV() - otmValue) > tolerance)
+            {
                 QAssert.Fail("failed to reproduce cached out-of-the-money "
                              + "swaption value:\n"
                              + "calculated: " + swaption.NPV() + "\n"
                              + "expected:   " + otmValue);
+            }
         }
     }
 }

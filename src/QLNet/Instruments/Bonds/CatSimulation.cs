@@ -5,6 +5,9 @@ namespace QLNet.Instruments.Bonds
 {
     public abstract class CatSimulation
     {
+        protected Date end_;
+        protected Date start_;
+
         protected CatSimulation(Date start, Date end)
         {
             start_ = start;
@@ -12,8 +15,5 @@ namespace QLNet.Instruments.Bonds
         }
 
         public abstract bool nextPath(List<KeyValuePair<Date, double>> path);
-
-        protected Date start_;
-        protected Date end_;
     }
 }

@@ -1,6 +1,9 @@
-﻿namespace QLNet.Math.Interpolations
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class ConvexMonotone4MinHelper : ConvexMonotone4Helper
+    [PublicAPI]
+    public class ConvexMonotone4MinHelper : ConvexMonotone4Helper
     {
         private bool splitRegion_;
         private double xRatio_, x2_, x3_;
@@ -9,7 +12,6 @@
             double fAverage, double eta4, double prevPrimitive)
             : base(xPrev, xNext, gPrev, gNext, fAverage, eta4, prevPrimitive)
         {
-
             splitRegion_ = false;
             if (A_ + fAverage_ <= 0.0)
             {
@@ -30,32 +32,12 @@
             }
         }
 
-        public override double value(double x)
-        {
-            if (!splitRegion_)
-                return base.value(x);
-
-            var xVal = (x - xPrev_) / xScaling_;
-            if (x <= x2_)
-            {
-                xVal /= xRatio_;
-                return fAverage_ + A_ + (gPrev_ - A_) * (eta4_ - xVal) * (eta4_ - xVal) / (eta4_ * eta4_);
-            }
-            else if (x < x3_)
-            {
-                return 0.0;
-            }
-            else
-            {
-                xVal = 1.0 - (1.0 - xVal) / xRatio_;
-                return fAverage_ + A_ + (gNext_ - A_) * (xVal - eta4_) * (xVal - eta4_) / ((1 - eta4_) * (1 - eta4_));
-            }
-        }
-
         public override double primitive(double x)
         {
             if (!splitRegion_)
+            {
                 return base.primitive(x);
+            }
 
             var xVal = (x - xPrev_) / xScaling_;
             if (x <= x2_)
@@ -64,18 +46,40 @@
                 return prevPrimitive_ + xScaling_ * xRatio_ * (fAverage_ + A_ + (gPrev_ - A_) / (eta4_ * eta4_) *
                     (eta4_ * eta4_ - eta4_ * xVal + 1.0 / 3.0 * xVal * xVal)) * xVal;
             }
-            else if (x <= x3_)
+
+            if (x <= x3_)
             {
                 return prevPrimitive_ + xScaling_ * xRatio_ * (fAverage_ * eta4_ + A_ * eta4_ + (gPrev_ - A_) / (eta4_ * eta4_) *
                     (1.0 / 3.0 * eta4_ * eta4_ * eta4_));
             }
-            else
+
+            xVal = 1.0 - (1.0 - xVal) / xRatio_;
+            return prevPrimitive_ + xScaling_ * xRatio_ * (fAverage_ * xVal + A_ * xVal + (gPrev_ - A_) * (1.0 / 3.0 * eta4_) +
+                                                           (gNext_ - A_) / ((1.0 - eta4_) * (1.0 - eta4_)) *
+                                                           (1.0 / 3.0 * xVal * xVal * xVal - eta4_ * xVal * xVal + eta4_ * eta4_ * xVal - 1.0 / 3.0 * eta4_ * eta4_ * eta4_));
+        }
+
+        public override double value(double x)
+        {
+            if (!splitRegion_)
             {
-                xVal = 1.0 - (1.0 - xVal) / xRatio_;
-                return prevPrimitive_ + xScaling_ * xRatio_ * (fAverage_ * xVal + A_ * xVal + (gPrev_ - A_) * (1.0 / 3.0 * eta4_) +
-                                                               (gNext_ - A_) / ((1.0 - eta4_) * (1.0 - eta4_)) *
-                                                               (1.0 / 3.0 * xVal * xVal * xVal - eta4_ * xVal * xVal + eta4_ * eta4_ * xVal - 1.0 / 3.0 * eta4_ * eta4_ * eta4_));
+                return base.value(x);
             }
+
+            var xVal = (x - xPrev_) / xScaling_;
+            if (x <= x2_)
+            {
+                xVal /= xRatio_;
+                return fAverage_ + A_ + (gPrev_ - A_) * (eta4_ - xVal) * (eta4_ - xVal) / (eta4_ * eta4_);
+            }
+
+            if (x < x3_)
+            {
+                return 0.0;
+            }
+
+            xVal = 1.0 - (1.0 - xVal) / xRatio_;
+            return fAverage_ + A_ + (gNext_ - A_) * (xVal - eta4_) * (xVal - eta4_) / ((1 - eta4_) * (1 - eta4_));
         }
     }
 }

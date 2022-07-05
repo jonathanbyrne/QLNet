@@ -17,23 +17,24 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet;
+
+using System;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
-using QLNet.Instruments;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Pricingengines.Swap
 {
-    [JetBrains.Annotations.PublicAPI] public class DiscountingSwapEngine : Instruments.Swap.SwapEngine
+    [PublicAPI]
+    public class DiscountingSwapEngine : Instruments.Swap.SwapEngine
     {
         private Handle<YieldTermStructure> discountCurve_;
         private bool? includeSettlementDateFlows_;
         private Date settlementDate_, npvDate_;
 
         public DiscountingSwapEngine(Handle<YieldTermStructure> discountCurve, bool? includeSettlementDateFlows = null,
-                                     Date settlementDate = null, Date npvDate = null)
+            Date settlementDate = null, Date npvDate = null)
         {
             discountCurve_ = discountCurve;
             discountCurve_.registerWith(update);
@@ -60,8 +61,8 @@ namespace QLNet.Pricingengines.Swap
             else
             {
                 Utils.QL_REQUIRE(settlementDate >= refDate, () =>
-                                 "settlement date (" + settlementDate + ") before " +
-                                 "discount curve reference date (" + refDate + ")");
+                    "settlement date (" + settlementDate + ") before " +
+                    "discount curve reference date (" + refDate + ")");
             }
 
             results_.valuationDate = npvDate_;
@@ -72,8 +73,8 @@ namespace QLNet.Pricingengines.Swap
             else
             {
                 Utils.QL_REQUIRE(npvDate_ >= refDate, () =>
-                                 "npv date (" + npvDate_ + ") before " +
-                                 "discount curve reference date (" + refDate + ")");
+                    "npv date (" + npvDate_ + ") before " +
+                    "discount curve reference date (" + refDate + ")");
             }
 
             results_.npvDateDiscount = discountCurve_.link.discount(results_.valuationDate);
@@ -86,9 +87,7 @@ namespace QLNet.Pricingengines.Swap
             results_.endDiscounts = new InitializedList<double?>(n);
 
             var includeRefDateFlows =
-               includeSettlementDateFlows_.HasValue ?
-               includeSettlementDateFlows_.Value :
-               Settings.includeReferenceDateEvents;
+                includeSettlementDateFlows_.HasValue ? includeSettlementDateFlows_.Value : Settings.includeReferenceDateEvents;
 
             for (var i = 0; i < n; ++i)
             {
@@ -97,12 +96,12 @@ namespace QLNet.Pricingengines.Swap
                     var discount_ref = discountCurve_.currentLink();
                     double npv = 0, bps = 0;
                     CashFlows.npvbps(arguments_.legs[i],
-                                     discount_ref,
-                                     includeRefDateFlows,
-                                     settlementDate,
-                                     results_.valuationDate,
-                                     out npv,
-                                     out bps);
+                        discount_ref,
+                        includeRefDateFlows,
+                        settlementDate,
+                        results_.valuationDate,
+                        out npv,
+                        out bps);
                     results_.legNPV[i] = npv * arguments_.payer[i];
                     results_.legBPS[i] = bps * arguments_.payer[i];
 
@@ -110,27 +109,35 @@ namespace QLNet.Pricingengines.Swap
                     {
                         var d1 = CashFlows.startDate(arguments_.legs[i]);
                         if (d1 >= refDate)
+                        {
                             results_.startDiscounts[i] = discountCurve_.link.discount(d1);
+                        }
                         else
+                        {
                             results_.startDiscounts[i] = null;
+                        }
 
                         var d2 = CashFlows.maturityDate(arguments_.legs[i]);
                         if (d2 >= refDate)
+                        {
                             results_.endDiscounts[i] = discountCurve_.link.discount(d2);
+                        }
                         else
+                        {
                             results_.endDiscounts[i] = null;
+                        }
                     }
                     else
                     {
                         results_.startDiscounts[i] = null;
                         results_.endDiscounts[i] = null;
                     }
-
                 }
                 catch (Exception e)
                 {
                     Utils.QL_FAIL(i + 1 + " leg: " + e.Message);
                 }
+
                 results_.value += results_.legNPV[i];
             }
         }

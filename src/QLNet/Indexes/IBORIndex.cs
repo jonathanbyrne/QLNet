@@ -18,59 +18,51 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Indexes
 {
     //! base class for Inter-Bank-Offered-Rate indexes (e.g. %Libor, etc.)
-    [JetBrains.Annotations.PublicAPI] public class IborIndex : InterestRateIndex
+    [PublicAPI]
+    public class IborIndex : InterestRateIndex
     {
-        public IborIndex(string familyName,
-                         Period tenor,
-                         int settlementDays,
-                         Currency currency,
-                         Calendar fixingCalendar,
-                         BusinessDayConvention convention,
-                         bool endOfMonth,
-                         DayCounter dayCounter,
-                         Handle<YieldTermStructure> h = null)
-           : base(familyName, tenor, settlementDays, currency, fixingCalendar, dayCounter)
-        {
+        protected BusinessDayConvention convention_;
+        protected bool endOfMonth_;
+        protected Handle<YieldTermStructure> termStructure_;
 
+        public IborIndex(string familyName,
+            Period tenor,
+            int settlementDays,
+            Currency currency,
+            Calendar fixingCalendar,
+            BusinessDayConvention convention,
+            bool endOfMonth,
+            DayCounter dayCounter,
+            Handle<YieldTermStructure> h = null)
+            : base(familyName, tenor, settlementDays, currency, fixingCalendar, dayCounter)
+        {
             convention_ = convention;
             termStructure_ = h ?? new Handle<YieldTermStructure>();
             endOfMonth_ = endOfMonth;
 
             // observer interface
             if (!termStructure_.empty())
+            {
                 termStructure_.registerWith(update);
+            }
         }
 
-        // InterestRateIndex interface
-        public override Date maturityDate(Date valueDate) => fixingCalendar().advance(valueDate, tenor_, convention_, endOfMonth_);
-
-        public override double forecastFixing(Date fixingDate)
+        // need by CashFlowVectors
+        public IborIndex()
         {
-            var d1 = valueDate(fixingDate);
-            var d2 = maturityDate(d1);
-            var t = dayCounter_.yearFraction(d1, d2);
-            Utils.QL_REQUIRE(t > 0.0, () =>
-                             "\n cannot calculate forward rate between " +
-                             d1 + " and " + d2 +
-                             ":\n non positive time (" + t +
-                             ") using " + dayCounter_.name() + " daycounter");
-            return forecastFixing(d1, d2, t);
         }
+
         // Inspectors
         public BusinessDayConvention businessDayConvention() => convention_;
-
-        public bool endOfMonth() => endOfMonth_;
-
-        // the curve used to forecast fixings
-        public Handle<YieldTermStructure> forwardingTermStructure() => termStructure_;
 
         // Other methods
         // returns a copy of itself linked to a different forwarding curve
@@ -78,10 +70,20 @@ namespace QLNet.Indexes
             new IborIndex(familyName(), tenor(), fixingDays(), currency(), fixingCalendar(),
                 businessDayConvention(), endOfMonth(), dayCounter(), forwarding);
 
-        protected BusinessDayConvention convention_;
-        protected Handle<YieldTermStructure> termStructure_;
-        protected bool endOfMonth_;
+        public bool endOfMonth() => endOfMonth_;
 
+        public override double forecastFixing(Date fixingDate)
+        {
+            var d1 = valueDate(fixingDate);
+            var d2 = maturityDate(d1);
+            var t = dayCounter_.yearFraction(d1, d2);
+            Utils.QL_REQUIRE(t > 0.0, () =>
+                "\n cannot calculate forward rate between " +
+                d1 + " and " + d2 +
+                ":\n non positive time (" + t +
+                ") using " + dayCounter_.name() + " daycounter");
+            return forecastFixing(d1, d2, t);
+        }
 
         public double forecastFixing(Date d1, Date d2, double t)
         {
@@ -91,9 +93,10 @@ namespace QLNet.Indexes
             return (disc1 / disc2 - 1.0) / t;
         }
 
+        // the curve used to forecast fixings
+        public Handle<YieldTermStructure> forwardingTermStructure() => termStructure_;
 
-        // need by CashFlowVectors
-        public IborIndex() { }
-
+        // InterestRateIndex interface
+        public override Date maturityDate(Date valueDate) => fixingCalendar().advance(valueDate, tenor_, convention_, endOfMonth_);
     }
 }

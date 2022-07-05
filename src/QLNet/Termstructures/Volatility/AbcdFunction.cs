@@ -13,29 +13,23 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Math;
-using System;
 
 namespace QLNet.Termstructures.Volatility
 {
     //! %Abcd functional form for instantaneous volatility
     /*! \f[ f(T-t) = [ a + b(T-t) ] e^{-c(T-t)} + d \f]
         following Rebonato's notation. */
-    [JetBrains.Annotations.PublicAPI] public class AbcdFunction : AbcdMathFunction
+    [PublicAPI]
+    public class AbcdFunction : AbcdMathFunction
     {
         public AbcdFunction(double a = -0.06, double b = 0.17, double c = 0.54, double d = 0.17)
-           : base(a, b, c, d)
-        { }
-
-        //! maximum value of the volatility function
-        public double maximumVolatility() => maximumValue();
-
-        //! volatility function value at time 0: \f[ f(0) \f]
-        public double shortTermVolatility() => new AbcdFunction().value(0.0);
-
-        //! volatility function value at time +inf: \f[ f(\inf) \f]
-        public double longTermVolatility() => longTermValue();
+            : base(a, b, c, d)
+        {
+        }
 
         /*! instantaneous covariance function at time t between T-fixing and
            S-fixing rates \f[ f(T-t)f(S-t) \f] */
@@ -52,39 +46,29 @@ namespace QLNet.Termstructures.Volatility
             {
                 return 0.0;
             }
-            else
-            {
-                cutOff = System.Math.Min(t2, cutOff);
-                return primitive(cutOff, T, S) - primitive(t1, T, S);
-            }
+
+            cutOff = System.Math.Min(t2, cutOff);
+            return primitive(cutOff, T, S) - primitive(t1, T, S);
         }
 
-        /*! average volatility in [tMin,tMax] of T-fixing rate:
-           \f[ \sqrt{ \frac{\int_{tMin}^{tMax} f^2(T-u)du}{tMax-tMin} } \f] */
-        public double volatility(double tMin, double tMax, double T)
-        {
-            if (tMax.IsEqual(tMin))
-                return instantaneousVolatility(tMax, T);
-            Utils.QL_REQUIRE(tMax > tMin, () => "tMax must be > tMin");
-            return System.Math.Sqrt(variance(tMin, tMax, T) / (tMax - tMin));
-        }
+        /*! instantaneous covariance at time t between T and S fixing rates:
+           \f[ f(T-u)f(S-u) \f] */
+        public double instantaneousCovariance(double u, double T, double S) => new AbcdFunction().value(T - u) * new AbcdFunction().value(S - u);
 
-        /*! variance between tMin and tMax of T-fixing rate:
-           \f[ \frac{\int_{tMin}^{tMax} f^2(T-u)du}{tMax-tMin} \f] */
-        public double variance(double tMin, double tMax, double T) => covariance(tMin, tMax, T, T);
+        /*! instantaneous variance at time t of T-fixing rate:
+           \f[ f(T-t)f(T-t) \f] */
+        public double instantaneousVariance(double u, double T) => instantaneousCovariance(u, T, T);
 
         // INSTANTANEOUS
         /*! instantaneous volatility at time t of the T-fixing rate:
            \f[ f(T-t) \f] */
         public double instantaneousVolatility(double u, double T) => System.Math.Sqrt(instantaneousVariance(u, T));
 
-        /*! instantaneous variance at time t of T-fixing rate:
-           \f[ f(T-t)f(T-t) \f] */
-        public double instantaneousVariance(double u, double T) => instantaneousCovariance(u, T, T);
+        //! volatility function value at time +inf: \f[ f(\inf) \f]
+        public double longTermVolatility() => longTermValue();
 
-        /*! instantaneous covariance at time t between T and S fixing rates:
-           \f[ f(T-u)f(S-u) \f] */
-        public double instantaneousCovariance(double u, double T, double S) => new AbcdFunction().value(T - u) * new AbcdFunction().value(S - u);
+        //! maximum value of the volatility function
+        public double maximumVolatility() => maximumValue();
 
         // PRIMITIVE
         /*! indefinite integral of the instantaneous covariance function at
@@ -93,7 +77,9 @@ namespace QLNet.Termstructures.Volatility
         public double primitive(double t, double T, double S)
         {
             if (T < t || S < t)
+            {
                 return 0.0;
+            }
 
             if (Utils.close(c_, 0.0))
             {
@@ -102,8 +88,8 @@ namespace QLNet.Termstructures.Volatility
             }
 
             double k1 = System.Math.Exp(c_ * t),
-                   k2 = System.Math.Exp(c_ * S),
-                   k3 = System.Math.Exp(c_ * T);
+                k2 = System.Math.Exp(c_ * S),
+                k3 = System.Math.Exp(c_ * T);
 
             return (b_ * b_ * (-1 - 2 * c_ * c_ * S * T - c_ * (S + T)
                                + k1 * k1 * (1 + c_ * (S + T - 2 * t) + 2 * c_ * c_ * (S - t) * (T - t)))
@@ -113,8 +99,28 @@ namespace QLNet.Termstructures.Volatility
                                      - 2 * d_ * (k3 * (1 + c_ * S) + k2 * (1 + c_ * T)
                                                  - k1 * k3 * (1 + c_ * (S - t))
                                                  - k1 * k2 * (1 + c_ * (T - t)))
-                                    )
-                   ) / (4 * c_ * c_ * c_ * k2 * k3);
+                    )
+                ) / (4 * c_ * c_ * c_ * k2 * k3);
+        }
+
+        //! volatility function value at time 0: \f[ f(0) \f]
+        public double shortTermVolatility() => new AbcdFunction().value(0.0);
+
+        /*! variance between tMin and tMax of T-fixing rate:
+           \f[ \frac{\int_{tMin}^{tMax} f^2(T-u)du}{tMax-tMin} \f] */
+        public double variance(double tMin, double tMax, double T) => covariance(tMin, tMax, T, T);
+
+        /*! average volatility in [tMin,tMax] of T-fixing rate:
+           \f[ \sqrt{ \frac{\int_{tMin}^{tMax} f^2(T-u)du}{tMax-tMin} } \f] */
+        public double volatility(double tMin, double tMax, double T)
+        {
+            if (tMax.IsEqual(tMin))
+            {
+                return instantaneousVolatility(tMax, T);
+            }
+
+            Utils.QL_REQUIRE(tMax > tMin, () => "tMax must be > tMin");
+            return System.Math.Sqrt(variance(tMin, tMax, T) / (tMax - tMin));
         }
     }
 

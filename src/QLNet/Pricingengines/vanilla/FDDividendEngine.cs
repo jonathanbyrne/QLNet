@@ -18,6 +18,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.processes;
 
 namespace QLNet.Pricingengines.vanilla
@@ -48,15 +49,17 @@ namespace QLNet.Pricingengines.vanilla
     */
 
     // Use Merton73 engine as default.
-    [JetBrains.Annotations.PublicAPI] public class FDDividendEngine : FDDividendEngineMerton73
+    [PublicAPI]
+    public class FDDividendEngine : FDDividendEngineMerton73
     {
-
         public FDDividendEngine()
-        { }
+        {
+        }
 
         public FDDividendEngine(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100,
-                                bool timeDependent = false) : base(process, timeSteps, gridPoints, timeDependent)
-        { }
+            bool timeDependent = false) : base(process, timeSteps, gridPoints, timeDependent)
+        {
+        }
 
         public override FDVanillaEngine factory2(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent) => new FDDividendEngine(process, timeSteps, gridPoints, timeDependent);
     }

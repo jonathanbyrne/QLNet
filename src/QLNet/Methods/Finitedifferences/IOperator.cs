@@ -1,20 +1,28 @@
-﻿using QLNet.Math;
+﻿using JetBrains.Annotations;
+using QLNet.Math;
 
 namespace QLNet.Methods.Finitedifferences
 {
-    [JetBrains.Annotations.PublicAPI] public interface IOperator : ICloneable
+    [PublicAPI]
+    public interface IOperator : ICloneable
     {
-        int size();
-        IOperator identity(int size);
-        Vector applyTo(Vector v);
-        Vector solveFor(Vector rhs);
-
-        IOperator multiply(double a, IOperator D);
         IOperator add
             (IOperator A, IOperator B);
-        IOperator subtract(IOperator A, IOperator B);
+
+        Vector applyTo(Vector v);
+
+        IOperator identity(int size);
 
         bool isTimeDependent();
+
+        IOperator multiply(double a, IOperator D);
+
         void setTime(double t);
+
+        int size();
+
+        Vector solveFor(Vector rhs);
+
+        IOperator subtract(IOperator A, IOperator B);
     }
 }

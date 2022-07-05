@@ -72,7 +72,9 @@ namespace QLNet.Tests
                 var leg = new List<CashFlow>();
 
                 for (var i = 0; i < 3; ++i)
+                {
                     leg.Add(new SimpleCashFlow(1.0, today + i));
+                }
 
                 // case 1: don't include reference-date payments, no override at
                 //         today's date
@@ -242,15 +244,21 @@ namespace QLNet.Tests
 
             var accruedPeriod = CashFlows.accruedPeriod(leg, false);
             if (accruedPeriod == 0.0)
+            {
                 QAssert.Fail("null accrued period with default settlement date");
+            }
 
             var accruedDays = CashFlows.accruedDays(leg, false);
             if (accruedDays == 0)
+            {
                 QAssert.Fail("no accrued days with default settlement date");
+            }
 
             var accruedAmount = CashFlows.accruedAmount(leg, false);
             if (accruedAmount == 0.0)
+            {
                 QAssert.Fail("null accrued amount with default settlement date");
+            }
         }
 
         [Fact]

@@ -1,7 +1,14 @@
-﻿namespace QLNet.Models.MarketModels.BrownianGenerators
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Models.MarketModels.BrownianGenerators
 {
-    [JetBrains.Annotations.PublicAPI] public class SobolBrownianGeneratorFactory : IBrownianGeneratorFactory
+    [PublicAPI]
+    public class SobolBrownianGeneratorFactory : IBrownianGeneratorFactory
     {
+        private SobolRsg.DirectionIntegers integers_;
+        private SobolBrownianGenerator.Ordering ordering_;
+        private ulong seed_;
+
         public SobolBrownianGeneratorFactory(SobolBrownianGenerator.Ordering ordering, ulong seed = 0,
             SobolRsg.DirectionIntegers integers = SobolRsg.DirectionIntegers.Jaeckel)
         {
@@ -11,9 +18,5 @@
         }
 
         public IBrownianGenerator create(int factors, int steps) => new SobolBrownianGenerator(factors, steps, ordering_, seed_, integers_);
-
-        private SobolBrownianGenerator.Ordering ordering_;
-        private ulong seed_;
-        private SobolRsg.DirectionIntegers integers_;
     }
 }

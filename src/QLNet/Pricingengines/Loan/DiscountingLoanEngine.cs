@@ -18,22 +18,22 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Termstructures;
 
 namespace QLNet.Pricingengines.Loan
 {
-    [JetBrains.Annotations.PublicAPI] public class DiscountingLoanEngine : QLNet.Instruments.Loan.Engine
+    [PublicAPI]
+    public class DiscountingLoanEngine : Instruments.Loan.Engine
     {
         private readonly Handle<YieldTermStructure> discountCurve_;
         private readonly bool? includeSettlementDateFlows_;
 
-        public Handle<YieldTermStructure> discountCurve() => discountCurve_;
-
         public DiscountingLoanEngine(Handle<YieldTermStructure> discountCurve, bool? includeSettlementDateFlows = null)
         {
             discountCurve_ = discountCurve;
-            discountCurve_.registerWith(this.update);
+            discountCurve_.registerWith(update);
             includeSettlementDateFlows_ = includeSettlementDateFlows;
         }
 
@@ -43,24 +43,24 @@ namespace QLNet.Pricingengines.Loan
 
             results_.valuationDate = discountCurve_.link.referenceDate();
             var includeRefDateFlows =
-               includeSettlementDateFlows_.HasValue ?
-               includeSettlementDateFlows_.Value :
-               Settings.includeReferenceDateEvents;
+                includeSettlementDateFlows_.HasValue ? includeSettlementDateFlows_.Value : Settings.includeReferenceDateEvents;
 
             results_.value = 0;
             results_.cash = 0;
             for (var i = 0; i < arguments_.legs.Count; ++i)
             {
                 results_.value += CashFlows.npv(arguments_.legs[i],
-                                                discountCurve_,
-                                                includeRefDateFlows,
-                                                results_.valuationDate,
-                                                results_.valuationDate)
+                                      discountCurve_,
+                                      includeRefDateFlows,
+                                      results_.valuationDate,
+                                      results_.valuationDate)
                                   * arguments_.payer[i];
 
                 results_.cash += CashFlows.cash(arguments_.legs[i], results_.valuationDate)
                                  * arguments_.payer[i];
             }
         }
+
+        public Handle<YieldTermStructure> discountCurve() => discountCurve_;
     }
 }

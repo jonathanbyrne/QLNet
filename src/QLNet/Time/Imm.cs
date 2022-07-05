@@ -16,20 +16,115 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using System;
-using System.Linq;
 
 namespace QLNet.Time
 {
     //! Main cycle of the International %Money Market (a.k.a. %IMM) months
     public struct IMM
     {
-        enum Month
+        private enum Month
         {
-            F = 1, G = 2, H = 3,
-            J = 4, K = 5, M = 6,
-            N = 7, Q = 8, U = 9,
-            V = 10, X = 11, Z = 12
+            F = 1,
+            G = 2,
+            H = 3,
+            J = 4,
+            K = 5,
+            M = 6,
+            N = 7,
+            Q = 8,
+            U = 9,
+            V = 10,
+            X = 11,
+            Z = 12
+        }
+
+        // returns the IMM code for the given date (e.g. H3 for March 20th, 2013).
+        public static string code(Date immDate)
+        {
+            if (!isIMMdate(immDate, false))
+            {
+                throw new ArgumentException(immDate + " is not an IMM date");
+            }
+
+            return "FGHJKMNQUVXZ"[immDate.Month - 1] + (immDate.Year % 10).ToString();
+        }
+
+        // returns the IMM date for the given IMM code (e.g. March 20th, 2013 for H3).
+        public static Date date(string immCode) => date(immCode, null);
+
+        public static Date date(string immCode, Date refDate)
+        {
+            if (!isIMMcode(immCode, false))
+            {
+                throw new ArgumentException(immCode + " is not a valid IMM code");
+            }
+
+            var referenceDate = refDate ?? Settings.evaluationDate();
+
+            var m = "FGHJKMNQUVXZ".IndexOf(immCode.ToUpper()[0]) + 1;
+            if (m == 0)
+            {
+                throw new ArgumentException("invalid IMM month letter");
+            }
+
+            if (!char.IsDigit(immCode[1]))
+            {
+                throw new ArgumentException(immCode + " is not a valid IMM code");
+            }
+
+            var y = immCode[1] - '0';
+
+            y += referenceDate.Year - referenceDate.Year % 10;
+
+            /* year<10 are not valid years: to avoid a run-time
+               exception in few lines below we need to add 10 years right away */
+            if (y == 0 && referenceDate.Year <= 1909)
+            {
+                y += 10;
+            }
+
+            var result = nextDate(new Date(1, m, y), false);
+            if (result < referenceDate)
+            {
+                result = nextDate(new Date(1, m, y + 10), false);
+            }
+
+            return result;
+        }
+
+        //! returns whether or not the given string is an IMM code
+        public static bool isIMMcode(string s) => isIMMcode(s, true);
+
+        public static bool isIMMcode(string s, bool mainCycle)
+        {
+            if (s.Length != 2)
+            {
+                return false;
+            }
+
+            var str1 = "0123456789";
+            if (!str1.Contains(s[1].ToString()))
+            {
+                return false;
+            }
+
+            if (mainCycle)
+            {
+                str1 = "hmzuHMZU";
+            }
+            else
+            {
+                str1 = "fghjkmnquvxzFGHJKMNQUVXZ";
+            }
+
+            if (!str1.Contains(s[0].ToString()))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         //! returns whether or not the given date is an IMM date
@@ -38,13 +133,19 @@ namespace QLNet.Time
         public static bool isIMMdate(Date date, bool mainCycle)
         {
             if (date.DayOfWeek != DayOfWeek.Wednesday)
+            {
                 return false;
+            }
 
             if (date.Day < 15 || date.Day > 21)
+            {
                 return false;
+            }
 
             if (!mainCycle)
+            {
                 return true;
+            }
 
             switch ((QLNet.Month)date.Month)
             {
@@ -58,66 +159,28 @@ namespace QLNet.Time
             }
         }
 
-        //! returns whether or not the given string is an IMM code
-        public static bool isIMMcode(string s) => isIMMcode(s, true);
+        /*! returns the IMM code for next contract listed in the
+            International Money Market section of the Chicago Mercantile Exchange.*/
+        public static string nextCode() => nextCode((Date)null, true);
 
-        public static bool isIMMcode(string s, bool mainCycle)
+        public static string nextCode(Date d) => nextCode(d, true);
+
+        public static string nextCode(Date d, bool mainCycle)
         {
-            if (s.Length != 2)
-                return false;
-
-            var str1 = "0123456789";
-            if (!str1.Contains(s[1].ToString()))
-                return false;
-
-            if (mainCycle)
-                str1 = "hmzuHMZU";
-            else
-                str1 = "fghjkmnquvxzFGHJKMNQUVXZ";
-            if (!str1.Contains(s[0].ToString()))
-                return false;
-
-            return true;
+            var date = nextDate(d, mainCycle);
+            return code(date);
         }
 
-        // returns the IMM code for the given date (e.g. H3 for March 20th, 2013).
-        public static string code(Date immDate)
+        /*! returns the IMM code for next contract listed in the
+            International Money Market section of the Chicago Mercantile Exchange. */
+        public static string nextCode(string immCode) => nextCode(immCode, true, null);
+
+        public static string nextCode(string immCode, bool mainCycle) => nextCode(immCode, mainCycle, null);
+
+        public static string nextCode(string immCode, bool mainCycle, Date referenceDate)
         {
-            if (!isIMMdate(immDate, false))
-                throw new ArgumentException(immDate + " is not an IMM date");
-            return "FGHJKMNQUVXZ"[immDate.Month - 1] + (immDate.Year % 10).ToString();
-        }
-
-        // returns the IMM date for the given IMM code (e.g. March 20th, 2013 for H3).
-        public static Date date(string immCode) => date(immCode, null);
-
-        public static Date date(string immCode, Date refDate)
-        {
-            if (!isIMMcode(immCode, false))
-                throw new ArgumentException(immCode + " is not a valid IMM code");
-
-            var referenceDate = refDate ?? Settings.evaluationDate();
-
-            var m = "FGHJKMNQUVXZ".IndexOf(immCode.ToUpper()[0]) + 1;
-            if (m == 0)
-                throw new ArgumentException("invalid IMM month letter");
-
-            if (!char.IsDigit(immCode[1]))
-                throw new ArgumentException(immCode + " is not a valid IMM code");
-            var y = immCode[1] - '0';
-
-            y += referenceDate.Year - referenceDate.Year % 10;
-
-            /* year<10 are not valid years: to avoid a run-time
-               exception in few lines below we need to add 10 years right away */
-            if (y == 0 && referenceDate.Year <= 1909)
-                y += 10;
-
-            var result = nextDate(new Date(1, m, y), false);
-            if (result < referenceDate)
-                result = nextDate(new Date(1, m, y + 10), false);
-
-            return result;
+            var date = nextDate(immCode, mainCycle, referenceDate);
+            return code(date);
         }
 
         //! next IMM date following the given date
@@ -152,7 +215,10 @@ namespace QLNet.Time
 
             var result = Date.nthWeekday(3, DayOfWeek.Wednesday, m, y);
             if (result <= refDate)
+            {
                 result = nextDate(new Date(22, m, y), mainCycle);
+            }
+
             return result;
         }
 
@@ -167,30 +233,6 @@ namespace QLNet.Time
         {
             var immDate = date(immCode, referenceDate);
             return nextDate(immDate + 1, mainCycle);
-        }
-
-        /*! returns the IMM code for next contract listed in the
-            International Money Market section of the Chicago Mercantile Exchange.*/
-        public static string nextCode() => nextCode((Date)null, true);
-
-        public static string nextCode(Date d) => nextCode(d, true);
-
-        public static string nextCode(Date d, bool mainCycle)
-        {
-            var date = nextDate(d, mainCycle);
-            return code(date);
-        }
-
-        /*! returns the IMM code for next contract listed in the
-            International Money Market section of the Chicago Mercantile Exchange. */
-        public static string nextCode(string immCode) => nextCode(immCode, true, null);
-
-        public static string nextCode(string immCode, bool mainCycle) => nextCode(immCode, mainCycle, null);
-
-        public static string nextCode(string immCode, bool mainCycle, Date referenceDate)
-        {
-            var date = nextDate(immCode, mainCycle, referenceDate);
-            return code(date);
         }
     }
 }

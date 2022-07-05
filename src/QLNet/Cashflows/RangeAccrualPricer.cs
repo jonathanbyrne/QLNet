@@ -1,36 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Indexes;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class RangeAccrualPricer : FloatingRateCouponPricer
+    [PublicAPI]
+    public class RangeAccrualPricer : FloatingRateCouponPricer
     {
-        // Observer interface
-        public override double swapletPrice() => throw new NotImplementedException();
-
-        public override double swapletRate() => swapletPrice() / (accrualFactor_ * discount_);
+        protected double accrualFactor_; // T-S
+        protected RangeAccrualFloatersCoupon coupon_;
+        protected double discount_;
+        protected double endTime_; // T
+        protected double gearing_;
+        protected List<double> initialValues_;
+        protected double lowerTrigger_;
+        protected int observationsNo_;
+        protected List<double> observationTimeLags_; // d
+        protected List<double> observationTimes_; // U
+        protected double spread_;
+        protected double spreadLegValue_;
+        protected double startTime_; // S
+        protected double upperTrigger_;
 
         public override double capletPrice(double effectiveCap)
         {
             Utils.QL_FAIL("RangeAccrualPricer::capletPrice not implemented");
             return 0;
         }
+
         public override double capletRate(double effectiveCap)
         {
             Utils.QL_FAIL("RangeAccrualPricer::capletRate not implemented");
             return 0;
         }
+
         public override double floorletPrice(double effectiveFloor)
         {
             Utils.QL_FAIL("RangeAccrualPricer::floorletPrice not implemented");
             return 0;
         }
+
         public override double floorletRate(double effectiveFloor)
         {
             Utils.QL_FAIL("RangeAccrualPricer::floorletRate not implemented");
             return 0;
         }
+
         public override void initialize(FloatingRateCoupon coupon)
         {
             coupon_ = coupon as RangeAccrualFloatersCoupon;
@@ -64,22 +80,11 @@ namespace QLNet.Cashflows
                 initialValues_[i] = index.fixing(
                     calendar.advance(observationDates[i], -coupon_.fixingDays, TimeUnit.Days));
             }
-
         }
 
-        protected RangeAccrualFloatersCoupon coupon_;
-        protected double startTime_;                                   // S
-        protected double endTime_;                                     // T
-        protected double accrualFactor_;                               // T-S
-        protected List<double> observationTimeLags_;                   // d
-        protected List<double> observationTimes_;                      // U
-        protected List<double> initialValues_;
-        protected int observationsNo_;
-        protected double lowerTrigger_;
-        protected double upperTrigger_;
-        protected double discount_;
-        protected double gearing_;
-        protected double spread_;
-        protected double spreadLegValue_;
+        // Observer interface
+        public override double swapletPrice() => throw new NotImplementedException();
+
+        public override double swapletRate() => swapletPrice() / (accrualFactor_ * discount_);
     }
 }

@@ -16,12 +16,14 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Instruments
 {
@@ -46,8 +48,83 @@ namespace QLNet.Instruments
           it against a known good value.
     */
 
-    [JetBrains.Annotations.PublicAPI] public class YoYInflationCapFloor : Instrument
+    [PublicAPI]
+    public class YoYInflationCapFloor : Instrument
     {
+        //! %Arguments for YoY Inflation cap/floor calculation
+        [PublicAPI]
+        public class Arguments : IPricingEngineArguments
+        {
+            public List<double> accrualTimes { get; set; }
+
+            public List<double?> capRates { get; set; }
+
+            public List<Date> fixingDates { get; set; }
+
+            public List<double?> floorRates { get; set; }
+
+            public List<double> gearings { get; set; }
+
+            public YoYInflationIndex index { get; set; }
+
+            public List<double> nominals { get; set; }
+
+            public Period observationLag { get; set; }
+
+            public List<Date> payDates { get; set; }
+
+            public List<double> spreads { get; set; }
+
+            public List<Date> startDates { get; set; }
+
+            public CapFloorType type { get; set; }
+
+            public void validate()
+            {
+                Utils.QL_REQUIRE(payDates.Count == startDates.Count, () =>
+                    "number of start dates (" + startDates.Count
+                                              + ") different from that of pay dates ("
+                                              + payDates.Count + ")");
+                Utils.QL_REQUIRE(accrualTimes.Count == startDates.Count, () =>
+                    "number of start dates (" + startDates.Count
+                                              + ") different from that of accrual times ("
+                                              + accrualTimes.Count + ")");
+                Utils.QL_REQUIRE(type == CapFloorType.Floor ||
+                                 capRates.Count == startDates.Count, () =>
+                    "number of start dates (" + startDates.Count
+                                              + ") different from that of cap rates ("
+                                              + capRates.Count + ")");
+                Utils.QL_REQUIRE(type == CapFloorType.Cap ||
+                                 floorRates.Count == startDates.Count, () =>
+                    "number of start dates (" + startDates.Count
+                                              + ") different from that of floor rates ("
+                                              + floorRates.Count + ")");
+                Utils.QL_REQUIRE(gearings.Count == startDates.Count, () =>
+                    "number of start dates (" + startDates.Count
+                                              + ") different from that of gearings ("
+                                              + gearings.Count + ")");
+                Utils.QL_REQUIRE(spreads.Count == startDates.Count, () =>
+                    "number of start dates (" + startDates.Count
+                                              + ") different from that of spreads ("
+                                              + spreads.Count + ")");
+                Utils.QL_REQUIRE(nominals.Count == startDates.Count, () =>
+                    "number of start dates (" + startDates.Count
+                                              + ") different from that of nominals ("
+                                              + nominals.Count + ")");
+            }
+        }
+
+        //! base class for cap/floor engines
+        [PublicAPI]
+        public class Engine : GenericEngine<Arguments, Results>
+        {
+        }
+
+        private List<double> capRates_;
+        private List<double> floorRates_;
+        private CapFloorType type_;
+        private List<CashFlow> yoyLeg_;
+
         public YoYInflationCapFloor(CapFloorType type, List<CashFlow> yoyLeg, List<double> capRates, List<double> floorRates)
         {
             type_ = type;
@@ -59,20 +136,26 @@ namespace QLNet.Instruments
             {
                 Utils.QL_REQUIRE(!capRates_.empty(), () => "no cap rates given");
                 while (capRates_.Count < yoyLeg_.Count)
+                {
                     capRates_.Add(capRates_.Last());
+                }
             }
+
             if (type_ == CapFloorType.Floor || type_ == CapFloorType.Collar)
             {
                 Utils.QL_REQUIRE(!floorRates_.empty(), () => "no floor rates given");
                 while (floorRates_.Count < yoyLeg_.Count)
+                {
                     floorRates_.Add(floorRates_.Last());
+                }
             }
 
             foreach (var cf in yoyLeg_)
+            {
                 cf.registerWith(update);
+            }
 
             Settings.registerWith(update);
-
         }
 
         public YoYInflationCapFloor(CapFloorType type, List<CashFlow> yoyLeg, List<double> strikes)
@@ -85,31 +168,96 @@ namespace QLNet.Instruments
             {
                 capRates_ = strikes;
                 while (capRates_.Count < yoyLeg_.Count)
+                {
                     capRates_.Add(capRates_.Last());
+                }
             }
             else if (type_ == CapFloorType.Floor)
             {
                 floorRates_ = strikes;
                 while (floorRates_.Count < yoyLeg_.Count)
+                {
                     floorRates_.Add(floorRates_.Last());
+                }
             }
             else
+            {
                 Utils.QL_FAIL("only Cap/Floor types allowed in this constructor");
+            }
 
             foreach (var cf in yoyLeg_)
+            {
                 cf.registerWith(update);
+            }
 
             Settings.registerWith(update);
+        }
+
+        public virtual double atmRate(YieldTermStructure discountCurve) =>
+            CashFlows.atmRate(yoyLeg_, discountCurve,
+                false, discountCurve.referenceDate());
+
+        public List<double> capRates() => capRates_;
+
+        public List<double> floorRates() => floorRates_;
+
+        //! implied term volatility
+        public virtual double impliedVolatility(
+            double price,
+            Handle<YoYInflationTermStructure> yoyCurve,
+            double guess,
+            double accuracy = 1.0e-4,
+            int maxEvaluations = 100,
+            double minVol = 1.0e-7,
+            double maxVol = 4.0)
+        {
+            Utils.QL_FAIL("not implemented yet");
+            return 0;
         }
 
         // Instrument interface
         public override bool isExpired()
         {
             for (var i = yoyLeg_.Count; i > 0; --i)
+            {
                 if (!yoyLeg_[i - 1].hasOccurred())
+                {
                     return false;
+                }
+            }
+
             return true;
         }
+
+        public YoYInflationCoupon lastYoYInflationCoupon()
+        {
+            var lastYoYInflationCoupon = yoyLeg_.Last() as YoYInflationCoupon;
+            return lastYoYInflationCoupon;
+        }
+
+        public Date maturityDate() => CashFlows.maturityDate(yoyLeg_);
+
+        //! Returns the n-th optionlet as a cap/floor with only one cash flow.
+        public YoYInflationCapFloor optionlet(int i)
+        {
+            Utils.QL_REQUIRE(i < yoyLeg().Count, () => " optionlet does not exist, only " + yoyLeg().Count);
+            var cf = new List<CashFlow>();
+            cf.Add(yoyLeg()[i]);
+
+            List<double> cap = new List<double>(), floor = new List<double>();
+            if (type() == CapFloorType.Cap || type() == CapFloorType.Collar)
+            {
+                cap.Add(capRates()[i]);
+            }
+
+            if (type() == CapFloorType.Floor || type() == CapFloorType.Collar)
+            {
+                floor.Add(floorRates()[i]);
+            }
+
+            return new YoYInflationCapFloor(type(), cf, cap, floor);
+        }
+
         public override void setupArguments(IPricingEngineArguments args)
         {
             var arguments = args as Arguments;
@@ -147,129 +295,31 @@ namespace QLNet.Instruments
                 arguments.spreads.Add(spread);
 
                 if (type_ == CapFloorType.Cap || type_ == CapFloorType.Collar)
+                {
                     arguments.capRates.Add((capRates_[i] - spread) / gearing);
+                }
                 else
+                {
                     arguments.capRates.Add(null);
+                }
 
                 if (type_ == CapFloorType.Floor || type_ == CapFloorType.Collar)
+                {
                     arguments.floorRates.Add((floorRates_[i] - spread) / gearing);
+                }
                 else
+                {
                     arguments.floorRates.Add(null);
+                }
             }
-
         }
+
+        public Date startDate() => CashFlows.startDate(yoyLeg_);
 
         // Inspectors
         public CapFloorType type() => type_;
 
-        public List<double> capRates() => capRates_;
-
-        public List<double> floorRates() => floorRates_;
-
         public List<CashFlow> yoyLeg() => yoyLeg_;
-
-        public Date startDate() => CashFlows.startDate(yoyLeg_);
-
-        public Date maturityDate() => CashFlows.maturityDate(yoyLeg_);
-
-        public YoYInflationCoupon lastYoYInflationCoupon()
-        {
-            var lastYoYInflationCoupon = yoyLeg_.Last() as YoYInflationCoupon;
-            return lastYoYInflationCoupon;
-        }
-        //! Returns the n-th optionlet as a cap/floor with only one cash flow.
-        public YoYInflationCapFloor optionlet(int i)
-        {
-            Utils.QL_REQUIRE(i < yoyLeg().Count, () => " optionlet does not exist, only " + yoyLeg().Count);
-            var cf = new List<CashFlow>();
-            cf.Add(yoyLeg()[i]);
-
-            List<double> cap = new List<double>(), floor = new List<double>();
-            if (type() == CapFloorType.Cap || type() == CapFloorType.Collar)
-                cap.Add(capRates()[i]);
-            if (type() == CapFloorType.Floor || type() == CapFloorType.Collar)
-                floor.Add(floorRates()[i]);
-
-            return new YoYInflationCapFloor(type(), cf, cap, floor);
-        }
-
-        public virtual double atmRate(YieldTermStructure discountCurve) =>
-            CashFlows.atmRate(yoyLeg_, discountCurve,
-                false, discountCurve.referenceDate());
-
-        //! implied term volatility
-        public virtual double impliedVolatility(
-           double price,
-           Handle<YoYInflationTermStructure> yoyCurve,
-           double guess,
-           double accuracy = 1.0e-4,
-           int maxEvaluations = 100,
-           double minVol = 1.0e-7,
-           double maxVol = 4.0)
-        {
-            Utils.QL_FAIL("not implemented yet");
-            return 0;
-        }
-
-        private CapFloorType type_;
-        private List<CashFlow> yoyLeg_;
-        private List<double> capRates_;
-        private List<double> floorRates_;
-
-        //! %Arguments for YoY Inflation cap/floor calculation
-        [JetBrains.Annotations.PublicAPI] public class Arguments : IPricingEngineArguments
-        {
-            public CapFloorType type { get; set; }
-            public YoYInflationIndex index { get; set; }
-            public Period observationLag { get; set; }
-            public List<Date> startDates { get; set; }
-            public List<Date> fixingDates { get; set; }
-            public List<Date> payDates { get; set; }
-            public List<double> accrualTimes { get; set; }
-            public List<double?> capRates { get; set; }
-            public List<double?> floorRates { get; set; }
-            public List<double> gearings { get; set; }
-            public List<double> spreads { get; set; }
-            public List<double> nominals { get; set; }
-            public void validate()
-            {
-                Utils.QL_REQUIRE(payDates.Count == startDates.Count, () =>
-                                 "number of start dates (" + startDates.Count
-                                 + ") different from that of pay dates ("
-                                 + payDates.Count + ")");
-                Utils.QL_REQUIRE(accrualTimes.Count == startDates.Count, () =>
-                                 "number of start dates (" + startDates.Count
-                                 + ") different from that of accrual times ("
-                                 + accrualTimes.Count + ")");
-                Utils.QL_REQUIRE(type == CapFloorType.Floor ||
-                                 capRates.Count == startDates.Count, () =>
-                                 "number of start dates (" + startDates.Count
-                                 + ") different from that of cap rates ("
-                                 + capRates.Count + ")");
-                Utils.QL_REQUIRE(type == CapFloorType.Cap ||
-                                 floorRates.Count == startDates.Count, () =>
-                                 "number of start dates (" + startDates.Count
-                                 + ") different from that of floor rates ("
-                                 + floorRates.Count + ")");
-                Utils.QL_REQUIRE(gearings.Count == startDates.Count, () =>
-                                 "number of start dates (" + startDates.Count
-                                 + ") different from that of gearings ("
-                                 + gearings.Count + ")");
-                Utils.QL_REQUIRE(spreads.Count == startDates.Count, () =>
-                                 "number of start dates (" + startDates.Count
-                                 + ") different from that of spreads ("
-                                 + spreads.Count + ")");
-                Utils.QL_REQUIRE(nominals.Count == startDates.Count, () =>
-                                 "number of start dates (" + startDates.Count
-                                 + ") different from that of nominals ("
-                                 + nominals.Count + ")");
-            }
-        }
-
-        //! base class for cap/floor engines
-        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results>
-        { }
-
     }
 
     //! Concrete YoY Inflation cap class

@@ -17,20 +17,19 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Cashflows
 {
     //! Predetermined cash flow
     /*! This cash flow pays a predetermined amount at a given date. */
-    [JetBrains.Annotations.PublicAPI] public class SimpleCashFlow : CashFlow
+    [PublicAPI]
+    public class SimpleCashFlow : CashFlow
     {
         private double amount_;
-        public override double amount() => amount_;
-
         private Date date_;
-        public override Date date() => date_;
 
         public SimpleCashFlow(double amount, Date date)
         {
@@ -38,6 +37,10 @@ namespace QLNet.Cashflows
             amount_ = amount;
             date_ = date;
         }
+
+        public override double amount() => amount_;
+
+        public override Date date() => date_;
     }
 
     //! Bond redemption

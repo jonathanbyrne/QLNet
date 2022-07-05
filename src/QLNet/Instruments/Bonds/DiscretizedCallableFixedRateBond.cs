@@ -16,29 +16,38 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Instruments;
-using QLNet.Time;
-using System;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math;
+using QLNet.Time;
 
 namespace QLNet.Instruments.Bonds
 {
-
-    [JetBrains.Annotations.PublicAPI] public class DiscretizedCallableFixedRateBond : DiscretizedAsset
+    [PublicAPI]
+    public class DiscretizedCallableFixedRateBond : DiscretizedAsset
     {
+        private CallableBond.Arguments arguments_;
+        private List<double> callabilityTimes_ = new List<double>();
+        private List<double> couponTimes_ = new List<double>();
+        private double redemptionTime_;
+
         public DiscretizedCallableFixedRateBond(CallableBond.Arguments args,
-                                                Date referenceDate,
-                                                DayCounter dayCounter)
+            Date referenceDate,
+            DayCounter dayCounter)
         {
             arguments_ = args;
             redemptionTime_ = dayCounter.yearFraction(referenceDate, args.redemptionDate);
 
             for (var i = 0; i < args.couponDates.Count; ++i)
+            {
                 couponTimes_.Add(dayCounter.yearFraction(referenceDate, args.couponDates[i]));
+            }
 
             for (var i = 0; i < args.callabilityDates.Count; ++i)
+            {
                 callabilityTimes_.Add(dayCounter.yearFraction(referenceDate, args.callabilityDates[i]));
+            }
 
             // similar to the tree swaption engine, we collapse similar coupon
             // and exercise dates to avoid mispricing. Delete if unnecessary.
@@ -49,15 +58,11 @@ namespace QLNet.Instruments.Bonds
                 for (var j = 0; j < couponTimes_.Count; j++)
                 {
                     if (withinNextWeek(exerciseTime, couponTimes_[j]))
+                    {
                         couponTimes_[j] = exerciseTime;
+                    }
                 }
             }
-        }
-
-        public override void reset(int size)
-        {
-            values_ = new Vector(size, arguments_.redemption);
-            adjustValues();
         }
 
         public override List<double> mandatoryTimes()
@@ -93,10 +98,12 @@ namespace QLNet.Instruments.Bonds
             return times;
         }
 
-        protected override void preAdjustValuesImpl()
+        public override void reset(int size)
         {
-            // Nothing to do here
+            values_ = new Vector(size, arguments_.redemption);
+            adjustValues();
         }
+
         protected override void postAdjustValuesImpl()
         {
             for (var i = 0; i < callabilityTimes_.Count; i++)
@@ -107,6 +114,7 @@ namespace QLNet.Instruments.Bonds
                     applyCallability(i);
                 }
             }
+
             for (var i = 0; i < couponTimes_.Count; i++)
             {
                 var t = couponTimes_[i];
@@ -117,10 +125,16 @@ namespace QLNet.Instruments.Bonds
             }
         }
 
-        private CallableBond.Arguments arguments_;
-        private double redemptionTime_;
-        private List<double> couponTimes_ = new List<double>();
-        private List<double> callabilityTimes_ = new List<double>();
+        protected override void preAdjustValuesImpl()
+        {
+            // Nothing to do here
+        }
+
+        private void addCoupon(int i)
+        {
+            values_ += arguments_.couponAmounts[i];
+        }
+
         private void applyCallability(int i)
         {
             int j;
@@ -131,6 +145,7 @@ namespace QLNet.Instruments.Bonds
                     {
                         values_[j] = System.Math.Min(arguments_.callabilityPrices[i], values_[j]);
                     }
+
                     break;
 
                 case Callability.Type.Put:
@@ -138,6 +153,7 @@ namespace QLNet.Instruments.Bonds
                     {
                         values_[j] = System.Math.Max(values_[j], arguments_.callabilityPrices[i]);
                     }
+
                     break;
 
                 default:
@@ -146,16 +162,10 @@ namespace QLNet.Instruments.Bonds
             }
         }
 
-        private void addCoupon(int i)
-        {
-            values_ += arguments_.couponAmounts[i];
-        }
-
         private bool withinNextWeek(double t1, double t2)
         {
             var dt = 1.0 / 52;
             return t1 <= t2 && t2 <= t1 + dt;
         }
-
     }
 }

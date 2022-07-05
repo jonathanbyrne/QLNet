@@ -21,11 +21,11 @@ namespace QLNet.Patterns
             skipVisibility: true);
 #else
             var method = new DynamicMethod(
-                name: "lambda",
-                returnType: newExpr.Type,
-                parameterTypes: new Type[0],
-                m: typeof(DynamicModuleLambdaCompiler).GetTypeInfo().Module,
-                skipVisibility: true);
+                "lambda",
+                newExpr.Type,
+                new Type[0],
+                typeof(DynamicModuleLambdaCompiler).GetTypeInfo().Module,
+                true);
 #endif
 
             var ilGen = method.GetILGenerator();

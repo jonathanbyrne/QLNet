@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.Optimization;
 
 namespace QLNet.Termstructures
 {
-    [JetBrains.Annotations.PublicAPI] public class PenaltyFunction<T, U> : CostFunction
+    [PublicAPI]
+    public class PenaltyFunction<T, U> : CostFunction
         where T : Curve<U>, new()
         where U : TermStructure
     {
@@ -31,7 +33,7 @@ namespace QLNet.Termstructures
             curve_.interpolation_.update();
 
             var penalty = rateHelpers_.GetRange(start_, localisation_)
-                .Aggregate(0.0, (acc, v) => System.Math.Abs((double)v.quoteError()));
+                .Aggregate(0.0, (acc, v) => System.Math.Abs(v.quoteError()));
             return penalty;
         }
 

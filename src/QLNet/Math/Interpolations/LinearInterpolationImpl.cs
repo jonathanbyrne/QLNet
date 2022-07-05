@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class LinearInterpolationImpl : Interpolation.templateImpl
+    [PublicAPI]
+    public class LinearInterpolationImpl : Interpolation.templateImpl
     {
         private List<double> primitiveConst_, s_;
 
@@ -12,6 +14,21 @@ namespace QLNet.Math.Interpolations
             primitiveConst_ = new InitializedList<double>(size_);
             s_ = new InitializedList<double>(size_);
         }
+
+        public override double derivative(double x)
+        {
+            var i = locate(x);
+            return s_[i];
+        }
+
+        public override double primitive(double x)
+        {
+            var i = locate(x);
+            var dx = x - xBegin_[i];
+            return primitiveConst_[i] + dx * (yBegin_[i] + 0.5 * dx * s_[i]);
+        }
+
+        public override double secondDerivative(double x) => 0.0;
 
         public override void update()
         {
@@ -30,17 +47,5 @@ namespace QLNet.Math.Interpolations
             var result = yBegin_[i] + (x - xBegin_[i]) * s_[i];
             return result;
         }
-        public override double primitive(double x)
-        {
-            var i = locate(x);
-            var dx = x - xBegin_[i];
-            return primitiveConst_[i] + dx * (yBegin_[i] + 0.5 * dx * s_[i]);
-        }
-        public override double derivative(double x)
-        {
-            var i = locate(x);
-            return s_[i];
-        }
-        public override double secondDerivative(double x) => 0.0;
     }
 }

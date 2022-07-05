@@ -14,12 +14,13 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Cashflows;
 using QLNet.Indexes;
+using QLNet.Pricingengines.Swap;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System.Collections.Generic;
-using QLNet.Cashflows;
-using QLNet.Pricingengines.Swap;
 using QLNet.Time.DayCounters;
 
 namespace QLNet.Instruments
@@ -28,14 +29,43 @@ namespace QLNet.Instruments
     /*! This class provides a more comfortable way
         to instantiate standard market constant maturity swap.
     */
-    [JetBrains.Annotations.PublicAPI] public class MakeCms
+    [PublicAPI]
+    public class MakeCms
     {
+        private Calendar cmsCalendar_, floatCalendar_;
+        private double? cmsCap_, cmsFloor_;
+        private BusinessDayConvention cmsConvention_, cmsTerminationDateConvention_;
+        private DayCounter cmsDayCount_, floatDayCount_;
+        private bool cmsEndOfMonth_, floatEndOfMonth_;
+        private Date cmsFirstDate_, cmsNextToLastDate_;
+        private double cmsGearing_;
+        private DateGeneration.Rule cmsRule_, floatRule_;
+        private double cmsSpread_;
+        private Period cmsTenor_, floatTenor_;
+        private CmsCouponPricer couponPricer_;
+        private Date effectiveDate_;
+        private IPricingEngine engine_;
+        private BusinessDayConvention floatConvention_, floatTerminationDateConvention_;
+        private Date floatFirstDate_, floatNextToLastDate_;
+        private Period forwardStart_;
+        private double? iborCap_, iborFloor_;
+        private IborCouponPricer iborCouponPricer_;
+        private double iborGearing_;
+        private IborIndex iborIndex_;
+        private double iborSpread_;
+        private Date maturityDate_;
+        private double nominal_;
+        private bool payCms_;
+        private SwapIndex swapIndex_;
+        private Period swapTenor_;
+        private bool useAtmSpread_;
+
         public MakeCms(Period swapTenor,
-                       SwapIndex swapIndex,
-                       IborIndex iborIndex,
-                       double iborSpread = 0.0,
-                       Period forwardStart = null,
-                       Date maturityDate = null)
+            SwapIndex swapIndex,
+            IborIndex iborIndex,
+            double iborSpread = 0.0,
+            Period forwardStart = null,
+            Date maturityDate = null)
         {
             swapTenor_ = swapTenor;
             swapIndex_ = swapIndex;
@@ -75,10 +105,10 @@ namespace QLNet.Instruments
         }
 
         public MakeCms(Period swapTenor,
-                       SwapIndex swapIndex,
-                       double iborSpread = 0.0,
-                       Period forwardStart = null,
-                       Date maturityDate = null)
+            SwapIndex swapIndex,
+            double iborSpread = 0.0,
+            Period forwardStart = null,
+            Date maturityDate = null)
         {
             swapTenor_ = swapTenor;
             swapIndex_ = swapIndex;
@@ -117,11 +147,19 @@ namespace QLNet.Instruments
             engine_ = new DiscountingSwapEngine(swapIndex.forwardingTermStructure());
         }
 
+        public MakeCms receiveCms(bool flag = true)
+        {
+            payCms_ = !flag;
+            return this;
+        }
+
         public Swap value()
         {
             Date startDate;
             if (effectiveDate_ != null)
+            {
                 startDate = effectiveDate_;
+            }
             else
             {
                 var fixingDays = iborIndex_.fixingDays();
@@ -136,50 +174,54 @@ namespace QLNet.Instruments
             var terminationDate = maturityDate_ == null ? startDate + swapTenor_ : maturityDate_;
 
             var cmsSchedule = new Schedule(startDate, terminationDate,
-                                                cmsTenor_, cmsCalendar_,
-                                                cmsConvention_,
-                                                cmsTerminationDateConvention_,
-                                                cmsRule_, cmsEndOfMonth_,
-                                                cmsFirstDate_, cmsNextToLastDate_);
+                cmsTenor_, cmsCalendar_,
+                cmsConvention_,
+                cmsTerminationDateConvention_,
+                cmsRule_, cmsEndOfMonth_,
+                cmsFirstDate_, cmsNextToLastDate_);
 
             var floatSchedule = new Schedule(startDate, terminationDate,
-                                                  floatTenor_, floatCalendar_,
-                                                  floatConvention_,
-                                                  floatTerminationDateConvention_,
-                                                  floatRule_, floatEndOfMonth_,
-                                                  floatFirstDate_, floatNextToLastDate_);
+                floatTenor_, floatCalendar_,
+                floatConvention_,
+                floatTerminationDateConvention_,
+                floatRule_, floatEndOfMonth_,
+                floatFirstDate_, floatNextToLastDate_);
 
             List<CashFlow> cmsLeg = new CmsLeg(cmsSchedule, swapIndex_)
-            .withPaymentDayCounter(cmsDayCount_)
-            .withFixingDays(swapIndex_.fixingDays())
-            .withGearings(cmsGearing_)
-            .withSpreads(cmsSpread_)
-            .withCaps(cmsCap_)
-            .withFloors(cmsFloor_)
-            .withNotionals(nominal_)
-            .withPaymentAdjustment(cmsConvention_);
+                .withPaymentDayCounter(cmsDayCount_)
+                .withFixingDays(swapIndex_.fixingDays())
+                .withGearings(cmsGearing_)
+                .withSpreads(cmsSpread_)
+                .withCaps(cmsCap_)
+                .withFloors(cmsFloor_)
+                .withNotionals(nominal_)
+                .withPaymentAdjustment(cmsConvention_);
 
             if (couponPricer_ != null)
+            {
                 Utils.setCouponPricer(cmsLeg, couponPricer_);
+            }
 
             double? usedSpread = iborSpread_;
             if (useAtmSpread_)
             {
                 Utils.QL_REQUIRE(!iborIndex_.forwardingTermStructure().empty(), () =>
-                                 "null term structure set to this instance of " + iborIndex_.name());
+                    "null term structure set to this instance of " + iborIndex_.name());
                 Utils.QL_REQUIRE(!swapIndex_.forwardingTermStructure().empty(), () =>
-                                 "null term structure set to this instance of " + swapIndex_.name());
+                    "null term structure set to this instance of " + swapIndex_.name());
                 Utils.QL_REQUIRE(couponPricer_ != null, () => "no CmsCouponPricer set (yet)");
                 List<CashFlow> fLeg = new IborLeg(floatSchedule, iborIndex_)
-                .withPaymentDayCounter(floatDayCount_)
-                .withFixingDays(iborIndex_.fixingDays())
-                .withCaps(iborCap_)
-                .withFloors(iborFloor_)
-                .withNotionals(nominal_)
-                .withPaymentAdjustment(floatConvention_);
+                    .withPaymentDayCounter(floatDayCount_)
+                    .withFixingDays(iborIndex_.fixingDays())
+                    .withCaps(iborCap_)
+                    .withFloors(iborFloor_)
+                    .withNotionals(nominal_)
+                    .withPaymentAdjustment(floatConvention_);
 
                 if (iborCouponPricer_ != null)
+                {
                     Utils.setCouponPricer(fLeg, iborCouponPricer_);
+                }
 
                 var temp = new Swap(cmsLeg, fLeg);
                 temp.setPricingEngine(engine_);
@@ -194,219 +236,218 @@ namespace QLNet.Instruments
             }
 
             List<CashFlow> floatLeg = new IborLeg(floatSchedule, iborIndex_)
-            .withSpreads(usedSpread.Value)
-            .withPaymentDayCounter(floatDayCount_)
-            .withFixingDays(iborIndex_.fixingDays())
-            .withGearings(iborGearing_)
-            .withCaps(iborCap_)
-            .withFloors(iborFloor_)
-            .withPaymentAdjustment(floatConvention_)
-            .withNotionals(nominal_);
+                .withSpreads(usedSpread.Value)
+                .withPaymentDayCounter(floatDayCount_)
+                .withFixingDays(iborIndex_.fixingDays())
+                .withGearings(iborGearing_)
+                .withCaps(iborCap_)
+                .withFloors(iborFloor_)
+                .withPaymentAdjustment(floatConvention_)
+                .withNotionals(nominal_);
 
             if (iborCouponPricer_ != null)
+            {
                 Utils.setCouponPricer(floatLeg, iborCouponPricer_);
+            }
 
             Swap swap;
             if (payCms_)
+            {
                 swap = new Swap(cmsLeg, floatLeg);
+            }
             else
+            {
                 swap = new Swap(floatLeg, cmsLeg);
+            }
+
             swap.setPricingEngine(engine_);
             return swap;
         }
 
-        public MakeCms receiveCms(bool flag = true)
-        {
-            payCms_ = !flag;
-            return this;
-        }
-        public MakeCms withNominal(double n)
-        {
-            nominal_ = n;
-            return this;
-        }
-        public MakeCms withEffectiveDate(Date effectiveDate)
-        {
-            effectiveDate_ = effectiveDate;
-            return this;
-        }
-        public MakeCms withCmsLegTenor(Period t)
-        {
-            cmsTenor_ = t;
-            return this;
-        }
-        public MakeCms withCmsLegCalendar(Calendar cal)
-        {
-            cmsCalendar_ = cal;
-            return this;
-        }
-        public MakeCms withCmsLegConvention(BusinessDayConvention bdc)
-        {
-            cmsConvention_ = bdc;
-            return this;
-        }
-        public MakeCms withCmsLegTerminationDateConvention(BusinessDayConvention bdc)
-        {
-            cmsTerminationDateConvention_ = bdc;
-            return this;
-        }
-        public MakeCms withCmsLegRule(DateGeneration.Rule r)
-        {
-            cmsRule_ = r;
-            return this;
-        }
-        public MakeCms withCmsLegEndOfMonth(bool flag = true)
-        {
-            cmsEndOfMonth_ = flag;
-            return this;
-        }
-        public MakeCms withCmsLegFirstDate(Date d)
-        {
-            cmsFirstDate_ = d;
-            return this;
-        }
-        public MakeCms withCmsLegNextToLastDate(Date d)
-        {
-            cmsNextToLastDate_ = d;
-            return this;
-        }
-        public MakeCms withCmsLegDayCount(DayCounter dc)
-        {
-            cmsDayCount_ = dc;
-            return this;
-        }
-        public MakeCms withFloatingLegTenor(Period t)
-        {
-            floatTenor_ = t;
-            return this;
-        }
-        public MakeCms withFloatingLegCalendar(Calendar cal)
-        {
-            floatCalendar_ = cal;
-            return this;
-        }
-        public MakeCms withFloatingLegConvention(BusinessDayConvention bdc)
-        {
-            floatConvention_ = bdc;
-            return this;
-        }
-        public MakeCms withFloatingLegTerminationDateConvention(BusinessDayConvention bdc)
-        {
-            floatTerminationDateConvention_ = bdc;
-            return this;
-        }
-        public MakeCms withFloatingLegRule(DateGeneration.Rule r)
-        {
-            floatRule_ = r;
-            return this;
-        }
-        public MakeCms withFloatingLegEndOfMonth(bool flag = true)
-        {
-            floatEndOfMonth_ = flag;
-            return this;
-        }
-        public MakeCms withFloatingLegFirstDate(Date d)
-        {
-            floatFirstDate_ = d;
-            return this;
-        }
-        public MakeCms withFloatingLegNextToLastDate(Date d)
-        {
-            floatNextToLastDate_ = d;
-            return this;
-        }
-        public MakeCms withFloatingLegDayCount(DayCounter dc)
-        {
-            floatDayCount_ = dc;
-            return this;
-        }
-        public MakeCms withFloatingCouponPricer(IborCouponPricer couponPricer)
-        {
-            iborCouponPricer_ = couponPricer;
-            return this;
-        }
-        public MakeCms withFloatingLegGearing(double iborGearing)
-        {
-            iborGearing_ = iborGearing;
-            return this;
-        }
         public MakeCms withAtmSpread(bool flag = true)
         {
             useAtmSpread_ = flag;
             return this;
         }
-        public MakeCms withDiscountingTermStructure(Handle<YieldTermStructure> discountingTermStructure)
-        {
-            engine_ = new DiscountingSwapEngine(discountingTermStructure);
-            return this;
-        }
-        public MakeCms withCmsCouponPricer(CmsCouponPricer couponPricer)
-        {
-            couponPricer_ = couponPricer;
-            return this;
-        }
-        public MakeCms withCmsGearing(double cmsGearing)
-        {
-            cmsGearing_ = cmsGearing;
-            return this;
-        }
-        public MakeCms withCmsSpread(double cmsSpread)
-        {
-            cmsSpread_ = cmsSpread;
-            return this;
-        }
+
         public MakeCms withCmsCap(double? cmsCap)
         {
             cmsCap_ = cmsCap;
             return this;
         }
+
+        public MakeCms withCmsCouponPricer(CmsCouponPricer couponPricer)
+        {
+            couponPricer_ = couponPricer;
+            return this;
+        }
+
         public MakeCms withCmsFloor(double? cmsFloor)
         {
             cmsFloor_ = cmsFloor;
             return this;
         }
+
+        public MakeCms withCmsGearing(double cmsGearing)
+        {
+            cmsGearing_ = cmsGearing;
+            return this;
+        }
+
+        public MakeCms withCmsLegCalendar(Calendar cal)
+        {
+            cmsCalendar_ = cal;
+            return this;
+        }
+
+        public MakeCms withCmsLegConvention(BusinessDayConvention bdc)
+        {
+            cmsConvention_ = bdc;
+            return this;
+        }
+
+        public MakeCms withCmsLegDayCount(DayCounter dc)
+        {
+            cmsDayCount_ = dc;
+            return this;
+        }
+
+        public MakeCms withCmsLegEndOfMonth(bool flag = true)
+        {
+            cmsEndOfMonth_ = flag;
+            return this;
+        }
+
+        public MakeCms withCmsLegFirstDate(Date d)
+        {
+            cmsFirstDate_ = d;
+            return this;
+        }
+
+        public MakeCms withCmsLegNextToLastDate(Date d)
+        {
+            cmsNextToLastDate_ = d;
+            return this;
+        }
+
+        public MakeCms withCmsLegRule(DateGeneration.Rule r)
+        {
+            cmsRule_ = r;
+            return this;
+        }
+
+        public MakeCms withCmsLegTenor(Period t)
+        {
+            cmsTenor_ = t;
+            return this;
+        }
+
+        public MakeCms withCmsLegTerminationDateConvention(BusinessDayConvention bdc)
+        {
+            cmsTerminationDateConvention_ = bdc;
+            return this;
+        }
+
+        public MakeCms withCmsSpread(double cmsSpread)
+        {
+            cmsSpread_ = cmsSpread;
+            return this;
+        }
+
+        public MakeCms withDiscountingTermStructure(Handle<YieldTermStructure> discountingTermStructure)
+        {
+            engine_ = new DiscountingSwapEngine(discountingTermStructure);
+            return this;
+        }
+
+        public MakeCms withEffectiveDate(Date effectiveDate)
+        {
+            effectiveDate_ = effectiveDate;
+            return this;
+        }
+
+        public MakeCms withFloatingCouponPricer(IborCouponPricer couponPricer)
+        {
+            iborCouponPricer_ = couponPricer;
+            return this;
+        }
+
+        public MakeCms withFloatingLegCalendar(Calendar cal)
+        {
+            floatCalendar_ = cal;
+            return this;
+        }
+
+        public MakeCms withFloatingLegConvention(BusinessDayConvention bdc)
+        {
+            floatConvention_ = bdc;
+            return this;
+        }
+
+        public MakeCms withFloatingLegDayCount(DayCounter dc)
+        {
+            floatDayCount_ = dc;
+            return this;
+        }
+
+        public MakeCms withFloatingLegEndOfMonth(bool flag = true)
+        {
+            floatEndOfMonth_ = flag;
+            return this;
+        }
+
+        public MakeCms withFloatingLegFirstDate(Date d)
+        {
+            floatFirstDate_ = d;
+            return this;
+        }
+
+        public MakeCms withFloatingLegGearing(double iborGearing)
+        {
+            iborGearing_ = iborGearing;
+            return this;
+        }
+
+        public MakeCms withFloatingLegNextToLastDate(Date d)
+        {
+            floatNextToLastDate_ = d;
+            return this;
+        }
+
+        public MakeCms withFloatingLegRule(DateGeneration.Rule r)
+        {
+            floatRule_ = r;
+            return this;
+        }
+
+        public MakeCms withFloatingLegTenor(Period t)
+        {
+            floatTenor_ = t;
+            return this;
+        }
+
+        public MakeCms withFloatingLegTerminationDateConvention(BusinessDayConvention bdc)
+        {
+            floatTerminationDateConvention_ = bdc;
+            return this;
+        }
+
         public MakeCms withIborCap(double? iborCap)
         {
             iborCap_ = iborCap;
             return this;
         }
+
         public MakeCms withIborFloor(double? iborFloor)
         {
             iborFloor_ = iborFloor;
             return this;
         }
 
-        private Period swapTenor_;
-        private SwapIndex swapIndex_;
-        private IborIndex iborIndex_;
-        private double iborSpread_;
-        private double iborGearing_;
-        private double? iborCap_, iborFloor_;
-        private bool useAtmSpread_;
-        private Period forwardStart_;
-
-        private double cmsSpread_;
-        private double cmsGearing_;
-        private double? cmsCap_, cmsFloor_;
-
-        private Date effectiveDate_;
-        private Calendar cmsCalendar_, floatCalendar_;
-
-        private bool payCms_;
-        private double nominal_;
-        private Period cmsTenor_, floatTenor_;
-        private BusinessDayConvention cmsConvention_, cmsTerminationDateConvention_;
-        private BusinessDayConvention floatConvention_, floatTerminationDateConvention_;
-        private DateGeneration.Rule cmsRule_, floatRule_;
-        private bool cmsEndOfMonth_, floatEndOfMonth_;
-        private Date cmsFirstDate_, cmsNextToLastDate_;
-        private Date floatFirstDate_, floatNextToLastDate_;
-        private Date maturityDate_;
-        private DayCounter cmsDayCount_, floatDayCount_;
-
-        private IPricingEngine engine_;
-        private CmsCouponPricer couponPricer_;
-        private IborCouponPricer iborCouponPricer_;
-
+        public MakeCms withNominal(double n)
+        {
+            nominal_ = n;
+            return this;
+        }
     }
 }

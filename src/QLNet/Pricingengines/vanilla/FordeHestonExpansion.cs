@@ -1,7 +1,12 @@
-﻿namespace QLNet.Pricingengines.vanilla
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Pricingengines.vanilla
 {
-    [JetBrains.Annotations.PublicAPI] public class FordeHestonExpansion : HestonExpansion
+    [PublicAPI]
+    public class FordeHestonExpansion : HestonExpansion
     {
+        private double[] coeffs = new double[5];
+
         public FordeHestonExpansion(double kappa, double theta, double sigma, double v0, double rho, double term)
         {
             var v0Sqrt = System.Math.Sqrt(v0);
@@ -26,7 +31,5 @@
             var = System.Math.Max(1e-8, var);
             return System.Math.Sqrt(var);
         }
-
-        private double[] coeffs = new double[5];
     }
 }

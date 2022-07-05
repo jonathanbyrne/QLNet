@@ -17,17 +17,17 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Exceptions;
-using QLNet.Math;
-using System;
 
 namespace QLNet.Math.Solvers1d
 {
-    [JetBrains.Annotations.PublicAPI] public class Bisection : Solver1D
+    [PublicAPI]
+    public class Bisection : Solver1D
     {
         protected override double solveImpl(ISolver1d f, double xAccuracy)
         {
-
             /* The implementation of the algorithm was inspired by
                Press, Teukolsky, Vetterling, and Flannery,
                "Numerical Recipes in C", 2nd edition, Cambridge
@@ -55,14 +55,18 @@ namespace QLNet.Math.Solvers1d
                 fMid = f.value(xMid);
                 evaluationNumber_++;
                 if (fMid <= 0.0)
+                {
                     root_ = xMid;
+                }
+
                 if (System.Math.Abs(dx) < xAccuracy || Utils.close(fMid, 0.0))
                 {
                     return root_;
                 }
             }
+
             Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
-                          QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
+                QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
             return 0;
         }
     }

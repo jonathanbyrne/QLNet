@@ -15,11 +15,18 @@
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Optimization
 {
-    [JetBrains.Annotations.PublicAPI] public class Projection
+    [PublicAPI]
+    public class Projection
     {
+        protected Vector actualParameters_;
+        protected Vector fixedParameters_;
+        protected List<bool> fixParameters_;
+        protected int numberOfFreeParameters_;
+
         public Projection(Vector parameterValues, List<bool> fixParameters = null)
         {
             numberOfFreeParameters_ = 0;
@@ -28,12 +35,35 @@ namespace QLNet.Math.Optimization
             fixParameters_ = fixParameters ?? new InitializedList<bool>(actualParameters_.size(), false);
 
             Utils.QL_REQUIRE(fixedParameters_.size() == fixParameters_.Count, () =>
-                             "fixedParameters_.size()!=parametersFreedoms_.size()");
+                "fixedParameters_.size()!=parametersFreedoms_.size()");
             for (var i = 0; i < fixParameters_.Count; i++)
+            {
                 if (!fixParameters_[i])
+                {
                     numberOfFreeParameters_++;
+                }
+            }
 
             Utils.QL_REQUIRE(numberOfFreeParameters_ > 0, () => "numberOfFreeParameters==0");
+        }
+
+        //! returns whole set of parameters corresponding to the set
+        // of projected parameters
+        public virtual Vector include(Vector projectedParameters)
+        {
+            Utils.QL_REQUIRE(projectedParameters.size() == numberOfFreeParameters_, () =>
+                "projectedParameters.size()!=numberOfFreeParameters");
+            var y = new Vector(fixedParameters_);
+            var i = 0;
+            for (var j = 0; j < y.size(); j++)
+            {
+                if (!fixParameters_[j])
+                {
+                    y[j] = projectedParameters[i++];
+                }
+            }
+
+            return y;
         }
 
         //! returns the subset of free parameters corresponding
@@ -44,37 +74,28 @@ namespace QLNet.Math.Optimization
             var projectedParameters = new Vector(numberOfFreeParameters_);
             var i = 0;
             for (var j = 0; j < fixParameters_.Count; j++)
+            {
                 if (!fixParameters_[j])
+                {
                     projectedParameters[i++] = parameters[j];
-            return projectedParameters;
-        }
+                }
+            }
 
-        //! returns whole set of parameters corresponding to the set
-        // of projected parameters
-        public virtual Vector include(Vector projectedParameters)
-        {
-            Utils.QL_REQUIRE(projectedParameters.size() == numberOfFreeParameters_, () =>
-                             "projectedParameters.size()!=numberOfFreeParameters");
-            var y = new Vector(fixedParameters_);
-            var i = 0;
-            for (var j = 0; j < y.size(); j++)
-                if (!fixParameters_[j])
-                    y[j] = projectedParameters[i++];
-            return y;
+            return projectedParameters;
         }
 
         protected void mapFreeParameters(Vector parameterValues)
         {
             Utils.QL_REQUIRE(parameterValues.size() == numberOfFreeParameters_, () =>
-                             "parameterValues.size()!=numberOfFreeParameters");
+                "parameterValues.size()!=numberOfFreeParameters");
             var i = 0;
             for (var j = 0; j < actualParameters_.size(); j++)
+            {
                 if (!fixParameters_[j])
+                {
                     actualParameters_[j] = parameterValues[i++];
+                }
+            }
         }
-        protected int numberOfFreeParameters_;
-        protected Vector fixedParameters_;
-        protected Vector actualParameters_;
-        protected List<bool> fixParameters_;
     }
 }

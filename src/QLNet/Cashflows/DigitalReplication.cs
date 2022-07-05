@@ -1,6 +1,9 @@
+using JetBrains.Annotations;
+
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class DigitalReplication
+    [PublicAPI]
+    public class DigitalReplication
     {
         private double gap_;
         private Replication.Type replicationType_;
@@ -11,8 +14,8 @@ namespace QLNet.Cashflows
             replicationType_ = t;
         }
 
-        public Replication.Type replicationType() => replicationType_;
-
         public double gap() => gap_;
+
+        public Replication.Type replicationType() => replicationType_;
     }
 }

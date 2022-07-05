@@ -16,9 +16,10 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Extensions;
-using System;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Extensions;
 
 namespace QLNet.Math.matrixutilities
 {
@@ -40,7 +41,8 @@ namespace QLNet.Math.matrixutilities
         \test the correctness of the returned values is tested by
               checking their properties.
     */
-    [JetBrains.Annotations.PublicAPI] public class SymmetricSchurDecomposition
+    [PublicAPI]
+    public class SymmetricSchurDecomposition
     {
         private Vector diagonal_;
         private Matrix eigenVectors_;
@@ -60,6 +62,7 @@ namespace QLNet.Math.matrixutilities
                 diagonal_[q] = s[q, q];
                 eigenVectors_[q, q] = 1.0;
             }
+
             var ss = new Matrix(s);
 
             var tmpDiag = new Vector(diagonal_);
@@ -89,9 +92,13 @@ namespace QLNet.Math.matrixutilities
                        make sure it is worthy to perform the Jacobi rotation
                     */
                     if (ite < 5)
+                    {
                         threshold = 0.2 * sum / (size * size);
+                    }
                     else
+                    {
                         threshold = 0.0;
+                    }
 
                     int j, k, l;
                     for (j = 0; j < size - 1; j++)
@@ -119,8 +126,11 @@ namespace QLNet.Math.matrixutilities
                                     tang = 1.0 / (System.Math.Abs(beta) +
                                                   System.Math.Sqrt(1 + beta * beta));
                                     if (beta < 0)
+                                    {
                                         tang = -tang;
+                                    }
                                 }
+
                                 cosin = 1 / System.Math.Sqrt(1 + tang * tang);
                                 sine = tang * cosin;
                                 rho = sine / (1 + cosin);
@@ -131,17 +141,29 @@ namespace QLNet.Math.matrixutilities
                                 diagonal_[k] += heig;
                                 ss[j, k] = 0.0;
                                 for (l = 0; l + 1 <= j; l++)
+                                {
                                     jacobiRotate_(ss, rho, sine, l, j, l, k);
+                                }
+
                                 for (l = j + 1; l <= k - 1; l++)
+                                {
                                     jacobiRotate_(ss, rho, sine, j, l, l, k);
+                                }
+
                                 for (l = k + 1; l < size; l++)
+                                {
                                     jacobiRotate_(ss, rho, sine, j, l, k, l);
+                                }
+
                                 for (l = 0; l < size; l++)
+                                {
                                     jacobiRotate_(eigenVectors_,
-                                                  rho, sine, l, j, l, k);
+                                        rho, sine, l, j, l, k);
+                                }
                             }
                         }
                     }
+
                     for (k = 0; k < size; k++)
                     {
                         tmpDiag[k] += tmpAccumulate[k];
@@ -149,8 +171,7 @@ namespace QLNet.Math.matrixutilities
                         tmpAccumulate[k] = 0.0;
                     }
                 }
-            }
-            while (++ite <= maxIterations && keeplooping);
+            } while (++ite <= maxIterations && keeplooping);
 
             Utils.QL_REQUIRE(ite <= maxIterations, () => "Too many iterations (" + maxIterations + ") reached");
 
@@ -163,6 +184,7 @@ namespace QLNet.Math.matrixutilities
                 eigenVectors_.column(col).ForEach((ii, xx) => eigenVector[ii] = xx);
                 temp[col] = new KeyValuePair<double, Vector>(diagonal_[col], eigenVector);
             }
+
             // sort descending: std::greater
             temp.Sort((x, y) => y.Key.CompareTo(x.Key));
             var maxEv = temp[0].Key;
@@ -172,14 +194,16 @@ namespace QLNet.Math.matrixutilities
                 diagonal_[col] = System.Math.Abs(temp[col].Key / maxEv) < 1e-16 ? 0.0 : temp[col].Key;
                 var sign = 1.0;
                 if (temp[col].Value[0] < 0.0)
+                {
                     sign = -1.0;
+                }
+
                 for (row = 0; row < size; row++)
                 {
                     eigenVectors_[row, col] = sign * temp[col].Value[row];
                 }
             }
         }
-
 
         public Vector eigenvalues() => diagonal_;
 

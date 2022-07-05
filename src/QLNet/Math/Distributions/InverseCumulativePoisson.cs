@@ -17,8 +17,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Extensions;
-using System;
 
 namespace QLNet.Math.Distributions
 {
@@ -26,12 +26,14 @@ namespace QLNet.Math.Distributions
     /*! \test the correctness of the returned value is tested by
               checking it against known good results.
     */
-    [JetBrains.Annotations.PublicAPI] public class InverseCumulativePoisson : IValue
+    [PublicAPI]
+    public class InverseCumulativePoisson : IValue
     {
         private double lambda_;
 
         public InverseCumulativePoisson() : this(1)
-        { }
+        {
+        }
 
         public InverseCumulativePoisson(double lambda)
         {
@@ -42,10 +44,12 @@ namespace QLNet.Math.Distributions
         public double value(double x)
         {
             Utils.QL_REQUIRE(x >= 0.0 && x <= 1.0, () =>
-                             "Inverse cumulative Poisson distribution is only defined on the interval [0,1]");
+                "Inverse cumulative Poisson distribution is only defined on the interval [0,1]");
 
             if (x.IsEqual(1.0))
+            {
                 return double.MaxValue;
+            }
 
             var sum = 0.0;
             uint index = 0;

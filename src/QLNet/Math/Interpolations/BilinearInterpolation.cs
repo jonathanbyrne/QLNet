@@ -18,21 +18,23 @@
 */
 
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
     //! %bilinear interpolation between discrete points
-    [JetBrains.Annotations.PublicAPI] public class BilinearInterpolation : Interpolation2D
+    [PublicAPI]
+    public class BilinearInterpolation : Interpolation2D
     {
         /*! \pre the \f$ x \f$ and \f$ y \f$ values must be sorted. */
 
         public BilinearInterpolation(List<double> xBegin, int xSize,
-                                     List<double> yBegin, int ySize,
-                                     Matrix zData)
+            List<double> yBegin, int ySize,
+            Matrix zData)
         {
             impl_ =
-                       new BilinearInterpolationImpl(xBegin, xSize,
-                                                     yBegin, ySize, zData);
+                new BilinearInterpolationImpl(xBegin, xSize,
+                    yBegin, ySize, zData);
         }
     }
 

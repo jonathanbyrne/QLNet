@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Termstructures;
 using QLNet.Time;
@@ -35,41 +36,42 @@ namespace QLNet.Indexes.swap
         Reuters page ISDAFIX.
 
     */
-    [JetBrains.Annotations.PublicAPI] public class EuriborSwapIsdaFixA : SwapIndex
+    [PublicAPI]
+    public class EuriborSwapIsdaFixA : SwapIndex
     {
         public EuriborSwapIsdaFixA(Period tenor)
-           : this(tenor, new Handle<YieldTermStructure>()) { }
+            : this(tenor, new Handle<YieldTermStructure>())
+        {
+        }
 
         public EuriborSwapIsdaFixA(Period tenor, Handle<YieldTermStructure> h)
-           : base("EuriborSwapIsdaFixA", // familyName
-                  tenor,
-                  2, // settlementDays
-                  new EURCurrency(),
-                  new TARGET(),
-                  new Period(1, TimeUnit.Years), // fixedLegTenor
-                  BusinessDayConvention.ModifiedFollowing, // fixedLegConvention
-                  new Thirty360(Thirty360.Thirty360Convention.BondBasis), // fixedLegDaycounter
-                  tenor > new Period(1, TimeUnit.Years) ?
-                  new Euribor(new Period(6, TimeUnit.Months), h) :
-                  new Euribor(new Period(3, TimeUnit.Months), h))
-        { }
+            : base("EuriborSwapIsdaFixA", // familyName
+                tenor,
+                2, // settlementDays
+                new EURCurrency(),
+                new TARGET(),
+                new Period(1, TimeUnit.Years), // fixedLegTenor
+                BusinessDayConvention.ModifiedFollowing, // fixedLegConvention
+                new Thirty360(Thirty360.Thirty360Convention.BondBasis), // fixedLegDaycounter
+                tenor > new Period(1, TimeUnit.Years) ? new Euribor(new Period(6, TimeUnit.Months), h) : new Euribor(new Period(3, TimeUnit.Months), h))
+        {
+        }
 
         public EuriborSwapIsdaFixA(Period tenor,
-                                   Handle<YieldTermStructure> forwarding,
-                                   Handle<YieldTermStructure> discounting)
-           : base("EuriborSwapIsdaFixA", // familyName
-                  tenor,
-                  2, // settlementDays
-                  new EURCurrency(),
-                  new TARGET(),
-                  new Period(1, TimeUnit.Years), // fixedLegTenor
-                  BusinessDayConvention.ModifiedFollowing, // fixedLegConvention
-                  new Thirty360(Thirty360.Thirty360Convention.BondBasis), // fixedLegDaycounter
-                  tenor > new Period(1, TimeUnit.Years) ?
-                  new Euribor(new Period(6, TimeUnit.Months), forwarding) :
-                  new Euribor(new Period(3, TimeUnit.Months), forwarding),
-                  discounting)
-        { }
+            Handle<YieldTermStructure> forwarding,
+            Handle<YieldTermStructure> discounting)
+            : base("EuriborSwapIsdaFixA", // familyName
+                tenor,
+                2, // settlementDays
+                new EURCurrency(),
+                new TARGET(),
+                new Period(1, TimeUnit.Years), // fixedLegTenor
+                BusinessDayConvention.ModifiedFollowing, // fixedLegConvention
+                new Thirty360(Thirty360.Thirty360Convention.BondBasis), // fixedLegDaycounter
+                tenor > new Period(1, TimeUnit.Years) ? new Euribor(new Period(6, TimeUnit.Months), forwarding) : new Euribor(new Period(3, TimeUnit.Months), forwarding),
+                discounting)
+        {
+        }
     }
 
     //! %EuriborSwapIsdaFixB index base class

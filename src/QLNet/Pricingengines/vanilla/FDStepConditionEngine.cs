@@ -16,33 +16,33 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences;
 using QLNet.processes;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Pricingengines.vanilla
 {
     //! Finite-differences pricing engine for American-style vanilla options
-    [JetBrains.Annotations.PublicAPI] public class FDStepConditionEngine : FDConditionEngineTemplate
+    [PublicAPI]
+    public class FDStepConditionEngine : FDConditionEngineTemplate
     {
-        protected TridiagonalOperator controlOperator_;
         protected List<BoundaryCondition<IOperator>> controlBCs_;
+        protected TridiagonalOperator controlOperator_;
         protected SampledCurve controlPrices_;
 
         // required for generics
-        public FDStepConditionEngine() { }
-        // required for template inheritance
-        public override FDVanillaEngine factory(GeneralizedBlackScholesProcess process,
-                                                int timeSteps, int gridPoints, bool timeDependent) =>
-            new FDStepConditionEngine(process, timeSteps, gridPoints, timeDependent);
+        public FDStepConditionEngine()
+        {
+        }
 
         //public FDStepConditionEngine(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints,
         //     bool timeDependent = false)
         public FDStepConditionEngine(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
-           : base(process, timeSteps, gridPoints, timeDependent)
+            : base(process, timeSteps, gridPoints, timeDependent)
         {
             controlBCs_ = new InitializedList<BoundaryCondition<IOperator>>(2);
             controlPrices_ = new SampledCurve(gridPoints);
@@ -112,5 +112,10 @@ namespace QLNet.Pricingengines.vanilla
                             + black.gamma(spot);
             results.additionalResults["priceCurve"] = prices_;
         }
+
+        // required for template inheritance
+        public override FDVanillaEngine factory(GeneralizedBlackScholesProcess process,
+            int timeSteps, int gridPoints, bool timeDependent) =>
+            new FDStepConditionEngine(process, timeSteps, gridPoints, timeDependent);
     }
 }

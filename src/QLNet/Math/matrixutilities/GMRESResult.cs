@@ -6,18 +6,12 @@ namespace QLNet.Math.matrixutilities
     {
         public GMRESResult(List<double> e, Vector xx)
         {
-            errors = e;
-            x = xx;
+            Errors = e;
+            X = xx;
         }
 
-        private List<double> errors;
-        private Vector x;
+        public List<double> Errors { get; set; }
 
-        public List<double> Errors { get => errors;
-            set => errors = value;
-        }
-        public Vector X { get => x;
-            set => x = value;
-        }
+        public Vector X { get; set; }
     }
 }

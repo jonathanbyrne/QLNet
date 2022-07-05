@@ -17,8 +17,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Quotes;
-using QLNet.Termstructures;
 using QLNet.Time;
 
 namespace QLNet.Termstructures.Yield
@@ -33,7 +33,8 @@ namespace QLNet.Termstructures.Yield
         - the correctness of the returned values is tested by checking them against numerical calculations.
         - observability against changes in the underlying term structure and in the added spread is checked.
     */
-    [JetBrains.Annotations.PublicAPI] public class ForwardSpreadedTermStructure : ForwardRateStructure
+    [PublicAPI]
+    public class ForwardSpreadedTermStructure : ForwardRateStructure
     {
         private Handle<YieldTermStructure> originalCurve_;
         private Handle<Quote> spread_;
@@ -47,17 +48,17 @@ namespace QLNet.Termstructures.Yield
             spread_.registerWith(update);
         }
 
-        public override DayCounter dayCounter() => originalCurve_.link.dayCounter();
-
         public override Calendar calendar() => originalCurve_.link.calendar();
 
-        public override int settlementDays() => originalCurve_.link.settlementDays();
-
-        public override Date referenceDate() => originalCurve_.link.referenceDate();
+        public override DayCounter dayCounter() => originalCurve_.link.dayCounter();
 
         public override Date maxDate() => originalCurve_.link.maxDate();
 
         public override double maxTime() => originalCurve_.link.maxTime();
+
+        public override Date referenceDate() => originalCurve_.link.referenceDate();
+
+        public override int settlementDays() => originalCurve_.link.settlementDays();
 
         //! returns the spreaded forward rate
         protected override double forwardImpl(double t) =>

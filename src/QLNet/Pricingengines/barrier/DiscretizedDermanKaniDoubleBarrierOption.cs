@@ -1,16 +1,22 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
 
 namespace QLNet.Pricingengines.barrier
 {
-    [JetBrains.Annotations.PublicAPI] public class DiscretizedDermanKaniDoubleBarrierOption : DiscretizedAsset
+    [PublicAPI]
+    public class DiscretizedDermanKaniDoubleBarrierOption : DiscretizedAsset
     {
+        private DiscretizedDoubleBarrierOption unenhanced_;
+
         public DiscretizedDermanKaniDoubleBarrierOption(DoubleBarrierOption.Arguments args,
             StochasticProcess process, TimeGrid grid = null)
         {
             unenhanced_ = new DiscretizedDoubleBarrierOption(args, process, grid);
         }
+
+        public override List<double> mandatoryTimes() => unenhanced_.mandatoryTimes();
 
         public override void reset(int size)
         {
@@ -19,14 +25,12 @@ namespace QLNet.Pricingengines.barrier
             adjustValues();
         }
 
-        public override List<double> mandatoryTimes() => unenhanced_.mandatoryTimes();
-
         protected override void postAdjustValuesImpl()
         {
             unenhanced_.rollback(time());
 
             var grid = method().grid(time());
-            unenhanced_.checkBarrier(values_, grid);   // compute payoffs
+            unenhanced_.checkBarrier(values_, grid); // compute payoffs
             adjustBarrier(values_, grid);
         }
 
@@ -63,6 +67,7 @@ namespace QLNet.Pricingengines.barrier
                             optvalues[j] = System.Math.Max(0.0, (ltob.GetValueOrDefault() * u + htob.GetValueOrDefault() * t) / htol); // derman std
                         }
                     }
+
                     break;
                 case DoubleBarrier.Type.KnockOut:
                     for (var j = 0; j < optvalues.size() - 1; ++j)
@@ -86,12 +91,12 @@ namespace QLNet.Pricingengines.barrier
                             optvalues[j] = System.Math.Max(0.0, (a.GetValueOrDefault() + b.GetValueOrDefault()) / c);
                         }
                     }
+
                     break;
                 default:
                     Utils.QL_FAIL("unsupported barrier ExerciseType");
                     break;
             }
         }
-        private DiscretizedDoubleBarrierOption unenhanced_;
     }
 }

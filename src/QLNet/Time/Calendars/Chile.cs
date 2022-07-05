@@ -16,64 +16,56 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Time;
+
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
     /// <summary>
-    /// Chilean calendars
+    ///     Chilean calendars
     /// </summary>
     /// <remarks>
-    /// Holidays for the Santiago Stock Exchange
-    /// (data from <https://en.wikipedia.org/wiki/Public_holidays_in_Chile>):
-    /// Saturdays
-    /// Sundays
-    /// New Year's Day, January 1st
-    /// January 2nd, when falling on a Monday (since 2017)
-    /// Good Friday
-    /// Easter Saturday
-    /// Labour Day, May 1st
-    /// Navy Day, May 21st
-    /// Day of Aboriginal People, June 21st (since 2021)
-    /// Saint Peter and Saint Paul, June 29th (moved to the nearest Monday if it falls on a weekday)
-    /// Our Lady of Mount Carmel, July 16th
-    /// Assumption Day, August 15th
-    /// Independence Day, September 18th (also the 17th if the latter falls on a Monday or Friday)
-    /// Army Day, September 19th (also the 20th if the latter falls on a Friday)
-    /// Discovery of Two Worlds, October 12th (moved to the nearest Monday if it falls on a weekday)
-    /// Reformation Day, October 31st (since 2008; moved to the preceding Friday if it falls on a Tuesday,
-    /// or to the following Friday if it falls on a Wednesday)
-    /// All Saints' Day, November 1st
-    /// Immaculate Conception, December 8th
-    /// Christmas Day, December 25th
+    ///     Holidays for the Santiago Stock Exchange
+    ///     (data from
+    ///     <https:// en.wikipedia.org/ wiki/ Public_holidays_in_Chile>
+    ///         ):
+    ///         Saturdays
+    ///         Sundays
+    ///         New Year's Day, January 1st
+    ///         January 2nd, when falling on a Monday (since 2017)
+    ///         Good Friday
+    ///         Easter Saturday
+    ///         Labour Day, May 1st
+    ///         Navy Day, May 21st
+    ///         Day of Aboriginal People, June 21st (since 2021)
+    ///         Saint Peter and Saint Paul, June 29th (moved to the nearest Monday if it falls on a weekday)
+    ///         Our Lady of Mount Carmel, July 16th
+    ///         Assumption Day, August 15th
+    ///         Independence Day, September 18th (also the 17th if the latter falls on a Monday or Friday)
+    ///         Army Day, September 19th (also the 20th if the latter falls on a Friday)
+    ///         Discovery of Two Worlds, October 12th (moved to the nearest Monday if it falls on a weekday)
+    ///         Reformation Day, October 31st (since 2008; moved to the preceding Friday if it falls on a Tuesday,
+    ///         or to the following Friday if it falls on a Wednesday)
+    ///         All Saints' Day, November 1st
+    ///         Immaculate Conception, December 8th
+    ///         Christmas Day, December 25th
     /// </remarks>
-
-    [JetBrains.Annotations.PublicAPI] public class Chile : Calendar
+    [PublicAPI]
+    public class Chile : Calendar
     {
         public enum Market
         {
             SSE // Santiago Stock Exchange
-        };
-
-        public Chile() : this(Market.SSE)
-        {
-        }
-
-        public Chile(Market m)
-        {
-            calendar_ = m switch
-            {
-                Market.SSE => Settlement.Singleton,
-                _ => throw new ArgumentException("Unknown market: " + m)
-            };
         }
 
         private class Settlement : WesternImpl
         {
             public static readonly Settlement Singleton = new Settlement();
-            private Settlement() { }
-            public override string name() => "Santiago Stock Exchange";
+
+            private Settlement()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -116,19 +108,36 @@ namespace QLNet.Time.Calendars
                     || d == 15 && m == Month.October && w == DayOfWeek.Monday
                     // Reformation Day
                     || (d == 27 && m == Month.October && w == DayOfWeek.Friday
-                       || d == 31 && m == Month.October && w != DayOfWeek.Tuesday && w != DayOfWeek.Wednesday
-                       || d == 2 && m == Month.November && w == DayOfWeek.Friday) && y >= 2008
+                        || d == 31 && m == Month.October && w != DayOfWeek.Tuesday && w != DayOfWeek.Wednesday
+                        || d == 2 && m == Month.November && w == DayOfWeek.Friday) && y >= 2008
                     // All Saints' Day
                     || d == 1 && m == Month.November
                     // Immaculate Conception
                     || d == 8 && m == Month.December
                     // Christmas Day
                     || d == 25 && m == Month.December
-                    )
+                   )
+                {
                     return false;
+                }
 
                 return true;
             }
+
+            public override string name() => "Santiago Stock Exchange";
+        }
+
+        public Chile() : this(Market.SSE)
+        {
+        }
+
+        public Chile(Market m)
+        {
+            calendar_ = m switch
+            {
+                Market.SSE => Settlement.Singleton,
+                _ => throw new ArgumentException("Unknown market: " + m)
+            };
         }
     }
 }

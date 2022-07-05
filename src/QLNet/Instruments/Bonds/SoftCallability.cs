@@ -1,9 +1,13 @@
-﻿using QLNet.Time;
+﻿using JetBrains.Annotations;
+using QLNet.Time;
 
 namespace QLNet.Instruments.Bonds
 {
-    [JetBrains.Annotations.PublicAPI] public class SoftCallability : Callability
+    [PublicAPI]
+    public class SoftCallability : Callability
     {
+        private double trigger_;
+
         public SoftCallability(Price price, Date date, double trigger)
             : base(price, Type.Call, date)
         {
@@ -11,7 +15,5 @@ namespace QLNet.Instruments.Bonds
         }
 
         public double trigger() => trigger_;
-
-        private double trigger_;
     }
 }

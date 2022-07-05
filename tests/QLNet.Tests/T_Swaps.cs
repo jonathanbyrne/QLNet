@@ -185,13 +185,15 @@ namespace QLNet.Tests
                     for (var z = 0; z < swap_values.Count - 1; z++)
                     {
                         if (swap_values[z] < swap_values[z + 1])
+                        {
                             QAssert.Fail(
-                               "NPV is increasing with the fixed rate in a swap: \n"
-                               + "    length: " + lengths[i] + " years\n"
-                               + "    value:  " + swap_values[z]
-                               + " paying fixed rate: " + rates[z] + "\n"
-                               + "    value:  " + swap_values[z + 1]
-                               + " paying fixed rate: " + rates[z + 1]);
+                                "NPV is increasing with the fixed rate in a swap: \n"
+                                + "    length: " + lengths[i] + " years\n"
+                                + "    value:  " + swap_values[z]
+                                + " paying fixed rate: " + rates[z] + "\n"
+                                + "    value:  " + swap_values[z + 1]
+                                + " paying fixed rate: " + rates[z + 1]);
+                        }
                     }
                 }
             }
@@ -223,13 +225,15 @@ namespace QLNet.Tests
                     for (var z = 0; z < swap_values.Count - 1; z++)
                     {
                         if (swap_values[z] > swap_values[z + 1])
+                        {
                             QAssert.Fail(
-                               "NPV is decreasing with the floating spread in a swap: \n"
-                               + "    length: " + lengths[i] + " years\n"
-                               + "    value:  " + swap_values[z]
-                               + " receiving spread: " + rates[z] + "\n"
-                               + "    value:  " + swap_values[z + 1]
-                               + " receiving spread: " + rates[z + 1]);
+                                "NPV is decreasing with the floating spread in a swap: \n"
+                                + "    length: " + lengths[i] + " years\n"
+                                + "    value:  " + swap_values[z]
+                                + " receiving spread: " + rates[z] + "\n"
+                                + "    value:  " + swap_values[z + 1]
+                                + " receiving spread: " + rates[z + 1]);
+                        }
                     }
                 }
             }
@@ -288,9 +292,11 @@ namespace QLNet.Tests
             var tolerance = 1.0;
 
             if (System.Math.Abs(swap.NPV() - storedValue) > tolerance)
+            {
                 QAssert.Fail("Wrong NPV calculation:\n"
                              + "    expected:   " + storedValue + "\n"
                              + "    calculated: " + swap.NPV());
+            }
         }
         [Fact]
         public void testCachedValue()
@@ -311,9 +317,11 @@ namespace QLNet.Tests
 #endif
 
             if (System.Math.Abs(swap.NPV() - cachedNPV) > 1.0e-11)
+            {
                 QAssert.Fail("failed to reproduce cached swap value:\n"
                              + "    calculated: " + swap.NPV() + "\n"
                              + "    expected:   " + cachedNPV);
+            }
         }
         [Fact]
         public void testFixing()

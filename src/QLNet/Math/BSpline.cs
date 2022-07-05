@@ -15,6 +15,7 @@
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math
 {
@@ -33,8 +34,16 @@ namespace QLNet.Math
         B-spline has \f$ p=3 \f$, etc.
 
     */
-    [JetBrains.Annotations.PublicAPI] public class BSpline
+    [PublicAPI]
+    public class BSpline
     {
+        private List<double> knots_;
+        // n_ + 1 =  "control points" = max number of basis functions
+        private int n_;
+
+        // e.g. p_=2 is a quadratic B-spline, p_=3 is a cubic B-Spline, etc.
+        private int p_;
+
         public BSpline(int p, int n, List<double> knots)
         {
             p_ = p;
@@ -66,18 +75,9 @@ namespace QLNet.Math
             {
                 return knots_[i] <= x && x < knots_[i + 1] ? 1.0 : 0.0;
             }
-            else
-            {
-                return (x - knots_[i]) / (knots_[i + p] - knots_[i]) * N(i, p - 1, x) +
-                       (knots_[i + p + 1] - x) / (knots_[i + p + 1] - knots_[i + 1]) * N(i + 1, p - 1, x);
-            }
 
+            return (x - knots_[i]) / (knots_[i + p] - knots_[i]) * N(i, p - 1, x) +
+                   (knots_[i + p + 1] - x) / (knots_[i + p + 1] - knots_[i + 1]) * N(i + 1, p - 1, x);
         }
-
-        // e.g. p_=2 is a quadratic B-spline, p_=3 is a cubic B-Spline, etc.
-        private int p_;
-        // n_ + 1 =  "control points" = max number of basis functions
-        private int n_;
-        private List<double> knots_;
     }
 }

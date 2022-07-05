@@ -17,18 +17,21 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System;
+using JetBrains.Annotations;
 using QLNet.Models.Shortrate;
 using QLNet.processes;
-using System;
 
 namespace QLNet.Methods.Finitedifferences
 {
-    [JetBrains.Annotations.PublicAPI] public class PdeShortRate : PdeSecondOrderParabolic
+    [PublicAPI]
+    public class PdeShortRate : PdeSecondOrderParabolic
     {
         private OneFactorModel.ShortRateDynamics dynamics_;
 
         public PdeShortRate()
-        { } // required for geerics
+        {
+        } // required for geerics
 
         public PdeShortRate(OneFactorModel.ShortRateDynamics d)
         {
@@ -37,9 +40,9 @@ namespace QLNet.Methods.Finitedifferences
 
         public override double diffusion(double t, double x) => dynamics_.process().diffusion(t, x);
 
-        public override double drift(double t, double x) => dynamics_.process().drift(t, x);
-
         public override double discount(double t, double x) => dynamics_.shortRate(t, x);
+
+        public override double drift(double t, double x) => dynamics_.process().drift(t, x);
 
         public override PdeSecondOrderParabolic factory(GeneralizedBlackScholesProcess process) => throw new NotSupportedException();
     }

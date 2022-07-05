@@ -17,6 +17,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Math.statistics
 {
     //! empirical-distribution risk measures
@@ -30,23 +32,24 @@ namespace QLNet.Math.statistics
 
     //! default risk measures tool
     /*! \test the correctness of the returned values is tested by checking them against numerical calculations. */
-    [JetBrains.Annotations.PublicAPI] public class RiskStatistics : GenericRiskStatistics<GaussianStatistics>
+    [PublicAPI]
+    public class RiskStatistics : GenericRiskStatistics<GaussianStatistics>
     {
+        public double gaussianAverageShortfall(double value) => impl_.gaussianAverageShortfall(value);
+
+        public double gaussianDownsideVariance() => impl_.gaussianDownsideVariance();
+
+        public double gaussianExpectedShortfall(double value) => impl_.gaussianExpectedShortfall(value);
+
         public double gaussianPercentile(double value) => impl_.gaussianPercentile(value);
 
         public double gaussianPotentialUpside(double value) => impl_.gaussianPotentialUpside(value);
 
-        public double gaussianValueAtRisk(double value) => impl_.gaussianValueAtRisk(value);
-
-        public double gaussianExpectedShortfall(double value) => impl_.gaussianExpectedShortfall(value);
+        public double gaussianRegret(double value) => impl_.gaussianRegret(value);
 
         public double gaussianShortfall(double value) => impl_.gaussianShortfall(value);
 
-        public double gaussianAverageShortfall(double value) => impl_.gaussianAverageShortfall(value);
-
-        public double gaussianRegret(double value) => impl_.gaussianRegret(value);
-
-        public double gaussianDownsideVariance() => impl_.gaussianDownsideVariance();
+        public double gaussianValueAtRisk(double value) => impl_.gaussianValueAtRisk(value);
     }
 
     //! default statistics tool

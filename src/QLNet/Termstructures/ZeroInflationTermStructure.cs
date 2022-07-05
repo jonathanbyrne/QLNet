@@ -7,7 +7,8 @@ namespace QLNet
     public abstract class ZeroInflationTermStructure : InflationTermStructure
     {
         protected ZeroInflationTermStructure()
-        {}
+        {
+        }
 
         // Constructors
         protected ZeroInflationTermStructure(DayCounter dayCounter,
@@ -19,7 +20,8 @@ namespace QLNet
             Seasonality seasonality = null)
             : base(baseZeroRate, observationLag, frequency, indexIsInterpolated,
                 yTS, dayCounter, seasonality)
-        {}
+        {
+        }
 
         protected ZeroInflationTermStructure(Date referenceDate,
             Calendar calendar,
@@ -32,7 +34,8 @@ namespace QLNet
             Seasonality seasonality = null)
             : base(referenceDate, baseZeroRate, observationLag, frequency, indexIsInterpolated,
                 yTS, calendar, dayCounter, seasonality)
-        {}
+        {
+        }
 
         protected ZeroInflationTermStructure(int settlementDays,
             Calendar calendar,
@@ -45,7 +48,8 @@ namespace QLNet
             Seasonality seasonality = null)
             : base(settlementDays, calendar, baseZeroRate, observationLag, frequency,
                 indexIsInterpolated, yTS, dayCounter, seasonality)
-        {}
+        {
+        }
 
         // Inspectors
         //! zero-coupon inflation rate for an instrument with maturity (pay date) d
@@ -112,7 +116,6 @@ namespace QLNet
             {
                 zeroRate = seasonality().correctZeroRate(d - useLag, zeroRate, this);
             }
-
 
             return zeroRate;
         }

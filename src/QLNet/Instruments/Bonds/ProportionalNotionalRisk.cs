@@ -1,10 +1,15 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet.Instruments.Bonds
 {
-    [JetBrains.Annotations.PublicAPI] public class ProportionalNotionalRisk : NotionalRisk
+    [PublicAPI]
+    public class ProportionalNotionalRisk : NotionalRisk
     {
+        protected double attachement_;
+        protected double exhaustion_;
+
         public ProportionalNotionalRisk(EventPaymentOffset paymentOffset, double attachement, double exhaustion)
             : base(paymentOffset)
         {
@@ -29,8 +34,5 @@ namespace QLNet.Instruments.Bonds
                 }
             }
         }
-
-        protected double attachement_;
-        protected double exhaustion_;
     }
 }

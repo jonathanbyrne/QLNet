@@ -1,12 +1,15 @@
-﻿using QLNet.Termstructures.Volatility.Inflation;
+﻿using JetBrains.Annotations;
+using QLNet.Termstructures.Volatility.Inflation;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class UnitDisplacedBlackYoYInflationCouponPricer : YoYInflationCouponPricer
+    [PublicAPI]
+    public class UnitDisplacedBlackYoYInflationCouponPricer : YoYInflationCouponPricer
     {
         public UnitDisplacedBlackYoYInflationCouponPricer(Handle<YoYOptionletVolatilitySurface> capletVol = null)
             : base(capletVol)
-        { }
+        {
+        }
 
         protected override double optionletPriceImp(Option.Type optionType, double effStrike,
             double forward, double stdDev) =>

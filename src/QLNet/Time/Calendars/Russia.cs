@@ -16,8 +16,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Time;
+
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -46,159 +47,73 @@ namespace QLNet.Time.Calendars
 
     \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class Russia : Calendar
+    [PublicAPI]
+    public class Russia : Calendar
     {
         public enum Market
         {
-            Settlement,     //!< generic settlement calendar
-            MOEX            //!< Moscow Exchange calendar
+            Settlement, //!< generic settlement calendar
+            MOEX //!< Moscow Exchange calendar
         }
 
-        public Russia() : this(Market.Settlement) { }
-
-        public Russia(Market m)
-           : base()
+        private class ExchangeImpl : OrthodoxImpl
         {
-            switch (m)
+            public static readonly ExchangeImpl Singleton = new ExchangeImpl();
+
+            private ExchangeImpl()
             {
-                case Market.Settlement:
-                    calendar_ = SettlementImpl.Singleton;
-                    break;
-                case Market.MOEX:
-                    calendar_ = ExchangeImpl.Singleton;
-                    break;
-                default:
-                    throw new ArgumentException("Unknown market: " + m);
             }
-        }
 
-
-        class SettlementImpl : OrthodoxImpl
-        {
-            public static readonly SettlementImpl Singleton = new SettlementImpl();
-            private SettlementImpl() { }
-
-            public override string name() => "Russian settlement";
-
-            private bool isExtraHolidaySettlementImpl(int d, Month month, int year)
-            {
-                switch (year)
-                {
-                    case 2017:
-                        switch (month)
-                        {
-                            case Month.February: return d == 24;
-                            case Month.May: return d == 8;
-                            case Month.November: return d == 6;
-                            default: return false;
-                        }
-                    case 2018:
-                        switch (month)
-                        {
-                            case Month.March: return d == 9;
-                            case Month.April: return d == 30;
-                            case Month.May: return d == 2;
-                            case Month.June: return d == 11;
-                            case Month.December: return d == 31;
-                            default: return false;
-                        }
-                    case 2019:
-                        switch (month)
-                        {
-                            case Month.May: return d == 2 || d == 3 || d == 10;
-                            default: return false;
-                        }
-                    case 2020:
-                        switch (month)
-                        {
-                            case Month.March: return d == 30 || d == 31;
-                            case Month.April: return d == 1 || d == 2 || d == 3;
-                            case Month.May: return d == 4 || d == 5;
-                            default: return false;
-                        }
-                    default:
-                        return false;
-                }
-            }
             public override bool isBusinessDay(Date date)
             {
                 var w = date.DayOfWeek;
-                int d = date.Day, dd = date.DayOfYear;
+                var d = date.Day;
                 var m = (Month)date.Month;
                 var y = date.Year;
-                var em = easterMonday(y);
 
+                // the exchange was formally established in 2011, so data are only
+                // available from 2012 to present
+                if (y < 2012)
+                {
+                    Utils.QL_FAIL("MOEX calendar for the year " + y + " does not exist.");
+                }
+
+                if (isWorkingWeekend(d, m, y))
+                {
+                    return true;
+                }
+
+                // Known holidays
                 if (isWeekend(w)
-                    // New Year's holidays
-                    || y <= 2005 && d <= 2 && m == Month.January
-                    || y >= 2005 && d <= 5 && m == Month.January
-                    // in 2012, the 6th was also a holiday
-                    || y == 2012 && d == 6 && m == Month.January
-                    // Christmas (possibly moved to Monday)
-                    || (d == 7 || (d == 8 || d == 9) && w == DayOfWeek.Monday) && m == Month.January
-                    // Defender of the Fatherland Day (possibly moved to Monday)
-                    || (d == 23 || (d == 24 || d == 25) && w == DayOfWeek.Monday) &&
-                        m == Month.February
+                    // Defender of the Fatherland Day
+                    || d == 23 && m == Month.February
                     // International Women's Day (possibly moved to Monday)
-                    || (d == 8 || (d == 9 || d == 10) && w == DayOfWeek.Monday) &&
-                        m == Month.March
-                    // Labour Day (possibly moved to Monday)
-                    || (d == 1 || (d == 2 || d == 3) && w == DayOfWeek.Monday) &&
-                        m == Month.May
+                    || (d == 8 || (d == 9 || d == 10) && w == DayOfWeek.Monday) && m == Month.March
+                    // Labour Day
+                    || d == 1 && m == Month.May
                     // Victory Day (possibly moved to Monday)
-                    || (d == 9 || (d == 10 || d == 11) && w == DayOfWeek.Monday) &&
-                        m == Month.May
-                    // Russia Day (possibly moved to Monday)
-                    || (d == 12 || (d == 13 || d == 14) && w == DayOfWeek.Monday) &&
-                        m == Month.June
+                    || (d == 9 || (d == 10 || d == 11) && w == DayOfWeek.Monday) && m == Month.May
+                    // Russia Day
+                    || d == 12 && m == Month.June
                     // Unity Day (possibly moved to Monday)
-                    || (d == 4 || (d == 5 || d == 6) && w == DayOfWeek.Monday) &&
-                        m == Month.November)
+                    || (d == 4 || (d == 5 || d == 6) && w == DayOfWeek.Monday)
+                    && m == Month.November
+                    // New Years Eve
+                    || d == 31 && m == Month.December)
+                {
                     return false;
+                }
 
-                if (isExtraHolidaySettlementImpl(d, m, y))
+                if (isExtraHolidayExchangeImpl(d, m, y))
+                {
                     return false;
+                }
 
                 return true;
             }
-        }
 
-        class ExchangeImpl : OrthodoxImpl
-        {
-            public static readonly ExchangeImpl Singleton = new ExchangeImpl();
-            private ExchangeImpl() { }
+            public override string name() => "Moscow exchange";
 
-            private bool isWorkingWeekend(int d, Month month, int year)
-            {
-                switch (year)
-                {
-                    case 2012:
-                        switch (month)
-                        {
-                            case Month.March: return d == 11;
-                            case Month.April: return d == 28;
-                            case Month.May: return d == 5 || d == 12;
-                            case Month.June: return d == 9;
-                            default: return false;
-                        }
-                    case 2016:
-                        switch (month)
-                        {
-                            case Month.February: return d == 20;
-                            default: return false;
-                        }
-                    case 2018:
-                        switch (month)
-                        {
-                            case Month.April: return d == 28;
-                            case Month.June: return d == 9;
-                            case Month.December: return d == 29;
-                            default: return false;
-                        }
-                    default:
-                        return false;
-                }
-            }
             private bool isExtraHolidayExchangeImpl(int d, Month month, int year)
             {
                 switch (year)
@@ -217,7 +132,7 @@ namespace QLNet.Time.Calendars
                         {
                             case Month.January:
                                 return d == 1 || d == 2 || d == 3
-                                                          || d == 4 || d == 7;
+                                       || d == 4 || d == 7;
                             default: return false;
                         }
                     case 2014:
@@ -277,48 +192,153 @@ namespace QLNet.Time.Calendars
                 }
             }
 
+            private bool isWorkingWeekend(int d, Month month, int year)
+            {
+                switch (year)
+                {
+                    case 2012:
+                        switch (month)
+                        {
+                            case Month.March: return d == 11;
+                            case Month.April: return d == 28;
+                            case Month.May: return d == 5 || d == 12;
+                            case Month.June: return d == 9;
+                            default: return false;
+                        }
+                    case 2016:
+                        switch (month)
+                        {
+                            case Month.February: return d == 20;
+                            default: return false;
+                        }
+                    case 2018:
+                        switch (month)
+                        {
+                            case Month.April: return d == 28;
+                            case Month.June: return d == 9;
+                            case Month.December: return d == 29;
+                            default: return false;
+                        }
+                    default:
+                        return false;
+                }
+            }
+        }
 
-            public override string name() => "Moscow exchange";
+        private class SettlementImpl : OrthodoxImpl
+        {
+            public static readonly SettlementImpl Singleton = new SettlementImpl();
+
+            private SettlementImpl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
-
                 var w = date.DayOfWeek;
-                var d = date.Day;
+                int d = date.Day, dd = date.DayOfYear;
                 var m = (Month)date.Month;
                 var y = date.Year;
+                var em = easterMonday(y);
 
-                // the exchange was formally established in 2011, so data are only
-                // available from 2012 to present
-                if (y < 2012)
-                    Utils.QL_FAIL("MOEX calendar for the year " + y + " does not exist.");
-
-                if (isWorkingWeekend(d, m, y))
-                    return true;
-
-                // Known holidays
                 if (isWeekend(w)
-                    // Defender of the Fatherland Day
-                    || d == 23 && m == Month.February
+                    // New Year's holidays
+                    || y <= 2005 && d <= 2 && m == Month.January
+                    || y >= 2005 && d <= 5 && m == Month.January
+                    // in 2012, the 6th was also a holiday
+                    || y == 2012 && d == 6 && m == Month.January
+                    // Christmas (possibly moved to Monday)
+                    || (d == 7 || (d == 8 || d == 9) && w == DayOfWeek.Monday) && m == Month.January
+                    // Defender of the Fatherland Day (possibly moved to Monday)
+                    || (d == 23 || (d == 24 || d == 25) && w == DayOfWeek.Monday) &&
+                    m == Month.February
                     // International Women's Day (possibly moved to Monday)
-                    || (d == 8 || (d == 9 || d == 10) && w == DayOfWeek.Monday) && m == Month.March
-                    // Labour Day
-                    || d == 1 && m == Month.May
+                    || (d == 8 || (d == 9 || d == 10) && w == DayOfWeek.Monday) &&
+                    m == Month.March
+                    // Labour Day (possibly moved to Monday)
+                    || (d == 1 || (d == 2 || d == 3) && w == DayOfWeek.Monday) &&
+                    m == Month.May
                     // Victory Day (possibly moved to Monday)
-                    || (d == 9 || (d == 10 || d == 11) && w == DayOfWeek.Monday) && m == Month.May
-                    // Russia Day
-                    || d == 12 && m == Month.June
+                    || (d == 9 || (d == 10 || d == 11) && w == DayOfWeek.Monday) &&
+                    m == Month.May
+                    // Russia Day (possibly moved to Monday)
+                    || (d == 12 || (d == 13 || d == 14) && w == DayOfWeek.Monday) &&
+                    m == Month.June
                     // Unity Day (possibly moved to Monday)
-                    || (d == 4 || (d == 5 || d == 6) && w == DayOfWeek.Monday)
-                        && m == Month.November
-                    // New Years Eve
-                    || d == 31 && m == Month.December)
+                    || (d == 4 || (d == 5 || d == 6) && w == DayOfWeek.Monday) &&
+                    m == Month.November)
+                {
                     return false;
+                }
 
-                if (isExtraHolidayExchangeImpl(d, m, y))
+                if (isExtraHolidaySettlementImpl(d, m, y))
+                {
                     return false;
+                }
 
                 return true;
+            }
+
+            public override string name() => "Russian settlement";
+
+            private bool isExtraHolidaySettlementImpl(int d, Month month, int year)
+            {
+                switch (year)
+                {
+                    case 2017:
+                        switch (month)
+                        {
+                            case Month.February: return d == 24;
+                            case Month.May: return d == 8;
+                            case Month.November: return d == 6;
+                            default: return false;
+                        }
+                    case 2018:
+                        switch (month)
+                        {
+                            case Month.March: return d == 9;
+                            case Month.April: return d == 30;
+                            case Month.May: return d == 2;
+                            case Month.June: return d == 11;
+                            case Month.December: return d == 31;
+                            default: return false;
+                        }
+                    case 2019:
+                        switch (month)
+                        {
+                            case Month.May: return d == 2 || d == 3 || d == 10;
+                            default: return false;
+                        }
+                    case 2020:
+                        switch (month)
+                        {
+                            case Month.March: return d == 30 || d == 31;
+                            case Month.April: return d == 1 || d == 2 || d == 3;
+                            case Month.May: return d == 4 || d == 5;
+                            default: return false;
+                        }
+                    default:
+                        return false;
+                }
+            }
+        }
+
+        public Russia() : this(Market.Settlement)
+        {
+        }
+
+        public Russia(Market m)
+        {
+            switch (m)
+            {
+                case Market.Settlement:
+                    calendar_ = SettlementImpl.Singleton;
+                    break;
+                case Market.MOEX:
+                    calendar_ = ExchangeImpl.Singleton;
+                    break;
+                default:
+                    throw new ArgumentException("Unknown market: " + m);
             }
         }
     }

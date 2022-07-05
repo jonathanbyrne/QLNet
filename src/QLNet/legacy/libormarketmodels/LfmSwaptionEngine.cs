@@ -17,28 +17,28 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Pricingengines;
-using QLNet.Termstructures;
-using QLNet.Termstructures.Volatility.swaption;
-using QLNet.Time;
-using System;
-using System.Linq;
 using QLNet.Pricingengines.Swap;
+using QLNet.Termstructures;
 
 namespace QLNet.legacy.libormarketmodels
 {
     //! %Libor forward model swaption engine based on Black formula
     /*! \ingroup swaptionengines */
-    [JetBrains.Annotations.PublicAPI] public class LfmSwaptionEngine : GenericModelEngine<LiborForwardModel,
-      Swaption.Arguments,
-      Instrument.Results>
+    [PublicAPI]
+    public class LfmSwaptionEngine : GenericModelEngine<LiborForwardModel,
+        Swaption.Arguments,
+        Instrument.Results>
     {
         private Handle<YieldTermStructure> discountCurve_;
 
         public LfmSwaptionEngine(LiborForwardModel model,
-                                 Handle<YieldTermStructure> discountCurve)
-           : base(model)
+            Handle<YieldTermStructure> discountCurve)
+            : base(model)
         {
             discountCurve_ = discountCurve;
             discountCurve_.registerWith(update);
@@ -47,7 +47,7 @@ namespace QLNet.legacy.libormarketmodels
         public override void calculate()
         {
             Utils.QL_REQUIRE(arguments_.settlementMethod != Settlement.Method.ParYieldCurve, () =>
-                             "cash-settled (ParYieldCurve) swaptions not priced with Lfm engine");
+                "cash-settled (ParYieldCurve) swaptions not priced with Lfm engine");
 
             var swap = arguments_.swap;
             IPricingEngine pe = new DiscountingSwapEngine(discountCurve_);
@@ -59,23 +59,22 @@ namespace QLNet.legacy.libormarketmodels
             var fairRate = swap.fairRate() - correction;
 
             var volatility =
-               model_.link.getSwaptionVolatilityMatrix();
+                model_.link.getSwaptionVolatilityMatrix();
 
             var referenceDate = volatility.referenceDate();
             var dayCounter = volatility.dayCounter();
 
             var exercise = dayCounter.yearFraction(referenceDate,
-                                                      arguments_.exercise.date(0));
+                arguments_.exercise.date(0));
             var swapLength =
-               dayCounter.yearFraction(referenceDate,
-                                       arguments_.fixedPayDates.Last())
-               - dayCounter.yearFraction(referenceDate,
-                                         arguments_.fixedResetDates[0]);
+                dayCounter.yearFraction(referenceDate,
+                    arguments_.fixedPayDates.Last())
+                - dayCounter.yearFraction(referenceDate,
+                    arguments_.fixedResetDates[0]);
 
-            var w = arguments_.type == VanillaSwap.Type.Payer ?
-                            QLNet.Option.Type.Call : QLNet.Option.Type.Put;
+            var w = arguments_.type == VanillaSwap.Type.Payer ? Option.Type.Call : Option.Type.Put;
             var vol = volatility.volatility(exercise, swapLength,
-                                               fairRate, true);
+                fairRate, true);
             results_.value = swap.fixedLegBPS() / Const.BASIS_POINT *
                              Utils.blackFormula(w, fixedRate, fairRate, vol * System.Math.Sqrt(exercise));
         }

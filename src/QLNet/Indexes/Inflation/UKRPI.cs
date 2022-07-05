@@ -17,22 +17,26 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
-using QLNet.Indexes;
 using QLNet.Time;
 
 namespace QLNet.Indexes.Inflation
 {
     //! UK Retail Price Inflation Index
-    [JetBrains.Annotations.PublicAPI] public class UKRPI : ZeroInflationIndex
+    [PublicAPI]
+    public class UKRPI : ZeroInflationIndex
     {
         public UKRPI(bool interpolated)
-           : this(interpolated, new Handle<ZeroInflationTermStructure>()) { }
+            : this(interpolated, new Handle<ZeroInflationTermStructure>())
+        {
+        }
 
         public UKRPI(bool interpolated, Handle<ZeroInflationTermStructure> ts)
-           : base("RPI", new UKRegion(), false, interpolated, Frequency.Monthly,
-                  new Period(1, TimeUnit.Months), new GBPCurrency(), ts)
-        { }
+            : base("RPI", new UKRegion(), false, interpolated, Frequency.Monthly,
+                new Period(1, TimeUnit.Months), new GBPCurrency(), ts)
+        {
+        }
     }
 
     //! Genuine year-on-year UK RPI (i.e. not a ratio of UK RPI)

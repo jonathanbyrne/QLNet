@@ -19,37 +19,42 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
     /// <summary>
-    /// Capped and/or floored floating-rate coupon
-    /// <remarks>
-    /// The payoff P of a capped floating-rate coupon is: P=N×T×min(aL+b,C).
-    /// The payoff of a floored floating-rate coupon is:  P=N×T×max(aL+b,F).
-    /// The payoff of a collared floating-rate coupon is: P=N×T×min(max(aL+b,F),C).
-    /// where N is the notional, T is the accrual time, L is the floating rate, a is its gearing, b is the spread, and C and F the strikes.
-    /// They can be decomposed in the following manner. Decomposition of a capped floating rate coupon:
-    /// R=min(aL+b,C)=(aL+b)+min(C?b??|a|L,0)
-    /// where ?=sgn(a). Then: R=(aL+b)+|a|min(C?b|a|??L,0)
-    /// </remarks>
+    ///     Capped and/or floored floating-rate coupon
+    ///     <remarks>
+    ///         The payoff P of a capped floating-rate coupon is: P=N×T×min(aL+b,C).
+    ///         The payoff of a floored floating-rate coupon is:  P=N×T×max(aL+b,F).
+    ///         The payoff of a collared floating-rate coupon is: P=N×T×min(max(aL+b,F),C).
+    ///         where N is the notional, T is the accrual time, L is the floating rate, a is its gearing, b is the spread, and
+    ///         C and F the strikes.
+    ///         They can be decomposed in the following manner. Decomposition of a capped floating rate coupon:
+    ///         R=min(aL+b,C)=(aL+b)+min(C?b??|a|L,0)
+    ///         where ?=sgn(a). Then: R=(aL+b)+|a|min(C?b|a|??L,0)
+    ///     </remarks>
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class CappedFlooredCoupon : FloatingRateCoupon
+    [PublicAPI]
+    public class CappedFlooredCoupon : FloatingRateCoupon
     {
-        // data
-        protected FloatingRateCoupon _underlying;
-        protected bool _isCapped;
-        protected bool _isFloored;
         protected double? _cap;
         protected double? _floor;
+        protected bool _isCapped;
+        protected bool _isFloored;
+        // data
+        protected FloatingRateCoupon _underlying;
 
         // need by CashFlowVectors
-        public CappedFlooredCoupon() { }
+        public CappedFlooredCoupon()
+        {
+        }
 
         public CappedFlooredCoupon(FloatingRateCoupon underlying, double? cap = null, double? floor = null)
-        : base(underlying.date(), underlying.nominal(), underlying.accrualStartDate(), underlying.accrualEndDate(), underlying.fixingDays, underlying.index(), underlying.gearing(), underlying.spread(), underlying.referencePeriodStart, underlying.referencePeriodEnd, underlying.dayCounter(), underlying.isInArrears())
+            : base(underlying.date(), underlying.nominal(), underlying.accrualStartDate(), underlying.accrualEndDate(), underlying.fixingDays, underlying.index(), underlying.gearing(), underlying.spread(), underlying.referencePeriodStart, underlying.referencePeriodEnd, underlying.dayCounter(), underlying.isInArrears())
         {
             _underlying = underlying;
             _isCapped = false;
@@ -62,6 +67,7 @@ namespace QLNet.Cashflows
                     _isCapped = true;
                     _cap = cap;
                 }
+
                 if (floor != null)
                 {
                     _floor = floor;
@@ -75,19 +81,70 @@ namespace QLNet.Cashflows
                     _floor = cap;
                     _isFloored = true;
                 }
+
                 if (floor != null)
                 {
                     _isCapped = true;
                     _cap = floor;
                 }
             }
+
             if (_isCapped && _isFloored)
             {
                 Utils.QL_REQUIRE(cap >= floor, () =>
-                                 "cap level (" + cap + ") less than floor level (" + floor + ")");
+                    "cap level (" + cap + ") less than floor level (" + floor + ")");
             }
+
             underlying.registerWith(update);
         }
+
+        // cap
+        public double Cap()
+        {
+            if (gearing_ > 0 && _isCapped)
+            {
+                return _cap.GetValueOrDefault();
+            }
+
+            if (gearing_ < 0 && _isFloored)
+            {
+                return _floor.GetValueOrDefault();
+            }
+
+            return 0.0;
+        }
+
+        public override double convexityAdjustment() => _underlying.convexityAdjustment();
+
+        //! effective cap of fixing
+        public double? EffectiveCap() => _isCapped ? (_cap.Value - spread()) / gearing() : (double?)null;
+
+        //! effective floor of fixing
+        public double? EffectiveFloor() => _isFloored ? (_floor.Value - spread()) / gearing() : (double?)null;
+
+        // Factory - for Leg generators
+        public virtual CashFlow Factory(double nominal, Date paymentDate, Date startDate, Date endDate, int fixingDays, InterestRateIndex index, double gearing, double spread, double? cap, double? floor, Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears) => new CappedFlooredCoupon(new IborCoupon(paymentDate, nominal, startDate, endDate, fixingDays, (IborIndex)index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears), cap, floor);
+
+        //! floor
+        public double Floor()
+        {
+            if (gearing_ > 0 && _isFloored)
+            {
+                return _floor.GetValueOrDefault();
+            }
+
+            if (gearing_ < 0 && _isCapped)
+            {
+                return _cap.GetValueOrDefault();
+            }
+
+            return 0.0;
+        }
+
+        public bool IsCapped() => _isCapped;
+
+        public bool IsFloored() => _isFloored;
+
         // Coupon interface
         public override double rate()
         {
@@ -96,49 +153,23 @@ namespace QLNet.Cashflows
             var swapletRate = _underlying.rate();
             var floorletRate = 0.0;
             if (_isFloored)
+            {
                 floorletRate = _underlying.pricer().floorletRate(EffectiveFloor().Value);
+            }
+
             var capletRate = 0.0;
             if (_isCapped)
+            {
                 capletRate = _underlying.pricer().capletRate(EffectiveCap().Value);
+            }
+
             return swapletRate + floorletRate - capletRate;
         }
-        public override double convexityAdjustment() => _underlying.convexityAdjustment();
-
-        // cap
-        public double Cap()
-        {
-            if (gearing_ > 0 && _isCapped)
-                return _cap.GetValueOrDefault();
-            if (gearing_ < 0 && _isFloored)
-                return _floor.GetValueOrDefault();
-            return 0.0;
-        }
-        //! floor
-        public double Floor()
-        {
-            if (gearing_ > 0 && _isFloored)
-                return _floor.GetValueOrDefault();
-            if (gearing_ < 0 && _isCapped)
-                return _cap.GetValueOrDefault();
-            return 0.0;
-        }
-        //! effective cap of fixing
-        public double? EffectiveCap() => _isCapped ? (_cap.Value - spread()) / gearing() : (double?)null;
-
-        //! effective floor of fixing
-        public double? EffectiveFloor() => _isFloored ? (_floor.Value - spread()) / gearing() : (double?)null;
-
-        public bool IsCapped() => _isCapped;
-
-        public bool IsFloored() => _isFloored;
 
         public override void setPricer(FloatingRateCouponPricer pricer)
         {
             base.setPricer(pricer);
             _underlying.setPricer(pricer);
         }
-
-        // Factory - for Leg generators
-        public virtual CashFlow Factory(double nominal, Date paymentDate, Date startDate, Date endDate, int fixingDays, InterestRateIndex index, double gearing, double spread, double? cap, double? floor, Date refPeriodStart, Date refPeriodEnd, DayCounter dayCounter, bool isInArrears) => new CappedFlooredCoupon(new IborCoupon(paymentDate, nominal, startDate, endDate, fixingDays, (IborIndex)index, gearing, spread, refPeriodStart, refPeriodEnd, dayCounter, isInArrears), cap, floor);
     }
 }

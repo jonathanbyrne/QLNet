@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Patterns;
 
 namespace QLNet
@@ -26,120 +27,145 @@ namespace QLNet
         pointer is relinked to another observable, the change will be propagated to all the copies.
         <tt>registerAsObserver</tt> is not needed since C# does automatic garbage collection */
 
-    [JetBrains.Annotations.PublicAPI] public class Handle<T> where T : IObservable
-   {
-      protected Link link_;
+    [PublicAPI]
+    public class Handle<T> where T : IObservable
+    {
+        protected class Link : IObservable, IObserver
+        {
+            // Observable
+            private readonly WeakEventSource eventSource = new WeakEventSource();
+            private T h_;
+            private bool isObserver_;
 
-      public Handle() : this(default(T)) { }
-
-      public Handle(T h) : this(h, true) { }
-
-      public Handle(T h, bool registerAsObserver)
-      {
-         link_ = new Link(h, registerAsObserver);
-      }
-
-      //! dereferencing
-      public T currentLink() => link;
-
-      // this one is instead of c++ -> and () operators overload
-      public static implicit operator T(Handle<T> ImpliedObject) => ImpliedObject.link;
-
-      public T link
-      {
-         get
-         {
-            Utils.QL_REQUIRE(!empty(), () => "empty Handle cannot be dereferenced");
-            return link_.currentLink();
-         }
-      }
-
-      // dereferencing of the observable to the Link
-      public void registerWith(Callback handler) { link_.registerWith(handler); }
-
-      public void unregisterWith(Callback handler) { link_.unregisterWith(handler); }
-
-      //! checks if the contained shared pointer points to anything
-      public bool empty() => link_.empty();
-
-      #region operator overload
-
-      public static bool operator ==(Handle<T> here, Handle<T> there)
-      {
-         if (ReferenceEquals(here, there))
-            return true;
-         if ((object)here == null || (object)there == null)
-            return false;
-         return here.Equals(there);
-      }
-
-      public static bool operator !=(Handle<T> here, Handle<T> there) => !(here == there);
-
-      public override bool Equals(object o) => link_ == ((Handle<T>)o).link_;
-
-      public override int GetHashCode() => ToString().GetHashCode();
-
-      #endregion operator overload
-
-      protected class Link : IObservable, IObserver
-      {
-         private T h_;
-         private bool isObserver_;
-
-         public Link(T h, bool registerAsObserver)
-         {
-            linkTo(h, registerAsObserver);
-         }
-
-         public void linkTo(T h, bool registerAsObserver)
-         {
-            if (h != null && (!h.Equals(h_) || (isObserver_ != registerAsObserver)))
+            public Link(T h, bool registerAsObserver)
             {
-               if (h_ != null && isObserver_)
-               {
-                  h_.unregisterWith(update);
-               }
-
-               h_ = h;
-               isObserver_ = registerAsObserver;
-
-               if (isObserver_)
-               {
-                  h_.registerWith(update);
-               }
-
-               // finally, notify observers of this of the change in the underlying object
-               notifyObservers();
+                linkTo(h, registerAsObserver);
             }
-         }
 
-         public bool empty() => h_ == null;
+            public T currentLink() => h_;
 
-         public T currentLink() => h_;
+            public bool empty() => h_ == null;
 
-         public void update() { notifyObservers(); }
+            public void linkTo(T h, bool registerAsObserver)
+            {
+                if (h != null && (!h.Equals(h_) || (isObserver_ != registerAsObserver)))
+                {
+                    if (h_ != null && isObserver_)
+                    {
+                        h_.unregisterWith(update);
+                    }
 
-         // Observable
-         private readonly WeakEventSource eventSource = new WeakEventSource();
+                    h_ = h;
+                    isObserver_ = registerAsObserver;
 
-         public event Callback notifyObserversEvent
-         {
-            add => eventSource.Subscribe(value);
-            remove => eventSource.Unsubscribe(value);
-         }
+                    if (isObserver_)
+                    {
+                        h_.registerWith(update);
+                    }
 
-         public void registerWith(Callback handler) { notifyObserversEvent += handler; }
+                    // finally, notify observers of this of the change in the underlying object
+                    notifyObservers();
+                }
+            }
 
-         public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
+            public void registerWith(Callback handler)
+            {
+                notifyObserversEvent += handler;
+            }
 
-         protected void notifyObservers()
-         {
-            eventSource.Raise();
-         }
-      }
-   }
+            public void unregisterWith(Callback handler)
+            {
+                notifyObserversEvent -= handler;
+            }
 
-   //! Relinkable handle to an observable
-   /*! An instance of this class can be relinked so that it points to another observable. The change will be propagated to all
-       handles that were created as copies of such instance. */
+            public void update()
+            {
+                notifyObservers();
+            }
+
+            protected void notifyObservers()
+            {
+                eventSource.Raise();
+            }
+
+            public event Callback notifyObserversEvent
+            {
+                add => eventSource.Subscribe(value);
+                remove => eventSource.Unsubscribe(value);
+            }
+        }
+
+        protected Link link_;
+
+        public Handle() : this(default(T))
+        {
+        }
+
+        public Handle(T h) : this(h, true)
+        {
+        }
+
+        public Handle(T h, bool registerAsObserver)
+        {
+            link_ = new Link(h, registerAsObserver);
+        }
+
+        public T link
+        {
+            get
+            {
+                Utils.QL_REQUIRE(!empty(), () => "empty Handle cannot be dereferenced");
+                return link_.currentLink();
+            }
+        }
+
+        // this one is instead of c++ -> and () operators overload
+        public static implicit operator T(Handle<T> ImpliedObject) => ImpliedObject.link;
+
+        //! dereferencing
+        public T currentLink() => link;
+
+        //! checks if the contained shared pointer points to anything
+        public bool empty() => link_.empty();
+
+        // dereferencing of the observable to the Link
+        public void registerWith(Callback handler)
+        {
+            link_.registerWith(handler);
+        }
+
+        public void unregisterWith(Callback handler)
+        {
+            link_.unregisterWith(handler);
+        }
+
+        #region operator overload
+
+        public static bool operator ==(Handle<T> here, Handle<T> there)
+        {
+            if (ReferenceEquals(here, there))
+            {
+                return true;
+            }
+
+            if ((object)here == null || (object)there == null)
+            {
+                return false;
+            }
+
+            return here.Equals(there);
+        }
+
+        public static bool operator !=(Handle<T> here, Handle<T> there) => !(here == there);
+
+        public override bool Equals(object o) => link_ == ((Handle<T>)o).link_;
+
+        public override int GetHashCode() => ToString().GetHashCode();
+
+        #endregion operator overload
+    }
+
+    //! Relinkable handle to an observable
+    /*! An instance of this class can be relinked so that it points to another observable. The change will be propagated to all
+        handles that were created as copies of such instance. */
 }

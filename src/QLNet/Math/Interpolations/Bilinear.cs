@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class Bilinear : IInterpolationFactory2D
+    [PublicAPI]
+    public class Bilinear : IInterpolationFactory2D
     {
         public Interpolation2D interpolate(List<double> xBegin, int xSize,
             List<double> yBegin, int ySize,

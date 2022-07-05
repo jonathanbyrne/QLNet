@@ -1,6 +1,9 @@
+using JetBrains.Annotations;
+
 namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public interface IPricingEngineArguments
+    [PublicAPI]
+    public interface IPricingEngineArguments
     {
         void validate();
     }

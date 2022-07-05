@@ -17,21 +17,22 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Quotes;
-using QLNet.Termstructures.Volatility;
 using QLNet.Time;
 
 namespace QLNet.Termstructures.Volatility.Optionlet
 {
     //! Constant caplet volatility, no time-strike dependence
-    [JetBrains.Annotations.PublicAPI] public class ConstantOptionletVolatility : OptionletVolatilityStructure
+    [PublicAPI]
+    public class ConstantOptionletVolatility : OptionletVolatilityStructure
     {
         private Handle<Quote> volatility_;
 
         //! floating reference date, floating market data
         public ConstantOptionletVolatility(int settlementDays, Calendar cal, BusinessDayConvention bdc,
-                                           Handle<Quote> vol, DayCounter dc)
-           : base(settlementDays, cal, bdc, dc)
+            Handle<Quote> vol, DayCounter dc)
+            : base(settlementDays, cal, bdc, dc)
         {
             volatility_ = vol;
 
@@ -40,8 +41,8 @@ namespace QLNet.Termstructures.Volatility.Optionlet
 
         //! fixed reference date, floating market data
         public ConstantOptionletVolatility(Date referenceDate, Calendar cal, BusinessDayConvention bdc,
-                                           Handle<Quote> vol, DayCounter dc)
-           : base(referenceDate, cal, bdc, dc)
+            Handle<Quote> vol, DayCounter dc)
+            : base(referenceDate, cal, bdc, dc)
         {
             volatility_ = vol;
 
@@ -50,26 +51,25 @@ namespace QLNet.Termstructures.Volatility.Optionlet
 
         //! floating reference date, fixed market data
         public ConstantOptionletVolatility(int settlementDays, Calendar cal, BusinessDayConvention bdc,
-                                           double vol, DayCounter dc)
-           : base(settlementDays, cal, bdc, dc)
+            double vol, DayCounter dc)
+            : base(settlementDays, cal, bdc, dc)
         {
             volatility_ = new Handle<Quote>(new SimpleQuote(vol));
         }
 
         //! fixed reference date, fixed market data
         public ConstantOptionletVolatility(Date referenceDate, Calendar cal, BusinessDayConvention bdc,
-                                           double vol, DayCounter dc)
-           : base(referenceDate, cal, bdc, dc)
+            double vol, DayCounter dc)
+            : base(referenceDate, cal, bdc, dc)
         {
             volatility_ = new Handle<Quote>(new SimpleQuote(vol));
         }
 
-
         public override Date maxDate() => Date.maxDate();
 
-        public override double minStrike() => double.MinValue;
-
         public override double maxStrike() => double.MaxValue;
+
+        public override double minStrike() => double.MinValue;
 
         protected override SmileSection smileSectionImpl(Date d)
         {

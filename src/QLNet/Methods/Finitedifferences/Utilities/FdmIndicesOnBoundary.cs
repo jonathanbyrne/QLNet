@@ -17,24 +17,28 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Methods.Finitedifferences.Operators;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Methods.Finitedifferences.Operators;
 
 namespace QLNet.Methods.Finitedifferences.Utilities
 {
     /// <summary>
-    /// helper class to extract the indices on a boundary
+    ///     helper class to extract the indices on a boundary
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class FdmIndicesOnBoundary
+    [PublicAPI]
+    public class FdmIndicesOnBoundary
     {
+        protected List<int> indices_;
+
         public FdmIndicesOnBoundary(FdmLinearOpLayout layout,
-                                    int direction, FdmDirichletBoundary.Side side)
+            int direction, BoundaryCondition<FdmLinearOp>.Side side)
         {
             var newDim = new List<int>(layout.dim());
             newDim[direction] = 1;
             var hyperSize
-               = newDim.accumulate(0, newDim.Count, 1,
-                                   (a, b) => a * b);
+                = newDim.accumulate(0, newDim.Count, 1,
+                    (a, b) => a * b);
 
             indices_ = new InitializedList<int>(hyperSize);
 
@@ -44,11 +48,11 @@ namespace QLNet.Methods.Finitedifferences.Utilities
                  iter != endIter;
                  ++iter)
             {
-                if (side == FdmDirichletBoundary.Side.Lower
-                     && iter.coordinates()[direction] == 0
-                    || side == FdmDirichletBoundary.Side.Upper
-                        && iter.coordinates()[direction]
-                        == layout.dim()[direction] - 1)
+                if (side == BoundaryCondition<FdmLinearOp>.Side.Lower
+                    && iter.coordinates()[direction] == 0
+                    || side == BoundaryCondition<FdmLinearOp>.Side.Upper
+                    && iter.coordinates()[direction]
+                    == layout.dim()[direction] - 1)
                 {
                     Utils.QL_REQUIRE(hyperSize > i, () => "index missmatch");
                     indices_[i++] = iter.index();
@@ -57,7 +61,5 @@ namespace QLNet.Methods.Finitedifferences.Utilities
         }
 
         public List<int> getIndices() => indices_;
-
-        protected List<int> indices_;
     }
 }

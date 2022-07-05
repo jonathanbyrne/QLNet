@@ -14,6 +14,7 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
 using QLNet.Time;
@@ -45,25 +46,41 @@ namespace QLNet.Instruments
      because we do not have that degree of generality.
 
     */
-    [JetBrains.Annotations.PublicAPI] public class CPICapFloor : Instrument
+    [PublicAPI]
+    public class CPICapFloor : Instrument
     {
-        [JetBrains.Annotations.PublicAPI] public class Arguments : IPricingEngineArguments
+        [PublicAPI]
+        public class Arguments : IPricingEngineArguments
         {
-            public QLNet.Option.Type type { get; set; }
-            public double nominal { get; set; }
-            public Date startDate { get; set; }
-            public Date fixDate { get; set; }
-            public Date payDate { get; set; }
             public double baseCPI { get; set; }
-            public Date maturity { get; set; }
+
             public Calendar fixCalendar { get; set; }
-            public Calendar payCalendar { get; set; }
+
             public BusinessDayConvention fixConvention { get; set; }
-            public BusinessDayConvention payConvention { get; set; }
-            public double strike { get; set; }
+
+            public Date fixDate { get; set; }
+
             public Handle<ZeroInflationIndex> infIndex { get; set; }
-            public Period observationLag { get; set; }
+
+            public Date maturity { get; set; }
+
+            public double nominal { get; set; }
+
             public InterpolationType observationInterpolation { get; set; }
+
+            public Period observationLag { get; set; }
+
+            public Calendar payCalendar { get; set; }
+
+            public BusinessDayConvention payConvention { get; set; }
+
+            public Date payDate { get; set; }
+
+            public Date startDate { get; set; }
+
+            public double strike { get; set; }
+
+            public Option.Type type { get; set; }
 
             public void validate()
             {
@@ -71,26 +88,46 @@ namespace QLNet.Instruments
             }
         }
 
-        public new class Results : Instrument.Results
+        [PublicAPI]
+        public class Engine : GenericEngine<Arguments, Results>
         {
-            public override void reset() { base.reset(); }
         }
 
-        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results> { }
+        public new class Results : Instrument.Results
+        {
+            public override void reset()
+            {
+                base.reset();
+            }
+        }
+
+        protected double baseCPI_;
+        protected Calendar fixCalendar_;
+        protected BusinessDayConvention fixConvention_;
+        protected Handle<ZeroInflationIndex> infIndex_;
+        protected Date maturity_;
+        protected double nominal_;
+        protected InterpolationType observationInterpolation_;
+        protected Period observationLag_;
+        protected Calendar payCalendar_;
+        protected BusinessDayConvention payConvention_;
+        protected Date startDate_, fixDate_, payDate_;
+        protected double strike_;
+        protected Option.Type type_;
 
         public CPICapFloor(Option.Type type,
-                           double nominal,
-                           Date startDate,   // start date of contract (only)
-                           double baseCPI,
-                           Date maturity,    // this is pre-adjustment!
-                           Calendar fixCalendar,
-                           BusinessDayConvention fixConvention,
-                           Calendar payCalendar,
-                           BusinessDayConvention payConvention,
-                           double strike,
-                           Handle<ZeroInflationIndex> infIndex,
-                           Period observationLag,
-                           InterpolationType observationInterpolation = InterpolationType.AsIndex)
+            double nominal,
+            Date startDate, // start date of contract (only)
+            double baseCPI,
+            Date maturity, // this is pre-adjustment!
+            Calendar fixCalendar,
+            BusinessDayConvention fixConvention,
+            Calendar payCalendar,
+            BusinessDayConvention payConvention,
+            double strike,
+            Handle<ZeroInflationIndex> infIndex,
+            Period observationLag,
+            InterpolationType observationInterpolation = InterpolationType.AsIndex)
         {
             type_ = type;
             nominal_ = nominal;
@@ -113,39 +150,34 @@ namespace QLNet.Instruments
                 observationInterpolation_ == InterpolationType.AsIndex && !infIndex_.link.interpolated())
             {
                 Utils.QL_REQUIRE(observationLag_ >= infIndex_.link.availabilityLag(), () =>
-                                 "CPIcapfloor's observationLag must be at least availabilityLag of inflation index: "
-                                 + "when the observation is effectively flat"
-                                 + observationLag_ + " vs " + infIndex_.link.availabilityLag());
+                    "CPIcapfloor's observationLag must be at least availabilityLag of inflation index: "
+                    + "when the observation is effectively flat"
+                    + observationLag_ + " vs " + infIndex_.link.availabilityLag());
             }
+
             if (observationInterpolation_ == InterpolationType.Linear ||
                 observationInterpolation_ == InterpolationType.AsIndex && infIndex_.link.interpolated())
             {
                 Utils.QL_REQUIRE(observationLag_ > infIndex_.link.availabilityLag(), () =>
-                                 "CPIcapfloor's observationLag must be greater then availabilityLag of inflation index: "
-                                 + "when the observation is effectively linear"
-                                 + observationLag_ + " vs " + infIndex_.link.availabilityLag());
+                    "CPIcapfloor's observationLag must be greater then availabilityLag of inflation index: "
+                    + "when the observation is effectively linear"
+                    + observationLag_ + " vs " + infIndex_.link.availabilityLag());
             }
         }
-
-        // Inspectors
-        public QLNet.Option.Type type() => type_;
-
-        public double nominal() => nominal_;
-
-        //! \f$ K \f$ in the above formula.
-        public double strike() => strike_;
 
         //! when you fix - but remember that there is an observation interpolation factor as well
         public Date fixingDate() => fixCalendar_.adjust(maturity_ - observationLag_, fixConvention_);
 
-        public Date payDate() => payCalendar_.adjust(maturity_, payConvention_);
-
         public Handle<ZeroInflationIndex> inflationIndex() => infIndex_;
-
-        public Period observationLag() => observationLag_;
 
         // Instrument interface
         public override bool isExpired() => Settings.evaluationDate() > maturity_;
+
+        public double nominal() => nominal_;
+
+        public Period observationLag() => observationLag_;
+
+        public Date payDate() => payCalendar_.adjust(maturity_, payConvention_);
 
         public override void setupArguments(IPricingEngineArguments args)
         {
@@ -169,23 +201,12 @@ namespace QLNet.Instruments
             arguments.infIndex = infIndex_;
             arguments.observationLag = observationLag_;
             arguments.observationInterpolation = observationInterpolation_;
-
         }
 
-        protected QLNet.Option.Type type_;
-        protected double nominal_;
-        protected Date startDate_, fixDate_, payDate_;
-        protected double baseCPI_;
-        protected Date maturity_;
-        protected Calendar fixCalendar_;
-        protected BusinessDayConvention fixConvention_;
-        protected Calendar payCalendar_;
-        protected BusinessDayConvention payConvention_;
-        protected double strike_;
-        protected Handle<ZeroInflationIndex> infIndex_;
-        protected Period observationLag_;
-        protected InterpolationType observationInterpolation_;
+        //! \f$ K \f$ in the above formula.
+        public double strike() => strike_;
+
+        // Inspectors
+        public Option.Type type() => type_;
     }
-
-
 }

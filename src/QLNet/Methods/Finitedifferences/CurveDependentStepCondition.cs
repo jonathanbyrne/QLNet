@@ -16,9 +16,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
+
 using System;
+using JetBrains.Annotations;
 using QLNet.Instruments;
+using QLNet.Math;
 
 namespace QLNet.Methods.Finitedifferences
 {
@@ -26,24 +28,59 @@ namespace QLNet.Methods.Finitedifferences
     /*! \ingroup findiff */
 
     /* Abstract base class which allows step conditions to use both payoff and array functions */
-    [JetBrains.Annotations.PublicAPI] public class CurveDependentStepCondition<array_type> : IStepCondition<array_type> where array_type : Vector
+    [PublicAPI]
+    public class CurveDependentStepCondition<array_type> : IStepCondition<array_type> where array_type : Vector
     {
-        CurveWrapper curveItem_;
+        protected class ArrayWrapper : CurveWrapper
+        {
+            private readonly array_type value_;
+
+            public ArrayWrapper(array_type a)
+            {
+                value_ = a;
+            }
+
+            public override double getValue(array_type a, int i) => value_[i];
+        }
+
+        protected abstract class CurveWrapper
+        {
+            public abstract double getValue(array_type a, int i);
+        }
+
+        protected class PayoffWrapper : CurveWrapper
+        {
+            private Payoff payoff_;
+
+            public PayoffWrapper(Payoff p)
+            {
+                payoff_ = p;
+            }
+
+            public PayoffWrapper(Option.Type type, double strike)
+            {
+                payoff_ = new PlainVanillaPayoff(type, strike);
+            }
+
+            public override double getValue(array_type a, int i) => a[i];
+        }
+
+        private CurveWrapper curveItem_;
 
         protected CurveDependentStepCondition(Option.Type type, double strike)
         {
             curveItem_ = new PayoffWrapper(type, strike);
         }
+
         protected CurveDependentStepCondition(Payoff p)
         {
             curveItem_ = new PayoffWrapper(p);
         }
+
         protected CurveDependentStepCondition(array_type a)
         {
             curveItem_ = new ArrayWrapper(a);
         }
-
-        protected double getValue(array_type a, int index) => curveItem_.getValue(a, index);
 
         public void applyTo(object o, double t)
         {
@@ -56,39 +93,8 @@ namespace QLNet.Methods.Finitedifferences
 
         protected virtual double applyToValue(double a, double b) => throw new NotImplementedException();
 
-        protected abstract class CurveWrapper
-        {
-            public abstract double getValue(array_type a, int i);
-        }
-
-        protected class ArrayWrapper : CurveWrapper
-        {
-            private array_type value_;
-
-            public ArrayWrapper(array_type a)
-            {
-                value_ = a;
-            }
-
-            public override double getValue(array_type a, int i) => value_[i];
-        }
-
-        protected class PayoffWrapper : CurveWrapper
-        {
-            private Payoff payoff_;
-
-            public PayoffWrapper(Payoff p)
-            {
-                payoff_ = p;
-            }
-            public PayoffWrapper(Option.Type type, double strike)
-            {
-                payoff_ = new PlainVanillaPayoff(type, strike);
-            }
-            public override double getValue(array_type a, int i) => a[i];
-        }
+        protected double getValue(array_type a, int index) => curveItem_.getValue(a, index);
     }
-
 
     //! %null step condition
     /*! \ingroup findiff */

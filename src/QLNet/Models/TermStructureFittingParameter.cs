@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Math;
 using QLNet.Math.Optimization;
@@ -6,25 +7,21 @@ using QLNet.Termstructures;
 
 namespace QLNet.Models
 {
-    [JetBrains.Annotations.PublicAPI] public class TermStructureFittingParameter : Parameter
+    [PublicAPI]
+    public class TermStructureFittingParameter : Parameter
     {
-        [JetBrains.Annotations.PublicAPI] public class NumericalImpl : Impl
+        [PublicAPI]
+        public class NumericalImpl : Impl
         {
+            private Handle<YieldTermStructure> termStructure_;
             private List<double> times_;
             private List<double> values_;
-            private Handle<YieldTermStructure> termStructure_;
 
             public NumericalImpl(Handle<YieldTermStructure> termStructure)
             {
                 times_ = new List<double>();
                 values_ = new List<double>();
                 termStructure_ = termStructure;
-            }
-
-            public void setvalue(double t, double x)
-            {
-                times_.Add(t);
-                values_.Add(x);
             }
 
             public void change(double x)
@@ -37,6 +34,15 @@ namespace QLNet.Models
                 times_.Clear();
                 values_.Clear();
             }
+
+            public void setvalue(double t, double x)
+            {
+                times_.Add(t);
+                values_.Add(x);
+            }
+
+            public Handle<YieldTermStructure> termStructure() => termStructure_;
+
             public override double value(Vector UnnamedParameter1, double t)
             {
                 var nIndex = times_.FindIndex(val => val.IsEqual(t));
@@ -44,8 +50,6 @@ namespace QLNet.Models
 
                 return values_[nIndex];
             }
-
-            public Handle<YieldTermStructure> termStructure() => termStructure_;
         }
 
         public TermStructureFittingParameter(Impl impl)

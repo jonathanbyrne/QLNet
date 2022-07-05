@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Quotes;
 using QLNet.Time;
 
 namespace QLNet.Instruments.Bonds
 {
-    [JetBrains.Annotations.PublicAPI] public class ConvertibleFixedCouponBond : ConvertibleBond
+    [PublicAPI]
+    public class ConvertibleFixedCouponBond : ConvertibleBond
     {
         public ConvertibleFixedCouponBond(Exercise exercise,
             double conversionRatio,
@@ -28,7 +30,7 @@ namespace QLNet.Instruments.Bonds
                 .withNotionals(100.0)
                 .withPaymentAdjustment(schedule.businessDayConvention());
 
-            addRedemptionsToCashflows(new List<double>() { redemption });
+            addRedemptionsToCashflows(new List<double> { redemption });
 
             Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
 

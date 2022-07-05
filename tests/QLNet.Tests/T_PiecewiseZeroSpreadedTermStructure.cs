@@ -109,9 +109,11 @@ namespace QLNet.Tests
             var expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() + spread1.value();
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
+            {
                 QAssert.Fail("unable to reproduce interpolated rate\n"
                              + "    calculated: " + interpolatedZeroRate + "\n"
                              + "    expected: " + expectedRate);
+            }
         }
 
         [Fact]
@@ -146,9 +148,11 @@ namespace QLNet.Tests
             var expectedRate = vars.termStructure.zeroRate(t, vars.compounding).value() + spread2.value();
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
+            {
                 QAssert.Fail("unable to reproduce interpolated rate\n"
                              + "    calculated: " + interpolatedZeroRate + "\n"
                              + "    expected: " + expectedRate);
+            }
         }
 
         [Fact]
@@ -189,11 +193,13 @@ namespace QLNet.Tests
                                spread1.value();
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
+            {
                 QAssert.Fail(
-                   "unable to reproduce interpolated rate\n"
+                    "unable to reproduce interpolated rate\n"
 
-                   + "    calculated: " + interpolatedZeroRate + "\n"
-                   + "    expected: " + expectedRate);
+                    + "    calculated: " + interpolatedZeroRate + "\n"
+                    + "    expected: " + expectedRate);
+            }
         }
 
         [Fact]
@@ -233,10 +239,12 @@ namespace QLNet.Tests
             var tolerance = 1e-9;
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
+            {
                 QAssert.Fail(
-                   "unable to reproduce interpolated rate\n"
-                   + "    calculated: " + interpolatedZeroRate + "\n"
-                   + "    expected: " + expectedRate);
+                    "unable to reproduce interpolated rate\n"
+                    + "    calculated: " + interpolatedZeroRate + "\n"
+                    + "    expected: " + expectedRate);
+            }
         }
 
         [Fact]
@@ -271,10 +279,12 @@ namespace QLNet.Tests
                                spread1.value();
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
+            {
                 QAssert.Fail(
-                   "unable to reproduce interpolated rate\n"
-                   + "    calculated: " + interpolatedZeroRate + "\n"
-                   + "    expected: " + expectedRate);
+                    "unable to reproduce interpolated rate\n"
+                    + "    calculated: " + interpolatedZeroRate + "\n"
+                    + "    expected: " + expectedRate);
+            }
         }
 
         [Fact]
@@ -312,11 +322,12 @@ namespace QLNet.Tests
                                spread2.value();
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
+            {
                 QAssert.Fail(
-                   "unable to reproduce interpolated rate\n"
-                   + "    calculated: " + interpolatedZeroRate + "\n"
-                   + "    expected: " + expectedRate);
-
+                    "unable to reproduce interpolated rate\n"
+                    + "    calculated: " + interpolatedZeroRate + "\n"
+                    + "    expected: " + expectedRate);
+            }
         }
 
         [Fact]
@@ -351,10 +362,12 @@ namespace QLNet.Tests
                                spread1.value();
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
+            {
                 QAssert.Fail(
-                   "unable to reproduce interpolated rate\n"
-                   + "    calculated: " + interpolatedZeroRate + "\n"
-                   + "    expected: " + expectedRate);
+                    "unable to reproduce interpolated rate\n"
+                    + "    calculated: " + interpolatedZeroRate + "\n"
+                    + "    expected: " + expectedRate);
+            }
         }
 
         [Fact]
@@ -402,10 +415,12 @@ namespace QLNet.Tests
                                0.026065770863;
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
+            {
                 QAssert.Fail(
-                   "unable to reproduce interpolated rate\n"
-                   + "    calculated: " + interpolatedZeroRate + "\n"
-                   + "    expected: " + expectedRate);
+                    "unable to reproduce interpolated rate\n"
+                    + "    calculated: " + interpolatedZeroRate + "\n"
+                    + "    expected: " + expectedRate);
+            }
         }
 
         [Fact]
@@ -435,10 +450,12 @@ namespace QLNet.Tests
             var expectedDate = vars.termStructure.maxDate() < spreadDates.Last() ? vars.termStructure.maxDate() : spreadDates.Last();
 
             if (maxDate != expectedDate)
+            {
                 QAssert.Fail(
-                   "unable to reproduce max date\n"
-                   + "    calculated: " + maxDate + "\n"
-                   + "    expected: " + expectedDate);
+                    "unable to reproduce max date\n"
+                    + "    calculated: " + maxDate + "\n"
+                    + "    expected: " + expectedDate);
+            }
         }
 
         [Fact]
@@ -472,10 +489,12 @@ namespace QLNet.Tests
                                0.03;
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
+            {
                 QAssert.Fail(
-                   "unable to reproduce interpolated rate\n"
-                   + "    calculated: " + interpolatedZeroRate + "\n"
-                   + "    expected: " + expectedRate);
+                    "unable to reproduce interpolated rate\n"
+                    + "    calculated: " + interpolatedZeroRate + "\n"
+                    + "    expected: " + expectedRate);
+            }
 
             spread2.setValue(0.025);
 
@@ -484,10 +503,12 @@ namespace QLNet.Tests
                            0.025;
 
             if (System.Math.Abs(interpolatedZeroRate - expectedRate) > tolerance)
+            {
                 QAssert.Fail(
-                   "unable to reproduce interpolated rate\n"
-                   + "    calculated: " + interpolatedZeroRate + "\n"
-                   + "    expected: " + expectedRate);
+                    "unable to reproduce interpolated rate\n"
+                    + "    calculated: " + interpolatedZeroRate + "\n"
+                    + "    expected: " + expectedRate);
+            }
         }
     }
 }

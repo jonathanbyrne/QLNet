@@ -1,16 +1,27 @@
+using JetBrains.Annotations;
 using QLNet.Patterns;
 
 namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public class RelinkableHandle<T> : Handle<T> where T : IObservable
+    [PublicAPI]
+    public class RelinkableHandle<T> : Handle<T> where T : IObservable
     {
-        public RelinkableHandle() : base(default(T), true) { }
+        public RelinkableHandle() : base(default(T), true)
+        {
+        }
 
-        public RelinkableHandle(T h) : base(h, true) { }
+        public RelinkableHandle(T h) : base(h, true)
+        {
+        }
 
-        public RelinkableHandle(T h, bool registerAsObserver) : base(h, registerAsObserver) { }
+        public RelinkableHandle(T h, bool registerAsObserver) : base(h, registerAsObserver)
+        {
+        }
 
-        public void linkTo(T h) { linkTo(h, true); }
+        public void linkTo(T h)
+        {
+            linkTo(h, true);
+        }
 
         public void linkTo(T h, bool registerAsObserver)
         {

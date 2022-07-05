@@ -38,7 +38,9 @@ public struct AtmVolatility
             for (var j = 0; j < tenors.swaps.Count; j++)
                 // every handle must be reassigned, as the ones created by
                 // default are all linked together.
+            {
                 volsHandle[i][j] = new Handle<Quote>(new SimpleQuote(vols[i, j]));
+            }
         }
     }
 }

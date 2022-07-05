@@ -1,13 +1,16 @@
-﻿using QLNet.Math;
+﻿using JetBrains.Annotations;
+using QLNet.Math;
 using QLNet.Math.Optimization;
 
 namespace QLNet.Termstructures.Yield
 {
-    [JetBrains.Annotations.PublicAPI] public class SvenssonFitting : FittedBondDiscountCurve.FittingMethod
+    [PublicAPI]
+    public class SvenssonFitting : FittedBondDiscountCurve.FittingMethod
     {
         public SvenssonFitting(Vector weights = null, OptimizationMethod optimizationMethod = null)
             : base(true, weights, optimizationMethod)
-        { }
+        {
+        }
 
         public override FittedBondDiscountCurve.FittingMethod clone() => MemberwiseClone() as FittedBondDiscountCurve.FittingMethod;
 
@@ -26,6 +29,5 @@ namespace QLNet.Termstructures.Yield
             var d = System.Math.Exp(-zeroRate * t);
             return d;
         }
-
     }
 }

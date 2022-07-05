@@ -1,11 +1,17 @@
-﻿using QLNet.Instruments;
+﻿using JetBrains.Annotations;
+using QLNet.Instruments;
 using QLNet.Math.Distributions;
 using QLNet.processes;
 
 namespace QLNet.Pricingengines.barrier
 {
-    [JetBrains.Annotations.PublicAPI] public class AnalyticBinaryBarrierEngine_helper
+    [PublicAPI]
+    public class AnalyticBinaryBarrierEngine_helper
     {
+        private BarrierOption.Arguments arguments_;
+        private AmericanExercise exercise_;
+        private StrikedTypePayoff payoff_;
+        private GeneralizedBlackScholesProcess process_;
 
         public AnalyticBinaryBarrierEngine_helper(
             GeneralizedBlackScholesProcess process,
@@ -39,15 +45,13 @@ namespace QLNet.Pricingengines.barrier
             double K = 0;
 
             // binary cash-or-nothing payoff?
-            var coo = payoff_ as CashOrNothingPayoff;
-            if (coo != null)
+            if (payoff_ is CashOrNothingPayoff coo)
             {
                 K = coo.cashPayoff();
             }
 
             // binary asset-or-nothing payoff?
-            var aoo = payoff_ as AssetOrNothingPayoff;
-            if (aoo != null)
+            if (payoff_ is AssetOrNothingPayoff aoo)
             {
                 mu += 1.0;
                 K = spot * dividendDiscount / discount; // forward
@@ -60,7 +64,9 @@ namespace QLNet.Pricingengines.barrier
             var H_S_2mu = System.Math.Pow(barrier.GetValueOrDefault() / spot, 2 * mu);
 
             var eta = barrierType == Barrier.Type.DownIn ||
-                      barrierType == Barrier.Type.DownOut ? 1.0 : -1.0;
+                      barrierType == Barrier.Type.DownOut
+                ? 1.0
+                : -1.0;
             var phi = type == QLNet.Option.Type.Call ? 1.0 : -1.0;
 
             double x1, x2, y1, y2;
@@ -84,21 +90,40 @@ namespace QLNet.Pricingengines.barrier
             else
             {
                 if (log_S_X > 0)
+                {
                     cum_x1 = 1.0;
+                }
                 else
+                {
                     cum_x1 = 0.0;
+                }
+
                 if (log_S_H > 0)
+                {
                     cum_x2 = 1.0;
+                }
                 else
+                {
                     cum_x2 = 0.0;
+                }
+
                 if (log_H2_SX > 0)
+                {
                     cum_y1 = 1.0;
+                }
                 else
+                {
                     cum_y1 = 0.0;
+                }
+
                 if (log_H_S > 0)
+                {
                     cum_y2 = 1.0;
+                }
                 else
+                {
                     cum_y2 = 0.0;
+                }
             }
 
             double alpha = 0;
@@ -134,6 +159,7 @@ namespace QLNet.Pricingengines.barrier
                             alpha = cum_x1;
                         }
                     }
+
                     break;
 
                 case Barrier.Type.UpIn:
@@ -165,6 +191,7 @@ namespace QLNet.Pricingengines.barrier
                             alpha = H_S_2mu * cum_y1;
                         }
                     }
+
                     break;
 
                 case Barrier.Type.DownOut:
@@ -196,6 +223,7 @@ namespace QLNet.Pricingengines.barrier
                             alpha = 0;
                         }
                     }
+
                     break;
                 case Barrier.Type.UpOut:
                     if (type == QLNet.Option.Type.Call)
@@ -226,6 +254,7 @@ namespace QLNet.Pricingengines.barrier
                             alpha = cum_x1 - H_S_2mu * cum_y1;
                         }
                     }
+
                     break;
                 default:
                     Utils.QL_FAIL("invalid barrier ExerciseType");
@@ -234,10 +263,5 @@ namespace QLNet.Pricingengines.barrier
 
             return discount * K * alpha;
         }
-
-        private GeneralizedBlackScholesProcess process_;
-        private StrikedTypePayoff payoff_;
-        private AmericanExercise exercise_;
-        private BarrierOption.Arguments arguments_;
     }
 }

@@ -17,11 +17,9 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Models.Shortrate.Twofactorsmodels;
-using QLNet.Pricingengines;
-using System;
 using QLNet.Pricingengines.Swap;
 
 namespace QLNet.Pricingengines.swaption
@@ -33,21 +31,21 @@ namespace QLNet.Pricingengines.swaption
         \warning The engine assumes that the exercise date equals the
                  start date of the passed swap.
     */
-    [JetBrains.Annotations.PublicAPI] public class G2SwaptionEngine : GenericModelEngine<G2, Swaption.Arguments,
-      Instrument.Results>
+    [PublicAPI]
+    public class G2SwaptionEngine : GenericModelEngine<G2, Swaption.Arguments,
+        Instrument.Results>
     {
-        double range_;
-        int intervals_;
+        private int intervals_;
+        private double range_;
 
         // range is the number of standard deviations to use in the
         // exponential term of the integral for the european swaption.
         // intervals is the number of intervals to use in the integration.
         public G2SwaptionEngine(G2 model,
-                                double range,
-                                int intervals)
-           : base(model)
+            double range,
+            int intervals)
+            : base(model)
         {
-
             range_ = range;
             intervals_ = intervals;
         }
@@ -55,7 +53,7 @@ namespace QLNet.Pricingengines.swaption
         public override void calculate()
         {
             Utils.QL_REQUIRE(arguments_.settlementType == Settlement.Type.Physical, () =>
-                             "cash-settled swaptions not priced with G2 engine");
+                "cash-settled swaptions not priced with G2 engine");
 
             // adjust the fixed rate of the swap for the spread on the
             // floating leg (which is not taken into account by the
@@ -67,9 +65,7 @@ namespace QLNet.Pricingengines.swaption
             var fixedRate = swap.fixedRate - correction;
 
             results_.value = model_.link.swaption(arguments_, fixedRate,
-                                                   range_, intervals_);
+                range_, intervals_);
         }
-
     }
-
 }

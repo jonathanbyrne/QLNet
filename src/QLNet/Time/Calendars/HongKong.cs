@@ -20,6 +20,7 @@
 */
 
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -54,16 +55,16 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class HongKong : Calendar
+    [PublicAPI]
+    public class HongKong : Calendar
     {
-        public HongKong() : base(Impl.Singleton) { }
-
-        class Impl : WesternImpl
+        private class Impl : WesternImpl
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "Hong Kong stock exchange";
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -76,7 +77,7 @@ namespace QLNet.Time.Calendars
                 if (isWeekend(w)
                     // New Year's Day
                     || (d == 1 || d == 2 && w == DayOfWeek.Monday)
-                        && m == Month.January
+                    && m == Month.January
                     // Good Friday
                     || dd == em - 3
                     // Easter Monday
@@ -87,17 +88,19 @@ namespace QLNet.Time.Calendars
                     || (d == 1 || d == 2 && w == DayOfWeek.Monday) && m == Month.July
                     // National Day
                     || (d == 1 || d == 2 && w == DayOfWeek.Monday)
-                        && m == Month.October
+                    && m == Month.October
                     // Christmas Day
                     || d == 25 && m == Month.December
                     // Boxing Day
                     || d == 26 && m == Month.December
-                )
+                   )
+                {
                     return false;
+                }
 
                 if (y == 2004)
                 {
-                    if (// Lunar New Year
+                    if ( // Lunar New Year
                         (d == 22 || d == 23 || d == 24) && m == Month.January
                         // Ching Ming Festival
                         || d == 5 && m == Month.April
@@ -109,12 +112,14 @@ namespace QLNet.Time.Calendars
                         || d == 29 && m == Month.September
                         // Chung Yeung
                         || d == 22 && m == Month.October)
+                    {
                         return false;
+                    }
                 }
 
                 if (y == 2005)
                 {
-                    if (// Lunar New Year
+                    if ( // Lunar New Year
                         (d == 9 || d == 10 || d == 11) && m == Month.February
                         // Ching Ming Festival
                         || d == 5 && m == Month.April
@@ -126,12 +131,14 @@ namespace QLNet.Time.Calendars
                         || d == 19 && m == Month.September
                         // Chung Yeung festival
                         || d == 11 && m == Month.October)
+                    {
                         return false;
+                    }
                 }
 
                 if (y == 2006)
                 {
-                    if (// Lunar New Year
+                    if ( // Lunar New Year
                         d >= 28 && d <= 31 && m == Month.January
                         // Ching Ming Festival
                         || d == 5 && m == Month.April
@@ -143,12 +150,14 @@ namespace QLNet.Time.Calendars
                         || d == 7 && m == Month.October
                         // Chung Yeung festival
                         || d == 30 && m == Month.October)
+                    {
                         return false;
+                    }
                 }
 
                 if (y == 2007)
                 {
-                    if (// Lunar New Year
+                    if ( // Lunar New Year
                         d >= 17 && d <= 20 && m == Month.February
                         // Ching Ming Festival
                         || d == 5 && m == Month.April
@@ -160,12 +169,14 @@ namespace QLNet.Time.Calendars
                         || d == 26 && m == Month.September
                         // Chung Yeung festival
                         || d == 19 && m == Month.October)
+                    {
                         return false;
+                    }
                 }
 
                 if (y == 2008)
                 {
-                    if (// Lunar New Year
+                    if ( // Lunar New Year
                         d >= 7 && d <= 9 && m == Month.February
                         // Ching Ming Festival
                         || d == 4 && m == Month.April
@@ -177,12 +188,14 @@ namespace QLNet.Time.Calendars
                         || d == 15 && m == Month.September
                         // Chung Yeung festival
                         || d == 7 && m == Month.October)
+                    {
                         return false;
+                    }
                 }
 
                 if (y == 2009)
                 {
-                    if (// Lunar New Year
+                    if ( // Lunar New Year
                         d >= 26 && d <= 28 && m == Month.January
                         // Ching Ming Festival
                         || d == 4 && m == Month.April
@@ -194,12 +207,14 @@ namespace QLNet.Time.Calendars
                         || d == 3 && m == Month.October
                         // Chung Yeung festival
                         || d == 26 && m == Month.October)
+                    {
                         return false;
+                    }
                 }
 
                 if (y == 2010)
                 {
-                    if (// Lunar New Year
+                    if ( // Lunar New Year
                         (d == 15 || d == 16) && m == Month.February
                         // Ching Ming Festival
                         || d == 6 && m == Month.April
@@ -209,12 +224,14 @@ namespace QLNet.Time.Calendars
                         || d == 16 && m == Month.June
                         // Mid-autumn festival
                         || d == 23 && m == Month.September)
+                    {
                         return false;
+                    }
                 }
 
                 if (y == 2011)
                 {
-                    if (// Lunar New Year
+                    if ( // Lunar New Year
                         (d == 3 || d == 4) && m == Month.February
                         // Ching Ming Festival
                         || d == 5 && m == Month.April
@@ -228,12 +245,14 @@ namespace QLNet.Time.Calendars
                         || d == 5 && m == Month.October
                         // Second day after Christmas
                         || d == 27 && m == Month.December)
+                    {
                         return false;
+                    }
                 }
 
                 if (y == 2012)
                 {
-                    if (// Lunar New Year
+                    if ( // Lunar New Year
                         d >= 23 && d <= 25 && m == Month.January
                         // Ching Ming Festival
                         || d == 4 && m == Month.April
@@ -243,12 +262,14 @@ namespace QLNet.Time.Calendars
                         || d == 1 && m == Month.October
                         // Chung Yeung festival
                         || d == 23 && m == Month.October)
+                    {
                         return false;
+                    }
                 }
 
                 if (y == 2013)
                 {
-                    if (// Lunar New Year
+                    if ( // Lunar New Year
                         d >= 11 && d <= 13 && m == Month.February
                         // Ching Ming Festival
                         || d == 4 && m == Month.April
@@ -260,47 +281,53 @@ namespace QLNet.Time.Calendars
                         || d == 20 && m == Month.September
                         // Chung Yeung festival
                         || d == 14 && m == Month.October)
+                    {
                         return false;
+                    }
                 }
 
                 if (y == 2014)
                 {
-                    if (// Lunar New Year
+                    if ( // Lunar New Year
                         d == 31 && m == Month.January || d <= 3 && m == Month.February
-                        // Buddha's birthday
-                        || d == 6 && m == Month.May
-                        // Tuen Ng festival
-                        || d == 2 && m == Month.June
-                        // Mid-autumn festival
-                        || d == 9 && m == Month.September
-                        // Chung Yeung festival
-                        || d == 2 && m == Month.October)
+                                                      // Buddha's birthday
+                                                      || d == 6 && m == Month.May
+                                                      // Tuen Ng festival
+                                                      || d == 2 && m == Month.June
+                                                      // Mid-autumn festival
+                                                      || d == 9 && m == Month.September
+                                                      // Chung Yeung festival
+                                                      || d == 2 && m == Month.October)
+                    {
                         return false;
+                    }
                 }
 
                 if (y == 2015)
                 {
-                    if (// Lunar New Year
+                    if ( // Lunar New Year
                         d == 19 && m == Month.February || d == 20 && m == Month.February
-                        // The day following Easter Monday
-                        || d == 7 && m == Month.April
-                        // Buddha's birthday
-                        || d == 25 && m == Month.May
-                        // Tuen Ng festival
-                        || d == 20 && m == Month.June
-                        // The 70th anniversary day of the victory of the Chinese 
-                        // people's war of resistance against Japanese aggression
-                        || d == 3 && m == Month.September
-                        // Mid-autumn festival
-                        || d == 28 && m == Month.September
-                        // Chung Yeung festival
-                        || d == 21 && m == Month.October)
+                                                       // The day following Easter Monday
+                                                       || d == 7 && m == Month.April
+                                                       // Buddha's birthday
+                                                       || d == 25 && m == Month.May
+                                                       // Tuen Ng festival
+                                                       || d == 20 && m == Month.June
+                                                       // The 70th anniversary day of the victory of the Chinese 
+                                                       // people's war of resistance against Japanese aggression
+                                                       || d == 3 && m == Month.September
+                                                       // Mid-autumn festival
+                                                       || d == 28 && m == Month.September
+                                                       // Chung Yeung festival
+                                                       || d == 21 && m == Month.October)
+                    {
                         return false;
+                    }
                 }
 
                 if (y == 2016)
                 {
-                    if (// Lunar New Year
+                    if ( // Lunar New Year
                         d >= 8 && d <= 10 && m == Month.February
                         // Ching Ming Festival
                         || d == 4 && m == Month.April
@@ -312,12 +339,14 @@ namespace QLNet.Time.Calendars
                         || d == 10 && m == Month.October
                         // Second day after Christmas
                         || d == 27 && m == Month.December)
+                    {
                         return false;
+                    }
                 }
 
                 if (y == 2017)
                 {
-                    if (// Lunar New Year
+                    if ( // Lunar New Year
                         (d == 30 || d == 31) && m == Month.January
                         // Ching Ming Festival
                         || d == 4 && m == Month.April
@@ -327,29 +356,33 @@ namespace QLNet.Time.Calendars
                         || d == 30 && m == Month.May
                         // Mid-autumn festival
                         || d == 5 && m == Month.October)
+                    {
                         return false;
+                    }
                 }
 
                 if (y == 2018)
                 {
-                    if (// Lunar New Year
+                    if ( // Lunar New Year
                         d == 16 && m == Month.February || d == 19 && m == Month.February
-                        // Ching Ming Festival
-                        || d == 5 && m == Month.April
-                        // Buddha's birthday
-                        || d == 22 && m == Month.May
-                        // Tuen Ng festival
-                        || d == 18 && m == Month.June
-                        // Mid-autumn festival
-                        || d == 25 && m == Month.September
-                        // Chung Yeung festival
-                        || d == 17 && m == Month.October)
+                                                       // Ching Ming Festival
+                                                       || d == 5 && m == Month.April
+                                                       // Buddha's birthday
+                                                       || d == 22 && m == Month.May
+                                                       // Tuen Ng festival
+                                                       || d == 18 && m == Month.June
+                                                       // Mid-autumn festival
+                                                       || d == 25 && m == Month.September
+                                                       // Chung Yeung festival
+                                                       || d == 17 && m == Month.October)
+                    {
                         return false;
+                    }
                 }
 
                 if (y == 2019)
                 {
-                    if (// Lunar New Year
+                    if ( // Lunar New Year
                         d >= 5 && d <= 7 && m == Month.February
                         // Ching Ming Festival
                         || d == 5 && m == Month.April
@@ -357,12 +390,14 @@ namespace QLNet.Time.Calendars
                         || d == 7 && m == Month.June
                         // Chung Yeung festival
                         || d == 7 && m == Month.October)
+                    {
                         return false;
+                    }
                 }
 
                 if (y == 2020)
                 {
-                    if (// Lunar New Year
+                    if ( // Lunar New Year
                         (d == 27 || d == 28) && m == Month.January
                         // Ching Ming Festival
                         || d == 4 && m == Month.April
@@ -374,10 +409,19 @@ namespace QLNet.Time.Calendars
                         || d == 2 && m == Month.October
                         // Chung Yeung festival
                         || d == 26 && m == Month.October)
+                    {
                         return false;
+                    }
                 }
+
                 return true;
             }
+
+            public override string name() => "Hong Kong stock exchange";
+        }
+
+        public HongKong() : base(Impl.Singleton)
+        {
         }
     }
 }

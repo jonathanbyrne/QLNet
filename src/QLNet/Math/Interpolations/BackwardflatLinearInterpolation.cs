@@ -14,14 +14,15 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-using QLNet.Math;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
     // backflat interpolation in first component, linear in second component
 
-    [JetBrains.Annotations.PublicAPI] public class BackwardflatLinearInterpolation : Interpolation2D
+    [PublicAPI]
+    public class BackwardflatLinearInterpolation : Interpolation2D
     {
         /*! \pre the \f$ x \f$ and \f$ y \f$ values must be sorted. */
         public BackwardflatLinearInterpolation(List<double> xBegin, int xEnd, List<double> yBegin, int yEnd, Matrix zData)
@@ -30,5 +31,3 @@ namespace QLNet.Math.Interpolations
         }
     }
 }
-
-

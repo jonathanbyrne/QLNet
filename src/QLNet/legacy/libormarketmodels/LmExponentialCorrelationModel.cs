@@ -17,9 +17,10 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.matrixutilities;
-using System;
 using QLNet.Math.Optimization;
 using QLNet.Models;
 
@@ -36,10 +37,13 @@ namespace QLNet.legacy.libormarketmodels
         (<http://www.business.uts.edu.au/qfrc/conferences/qmf2001/Brigo_D.pdf>)
     */
 
-    [JetBrains.Annotations.PublicAPI] public class LmExponentialCorrelationModel : LmCorrelationModel
+    [PublicAPI]
+    public class LmExponentialCorrelationModel : LmCorrelationModel
     {
+        private Matrix corrMatrix_, pseudoSqrt_;
+
         public LmExponentialCorrelationModel(int size, double rho)
-           : base(size, 1)
+            : base(size, 1)
         {
             corrMatrix_ = new Matrix(size, size);
             pseudoSqrt_ = new Matrix(size, size);
@@ -53,16 +57,15 @@ namespace QLNet.legacy.libormarketmodels
             return tmp;
         }
 
+        public override double correlation(int i, int j, double t, Vector x = null) => corrMatrix_[i, j];
+
+        public override bool isTimeIndependent() => true;
+
         public override Matrix pseudoSqrt(double t, Vector x = null)
         {
             var tmp = new Matrix(pseudoSqrt_);
             return tmp;
         }
-
-
-        public override double correlation(int i, int j, double t, Vector x = null) => corrMatrix_[i, j];
-
-        public override bool isTimeIndependent() => true;
 
         protected override void generateArguments()
         {
@@ -75,9 +78,8 @@ namespace QLNet.legacy.libormarketmodels
                     corrMatrix_[i, j] = corrMatrix_[j, i] = System.Math.Exp(-rho * System.Math.Abs(i - (double)j));
                 }
             }
+
             pseudoSqrt_ = MatrixUtilitites.pseudoSqrt(corrMatrix_, MatrixUtilitites.SalvagingAlgorithm.Spectral);
         }
-
-        private Matrix corrMatrix_, pseudoSqrt_;
     }
 }

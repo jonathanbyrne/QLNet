@@ -13,8 +13,9 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
-using QLNet.Time;
+
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -41,31 +42,54 @@ namespace QLNet.Time.Calendars
         (data from <http://www.bvb.ro/Marketplace/TradingCalendar/index.aspx>):
         all public holidays, plus a few one-off closing days (2014 only).      
     */
-    [JetBrains.Annotations.PublicAPI] public class Romania : Calendar
+    [PublicAPI]
+    public class Romania : Calendar
     {
         public enum Market
         {
-            Public,     //!< Public holidays
-            BVB         //!< Bucharest stock-exchange
+            Public, //!< Public holidays
+            BVB //!< Bucharest stock-exchange
         }
 
-        public Romania() : this(Market.BVB) { }
-
-        public Romania(Market m) : base()
+        private class BVBImpl : PublicImpl
         {
-            calendar_ = m switch
+            public static readonly BVBImpl Impl = new BVBImpl();
+
+            private BVBImpl()
             {
-                Market.Public => PublicImpl.Singleton,
-                Market.BVB => BVBImpl.Impl,
-                _ => throw new ArgumentException("Unknown market: " + m)
-            };
+            }
+
+            public override bool isBusinessDay(Date date)
+            {
+                if (!base.isBusinessDay(date))
+                {
+                    return false;
+                }
+
+                var d = date.Day;
+                var m = (Month)date.Month;
+                var y = date.Year;
+                if ( // one-off closing days
+                    d == 24 && m == Month.December && y == 2014 ||
+                    d == 31 && m == Month.December && y == 2014
+                   )
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            public override string name() => "Romania";
         }
 
         private class PublicImpl : OrthodoxImpl
         {
             public static readonly PublicImpl Singleton = new PublicImpl();
-            protected PublicImpl() { }
-            public override string name() => "Romania";
+
+            protected PublicImpl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -99,31 +123,28 @@ namespace QLNet.Time.Calendars
                     || d == 25 && m == Month.December
                     // 2nd Day of Chritsmas
                     || d == 26 && m == Month.December)
+                {
                     return false;
+                }
+
                 return true;
             }
+
+            public override string name() => "Romania";
         }
 
-        private class BVBImpl : PublicImpl
+        public Romania() : this(Market.BVB)
         {
-            public static readonly BVBImpl Impl = new BVBImpl();
-            private BVBImpl() { }
-            public override string name() => "Romania";
+        }
 
-            public override bool isBusinessDay(Date date)
+        public Romania(Market m)
+        {
+            calendar_ = m switch
             {
-                if (!base.isBusinessDay(date))
-                    return false;
-                var d = date.Day;
-                var m = (Month)date.Month;
-                var y = date.Year;
-                if (// one-off closing days
-                   d == 24 && m == Month.December && y == 2014 ||
-                   d == 31 && m == Month.December && y == 2014
-                )
-                    return false;
-                return true;
-            }
+                Market.Public => PublicImpl.Singleton,
+                Market.BVB => BVBImpl.Impl,
+                _ => throw new ArgumentException("Unknown market: " + m)
+            };
         }
     }
 }

@@ -17,29 +17,40 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Methods.Finitedifferences.Meshers;
 using QLNet.Methods.Finitedifferences.Solvers;
 using QLNet.Methods.Finitedifferences.StepConditions;
 using QLNet.Methods.Finitedifferences.Utilities;
 using QLNet.processes;
-using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Pricingengines.vanilla
 {
-    [JetBrains.Annotations.PublicAPI] public class FdBlackScholesVanillaEngine : DividendVanillaOption.Engine
+    [PublicAPI]
+    public class FdBlackScholesVanillaEngine : DividendVanillaOption.Engine
     {
-        public enum CashDividendModel { Spot, Escrowed }
+        public enum CashDividendModel
+        {
+            Spot,
+            Escrowed
+        }
+
+        protected CashDividendModel cashDividendModel_;
+        protected double? illegalLocalVolOverwrite_;
+        protected bool localVol_;
+        protected GeneralizedBlackScholesProcess process_;
+        protected FdmQuantoHelper quantoHelper_;
+        protected FdmSchemeDesc schemeDesc_;
+        protected int tGrid_, xGrid_, dampingSteps_;
+
         public FdBlackScholesVanillaEngine(
-           GeneralizedBlackScholesProcess process,
-           int tGrid = 100, int xGrid = 100, int dampingSteps = 0,
-           FdmSchemeDesc schemeDesc = null,
-           bool localVol = false,
-           double? illegalLocalVolOverwrite = null,
-           CashDividendModel cashDividendModel = CashDividendModel.Spot)
+            GeneralizedBlackScholesProcess process,
+            int tGrid = 100, int xGrid = 100, int dampingSteps = 0,
+            FdmSchemeDesc schemeDesc = null,
+            bool localVol = false,
+            double? illegalLocalVolOverwrite = null,
+            CashDividendModel cashDividendModel = CashDividendModel.Spot)
         {
             process_ = process;
             tGrid_ = tGrid;
@@ -53,13 +64,13 @@ namespace QLNet.Pricingengines.vanilla
         }
 
         public FdBlackScholesVanillaEngine(
-           GeneralizedBlackScholesProcess process,
-           FdmQuantoHelper quantoHelper = null,
-           int tGrid = 100, int xGrid = 100, int dampingSteps = 0,
-           FdmSchemeDesc schemeDesc = null,
-           bool localVol = false,
-           double? illegalLocalVolOverwrite = null,
-           CashDividendModel cashDividendModel = CashDividendModel.Spot)
+            GeneralizedBlackScholesProcess process,
+            FdmQuantoHelper quantoHelper = null,
+            int tGrid = 100, int xGrid = 100, int dampingSteps = 0,
+            FdmSchemeDesc schemeDesc = null,
+            bool localVol = false,
+            double? illegalLocalVolOverwrite = null,
+            CashDividendModel cashDividendModel = CashDividendModel.Spot)
         {
             process_ = process;
             tGrid_ = tGrid;
@@ -97,15 +108,15 @@ namespace QLNet.Pricingengines.vanilla
                         {
                             var divAmount = divIter.amount();
                             var discount =
-                               process_.riskFreeRate().currentLink().discount(divDate) /
-                               process_.dividendYield().currentLink().discount(divDate);
+                                process_.riskFreeRate().currentLink().discount(divDate) /
+                                process_.dividendYield().currentLink().discount(divDate);
 
                             spotAdjustment -= divAmount * discount;
                         }
                     }
 
                     Utils.QL_REQUIRE(process_.x0() + spotAdjustment > 0.0,
-                                     () => "spot minus dividends becomes negative");
+                        () => "spot minus dividends becomes negative");
                     break;
                 default:
                     Utils.QL_FAIL("unknwon cash dividend model");
@@ -116,25 +127,25 @@ namespace QLNet.Pricingengines.vanilla
             var payoff = arguments_.payoff as StrikedTypePayoff;
 
             Fdm1dMesher equityMesher =
-               new FdmBlackScholesMesher(
-               xGrid_, process_, maturity, payoff.strike(),
-               null, null, 0.0001, 1.5,
-               new Pair<double?, double?>(payoff.strike(), 0.1),
-               dividendSchedule, quantoHelper_,
-               spotAdjustment);
+                new FdmBlackScholesMesher(
+                    xGrid_, process_, maturity, payoff.strike(),
+                    null, null, 0.0001, 1.5,
+                    new Pair<double?, double?>(payoff.strike(), 0.1),
+                    dividendSchedule, quantoHelper_,
+                    spotAdjustment);
 
             FdmMesher mesher =
-               new FdmMesherComposite(equityMesher);
+                new FdmMesherComposite(equityMesher);
 
             // 2. Calculator
             FdmInnerValueCalculator calculator = new FdmLogInnerValue(payoff, mesher, 0);
 
             // 3. Step conditions
             var conditions = FdmStepConditionComposite.vanillaComposite(
-                                                      arguments_.cashFlow, arguments_.exercise,
-                                                      mesher, calculator,
-                                                      process_.riskFreeRate().currentLink().referenceDate(),
-                                                      process_.riskFreeRate().currentLink().dayCounter());
+                arguments_.cashFlow, arguments_.exercise,
+                mesher, calculator,
+                process_.riskFreeRate().currentLink().referenceDate(),
+                process_.riskFreeRate().currentLink().dayCounter());
 
             // 4. Boundary conditions
             var boundaries = new FdmBoundaryConditionSet();
@@ -150,10 +161,10 @@ namespace QLNet.Pricingengines.vanilla
             solverDesc.timeSteps = tGrid_;
 
             var solver =
-               new FdmBlackScholesSolver(
-               new Handle<GeneralizedBlackScholesProcess>(process_),
-               payoff.strike(), solverDesc, schemeDesc_,
-               localVol_, illegalLocalVolOverwrite_);
+                new FdmBlackScholesSolver(
+                    new Handle<GeneralizedBlackScholesProcess>(process_),
+                    payoff.strike(), solverDesc, schemeDesc_,
+                    localVol_, illegalLocalVolOverwrite_);
 
             var spot = process_.x0();
             results_.value = solver.valueAt(spot);
@@ -161,13 +172,5 @@ namespace QLNet.Pricingengines.vanilla
             results_.gamma = solver.gammaAt(spot);
             results_.theta = solver.thetaAt(spot);
         }
-
-        protected GeneralizedBlackScholesProcess process_;
-        protected int tGrid_, xGrid_, dampingSteps_;
-        protected FdmSchemeDesc schemeDesc_;
-        protected bool localVol_;
-        protected double? illegalLocalVolOverwrite_;
-        protected FdmQuantoHelper quantoHelper_;
-        protected CashDividendModel cashDividendModel_;
     }
 }

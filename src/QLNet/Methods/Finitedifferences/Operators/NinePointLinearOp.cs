@@ -16,17 +16,28 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.matrixutilities;
 using QLNet.Methods.Finitedifferences.Meshers;
 using QLNet.Methods.Finitedifferences.Utilities;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Methods.Finitedifferences.Operators
 {
-    [JetBrains.Annotations.PublicAPI] public class NinePointLinearOp : FdmLinearOp
+    [PublicAPI]
+    public class NinePointLinearOp : FdmLinearOp
     {
+        protected List<double> a00_, a10_, a20_;
+        protected List<double> a01_, a11_, a21_;
+        protected List<double> a02_, a12_, a22_;
+        protected int d0_, d1_;
+        protected List<int> i00_, i10_, i20_;
+        protected List<int> i01_, i21_;
+        protected List<int> i02_, i12_, i22_;
+        protected FdmMesher mesher_;
+
         public NinePointLinearOp(int d0, int d1, FdmMesher mesher)
         {
             d0_ = d0;
@@ -53,7 +64,7 @@ namespace QLNet.Methods.Finitedifferences.Operators
             Utils.QL_REQUIRE(d0_ != d1_
                              && d0_ < mesher.layout().dim().Count
                              && d1_ < mesher.layout().dim().Count,
-                             () => "inconsistent derivative directions");
+                () => "inconsistent derivative directions");
 
             var layout = mesher.layout();
             var endIter = layout.end();
@@ -72,6 +83,7 @@ namespace QLNet.Methods.Finitedifferences.Operators
                 i22_[i] = layout.neighbourhood(iter, d0_, 1, d1_, 1);
             }
         }
+
         public NinePointLinearOp(NinePointLinearOp m)
         {
             d0_ = m.d0_;
@@ -118,7 +130,7 @@ namespace QLNet.Methods.Finitedifferences.Operators
         {
             var index = mesher_.layout();
             Utils.QL_REQUIRE(r.size() == index.size(), () => "inconsistent length of r "
-                             + r.size() + " vs " + index.size());
+                                                             + r.size() + " vs " + index.size());
 
             var retVal = new Vector(r.size());
 
@@ -126,17 +138,19 @@ namespace QLNet.Methods.Finitedifferences.Operators
             for (var i = 0; i < retVal.size(); ++i)
             {
                 retVal[i] = a00_[i] * r[i00_[i]]
-                              + a01_[i] * r[i01_[i]]
-                              + a02_[i] * r[i02_[i]]
-                              + a10_[i] * r[i10_[i]]
-                              + a11_[i] * r[i]
-                              + a12_[i] * r[i12_[i]]
-                              + a20_[i] * r[i20_[i]]
-                              + a21_[i] * r[i21_[i]]
-                              + a22_[i] * r[i22_[i]];
+                            + a01_[i] * r[i01_[i]]
+                            + a02_[i] * r[i02_[i]]
+                            + a10_[i] * r[i10_[i]]
+                            + a11_[i] * r[i]
+                            + a12_[i] * r[i12_[i]]
+                            + a20_[i] * r[i20_[i]]
+                            + a21_[i] * r[i21_[i]]
+                            + a22_[i] * r[i22_[i]];
             }
+
             return retVal;
         }
+
         public NinePointLinearOp mult(Vector r)
         {
             var retVal = new NinePointLinearOp(d0_, d1_, mesher_);
@@ -146,14 +160,44 @@ namespace QLNet.Methods.Finitedifferences.Operators
             for (var i = 0; i < size; ++i)
             {
                 var s = r[i];
-                retVal.a11_[i] = a11_[i] * s; retVal.a00_[i] = a00_[i] * s;
-                retVal.a01_[i] = a01_[i] * s; retVal.a02_[i] = a02_[i] * s;
-                retVal.a10_[i] = a10_[i] * s; retVal.a20_[i] = a20_[i] * s;
-                retVal.a21_[i] = a21_[i] * s; retVal.a12_[i] = a12_[i] * s;
+                retVal.a11_[i] = a11_[i] * s;
+                retVal.a00_[i] = a00_[i] * s;
+                retVal.a01_[i] = a01_[i] * s;
+                retVal.a02_[i] = a02_[i] * s;
+                retVal.a10_[i] = a10_[i] * s;
+                retVal.a20_[i] = a20_[i] * s;
+                retVal.a21_[i] = a21_[i] * s;
+                retVal.a12_[i] = a12_[i] * s;
                 retVal.a22_[i] = a22_[i] * s;
             }
 
             return retVal;
+        }
+
+        public void swap(NinePointLinearOp m)
+        {
+            Utils.swap(ref d0_, ref m.d0_);
+            Utils.swap(ref d1_, ref m.d1_);
+
+            Utils.swap(ref i00_, ref m.i00_);
+            Utils.swap(ref i10_, ref m.i10_);
+            Utils.swap(ref i20_, ref m.i20_);
+            Utils.swap(ref i01_, ref m.i01_);
+            Utils.swap(ref i21_, ref m.i21_);
+            Utils.swap(ref i02_, ref m.i02_);
+            Utils.swap(ref i12_, ref m.i12_);
+            Utils.swap(ref i22_, ref m.i22_);
+            Utils.swap(ref a00_, ref m.a00_);
+            Utils.swap(ref a10_, ref m.a10_);
+            Utils.swap(ref a20_, ref m.a20_);
+            Utils.swap(ref a01_, ref m.a01_);
+            Utils.swap(ref a21_, ref m.a21_);
+            Utils.swap(ref a02_, ref m.a02_);
+            Utils.swap(ref a12_, ref m.a12_);
+            Utils.swap(ref a22_, ref m.a22_);
+            Utils.swap(ref a11_, ref m.a11_);
+
+            Utils.swap(ref mesher_, ref m.mesher_);
         }
 
         public override SparseMatrix toMatrix()
@@ -178,22 +222,8 @@ namespace QLNet.Methods.Finitedifferences.Operators
             return retVal;
         }
 
-        public void swap(NinePointLinearOp m)
-        {
-            Utils.swap(ref d0_, ref m.d0_);
-            Utils.swap(ref d1_, ref m.d1_);
-
-            Utils.swap(ref i00_, ref m.i00_); Utils.swap(ref i10_, ref m.i10_); Utils.swap(ref i20_, ref m.i20_);
-            Utils.swap(ref i01_, ref m.i01_); Utils.swap(ref i21_, ref m.i21_); Utils.swap(ref i02_, ref m.i02_);
-            Utils.swap(ref i12_, ref m.i12_); Utils.swap(ref i22_, ref m.i22_);
-            Utils.swap(ref a00_, ref m.a00_); Utils.swap(ref a10_, ref m.a10_); Utils.swap(ref a20_, ref m.a20_);
-            Utils.swap(ref a01_, ref m.a01_); Utils.swap(ref a21_, ref m.a21_); Utils.swap(ref a02_, ref m.a02_);
-            Utils.swap(ref a12_, ref m.a12_); Utils.swap(ref a22_, ref m.a22_); Utils.swap(ref a11_, ref m.a11_);
-
-            Utils.swap(ref mesher_, ref m.mesher_);
-        }
-
         #region IOperator interface
+
         public override int size() => 0;
 
         public override IOperator identity(int size) => null;
@@ -205,26 +235,19 @@ namespace QLNet.Methods.Finitedifferences.Operators
         public override IOperator multiply(double a, IOperator D) => null;
 
         public override IOperator add
-           (IOperator A, IOperator B) =>
+            (IOperator A, IOperator B) =>
             null;
 
         public override IOperator subtract(IOperator A, IOperator B) => null;
 
         public override bool isTimeDependent() => false;
 
-        public override void setTime(double t) { }
+        public override void setTime(double t)
+        {
+        }
+
         public override object Clone() => MemberwiseClone();
 
         #endregion
-
-        protected int d0_, d1_;
-        protected List<int> i00_, i10_, i20_;
-        protected List<int> i01_, i21_;
-        protected List<int> i02_, i12_, i22_;
-        protected List<double> a00_, a10_, a20_;
-        protected List<double> a01_, a11_, a21_;
-        protected List<double> a02_, a12_, a22_;
-
-        protected FdmMesher mesher_;
     }
 }

@@ -17,27 +17,14 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Methods.lattices;
 using System;
+using JetBrains.Annotations;
+using QLNet.Methods.lattices;
 
 namespace QLNet.Models.Shortrate
 {
     public abstract class TwoFactorModel : ShortRateModel
     {
-        protected TwoFactorModel(int nArguments)
-           : base(nArguments)
-        { }
-
-        public abstract ShortRateDynamics dynamics();
-
-        public override Lattice tree(TimeGrid grid)
-        {
-            var dyn = dynamics();
-            var tree1 = new TrinomialTree(dyn.xProcess(), grid);
-            var tree2 = new TrinomialTree(dyn.yProcess(), grid);
-            return new ShortRateTree(tree1, tree2, dyn);
-        }
-
         //! Class describing the dynamics of the two state variables
         /*! We assume here that the short-rate is a function of two state
             variables x and y.
@@ -45,45 +32,46 @@ namespace QLNet.Models.Shortrate
 
         public abstract class ShortRateDynamics
         {
-            StochasticProcess1D xProcess_, yProcess_;
-            public double correlation_ { get; set; }
+            private readonly StochasticProcess1D xProcess_;
+            private readonly StochasticProcess1D yProcess_;
 
             protected ShortRateDynamics(StochasticProcess1D xProcess,
-                                        StochasticProcess1D yProcess,
-                                        double correlation)
+                StochasticProcess1D yProcess,
+                double correlation)
             {
                 xProcess_ = xProcess;
                 yProcess_ = yProcess;
                 correlation_ = correlation;
             }
 
+            public double correlation_ { get; set; }
+
+            //! Joint process of the two variables
+            public abstract StochasticProcess process();
+
             public abstract double shortRate(double t, double x, double y);
+
+            //! Correlation \f$ \rho \f$ between the two brownian motions.
+            public double correlation() => correlation_;
 
             //! Risk-neutral dynamics of the first state variable x
             public StochasticProcess1D xProcess() => xProcess_;
 
             //! Risk-neutral dynamics of the second state variable y
             public StochasticProcess1D yProcess() => yProcess_;
-
-            //! Correlation \f$ \rho \f$ between the two brownian motions.
-            public double correlation() => correlation_;
-
-            //! Joint process of the two variables
-            public abstract StochasticProcess process();
         }
 
         //! Recombining two-dimensional tree discretizing the state variable
-        [JetBrains.Annotations.PublicAPI] public class ShortRateTree : TreeLattice2D<ShortRateTree, TrinomialTree>, IGenericLattice
+        [PublicAPI]
+        public class ShortRateTree : TreeLattice2D<ShortRateTree, TrinomialTree>, IGenericLattice
         {
-            protected override ShortRateTree impl() => this;
-
-            ShortRateDynamics dynamics_;
+            private ShortRateDynamics dynamics_;
 
             //! Plain tree build-up from short-rate dynamics
             public ShortRateTree(TrinomialTree tree1,
-                                 TrinomialTree tree2,
-                                 ShortRateDynamics dynamics)
-               : base(tree1, tree2, dynamics.correlation())
+                TrinomialTree tree2,
+                ShortRateDynamics dynamics)
+                : base(tree1, tree2, dynamics.correlation())
             {
                 dynamics_ = dynamics;
             }
@@ -106,8 +94,23 @@ namespace QLNet.Models.Shortrate
             public double underlying(int i, int index) => throw new NotImplementedException();
 
             #endregion
+
+            protected override ShortRateTree impl() => this;
+        }
+
+        protected TwoFactorModel(int nArguments)
+            : base(nArguments)
+        {
+        }
+
+        public abstract ShortRateDynamics dynamics();
+
+        public override Lattice tree(TimeGrid grid)
+        {
+            var dyn = dynamics();
+            var tree1 = new TrinomialTree(dyn.xProcess(), grid);
+            var tree2 = new TrinomialTree(dyn.yProcess(), grid);
+            return new ShortRateTree(tree1, tree2, dyn);
         }
     }
-
 }
-

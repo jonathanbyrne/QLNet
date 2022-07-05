@@ -17,21 +17,53 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Patterns;
-using QLNet.Time;
+
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Patterns;
+using QLNet.Time;
 
 namespace QLNet.Instruments
 {
     // Abstract instrument class. It defines the interface of concrete instruments
-    [JetBrains.Annotations.PublicAPI] public class Instrument : LazyObject
+    [PublicAPI]
+    public class Instrument : LazyObject
     {
-        // The value of these attributes and any other that derived classes might declare must be set during calculation.
-        protected double? NPV_, errorEstimate_, CASH_;
+        [PublicAPI]
+        public class Results : IPricingEngineResults
+        {
+            public Results()
+            {
+                additionalResults = new Dictionary<string, object>();
+            }
+
+            public Dictionary<string, object> additionalResults { get; set; }
+
+            public double? cash { get; set; }
+
+            public double? errorEstimate { get; set; }
+
+            public Date valuationDate { get; set; }
+
+            public double? value { get; set; }
+
+            public virtual void reset()
+            {
+                value = errorEstimate = cash = null;
+                additionalResults.Clear();
+                valuationDate = null;
+            }
+        }
+
         protected Dictionary<string, object> additionalResults_ = new Dictionary<string, object>();
         protected IPricingEngine engine_;
-        protected Date valuationDate_ = null;
+        // The value of these attributes and any other that derived classes might declare must be set during calculation.
+        protected double? NPV_, errorEstimate_, CASH_;
+        protected Date valuationDate_;
+
+        //! returns whether the instrument is still tradable.
+        public virtual bool isExpired() => throw new NotSupportedException();
 
         //! sets the pricing engine to be used.
         /*! calling this method will have no effects in case the performCalculation method
@@ -39,22 +71,37 @@ namespace QLNet.Instruments
         public void setPricingEngine(IPricingEngine e)
         {
             if (engine_ != null)
+            {
                 engine_.unregisterWith(update);
+            }
+
             engine_ = e;
             if (engine_ != null)
+            {
                 engine_.registerWith(update);
+            }
 
-            update();       // trigger (lazy) recalculation and notify observers
+            update(); // trigger (lazy) recalculation and notify observers
         }
-
 
         /*! When a derived argument structure is defined for an instrument,
          * this method should be overridden to fill it.
          * This is mandatory in case a pricing engine is used. */
-        public virtual void setupArguments(IPricingEngineArguments a) { throw new NotImplementedException(); }
+        public virtual void setupArguments(IPricingEngineArguments a)
+        {
+            throw new NotImplementedException();
+        }
 
+        // This method must leave the instrument in a consistent state when the expiration condition is met.
+        protected virtual void setupExpired()
+        {
+            NPV_ = errorEstimate_ = CASH_ = 0.0;
+            valuationDate_ = null;
+            additionalResults_.Clear();
+        }
 
         #region Lazy object interface
+
         protected override void calculate()
         {
             if (isExpired())
@@ -74,24 +121,31 @@ namespace QLNet.Instruments
         protected override void performCalculations()
         {
             if (engine_ == null)
+            {
                 throw new ArgumentException("null pricing engine");
+            }
+
             engine_.reset();
             setupArguments(engine_.getArguments());
             engine_.getArguments().validate();
             engine_.calculate();
             fetchResults(engine_.getResults());
         }
+
         #endregion
 
         #region Results
+
         /*! When a derived result structure is defined for an instrument,
          * this method should be overridden to read from it.
          * This is mandatory in case a pricing engine is used.  */
         public virtual void fetchResults(IPricingEngineResults r)
         {
-            var results = r as Results;
-            if (results == null)
+            if (!(r is Results results))
+            {
                 throw new ArgumentException("no results returned from pricing engine");
+            }
+
             NPV_ = results.value;
             CASH_ = results.cash;
             errorEstimate_ = results.errorEstimate;
@@ -104,7 +158,10 @@ namespace QLNet.Instruments
             //! returns the net present value of the instrument.
             calculate();
             if (NPV_ == null)
+            {
                 throw new ArgumentException("NPV not provided");
+            }
+
             return NPV_.GetValueOrDefault();
         }
 
@@ -113,7 +170,10 @@ namespace QLNet.Instruments
             //! returns the net present value of the instrument.
             calculate();
             if (CASH_ == null)
+            {
                 throw new ArgumentException("CASH not provided");
+            }
+
             return CASH_.GetValueOrDefault();
         }
 
@@ -122,9 +182,13 @@ namespace QLNet.Instruments
             //! returns the error estimate on the NPV when available.
             calculate();
             if (errorEstimate_ == null)
+            {
                 throw new ArgumentException("error estimate not provided");
+            }
+
             return errorEstimate_.GetValueOrDefault();
         }
+
         //! returns the date the net present value refers to.
         public Date valuationDate()
         {
@@ -151,39 +215,5 @@ namespace QLNet.Instruments
         public Dictionary<string, object> additionalResults() => additionalResults_;
 
         #endregion
-
-        // This method must leave the instrument in a consistent state when the expiration condition is met.
-        protected virtual void setupExpired()
-        {
-            NPV_ = errorEstimate_ = CASH_ = 0.0;
-            valuationDate_ = null;
-            additionalResults_.Clear();
-        }
-
-        //! returns whether the instrument is still tradable.
-        public virtual bool isExpired() => throw new NotSupportedException();
-
-        [JetBrains.Annotations.PublicAPI] public class Results : IPricingEngineResults
-        {
-            public Results()
-            {
-                additionalResults = new Dictionary<string, object>();
-            }
-            public double? value { get; set; }
-            public double? errorEstimate { get; set; }
-            public double? cash { get; set; }
-            public Date valuationDate { get; set; }
-
-            public Dictionary<string, object> additionalResults { get; set; }
-
-            public virtual void reset()
-            {
-                value = errorEstimate = cash = null;
-                additionalResults.Clear();
-                valuationDate = null;
-            }
-
-        }
-
     }
 }

@@ -1,8 +1,10 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public class CouponConversion
+    [PublicAPI]
+    public class CouponConversion
     {
         public CouponConversion(DateTime date, double rate)
         {
@@ -11,7 +13,9 @@ namespace QLNet
         }
 
         public DateTime Date { get; set; }
+
         public double Rate { get; set; }
+
         public override string ToString() => ($"Conversion Date : {Date}\nConversion Rate : {Rate}");
     }
 }

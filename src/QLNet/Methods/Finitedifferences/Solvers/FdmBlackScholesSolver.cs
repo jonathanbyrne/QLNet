@@ -17,24 +17,34 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Methods.Finitedifferences.Operators;
 using QLNet.Methods.Finitedifferences.Utilities;
 using QLNet.Patterns;
 using QLNet.processes;
-using System;
 
 namespace QLNet.Methods.Finitedifferences.Solvers
 {
-    [JetBrains.Annotations.PublicAPI] public class FdmBlackScholesSolver : LazyObject
+    [PublicAPI]
+    public class FdmBlackScholesSolver : LazyObject
     {
+        protected double? illegalLocalVolOverwrite_;
+        protected bool localVol_;
+        protected Handle<GeneralizedBlackScholesProcess> process_;
+        protected Handle<FdmQuantoHelper> quantoHelper_;
+        protected FdmSchemeDesc schemeDesc_;
+        protected Fdm1DimSolver solver_;
+        protected FdmSolverDesc solverDesc_;
+        protected double strike_;
+
         public FdmBlackScholesSolver(
-           Handle<GeneralizedBlackScholesProcess> process,
-           double strike,
-           FdmSolverDesc solverDesc,
-           FdmSchemeDesc schemeDesc = null,
-           bool localVol = false,
-           double? illegalLocalVolOverwrite = null,
-           Handle<FdmQuantoHelper> quantoHelper = null)
+            Handle<GeneralizedBlackScholesProcess> process,
+            double strike,
+            FdmSolverDesc solverDesc,
+            FdmSchemeDesc schemeDesc = null,
+            bool localVol = false,
+            double? illegalLocalVolOverwrite = null,
+            Handle<FdmQuantoHelper> quantoHelper = null)
         {
             process_ = process;
             strike_ = strike;
@@ -49,43 +59,37 @@ namespace QLNet.Methods.Finitedifferences.Solvers
             quantoHelper_.registerWith(update);
         }
 
-        public double valueAt(double s)
-        {
-            calculate();
-            return solver_.interpolateAt(System.Math.Log(s));
-        }
         public double deltaAt(double s)
         {
             calculate();
             return solver_.derivativeX(System.Math.Log(s)) / s;
         }
+
         public double gammaAt(double s)
         {
             calculate();
             return (solver_.derivativeXX(System.Math.Log(s))
                     - solver_.derivativeX(System.Math.Log(s))) / (s * s);
         }
+
         public double thetaAt(double s) => solver_.thetaAt(System.Math.Log(s));
+
+        public double valueAt(double s)
+        {
+            calculate();
+            return solver_.interpolateAt(System.Math.Log(s));
+        }
 
         protected override void performCalculations()
         {
             var op = new FdmBlackScholesOp(
-               solverDesc_.mesher, process_.currentLink(), strike_,
-               localVol_, illegalLocalVolOverwrite_, 0,
-               quantoHelper_.empty()
-               ? null
-               : quantoHelper_.currentLink());
+                solverDesc_.mesher, process_.currentLink(), strike_,
+                localVol_, illegalLocalVolOverwrite_, 0,
+                quantoHelper_.empty()
+                    ? null
+                    : quantoHelper_.currentLink());
 
             solver_ = new Fdm1DimSolver(solverDesc_, schemeDesc_, op);
         }
-
-        protected Handle<GeneralizedBlackScholesProcess> process_;
-        protected double strike_;
-        protected FdmSolverDesc solverDesc_;
-        protected FdmSchemeDesc schemeDesc_;
-        protected bool localVol_;
-        protected double? illegalLocalVolOverwrite_;
-        protected Fdm1DimSolver solver_;
-        protected Handle<FdmQuantoHelper> quantoHelper_;
     }
 }

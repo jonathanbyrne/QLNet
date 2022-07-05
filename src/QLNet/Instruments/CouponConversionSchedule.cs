@@ -15,9 +15,12 @@
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public class CouponConversionSchedule : List<CouponConversion>
-   {}
+    [PublicAPI]
+    public class CouponConversionSchedule : List<CouponConversion>
+    {
+    }
 }

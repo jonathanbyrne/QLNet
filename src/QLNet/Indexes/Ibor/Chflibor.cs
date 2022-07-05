@@ -18,6 +18,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Termstructures;
 using QLNet.Time;
@@ -26,7 +27,6 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.Ibor
 {
-
     //! %CHF %LIBOR rate
     /*! Swiss Franc LIBOR fixed by ICE.
 
@@ -35,15 +35,18 @@ namespace QLNet.Indexes.Ibor
         \warning This is the rate fixed in London by BBA. Use ZIBOR if
                  you're interested in the Zurich fixing.
     */
-    [JetBrains.Annotations.PublicAPI] public class CHFLibor : Libor
+    [PublicAPI]
+    public class CHFLibor : Libor
     {
         public CHFLibor(Period tenor)
-           : base("CHFLibor", tenor, 2, new CHFCurrency(), new Switzerland(), new Actual360(), new Handle<YieldTermStructure>())
-        { }
+            : base("CHFLibor", tenor, 2, new CHFCurrency(), new Switzerland(), new Actual360(), new Handle<YieldTermStructure>())
+        {
+        }
 
         public CHFLibor(Period tenor, Handle<YieldTermStructure> h)
-           : base("CHFLibor", tenor, 2, new CHFCurrency(), new Switzerland(), new Actual360(), h)
-        { }
+            : base("CHFLibor", tenor, 2, new CHFCurrency(), new Switzerland(), new Actual360(), h)
+        {
+        }
     }
 
     //! base class for the one day deposit BBA %CHF %LIBOR indexes

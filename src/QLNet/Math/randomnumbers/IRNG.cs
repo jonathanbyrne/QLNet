@@ -1,14 +1,18 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Methods.montecarlo;
 
 namespace QLNet.Math.randomnumbers
 {
-    [JetBrains.Annotations.PublicAPI] public interface IRNG
+    [PublicAPI]
+    public interface IRNG
     {
         int dimension();
-        Sample<List<double>> nextSequence();
-        Sample<List<double>> lastSequence();
 
         IRNG factory(int dimensionality, ulong seed);
+
+        Sample<List<double>> lastSequence();
+
+        Sample<List<double>> nextSequence();
     }
 }

@@ -18,26 +18,35 @@
 */
 
 using System;
-
+using JetBrains.Annotations;
 
 namespace QLNet.Math
 {
     /// <summary>
-    /// Numerical Differentiation on arbitrarily spaced grids
-    /// <remarks>
-    /// References:
-    /// B. Fornberg, 1988. Generation of Finite Difference Formulas
-    /// on Arbitrarily Spaced Grids,
-    /// http://amath.colorado.edu/faculty/fornberg/Docs/MathComp_88_FD_formulas.pdf
-    /// </remarks>
+    ///     Numerical Differentiation on arbitrarily spaced grids
+    ///     <remarks>
+    ///         References:
+    ///         B. Fornberg, 1988. Generation of Finite Difference Formulas
+    ///         on Arbitrarily Spaced Grids,
+    ///         http://amath.colorado.edu/faculty/fornberg/Docs/MathComp_88_FD_formulas.pdf
+    ///     </remarks>
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class NumericalDifferentiation
+    [PublicAPI]
+    public class NumericalDifferentiation
     {
-        public enum Scheme { Central, Backward, Forward }
+        public enum Scheme
+        {
+            Central,
+            Backward,
+            Forward
+        }
+
+        protected Func<double, double> f_;
+        protected Vector offsets_, w_;
 
         public NumericalDifferentiation(Func<double, double> f,
-                                        int orderOfDerivative,
-                                        Vector x_offsets)
+            int orderOfDerivative,
+            Vector x_offsets)
         {
             f_ = f;
             offsets_ = x_offsets;
@@ -45,15 +54,17 @@ namespace QLNet.Math
         }
 
         public NumericalDifferentiation(Func<double, double> f,
-                                        int orderOfDerivative,
-                                        double stepSize,
-                                        int steps,
-                                        Scheme scheme)
+            int orderOfDerivative,
+            double stepSize,
+            int steps,
+            Scheme scheme)
         {
             f_ = f;
             offsets_ = calcOffsets(stepSize, steps, scheme);
             w_ = calcWeights(offsets_, orderOfDerivative);
         }
+
+        public Vector offsets() => offsets_;
 
         public double value(double x)
         {
@@ -65,12 +76,49 @@ namespace QLNet.Math
                     s += w_[i] * f_(x + offsets_[i]);
                 }
             }
+
             return s;
         }
 
-        public Vector offsets() => offsets_;
-
         public Vector weights() => w_;
+
+        protected Vector calcOffsets(double h, int n, Scheme scheme)
+        {
+            Utils.QL_REQUIRE(n > 1, () => "number of steps must be greater than one");
+
+            var retVal = new Vector(n);
+            switch (scheme)
+            {
+                case Scheme.Central:
+                    Utils.QL_REQUIRE(n > 2 && n % 2 > 0,
+                        () => "number of steps must be an odd number greater than two");
+                    for (var i = 0; i < n; ++i)
+                    {
+                        retVal[i] = (i - n / 2) * h;
+                    }
+
+                    break;
+                case Scheme.Backward:
+                    for (var i = 0; i < n; ++i)
+                    {
+                        retVal[i] = -(i * h);
+                    }
+
+                    break;
+                case Scheme.Forward:
+                    for (var i = 0; i < n; ++i)
+                    {
+                        retVal[i] = i * h;
+                    }
+
+                    break;
+                default:
+                    Utils.QL_FAIL("unknown numerical differentiation scheme");
+                    break;
+            }
+
+            return retVal;
+        }
 
         // This is a C# implementation of the algorithm/pseudo code in
         // B. Fornberg, 1998. Calculation of Weights
@@ -80,7 +128,7 @@ namespace QLNet.Math
         {
             var N = x.size();
             Utils.QL_REQUIRE(N > M, () => "number of points must be greater "
-                             + "than the order of the derivative");
+                                          + "than the order of the derivative");
 
             var d = new double[M + 1, N, N];
             d[0, 0, 0] = 1.0;
@@ -106,6 +154,7 @@ namespace QLNet.Math
                     d[m, n, n] = c1 / c2 * ((m > 0 ? m * d[m - 1, n - 1, n - 1] : 0.0) -
                                             x[n - 1] * d[m, n - 1, n - 1]);
                 }
+
                 c1 = c2;
             }
 
@@ -114,39 +163,8 @@ namespace QLNet.Math
             {
                 retVal[i] = d[M, N - 1, i];
             }
-            return retVal;
-        }
-
-        protected Vector calcOffsets(double h, int n, Scheme scheme)
-        {
-            Utils.QL_REQUIRE(n > 1, () => "number of steps must be greater than one");
-
-            var retVal = new Vector(n);
-            switch (scheme)
-            {
-                case Scheme.Central:
-                    Utils.QL_REQUIRE(n > 2 && n % 2 > 0,
-                                     () => "number of steps must be an odd number greater than two");
-                    for (var i = 0; i < n; ++i)
-                        retVal[i] = (i - n / 2) * h;
-                    break;
-                case Scheme.Backward:
-                    for (var i = 0; i < n; ++i)
-                        retVal[i] = -(i * h);
-                    break;
-                case Scheme.Forward:
-                    for (var i = 0; i < n; ++i)
-                        retVal[i] = i * h;
-                    break;
-                default:
-                    Utils.QL_FAIL("unknown numerical differentiation scheme");
-                    break;
-            }
 
             return retVal;
         }
-
-        protected Vector offsets_, w_;
-        protected Func<double, double> f_;
     }
 }

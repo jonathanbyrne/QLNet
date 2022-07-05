@@ -18,8 +18,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
-using System;
 
 namespace QLNet.Methods.lattices
 {
@@ -28,10 +28,17 @@ namespace QLNet.Methods.lattices
     //! Simple binomial lattice approximating the Black-Scholes model
     /*! \ingroup lattices */
 
-    [JetBrains.Annotations.PublicAPI] public class BlackScholesLattice : TreeLattice1D<BlackScholesLattice>, IGenericLattice
+    [PublicAPI]
+    public class BlackScholesLattice : TreeLattice1D<BlackScholesLattice>, IGenericLattice
     {
+        protected double discount_;
+        protected double dt_;
+        protected double pd_, pu_;
+        protected double riskFreeRate_;
+        protected ITree tree_;
+
         public BlackScholesLattice(ITree tree, double riskFreeRate, double end, int steps)
-           : base(new TimeGrid(end, steps), 2)
+            : base(new TimeGrid(end, steps), 2)
         {
             tree_ = tree;
             riskFreeRate_ = riskFreeRate;
@@ -41,35 +48,30 @@ namespace QLNet.Methods.lattices
             pu_ = tree.probability(0, 0, 1);
         }
 
-        public double riskFreeRate() => riskFreeRate_;
+        public int descendant(int i, int index, int branch) => tree_.descendant(i, index, branch);
+
+        public double discount(int i, int j) => discount_;
 
         public double dt() => dt_;
 
-        public int size(int i) => tree_.size(i);
+        public double probability(int i, int index, int branch) => tree_.probability(i, index, branch);
 
-        public double discount(int i, int j) => discount_;
+        public double riskFreeRate() => riskFreeRate_;
+
+        public int size(int i) => tree_.size(i);
 
         public override void stepback(int i, Vector values, Vector newValues)
         {
             for (var j = 0; j < size(i); j++)
+            {
                 newValues[j] = (pd_ * values[j] + pu_ * values[j + 1]) * discount_;
+            }
         }
 
         public override double underlying(int i, int index) => tree_.underlying(i, index);
 
-        public int descendant(int i, int index, int branch) => tree_.descendant(i, index, branch);
-
-        public double probability(int i, int index, int branch) => tree_.probability(i, index, branch);
-
         // this is a workaround for CuriouslyRecurringTemplate of TreeLattice
         // recheck it
         protected override BlackScholesLattice impl() => this;
-
-        protected ITree tree_;
-        protected double riskFreeRate_;
-        protected double dt_;
-        protected double discount_;
-        protected double pd_, pu_;
-
     }
 }

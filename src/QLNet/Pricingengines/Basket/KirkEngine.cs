@@ -16,9 +16,10 @@
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 //
 
+using System;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.processes;
-using System;
 
 namespace QLNet.Pricingengines.Basket
 {
@@ -33,11 +34,16 @@ namespace QLNet.Pricingengines.Basket
         \test the correctness of the returned value is tested by
               reproducing results available in literature.
     */
-    [JetBrains.Annotations.PublicAPI] public class KirkEngine : BasketOption.Engine
+    [PublicAPI]
+    public class KirkEngine : BasketOption.Engine
     {
+        private BlackProcess process1_;
+        private BlackProcess process2_;
+        private double rho_;
+
         public KirkEngine(BlackProcess process1,
-                          BlackProcess process2,
-                          double correlation)
+            BlackProcess process2,
+            double correlation)
         {
             process1_ = process1;
             process2_ = process2;
@@ -49,7 +55,6 @@ namespace QLNet.Pricingengines.Basket
 
         public override void calculate()
         {
-
             Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European Option");
 
             var exercise = arguments_.exercise as EuropeanExercise;
@@ -81,11 +86,6 @@ namespace QLNet.Pricingengines.Basket
             var black = new BlackCalculator(new PlainVanillaPayoff(payoff.optionType(), 1.0), f, v, riskFreeDiscount);
 
             results_.value = (f2 + strike) * black.value();
-
         }
-
-        private BlackProcess process1_;
-        private BlackProcess process2_;
-        private double rho_;
     }
 }

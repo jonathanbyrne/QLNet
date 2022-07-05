@@ -18,31 +18,34 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
 
 namespace QLNet.legacy.libormarketmodels
 {
-    [JetBrains.Annotations.PublicAPI] public class LmConstWrapperCorrelationModel : LmCorrelationModel
+    [PublicAPI]
+    public class LmConstWrapperCorrelationModel : LmCorrelationModel
     {
+        protected LmCorrelationModel corrModel_;
+
         public LmConstWrapperCorrelationModel(LmCorrelationModel corrModel)
-           : base(corrModel.size(), 0)
+            : base(corrModel.size(), 0)
         {
             corrModel_ = corrModel;
         }
 
-        public override int factors() => corrModel_.factors();
-
         public override Matrix correlation(double t, Vector x = null) => corrModel_.correlation(t, x);
-
-        public override Matrix pseudoSqrt(double t, Vector x = null) => corrModel_.pseudoSqrt(t, x);
 
         public override double correlation(int i, int j, double t, Vector x = null) => corrModel_.correlation(i, j, t, x);
 
+        public override int factors() => corrModel_.factors();
+
         public new bool isTimeIndependent() => corrModel_.isTimeIndependent();
 
-        protected override void generateArguments()
-        { }
+        public override Matrix pseudoSqrt(double t, Vector x = null) => corrModel_.pseudoSqrt(t, x);
 
-        protected LmCorrelationModel corrModel_;
+        protected override void generateArguments()
+        {
+        }
     }
 }

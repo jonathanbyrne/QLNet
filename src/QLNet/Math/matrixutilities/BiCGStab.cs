@@ -17,20 +17,23 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Extensions;
-using QLNet.Math;
 
 namespace QLNet.Math.matrixutilities
 {
-    ///
     /// bi-conjugated gradient stableized algorithm
-    ///
-    [JetBrains.Annotations.PublicAPI] public class BiCGStab
+    [PublicAPI]
+    public class BiCGStab
     {
         public delegate Vector MatrixMult(Vector x);
 
+        protected MatrixMult A_, M_;
+        protected int maxIter_;
+        protected double relTol_;
+
         public BiCGStab(MatrixMult A, int maxIter, double relTol,
-                        MatrixMult preConditioner = null)
+            MatrixMult preConditioner = null)
         {
             A_ = A;
             M_ = preConditioner;
@@ -63,7 +66,9 @@ namespace QLNet.Math.matrixutilities
             {
                 rho = Vector.DotProduct(rTld, r);
                 if (rho.IsEqual(0.0) || omega.IsEqual(0.0))
+                {
                     break;
+                }
 
                 if (i > 0)
                 {
@@ -102,9 +107,5 @@ namespace QLNet.Math.matrixutilities
             result = new BiCGStabResult(i, error, x);
             return result;
         }
-
-        protected MatrixMult A_, M_;
-        protected int maxIter_;
-        protected double relTol_;
     }
 }

@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Termstructures;
 using QLNet.Time;
@@ -25,19 +26,20 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.Ibor
 {
-
     //! %AUD %LIBOR rate
     /*! Australian Dollar LIBOR discontinued as of 2013.
     */
-    [JetBrains.Annotations.PublicAPI] public class AUDLibor : Libor
+    [PublicAPI]
+    public class AUDLibor : Libor
     {
         public AUDLibor(Period tenor)
-           : base("AUDLibor", tenor, 2, new AUDCurrency(), new Australia(), new Actual360(), new Handle<YieldTermStructure>())
-        { }
+            : base("AUDLibor", tenor, 2, new AUDCurrency(), new Australia(), new Actual360(), new Handle<YieldTermStructure>())
+        {
+        }
 
         public AUDLibor(Period tenor, Handle<YieldTermStructure> h)
-           : base("AUDLibor", tenor, 2, new AUDCurrency(), new Australia(), new Actual360(), h)
-        { }
+            : base("AUDLibor", tenor, 2, new AUDCurrency(), new Australia(), new Actual360(), h)
+        {
+        }
     }
-
 }

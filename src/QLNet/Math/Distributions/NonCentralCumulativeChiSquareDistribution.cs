@@ -1,6 +1,9 @@
-﻿namespace QLNet.Math.Distributions
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.Distributions
 {
-    [JetBrains.Annotations.PublicAPI] public class NonCentralCumulativeChiSquareDistribution
+    [PublicAPI]
+    public class NonCentralCumulativeChiSquareDistribution
     {
         protected double df_, ncp_;
 
@@ -13,7 +16,9 @@
         public double value(double x)
         {
             if (x <= 0.0)
+            {
                 return 0.0;
+            }
 
             var errmax = 1e-12;
             var itrmax = 10000;
@@ -47,14 +52,15 @@
 
             double bound;
             var skip = false;
-            for (; ; )
+            for (;;)
             {
                 if (f_x_2n > 0)
                 {
                     flag = true;
                     skip = true;
                 }
-                for (; ; )
+
+                for (;;)
                 {
                     if (!skip)
                     {
@@ -66,17 +72,26 @@
                         f_2n += 2.0;
                         f_x_2n += 2.0;
                         if (!flag && n <= itrmax)
+                        {
                             break;
+                        }
                     }
+
                     bound = t * x / f_x_2n;
                     skip = false;
                     if (bound <= errmax || n > itrmax)
+                    {
                         goto L_End;
+                    }
                 }
             }
+
             L_End:
             if (bound > errmax)
+            {
                 Utils.QL_FAIL("didn't converge");
+            }
+
             return ans;
         }
     }

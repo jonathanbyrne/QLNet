@@ -18,16 +18,27 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Math;
-
 namespace QLNet.Math.Optimization
 {
     //! Base class for line search
     public abstract class LineSearch
     {
+        protected Vector gradient_ = new Vector();
+        protected double qpt_;
+        //! cost function value and gradient norm corresponding to xtd_
+        protected double qt_;
+
+        //! current values of the search direction
+        protected Vector searchDirection_;
+        //! flag to know if linesearch succeed
+        protected bool succeed_;
+        //! new x and its gradient
+        protected Vector xtd_;
+
         //! Default constructor
         protected LineSearch() : this(0.0)
-        { }
+        {
+        }
 
         protected LineSearch(double UnnamedParameter1)
         {
@@ -36,8 +47,15 @@ namespace QLNet.Math.Optimization
             succeed_ = true;
         }
 
-        //! return last x value
-        public Vector lastX() => xtd_;
+        //! current value of the search direction
+        public Vector searchDirection
+        {
+            get => searchDirection_;
+            set => searchDirection_ = value;
+        }
+
+        //! Perform line search
+        public abstract double value(Problem P, ref EndCriteria.Type ecType, EndCriteria NamelessParameter3, double t_ini); // initial value of line-search step
 
         //! return last cost function value
         public double lastFunctionValue() => qt_;
@@ -48,10 +66,10 @@ namespace QLNet.Math.Optimization
         //! return square norm of last gradient
         public double lastGradientNorm2() => qpt_;
 
-        public bool succeed() => succeed_;
+        //! return last x value
+        public Vector lastX() => xtd_;
 
-        //! Perform line search
-        public abstract double value(Problem P, ref EndCriteria.Type ecType, EndCriteria NamelessParameter3, double t_ini); // initial value of line-search step
+        public bool succeed() => succeed_;
 
         public double update(ref Vector data, Vector direction, double beta, Constraint constraint)
         {
@@ -67,26 +85,9 @@ namespace QLNet.Math.Optimization
                 newParams = data + diff * direction;
                 valid = constraint.test(newParams);
             }
+
             data += diff * direction;
             return diff;
         }
-
-        //! current value of the search direction
-        public Vector searchDirection
-        {
-            get => searchDirection_;
-            set => searchDirection_ = value;
-        }
-
-        //! current values of the search direction
-        protected Vector searchDirection_;
-        //! new x and its gradient
-        protected Vector xtd_;
-        protected Vector gradient_ = new Vector();
-        //! cost function value and gradient norm corresponding to xtd_
-        protected double qt_;
-        protected double qpt_;
-        //! flag to know if linesearch succeed
-        protected bool succeed_;
     }
 }

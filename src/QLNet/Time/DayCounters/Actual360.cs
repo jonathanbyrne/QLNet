@@ -18,46 +18,63 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Time.DayCounters
 {
     //! Actual/360 day count convention
     /*! Actual/360 day count convention, also known as "Act/360", or "A/360". */
-    [JetBrains.Annotations.PublicAPI] public class Actual360 : DayCounter
+    [PublicAPI]
+    public class Actual360 : DayCounter
     {
-        public enum Actual360Convention { excludeLastDay, includeLastDay }
-
-        public Actual360(bool c = false) : base(conventions(c)) { }
-
-        private static DayCounter conventions(bool c)
+        public enum Actual360Convention
         {
-            if (c)
-                return IncludedImpl.Singleton;
-
-            return Impl.Singleton;
+            excludeLastDay,
+            includeLastDay
         }
 
-        class Impl : DayCounter
+        private class Impl : DayCounter
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "Actual/360";
+            private Impl()
+            {
+            }
 
             public override int dayCount(Date d1, Date d2) => d2 - d1;
+
+            public override string name() => "Actual/360";
 
             public override double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd) => Date.daysBetween(d1, d2) / 360.0;
         }
 
-        class IncludedImpl : DayCounter
+        private class IncludedImpl : DayCounter
         {
             public static readonly IncludedImpl Singleton = new IncludedImpl();
-            private IncludedImpl() { }
 
-            public override string name() => "Actual/360 (inc)";
+            private IncludedImpl()
+            {
+            }
 
             public override int dayCount(Date d1, Date d2) => d2 - d1 + 1;
 
+            public override string name() => "Actual/360 (inc)";
+
             public override double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd) => (Date.daysBetween(d1, d2) + 1) / 360.0;
+        }
+
+        public Actual360(bool c = false) : base(conventions(c))
+        {
+        }
+
+        private static DayCounter conventions(bool c)
+        {
+            if (c)
+            {
+                return IncludedImpl.Singleton;
+            }
+
+            return Impl.Singleton;
         }
     }
 }

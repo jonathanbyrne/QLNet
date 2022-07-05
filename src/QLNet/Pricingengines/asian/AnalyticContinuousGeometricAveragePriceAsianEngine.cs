@@ -17,10 +17,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.processes;
-using QLNet.Time;
-using System;
 
 namespace QLNet.Pricingengines.asian
 {
@@ -40,13 +41,17 @@ namespace QLNet.Pricingengines.asian
 
         \todo handle seasoned options
     */
-    [JetBrains.Annotations.PublicAPI] public class AnalyticContinuousGeometricAveragePriceAsianEngine : ContinuousAveragingAsianOption.Engine
+    [PublicAPI]
+    public class AnalyticContinuousGeometricAveragePriceAsianEngine : ContinuousAveragingAsianOption.Engine
     {
+        private GeneralizedBlackScholesProcess process_;
+
         public AnalyticContinuousGeometricAveragePriceAsianEngine(GeneralizedBlackScholesProcess process)
         {
             process_ = process;
             process_.registerWith(update);
         }
+
         public override void calculate()
         {
             Utils.QL_REQUIRE(arguments_.averageType == Average.Type.Geometric, () => "not a geometric average option");
@@ -66,13 +71,13 @@ namespace QLNet.Pricingengines.asian
             var voldc = process_.blackVolatility().link.dayCounter();
 
             var dividendYield = 0.5 * (
-                                      process_.riskFreeRate().link.zeroRate(exercise, rfdc,
-                                                                            Compounding.Continuous,
-                                                                            Frequency.NoFrequency).rate() +
-                                      process_.dividendYield().link.zeroRate(exercise, divdc,
-                                                                             Compounding.Continuous,
-                                                                             Frequency.NoFrequency).rate() +
-                                      volatility * volatility / 6.0);
+                process_.riskFreeRate().link.zeroRate(exercise, rfdc,
+                    Compounding.Continuous,
+                    Frequency.NoFrequency).rate() +
+                process_.dividendYield().link.zeroRate(exercise, divdc,
+                    Compounding.Continuous,
+                    Frequency.NoFrequency).rate() +
+                volatility * volatility / 6.0);
 
             var t_q = divdc.yearFraction(process_.dividendYield().link.referenceDate(), exercise);
             var dividendDiscount = System.Math.Exp(-dividendYield * t_q);
@@ -105,7 +110,5 @@ namespace QLNet.Pricingengines.asian
                 results_.theta = null;
             }
         }
-
-        private GeneralizedBlackScholesProcess process_;
     }
 }

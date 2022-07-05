@@ -59,9 +59,11 @@ namespace QLNet.Tests
             {
                 if (System.Math.Abs(b[i].Real - expected[i].Real) > 1.0e-2 ||
                     System.Math.Abs(b[i].Imaginary - expected[i].Imaginary) > 1.0e-2)
+                {
                     QAssert.Fail("Convolution(" + i + ")\n"
                                  + "    calculated: " + b[i] + "\n"
                                  + "    expected:   " + expected[i]);
+                }
             }
         }
 
@@ -94,26 +96,31 @@ namespace QLNet.Tests
             var calculated = ft[0].Real / nFrq;
             var expected = (x[0] * x[0] + x[1] * x[1] + x[2] * x[2]).Real;
             if (System.Math.Abs(calculated - expected) > 1.0e-10)
+            {
                 QAssert.Fail("Convolution(0)\n"
                              + "    calculated: " + calculated + "\n"
                              + "    expected:   " + expected);
+            }
 
             // 1
             calculated = ft[1].Real / nFrq;
             expected = (x[0] * x[1] + x[1] * x[2]).Real;
             if (System.Math.Abs(calculated - expected) > 1.0e-10)
+            {
                 QAssert.Fail("Convolution(1)\n"
                              + "    calculated: " + calculated + "\n"
                              + "    expected:   " + expected);
+            }
 
             // 2
             calculated = ft[2].Real / nFrq;
             expected = (x[0] * x[2]).Real;
             if (System.Math.Abs(calculated - expected) > 1.0e-10)
+            {
                 QAssert.Fail("Convolution(1)\n"
                              + "    calculated: " + calculated + "\n"
                              + "    expected:   " + expected);
-
+            }
         }
     }
 }

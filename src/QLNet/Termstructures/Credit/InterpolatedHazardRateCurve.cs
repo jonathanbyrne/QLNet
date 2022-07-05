@@ -16,98 +16,121 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Math;
 using QLNet.Patterns;
 using QLNet.Quotes;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Termstructures.Credit
 {
-    [JetBrains.Annotations.PublicAPI] public class InterpolatedHazardRateCurve<Interpolator> : HazardRateStructure, InterpolatedCurve
-      where Interpolator : IInterpolationFactory, new()
+    [PublicAPI]
+    public class InterpolatedHazardRateCurve<Interpolator> : HazardRateStructure, InterpolatedCurve
+        where Interpolator : IInterpolationFactory, new()
     {
         public InterpolatedHazardRateCurve(List<Date> dates, List<double> hazardRates, DayCounter dayCounter, Calendar cal = null,
-                                           List<Handle<Quote>> jumps = null, List<Date> jumpDates = null, Interpolator interpolator = default)
-           : base(dates[0], cal, dayCounter, jumps, jumpDates)
+            List<Handle<Quote>> jumps = null, List<Date> jumpDates = null, Interpolator interpolator = default)
+            : base(dates[0], cal, dayCounter, jumps, jumpDates)
         {
             dates_ = dates;
             times_ = new List<double>();
             data_ = hazardRates;
 
             if (interpolator == null)
+            {
                 interpolator_ = FastActivator<Interpolator>.Create();
+            }
             else
+            {
                 interpolator_ = interpolator;
+            }
 
             initialize();
         }
 
         public InterpolatedHazardRateCurve(List<Date> dates, List<double> hazardRates, DayCounter dayCounter, Calendar calendar,
-                                           Interpolator interpolator)
-           : base(dates[0], calendar, dayCounter)
+            Interpolator interpolator)
+            : base(dates[0], calendar, dayCounter)
         {
             dates_ = dates;
             times_ = new List<double>();
             data_ = hazardRates;
             if (interpolator == null)
+            {
                 interpolator_ = FastActivator<Interpolator>.Create();
+            }
             else
+            {
                 interpolator_ = interpolator;
+            }
+
             initialize();
         }
 
         public InterpolatedHazardRateCurve(List<Date> dates, List<double> hazardRates, DayCounter dayCounter, Interpolator interpolator)
-           : base(dates[0], null, dayCounter)
+            : base(dates[0], null, dayCounter)
         {
             dates_ = dates;
             if (interpolator == null)
+            {
                 interpolator_ = FastActivator<Interpolator>.Create();
+            }
             else
+            {
                 interpolator_ = interpolator;
+            }
+
             initialize();
         }
 
-
-        public List<double> hazardRates() => data_;
-
         protected InterpolatedHazardRateCurve(DayCounter dc,
-                                              List<Handle<Quote>> jumps = null,
-                                              List<Date> jumpDates = null,
-                                              Interpolator interpolator = default)
-           : base(dc, jumps, jumpDates)
-        { }
+            List<Handle<Quote>> jumps = null,
+            List<Date> jumpDates = null,
+            Interpolator interpolator = default)
+            : base(dc, jumps, jumpDates)
+        {
+        }
 
         protected InterpolatedHazardRateCurve(Date referenceDate, DayCounter dc,
-                                              List<Handle<Quote>> jumps = null,
-                                              List<Date> jumpDates = null,
-                                              Interpolator interpolator = default)
-           : base(referenceDate, null, dc, jumps, jumpDates)
-        { }
+            List<Handle<Quote>> jumps = null,
+            List<Date> jumpDates = null,
+            Interpolator interpolator = default)
+            : base(referenceDate, null, dc, jumps, jumpDates)
+        {
+        }
 
         protected InterpolatedHazardRateCurve(int settlementDays, Calendar cal, DayCounter dc,
-                                              List<Handle<Quote>> jumps = null,
-                                              List<Date> jumpDates = null,
-                                              Interpolator interpolator = default)
-           : base(settlementDays, cal, dc, jumps, jumpDates)
-        { }
+            List<Handle<Quote>> jumps = null,
+            List<Date> jumpDates = null,
+            Interpolator interpolator = default)
+            : base(settlementDays, cal, dc, jumps, jumpDates)
+        {
+        }
+
+        public List<double> hazardRates() => data_;
 
         // DefaultProbabilityTermStructure implementation
         protected override double hazardRateImpl(double t)
         {
             if (t <= times_.Last())
+            {
                 return interpolation_.value(t, true);
+            }
 
             // flat hazard rate extrapolation
             return data_.Last();
         }
+
         protected override double survivalProbabilityImpl(double t)
         {
             if (t.IsEqual(0.0))
+            {
                 return 1.0;
+            }
 
             double integral;
             if (t <= times_.Last())
@@ -120,6 +143,7 @@ namespace QLNet.Termstructures.Credit
                 integral = interpolation_.primitive(times_.Last(), true)
                            + data_.Last() * (t - times_.Last());
             }
+
             return System.Math.Exp(-integral);
         }
 
@@ -134,7 +158,7 @@ namespace QLNet.Termstructures.Credit
                 Utils.QL_REQUIRE(dates_[i] > dates_[i - 1], () => "invalid date (" + dates_[i] + ", vs " + dates_[i - 1] + ")");
                 times_.Add(dayCounter().yearFraction(dates_[0], dates_[i]));
                 Utils.QL_REQUIRE(!Utils.close(times_[i], times_[i - 1]), () => "two dates correspond to the same time " +
-                                 "under this curve's day count convention");
+                                                                               "under this curve's day count convention");
                 Utils.QL_REQUIRE(data_[i] >= 0.0, () => "negative hazard rate");
             }
 
@@ -145,26 +169,33 @@ namespace QLNet.Termstructures.Credit
         #region InterpolatedCurve
 
         public List<double> times_ { get; set; }
+
         public List<double> times() => times_;
 
         public List<Date> dates_ { get; set; }
+
         public List<Date> dates() => dates_;
 
         public Date maxDate_ { get; set; }
+
         public override Date maxDate()
         {
             if (maxDate_ != null)
+            {
                 return maxDate_;
+            }
 
             return dates_.Last();
         }
 
         public List<double> data_ { get; set; }
+
         public List<double> discounts() => data_;
 
         public List<double> data() => discounts();
 
         public Interpolation interpolation_ { get; set; }
+
         public IInterpolationFactory interpolator_ { get; set; }
 
         public Dictionary<Date, double> nodes()
@@ -188,6 +219,7 @@ namespace QLNet.Termstructures.Credit
             copy.setupInterpolation();
             return copy;
         }
+
         #endregion
     }
 }

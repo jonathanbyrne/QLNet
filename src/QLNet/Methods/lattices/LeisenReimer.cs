@@ -1,12 +1,16 @@
-﻿namespace QLNet.Methods.lattices
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Methods.lattices
 {
-    [JetBrains.Annotations.PublicAPI] public class LeisenReimer : BinomialTree<LeisenReimer>, ITreeFactory<LeisenReimer>
+    [PublicAPI]
+    public class LeisenReimer : BinomialTree<LeisenReimer>, ITreeFactory<LeisenReimer>
     {
         protected double up_, down_, pu_, pd_;
 
         // parameterless constructor is requried for generics
         public LeisenReimer()
-        { }
+        {
+        }
 
         public LeisenReimer(StochasticProcess1D process, double end, int steps, double strike)
             : base(process, end, steps % 2 != 0 ? steps : steps + 1)
@@ -23,10 +27,10 @@
             down_ = (ermqdt - pu_ * up_) / (1.0 - pu_);
         }
 
-        public override double underlying(int i, int index) => x0_ * System.Math.Pow(down_, i - index) * System.Math.Pow(up_, index);
+        public LeisenReimer factory(StochasticProcess1D process, double end, int steps, double strike) => new LeisenReimer(process, end, steps, strike);
 
         public override double probability(int i, int j, int branch) => branch == 1 ? pu_ : pd_;
 
-        public LeisenReimer factory(StochasticProcess1D process, double end, int steps, double strike) => new LeisenReimer(process, end, steps, strike);
+        public override double underlying(int i, int index) => x0_ * System.Math.Pow(down_, i - index) * System.Math.Pow(up_, index);
     }
 }

@@ -13,16 +13,12 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.processes;
-using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
-using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using QLNet.Termstructures.Yield;
 
 namespace QLNet.Pricingengines.Forward
@@ -36,10 +32,16 @@ namespace QLNet.Pricingengines.Forward
         - the correctness of the returned greeks is tested by
           reproducing numerical derivatives.
     */
-    [JetBrains.Annotations.PublicAPI] public class ForwardVanillaEngine : GenericEngine<ForwardVanillaOption.Arguments, OneAssetOption.Results>
+    [PublicAPI]
+    public class ForwardVanillaEngine : GenericEngine<ForwardVanillaOption.Arguments, OneAssetOption.Results>
     {
-
         public delegate IPricingEngine GetOriginalEngine(GeneralizedBlackScholesProcess process);
+
+        protected GetOriginalEngine getOriginalEngine_;
+        protected QLNet.Option.Arguments originalArguments_;
+        protected IPricingEngine originalEngine_;
+        protected OneAssetOption.Results originalResults_;
+        protected GeneralizedBlackScholesProcess process_;
 
         public ForwardVanillaEngine(GeneralizedBlackScholesProcess process, GetOriginalEngine getEngine)
         {
@@ -47,55 +49,12 @@ namespace QLNet.Pricingengines.Forward
             process_.registerWith(update);
             getOriginalEngine_ = getEngine;
         }
+
         public override void calculate()
         {
             setup();
             originalEngine_.calculate();
             getOriginalResults();
-        }
-
-        protected void setup()
-        {
-            var argumentsPayoff = arguments_.payoff as StrikedTypePayoff;
-            Utils.QL_REQUIRE(argumentsPayoff != null, () => "wrong payoff given");
-
-            StrikedTypePayoff payoff = new PlainVanillaPayoff(argumentsPayoff.optionType(),
-                                                              arguments_.moneyness * process_.x0());
-
-            // maybe the forward value is "better", in some fashion
-            // the right level is needed in order to interpolate
-            // the vol
-            var spot = process_.stateVariable();
-            Utils.QL_REQUIRE(spot.link.value() >= 0.0, () => "negative or null underlting given");
-            var dividendYield = new Handle<YieldTermStructure>(
-               new ImpliedTermStructure(process_.dividendYield(), arguments_.resetDate));
-            var riskFreeRate = new Handle<YieldTermStructure>(
-               new ImpliedTermStructure(process_.riskFreeRate(), arguments_.resetDate));
-            // The following approach is ok if the vol is at most
-            // time dependant. It is plain wrong if it is asset dependant.
-            // In the latter case the right solution would be stochastic
-            // volatility or at least local volatility (which unfortunately
-            // implies an unrealistic time-decreasing smile)
-            var blackVolatility = new Handle<BlackVolTermStructure>(
-               new ImpliedVolTermStructure(process_.blackVolatility(), arguments_.resetDate));
-
-            var fwdProcess = new GeneralizedBlackScholesProcess(spot, dividendYield,
-                                                                                           riskFreeRate, blackVolatility);
-
-
-            originalEngine_ = getOriginalEngine_(fwdProcess);
-            originalEngine_.reset();
-
-            originalArguments_ = originalEngine_.getArguments() as QLNet.Option.Arguments;
-            Utils.QL_REQUIRE(originalArguments_ != null, () => "wrong engine ExerciseType");
-            originalResults_ = originalEngine_.getResults() as OneAssetOption.Results;
-            Utils.QL_REQUIRE(originalResults_ != null, () => "wrong engine ExerciseType");
-
-            originalArguments_.payoff = payoff;
-            originalArguments_.exercise = arguments_.exercise;
-
-            originalArguments_.validate();
-
         }
 
         protected virtual void getOriginalResults()
@@ -110,26 +69,69 @@ namespace QLNet.Pricingengines.Forward
             if (originalResults_.delta != null && originalResults_.strikeSensitivity != null)
             {
                 results_.delta = discQ * (originalResults_.delta +
-                                               arguments_.moneyness * originalResults_.strikeSensitivity);
+                                          arguments_.moneyness * originalResults_.strikeSensitivity);
             }
+
             results_.gamma = 0.0;
-            results_.theta = process_.dividendYield().link.
-                                  zeroRate(arguments_.resetDate, divdc, Compounding.Continuous, Frequency.NoFrequency).value()
-                                  * results_.value;
+            results_.theta = process_.dividendYield().link.zeroRate(arguments_.resetDate, divdc, Compounding.Continuous, Frequency.NoFrequency).value()
+                             * results_.value;
             if (originalResults_.vega != null)
+            {
                 results_.vega = discQ * originalResults_.vega;
+            }
+
             if (originalResults_.rho != null)
+            {
                 results_.rho = discQ * originalResults_.rho;
+            }
+
             if (originalResults_.dividendRho != null)
             {
                 results_.dividendRho = -resetTime * results_.value
-                                            + discQ * originalResults_.dividendRho;
+                                       + discQ * originalResults_.dividendRho;
             }
         }
-        protected GeneralizedBlackScholesProcess process_;
-        protected IPricingEngine originalEngine_;
-        protected QLNet.Option.Arguments originalArguments_;
-        protected OneAssetOption.Results originalResults_;
-        protected GetOriginalEngine getOriginalEngine_;
+
+        protected void setup()
+        {
+            var argumentsPayoff = arguments_.payoff as StrikedTypePayoff;
+            Utils.QL_REQUIRE(argumentsPayoff != null, () => "wrong payoff given");
+
+            StrikedTypePayoff payoff = new PlainVanillaPayoff(argumentsPayoff.optionType(),
+                arguments_.moneyness * process_.x0());
+
+            // maybe the forward value is "better", in some fashion
+            // the right level is needed in order to interpolate
+            // the vol
+            var spot = process_.stateVariable();
+            Utils.QL_REQUIRE(spot.link.value() >= 0.0, () => "negative or null underlting given");
+            var dividendYield = new Handle<YieldTermStructure>(
+                new ImpliedTermStructure(process_.dividendYield(), arguments_.resetDate));
+            var riskFreeRate = new Handle<YieldTermStructure>(
+                new ImpliedTermStructure(process_.riskFreeRate(), arguments_.resetDate));
+            // The following approach is ok if the vol is at most
+            // time dependant. It is plain wrong if it is asset dependant.
+            // In the latter case the right solution would be stochastic
+            // volatility or at least local volatility (which unfortunately
+            // implies an unrealistic time-decreasing smile)
+            var blackVolatility = new Handle<BlackVolTermStructure>(
+                new ImpliedVolTermStructure(process_.blackVolatility(), arguments_.resetDate));
+
+            var fwdProcess = new GeneralizedBlackScholesProcess(spot, dividendYield,
+                riskFreeRate, blackVolatility);
+
+            originalEngine_ = getOriginalEngine_(fwdProcess);
+            originalEngine_.reset();
+
+            originalArguments_ = originalEngine_.getArguments() as QLNet.Option.Arguments;
+            Utils.QL_REQUIRE(originalArguments_ != null, () => "wrong engine ExerciseType");
+            originalResults_ = originalEngine_.getResults() as OneAssetOption.Results;
+            Utils.QL_REQUIRE(originalResults_ != null, () => "wrong engine ExerciseType");
+
+            originalArguments_.payoff = payoff;
+            originalArguments_.exercise = arguments_.exercise;
+
+            originalArguments_.validate();
+        }
     }
 }

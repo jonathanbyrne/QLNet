@@ -19,8 +19,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Time;
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -55,18 +55,16 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class Japan : Calendar
+    [PublicAPI]
+    public class Japan : Calendar
     {
-        public Japan() : base(Impl.Singleton) { }
-
-        class Impl : Calendar
+        private class Impl : Calendar
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "Japan";
-
-            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -82,8 +80,8 @@ namespace QLNet.Time.Calendars
                 var moving_amount = (y - 2000) * diff_per_year;
                 var number_of_leap_years = (y - 2000) / 4 + (y - 2000) / 100 - (y - 2000) / 400;
                 var ve = (int)(exact_vernal_equinox_time + moving_amount - number_of_leap_years); // vernal equinox day
-                var ae = (int)(exact_autumnal_equinox_time + moving_amount - number_of_leap_years);   // autumnal equinox day
-                                                                                                      // checks
+                var ae = (int)(exact_autumnal_equinox_time + moving_amount - number_of_leap_years); // autumnal equinox day
+                // checks
                 if (isWeekend(w)
                     // New Year's Day
                     || d == 1 && m == Month.January
@@ -94,9 +92,9 @@ namespace QLNet.Time.Calendars
                     // Coming of Age Day (2nd Monday in January),
                     // was January 15th until 2000
                     || w == DayOfWeek.Monday && d >= 8 && d <= 14 && m == Month.January
-                        && y >= 2000
+                    && y >= 2000
                     || (d == 15 || d == 16 && w == DayOfWeek.Monday) && m == Month.January
-                        && y < 2000
+                                                                     && y < 2000
                     // National Foundation Day
                     || (d == 11 || d == 12 && w == DayOfWeek.Monday) && m == Month.February
                     // Emperor's Birthday (Emperor Naruhito)
@@ -120,7 +118,7 @@ namespace QLNet.Time.Calendars
                     // July 23rd in 2020 due to Olympics games
                     // July 22nd in 2021 due to Olympics games
                     || w == DayOfWeek.Monday && d >= 15 && d <= 21 && m == Month.July
-                        && (y >= 2003 && y < 2020 || y >= 2022)
+                    && (y >= 2003 && y < 2020 || y >= 2022)
                     || (d == 20 || d == 21 && w == DayOfWeek.Monday) && m == Month.July && y >= 1996 && y < 2003
                     || d == 23 && m == Month.July && y == 2020
                     || d == 22 && m == Month.July && y == 2021
@@ -144,7 +142,7 @@ namespace QLNet.Time.Calendars
                     // July 24th in 2020 due to Olympics games
                     // July 23rd in 2021 due to Olympics games
                     || w == DayOfWeek.Monday && d >= 8 && d <= 14 && m == Month.October
-                        && (y >= 2000 && y < 2020 || y >= 2022)
+                    && (y >= 2000 && y < 2020 || y >= 2022)
                     || (d == 10 || d == 11 && w == DayOfWeek.Monday) && m == Month.October && y < 2000
                     || d == 24 && m == Month.July && y == 2020
                     || d == 23 && m == Month.July && y == 2021
@@ -171,10 +169,20 @@ namespace QLNet.Time.Calendars
                     || d == 2 && m == Month.May && y == 2019
                     // Enthronement Ceremony (Emperor Naruhito)
                     || d == 22 && m == Month.October && y == 2019)
+                {
                     return false;
+                }
+
                 return true;
             }
+
+            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
+
+            public override string name() => "Japan";
+        }
+
+        public Japan() : base(Impl.Singleton)
+        {
         }
     }
 }
-

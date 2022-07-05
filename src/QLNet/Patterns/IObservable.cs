@@ -17,12 +17,17 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Patterns
 {
-    [JetBrains.Annotations.PublicAPI] public interface IObservable
+    [PublicAPI]
+    public interface IObservable
     {
-        event Callback notifyObserversEvent;
         void registerWith(Callback handler);
+
         void unregisterWith(Callback handler);
+
+        event Callback notifyObserversEvent;
     }
 }

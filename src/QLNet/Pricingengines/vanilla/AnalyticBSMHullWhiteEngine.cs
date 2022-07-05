@@ -14,11 +14,11 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Models.Shortrate.Onefactormodels;
 using QLNet.processes;
 using QLNet.Termstructures.Volatility.equityfx;
-using System;
 
 namespace QLNet.Pricingengines.vanilla
 {
@@ -32,13 +32,17 @@ namespace QLNet.Pricingengines.vanilla
         \test the correctness of the returned value is tested by
               reproducing results available in web/literature
     */
-    [JetBrains.Annotations.PublicAPI] public class AnalyticBSMHullWhiteEngine : GenericModelEngine<HullWhite, QLNet.Option.Arguments,
-       OneAssetOption.Results>
+    [PublicAPI]
+    public class AnalyticBSMHullWhiteEngine : GenericModelEngine<HullWhite, QLNet.Option.Arguments,
+        OneAssetOption.Results>
     {
+        private GeneralizedBlackScholesProcess process_;
+        private double rho_;
+
         public AnalyticBSMHullWhiteEngine(double equityShortRateCorrelation,
-                                          GeneralizedBlackScholesProcess process,
-                                          HullWhite model)
-           : base(model)
+            GeneralizedBlackScholesProcess process,
+            HullWhite model)
+            : base(model)
         {
             rho_ = equityShortRateCorrelation;
             process_ = process;
@@ -56,7 +60,7 @@ namespace QLNet.Pricingengines.vanilla
             var exercise = arguments_.exercise;
 
             var t = process_.riskFreeRate().link.dayCounter().yearFraction(process_.riskFreeRate().link.referenceDate(),
-                                                                              exercise.lastDate());
+                exercise.lastDate());
 
             var a = model_.link.parameters()[0];
             var sigma = model_.link.parameters()[1];
@@ -80,13 +84,13 @@ namespace QLNet.Pricingengines.vanilla
             }
 
             var volTS = new Handle<BlackVolTermStructure>(
-               new ShiftedBlackVolTermStructure(varianceOffset, process_.blackVolatility()));
+                new ShiftedBlackVolTermStructure(varianceOffset, process_.blackVolatility()));
 
             var adjProcess =
-               new GeneralizedBlackScholesProcess(process_.stateVariable(),
-                                                  process_.dividendYield(),
-                                                  process_.riskFreeRate(),
-                                                  volTS);
+                new GeneralizedBlackScholesProcess(process_.stateVariable(),
+                    process_.dividendYield(),
+                    process_.riskFreeRate(),
+                    volTS);
 
             var bsmEngine = new AnalyticEuropeanEngine(adjProcess);
 
@@ -96,10 +100,6 @@ namespace QLNet.Pricingengines.vanilla
             bsmEngine.calculate();
 
             results_ = bsmEngine.getResults() as OneAssetOption.Results;
-
         }
-
-        private double rho_;
-        private GeneralizedBlackScholesProcess process_;
     }
 }

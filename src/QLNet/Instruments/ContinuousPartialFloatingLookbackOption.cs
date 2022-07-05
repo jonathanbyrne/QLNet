@@ -1,14 +1,18 @@
-﻿using QLNet.Time;
+﻿using JetBrains.Annotations;
+using QLNet.Time;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class ContinuousPartialFloatingLookbackOption : ContinuousFloatingLookbackOption
+    [PublicAPI]
+    public class ContinuousPartialFloatingLookbackOption : ContinuousFloatingLookbackOption
     {
         //! %Arguments for continuous partial floating lookback option calculation
         public new class Arguments : ContinuousFloatingLookbackOption.Arguments
         {
             public double lambda { get; set; }
+
             public Date lookbackPeriodEnd { get; set; }
+
             public override void validate()
             {
                 base.validate();
@@ -36,7 +40,11 @@ namespace QLNet.Instruments
         //! %Continuous partial floating lookback %engine base class
         public new class Engine : GenericEngine<Arguments,
             Results>
-        { }
+        {
+        }
+
+        protected double lambda_;
+        protected Date lookbackPeriodEnd_;
 
         public ContinuousPartialFloatingLookbackOption(double minmax, double lambda,
             Date lookbackPeriodEnd, TypePayoff payoff, Exercise exercise)
@@ -45,6 +53,7 @@ namespace QLNet.Instruments
             lambda_ = lambda;
             lookbackPeriodEnd_ = lookbackPeriodEnd;
         }
+
         public override void setupArguments(IPricingEngineArguments args)
         {
             base.setupArguments(args);
@@ -54,8 +63,5 @@ namespace QLNet.Instruments
             moreArgs.lambda = lambda_;
             moreArgs.lookbackPeriodEnd = lookbackPeriodEnd_;
         }
-
-        protected double lambda_;
-        protected Date lookbackPeriodEnd_;
     }
 }

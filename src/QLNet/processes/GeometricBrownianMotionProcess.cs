@@ -17,6 +17,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.processes
 {
     //! Geometric brownian-motion process
@@ -27,24 +29,25 @@ namespace QLNet.processes
 
         \ingroup processes
     */
-    [JetBrains.Annotations.PublicAPI] public class GeometricBrownianMotionProcess : StochasticProcess1D
+    [PublicAPI]
+    public class GeometricBrownianMotionProcess : StochasticProcess1D
     {
         protected double initialValue_;
         protected double mue_;
         protected double sigma_;
 
         public GeometricBrownianMotionProcess(double initialValue, double mue, double sigma)
-           : base(new EulerDiscretization())
+            : base(new EulerDiscretization())
         {
             initialValue_ = initialValue;
             mue_ = mue;
             sigma_ = sigma;
         }
 
-        public override double x0() => initialValue_;
+        public override double diffusion(double t, double x) => sigma_ * x;
 
         public override double drift(double t, double x) => mue_ * x;
 
-        public override double diffusion(double t, double x) => sigma_ * x;
+        public override double x0() => initialValue_;
     }
 }

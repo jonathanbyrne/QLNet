@@ -17,8 +17,6 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using System;
-
 namespace QLNet.Methods.lattices
 {
     // factory to create exact versions of trees
@@ -35,27 +33,29 @@ namespace QLNet.Methods.lattices
             branches = 2
         }
 
-        protected double x0_, driftPerStep_;
         protected double dt_;
+        protected double x0_, driftPerStep_;
 
         // parameterless constructor is requried for generics
         protected BinomialTree()
-        { }
+        {
+        }
 
         protected BinomialTree(StochasticProcess1D process, double end, int steps)
-           : base(steps + 1)
+            : base(steps + 1)
         {
             x0_ = process.x0();
             dt_ = end / steps;
             driftPerStep_ = process.drift(0.0, x0_) * dt_;
         }
 
-        public int size(int i) => i + 1;
+        public abstract double probability(int x, int y, int z);
+
+        public abstract double underlying(int i, int index);
 
         public int descendant(int x, int index, int branch) => index + branch;
 
-        public abstract double underlying(int i, int index);
-        public abstract double probability(int x, int y, int z);
+        public int size(int i) => i + 1;
     }
 
     //! Base class for equal probabilities binomial tree

@@ -17,6 +17,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Patterns
 {
     //! %observable and assignable proxy to concrete value
@@ -29,8 +31,11 @@ namespace QLNet.Patterns
               would necessarily bypass the notification code; client
               code should modify the value via re-assignment instead.
     */
-    [JetBrains.Annotations.PublicAPI] public class ObservableValue<T> : IObservable where T : new()
+    [PublicAPI]
+    public class ObservableValue<T> : IObservable where T : new()
     {
+        // Subjects, i.e. observables, should define interface internally like follows.
+        private readonly WeakEventSource eventSource = new WeakEventSource();
         private T value_;
 
         public ObservableValue()
@@ -48,7 +53,6 @@ namespace QLNet.Patterns
             value_ = t.value_;
         }
 
-
         // controlled assignment
         public ObservableValue<T> Assign(T t)
         {
@@ -64,22 +68,28 @@ namespace QLNet.Patterns
             return this;
         }
 
+        public void registerWith(Callback handler)
+        {
+            notifyObserversEvent += handler;
+        }
+
+        public void unregisterWith(Callback handler)
+        {
+            notifyObserversEvent -= handler;
+        }
+
         //! explicit inspector
         public T value() => value_;
 
-        // Subjects, i.e. observables, should define interface internally like follows.
-        private readonly WeakEventSource eventSource = new WeakEventSource();
+        protected void notifyObservers()
+        {
+            eventSource.Raise();
+        }
+
         public event Callback notifyObserversEvent
         {
             add => eventSource.Subscribe(value);
             remove => eventSource.Unsubscribe(value);
-        }
-
-        public void registerWith(Callback handler) { notifyObserversEvent += handler; }
-        public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
-        protected void notifyObservers()
-        {
-            eventSource.Raise();
         }
     }
 }

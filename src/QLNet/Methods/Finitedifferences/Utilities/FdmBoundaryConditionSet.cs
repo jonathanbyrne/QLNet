@@ -17,14 +17,14 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Methods.Finitedifferences.Operators;
-using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Methods.Finitedifferences.Operators;
 
 namespace QLNet.Methods.Finitedifferences.Utilities
 {
-    [JetBrains.Annotations.PublicAPI] public class FdmBoundaryConditionSet : List<BoundaryCondition<FdmLinearOp>>
+    [PublicAPI]
+    public class FdmBoundaryConditionSet : List<BoundaryCondition<FdmLinearOp>>
     {
-
     }
 }

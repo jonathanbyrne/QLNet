@@ -17,14 +17,14 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
 using QLNet.Math;
 using QLNet.Math.Solvers1d;
 using QLNet.Patterns;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.Optionlet;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Models
 {
@@ -33,14 +33,38 @@ namespace QLNet.Models
     {
         public enum CalibrationErrorType
         {
-            RelativePriceError, PriceError, ImpliedVolError
+            RelativePriceError,
+            PriceError,
+            ImpliedVolError
         }
 
+        private class ImpliedVolatilityHelper : ISolver1d
+        {
+            private readonly CalibrationHelper helper_;
+            private readonly double value_;
+
+            public ImpliedVolatilityHelper(CalibrationHelper helper, double value)
+            {
+                helper_ = helper;
+                value_ = value;
+            }
+
+            public override double value(double x) => value_ - helper_.blackPrice(x);
+        }
+
+        protected IPricingEngine engine_;
+        protected double marketValue_;
+        protected double shift_;
+        protected Handle<YieldTermStructure> termStructure_;
+        protected Handle<Quote> volatility_;
+        protected VolatilityType volatilityType_;
+        private readonly CalibrationErrorType calibrationErrorType_;
+
         protected CalibrationHelper(Handle<Quote> volatility,
-                                    Handle<YieldTermStructure> termStructure,
-                                    CalibrationErrorType calibrationErrorType = CalibrationErrorType.RelativePriceError,
-                                    VolatilityType type = VolatilityType.ShiftedLognormal,
-                                    double shift = 0.0)
+            Handle<YieldTermStructure> termStructure,
+            CalibrationErrorType calibrationErrorType = CalibrationErrorType.RelativePriceError,
+            VolatilityType type = VolatilityType.ShiftedLognormal,
+            double shift = 0.0)
         {
             volatility_ = volatility;
             termStructure_ = termStructure;
@@ -52,19 +76,10 @@ namespace QLNet.Models
             termStructure_.registerWith(update);
         }
 
-        protected override void performCalculations()
-        {
-            marketValue_ = blackPrice(volatility_.link.value());
-        }
+        public abstract void addTimesTo(List<double> times);
 
-        //! returns the volatility Handle
-        public Handle<Quote> volatility() => volatility_;
-
-        //! returns the volatility ExerciseType
-        public VolatilityType volatilityType() => volatilityType_;
-
-        //! returns the actual price of the instrument (from volatility)
-        public double marketValue() { calculate(); return marketValue_; }
+        //! Black price given a volatility
+        public abstract double blackPrice(double volatility);
 
         //! returns the price of the instrument according to the model
         public abstract double modelValue();
@@ -83,22 +98,29 @@ namespace QLNet.Models
                     error = marketValue() - modelValue();
                     break;
                 case CalibrationErrorType.ImpliedVolError:
-                    {
-                        var minVol = volatilityType_ == VolatilityType.ShiftedLognormal ? 0.0010 : 0.00005;
-                        var maxVol = volatilityType_ == VolatilityType.ShiftedLognormal ? 10.0 : 0.50;
-                        var lowerPrice = blackPrice(minVol);
-                        var upperPrice = blackPrice(maxVol);
-                        var modelPrice = modelValue();
+                {
+                    var minVol = volatilityType_ == VolatilityType.ShiftedLognormal ? 0.0010 : 0.00005;
+                    var maxVol = volatilityType_ == VolatilityType.ShiftedLognormal ? 10.0 : 0.50;
+                    var lowerPrice = blackPrice(minVol);
+                    var upperPrice = blackPrice(maxVol);
+                    var modelPrice = modelValue();
 
-                        double implied;
-                        if (modelPrice <= lowerPrice)
-                            implied = 0.001;
-                        else if (modelPrice >= upperPrice)
-                            implied = 10.0;
-                        else
-                            implied = impliedVolatility(modelPrice, 1e-12, 5000, 0.001, 10);
-                        error = implied - volatility_.link.value();
+                    double implied;
+                    if (modelPrice <= lowerPrice)
+                    {
+                        implied = 0.001;
                     }
+                    else if (modelPrice >= upperPrice)
+                    {
+                        implied = 10.0;
+                    }
+                    else
+                    {
+                        implied = impliedVolatility(modelPrice, 1e-12, 5000, 0.001, 10);
+                    }
+
+                    error = implied - volatility_.link.value();
+                }
                     break;
                 default:
                     Utils.QL_FAIL("unknown Calibration Error Type");
@@ -106,51 +128,39 @@ namespace QLNet.Models
             }
 
             return error;
-
         }
-
-        public abstract void addTimesTo(List<double> times);
 
         //! Black volatility implied by the model
         public double impliedVolatility(double targetValue,
-                                        double accuracy, int maxEvaluations, double minVol, double maxVol)
+            double accuracy, int maxEvaluations, double minVol, double maxVol)
         {
-
             var f = new ImpliedVolatilityHelper(this, targetValue);
             var solver = new Brent();
             solver.setMaxEvaluations(maxEvaluations);
             return solver.solve(f, accuracy, volatility_.link.value(), minVol, maxVol);
         }
 
-        //! Black price given a volatility
-        public abstract double blackPrice(double volatility);
-
-        public void setPricingEngine(IPricingEngine engine) { engine_ = engine; }
-
-
-        protected double marketValue_;
-        protected Handle<Quote> volatility_;
-        protected Handle<YieldTermStructure> termStructure_;
-        protected IPricingEngine engine_;
-        protected VolatilityType volatilityType_;
-        protected double shift_;
-
-
-        private CalibrationErrorType calibrationErrorType_;
-
-        private class ImpliedVolatilityHelper : ISolver1d
+        //! returns the actual price of the instrument (from volatility)
+        public double marketValue()
         {
-            private CalibrationHelper helper_;
-            private double value_;
-
-            public ImpliedVolatilityHelper(CalibrationHelper helper, double value)
-            {
-                helper_ = helper;
-                value_ = value;
-            }
-
-            public override double value(double x) => value_ - helper_.blackPrice(x);
+            calculate();
+            return marketValue_;
         }
 
+        public void setPricingEngine(IPricingEngine engine)
+        {
+            engine_ = engine;
+        }
+
+        //! returns the volatility Handle
+        public Handle<Quote> volatility() => volatility_;
+
+        //! returns the volatility ExerciseType
+        public VolatilityType volatilityType() => volatilityType_;
+
+        protected override void performCalculations()
+        {
+            marketValue_ = blackPrice(volatility_.link.value());
+        }
     }
 }

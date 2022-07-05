@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
@@ -32,14 +33,20 @@ namespace QLNet.Cashflows
         growthOnly = false means i(T)/i(0), which is a bond-ExerciseType setting.
         growthOnly = true means i(T)/i(0) - 1, which is a swap-ExerciseType setting.
     */
-    [JetBrains.Annotations.PublicAPI] public class IndexedCashFlow : CashFlow
+    [PublicAPI]
+    public class IndexedCashFlow : CashFlow
     {
+        private Date baseDate_, fixingDate_, paymentDate_;
+        private bool growthOnly_;
+        private Index index_;
+        private double notional_;
+
         public IndexedCashFlow(double notional,
-                               Index index,
-                               Date baseDate,
-                               Date fixingDate,
-                               Date paymentDate,
-                               bool growthOnly = false)
+            Index index,
+            Date baseDate,
+            Date fixingDate,
+            Date paymentDate,
+            bool growthOnly = false)
         {
             notional_ = notional;
             index_ = index;
@@ -49,32 +56,29 @@ namespace QLNet.Cashflows
             growthOnly_ = growthOnly;
         }
 
-        public override Date date() => paymentDate_;
-
-        public virtual double notional() => notional_;
-
-        public virtual Date baseDate() => baseDate_;
-
-        public virtual Date fixingDate() => fixingDate_;
-
-        public virtual Index index() => index_;
-
-        public virtual bool growthOnly() => growthOnly_;
-
         public override double amount()
         {
             var I0 = index_.fixing(baseDate_);
             var I1 = index_.fixing(fixingDate_);
 
             if (growthOnly_)
+            {
                 return notional_ * (I1 / I0 - 1.0);
-            else
-                return notional_ * (I1 / I0);
+            }
 
+            return notional_ * (I1 / I0);
         }
-        private double notional_;
-        private Index index_;
-        private Date baseDate_, fixingDate_, paymentDate_;
-        private bool growthOnly_;
+
+        public virtual Date baseDate() => baseDate_;
+
+        public override Date date() => paymentDate_;
+
+        public virtual Date fixingDate() => fixingDate_;
+
+        public virtual bool growthOnly() => growthOnly_;
+
+        public virtual Index index() => index_;
+
+        public virtual double notional() => notional_;
     }
 }

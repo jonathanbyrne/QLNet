@@ -17,8 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using System;
-using System.Reflection;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.statistics
 {
@@ -43,8 +42,11 @@ namespace QLNet.Math.statistics
     /*! \test the correctness of the returned values is tested by
               checking them against numerical calculations.
     */
-    [JetBrains.Annotations.PublicAPI] public class SequenceStatistics : GenericSequenceStatistics<RiskStatistics>
+    [PublicAPI]
+    public class SequenceStatistics : GenericSequenceStatistics<RiskStatistics>
     {
-        public SequenceStatistics(int dimension) : base(dimension) { }
+        public SequenceStatistics(int dimension) : base(dimension)
+        {
+        }
     }
 }

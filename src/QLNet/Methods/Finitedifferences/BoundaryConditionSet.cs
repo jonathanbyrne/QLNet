@@ -1,6 +1,10 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Methods.Finitedifferences
 {
-    [JetBrains.Annotations.PublicAPI] public class BoundaryConditionSet : List<List<BoundaryCondition<IOperator>>> { }
+    [PublicAPI]
+    public class BoundaryConditionSet : List<List<BoundaryCondition<IOperator>>>
+    {
+    }
 }

@@ -1,16 +1,22 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
 
 namespace QLNet.Pricingengines.barrier
 {
-    [JetBrains.Annotations.PublicAPI] public class DiscretizedDermanKaniBarrierOption : DiscretizedAsset
+    [PublicAPI]
+    public class DiscretizedDermanKaniBarrierOption : DiscretizedAsset
     {
+        private DiscretizedBarrierOption unenhanced_;
+
         public DiscretizedDermanKaniBarrierOption(BarrierOption.Arguments args,
             StochasticProcess process, TimeGrid grid = null)
         {
             unenhanced_ = new DiscretizedBarrierOption(args, process, grid);
         }
+
+        public override List<double> mandatoryTimes() => unenhanced_.mandatoryTimes();
 
         public override void reset(int size)
         {
@@ -19,15 +25,13 @@ namespace QLNet.Pricingengines.barrier
             adjustValues();
         }
 
-        public override List<double> mandatoryTimes() => unenhanced_.mandatoryTimes();
-
         protected override void postAdjustValuesImpl()
         {
             unenhanced_.rollback(time());
 
             var grid = method().grid(time());
             adjustBarrier(values_, grid);
-            unenhanced_.checkBarrier(values_, grid);   // compute payoffs
+            unenhanced_.checkBarrier(values_, grid); // compute payoffs
         }
 
         private void adjustBarrier(Vector optvalues, Vector grid)
@@ -49,6 +53,7 @@ namespace QLNet.Pricingengines.barrier
                             optvalues[j + 1] = System.Math.Max(0.0, (ltob.GetValueOrDefault() * t1 + htob.GetValueOrDefault() * u1) / htol);
                         }
                     }
+
                     break;
                 case Barrier.Type.DownOut:
                     for (var j = 0; j < optvalues.size() - 1; ++j)
@@ -61,6 +66,7 @@ namespace QLNet.Pricingengines.barrier
                             optvalues[j + 1] = System.Math.Max(0.0, (a.GetValueOrDefault() + b.GetValueOrDefault()) / c);
                         }
                     }
+
                     break;
                 case Barrier.Type.UpIn:
                     for (var j = 0; j < optvalues.size() - 1; ++j)
@@ -75,6 +81,7 @@ namespace QLNet.Pricingengines.barrier
                             optvalues[j] = System.Math.Max(0.0, (ltob.GetValueOrDefault() * u + htob.GetValueOrDefault() * t) / htol); // derman std
                         }
                     }
+
                     break;
                 case Barrier.Type.UpOut:
                     for (var j = 0; j < optvalues.size() - 1; ++j)
@@ -87,9 +94,9 @@ namespace QLNet.Pricingengines.barrier
                             optvalues[j] = System.Math.Max(0.0, (a.GetValueOrDefault() + b.GetValueOrDefault()) / c);
                         }
                     }
+
                     break;
             }
         }
-        private DiscretizedBarrierOption unenhanced_;
     }
 }

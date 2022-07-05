@@ -17,24 +17,38 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.matrixutilities;
 using QLNet.Methods.Finitedifferences.Operators;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Schemes
 {
-    [JetBrains.Annotations.PublicAPI] public class ImplicitEulerScheme : IMixedScheme, ISchemeFactory
+    [PublicAPI]
+    public class ImplicitEulerScheme : IMixedScheme, ISchemeFactory
     {
-        public enum SolverType { BiCGstab, GMRES }
+        public enum SolverType
+        {
+            BiCGstab,
+            GMRES
+        }
 
-        public ImplicitEulerScheme() { }
+        protected BoundaryConditionSchemeHelper bcSet_;
+        protected double? dt_;
+        protected int iterations_;
+        protected FdmLinearOpComposite map_;
+        protected double relTol_;
+        protected SolverType solverType_;
+
+        public ImplicitEulerScheme()
+        {
+        }
+
         public ImplicitEulerScheme(FdmLinearOpComposite map,
-                                   List<BoundaryCondition<FdmLinearOp>> bcSet,
-                                   double relTol = 1e-8,
-                                   SolverType solverType = SolverType.BiCGstab)
+            List<BoundaryCondition<FdmLinearOp>> bcSet,
+            double relTol = 1e-8,
+            SolverType solverType = SolverType.BiCGstab)
         {
             dt_ = null;
             iterations_ = 0;
@@ -45,11 +59,17 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         }
 
         #region ISchemeFactory
+
         public IMixedScheme factory(object L, object bcs, object[] additionalFields = null) => new ImplicitEulerScheme(L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
 
         #endregion
 
+        public int numberOfIterations() => iterations_;
+
+        protected Vector apply(Vector r, double theta = 1.0) => r - theta * dt_.Value * map_.apply(r);
+
         #region IMixedScheme interface
+
         public void step(ref object a, double t, double theta = 1.0)
         {
             Utils.QL_REQUIRE(t - dt_.Value > -1e-8, () => "a step towards negative time given");
@@ -70,7 +90,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
                     BiCGStab.MatrixMult applyF = x => apply(x, theta);
 
                     var result =
-                       new BiCGStab(applyF, System.Math.Max(10, (a as Vector).Count), relTol_, preconditioner).solve(a as Vector, a as Vector);
+                        new BiCGStab(applyF, System.Math.Max(10, (a as Vector).Count), relTol_, preconditioner).solve(a as Vector, a as Vector);
 
                     iterations_ += result.Iterations;
                     a = result.X;
@@ -81,14 +101,17 @@ namespace QLNet.Methods.Finitedifferences.Schemes
                     GMRES.MatrixMult applyF = x => apply(x, theta);
 
                     var result =
-                       new GMRES(applyF, System.Math.Max(10, (a as Vector).Count) / 10, relTol_, preconditioner).solve(a as Vector, a as Vector);
+                        new GMRES(applyF, System.Math.Max(10, (a as Vector).Count) / 10, relTol_, preconditioner).solve(a as Vector, a as Vector);
 
                     iterations_ += result.Errors.Count;
                     a = result.X;
                 }
                 else
+                {
                     Utils.QL_FAIL("unknown/illegal solver ExerciseType");
+                }
             }
+
             bcSet_.applyAfterSolving(a as Vector);
         }
 
@@ -96,17 +119,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         {
             dt_ = dt;
         }
+
         #endregion
-
-        public int numberOfIterations() => iterations_;
-
-        protected Vector apply(Vector r, double theta = 1.0) => r - theta * dt_.Value * map_.apply(r);
-
-        protected double? dt_;
-        protected int iterations_;
-        protected double relTol_;
-        protected FdmLinearOpComposite map_;
-        protected BoundaryConditionSchemeHelper bcSet_;
-        protected SolverType solverType_;
     }
 }

@@ -19,41 +19,54 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Patterns;
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Patterns;
 using history_map = System.Collections.Generic.Dictionary<string, QLNet.Patterns.ObservableValue<QLNet.TimeSeries<double?>>>;
 
 namespace QLNet.Indexes
 {
     /// <summary>
-    /// global repository for past index fixings
-    /// <remarks>
-    /// Index names are case insensitive
-    /// </remarks>
+    ///     global repository for past index fixings
+    ///     <remarks>
+    ///         Index names are case insensitive
+    ///     </remarks>
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class IndexManager
+    [PublicAPI]
+    public class IndexManager
     {
+        private static history_map data_ = new history_map();
+        private static readonly IndexManager instance_ = new IndexManager();
+
+        private IndexManager()
+        {
+        }
 
         // Index manager can store a callback for missing fixings
         public static Func<InterestRateIndex, DateTime, double> MissingPastFixingCallBack { get; set; }
 
-        private static readonly IndexManager instance_ = new IndexManager();
-
         public static IndexManager instance() => instance_;
 
-        private IndexManager()
-        { }
+        /// <summary>
+        ///     clears ALL stored fixings
+        /// </summary>
+        public void clearHistories()
+        {
+            data_.Clear();
+        }
 
         /// <summary>
-        /// returns whether historical fixings were stored for the index
+        ///     clears the historical fixings of the index
         /// </summary>
         /// <param name="name"></param>
-        /// <returns></returns>
-        public bool hasHistory(string name) => data_.ContainsKey(name.ToUpper()) && data_[name.ToUpper()].value().Count > 0;
+        public void clearHistory(string name)
+        {
+            data_.Remove(name.ToUpper());
+        }
 
         /// <summary>
-        /// returns the (possibly empty) history of the index fixings
+        ///     returns the (possibly empty) history of the index fixings
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
@@ -64,8 +77,52 @@ namespace QLNet.Indexes
         }
 
         /// <summary>
-        /// Returns the history of the index fixings if the index exists
-        /// A return value indicates whether the index exists.
+        ///     returns whether historical fixings were stored for the index
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public bool hasHistory(string name) => data_.ContainsKey(name.ToUpper()) && data_[name.ToUpper()].value().Count > 0;
+
+        /// <summary>
+        ///     returns all names of the indexes for which fixings were stored
+        /// </summary>
+        /// <returns></returns>
+        public List<string> histories()
+        {
+            var t = new List<string>();
+            foreach (var s in data_.Keys)
+            {
+                t.Add(s);
+            }
+
+            return t;
+        }
+
+        /// <summary>
+        ///     observer notifying of changes in the index fixings;
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public ObservableValue<TimeSeries<double?>> notifier(string name)
+        {
+            checkExists(name);
+            return data_[name.ToUpper()];
+        }
+
+        /// <summary>
+        ///     stores the historical fixings of the index
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="history"></param>
+        public void setHistory(string name, TimeSeries<double?> history)
+        {
+            checkExists(name);
+            data_[name.ToUpper()].Assign(history);
+        }
+
+        /// <summary>
+        ///     Returns the history of the index fixings if the index exists
+        ///     A return value indicates whether the index exists.
         /// </summary>
         /// <param name="name">The index name</param>
         /// <param name="history">The history of the index. Populated with null if the index does not exist</param>
@@ -77,76 +134,21 @@ namespace QLNet.Indexes
                 history = getHistory(name);
                 return true;
             }
-            else
-            {
-                history = null;
-                return false;
-            }
+
+            history = null;
+            return false;
         }
 
         /// <summary>
-        /// stores the historical fixings of the index
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="history"></param>
-        public void setHistory(string name, TimeSeries<double?> history)
-        {
-            checkExists(name);
-            data_[name.ToUpper()].Assign(history);
-        }
-
-        /// <summary>
-        /// observer notifying of changes in the index fixings;
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public ObservableValue<TimeSeries<double?>> notifier(string name)
-        {
-            checkExists(name);
-            return data_[name.ToUpper()];
-        }
-
-        /// <summary>
-        /// returns all names of the indexes for which fixings were stored
-        /// </summary>
-        /// <returns></returns>
-        public List<string> histories()
-        {
-            var t = new List<string>();
-            foreach (var s in data_.Keys)
-                t.Add(s);
-            return t;
-        }
-
-        /// <summary>
-        /// clears the historical fixings of the index
-        /// </summary>
-        /// <param name="name"></param>
-        public void clearHistory(string name)
-        {
-            data_.Remove(name.ToUpper());
-        }
-
-        /// <summary>
-        /// clears ALL stored fixings
-        /// </summary>
-        public void clearHistories()
-        {
-            data_.Clear();
-        }
-
-        /// <summary>
-        /// checks whether index exists and adds it otherwise; for interal use only
+        ///     checks whether index exists and adds it otherwise; for interal use only
         /// </summary>
         /// <param name="name"></param>
         private void checkExists(string name)
         {
             if (!data_.ContainsKey(name.ToUpper()))
+            {
                 data_.Add(name.ToUpper(), new ObservableValue<TimeSeries<double?>>());
+            }
         }
-
-        private static history_map data_ = new history_map();
-
     }
-
 }

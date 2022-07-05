@@ -17,32 +17,29 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Patterns;
 
 namespace QLNet.Math.randomnumbers
 {
     // random number traits
-    [JetBrains.Annotations.PublicAPI] public class GenericPseudoRandom<URNG, IC> : IRSG where URNG : IRNGTraits, new() where IC : IValue, new()
+    [PublicAPI]
+    public class GenericPseudoRandom<URNG, IC> : IRSG where URNG : IRNGTraits, new() where IC : IValue, new()
     {
         // data
-        private static IC icInstance_ = FastActivator<IC>.Create();
+
+        public static IC icInstance { get; set; } = FastActivator<IC>.Create();
 
         // more traits
         public int allowsErrorEstimate => 1;
-
-        public static IC icInstance
-        {
-            get => icInstance_;
-            set => icInstance_ = value;
-        }
 
         // factory
         public IRNG make_sequence_generator(int dimension, ulong seed)
         {
             var g = new RandomSequenceGenerator<URNG>(dimension, seed);
-            return icInstance_ != null
-                    ? new InverseCumulativeRsg<RandomSequenceGenerator<URNG>, IC>(g, icInstance_)
-                    : new InverseCumulativeRsg<RandomSequenceGenerator<URNG>, IC>(g);
+            return icInstance != null
+                ? new InverseCumulativeRsg<RandomSequenceGenerator<URNG>, IC>(g, icInstance)
+                : new InverseCumulativeRsg<RandomSequenceGenerator<URNG>, IC>(g);
         }
     }
 

@@ -16,11 +16,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
 using QLNet.Math.integrals;
 using QLNet.Quotes;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Termstructures.Credit
 {
@@ -39,21 +39,6 @@ namespace QLNet.Termstructures.Credit
     */
     public abstract class HazardRateStructure : DefaultProbabilityTermStructure
     {
-        #region Constructors
-
-        protected HazardRateStructure(DayCounter dc = null, List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
-           : base(dc, jumps, jumpDates) { }
-
-        protected HazardRateStructure(Date referenceDate, Calendar cal = null, DayCounter dc = null,
-                                      List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
-           : base(referenceDate, cal, dc, jumps, jumpDates) { }
-
-        protected HazardRateStructure(int settlementDays, Calendar cal, DayCounter dc = null,
-                                      List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
-           : base(settlementDays, cal, dc, jumps, jumpDates) { }
-
-        #endregion
-
         #region Calculations
 
         // This method must be implemented in derived classes to
@@ -63,6 +48,27 @@ namespace QLNet.Termstructures.Credit
 
         //! hazard rate calculation
         protected abstract double hazardRateImpl(double t);
+
+        #endregion
+
+        #region Constructors
+
+        protected HazardRateStructure(DayCounter dc = null, List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
+            : base(dc, jumps, jumpDates)
+        {
+        }
+
+        protected HazardRateStructure(Date referenceDate, Calendar cal = null, DayCounter dc = null,
+            List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
+            : base(referenceDate, cal, dc, jumps, jumpDates)
+        {
+        }
+
+        protected HazardRateStructure(int settlementDays, Calendar cal, DayCounter dc = null,
+            List<Handle<Quote>> jumps = null, List<Date> jumpDates = null)
+            : base(settlementDays, cal, dc, jumps, jumpDates)
+        {
+        }
 
         #endregion
 

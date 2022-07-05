@@ -15,13 +15,20 @@
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math
 {
     //! %Cubic functional form
     /*! \f[ f(t) = \sum_{i=0}^n{c_i t^i} \f] */
-    [JetBrains.Annotations.PublicAPI] public class PolynomialFunction
+    [PublicAPI]
+    public class PolynomialFunction
     {
+        private List<double> c_, derC_, prC_;
+        private Matrix eqs_;
+        private double K_;
+        private int order_;
+
         public PolynomialFunction(List<double> coeff)
         {
             Utils.QL_REQUIRE(!coeff.empty(), () => "empty coefficient vector");
@@ -38,18 +45,35 @@ namespace QLNet.Math
                 prC_[i] = c_[i] / (i + 1);
                 derC_[i] = c_[i + 1] * (i + 1);
             }
+
             prC_[i] = c_[i] / (i + 1);
         }
 
-        //! function value at time t: \f[ f(t) = \sum_{i=0}^n{c_i t^i} \f]
-        public double value(double t)
+        public List<double> coefficients() => c_;
+
+        /*! coefficients of a PolynomialFunction defined as definite
+           derivative on a rolling window of length tau, with tau = t2-t */
+        public List<double> definiteDerivativeCoefficients(double t, double t2)
         {
-            double result = 0.0, tPower = 1.0;
-            for (var i = 0; i < order_; ++i)
-            {
-                result += c_[i] * tPower;
-                tPower *= t;
-            }
+            var k = new Vector(c_);
+            initializeEqs_(t, t2);
+            var coeff = Matrix.transpose(eqs_) * k;
+            List<double> result = new Vector(coeff);
+            return result;
+        }
+
+        /*! definite integral of the function between t1 and t2
+           \f[ \int_{t1}^{t2} f(t)dt \f] */
+        public double definiteIntegral(double t1, double t2) => primitive(t2) - primitive(t1);
+
+        /*! coefficients of a PolynomialFunction defined as definite
+           integral on a rolling window of length tau, with tau = t2-t */
+        public List<double> definiteIntegralCoefficients(double t, double t2)
+        {
+            var k = new Vector(c_);
+            initializeEqs_(t, t2);
+            var coeff = eqs_ * k;
+            var result = new List<double>(coeff);
             return result;
         }
 
@@ -63,8 +87,14 @@ namespace QLNet.Math
                 result += derC_[i] * tPower;
                 tPower *= t;
             }
+
             return result;
         }
+
+        public List<double> derivativeCoefficients() => derC_;
+
+        /*! Inspectors */
+        public int order() => order_;
 
         /*! indefinite integral of the function at time t
            \f[ \int f(t)dt = \sum_{i=0}^n{c_i t^{i+1} / (i+1)} + K \f] */
@@ -76,48 +106,25 @@ namespace QLNet.Math
                 result += prC_[i] * tPower;
                 tPower *= t;
             }
+
             return result;
         }
-
-        /*! definite integral of the function between t1 and t2
-           \f[ \int_{t1}^{t2} f(t)dt \f] */
-        public double definiteIntegral(double t1, double t2) => primitive(t2) - primitive(t1);
-
-        /*! Inspectors */
-        public int order() => order_;
-
-        public List<double> coefficients() => c_;
-
-        public List<double> derivativeCoefficients() => derC_;
 
         public List<double> primitiveCoefficients() => prC_;
 
-        /*! coefficients of a PolynomialFunction defined as definite
-           integral on a rolling window of length tau, with tau = t2-t */
-        public List<double> definiteIntegralCoefficients(double t, double t2)
+        //! function value at time t: \f[ f(t) = \sum_{i=0}^n{c_i t^i} \f]
+        public double value(double t)
         {
-            var k = new Vector(c_);
-            initializeEqs_(t, t2);
-            var coeff = eqs_ * k;
-            var result = new List<double>(coeff);
+            double result = 0.0, tPower = 1.0;
+            for (var i = 0; i < order_; ++i)
+            {
+                result += c_[i] * tPower;
+                tPower *= t;
+            }
+
             return result;
         }
 
-        /*! coefficients of a PolynomialFunction defined as definite
-           derivative on a rolling window of length tau, with tau = t2-t */
-        public List<double> definiteDerivativeCoefficients(double t, double t2)
-        {
-            var k = new Vector(c_);
-            initializeEqs_(t, t2);
-            var coeff = Matrix.transpose(eqs_) * k;
-            List<double> result = new Vector(coeff);
-            return result;
-        }
-
-        private int order_;
-        private List<double> c_, derC_, prC_;
-        private double K_;
-        private Matrix eqs_;
         private void initializeEqs_(double t, double t2)
         {
             var dt = t2 - t;
@@ -132,6 +139,5 @@ namespace QLNet.Math
                 }
             }
         }
-
     }
 }

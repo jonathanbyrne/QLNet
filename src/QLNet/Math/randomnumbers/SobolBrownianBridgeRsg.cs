@@ -13,21 +13,28 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
-using QLNet.Methods.montecarlo;
-using QLNet.Models.MarketModels.BrownianGenerators;
+
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Methods.montecarlo;
+using QLNet.Models.MarketModels.BrownianGenerators;
 
 namespace QLNet.Math.randomnumbers
 {
     // Interface class to map the functionality of SobolBrownianGenerator
     // to the "conventional" sequence generator interface
-    [JetBrains.Annotations.PublicAPI] public class SobolBrownianBridgeRsg : IRNG
+    [PublicAPI]
+    public class SobolBrownianBridgeRsg : IRNG
     {
+        private int factors_, steps_, dim_;
+        private SobolBrownianGenerator gen_;
+        private Sample<List<double>> seq_;
+
         public SobolBrownianBridgeRsg(int factors, int steps,
-                                      SobolBrownianGenerator.Ordering ordering = SobolBrownianGenerator.Ordering.Diagonal,
-                                      ulong seed = 0,
-                                      SobolRsg.DirectionIntegers directionIntegers = SobolRsg.DirectionIntegers.JoeKuoD7)
+            SobolBrownianGenerator.Ordering ordering = SobolBrownianGenerator.Ordering.Diagonal,
+            ulong seed = 0,
+            SobolRsg.DirectionIntegers directionIntegers = SobolRsg.DirectionIntegers.JoeKuoD7)
         {
             factors_ = factors;
             steps_ = steps;
@@ -35,6 +42,12 @@ namespace QLNet.Math.randomnumbers
             seq_ = new Sample<List<double>>(new InitializedList<double>(factors * steps), 1.0);
             gen_ = new SobolBrownianGenerator(factors, steps, ordering, seed, directionIntegers);
         }
+
+        public int dimension() => dim_;
+
+        public IRNG factory(int dimensionality, ulong seed) => throw new NotImplementedException();
+
+        public Sample<List<double>> lastSequence() => seq_;
 
         public Sample<List<double>> nextSequence()
         {
@@ -51,14 +64,5 @@ namespace QLNet.Math.randomnumbers
 
             return seq_;
         }
-        public Sample<List<double>> lastSequence() => seq_;
-
-        public IRNG factory(int dimensionality, ulong seed) => throw new NotImplementedException();
-
-        public int dimension() => dim_;
-
-        private int factors_, steps_, dim_;
-        private Sample<List<double>> seq_;
-        private SobolBrownianGenerator gen_;
     }
 }

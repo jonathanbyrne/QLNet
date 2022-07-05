@@ -16,15 +16,17 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Methods.Finitedifferences.Meshers;
-using System;
 
 namespace QLNet.Methods.Finitedifferences.Operators
 {
-    [JetBrains.Annotations.PublicAPI] public class SecondOrderMixedDerivativeOp : NinePointLinearOp
+    [PublicAPI]
+    public class SecondOrderMixedDerivativeOp : NinePointLinearOp
     {
         public SecondOrderMixedDerivativeOp(int d0, int d1, FdmMesher mesher)
-           : base(d0, d1, mesher)
+            : base(d0, d1, mesher)
         {
             var layout = mesher.layout();
             var endIter = layout.end();

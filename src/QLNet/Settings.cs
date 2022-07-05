@@ -18,82 +18,75 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System;
 using QLNet.Patterns;
 using QLNet.Time;
-using System;
 
 namespace QLNet
 {
     // we need only one instance of the class
     // we can not derive it from IObservable because the class is static
     public static class Settings
-   {
+    {
+        [ThreadStatic]
+        private static Date evaluationDate_;
 
-      [ThreadStatic]
-      private static Date evaluationDate_;
+        ////////////////////////////////////////////////////
+        // Observable interface
+        private static readonly WeakEventSource eventSource = new WeakEventSource();
 
-      [ThreadStatic]
-      private static bool includeReferenceDateEvents_;
+        [field: ThreadStatic]
+        public static bool enforcesTodaysHistoricFixings { get; set; }
 
-      [ThreadStatic]
-      private static bool enforcesTodaysHistoricFixings_;
+        [field: ThreadStatic]
+        public static bool includeReferenceDateEvents { get; set; }
 
-      [ThreadStatic]
-      private static bool? includeTodaysCashFlows_;
+        [field: ThreadStatic]
+        public static bool? includeTodaysCashFlows { get; set; }
 
-      public static Date evaluationDate()
-      {
-         if (evaluationDate_ == null)
-            evaluationDate_ = Date.Today;
-         return evaluationDate_;
-      }
+        public static void clearObservers()
+        {
+            eventSource.Clear();
+        }
 
+        public static Date evaluationDate()
+        {
+            if (evaluationDate_ == null)
+            {
+                evaluationDate_ = Date.Today;
+            }
 
-      public static void setEvaluationDate(Date d)
-      {
-         evaluationDate_ = d;
-         notifyObservers();
-      }
+            return evaluationDate_;
+        }
 
-      public static bool enforcesTodaysHistoricFixings
-      {
-         get => enforcesTodaysHistoricFixings_;
-         set => enforcesTodaysHistoricFixings_ = value;
-      }
+        public static void registerWith(Callback handler)
+        {
+            notifyObserversEvent += handler;
+        }
 
-      public static bool includeReferenceDateEvents
-      {
-         get => includeReferenceDateEvents_;
-         set => includeReferenceDateEvents_ = value;
-      }
+        public static void setEvaluationDate(Date d)
+        {
+            evaluationDate_ = d;
+            notifyObservers();
+        }
 
-      public static bool? includeTodaysCashFlows
-      {
-         get => includeTodaysCashFlows_;
-         set => includeTodaysCashFlows_ = value;
-      }
+        public static void unregisterWith(Callback handler)
+        {
+            notifyObserversEvent -= handler;
+        }
 
-      ////////////////////////////////////////////////////
-      // Observable interface
-      private static readonly WeakEventSource eventSource = new WeakEventSource();
-      public static event Callback notifyObserversEvent
-      {
-         add => eventSource.Subscribe(value);
-         remove => eventSource.Unsubscribe(value);
-      }
+        private static void notifyObservers()
+        {
+            eventSource.Raise();
+        }
 
-      public static void registerWith(Callback handler) { notifyObserversEvent += handler; }
-      public static void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
-      private static void notifyObservers()
-      {
-         eventSource.Raise();
-      }
+        public static event Callback notifyObserversEvent
+        {
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
+        }
+    }
 
-      public static void clearObservers()
-      {
-         eventSource.Clear();
-      }
-   }
-
-   // helper class to temporarily and safely change the settings
+    // helper class to temporarily and safely change the settings
 }

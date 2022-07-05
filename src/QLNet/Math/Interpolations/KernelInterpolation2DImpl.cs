@@ -1,9 +1,17 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class KernelInterpolation2DImpl<Kernel> : Interpolation2D.templateImpl where Kernel : IKernelFunction
+    [PublicAPI]
+    public class KernelInterpolation2DImpl<Kernel> : Interpolation2D.templateImpl where Kernel : IKernelFunction
     {
+        private Vector alphaVec_, yVec_;
+        private double invPrec_;
+        private Kernel kernel_;
+        private Matrix M_;
+        private int xySize_; // xSize_,ySize_,
+
         public KernelInterpolation2DImpl(List<double> xBegin, int size, List<double> yBegin, int ySize,
             Matrix zData, Kernel kernel)
             : base(xBegin, size, yBegin, ySize, zData)
@@ -23,14 +31,27 @@ namespace QLNet.Math.Interpolations
                 "Z value matrix has wrong number of columns");
         }
 
-        public override void calculate() { updateAlphaVec(); }
+        public override void calculate()
+        {
+            updateAlphaVec();
+        }
+
+        // the calculation will solve y=M*a for a.  Due to
+        // singularity or rounding errors the recalculation
+        // M*a may not give y. Here, a failure will be thrown if
+        // |M*a-y|>=invPrec_
+        public void setInverseResultPrecision(double invPrec)
+        {
+            invPrec_ = invPrec;
+        }
 
         public override double value(double x1, double x2)
         {
             var res = 0.0;
 
             Vector X = new Vector(2), Xn = new Vector(2);
-            X[0] = x1; X[1] = x2;
+            X[0] = x1;
+            X[1] = x2;
 
             var cnt = 0; // counter
 
@@ -44,18 +65,9 @@ namespace QLNet.Math.Interpolations
                     cnt++;
                 }
             }
+
             return res / gammaFunc(X);
         }
-
-        // the calculation will solve y=M*a for a.  Due to
-        // singularity or rounding errors the recalculation
-        // M*a may not give y. Here, a failure will be thrown if
-        // |M*a-y|>=invPrec_
-        public void setInverseResultPrecision(double invPrec) { invPrec_ = invPrec; }
-
-
-        // returns K(||X-Y||) where X,Y are vectors
-        private double kernelAbs(Vector X, Vector Y) => kernel_.value(Vector.Norm2(X - Y));
 
         private double gammaFunc(Vector X)
         {
@@ -74,6 +86,9 @@ namespace QLNet.Math.Interpolations
 
             return res;
         }
+
+        // returns K(||X-Y||) where X,Y are vectors
+        private double kernelAbs(Vector X, Vector Y) => kernel_.value(Vector.Norm2(X - Y));
 
         private void updateAlphaVec()
         {
@@ -106,11 +121,12 @@ namespace QLNet.Math.Interpolations
                             Xn[1] = yBegin_[jM];
                             M_[rowCnt, colCnt] = kernelAbs(Xk, Xn) * tmpVar;
                             colCnt++; // increase column counter
-                        }// end iM
-                    }// end jM
+                        } // end iM
+                    } // end jM
+
                     rowCnt++; // increase row counter
                 } // end i
-            }// end j
+            } // end j
 
             alphaVec_ = MatrixUtilities.qrSolve(M_, yVec_);
 
@@ -124,12 +140,5 @@ namespace QLNet.Math.Interpolations
                     "inversion failed in 2d kernel interpolation");
             }
         }
-
-        private int xySize_; // xSize_,ySize_,
-        private double invPrec_;
-        private Vector alphaVec_, yVec_;
-        private Matrix M_;
-        private Kernel kernel_;
-
     }
 }

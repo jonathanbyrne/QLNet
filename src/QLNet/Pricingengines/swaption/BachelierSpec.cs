@@ -1,17 +1,19 @@
-﻿using QLNet.Termstructures.Volatility.Optionlet;
+﻿using JetBrains.Annotations;
+using QLNet.Termstructures.Volatility.Optionlet;
 
 namespace QLNet.Pricingengines.swaption
 {
-    [JetBrains.Annotations.PublicAPI] public class BachelierSpec : ISwaptionEngineSpec
+    [PublicAPI]
+    public class BachelierSpec : ISwaptionEngineSpec
     {
         private VolatilityType type_;
-
-        public VolatilityType type() => type_;
 
         public BachelierSpec()
         {
             type_ = VolatilityType.Normal;
         }
+
+        public VolatilityType type() => type_;
 
         public double value(QLNet.Option.Type type, double strike, double atmForward, double stdDev, double annuity,
             double displacement = 0.0) =>

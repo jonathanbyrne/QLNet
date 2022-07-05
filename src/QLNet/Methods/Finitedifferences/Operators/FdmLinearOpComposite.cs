@@ -16,27 +16,27 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using System.Linq;
 using QLNet.Math;
 using QLNet.Math.matrixutilities;
 using QLNet.Methods.Finitedifferences.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Operators
 {
     public abstract class FdmLinearOpComposite : FdmLinearOp
     {
-        //! Time \f$t1 <= t2\f$ is required
-        public abstract void setTime(double t1, double t2);
+        public abstract Vector apply_direction(int direction, Vector r);
 
         public abstract Vector apply_mixed(Vector r);
 
-        public abstract Vector apply_direction(int direction, Vector r);
-        public abstract Vector solve_splitting(int direction, Vector r, double s);
         public abstract Vector preconditioner(Vector r, double s);
 
-        public virtual List<SparseMatrix> toMatrixDecomp() => null;
+        //! Time \f$t1 <= t2\f$ is required
+        public abstract void setTime(double t1, double t2);
+
+        public abstract Vector solve_splitting(int direction, Vector r, double s);
 
         public override SparseMatrix toMatrix()
         {
@@ -44,5 +44,7 @@ namespace QLNet.Methods.Finitedifferences.Operators
             var retVal = dcmp.accumulate(1, dcmp.Count, dcmp.First(), (a, b) => a + b);
             return retVal;
         }
+
+        public virtual List<SparseMatrix> toMatrixDecomp() => null;
     }
 }

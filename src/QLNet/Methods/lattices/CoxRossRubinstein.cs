@@ -1,10 +1,14 @@
-﻿namespace QLNet.Methods.lattices
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Methods.lattices
 {
-    [JetBrains.Annotations.PublicAPI] public class CoxRossRubinstein : EqualJumpsBinomialTree<CoxRossRubinstein>, ITreeFactory<CoxRossRubinstein>
+    [PublicAPI]
+    public class CoxRossRubinstein : EqualJumpsBinomialTree<CoxRossRubinstein>, ITreeFactory<CoxRossRubinstein>
     {
         // parameterless constructor is requried for generics
         public CoxRossRubinstein()
-        { }
+        {
+        }
 
         public CoxRossRubinstein(StochasticProcess1D process, double end, int steps, double strike)
             : base(process, end, steps)

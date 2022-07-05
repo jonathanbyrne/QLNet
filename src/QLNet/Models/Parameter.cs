@@ -19,22 +19,25 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.Optimization;
-using System;
 
 namespace QLNet.Models
 {
     //! Base class for model arguments
-    [JetBrains.Annotations.PublicAPI] public class Parameter
+    [PublicAPI]
+    public class Parameter
     {
-        protected Impl impl_;
-        public Impl implementation() => impl_;
-
-        protected Vector params_;
-        public Vector parameters() => params_;
+        //! Base class for model parameter implementation
+        public abstract class Impl
+        {
+            public abstract double value(Vector p, double t);
+        }
 
         protected Constraint constraint_;
+        protected Impl impl_;
+        protected Vector params_;
 
         public Parameter()
         {
@@ -48,20 +51,22 @@ namespace QLNet.Models
             constraint_ = constraint;
         }
 
-        public void setParam(int i, double x) { params_[i] = x; }
-        public bool testParams(Vector p) => constraint_.test(p);
+        public Constraint constraint() => constraint_;
+
+        public Impl implementation() => impl_;
+
+        public Vector parameters() => params_;
+
+        public void setParam(int i, double x)
+        {
+            params_[i] = x;
+        }
 
         public int size() => params_.size();
 
+        public bool testParams(Vector p) => constraint_.test(p);
+
         public double value(double t) => impl_.value(params_, t);
-
-        public Constraint constraint() => constraint_;
-
-        //! Base class for model parameter implementation
-        public abstract class Impl
-        {
-            public abstract double value(Vector p, double t);
-        }
     }
 
     //! Standard constant parameter \f$ a(t) = a \f$

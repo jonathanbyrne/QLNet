@@ -16,10 +16,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
+
 using System;
 using System.Collections.Generic;
-
+using JetBrains.Annotations;
+using QLNet.Math;
 
 namespace QLNet.Methods.lattices
 {
@@ -29,16 +30,13 @@ namespace QLNet.Methods.lattices
         on one or more trees.
     */
 
-    [JetBrains.Annotations.PublicAPI] public class TreeLattice<T> : Lattice where T : IGenericLattice
+    [PublicAPI]
+    public class TreeLattice<T> : Lattice where T : IGenericLattice
     {
-        // this should be overriden in the dering class
-        protected virtual T impl() => throw new NotSupportedException();
-
-        private int n_;
-        private int statePricesLimit_;
-
         // Arrow-Debrew state prices
         protected List<Vector> statePrices_;
+        private int n_;
+        private int statePricesLimit_;
 
         public TreeLattice(TimeGrid timeGrid, int n) : base(timeGrid)
         {
@@ -48,7 +46,6 @@ namespace QLNet.Methods.lattices
             statePricesLimit_ = 0;
         }
 
-
         // Lattice interface
         public override void initialize(DiscretizedAsset asset, double t)
         {
@@ -57,18 +54,14 @@ namespace QLNet.Methods.lattices
             asset.reset(impl().size(i));
         }
 
-        public override void rollback(DiscretizedAsset asset, double to)
-        {
-            partialRollback(asset, to);
-            asset.adjustValues();
-        }
-
         public override void partialRollback(DiscretizedAsset asset, double to)
         {
             var from = asset.time();
 
             if (Utils.close(from, to))
+            {
                 return;
+            }
 
             Utils.QL_REQUIRE(from > to, () => "cannot roll the asset back to" + to + " (it is already at t = " + from + ")");
 
@@ -83,7 +76,9 @@ namespace QLNet.Methods.lattices
                 asset.setValues(newValues);
                 // skip the very last adjustment
                 if (i != iTo)
+                {
                     asset.adjustValues();
+                }
             }
         }
 
@@ -94,10 +89,19 @@ namespace QLNet.Methods.lattices
             return Vector.DotProduct(asset.values(), statePrices(i));
         }
 
+        public override void rollback(DiscretizedAsset asset, double to)
+        {
+            partialRollback(asset, to);
+            asset.adjustValues();
+        }
+
         public Vector statePrices(int i)
         {
             if (i > statePricesLimit_)
+            {
                 computeStatePrices(i);
+            }
+
             return statePrices_[i];
         }
 
@@ -113,6 +117,7 @@ namespace QLNet.Methods.lattices
                     d2 = values[impl().descendant(i, j, l)];
                     value += impl().probability(i, j, l) * values[impl().descendant(i, j, l)];
                 }
+
                 value *= impl().discount(i, j);
                 newValues[j] = value;
             }
@@ -133,7 +138,11 @@ namespace QLNet.Methods.lattices
                     }
                 }
             }
+
             statePricesLimit_ = until;
         }
+
+        // this should be overriden in the dering class
+        protected virtual T impl() => throw new NotSupportedException();
     }
 }

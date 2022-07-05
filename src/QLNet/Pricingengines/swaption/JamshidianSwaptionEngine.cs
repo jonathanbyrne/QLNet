@@ -18,17 +18,17 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Math.Solvers1d;
 using QLNet.Models;
 using QLNet.Models.Shortrate;
-using QLNet.Pricingengines;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Pricingengines.swaption
 {
@@ -39,36 +39,25 @@ namespace QLNet.Pricingengines.swaption
                  start date of the passed swap.
     */
 
-    [JetBrains.Annotations.PublicAPI] public class JamshidianSwaptionEngine : GenericModelEngine<OneFactorAffineModel,
-      Swaption.Arguments,
-      Instrument.Results>
+    [PublicAPI]
+    public class JamshidianSwaptionEngine : GenericModelEngine<OneFactorAffineModel,
+        Swaption.Arguments,
+        Instrument.Results>
     {
-
-        /*! \note the term structure is only needed when the short-rate
-                 model cannot provide one itself.
-        */
-        public JamshidianSwaptionEngine(OneFactorAffineModel model,
-                                        Handle<YieldTermStructure> termStructure)
-           : base(model)
+        [PublicAPI]
+        public class rStarFinder : ISolver1d
         {
-            termStructure_ = termStructure;
-            termStructure_.registerWith(update);
-        }
-
-        public JamshidianSwaptionEngine(OneFactorAffineModel model)
-           : this(model, new Handle<YieldTermStructure>())
-        { }
-
-        private Handle<YieldTermStructure> termStructure_;
-
-        [JetBrains.Annotations.PublicAPI] public class rStarFinder : ISolver1d
-        {
+            private List<double> amounts_;
+            private double maturity_;
+            private OneFactorAffineModel model_;
+            private double strike_;
+            private List<double> times_;
 
             public rStarFinder(OneFactorAffineModel model,
-                               double nominal,
-                               double maturity,
-                               List<double> fixedPayTimes,
-                               List<double> amounts)
+                double nominal,
+                double maturity,
+                List<double> fixedPayTimes,
+                List<double> amounts)
             {
                 strike_ = nominal;
                 maturity_ = maturity;
@@ -84,29 +73,42 @@ namespace QLNet.Pricingengines.swaption
                 for (var i = 0; i < size; i++)
                 {
                     var dbValue =
-                       model_.discountBond(maturity_, times_[i], x);
+                        model_.discountBond(maturity_, times_[i], x);
                     value -= amounts_[i] * dbValue;
                 }
+
                 return value;
             }
+        }
 
-            private double strike_;
-            private double maturity_;
-            private List<double> times_;
-            private List<double> amounts_;
-            private OneFactorAffineModel model_;
+        private Handle<YieldTermStructure> termStructure_;
+
+        /*! \note the term structure is only needed when the short-rate
+                 model cannot provide one itself.
+        */
+        public JamshidianSwaptionEngine(OneFactorAffineModel model,
+            Handle<YieldTermStructure> termStructure)
+            : base(model)
+        {
+            termStructure_ = termStructure;
+            termStructure_.registerWith(update);
+        }
+
+        public JamshidianSwaptionEngine(OneFactorAffineModel model)
+            : this(model, new Handle<YieldTermStructure>())
+        {
         }
 
         public override void calculate()
         {
             Utils.QL_REQUIRE(arguments_.settlementMethod != Settlement.Method.ParYieldCurve, () =>
-                             "cash-settled (ParYieldCurve) swaptions not priced by Jamshidian engine");
+                "cash-settled (ParYieldCurve) swaptions not priced by Jamshidian engine");
 
             Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () =>
-                             "cannot use the Jamshidian decomposition on exotic swaptions");
+                "cannot use the Jamshidian decomposition on exotic swaptions");
 
             Utils.QL_REQUIRE(arguments_.swap.spread.IsEqual(0.0), () =>
-                             "non zero spread (" + arguments_.swap.spread + ") not allowed");
+                "non zero spread (" + arguments_.swap.spread + ") not allowed");
 
             Date referenceDate;
             DayCounter dayCounter;
@@ -133,20 +135,25 @@ namespace QLNet.Pricingengines.swaption
 
             List<double> amounts = new InitializedList<double>(arguments_.fixedCoupons.Count);
             for (var i = 0; i < amounts.Count; i++)
+            {
                 amounts[i] = arguments_.fixedCoupons[i];
+            }
+
             amounts[amounts.Count - 1] = amounts.Last() + arguments_.nominal;
 
             var maturity = dayCounter.yearFraction(referenceDate,
-                                                      arguments_.exercise.date(0));
+                arguments_.exercise.date(0));
 
             List<double> fixedPayTimes = new InitializedList<double>(arguments_.fixedPayDates.Count);
             for (var i = 0; i < fixedPayTimes.Count; i++)
+            {
                 fixedPayTimes[i] =
-                   dayCounter.yearFraction(referenceDate,
-                                           arguments_.fixedPayDates[i]);
+                    dayCounter.yearFraction(referenceDate,
+                        arguments_.fixedPayDates[i]);
+            }
 
             var finder = new rStarFinder(model_, arguments_.nominal, maturity,
-                                                 fixedPayTimes, amounts);
+                fixedPayTimes, amounts);
             var s1d = new Brent();
             var minStrike = -10.0;
             var maxStrike = 10.0;
@@ -155,24 +162,24 @@ namespace QLNet.Pricingengines.swaption
             s1d.setUpperBound(maxStrike);
             var rStar = s1d.solve(finder, 1e-8, 0.05, minStrike, maxStrike);
 
-            var w = arguments_.type == VanillaSwap.Type.Payer ?
-                            QLNet.Option.Type.Put : QLNet.Option.Type.Call;
+            var w = arguments_.type == VanillaSwap.Type.Payer ? QLNet.Option.Type.Put : QLNet.Option.Type.Call;
             var size = arguments_.fixedCoupons.Count;
 
             var value = 0.0;
             for (var i = 0; i < size; i++)
             {
                 var fixedPayTime =
-                   dayCounter.yearFraction(referenceDate,
-                                           arguments_.fixedPayDates[i]);
+                    dayCounter.yearFraction(referenceDate,
+                        arguments_.fixedPayDates[i]);
                 var strike = model_.link.discountBond(maturity,
-                                                         fixedPayTime,
-                                                         rStar);
+                    fixedPayTime,
+                    rStar);
                 var dboValue = model_.link.discountBondOption(
-                                     w, strike, maturity,
-                                     fixedPayTime);
+                    w, strike, maturity,
+                    fixedPayTime);
                 value += amounts[i] * dboValue;
             }
+
             results_.value = value;
         }
     }

@@ -17,95 +17,108 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Time;
+
 using System;
+using QLNet.Time;
 
 namespace QLNet
 {
     //! Base class for cash flows. This class is purely virtual and acts as a base class for the actual cash flow implementations.
     public abstract class CashFlow : Event, IComparable<CashFlow>
-   {
-      #region Event interface
+    {
+        public static bool operator ==(CashFlow left, CashFlow right)
+        {
+            if (ReferenceEquals(left, null))
+            {
+                return ReferenceEquals(right, null);
+            }
 
-      public override bool hasOccurred(Date refDate = null, bool? includeRefDate = null)
-      {
+            return left.Equals(right);
+        }
 
-         // easy and quick handling of most cases
-         if (refDate != null)
-         {
-            var cf = date();
-            if (refDate < cf)
-               return false;
-            if (cf < refDate)
-               return true;
-         }
+        public static bool operator >(CashFlow left, CashFlow right) => left.date() > right.date();
 
-         if (refDate == null ||  refDate == Settings.evaluationDate())
-         {
-            // today's date; we override the bool with the one
-            // specified in the settings (if any)
-            var includeToday = Settings.includeTodaysCashFlows;
-            if (includeToday.HasValue)
-               includeRefDate = includeToday;
-         }
-         return base.hasOccurred(refDate, includeRefDate);
+        public static bool operator >=(CashFlow left, CashFlow right) => left.date() >= right.date();
 
-      }
+        public static bool operator !=(CashFlow left, CashFlow right) => !(left == right);
 
-      #endregion
+        public static bool operator <(CashFlow left, CashFlow right) => left.date() < right.date();
 
-      #region CashFlow interface
+        public static bool operator <=(CashFlow left, CashFlow right) => left.date() <= right.date();
 
-      //! returns the amount of the cash flow
-      //! The amount is not discounted, i.e., it is the actual  amount paid at the cash flow date.
-      public abstract double amount();
-      //! returns the date that the cash flow trades exCoupon
-      public virtual Date exCouponDate() => null;
+        public int CompareTo(CashFlow cf) => date().CompareTo(cf.date());
 
-      //! returns true if the cashflow is trading ex-coupon on the refDate
-      public bool tradingExCoupon(Date refDate = null)
-      {
-         var ecd = exCouponDate();
-         if (ecd == null)
-            return false;
+        public override bool Equals(object cf)
+        {
+            var other = cf as CashFlow;
+            if (ReferenceEquals(other, null))
+            {
+                return false;
+            }
 
-         var ref_ = refDate ?? Settings.evaluationDate();
+            return CompareTo(other) == 0;
+        }
 
-         return ecd <= ref_;
-      }
+        public override int GetHashCode() => date().serialNumber();
 
-      #endregion
+        #region Event interface
 
-      public int CompareTo(CashFlow cf) => date().CompareTo(cf.date());
+        public override bool hasOccurred(Date refDate = null, bool? includeRefDate = null)
+        {
+            // easy and quick handling of most cases
+            if (refDate != null)
+            {
+                var cf = date();
+                if (refDate < cf)
+                {
+                    return false;
+                }
 
-      public override bool Equals(Object cf)
-      {
-         var other = cf as CashFlow;
-         if (ReferenceEquals(other, null))
-         {
-            return false;
-         }
-         return CompareTo(other) == 0;
-      }
+                if (cf < refDate)
+                {
+                    return true;
+                }
+            }
 
-      public override int GetHashCode() => date().serialNumber();
+            if (refDate == null || refDate == Settings.evaluationDate())
+            {
+                // today's date; we override the bool with the one
+                // specified in the settings (if any)
+                var includeToday = Settings.includeTodaysCashFlows;
+                if (includeToday.HasValue)
+                {
+                    includeRefDate = includeToday;
+                }
+            }
 
-      public static bool operator ==(CashFlow left, CashFlow right)
-      {
-         if (ReferenceEquals(left, null))
-         {
-            return ReferenceEquals(right, null);
-         }
-         return left.Equals(right);
-      }
-      public static bool operator >(CashFlow left, CashFlow right) => left.date() > right.date();
+            return base.hasOccurred(refDate, includeRefDate);
+        }
 
-      public static bool operator >=(CashFlow left, CashFlow right) => left.date() >= right.date();
+        #endregion
 
-      public static bool operator <(CashFlow left, CashFlow right) => left.date() < right.date();
+        #region CashFlow interface
 
-      public static bool operator <=(CashFlow left, CashFlow right) => left.date() <= right.date();
+        //! returns the amount of the cash flow
+        //! The amount is not discounted, i.e., it is the actual  amount paid at the cash flow date.
+        public abstract double amount();
 
-      public static bool operator !=(CashFlow left, CashFlow right) => !(left == right);
-   }
+        //! returns the date that the cash flow trades exCoupon
+        public virtual Date exCouponDate() => null;
+
+        //! returns true if the cashflow is trading ex-coupon on the refDate
+        public bool tradingExCoupon(Date refDate = null)
+        {
+            var ecd = exCouponDate();
+            if (ecd == null)
+            {
+                return false;
+            }
+
+            var ref_ = refDate ?? Settings.evaluationDate();
+
+            return ecd <= ref_;
+        }
+
+        #endregion
+    }
 }

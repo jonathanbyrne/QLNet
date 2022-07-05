@@ -1,10 +1,15 @@
-﻿using QLNet.Instruments;
+﻿using JetBrains.Annotations;
+using QLNet.Instruments;
 using QLNet.Methods.montecarlo;
 
 namespace QLNet.Pricingengines.vanilla
 {
-    [JetBrains.Annotations.PublicAPI] public class EuropeanHestonPathPricer : PathPricer<IPath>
+    [PublicAPI]
+    public class EuropeanHestonPathPricer : PathPricer<IPath>
     {
+        private double discount_;
+        private PlainVanillaPayoff payoff_;
+
         public EuropeanHestonPathPricer(QLNet.Option.Type type, double strike, double discount)
         {
             payoff_ = new PlainVanillaPayoff(type, strike);
@@ -23,8 +28,5 @@ namespace QLNet.Pricingengines.vanilla
 
             return payoff_.value(path.back()) * discount_;
         }
-
-        private PlainVanillaPayoff payoff_;
-        private double discount_;
     }
 }

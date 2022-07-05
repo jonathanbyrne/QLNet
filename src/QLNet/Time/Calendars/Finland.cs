@@ -20,6 +20,7 @@
 */
 
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -43,16 +44,16 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class Finland : Calendar
+    [PublicAPI]
+    public class Finland : Calendar
     {
-        public Finland() : base(Impl.Singleton) { }
-
-        class Impl : WesternImpl
+        private class Impl : WesternImpl
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "Finland";
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -85,10 +86,18 @@ namespace QLNet.Time.Calendars
                     || d == 25 && m == Month.December
                     // Boxing Day
                     || d == 26 && m == Month.December)
+                {
                     return false;
+                }
+
                 return true;
             }
+
+            public override string name() => "Finland";
+        }
+
+        public Finland() : base(Impl.Singleton)
+        {
         }
     }
 }
-

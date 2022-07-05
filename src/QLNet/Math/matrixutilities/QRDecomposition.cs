@@ -17,151 +17,168 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
 using QLNet.Extensions;
 using QLNet.Math;
 using QLNet.Math.Optimization;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet
 {
     public static partial class MatrixUtilities
-   {
-      //! QR decompoisition
-      /*! This implementation is based on MINPACK
-          (<http://www.netlib.org/minpack>,
-          <http://www.netlib.org/cephes/linalg.tgz>)
+    {
+        //! QR decompoisition
+        /*! This implementation is based on MINPACK
+            (<http://www.netlib.org/minpack>,
+            <http://www.netlib.org/cephes/linalg.tgz>)
+  
+            This subroutine uses householder transformations with column
+            pivoting (optional) to compute a qr factorization of the
+            m by n matrix A. That is, qrfac determines an orthogonal
+            matrix q, a permutation matrix p, and an upper trapezoidal
+            matrix r with diagonal elements of nonincreasing magnitude,
+            such that A*p = q*r.
+  
+            Return value ipvt is an integer array of length n, which
+            defines the permutation matrix p such that A*p = q*r.
+            Column j of p is column ipvt(j) of the identity matrix.
+  
+            See lmdiff.cpp for further details.
+        */
+        public static List<int> qrDecomposition(Matrix M, ref Matrix q, ref Matrix r, bool pivot)
+        {
+            var mT = Matrix.transpose(M);
+            var m = M.rows();
+            var n = M.columns();
 
-          This subroutine uses householder transformations with column
-          pivoting (optional) to compute a qr factorization of the
-          m by n matrix A. That is, qrfac determines an orthogonal
-          matrix q, a permutation matrix p, and an upper trapezoidal
-          matrix r with diagonal elements of nonincreasing magnitude,
-          such that A*p = q*r.
+            List<int> lipvt = new InitializedList<int>(n);
+            var rdiag = new Vector(n);
+            var wa = new Vector(n);
 
-          Return value ipvt is an integer array of length n, which
-          defines the permutation matrix p such that A*p = q*r.
-          Column j of p is column ipvt(j) of the identity matrix.
+            MINPACK.qrfac(m, n, mT, 0, (pivot) ? 1 : 0, ref lipvt, n, ref rdiag, ref rdiag, wa);
 
-          See lmdiff.cpp for further details.
-      */
-      public static List<int> qrDecomposition(Matrix M, ref Matrix q, ref Matrix r, bool pivot)
-      {
-         var mT = Matrix.transpose(M);
-         var m = M.rows();
-         var n = M.columns();
-
-         List<int> lipvt = new InitializedList<int>(n);
-         var rdiag = new Vector(n);
-         var wa = new Vector(n);
-
-         MINPACK.qrfac(m, n, mT, 0, (pivot) ? 1 : 0, ref lipvt, n, ref rdiag, ref rdiag, wa);
-
-         if (r.columns() != n || r.rows() != n)
-            r = new Matrix(n, n);
-
-         for (var i = 0; i < n; ++i)
-         {
-            r[i, i] = rdiag[i];
-            if (i < m)
+            if (r.columns() != n || r.rows() != n)
             {
-               for (var j = i; j < mT.rows() - 1; j++)
-                  r[i, j + 1] = mT[j + 1, i];
+                r = new Matrix(n, n);
             }
-         }
 
-         if (q.rows() != m || q.columns() != n)
-            q = new Matrix(m, n);
-
-         var w = new Vector(m);
-         for (var k = 0; k < m; ++k)
-         {
-            w.Erase();
-            w[k] = 1.0;
-
-            for (var j = 0; j < System.Math.Min(n, m); ++j)
+            for (var i = 0; i < n; ++i)
             {
-               var t3 = mT[j, j];
-               if (t3.IsNotEqual(0.0))
-               {
-                  double t = 0;
-                  for (var kk = j ; kk < mT.columns(); kk++)
-                     t += (mT[j, kk] * w[kk]) / t3 ;
-
-                  for (var i = j; i < m; ++i)
-                  {
-                     w[i] -= mT[j, i] * t;
-                  }
-               }
-               q[k, j] = w[j];
+                r[i, i] = rdiag[i];
+                if (i < m)
+                {
+                    for (var j = i; j < mT.rows() - 1; j++)
+                    {
+                        r[i, j + 1] = mT[j + 1, i];
+                    }
+                }
             }
-         }
 
-         List<int> ipvt = new InitializedList<int>(n);
-         if (pivot)
-         {
-            for (var i = 0; i < n; ++i)
-               ipvt[i] = lipvt[i];
-         }
-         else
-         {
-            for (var i = 0; i < n; ++i)
-               ipvt[i] = i;
-         }
+            if (q.rows() != m || q.columns() != n)
+            {
+                q = new Matrix(m, n);
+            }
 
-         return ipvt;
-      }
+            var w = new Vector(m);
+            for (var k = 0; k < m; ++k)
+            {
+                w.Erase();
+                w[k] = 1.0;
 
-      //! QR Solve
-      /*! This implementation is based on MINPACK
-          (<http://www.netlib.org/minpack>,
-          <http://www.netlib.org/cephes/linalg.tgz>)
+                for (var j = 0; j < System.Math.Min(n, m); ++j)
+                {
+                    var t3 = mT[j, j];
+                    if (t3.IsNotEqual(0.0))
+                    {
+                        double t = 0;
+                        for (var kk = j; kk < mT.columns(); kk++)
+                        {
+                            t += (mT[j, kk] * w[kk]) / t3;
+                        }
 
-          Given an m by n matrix A, an n by n diagonal matrix d,
-          and an m-vector b, the problem is to determine an x which
-          solves the system
+                        for (var i = j; i < m; ++i)
+                        {
+                            w[i] -= mT[j, i] * t;
+                        }
+                    }
 
-          A*x = b ,     d*x = 0 ,
+                    q[k, j] = w[j];
+                }
+            }
 
-          in the least squares sense.
+            List<int> ipvt = new InitializedList<int>(n);
+            if (pivot)
+            {
+                for (var i = 0; i < n; ++i)
+                {
+                    ipvt[i] = lipvt[i];
+                }
+            }
+            else
+            {
+                for (var i = 0; i < n; ++i)
+                {
+                    ipvt[i] = i;
+                }
+            }
 
-          d is an input array of length n which must contain the
-          diagonal elements of the matrix d.
+            return ipvt;
+        }
 
-          See lmdiff.cpp for further details.
-      */
-      public static Vector qrSolve(Matrix a, Vector b, bool pivot = true, Vector d = null)
-      {
-         var m = a.rows();
-         var n = a.columns();
-         if (d == null)
-            d = new Vector();
-         Utils.QL_REQUIRE(b.Count == m, () => "dimensions of A and b don't match");
-         Utils.QL_REQUIRE(d.Count == n || d.empty(), () => "dimensions of A and d don't match");
+        //! QR Solve
+        /*! This implementation is based on MINPACK
+            (<http://www.netlib.org/minpack>,
+            <http://www.netlib.org/cephes/linalg.tgz>)
+  
+            Given an m by n matrix A, an n by n diagonal matrix d,
+            and an m-vector b, the problem is to determine an x which
+            solves the system
+  
+            A*x = b ,     d*x = 0 ,
+  
+            in the least squares sense.
+  
+            d is an input array of length n which must contain the
+            diagonal elements of the matrix d.
+  
+            See lmdiff.cpp for further details.
+        */
+        public static Vector qrSolve(Matrix a, Vector b, bool pivot = true, Vector d = null)
+        {
+            var m = a.rows();
+            var n = a.columns();
+            if (d == null)
+            {
+                d = new Vector();
+            }
 
-         Matrix q = new Matrix(m, n), r = new Matrix(n, n);
+            Utils.QL_REQUIRE(b.Count == m, () => "dimensions of A and b don't match");
+            Utils.QL_REQUIRE(d.Count == n || d.empty(), () => "dimensions of A and d don't match");
 
-         var lipvt = MatrixUtilities.qrDecomposition(a, ref q, ref r, pivot);
-         var ipvt = new List<int>(n);
-         ipvt = lipvt;
+            Matrix q = new Matrix(m, n), r = new Matrix(n, n);
 
-         var aT = Matrix.transpose(a);
-         var rT = Matrix.transpose(r);
+            var lipvt = qrDecomposition(a, ref q, ref r, pivot);
+            var ipvt = new List<int>(n);
+            ipvt = lipvt;
 
-         var sdiag = new Vector(n);
-         var wa = new Vector(n);
+            var aT = Matrix.transpose(a);
+            var rT = Matrix.transpose(r);
 
-         var ld = new Vector(n, 0.0);
-         if (!d.empty())
-         {
-            ld = d;
-         }
-         var x = new Vector(n);
-         var qtb = Matrix.transpose(q) * b;
+            var sdiag = new Vector(n);
+            var wa = new Vector(n);
 
-         MINPACK.qrsolv(n, rT, n, ipvt, ld, qtb, x, sdiag, wa);
+            var ld = new Vector(n, 0.0);
+            if (!d.empty())
+            {
+                ld = d;
+            }
 
-         return x;
-      }
-   }
+            var x = new Vector(n);
+            var qtb = Matrix.transpose(q) * b;
+
+            MINPACK.qrsolv(n, rT, n, ipvt, ld, qtb, x, sdiag, wa);
+
+            return x;
+        }
+    }
 }

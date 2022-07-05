@@ -2,14 +2,19 @@
 {
     public struct Settlement
     {
-        public enum Type { Physical, Cash };
         public enum Method
         {
             PhysicalOTC,
             PhysicalCleared,
             CollateralizedCashPrice,
             ParYieldCurve
-        };
+        }
+
+        public enum Type
+        {
+            Physical,
+            Cash
+        }
 
         public static void checkTypeAndMethodConsistency(Type settlementType, Method settlementMethod)
         {
@@ -19,6 +24,7 @@
                                  settlementMethod == Method.PhysicalCleared,
                     () => "invalid settlement method for physical settlement");
             }
+
             if (settlementType == Type.Cash)
             {
                 Utils.QL_REQUIRE(settlementMethod == Method.CollateralizedCashPrice ||

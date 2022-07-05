@@ -38,14 +38,18 @@ namespace QLNet.Tests
             var values = rsg.nextSequence().value;
             var sum = 0.0;
             for (var i = 0; i < values.Count; i++)
+            {
                 sum += values[i];
+            }
 
             var stored = 4.09916;
             var tolerance = 1.0e-5;
             if (System.Math.Abs(sum - stored) > tolerance)
+            {
                 QAssert.Fail("the sum of the samples does not match the stored value\n"
                              + "    calculated: " + sum + "\n"
                              + "    expected:   " + stored);
+            }
         }
 
         [Fact]
@@ -60,13 +64,17 @@ namespace QLNet.Tests
             var values = rsg.nextSequence().value;
             var sum = 0.0;
             for (var i = 0; i < values.Count; i++)
+            {
                 sum += values[i];
+            }
 
             var stored = 108.0;
             if (!Utils.close(sum, stored))
+            {
                 QAssert.Fail("the sum of the samples does not match the stored value\n"
                              + "    calculated: " + sum + "\n"
                              + "    expected:   " + stored);
+            }
         }
 
         [Fact]
@@ -81,13 +89,17 @@ namespace QLNet.Tests
             var values = rsg.nextSequence().value;
             var sum = 0.0;
             for (var i = 0; i < values.Count; i++)
+            {
                 sum += values[i];
+            }
 
             var stored = 409.0;
             if (!Utils.close(sum, stored))
+            {
                 QAssert.Fail("the sum of the samples does not match the stored value\n"
                              + "    calculated: " + sum + "\n"
                              + "    expected:   " + stored);
+            }
         }
     }
 }

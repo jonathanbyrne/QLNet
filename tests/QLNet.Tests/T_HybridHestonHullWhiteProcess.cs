@@ -637,7 +637,9 @@ namespace QLNet.Tests
             List<double> times = new InitializedList<double>(maturity + 1);
 
             for (var i = 0; i <= maturity; ++i)
+            {
                 times[i] = i;
+            }
 
             var grid = new TimeGrid(times, times.Count);
 

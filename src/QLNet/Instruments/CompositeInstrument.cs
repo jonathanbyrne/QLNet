@@ -15,6 +15,7 @@
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using component = System.Collections.Generic.KeyValuePair<QLNet.Instruments.Instrument, double>;
 
 namespace QLNet.Instruments
@@ -30,32 +31,39 @@ namespace QLNet.Instruments
 
         \ingroup instruments
     */
-    [JetBrains.Annotations.PublicAPI] public class CompositeInstrument : Instrument
+    [PublicAPI]
+    public class CompositeInstrument : Instrument
     {
+        private List<component> components_ = new List<component>();
+
         //! adds an instrument to the composite
         public void add
-           (Instrument instrument, double multiplier = 1.0)
+            (Instrument instrument, double multiplier = 1.0)
         {
             components_.Add(new component(instrument, multiplier));
             instrument.registerWith(update);
             update();
         }
 
-        //! shorts an instrument from the composite
-        public void subtract(Instrument instrument, double multiplier = 1.0)
-        {
-            add
-               (instrument, -multiplier);
-        }
         // Instrument interface
         public override bool isExpired()
         {
             foreach (var c in components_)
             {
                 if (!c.Key.isExpired())
+                {
                     return false;
+                }
             }
+
             return true;
+        }
+
+        //! shorts an instrument from the composite
+        public void subtract(Instrument instrument, double multiplier = 1.0)
+        {
+            add
+                (instrument, -multiplier);
         }
 
         protected override void performCalculations()
@@ -66,8 +74,5 @@ namespace QLNet.Instruments
                 NPV_ += c.Value * c.Key.NPV();
             }
         }
-
-        private List<component> components_ = new List<component>();
-
     }
 }

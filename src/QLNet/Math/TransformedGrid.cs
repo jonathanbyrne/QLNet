@@ -16,30 +16,23 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Math
 {
     //! transformed grid
     /*! This package encapuslates an array of grid points.  It is used primarily in PDE calculations.
     */
-    [JetBrains.Annotations.PublicAPI] public class TransformedGrid
+    [PublicAPI]
+    public class TransformedGrid
     {
-        protected Vector grid_;
-        protected Vector transformedGrid_;
+        protected Vector dx_;
         protected Vector dxm_;
         protected Vector dxp_;
-        protected Vector dx_;
-
-        public Vector gridArray() => grid_;
-
-        public Vector transformedGridArray() => transformedGrid_;
-
-        public Vector dxmArray() => dxm_;
-
-        public Vector dxpArray() => dxp_;
-
-        public Vector dxArray() => dx_;
+        protected Vector grid_;
+        protected Vector transformedGrid_;
 
         public TransformedGrid(Vector grid)
         {
@@ -66,7 +59,9 @@ namespace QLNet.Math
             dx_ = new Vector(grid.size());
 
             for (var i = 0; i < grid.size(); i++)
+            {
                 transformedGrid_[i] = func(grid_[i]);
+            }
 
             for (var i = 1; i < transformedGrid_.size() - 1; i++)
             {
@@ -76,16 +71,26 @@ namespace QLNet.Math
             }
         }
 
-        public double grid(int i) => grid_[i];
+        public double dx(int i) => dx_[i];
 
-        public double transformedGrid(int i) => transformedGrid_[i];
+        public Vector dxArray() => dx_;
 
         public double dxm(int i) => dxm_[i];
 
+        public Vector dxmArray() => dxm_;
+
         public double dxp(int i) => dxp_[i];
 
-        public double dx(int i) => dx_[i];
+        public Vector dxpArray() => dxp_;
+
+        public double grid(int i) => grid_[i];
+
+        public Vector gridArray() => grid_;
 
         public int size() => grid_.size();
+
+        public double transformedGrid(int i) => transformedGrid_[i];
+
+        public Vector transformedGridArray() => transformedGrid_;
     }
 }

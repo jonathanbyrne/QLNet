@@ -8,14 +8,8 @@ namespace QLNet.Models.Shortrate
     {
         protected OneFactorAffineModel(int nArguments)
             : base(nArguments)
-        { }
-
-        public virtual double discountBond(double now,
-            double maturity,
-            Vector factors) =>
-            discountBond(now, maturity, factors[0]);
-
-        public double discountBond(double now, double maturity, double rate) => A(now, maturity) * System.Math.Exp(-B(now, maturity) * rate);
+        {
+        }
 
         public double discount(double t)
         {
@@ -24,6 +18,13 @@ namespace QLNet.Models.Shortrate
             return discountBond(0.0, t, r0);
         }
 
+        public virtual double discountBond(double now,
+            double maturity,
+            Vector factors) =>
+            discountBond(now, maturity, factors[0]);
+
+        public double discountBond(double now, double maturity, double rate) => A(now, maturity) * System.Math.Exp(-B(now, maturity) * rate);
+
         public virtual double discountBondOption(Option.Type type,
             double strike,
             double maturity,
@@ -31,6 +32,7 @@ namespace QLNet.Models.Shortrate
             throw new NotImplementedException();
 
         protected abstract double A(double t, double T);
+
         protected abstract double B(double t, double T);
     }
 }

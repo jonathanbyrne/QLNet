@@ -16,24 +16,24 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
-using System;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Optimization
 {
-
     //! Parameterized cost function
     //    ! This class creates a proxy cost function which can depend
     //        on any arbitrary subset of parameters (the other being fixed)
     //
-    [JetBrains.Annotations.PublicAPI] public class ProjectedCostFunction : CostFunction
+    [PublicAPI]
+    public class ProjectedCostFunction : CostFunction
     {
-        private int numberOfFreeParameters_;
-        private Vector fixedParameters_;
         private Vector actualParameters_;
-        private List<bool> parametersFreedoms_;
         private CostFunction costFunction_;
+        private Vector fixedParameters_;
+        private int numberOfFreeParameters_;
+        private List<bool> parametersFreedoms_;
 
         public ProjectedCostFunction(CostFunction costFunction, Vector parametersValues, List<bool> parametersFreedoms)
         {
@@ -44,25 +44,37 @@ namespace QLNet.Math.Optimization
             costFunction_ = costFunction;
 
             Utils.QL_REQUIRE(fixedParameters_.Count == parametersFreedoms_.Count, () =>
-                             "fixedParameters_.Count!=parametersFreedoms_.Count");
+                "fixedParameters_.Count!=parametersFreedoms_.Count");
 
             for (var i = 0; i < parametersFreedoms_.Count; i++)
+            {
                 if (!parametersFreedoms_[i])
+                {
                     numberOfFreeParameters_++;
+                }
+            }
 
             Utils.QL_REQUIRE(numberOfFreeParameters_ > 0, () => "numberOfFreeParameters==0");
         }
 
-        // CostFunction interface
-        public override double value(Vector freeParameters)
+        //! returns whole set of parameters corresponding to the set
+        // of projected parameters
+        public Vector include(Vector projectedParameters)
         {
-            mapFreeParameters(freeParameters);
-            return costFunction_.value(actualParameters_);
-        }
-        public override Vector values(Vector freeParameters)
-        {
-            mapFreeParameters(freeParameters);
-            return costFunction_.values(actualParameters_);
+            Utils.QL_REQUIRE(projectedParameters.Count == numberOfFreeParameters_, () =>
+                "projectedParameters.Count!=numberOfFreeParameters");
+
+            var y = new Vector(fixedParameters_);
+            var i = 0;
+            for (var j = 0; j < y.Count; j++)
+            {
+                if (!parametersFreedoms_[j])
+                {
+                    y[j] = projectedParameters[i++];
+                }
+            }
+
+            return y;
         }
 
         //! returns the subset of free parameters corresponding
@@ -74,35 +86,42 @@ namespace QLNet.Math.Optimization
             var projectedParameters = new Vector(numberOfFreeParameters_);
             var i = 0;
             for (var j = 0; j < parametersFreedoms_.Count; j++)
+            {
                 if (!parametersFreedoms_[j])
+                {
                     projectedParameters[i++] = parameters[j];
+                }
+            }
+
             return projectedParameters;
         }
 
-        //! returns whole set of parameters corresponding to the set
-        // of projected parameters
-        public Vector include(Vector projectedParameters)
+        // CostFunction interface
+        public override double value(Vector freeParameters)
         {
-            Utils.QL_REQUIRE(projectedParameters.Count == numberOfFreeParameters_, () =>
-                             "projectedParameters.Count!=numberOfFreeParameters");
+            mapFreeParameters(freeParameters);
+            return costFunction_.value(actualParameters_);
+        }
 
-            var y = new Vector(fixedParameters_);
-            var i = 0;
-            for (var j = 0; j < y.Count; j++)
-                if (!parametersFreedoms_[j])
-                    y[j] = projectedParameters[i++];
-            return y;
+        public override Vector values(Vector freeParameters)
+        {
+            mapFreeParameters(freeParameters);
+            return costFunction_.values(actualParameters_);
         }
 
         private void mapFreeParameters(Vector parametersValues)
         {
             Utils.QL_REQUIRE(parametersValues.Count == numberOfFreeParameters_, () =>
-                             "parametersValues.Count!=numberOfFreeParameters");
+                "parametersValues.Count!=numberOfFreeParameters");
 
             var i = 0;
             for (var j = 0; j < actualParameters_.Count; j++)
+            {
                 if (!parametersFreedoms_[j])
+                {
                     actualParameters_[j] = parametersValues[i++];
+                }
+            }
         }
     }
 }

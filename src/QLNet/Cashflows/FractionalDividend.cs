@@ -1,14 +1,13 @@
-﻿using QLNet.Time;
+﻿using JetBrains.Annotations;
+using QLNet.Time;
 
 namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public class FractionalDividend : Dividend
+    [PublicAPI]
+    public class FractionalDividend : Dividend
     {
-        protected double rate_;
-        public double rate() => rate_;
-
         protected double? nominal_;
-        public double? nominal() => nominal_;
+        protected double rate_;
 
         public FractionalDividend(double rate, Date date)
             : base(date)
@@ -32,5 +31,9 @@ namespace QLNet
         }
 
         public override double amount(double underlying) => rate_ * underlying;
+
+        public double? nominal() => nominal_;
+
+        public double rate() => rate_;
     }
 }

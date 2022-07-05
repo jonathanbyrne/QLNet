@@ -14,6 +14,8 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Instruments;
 using QLNet.Math;
@@ -22,7 +24,6 @@ using QLNet.Pricingengines.CapFloor;
 using QLNet.Quotes;
 using QLNet.Termstructures.Volatility.CapFloor;
 using QLNet.Time;
-using System.Collections.Generic;
 
 namespace QLNet.Termstructures.Volatility.Optionlet
 {
@@ -31,15 +32,63 @@ namespace QLNet.Termstructures.Volatility.Optionlet
          forward-forward volatilities) from the (cap/floor) At-The-Money
          term volatilities of a CapFloorTermVolCurve.
     */
-    [JetBrains.Annotations.PublicAPI] public class OptionletStripper2 : OptionletStripper
+    [PublicAPI]
+    public class OptionletStripper2 : OptionletStripper
     {
+        private class ObjectiveFunction : ISolver1d
+        {
+            private readonly Instruments.CapFloor cap_;
+            private readonly SimpleQuote spreadQuote_;
+            private readonly double targetValue_;
+
+            public ObjectiveFunction(OptionletStripper1 optionletStripper1, Instruments.CapFloor cap, double targetValue)
+            {
+                cap_ = cap;
+                targetValue_ = targetValue;
+
+                OptionletVolatilityStructure adapter = new StrippedOptionletAdapter(optionletStripper1);
+
+                // set an implausible value, so that calculation is forced
+                // at first operator()(Volatility x) call
+                spreadQuote_ = new SimpleQuote(-1.0);
+
+                OptionletVolatilityStructure spreadedAdapter = new SpreadedOptionletVolatility(
+                    new Handle<OptionletVolatilityStructure>(adapter), new Handle<Quote>(spreadQuote_));
+
+                var engine = new BlackCapFloorEngine(optionletStripper1.iborIndex().forwardingTermStructure(),
+                    new Handle<OptionletVolatilityStructure>(spreadedAdapter));
+
+                cap_.setPricingEngine(engine);
+            }
+
+            public override double value(double s)
+            {
+                if (s.IsNotEqual(spreadQuote_.value()))
+                {
+                    spreadQuote_.setValue(s);
+                }
+
+                return cap_.NPV() - targetValue_;
+            }
+        }
+
+        private double accuracy_;
+        private List<double> atmCapFloorPrices_;
+        private List<double> atmCapFloorStrikes_;
+        private Handle<CapFloorTermVolCurve> atmCapFloorTermVolCurve_;
+        private List<Instruments.CapFloor> caps_;
+        private DayCounter dc_;
+        private int maxEvaluations_;
+        private int nOptionExpiries_;
+        private List<double> spreadsVolImplied_;
+        private OptionletStripper1 stripper1_;
 
         public OptionletStripper2(OptionletStripper1 optionletStripper1, Handle<CapFloorTermVolCurve> atmCapFloorTermVolCurve)
-           : base(optionletStripper1.termVolSurface(),
-                  optionletStripper1.iborIndex(),
-                  new Handle<YieldTermStructure>(),
-                  optionletStripper1.volatilityType(),
-                  optionletStripper1.displacement())
+            : base(optionletStripper1.termVolSurface(),
+                optionletStripper1.iborIndex(),
+                new Handle<YieldTermStructure>(),
+                optionletStripper1.volatilityType(),
+                optionletStripper1.displacement())
         {
             stripper1_ = optionletStripper1;
             atmCapFloorTermVolCurve_ = atmCapFloorTermVolCurve;
@@ -58,15 +107,16 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             Utils.QL_REQUIRE(dc_ == atmCapFloorTermVolCurve.link.dayCounter(), () => "different day counters provided");
         }
 
-        public List<double> atmCapFloorStrikes()
-        {
-            calculate();
-            return atmCapFloorStrikes_;
-        }
         public List<double> atmCapFloorPrices()
         {
             calculate();
             return atmCapFloorPrices_;
+        }
+
+        public List<double> atmCapFloorStrikes()
+        {
+            calculate();
+            return atmCapFloorStrikes_;
         }
 
         public List<double> spreadsVol()
@@ -99,7 +149,7 @@ namespace QLNet.Termstructures.Volatility.Optionlet
                 var atmOptionVol = atmCapFloorTermVolCurve_.link.volatility(optionExpiriesTimes[j], 33.3333); // dummy strike
                 var engine = new BlackCapFloorEngine(iborIndex_.forwardingTermStructure(), atmOptionVol, dc_);
                 var test = new MakeCapFloor(CapFloorType.Cap, optionExpiriesTenors[j], iborIndex_, null,
-                                                 new Period(0, TimeUnit.Days)).withPricingEngine(engine).value();
+                    new Period(0, TimeUnit.Days)).withPricingEngine(engine).value();
                 caps_.Add(test);
                 atmCapFloorStrikes_[j] = caps_[j].atmRate(iborIndex_.forwardingTermStructure());
                 atmCapFloorPrices_[j] = caps_[j].NPV();
@@ -141,53 +191,8 @@ namespace QLNet.Termstructures.Volatility.Optionlet
                 var root = solver.solve(f, accuracy_, guess, minSpread, maxSpread);
                 result[j] = root;
             }
+
             return result;
         }
-
-        private class ObjectiveFunction : ISolver1d
-        {
-            public ObjectiveFunction(OptionletStripper1 optionletStripper1, Instruments.CapFloor cap, double targetValue)
-            {
-                cap_ = cap;
-                targetValue_ = targetValue;
-
-                OptionletVolatilityStructure adapter = new StrippedOptionletAdapter(optionletStripper1);
-
-                // set an implausible value, so that calculation is forced
-                // at first operator()(Volatility x) call
-                spreadQuote_ = new SimpleQuote(-1.0);
-
-                OptionletVolatilityStructure spreadedAdapter = new SpreadedOptionletVolatility(
-                   new Handle<OptionletVolatilityStructure>(adapter), new Handle<Quote>(spreadQuote_));
-
-                var engine = new BlackCapFloorEngine(optionletStripper1.iborIndex().forwardingTermStructure(),
-                                                                     new Handle<OptionletVolatilityStructure>(spreadedAdapter));
-
-                cap_.setPricingEngine(engine);
-
-            }
-            public override double value(double s)
-            {
-                if (s.IsNotEqual(spreadQuote_.value()))
-                    spreadQuote_.setValue(s);
-                return cap_.NPV() - targetValue_;
-            }
-
-            private SimpleQuote spreadQuote_;
-            private Instruments.CapFloor cap_;
-            private double targetValue_;
-        }
-
-        private OptionletStripper1 stripper1_;
-        private Handle<CapFloorTermVolCurve> atmCapFloorTermVolCurve_;
-        private DayCounter dc_;
-        private int nOptionExpiries_;
-        private List<double> atmCapFloorStrikes_;
-        private List<double> atmCapFloorPrices_;
-        private List<double> spreadsVolImplied_;
-        private List<Instruments.CapFloor> caps_;
-        private int maxEvaluations_;
-        private double accuracy_;
-
     }
 }

@@ -16,11 +16,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Instruments;
-using QLNet.Pricingengines;
-using QLNet.processes;
-using QLNet.Time;
+
 using System;
+using JetBrains.Annotations;
+using QLNet.Instruments;
+using QLNet.processes;
 
 namespace QLNet.Pricingengines.vanilla
 {
@@ -30,8 +30,11 @@ namespace QLNet.Pricingengines.vanilla
         \test the correctness of the returned greeks is tested by
               reproducing numerical derivatives.
     */
-    [JetBrains.Annotations.PublicAPI] public class AnalyticDividendEuropeanEngine : DividendVanillaOption.Engine
+    [PublicAPI]
+    public class AnalyticDividendEuropeanEngine : DividendVanillaOption.Engine
     {
+        private GeneralizedBlackScholesProcess process_;
+
         public AnalyticDividendEuropeanEngine(GeneralizedBlackScholesProcess process)
         {
             process_ = process;
@@ -49,9 +52,13 @@ namespace QLNet.Pricingengines.vanilla
             var riskless = 0.0;
             int i;
             for (i = 0; i < arguments_.cashFlow.Count; i++)
+            {
                 if (arguments_.cashFlow[i].date() >= settlementDate)
+                {
                     riskless += arguments_.cashFlow[i].amount() *
                                 process_.riskFreeRate().link.discount(arguments_.cashFlow[i].date());
+                }
+            }
 
             var spot = process_.stateVariable().link.value() - riskless;
             Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying after subtracting dividends");
@@ -61,7 +68,7 @@ namespace QLNet.Pricingengines.vanilla
             var forwardPrice = spot * dividendDiscount / riskFreeDiscount;
 
             var variance = process_.blackVolatility().link.blackVariance(arguments_.exercise.lastDate(),
-                                                                            payoff.strike());
+                payoff.strike());
 
             var black = new BlackCalculator(payoff, forwardPrice, System.Math.Sqrt(variance), riskFreeDiscount);
 
@@ -81,13 +88,14 @@ namespace QLNet.Pricingengines.vanilla
                 if (d >= settlementDate)
                 {
                     delta_theta -= arguments_.cashFlow[i].amount() *
-                                   process_.riskFreeRate().link.zeroRate(d, rfdc, Compounding.Continuous, Frequency.Annual).value() *
+                                   process_.riskFreeRate().link.zeroRate(d, rfdc, Compounding.Continuous).value() *
                                    process_.riskFreeRate().link.discount(d);
                     var t1 = process_.time(d);
                     delta_rho += arguments_.cashFlow[i].amount() * t1 *
                                  process_.riskFreeRate().link.discount(t1);
                 }
             }
+
             t = process_.time(arguments_.exercise.lastDate());
             try
             {
@@ -100,10 +108,6 @@ namespace QLNet.Pricingengines.vanilla
             }
 
             results_.rho = black.rho(t) + delta_rho * black.delta(spot);
-
         }
-
-
-        private GeneralizedBlackScholesProcess process_;
     }
 }

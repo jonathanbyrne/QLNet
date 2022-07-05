@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Methods.Finitedifferences.Meshers
 {
-    [JetBrains.Annotations.PublicAPI] public class equal_on_first : IEqualityComparer<Pair<double?, double?>>
+    [PublicAPI]
+    public class equal_on_first : IEqualityComparer<Pair<double?, double?>>
     {
         public bool Equals(Pair<double?, double?> p1,
             Pair<double?, double?> p2) =>

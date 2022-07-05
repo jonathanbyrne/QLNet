@@ -19,117 +19,131 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet;
-using QLNet.Extensions;
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Extensions;
 
 namespace QLNet.Math
 {
     /// <summary>
-    /// 1-D vector used in linear algebra.
+    ///     1-D vector used in linear algebra.
     /// </summary>
-    /// <remarks>This class implements the concept of vector as used in linear algebra.
-    /// As such, it is not meant to be used as a container -
-    /// <c>List</c> should be used instead.</remarks>
-    [JetBrains.Annotations.PublicAPI] public class Vector : InitializedList<double>, ICloneable
+    /// <remarks>
+    ///     This class implements the concept of vector as used in linear algebra.
+    ///     As such, it is not meant to be used as a container -
+    ///     <c>List</c> should be used instead.
+    /// </remarks>
+    [PublicAPI]
+    public class Vector : InitializedList<double>, ICloneable
     {
         /// <summary>
-        /// Creates an empty Vector.
+        ///     Creates an empty Vector.
         /// </summary>
         public Vector() : this(0)
-        { }
+        {
+        }
 
         /// <summary>
-        /// Creates a Vector of the given size.
+        ///     Creates a Vector of the given size.
         /// </summary>
         public Vector(int size) : base(size)
-        { }
+        {
+        }
 
         /// <summary>
-        /// Creates the Vector and fills it with value
+        ///     Creates the Vector and fills it with value
         /// </summary>
         public Vector(int size, double value) : base(size, value)
-        { }
+        {
+        }
 
         /// <summary>
-        /// Creates the vector and fills it according to
-        /// <para>Vector[0] = value</para>
-        /// Vector[i]=Vector[i-1]+increment
+        ///     Creates the vector and fills it according to
+        ///     <para>Vector[0] = value</para>
+        ///     Vector[i]=Vector[i-1]+increment
         /// </summary>
         public Vector(int size, double value, double increment) : this(size)
         {
             for (var i = 0; i < Count; i++, value += increment)
+            {
                 this[i] = value;
+            }
         }
 
         /// <summary>
-        /// Creates a Vector cloning from
+        ///     Creates a Vector cloning from
         /// </summary>
         public Vector(Vector from) : base(from.Count)
         {
             for (var i = 0; i < Count; i++)
+            {
                 this[i] = from[i];
+            }
         }
 
         /// <summary>
-        /// Creates a Vector as a copy of a given List
+        ///     Creates a Vector as a copy of a given List
         /// </summary>
         public Vector(List<double> from) : this(from.Count)
         {
             for (var i = 0; i < Count; i++)
+            {
                 this[i] = from[i];
+            }
         }
 
         /// <summary>
-        /// Returns a deep-copy clone of the Vector.
+        ///     Returns a deep-copy clone of the Vector.
         /// </summary>
         /// <returns>A clone of the vector.</returns>
         public Vector Clone() => new Vector(this);
 
-        /// <summary>
-        /// Creates a new object that is a copy of the current instance.
-        /// </summary>
-        /// <returns>
-        /// A new object that is a copy of this instance.
-        /// </returns>
-        object ICloneable.Clone() => Clone();
+        public bool empty() => Count == 0;
 
         /// <summary>
-        /// Indicates whether the current Vector is equal to another Vector.
+        ///     Indicates whether the current Vector is equal to another Vector.
         /// </summary>
         /// <param name="other">A Vector to compare with this Vector.</param>
         /// <returns>
-        ///    <c>true</c> if the current Vector is equal to the <paramref name="other"/> parameter; otherwise, <c>false</c>.
+        ///     <c>true</c> if the current Vector is equal to the <paramref name="other" /> parameter; otherwise, <c>false</c>.
         /// </returns>
         public bool Equals(Vector other)
         {
             if (other == null)
+            {
                 return false;
+            }
+
             if (ReferenceEquals(this, other))
+            {
                 return true;
+            }
+
             if (Count != other.Count)
+            {
                 return false;
+            }
 
             for (var i = 0; i < Count; i++)
+            {
                 if (other[i].IsNotEqual(this[i]))
+                {
                     return false;
+                }
+            }
 
             return true;
         }
 
         /// <summary>
-        /// Determines whether the specified <see cref="object"/> is equal to this instance.
+        ///     Determines whether the specified <see cref="object" /> is equal to this instance.
         /// </summary>
-        /// <param name="o">The <see cref="object"/> to compare with this instance.</param>
+        /// <param name="o">The <see cref="object" /> to compare with this instance.</param>
         /// <returns>
-        ///     <c>true</c> if the specified <see cref="object"/> is equal to this instance; otherwise, <c>false</c>.
+        ///     <c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
-        public sealed override bool Equals(object o)
-        {
-            var v = o as Vector;
-            return v != null && this == v;
-        }
+        public sealed override bool Equals(object o) => o is Vector v && this == v;
 
         public override int GetHashCode()
         {
@@ -138,12 +152,19 @@ namespace QLNet.Math
             {
                 hash = hash * 31 + this[i].GetHashCode();
             }
+
             return hash;
         }
 
         public int size() => Count;
 
-        public bool empty() => Count == 0;
+        /// <summary>
+        ///     Creates a new object that is a copy of the current instance.
+        /// </summary>
+        /// <returns>
+        ///     A new object that is a copy of this instance.
+        /// </returns>
+        object ICloneable.Clone() => Clone();
 
         #region Vector algebra
 
@@ -203,11 +224,14 @@ namespace QLNet.Math
         internal static Vector operVector(Vector v1, Vector v2, Func<double, double, double> func)
         {
             Utils.QL_REQUIRE(v1.Count == v2.Count, () =>
-                             "operation on vectors with different sizes (" + v1.Count + ", " + v2.Count);
+                "operation on vectors with different sizes (" + v1.Count + ", " + v2.Count);
 
             var temp = new Vector(v1.Count);
             for (var i = 0; i < v1.Count; i++)
+            {
                 temp[i] = func(v1[i], v2[i]);
+            }
+
             return temp;
         }
 
@@ -215,18 +239,24 @@ namespace QLNet.Math
         {
             var temp = new Vector(v1.Count);
             for (var i = 0; i < v1.Count; i++)
+            {
                 temp[i] = func(v1[i], value);
+            }
+
             return temp;
         }
 
         public static double operator *(Vector v1, Vector v2)
         {
             Utils.QL_REQUIRE(v1.Count == v2.Count, () =>
-                             "operation on vectors with different sizes (" + v1.Count + ", " + v2.Count);
+                "operation on vectors with different sizes (" + v1.Count + ", " + v2.Count);
 
             double result = 0;
             for (var i = 0; i < v1.Count; i++)
+            {
                 result += v1[i] * v2[i];
+            }
+
             return result;
         }
 

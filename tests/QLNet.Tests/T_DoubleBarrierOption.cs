@@ -441,9 +441,13 @@ namespace QLNet.Tests
 
                     double expected = 0;
                     if (barrierType == DoubleBarrier.Type.KnockOut)
+                    {
                         expected = values[i].result;
+                    }
                     else if (barrierType == DoubleBarrier.Type.KnockIn)
+                    {
                         expected = bsVanillaPrice - values[i].result;
+                    }
 
                     var calculated = doubleBarrierOption.NPV();
                     var error = System.Math.Abs(calculated - expected);

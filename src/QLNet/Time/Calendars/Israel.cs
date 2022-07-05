@@ -13,7 +13,9 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -46,40 +48,22 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class Israel : Calendar
+    [PublicAPI]
+    public class Israel : Calendar
     {
         public enum Market
         {
-            Settlement,  //!< generic settlement calendar
-            TASE         //!< Tel-Aviv stock exchange calendar
+            Settlement, //!< generic settlement calendar
+            TASE //!< Tel-Aviv stock exchange calendar
         }
 
-        public Israel(Market m = Market.Settlement)
-           : base()
-        {
-            // all calendar instances on the same market share the same
-            // implementation instance
-            switch (m)
-            {
-                case Market.Settlement:
-                    calendar_ = TelAvivImpl.Singleton;
-                    break;
-                case Market.TASE:
-                    calendar_ = TelAvivImpl.Singleton;
-                    break;
-                default:
-                    throw new ArgumentException("Unknown market: " + m);
-            }
-        }
-
-        class TelAvivImpl : Calendar
+        private class TelAvivImpl : Calendar
         {
             public static readonly TelAvivImpl Singleton = new TelAvivImpl();
-            private TelAvivImpl() { }
 
-            public override string name() => "Tel Aviv stock exchange";
-
-            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Friday || w == DayOfWeek.Saturday;
+            private TelAvivImpl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -386,16 +370,33 @@ namespace QLNet.Time.Calendars
                     || (d == 5 || d == 6) && m == Month.October && y == 2042
                     || (d == 25 || d == 26) && m == Month.October && y == 2043
                     || (d == 12 || d == 13) && m == Month.October && y == 2044)
+                {
                     return false;
+                }
 
                 return true;
             }
 
+            public override bool isWeekend(DayOfWeek w) => w == DayOfWeek.Friday || w == DayOfWeek.Saturday;
+
+            public override string name() => "Tel Aviv stock exchange";
         }
 
+        public Israel(Market m = Market.Settlement)
+        {
+            // all calendar instances on the same market share the same
+            // implementation instance
+            switch (m)
+            {
+                case Market.Settlement:
+                    calendar_ = TelAvivImpl.Singleton;
+                    break;
+                case Market.TASE:
+                    calendar_ = TelAvivImpl.Singleton;
+                    break;
+                default:
+                    throw new ArgumentException("Unknown market: " + m);
+            }
+        }
     }
-
-
 }
-
-

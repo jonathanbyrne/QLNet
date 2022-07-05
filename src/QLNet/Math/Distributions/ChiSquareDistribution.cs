@@ -18,14 +18,15 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Math;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Distributions
 {
     /// <summary>
-    /// Chi-square (central and non-central) distributions
+    ///     Chi-square (central and non-central) distributions
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class ChiSquareDistribution
+    [PublicAPI]
+    public class ChiSquareDistribution
     {
         private double df_;
 

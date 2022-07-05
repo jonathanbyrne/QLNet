@@ -1,6 +1,9 @@
-﻿namespace QLNet
+﻿using JetBrains.Annotations;
+
+namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public class CumulativeBinomialDistribution
+    [PublicAPI]
+    public class CumulativeBinomialDistribution
     {
         private int n_;
         private double p_;
@@ -18,7 +21,10 @@
         public double value(long k)
         {
             if (k >= n_)
+            {
                 return 1.0;
+            }
+
             return 1.0 - Utils.incompleteBetaFunction(k + 1, n_ - k, p_);
         }
     }

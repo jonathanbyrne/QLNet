@@ -222,9 +222,13 @@ namespace QLNet.Tests
                 Exercise exercise;
                 if (values[i].barrierType == DoubleBarrier.Type.KIKO ||
                     values[i].barrierType == DoubleBarrier.Type.KOKI)
+                {
                     exercise = new AmericanExercise(today, exDate, true);
+                }
                 else
+                {
                     exercise = new EuropeanExercise(exDate);
+                }
 
                 spot.setValue(values[i].s);
                 qRate.setValue(values[i].q);

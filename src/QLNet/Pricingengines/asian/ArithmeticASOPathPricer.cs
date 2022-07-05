@@ -1,15 +1,17 @@
-﻿using QLNet.Extensions;
+﻿using JetBrains.Annotations;
+using QLNet.Extensions;
 using QLNet.Instruments;
 using QLNet.Methods.montecarlo;
 
 namespace QLNet.Pricingengines.asian
 {
-    [JetBrains.Annotations.PublicAPI] public class ArithmeticASOPathPricer : PathPricer<Path>
+    [PublicAPI]
+    public class ArithmeticASOPathPricer : PathPricer<Path>
     {
-        private QLNet.Option.Type type_;
         private double discount_;
-        private double runningSum_;
         private int pastFixings_;
+        private double runningSum_;
+        private QLNet.Option.Type type_;
 
         public ArithmeticASOPathPricer(QLNet.Option.Type type,
             double discount,
@@ -26,12 +28,14 @@ namespace QLNet.Pricingengines.asian
             double discount,
             double runningSum)
             : this(type, discount, runningSum, 0)
-        { }
+        {
+        }
 
         public ArithmeticASOPathPricer(QLNet.Option.Type type,
             double discount)
             : this(type, discount, 0.0, 0)
-        { }
+        {
+        }
 
         public double value(Path path)
         {
@@ -43,15 +47,22 @@ namespace QLNet.Pricingengines.asian
                 //averageStrike =
                 //std::accumulate(path.begin(),path.end(),runningSum_)/(pastFixings_ + n)
                 for (var i = 0; i < path.length(); i++)
+                {
                     averageStrike += path[i];
+                }
+
                 averageStrike /= pastFixings_ + n;
             }
             else
             {
                 for (var i = 1; i < path.length(); i++)
+                {
                     averageStrike += path[i];
+                }
+
                 averageStrike /= pastFixings_ + n - 1;
             }
+
             return discount_
                    * new PlainVanillaPayoff(type_, averageStrike).value(path.back());
         }

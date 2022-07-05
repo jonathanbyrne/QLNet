@@ -17,18 +17,23 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System;
+using JetBrains.Annotations;
+using QLNet.Pricingengines.vanilla;
 using QLNet.processes;
 using QLNet.Quotes;
-using System;
-using QLNet.Pricingengines.vanilla;
 
 namespace QLNet.Instruments
 {
     //! Vanilla option (no discrete dividends, no barriers) on a single asset
-    [JetBrains.Annotations.PublicAPI] public class VanillaOption : OneAssetOption
+    [PublicAPI]
+    public class VanillaOption : OneAssetOption
     {
         public VanillaOption(StrikedTypePayoff payoff, Exercise exercise)
-           : base(payoff, exercise) { }
+            : base(payoff, exercise)
+        {
+        }
 
         /*! \warning currently, this method returns the Black-Scholes
                  implied volatility using analytic formulas for
@@ -49,13 +54,12 @@ namespace QLNet.Instruments
                  of American options.
         */
         public double impliedVolatility(double targetValue,
-                                        GeneralizedBlackScholesProcess process,
-                                        double accuracy = 1.0e-4,
-                                        int maxEvaluations = 100,
-                                        double minVol = 1.0e-7,
-                                        double maxVol = 4.0)
+            GeneralizedBlackScholesProcess process,
+            double accuracy = 1.0e-4,
+            int maxEvaluations = 100,
+            double minVol = 1.0e-7,
+            double maxVol = 4.0)
         {
-
             Utils.QL_REQUIRE(!isExpired(), () => "option expired");
 
             var volQuote = new SimpleQuote();
@@ -80,7 +84,7 @@ namespace QLNet.Instruments
             }
 
             return ImpliedVolatilityHelper.calculate(this, engine, volQuote, targetValue, accuracy,
-                                                     maxEvaluations, minVol, maxVol);
+                maxEvaluations, minVol, maxVol);
         }
     }
 }

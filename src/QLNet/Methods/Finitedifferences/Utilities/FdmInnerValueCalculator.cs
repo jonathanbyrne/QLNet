@@ -18,13 +18,13 @@
 */
 
 using QLNet.Methods.Finitedifferences.Operators;
-using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Utilities
 {
     public abstract class FdmInnerValueCalculator
     {
-        public abstract double innerValue(FdmLinearOpIterator iter, double t);
         public abstract double avgInnerValue(FdmLinearOpIterator iter, double t);
+
+        public abstract double innerValue(FdmLinearOpIterator iter, double t);
     }
 }

@@ -13,10 +13,11 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
 using QLNet.processes;
-using System;
 
 namespace QLNet.Pricingengines.Lookback
 {
@@ -24,13 +25,18 @@ namespace QLNet.Pricingengines.Lookback
     /*! Formula from "Option Pricing Formulas",
         E.G. Haug, McGraw-Hill, 1998, p.61-62
     */
-    [JetBrains.Annotations.PublicAPI] public class AnalyticContinuousFloatingLookbackEngine : ContinuousFloatingLookbackOption.Engine
+    [PublicAPI]
+    public class AnalyticContinuousFloatingLookbackEngine : ContinuousFloatingLookbackOption.Engine
     {
+        private CumulativeNormalDistribution f_ = new CumulativeNormalDistribution();
+        private GeneralizedBlackScholesProcess process_;
+
         public AnalyticContinuousFloatingLookbackEngine(GeneralizedBlackScholesProcess process)
         {
             process_ = process;
             process_.registerWith(update);
         }
+
         public override void calculate()
         {
             var payoff = arguments_.payoff as FloatingTypePayoff;
@@ -52,31 +58,6 @@ namespace QLNet.Pricingengines.Lookback
             }
         }
 
-        private GeneralizedBlackScholesProcess process_;
-        private CumulativeNormalDistribution f_ = new CumulativeNormalDistribution();
-        // helper methods
-        private double underlying() => process_.x0();
-
-        private double residualTime() => process_.time(arguments_.exercise.lastDate());
-
-        private double volatility() => process_.blackVolatility().link.blackVol(residualTime(), minmax());
-
-        private double minmax() => arguments_.minmax.GetValueOrDefault();
-
-        private double stdDeviation() => volatility() * System.Math.Sqrt(residualTime());
-
-        private double riskFreeRate() =>
-            process_.riskFreeRate().link.zeroRate(residualTime(),
-                Compounding.Continuous, Frequency.NoFrequency).value();
-
-        private double riskFreeDiscount() => process_.riskFreeRate().link.discount(residualTime());
-
-        private double dividendYield() =>
-            process_.dividendYield().link.zeroRate(residualTime(),
-                Compounding.Continuous, Frequency.NoFrequency).value();
-
-        private double dividendDiscount() => process_.dividendYield().link.discount(residualTime());
-
         private double A(double eta)
         {
             var vol = volatility();
@@ -89,9 +70,32 @@ namespace QLNet.Pricingengines.Lookback
             var n4 = f_.value(eta * -d1);
             var pow_s = System.Math.Pow(s, -lambda);
             return eta * (underlying() * dividendDiscount() * n1 -
-                           minmax() * riskFreeDiscount() * n2 +
+                          minmax() * riskFreeDiscount() * n2 +
                           underlying() * riskFreeDiscount() *
-                           (pow_s * n3 - dividendDiscount() * n4 / riskFreeDiscount()) / lambda);
+                          (pow_s * n3 - dividendDiscount() * n4 / riskFreeDiscount()) / lambda);
         }
+
+        private double dividendDiscount() => process_.dividendYield().link.discount(residualTime());
+
+        private double dividendYield() =>
+            process_.dividendYield().link.zeroRate(residualTime(),
+                Compounding.Continuous, Frequency.NoFrequency).value();
+
+        private double minmax() => arguments_.minmax.GetValueOrDefault();
+
+        private double residualTime() => process_.time(arguments_.exercise.lastDate());
+
+        private double riskFreeDiscount() => process_.riskFreeRate().link.discount(residualTime());
+
+        private double riskFreeRate() =>
+            process_.riskFreeRate().link.zeroRate(residualTime(),
+                Compounding.Continuous, Frequency.NoFrequency).value();
+
+        private double stdDeviation() => volatility() * System.Math.Sqrt(residualTime());
+
+        // helper methods
+        private double underlying() => process_.x0();
+
+        private double volatility() => process_.blackVolatility().link.blackVol(residualTime(), minmax());
     }
 }

@@ -19,6 +19,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Instruments;
 using QLNet.Termstructures;
@@ -27,22 +28,35 @@ using QLNet.Time;
 namespace QLNet.Indexes
 {
     //! base class for swap-rate indexes
-    [JetBrains.Annotations.PublicAPI] public class SwapIndex : InterestRateIndex
+    [PublicAPI]
+    public class SwapIndex : InterestRateIndex
     {
-        // need by CashFlowVectors
-        public SwapIndex() { }
+        protected Handle<YieldTermStructure> discount_;
+        protected bool exogenousDiscount_;
+        protected BusinessDayConvention fixedLegConvention_;
+        protected Period fixedLegTenor_;
+        protected IborIndex iborIndex_;
+        protected Date lastFixingDate_;
+        // cache data to avoid swap recreation when the same fixing date
+        // is used multiple time to forecast changing fixing
+        protected VanillaSwap lastSwap_;
+        protected new Period tenor_;
 
+        // need by CashFlowVectors
+        public SwapIndex()
+        {
+        }
 
         public SwapIndex(string familyName,
-                         Period tenor,
-                         int settlementDays,
-                         Currency currency,
-                         Calendar calendar,
-                         Period fixedLegTenor,
-                         BusinessDayConvention fixedLegConvention,
-                         DayCounter fixedLegDayCounter,
-                         IborIndex iborIndex) :
-           base(familyName, tenor, settlementDays, currency, calendar, fixedLegDayCounter)
+            Period tenor,
+            int settlementDays,
+            Currency currency,
+            Calendar calendar,
+            Period fixedLegTenor,
+            BusinessDayConvention fixedLegConvention,
+            DayCounter fixedLegDayCounter,
+            IborIndex iborIndex) :
+            base(familyName, tenor, settlementDays, currency, calendar, fixedLegDayCounter)
         {
             tenor_ = tenor;
             iborIndex_ = iborIndex;
@@ -55,16 +69,16 @@ namespace QLNet.Indexes
         }
 
         public SwapIndex(string familyName,
-                         Period tenor,
-                         int settlementDays,
-                         Currency currency,
-                         Calendar calendar,
-                         Period fixedLegTenor,
-                         BusinessDayConvention fixedLegConvention,
-                         DayCounter fixedLegDayCounter,
-                         IborIndex iborIndex,
-                         Handle<YieldTermStructure> discountingTermStructure) :
-           base(familyName, tenor, settlementDays, currency, calendar, fixedLegDayCounter)
+            Period tenor,
+            int settlementDays,
+            Currency currency,
+            Calendar calendar,
+            Period fixedLegTenor,
+            BusinessDayConvention fixedLegConvention,
+            DayCounter fixedLegDayCounter,
+            IborIndex iborIndex,
+            Handle<YieldTermStructure> discountingTermStructure) :
+            base(familyName, tenor, settlementDays, currency, calendar, fixedLegDayCounter)
         {
             tenor_ = tenor;
             iborIndex_ = iborIndex;
@@ -77,83 +91,35 @@ namespace QLNet.Indexes
             discount_.registerWith(update);
         }
 
-        // InterestRateIndex interface
-        public override Date maturityDate(Date valueDate)
-        {
-            var fixDate = fixingDate(valueDate);
-            return underlyingSwap(fixDate).maturityDate();
-        }
-        // Inspectors
-        public Period fixedLegTenor() => fixedLegTenor_;
-
-        public BusinessDayConvention fixedLegConvention() => fixedLegConvention_;
-
-        public IborIndex iborIndex() => iborIndex_;
-
-        public Handle<YieldTermStructure> forwardingTermStructure() => iborIndex_.forwardingTermStructure();
-
-        public Handle<YieldTermStructure> discountingTermStructure() => discount_;
-
-        public bool exogenousDiscount() => exogenousDiscount_;
-
-        // \warning Relinking the term structure underlying the index will not have effect on the returned swap.
-        // recheck
-        public VanillaSwap underlyingSwap(Date fixingDate)
-        {
-            Utils.QL_REQUIRE(fixingDate != null, () => "null fixing date");
-            // caching mechanism
-            if (lastFixingDate_ != fixingDate)
-            {
-                var fixedRate = 0.0;
-                if (exogenousDiscount_)
-                    lastSwap_ = new MakeVanillaSwap(tenor_, iborIndex_, fixedRate)
-                    .withEffectiveDate(valueDate(fixingDate))
-                    .withFixedLegCalendar(fixingCalendar())
-                    .withFixedLegDayCount(dayCounter_)
-                    .withFixedLegTenor(fixedLegTenor_)
-                    .withFixedLegConvention(fixedLegConvention_)
-                    .withFixedLegTerminationDateConvention(fixedLegConvention_)
-                    .withDiscountingTermStructure(discount_)
-                    .value();
-                else
-                    lastSwap_ = new MakeVanillaSwap(tenor_, iborIndex_, fixedRate)
-                    .withEffectiveDate(valueDate(fixingDate))
-                    .withFixedLegCalendar(fixingCalendar())
-                    .withFixedLegDayCount(dayCounter_)
-                    .withFixedLegTenor(fixedLegTenor_)
-                    .withFixedLegConvention(fixedLegConvention_)
-                    .withFixedLegTerminationDateConvention(fixedLegConvention_)
-                    .value();
-                lastFixingDate_ = fixingDate;
-            }
-            return lastSwap_;
-        }
         // Other methods
         // returns a copy of itself linked to a different forwarding curve
         public virtual SwapIndex clone(Handle<YieldTermStructure> forwarding)
         {
             if (exogenousDiscount_)
+            {
                 return new SwapIndex(familyName(),
-                                     tenor(),
-                                     fixingDays(),
-                                     currency(),
-                                     fixingCalendar(),
-                                     fixedLegTenor(),
-                                     fixedLegConvention(),
-                                     dayCounter(),
-                                     iborIndex_.clone(forwarding),
-                                     discount_);
-            else
-                return new SwapIndex(familyName(),
-                                     tenor(),
-                                     fixingDays(),
-                                     currency(),
-                                     fixingCalendar(),
-                                     fixedLegTenor(),
-                                     fixedLegConvention(),
-                                     dayCounter(),
-                                     iborIndex_.clone(forwarding));
+                    tenor(),
+                    fixingDays(),
+                    currency(),
+                    fixingCalendar(),
+                    fixedLegTenor(),
+                    fixedLegConvention(),
+                    dayCounter(),
+                    iborIndex_.clone(forwarding),
+                    discount_);
+            }
+
+            return new SwapIndex(familyName(),
+                tenor(),
+                fixingDays(),
+                currency(),
+                fixingCalendar(),
+                fixedLegTenor(),
+                fixedLegConvention(),
+                dayCounter(),
+                iborIndex_.clone(forwarding));
         }
+
         //! returns a copy of itself linked to a different curves
         public virtual SwapIndex clone(Handle<YieldTermStructure> forwarding, Handle<YieldTermStructure> discounting) =>
             new SwapIndex(familyName(),
@@ -171,39 +137,90 @@ namespace QLNet.Indexes
         public virtual SwapIndex clone(Period tenor)
         {
             if (exogenousDiscount_)
+            {
                 return new SwapIndex(familyName(),
-                                     tenor,
-                                     fixingDays(),
-                                     currency(),
-                                     fixingCalendar(),
-                                     fixedLegTenor(),
-                                     fixedLegConvention(),
-                                     dayCounter(),
-                                     iborIndex(),
-                                     discountingTermStructure());
-            else
-                return new SwapIndex(familyName(),
-                                     tenor,
-                                     fixingDays(),
-                                     currency(),
-                                     fixingCalendar(),
-                                     fixedLegTenor(),
-                                     fixedLegConvention(),
-                                     dayCounter(),
-                                     iborIndex());
+                    tenor,
+                    fixingDays(),
+                    currency(),
+                    fixingCalendar(),
+                    fixedLegTenor(),
+                    fixedLegConvention(),
+                    dayCounter(),
+                    iborIndex(),
+                    discountingTermStructure());
+            }
+
+            return new SwapIndex(familyName(),
+                tenor,
+                fixingDays(),
+                currency(),
+                fixingCalendar(),
+                fixedLegTenor(),
+                fixedLegConvention(),
+                dayCounter(),
+                iborIndex());
         }
+
+        public Handle<YieldTermStructure> discountingTermStructure() => discount_;
+
+        public bool exogenousDiscount() => exogenousDiscount_;
+
+        public BusinessDayConvention fixedLegConvention() => fixedLegConvention_;
+
+        // Inspectors
+        public Period fixedLegTenor() => fixedLegTenor_;
+
         public override double forecastFixing(Date fixingDate) => underlyingSwap(fixingDate).fairRate();
 
-        protected new Period tenor_;
-        protected IborIndex iborIndex_;
-        protected Period fixedLegTenor_;
-        protected BusinessDayConvention fixedLegConvention_;
-        protected bool exogenousDiscount_;
-        protected Handle<YieldTermStructure> discount_;
-        // cache data to avoid swap recreation when the same fixing date
-        // is used multiple time to forecast changing fixing
-        protected VanillaSwap lastSwap_;
-        protected Date lastFixingDate_;
+        public Handle<YieldTermStructure> forwardingTermStructure() => iborIndex_.forwardingTermStructure();
+
+        public IborIndex iborIndex() => iborIndex_;
+
+        // InterestRateIndex interface
+        public override Date maturityDate(Date valueDate)
+        {
+            var fixDate = fixingDate(valueDate);
+            return underlyingSwap(fixDate).maturityDate();
+        }
+
+        // \warning Relinking the term structure underlying the index will not have effect on the returned swap.
+        // recheck
+        public VanillaSwap underlyingSwap(Date fixingDate)
+        {
+            Utils.QL_REQUIRE(fixingDate != null, () => "null fixing date");
+            // caching mechanism
+            if (lastFixingDate_ != fixingDate)
+            {
+                var fixedRate = 0.0;
+                if (exogenousDiscount_)
+                {
+                    lastSwap_ = new MakeVanillaSwap(tenor_, iborIndex_, fixedRate)
+                        .withEffectiveDate(valueDate(fixingDate))
+                        .withFixedLegCalendar(fixingCalendar())
+                        .withFixedLegDayCount(dayCounter_)
+                        .withFixedLegTenor(fixedLegTenor_)
+                        .withFixedLegConvention(fixedLegConvention_)
+                        .withFixedLegTerminationDateConvention(fixedLegConvention_)
+                        .withDiscountingTermStructure(discount_)
+                        .value();
+                }
+                else
+                {
+                    lastSwap_ = new MakeVanillaSwap(tenor_, iborIndex_, fixedRate)
+                        .withEffectiveDate(valueDate(fixingDate))
+                        .withFixedLegCalendar(fixingCalendar())
+                        .withFixedLegDayCount(dayCounter_)
+                        .withFixedLegTenor(fixedLegTenor_)
+                        .withFixedLegConvention(fixedLegConvention_)
+                        .withFixedLegTerminationDateConvention(fixedLegConvention_)
+                        .value();
+                }
+
+                lastFixingDate_ = fixingDate;
+            }
+
+            return lastSwap_;
+        }
     }
 
     //! base class for overnight indexed swap indexes

@@ -16,23 +16,25 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Quotes;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Termstructures.Volatility.CapFloor
 {
-    [JetBrains.Annotations.PublicAPI] public class ConstantCapFloorTermVolatility : CapFloorTermVolatilityStructure
+    [PublicAPI]
+    public class ConstantCapFloorTermVolatility : CapFloorTermVolatilityStructure
     {
         private Handle<Quote> volatility_;
 
         //! floating reference date, floating market data
         public ConstantCapFloorTermVolatility(int settlementDays,
-                                              Calendar cal,
-                                              BusinessDayConvention bdc,
-                                              Handle<Quote> volatility,
-                                              DayCounter dc)
-           : base(settlementDays, cal, bdc, dc)
+            Calendar cal,
+            BusinessDayConvention bdc,
+            Handle<Quote> volatility,
+            DayCounter dc)
+            : base(settlementDays, cal, bdc, dc)
         {
             volatility_ = volatility;
             volatility_.registerWith(update);
@@ -40,11 +42,11 @@ namespace QLNet.Termstructures.Volatility.CapFloor
 
         //! fixed reference date, floating market data
         public ConstantCapFloorTermVolatility(Date referenceDate,
-                                              Calendar cal,
-                                              BusinessDayConvention bdc,
-                                              Handle<Quote> volatility,
-                                              DayCounter dc)
-           : base(referenceDate, cal, bdc, dc)
+            Calendar cal,
+            BusinessDayConvention bdc,
+            Handle<Quote> volatility,
+            DayCounter dc)
+            : base(referenceDate, cal, bdc, dc)
         {
             volatility_ = volatility;
             volatility_.registerWith(update);
@@ -52,22 +54,22 @@ namespace QLNet.Termstructures.Volatility.CapFloor
 
         //! floating reference date, fixed market data
         public ConstantCapFloorTermVolatility(int settlementDays,
-                                              Calendar cal,
-                                              BusinessDayConvention bdc,
-                                              double volatility,
-                                              DayCounter dc)
-           : base(settlementDays, cal, bdc, dc)
+            Calendar cal,
+            BusinessDayConvention bdc,
+            double volatility,
+            DayCounter dc)
+            : base(settlementDays, cal, bdc, dc)
         {
             volatility_ = new Handle<Quote>(new SimpleQuote(volatility));
         }
 
         // fixed reference date, fixed market data
         public ConstantCapFloorTermVolatility(Date referenceDate,
-                                              Calendar cal,
-                                              BusinessDayConvention bdc,
-                                              double volatility,
-                                              DayCounter dc)
-           : base(referenceDate, cal, bdc, dc)
+            Calendar cal,
+            BusinessDayConvention bdc,
+            double volatility,
+            DayCounter dc)
+            : base(referenceDate, cal, bdc, dc)
         {
             volatility_ = new Handle<Quote>(new SimpleQuote(volatility));
         }
@@ -78,15 +80,14 @@ namespace QLNet.Termstructures.Volatility.CapFloor
 
         #endregion
 
+        protected override double volatilityImpl(double t, double rate) => volatility_.link.value();
 
         #region VolatilityTermStructure interface
+
         public override double minStrike() => double.MinValue;
 
         public override double maxStrike() => double.MaxValue;
 
         #endregion
-
-
-        protected override double volatilityImpl(double t, double rate) => volatility_.link.value();
     }
 }

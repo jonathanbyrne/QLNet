@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Termstructures;
 using QLNet.Time;
@@ -25,7 +26,6 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.Ibor
 {
-
     //! %TRY %LIBOR rate
     /*! TRY LIBOR fixed by TBA.
 
@@ -33,16 +33,17 @@ namespace QLNet.Indexes.Ibor
 
         \todo check end-of-month adjustment.
     */
-    [JetBrains.Annotations.PublicAPI] public class TRLibor : IborIndex
+    [PublicAPI]
+    public class TRLibor : IborIndex
     {
         public TRLibor(Period tenor)
-           : base("TRLibor", tenor, 0, new TRYCurrency(), new Turkey(), BusinessDayConvention.ModifiedFollowing, false, new Actual360(), new Handle<YieldTermStructure>())
-        { }
+            : base("TRLibor", tenor, 0, new TRYCurrency(), new Turkey(), BusinessDayConvention.ModifiedFollowing, false, new Actual360(), new Handle<YieldTermStructure>())
+        {
+        }
 
         public TRLibor(Period tenor, Handle<YieldTermStructure> h)
-           : base("TRLibor", tenor, 0, new TRYCurrency(), new Turkey(), BusinessDayConvention.ModifiedFollowing, false, new Actual360(), h)
-        { }
-
+            : base("TRLibor", tenor, 0, new TRYCurrency(), new Turkey(), BusinessDayConvention.ModifiedFollowing, false, new Actual360(), h)
+        {
+        }
     }
-
 }

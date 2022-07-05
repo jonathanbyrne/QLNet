@@ -16,7 +16,8 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using System;
+
+using JetBrains.Annotations;
 
 namespace QLNet.Math
 {
@@ -26,104 +27,106 @@ namespace QLNet.Math
         \warning the names of the Floor and Ceiling methods might be misleading. Check the provided reference. */
 
     /// <summary>
-    /// Basic rounding class
+    ///     Basic rounding class
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class Rounding
+    [PublicAPI]
+    public class Rounding
     {
-        private int precision_;
-        private Type type_;
-        private int digit_;
-
         public enum Type
         {
             /// <summary>
-            /// do not round: return the number unmodified
+            ///     do not round: return the number unmodified
             /// </summary>
             None,
             /// <summary>
-            /// the first decimal place past the precision will be
-            /// rounded up. This differs from the OMG rule which
-            /// rounds up only if the decimal to be rounded is
-            /// greater than or equal to the rounding digit
+            ///     the first decimal place past the precision will be
+            ///     rounded up. This differs from the OMG rule which
+            ///     rounds up only if the decimal to be rounded is
+            ///     greater than or equal to the rounding digit
             /// </summary>
             Up,
             /// <summary>
-            /// all decimal places past the precision will be
-            /// truncated
+            ///     all decimal places past the precision will be
+            ///     truncated
             /// </summary>
             Down,
             /// <summary>
-            /// the first decimal place past the precision
-            /// will be rounded up if greater than or equal
-            /// to the rounding digit; this corresponds to
-            /// the OMG round-up rule.  When the rounding
-            /// digit is 5, the result will be the one
-            /// closest to the original number, hence the
-            /// name.
+            ///     the first decimal place past the precision
+            ///     will be rounded up if greater than or equal
+            ///     to the rounding digit; this corresponds to
+            ///     the OMG round-up rule.  When the rounding
+            ///     digit is 5, the result will be the one
+            ///     closest to the original number, hence the
+            ///     name.
             /// </summary>
             Closest,
             /// <summary>
-            /// positive numbers will be rounded up and negative
-            /// numbers will be rounded down using the OMG round up
-            /// and round down rules
+            ///     positive numbers will be rounded up and negative
+            ///     numbers will be rounded down using the OMG round up
+            ///     and round down rules
             /// </summary>
             Floor,
             /// <summary>
-            /// positive numbers will be rounded down and negative
-            /// numbers will be rounded up using the OMG round up
-            /// and round down rules
+            ///     positive numbers will be rounded down and negative
+            ///     numbers will be rounded up using the OMG round up
+            ///     and round down rules
             /// </summary>
             Ceiling
         }
 
         /// <summary>
-        /// default constructor
-        /// Instances built through this constructor don't perform
-        /// any rounding.
+        ///     default constructor
+        ///     Instances built through this constructor don't perform
+        ///     any rounding.
         /// </summary>
         public Rounding()
         {
-            type_ = Type.None;
+            getType = Type.None;
         }
+
         public Rounding(int precision, Type type)
-           : this(precision, type, 5)
+            : this(precision, type, 5)
         {
         }
+
         public Rounding(int precision)
-           : this(precision, Type.Closest, 5)
+            : this(precision, Type.Closest, 5)
         {
         }
+
         public Rounding(int precision, Type type, int digit)
         {
-            precision_ = precision;
-            type_ = type;
-            digit_ = digit;
+            Precision = precision;
+            getType = type;
+            Digit = digit;
         }
 
-        public int Precision => precision_;
+        public int Digit { get; }
 
-        public Type getType => type_;
+        public Type getType { get; }
 
-        public int Digit => digit_;
+        public int Precision { get; }
 
         /// <summary>
-        /// Up-rounding
+        ///     Up-rounding
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
         public double Round(double value)
         {
-            if (type_ == Type.None)
+            if (getType == Type.None)
+            {
                 return value;
+            }
 
-            var mult = System.Math.Pow(10.0, precision_);
+            var mult = System.Math.Pow(10.0, Precision);
             var neg = value < 0.0;
             var lvalue = System.Math.Abs(value) * mult;
             var integral = 0.0;
             var modVal = lvalue - (integral = System.Math.Floor(lvalue));
 
             lvalue -= modVal;
-            switch (type_)
+            switch (getType)
             {
                 case Type.Down:
                     break;
@@ -131,30 +134,39 @@ namespace QLNet.Math
                     lvalue += 1.0;
                     break;
                 case Type.Closest:
-                    if (modVal >= digit_ / 10.0)
+                    if (modVal >= Digit / 10.0)
+                    {
                         lvalue += 1.0;
+                    }
+
                     break;
                 case Type.Floor:
                     if (!neg)
                     {
-                        if (modVal >= digit_ / 10.0)
+                        if (modVal >= Digit / 10.0)
+                        {
                             lvalue += 1.0;
+                        }
                     }
+
                     break;
                 case Type.Ceiling:
                     if (neg)
                     {
-                        if (modVal >= digit_ / 10.0)
+                        if (modVal >= Digit / 10.0)
+                        {
                             lvalue += 1.0;
+                        }
                     }
+
                     break;
                 default:
                     Utils.QL_FAIL("unknown rounding method");
                     break;
             }
+
             return neg ? -(lvalue / mult) : lvalue / mult;
         }
-
     }
 
     //!

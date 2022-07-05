@@ -16,24 +16,25 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Methods.Finitedifferences.Meshers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Operators
 {
-    [JetBrains.Annotations.PublicAPI] public class SecondDerivativeOp : TripleBandLinearOp
+    [PublicAPI]
+    public class SecondDerivativeOp : TripleBandLinearOp
     {
         public SecondDerivativeOp(SecondDerivativeOp rhs)
-           : base(rhs.direction_, rhs.mesher_)
+            : base(rhs.direction_, rhs.mesher_)
         {
             lower_ = rhs.lower_;
             diag_ = rhs.diag_;
             upper_ = rhs.upper_;
         }
+
         public SecondDerivativeOp(int direction, FdmMesher mesher)
-           : base(direction, mesher)
+            : base(direction, mesher)
         {
             var layout = mesher.layout();
             var endIter = layout.end();

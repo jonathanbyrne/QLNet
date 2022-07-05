@@ -20,8 +20,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Time;
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -53,16 +53,16 @@ namespace QLNet.Time.Calendars
 
     \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class Botswana : Calendar
+    [PublicAPI]
+    public class Botswana : Calendar
     {
-        public Botswana() : base(Impl.Singleton) { }
-
-        class Impl : WesternImpl
+        private class Impl : WesternImpl
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "South Africa";
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -75,38 +75,45 @@ namespace QLNet.Time.Calendars
                 if (isWeekend(w)
                     // New Year's Day (possibly moved to Monday or Tuesday)
                     || (d == 1 || d == 2 && w == DayOfWeek.Monday || d == 3 && w == DayOfWeek.Tuesday)
-                        && m == Month.January
+                    && m == Month.January
                     // Good Friday
                     || dd == em - 3
                     // Easter Monday
                     || dd == em
                     // Labour Day, May 1st (possibly moved to Monday)
                     || (d == 1 || d == 2 && w == DayOfWeek.Monday)
-                        && m == Month.May
+                    && m == Month.May
                     // Ascension
                     || dd == em + 38
                     // Sir Seretse Khama Day, July 1st (possibly moved to Monday)
                     || (d == 1 || d == 2 && w == DayOfWeek.Monday)
-                        && m == Month.July
+                    && m == Month.July
                     // Presidents' Day (third Monday of July)
                     || d >= 15 && d <= 21 && w == DayOfWeek.Monday && m == Month.July
                     // Independence Day, September 30th (possibly moved to Monday)
                     || d == 30 && m == Month.September ||
-                        d == 1 && w == DayOfWeek.Monday && m == Month.October
+                    d == 1 && w == DayOfWeek.Monday && m == Month.October
                     // Botswana Day, October 1st (possibly moved to Monday or Tuesday)
                     || (d == 1 || d == 2 && w == DayOfWeek.Monday || d == 3 && w == DayOfWeek.Tuesday)
-                        && m == Month.October
+                    && m == Month.October
                     // Christmas
                     || d == 25 && m == Month.December
                     // Boxing Day (possibly moved to Monday)
                     || (d == 26 || d == 27 && w == DayOfWeek.Monday)
-                        && m == Month.December
+                    && m == Month.December
                    )
+                {
                     return false;
+                }
 
                 return true;
             }
+
+            public override string name() => "South Africa";
+        }
+
+        public Botswana() : base(Impl.Singleton)
+        {
         }
     }
 }
-

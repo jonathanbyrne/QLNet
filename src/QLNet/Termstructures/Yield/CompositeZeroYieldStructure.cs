@@ -17,25 +17,26 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Time;
 using System;
+using JetBrains.Annotations;
+using QLNet.Time;
 
 namespace QLNet.Termstructures.Yield
 {
-    [JetBrains.Annotations.PublicAPI] public class CompositeZeroYieldStructure : ZeroYieldStructure
+    [PublicAPI]
+    public class CompositeZeroYieldStructure : ZeroYieldStructure
     {
+        private readonly Compounding comp_;
         private readonly Handle<YieldTermStructure> curve1_;
         private readonly Handle<YieldTermStructure> curve2_;
-        private readonly Compounding comp_;
-        private readonly Frequency freq_;
         private readonly Func<double, double, double> f_;
+        private readonly Frequency freq_;
 
         public CompositeZeroYieldStructure(Handle<YieldTermStructure> h1,
-                                           Handle<YieldTermStructure> h2,
-                                           Func<double, double, double> f,
-                                           Compounding comp = Compounding.Continuous,
-                                           Frequency freq = Frequency.NoFrequency)
-
+            Handle<YieldTermStructure> h2,
+            Func<double, double, double> f,
+            Compounding comp = Compounding.Continuous,
+            Frequency freq = Frequency.NoFrequency)
         {
             curve1_ = h1;
             curve2_ = h2;
@@ -44,23 +45,25 @@ namespace QLNet.Termstructures.Yield
             freq_ = freq;
 
             if (!curve1_.empty() && !curve2_.empty())
+            {
                 enableExtrapolation(curve1_.link.allowsExtrapolation() && curve2_.link.allowsExtrapolation());
+            }
 
             curve1_.registerWith(update);
             curve2_.registerWith(update);
         }
 
-        public override DayCounter dayCounter() => curve1_.link.dayCounter();
-
         public override Calendar calendar() => curve1_.link.calendar();
 
-        public override int settlementDays() => curve1_.link.settlementDays();
-
-        public override Date referenceDate() => curve1_.link.referenceDate();
+        public override DayCounter dayCounter() => curve1_.link.dayCounter();
 
         public override Date maxDate() => curve1_.link.maxDate();
 
         public override double maxTime() => curve1_.link.maxTime();
+
+        public override Date referenceDate() => curve1_.link.referenceDate();
+
+        public override int settlementDays() => curve1_.link.settlementDays();
 
         public override void update()
         {

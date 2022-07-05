@@ -23,7 +23,6 @@ namespace QLNet.Termstructures.Yield
             evaluationDate_ = Settings.evaluationDate();
         }
 
-
         //////////////////////////////////////
         //! Observer interface
         public override void update()
@@ -33,6 +32,7 @@ namespace QLNet.Termstructures.Yield
                 evaluationDate_ = Settings.evaluationDate();
                 initializeDates();
             }
+
             base.update();
         }
 

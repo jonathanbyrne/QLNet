@@ -13,11 +13,11 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.Pricingengines;
 using QLNet.processes;
-using System;
 
 namespace QLNet.Pricingengines.barrier
 {
@@ -35,8 +35,13 @@ namespace QLNet.Pricingengines.barrier
         \test the correctness of the returned value is tested by
               reproducing results available in literature.
     */
-    [JetBrains.Annotations.PublicAPI] public class AnalyticDoubleBarrierEngine : DoubleBarrierOption.Engine
+    [PublicAPI]
+    public class AnalyticDoubleBarrierEngine : DoubleBarrierOption.Engine
     {
+        private CumulativeNormalDistribution f_;
+        private GeneralizedBlackScholesProcess process_;
+        private int series_;
+
         public AnalyticDoubleBarrierEngine(GeneralizedBlackScholesProcess process, int series = 5)
         {
             process_ = process;
@@ -45,10 +50,11 @@ namespace QLNet.Pricingengines.barrier
 
             process_.registerWith(update);
         }
+
         public override void calculate()
         {
             Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () =>
-                             "this engine handles only european options");
+                "this engine handles only european options");
 
             var payoff = arguments_.payoff as PlainVanillaPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
@@ -65,9 +71,13 @@ namespace QLNet.Pricingengines.barrier
             if (triggered(spot))
             {
                 if (barrierType == DoubleBarrier.Type.KnockIn)
-                    results_.value = vanillaEquivalent();  // knocked in
+                {
+                    results_.value = vanillaEquivalent(); // knocked in
+                }
                 else
-                    results_.value = 0.0;  // knocked out
+                {
+                    results_.value = 0.0; // knocked out
+                }
             }
             else
             {
@@ -90,6 +100,7 @@ namespace QLNet.Pricingengines.barrier
                                 Utils.QL_FAIL("unknown double-barrier ExerciseType: " + barrierType);
                                 break;
                         }
+
                         break;
                     case QLNet.Option.Type.Put:
                         switch (barrierType)
@@ -108,6 +119,7 @@ namespace QLNet.Pricingengines.barrier
                                 Utils.QL_FAIL("unknown double-barrier ExerciseType: " + barrierType);
                                 break;
                         }
+
                         break;
                     default:
                         Utils.QL_FAIL("unknown ExerciseType");
@@ -116,57 +128,14 @@ namespace QLNet.Pricingengines.barrier
             }
         }
 
-        private GeneralizedBlackScholesProcess process_;
-        private CumulativeNormalDistribution f_;
-        private int series_;
-        // helper methods
-        private double underlying() => process_.x0();
-
-        private double strike()
-        {
-            var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
-            return payoff.strike();
-        }
-        private double residualTime() => process_.time(arguments_.exercise.lastDate());
-
-        private double volatility() => process_.blackVolatility().link.blackVol(residualTime(), strike());
-
-        private double volatilitySquared() => volatility() * volatility();
+        private double barrierHi() => arguments_.barrier_hi.GetValueOrDefault();
 
         private double barrierLo() => arguments_.barrier_lo.GetValueOrDefault();
 
-        private double barrierHi() => arguments_.barrier_hi.GetValueOrDefault();
-
-        private double rebate() => arguments_.rebate.GetValueOrDefault();
-
-        private double stdDeviation() => volatility() * System.Math.Sqrt(residualTime());
-
-        private double riskFreeRate() =>
-            process_.riskFreeRate().link.zeroRate(
-                residualTime(), Compounding.Continuous, Frequency.NoFrequency).value();
-
-        private double riskFreeDiscount() => process_.riskFreeRate().link.discount(residualTime());
-
-        private double dividendYield() =>
-            process_.dividendYield().link.zeroRate(
-                residualTime(), Compounding.Continuous, Frequency.NoFrequency).value();
-
-        private double costOfCarry() => riskFreeRate() - dividendYield();
-
-        private double dividendDiscount() => process_.dividendYield().link.discount(residualTime());
-
-        private double vanillaEquivalent()
-        {
+        private double callKI() =>
             // Call KI equates to vanilla - callKO
-            var payoff = arguments_.payoff as StrikedTypePayoff;
-            var forwardPrice = underlying() * dividendDiscount() / riskFreeDiscount();
-            var black = new BlackCalculator(payoff, forwardPrice, stdDeviation(), riskFreeDiscount());
-            var vanilla = black.value();
-            if (vanilla < 0.0)
-                vanilla = 0.0;
-            return vanilla;
-        }
+            System.Math.Max(0.0, vanillaEquivalent() - callKO());
+
         private double callKO()
         {
             // N.B. for flat barriers mu3=mu1 and mu2=0
@@ -198,12 +167,22 @@ namespace QLNet.Pricingengines.barrier
             var rend = System.Math.Exp(-dividendYield() * residualTime());
             var kov = underlying() * rend * acc1 - strike() * riskFreeDiscount() * acc2;
             return System.Math.Max(0.0, kov);
-
         }
+
+        private double costOfCarry() => riskFreeRate() - dividendYield();
+
+        private double dividendDiscount() => process_.dividendYield().link.discount(residualTime());
+
+        private double dividendYield() =>
+            process_.dividendYield().link.zeroRate(
+                residualTime(), Compounding.Continuous, Frequency.NoFrequency).value();
+
+        private double putKI() =>
+            // Put KI equates to vanilla - putKO
+            System.Math.Max(0.0, vanillaEquivalent() - putKO());
 
         private double putKO()
         {
-
             var mu1 = 2 * costOfCarry() / volatilitySquared() + 1;
             var bsigma = (costOfCarry() + volatilitySquared() / 2.0) * residualTime() / stdDeviation();
 
@@ -227,21 +206,52 @@ namespace QLNet.Pricingengines.barrier
                         (f_.value(y1) - f_.value(y2)) -
                         System.Math.Pow(System.Math.Pow(barrierLo(), n + 1) / (System.Math.Pow(barrierHi(), n) * underlying()), mu1) *
                         (f_.value(y3) - f_.value(y4));
-
             }
 
             var rend = System.Math.Exp(-dividendYield() * residualTime());
             var kov = strike() * riskFreeDiscount() * acc1 - underlying() * rend * acc2;
             return System.Math.Max(0.0, kov);
-
         }
 
-        private double callKI() =>
-            // Call KI equates to vanilla - callKO
-            System.Math.Max(0.0, vanillaEquivalent() - callKO());
+        private double rebate() => arguments_.rebate.GetValueOrDefault();
 
-        private double putKI() =>
-            // Put KI equates to vanilla - putKO
-            System.Math.Max(0.0, vanillaEquivalent() - putKO());
+        private double residualTime() => process_.time(arguments_.exercise.lastDate());
+
+        private double riskFreeDiscount() => process_.riskFreeRate().link.discount(residualTime());
+
+        private double riskFreeRate() =>
+            process_.riskFreeRate().link.zeroRate(
+                residualTime(), Compounding.Continuous, Frequency.NoFrequency).value();
+
+        private double stdDeviation() => volatility() * System.Math.Sqrt(residualTime());
+
+        private double strike()
+        {
+            var payoff = arguments_.payoff as PlainVanillaPayoff;
+            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            return payoff.strike();
+        }
+
+        // helper methods
+        private double underlying() => process_.x0();
+
+        private double vanillaEquivalent()
+        {
+            // Call KI equates to vanilla - callKO
+            var payoff = arguments_.payoff as StrikedTypePayoff;
+            var forwardPrice = underlying() * dividendDiscount() / riskFreeDiscount();
+            var black = new BlackCalculator(payoff, forwardPrice, stdDeviation(), riskFreeDiscount());
+            var vanilla = black.value();
+            if (vanilla < 0.0)
+            {
+                vanilla = 0.0;
+            }
+
+            return vanilla;
+        }
+
+        private double volatility() => process_.blackVolatility().link.blackVol(residualTime(), strike());
+
+        private double volatilitySquared() => volatility() * volatility();
     }
 }

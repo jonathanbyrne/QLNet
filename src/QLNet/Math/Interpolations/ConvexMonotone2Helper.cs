@@ -1,6 +1,9 @@
-﻿namespace QLNet.Math.Interpolations
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class ConvexMonotone2Helper : ISectionHelper
+    [PublicAPI]
+    public class ConvexMonotone2Helper : ISectionHelper
     {
         private double xPrev_, xScaling_, gPrev_, gNext_, fAverage_, eta2_, prevPrimitive_;
 
@@ -16,18 +19,7 @@
             prevPrimitive_ = prevPrimitive;
         }
 
-        public double value(double x)
-        {
-            var xVal = (x - xPrev_) / xScaling_;
-            if (xVal <= eta2_)
-            {
-                return fAverage_ + gPrev_;
-            }
-            else
-            {
-                return fAverage_ + gPrev_ + (gNext_ - gPrev_) / ((1 - eta2_) * (1 - eta2_)) * (xVal - eta2_) * (xVal - eta2_);
-            }
-        }
+        public double fNext() => fAverage_ + gNext_;
 
         public double primitive(double x)
         {
@@ -36,12 +28,20 @@
             {
                 return prevPrimitive_ + xScaling_ * (fAverage_ * xVal + gPrev_ * xVal);
             }
-            else
-            {
-                return prevPrimitive_ + xScaling_ * (fAverage_ * xVal + gPrev_ * xVal + (gNext_ - gPrev_) / ((1 - eta2_) * (1 - eta2_)) *
-                    (1.0 / 3.0 * (xVal * xVal * xVal - eta2_ * eta2_ * eta2_) - eta2_ * xVal * xVal + eta2_ * eta2_ * xVal));
-            }
+
+            return prevPrimitive_ + xScaling_ * (fAverage_ * xVal + gPrev_ * xVal + (gNext_ - gPrev_) / ((1 - eta2_) * (1 - eta2_)) *
+                (1.0 / 3.0 * (xVal * xVal * xVal - eta2_ * eta2_ * eta2_) - eta2_ * xVal * xVal + eta2_ * eta2_ * xVal));
         }
-        public double fNext() => fAverage_ + gNext_;
+
+        public double value(double x)
+        {
+            var xVal = (x - xPrev_) / xScaling_;
+            if (xVal <= eta2_)
+            {
+                return fAverage_ + gPrev_;
+            }
+
+            return fAverage_ + gPrev_ + (gNext_ - gPrev_) / ((1 - eta2_) * (1 - eta2_)) * (xVal - eta2_) * (xVal - eta2_);
+        }
     }
 }

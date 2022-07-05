@@ -1,14 +1,18 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Instruments
 {
     /// <summary>
-    /// Concrete collar class
-    /// \ingroup instruments
+    ///     Concrete collar class
+    ///     \ingroup instruments
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class Collar : CapFloor
+    [PublicAPI]
+    public class Collar : CapFloor
     {
         public Collar(List<CashFlow> floatingLeg, List<double> capRates, List<double> floorRates)
-            : base(CapFloorType.Collar, floatingLeg, capRates, floorRates) { }
+            : base(CapFloorType.Collar, floatingLeg, capRates, floorRates)
+        {
+        }
     }
 }

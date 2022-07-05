@@ -17,11 +17,10 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences.Operators;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Schemes
 {
@@ -32,12 +31,21 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         ADI finite difference schemes for option pricing in the Heston
         model with correlation, http://arxiv.org/pdf/0811.3427
     */
-    [JetBrains.Annotations.PublicAPI] public class ModifiedCraigSneydScheme : IMixedScheme, ISchemeFactory
+    [PublicAPI]
+    public class ModifiedCraigSneydScheme : IMixedScheme, ISchemeFactory
     {
-        public ModifiedCraigSneydScheme() { }
+        protected BoundaryConditionSchemeHelper bcSet_;
+        protected double? dt_;
+        protected FdmLinearOpComposite map_;
+        protected double theta_, mu_;
+
+        public ModifiedCraigSneydScheme()
+        {
+        }
+
         public ModifiedCraigSneydScheme(double theta, double mu,
-                                        FdmLinearOpComposite map,
-                                        List<BoundaryCondition<FdmLinearOp>> bcSet = null)
+            FdmLinearOpComposite map,
+            List<BoundaryCondition<FdmLinearOp>> bcSet = null)
         {
             dt_ = null;
             theta_ = theta;
@@ -47,16 +55,19 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         }
 
         #region ISchemeFactory
+
         public IMixedScheme factory(object L, object bcs, object[] additionalInputs)
         {
             var theta = additionalInputs[0] as double?;
             var mu = additionalInputs[1] as double?;
             return new ModifiedCraigSneydScheme(theta.Value, mu.Value,
-                                                L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
+                L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
         }
+
         #endregion
 
         #region IMixedScheme interface
+
         public void step(ref object a, double t, double theta = 1.0)
         {
             Utils.QL_REQUIRE(t - dt_.Value > -1e-8, () => "a step towards negative time given");
@@ -77,7 +88,8 @@ namespace QLNet.Methods.Finitedifferences.Schemes
 
             bcSet_.applyBeforeApplying(map_);
             var yt = y0 + mu_ * dt_.Value * map_.apply_mixed(y - (a as Vector))
-                        + (0.5 - mu_) * dt_.Value * map_.apply(y - (a as Vector)); ;
+                        + (0.5 - mu_) * dt_.Value * map_.apply(y - (a as Vector));
+            ;
             bcSet_.applyAfterApplying(yt);
 
             for (var i = 0; i < map_.size(); ++i)
@@ -85,6 +97,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
                 var rhs = yt - theta_ * dt_.Value * map_.apply_direction(i, a as Vector);
                 yt = map_.solve_splitting(i, rhs, -theta_ * dt_.Value);
             }
+
             bcSet_.applyAfterSolving(yt);
 
             a = yt;
@@ -94,11 +107,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         {
             dt_ = dt;
         }
-        #endregion
 
-        protected double? dt_;
-        protected double theta_, mu_;
-        protected FdmLinearOpComposite map_;
-        protected BoundaryConditionSchemeHelper bcSet_;
+        #endregion
     }
 }

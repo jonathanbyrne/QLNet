@@ -16,10 +16,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System;
 using QLNet.Math;
 using QLNet.Patterns;
 using QLNet.Time;
-using System;
 
 namespace QLNet
 {
@@ -28,96 +29,110 @@ namespace QLNet
     //! discretization of a 1D stochastic process over a given time interval
 
     //! multi-dimensional stochastic process class.
-   /*! This class describes a stochastic process governed by
-       \f[
-       d\mathrm{x}_t = \mu(t, x_t)\mathrm{d}t
-                     + \sigma(t, \mathrm{x}_t) \cdot d\mathrm{W}_t.
-       \f]
-   */
-   public abstract class StochasticProcess : IObservable, IObserver
-   {
-      protected IDiscretization discretization_;
+    /*! This class describes a stochastic process governed by
+        \f[
+        d\mathrm{x}_t = \mu(t, x_t)\mathrm{d}t
+                      + \sigma(t, \mathrm{x}_t) \cdot d\mathrm{W}_t.
+        \f]
+    */
+    public abstract class StochasticProcess : IObservable, IObserver
+    {
+        protected IDiscretization discretization_;
 
-      protected StochasticProcess() { }
-      protected StochasticProcess(IDiscretization disc)
-      {
-         discretization_ = disc;
-      }
+        protected StochasticProcess()
+        {
+        }
 
-      // Stochastic process interface
-      //! returns the number of dimensions of the stochastic process
-      public abstract int size();
+        protected StochasticProcess(IDiscretization disc)
+        {
+            discretization_ = disc;
+        }
 
-      //! returns the number of independent factors of the process
-      public virtual int factors() => size();
+        /*! \brief returns the diffusion part of the equation, i.e.
+                   \f$ \sigma(t, \mathrm{x}_t) \f$ */
+        public abstract Matrix diffusion(double t, Vector x);
 
-      //! returns the initial values of the state variables
-      public abstract Vector initialValues();
+        /*! \brief returns the drift part of the equation, i.e.,
+                   \f$ \mu(t, \mathrm{x}_t) \f$ */
+        public abstract Vector drift(double t, Vector x);
 
-      /*! \brief returns the drift part of the equation, i.e.,
-                 \f$ \mu(t, \mathrm{x}_t) \f$ */
-      public abstract Vector drift(double t, Vector x);
+        //! returns the initial values of the state variables
+        public abstract Vector initialValues();
 
-      /*! \brief returns the diffusion part of the equation, i.e.
-                 \f$ \sigma(t, \mathrm{x}_t) \f$ */
-      public abstract Matrix diffusion(double t, Vector x);
+        // Stochastic process interface
+        //! returns the number of dimensions of the stochastic process
+        public abstract int size();
 
-      /*! This method can be
-          overridden in derived classes which want to hard-code a
-          particular discretization.
-      */
-      public virtual Vector expectation(double t0, Vector x0, double dt) => apply(x0, discretization_.drift(this, t0, x0, dt));
+        // applies a change to the asset value.
+        public virtual Vector apply(Vector x0, Vector dx) => x0 + dx;
 
-      /*! returns the standard deviation. This method can be
-          overridden in derived classes which want to hard-code a
-          particular discretization.
-      */
-      public virtual Matrix stdDeviation(double t0, Vector x0, double dt) => discretization_.diffusion(this, t0, x0, dt);
+        /*! returns the covariance. This method can be
+            overridden in derived classes which want to hard-code a
+            particular discretization.
+        */
+        public virtual Matrix covariance(double t0, Vector x0, double dt) => discretization_.covariance(this, t0, x0, dt);
 
-      /*! returns the covariance. This method can be
-          overridden in derived classes which want to hard-code a
-          particular discretization.
-      */
-      public virtual Matrix covariance(double t0, Vector x0, double dt) => discretization_.covariance(this, t0, x0, dt);
+        // returns the asset value after a time interval
+        public virtual Vector evolve(double t0, Vector x0, double dt, Vector dw) => apply(expectation(t0, x0, dt), stdDeviation(t0, x0, dt) * dw);
 
-      // returns the asset value after a time interval
-      public virtual Vector evolve(double t0, Vector x0, double dt, Vector dw) => apply(expectation(t0, x0, dt), stdDeviation(t0, x0, dt) * dw);
+        /*! This method can be
+            overridden in derived classes which want to hard-code a
+            particular discretization.
+        */
+        public virtual Vector expectation(double t0, Vector x0, double dt) => apply(x0, discretization_.drift(this, t0, x0, dt));
 
-      // applies a change to the asset value.
-      public virtual Vector apply(Vector x0, Vector dx) => x0 + dx;
+        //! returns the number of independent factors of the process
+        public virtual int factors() => size();
 
-      // utilities
-      /*! returns the time value corresponding to the given date
-          in the reference system of the stochastic process.
+        /*! returns the standard deviation. This method can be
+            overridden in derived classes which want to hard-code a
+            particular discretization.
+        */
+        public virtual Matrix stdDeviation(double t0, Vector x0, double dt) => discretization_.diffusion(this, t0, x0, dt);
 
-          \note As a number of processes might not need this
-                functionality, a default implementation is given
-                which raises an exception.
-      */
-      public virtual double time(Date d) => throw new NotSupportedException("date/time conversion not supported");
+        // utilities
+        /*! returns the time value corresponding to the given date
+            in the reference system of the stochastic process.
+  
+            \note As a number of processes might not need this
+                  functionality, a default implementation is given
+                  which raises an exception.
+        */
+        public virtual double time(Date d) => throw new NotSupportedException("date/time conversion not supported");
 
-      #region Observer & Observable
-      // Subjects, i.e. observables, should define interface internally like follows.
-      private readonly WeakEventSource eventSource = new WeakEventSource();
-      public event Callback notifyObserversEvent
-      {
-         add => eventSource.Subscribe(value);
-         remove => eventSource.Unsubscribe(value);
-      }
+        #region Observer & Observable
 
-      public void registerWith(Callback handler) { notifyObserversEvent += handler; }
-      public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
-      protected void notifyObservers()
-      {
-         eventSource.Raise();
-      }
+        // Subjects, i.e. observables, should define interface internally like follows.
+        private readonly WeakEventSource eventSource = new WeakEventSource();
 
-      public virtual void update()
-      {
-         notifyObservers();
-      }
-      #endregion
-   }
+        public event Callback notifyObserversEvent
+        {
+            add => eventSource.Subscribe(value);
+            remove => eventSource.Unsubscribe(value);
+        }
 
-   //! 1-dimensional stochastic process
+        public void registerWith(Callback handler)
+        {
+            notifyObserversEvent += handler;
+        }
+
+        public void unregisterWith(Callback handler)
+        {
+            notifyObserversEvent -= handler;
+        }
+
+        protected void notifyObservers()
+        {
+            eventSource.Raise();
+        }
+
+        public virtual void update()
+        {
+            notifyObservers();
+        }
+
+        #endregion
+    }
+
+    //! 1-dimensional stochastic process
 }

@@ -16,55 +16,68 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Indexes;
-using QLNet.Instruments;
-using QLNet.Time;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
+using QLNet.Indexes;
+using QLNet.Time;
 
 namespace QLNet.Instruments.Bonds
 {
-    [JetBrains.Annotations.PublicAPI] public class CmsRateBond : Bond
+    [PublicAPI]
+    public class CmsRateBond : Bond
     {
         public CmsRateBond(int settlementDays,
-                           double faceAmount,
-                           Schedule schedule,
-                           SwapIndex index,
-                           DayCounter paymentDayCounter,
-                           BusinessDayConvention paymentConvention = BusinessDayConvention.Following,
-                           int fixingDays = 0,
-                           List<double> gearings = null,
-                           List<double> spreads = null,
-                           List<double?> caps = null,
-                           List<double?> floors = null,
-                           bool inArrears = false,
-                           double redemption = 100.0,
-                           Date issueDate = null)
-        : base(settlementDays, schedule.calendar(), issueDate)
+            double faceAmount,
+            Schedule schedule,
+            SwapIndex index,
+            DayCounter paymentDayCounter,
+            BusinessDayConvention paymentConvention = BusinessDayConvention.Following,
+            int fixingDays = 0,
+            List<double> gearings = null,
+            List<double> spreads = null,
+            List<double?> caps = null,
+            List<double?> floors = null,
+            bool inArrears = false,
+            double redemption = 100.0,
+            Date issueDate = null)
+            : base(settlementDays, schedule.calendar(), issueDate)
         {
             // Optional value check
             if (gearings == null)
-                gearings = new List<double>() { 1 };
+            {
+                gearings = new List<double> { 1 };
+            }
+
             if (spreads == null)
-                spreads = new List<double>() { 0 };
+            {
+                spreads = new List<double> { 0 };
+            }
+
             if (caps == null)
+            {
                 caps = new List<double?>();
+            }
+
             if (floors == null)
+            {
                 floors = new List<double?>();
+            }
 
             maturityDate_ = schedule.endDate();
             cashflows_ = new CmsLeg(schedule, index)
-            .withPaymentDayCounter(paymentDayCounter)
-            .withFixingDays(fixingDays)
-            .withGearings(gearings)
-            .withSpreads(spreads)
-            .withCaps(caps)
-            .withFloors(floors)
-            .inArrears(inArrears)
-            .withNotionals(faceAmount)
-            .withPaymentAdjustment(paymentConvention);
+                .withPaymentDayCounter(paymentDayCounter)
+                .withFixingDays(fixingDays)
+                .withGearings(gearings)
+                .withSpreads(spreads)
+                .withCaps(caps)
+                .withFloors(floors)
+                .inArrears(inArrears)
+                .withNotionals(faceAmount)
+                .withPaymentAdjustment(paymentConvention);
 
-            addRedemptionsToCashflows(new List<double>() { redemption });
+            addRedemptionsToCashflows(new List<double> { redemption });
 
             Utils.QL_REQUIRE(cashflows().Count != 0, () => "bond with no cashflows!");
             Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");

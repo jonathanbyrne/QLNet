@@ -1,6 +1,9 @@
-﻿namespace QLNet.Math.Interpolations
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public interface IWrapper
+    [PublicAPI]
+    public interface IWrapper
     {
         double volatility(double x);
     }

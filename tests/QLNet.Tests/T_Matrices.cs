@@ -41,7 +41,10 @@ namespace QLNet.Tests
             var sum = 0.0;
             for (var i = 0; i < m.rows(); i++)
                 for (var j = 0; j < m.columns(); j++)
+                {
                     sum += m[i, j] * m[i, j];
+                }
+
             return System.Math.Sqrt(sum);
         }
 
@@ -114,25 +117,35 @@ namespace QLNet.Tests
                 {
                     var v = new Vector(N);
                     for (var j = 0; j < N; j++)
+                    {
                         v[j] = eigenVectors[j, i];
+                    }
+
                     // check definition
                     var a = M * v;
                     var b = eigenValues[i] * v;
                     if (norm(a - b) > 1.0e-15)
+                    {
                         QAssert.Fail("Eigenvector definition not satisfied");
+                    }
+
                     // check decreasing ordering
                     if (eigenValues[i] >= minHolder)
                     {
                         QAssert.Fail("Eigenvalues not ordered: " + eigenValues);
                     }
                     else
+                    {
                         minHolder = eigenValues[i];
+                    }
                 }
 
                 // check normalization
                 var m = eigenVectors * Matrix.transpose(eigenVectors);
                 if (norm(m - I) > 1.0e-15)
+                {
                     QAssert.Fail("Eigenvector not normalized");
+                }
             }
         }
 
@@ -209,21 +222,29 @@ namespace QLNet.Tests
                 for (var i = 0; i < S.rows(); i++)
                 {
                     if (S[i, i] != s[i])
+                    {
                         QAssert.Fail("S not consistent with s");
+                    }
                 }
 
                 // tests
                 var U_Utranspose = Matrix.transpose(U) * U;
                 if (norm(U_Utranspose - I) > tol)
+                {
                     QAssert.Fail("U not orthogonal (norm of U^T*U-I = " + norm(U_Utranspose - I) + ")");
+                }
 
                 var V_Vtranspose = Matrix.transpose(V) * V;
                 if (norm(V_Vtranspose - I) > tol)
+                {
                     QAssert.Fail("V not orthogonal (norm of V^T*V-I = " + norm(V_Vtranspose - I) + ")");
+                }
 
                 var A_reconstructed = U * S * Matrix.transpose(V);
                 if (norm(A_reconstructed - A) > tol)
+                {
                     QAssert.Fail("Product does not recover A: (norm of U*S*V^T-A = " + norm(A_reconstructed - A) + ")");
+                }
             }
         }
 
@@ -256,16 +277,19 @@ namespace QLNet.Tests
                 }
 
                 if (norm(Q * R - A * P) > tol)
+                {
                     QAssert.Fail("Q*R does not match matrix A*P (norm = "
                                  + norm(Q * R - A * P) + ")");
+                }
 
                 pivot = false;
                 MatrixUtilities.qrDecomposition(A, ref Q, ref R, pivot);
 
                 if (norm(Q * R - A) > tol)
+                {
                     QAssert.Fail("Q*R does not match matrix A (norm = "
                                  + norm(Q * R - A) + ")");
-
+                }
             }
         }
 
@@ -302,8 +326,10 @@ namespace QLNet.Tests
                     if (A.columns() >= A.rows())
                     {
                         if (norm(A * x - b) > tol)
+                        {
                             QAssert.Fail("A*x does not match vector b (norm = "
                                          + norm(A * x - b) + ")");
+                        }
                     }
                     else
                     {
@@ -324,7 +350,9 @@ namespace QLNet.Tests
                                 double u = 0;
                                 var zero = 0;
                                 for (var kk = 0; kk < U.rows(); kk++)
+                                {
                                     u += U[kk, i] * b[zero++] / w[i];
+                                }
 
                                 for (var jj = 0; jj < n; ++jj)
                                 {
@@ -364,15 +392,21 @@ namespace QLNet.Tests
 
                 var eins = new Matrix(A.rows(), A.rows(), 0.0);
                 for (var i = 0; i < A.rows(); ++i)
+                {
                     eins[i, i] = 1.0;
+                }
 
                 if (norm(I1 - eins) > tol)
+                {
                     QAssert.Fail("inverse(A)*A does not recover unit matrix (norm = "
                                  + norm(I1 - eins) + ")");
+                }
 
                 if (norm(I2 - eins) > tol)
+                {
                     QAssert.Fail("A*inverse(A) does not recover unit matrix (norm = "
                                  + norm(I1 - eins) + ")");
+                }
             }
         }
     }

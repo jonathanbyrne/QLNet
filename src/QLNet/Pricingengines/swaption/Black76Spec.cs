@@ -1,17 +1,19 @@
-﻿using QLNet.Termstructures.Volatility.Optionlet;
+﻿using JetBrains.Annotations;
+using QLNet.Termstructures.Volatility.Optionlet;
 
 namespace QLNet.Pricingengines.swaption
 {
-    [JetBrains.Annotations.PublicAPI] public class Black76Spec : ISwaptionEngineSpec
+    [PublicAPI]
+    public class Black76Spec : ISwaptionEngineSpec
     {
         private VolatilityType type_;
-
-        public VolatilityType type() => type_;
 
         public Black76Spec()
         {
             type_ = VolatilityType.ShiftedLognormal;
         }
+
+        public VolatilityType type() => type_;
 
         public double value(QLNet.Option.Type type, double strike, double atmForward, double stdDev, double annuity,
             double displacement = 0.0) =>

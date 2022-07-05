@@ -16,11 +16,12 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet;
-using QLNet.Math.matrixutilities;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Math.matrixutilities;
 
 namespace QLNet.Math
 {
@@ -32,25 +33,19 @@ namespace QLNet.Math
         \test the correctness of the returned values is tested by
               checking their properties.
     */
-    [JetBrains.Annotations.PublicAPI] public class LinearLeastSquaresRegression : LinearLeastSquaresRegression<double>
+    [PublicAPI]
+    public class LinearLeastSquaresRegression : LinearLeastSquaresRegression<double>
     {
         public LinearLeastSquaresRegression(List<double> x, List<double> y, List<Func<double, double>> v)
-           : base(x, y, v) { }
+            : base(x, y, v)
+        {
+        }
     }
 
-    [JetBrains.Annotations.PublicAPI] public class LinearLeastSquaresRegression<ArgumentType>
+    [PublicAPI]
+    public class LinearLeastSquaresRegression<ArgumentType>
     {
         private Vector a_, err_, residuals_, standardErrors_;
-
-        public Vector coefficients() => a_;
-
-        public Vector residuals() => residuals_;
-
-        //! standard parameter errors as given by Excel, R etc.
-        public Vector standardErrors() => standardErrors_;
-        //! modeling uncertainty as definied in Numerical Recipes
-
-        public Vector error() => err_;
 
         public LinearLeastSquaresRegression(List<ArgumentType> x, List<double> y, List<Func<ArgumentType, double>> v)
         {
@@ -68,7 +63,9 @@ namespace QLNet.Math
 
             var A = new Matrix(n, m);
             for (i = 0; i < m; ++i)
+            {
                 x.ForEach((jj, xx) => A[jj, i] = v[i](xx));
+            }
 
             var svd = new SVD(A);
             var V = svd.V();
@@ -91,12 +88,23 @@ namespace QLNet.Math
                     }
                 }
             }
+
             err_ = Vector.Sqrt(err_);
             residuals_ = A * a_ - new Vector(y);
 
             var chiSq = residuals_.Sum(r => r * r);
             err_.ForEach((ii, vv) => standardErrors_[ii] = vv * System.Math.Sqrt(chiSq / (n - 2)));
         }
+
+        public Vector coefficients() => a_;
+        //! modeling uncertainty as definied in Numerical Recipes
+
+        public Vector error() => err_;
+
+        public Vector residuals() => residuals_;
+
+        //! standard parameter errors as given by Excel, R etc.
+        public Vector standardErrors() => standardErrors_;
     }
 
     //! linear regression y_i = a_0 + a_1*x_0 +..+a_n*x_{n-1} + eps

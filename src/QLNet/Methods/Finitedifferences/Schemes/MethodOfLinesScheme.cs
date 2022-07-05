@@ -16,12 +16,12 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
-using QLNet.Methods.Finitedifferences.Operators;
-using System;
+
 using System.Collections.Generic;
-using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Math;
 using QLNet.Math.ODE;
+using QLNet.Methods.Finitedifferences.Operators;
 
 namespace QLNet.Methods.Finitedifferences.Schemes
 {
@@ -29,15 +29,22 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         Douglas scheme and in higher dimensions it is usually inferior to
         operator splitting methods like Craig-Sneyd or Hundsdorfer-Verwer.
     */
-    [JetBrains.Annotations.PublicAPI] public class MethodOfLinesScheme : IMixedScheme, ISchemeFactory
+    [PublicAPI]
+    public class MethodOfLinesScheme : IMixedScheme, ISchemeFactory
     {
+        protected BoundaryConditionSchemeHelper bcSet_;
+        protected double? dt_;
+        protected double eps_, relInitStepSize_;
+        protected FdmLinearOpComposite map_;
+
         public MethodOfLinesScheme()
-        { }
+        {
+        }
 
         public MethodOfLinesScheme(double eps,
-                                   double relInitStepSize,
-                                   FdmLinearOpComposite map,
-                                   List<BoundaryCondition<FdmLinearOp>> bcSet = null)
+            double relInitStepSize,
+            FdmLinearOpComposite map,
+            List<BoundaryCondition<FdmLinearOp>> bcSet = null)
         {
             dt_ = null;
             eps_ = eps;
@@ -53,10 +60,24 @@ namespace QLNet.Methods.Finitedifferences.Schemes
             var eps = additionalInputs[0] as double?;
             var relInitStepSize = additionalInputs[1] as double?;
             return new MethodOfLinesScheme(eps.Value, relInitStepSize.Value,
-                                           L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
+                L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
         }
 
         #endregion
+
+        public void setStep(double dt)
+        {
+            dt_ = dt;
+        }
+
+        public void step(ref object a, double t, double theta = 1.0)
+        {
+            Utils.QL_REQUIRE(t - dt_ > -1e-8, () => "a step towards negative time given");
+            var v = new AdaptiveRungeKutta(eps_, relInitStepSize_ * dt_.Value).value(apply, a as Vector, t, System.Math.Max(0.0, t - dt_.Value));
+            var y = new Vector(v);
+            bcSet_.applyAfterSolving(y);
+            a = y;
+        }
 
         protected List<double> apply(double t, List<double> r)
         {
@@ -67,24 +88,5 @@ namespace QLNet.Methods.Finitedifferences.Schemes
 
             return dxdt;
         }
-
-        public void step(ref object a, double t, double theta = 1.0)
-        {
-            Utils.QL_REQUIRE(t - dt_ > -1e-8, () => "a step towards negative time given");
-            var v = new AdaptiveRungeKutta(eps_, relInitStepSize_ * dt_.Value).value(this.apply, a as Vector, t, System.Math.Max(0.0, t - dt_.Value));
-            var y = new Vector(v);
-            bcSet_.applyAfterSolving(y);
-            a = y;
-        }
-
-        public void setStep(double dt)
-        {
-            dt_ = dt;
-        }
-
-        protected double? dt_;
-        protected double eps_, relInitStepSize_;
-        protected FdmLinearOpComposite map_;
-        protected BoundaryConditionSchemeHelper bcSet_;
     }
 }

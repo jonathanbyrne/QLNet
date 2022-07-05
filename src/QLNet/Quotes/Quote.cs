@@ -17,35 +17,45 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Patterns;
 
 namespace QLNet.Quotes
 {
     //! purely virtual base class for market observables
-    [JetBrains.Annotations.PublicAPI] public class Quote : IObservable
+    [PublicAPI]
+    public class Quote : IObservable
     {
+        // observable interface
+        private readonly WeakEventSource eventSource = new WeakEventSource();
+
+        //! returns true if the Quote holds a valid value, true by default
+        public virtual bool isValid() => true;
+
+        public void registerWith(Callback handler)
+        {
+            notifyObserversEvent += handler;
+        }
+
+        public void unregisterWith(Callback handler)
+        {
+            notifyObserversEvent -= handler;
+        }
         // recheck this abstract implementations of methods which otherwise should throw "notimplemented"
         // such default implementation is needed for Handles
 
         //! returns the current value, 0 by default
         public virtual double value() => 0;
 
-        //! returns true if the Quote holds a valid value, true by default
-        public virtual bool isValid() => true;
+        protected void notifyObservers()
+        {
+            eventSource.Raise();
+        }
 
-        // observable interface
-        private readonly WeakEventSource eventSource = new WeakEventSource();
         public event Callback notifyObserversEvent
         {
             add => eventSource.Subscribe(value);
             remove => eventSource.Unsubscribe(value);
-        }
-
-        public void registerWith(Callback handler) { notifyObserversEvent += handler; }
-        public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
-        protected void notifyObservers()
-        {
-            eventSource.Raise();
         }
     }
 }

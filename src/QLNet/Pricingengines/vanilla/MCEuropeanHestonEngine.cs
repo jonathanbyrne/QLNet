@@ -14,6 +14,7 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.randomnumbers;
 using QLNet.Math.statistics;
@@ -28,21 +29,23 @@ namespace QLNet.Pricingengines.vanilla
         \test the correctness of the returned value is tested by
               reproducing results available in web/literature
     */
-    [JetBrains.Annotations.PublicAPI] public class MCEuropeanHestonEngine<RNG, S> : MCVanillaEngine<MultiVariate, RNG, S>
-      where RNG : IRSG, new()
-      where S : IGeneralStatistics, new()
+    [PublicAPI]
+    public class MCEuropeanHestonEngine<RNG, S> : MCVanillaEngine<MultiVariate, RNG, S>
+        where RNG : IRSG, new()
+        where S : IGeneralStatistics, new()
     {
         public MCEuropeanHestonEngine(HestonProcess process,
-                                      int? timeSteps,
-                                      int? timeStepsPerYear,
-                                      bool antitheticVariate,
-                                      int? requiredSamples,
-                                      double? requiredTolerance,
-                                      int? maxSamples,
-                                      ulong seed)
-        : base(process, timeSteps, timeStepsPerYear, false, antitheticVariate, false, requiredSamples, requiredTolerance,
-               maxSamples, seed)
-        { }
+            int? timeSteps,
+            int? timeStepsPerYear,
+            bool antitheticVariate,
+            int? requiredSamples,
+            double? requiredTolerance,
+            int? maxSamples,
+            ulong seed)
+            : base(process, timeSteps, timeStepsPerYear, false, antitheticVariate, false, requiredSamples, requiredTolerance,
+                maxSamples, seed)
+        {
+        }
 
         protected override PathPricer<IPath> pathPricer()
         {
@@ -53,10 +56,9 @@ namespace QLNet.Pricingengines.vanilla
             Utils.QL_REQUIRE(process != null, () => "Heston process required");
 
             return new EuropeanHestonPathPricer(payoff.optionType(),
-                                                payoff.strike(),
-                                                process.riskFreeRate().link.discount(timeGrid().Last()));
+                payoff.strike(),
+                process.riskFreeRate().link.discount(timeGrid().Last()));
         }
-
     }
 
     //! Monte Carlo Heston European engine factory

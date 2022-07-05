@@ -19,6 +19,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
 
 namespace QLNet.Currencies
@@ -29,9 +30,12 @@ namespace QLNet.Currencies
     //
     //        \ingroup currencies
     //
-    [JetBrains.Annotations.PublicAPI] public class ARSCurrency : Currency
+    [PublicAPI]
+    public class ARSCurrency : Currency
     {
-        public ARSCurrency() : base("Argentinian peso", "ARS", 32, "", "", 100, new Rounding(), "%2% %1$.2f") { }
+        public ARSCurrency() : base("Argentinian peso", "ARS", 32, "", "", 100, new Rounding(), "%2% %1$.2f")
+        {
+        }
     }
 
     //! Brazilian real

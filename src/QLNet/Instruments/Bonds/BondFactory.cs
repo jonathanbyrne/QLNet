@@ -17,23 +17,25 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Time;
 using QLNet.Time.Calendars;
 
 namespace QLNet.Instruments.Bonds
 {
-    [JetBrains.Annotations.PublicAPI] public class BondFactory
+    [PublicAPI]
+    public class BondFactory
     {
         public static AmortizingBond makeAmortizingBond(double FaceValue,
-                                                        double MarketValue,
-                                                        double CouponRate,
-                                                        Date IssueDate,
-                                                        Date MaturityDate,
-                                                        Date TradeDate,
-                                                        Frequency payFrequency,
-                                                        DayCounter dCounter,
-                                                        AmortizingMethod Method,
-                                                        double gYield = 0) =>
+            double MarketValue,
+            double CouponRate,
+            Date IssueDate,
+            Date MaturityDate,
+            Date TradeDate,
+            Frequency payFrequency,
+            DayCounter dCounter,
+            AmortizingMethod Method,
+            double gYield = 0) =>
             new AmortizingBond(FaceValue,
                 MarketValue,
                 CouponRate,
@@ -46,65 +48,63 @@ namespace QLNet.Instruments.Bonds
                 new NullCalendar(), gYield);
 
         public static AmortizingFixedRateBond makeAmortizingFixedBond(Date startDate,
-                                                                      Period bondLength,
-                                                                      DayCounter dCounter,
-                                                                      Frequency payFrequency,
-                                                                      double amount,
-                                                                      double rate) =>
+            Period bondLength,
+            DayCounter dCounter,
+            Frequency payFrequency,
+            double amount,
+            double rate) =>
             makeAmortizingFixedBond(startDate, bondLength, dCounter, payFrequency, amount, rate, new TARGET());
 
         public static AmortizingFixedRateBond makeAmortizingFixedBond(Date startDate,
-                                                                      Period bondLength,
-                                                                      DayCounter dCounter,
-                                                                      Frequency payFrequency,
-                                                                      double amount,
-                                                                      double rate,
-                                                                      Calendar calendar)
+            Period bondLength,
+            DayCounter dCounter,
+            Frequency payFrequency,
+            double amount,
+            double rate,
+            Calendar calendar)
         {
             AmortizingFixedRateBond bond;
             var endDate = calendar.advance(startDate, bondLength);
 
             var schedule = new Schedule(startDate, endDate, bondLength, calendar, BusinessDayConvention.Unadjusted,
-                                             BusinessDayConvention.Unadjusted, DateGeneration.Rule.Backward, false);
+                BusinessDayConvention.Unadjusted, DateGeneration.Rule.Backward, false);
 
             bond = new AmortizingFixedRateBond(0, calendar, amount, startDate, bondLength, payFrequency, rate, dCounter);
 
             return bond;
-
         }
 
         public static MBSFixedRateBond makeMBSFixedBond(Date startDate,
-                                                        Period bondLength,
-                                                        Period originalLength,
-                                                        DayCounter dCounter,
-                                                        Frequency payFrequency,
-                                                        double amount,
-                                                        double WACRate,
-                                                        double PassThroughRate,
-                                                        PSACurve psaCurve) =>
+            Period bondLength,
+            Period originalLength,
+            DayCounter dCounter,
+            Frequency payFrequency,
+            double amount,
+            double WACRate,
+            double PassThroughRate,
+            PSACurve psaCurve) =>
             makeMBSFixedBond(startDate, bondLength, originalLength, dCounter, payFrequency, amount, WACRate, PassThroughRate, psaCurve, new TARGET());
 
         public static MBSFixedRateBond makeMBSFixedBond(Date startDate,
-                                                        Period bondLength,
-                                                        Period originalLength,
-                                                        DayCounter dCounter,
-                                                        Frequency payFrequency,
-                                                        double amount,
-                                                        double WACrate,
-                                                        double PassThroughRate,
-                                                        PSACurve psaCurve,
-                                                        Calendar calendar)
+            Period bondLength,
+            Period originalLength,
+            DayCounter dCounter,
+            Frequency payFrequency,
+            double amount,
+            double WACrate,
+            double PassThroughRate,
+            PSACurve psaCurve,
+            Calendar calendar)
         {
             MBSFixedRateBond bond;
             var endDate = calendar.advance(startDate, bondLength);
 
             var schedule = new Schedule(startDate, endDate, bondLength, calendar, BusinessDayConvention.Unadjusted,
-                                             BusinessDayConvention.Unadjusted, DateGeneration.Rule.Backward, false);
+                BusinessDayConvention.Unadjusted, DateGeneration.Rule.Backward, false);
 
             bond = new MBSFixedRateBond(0, calendar, amount, startDate, bondLength, originalLength, payFrequency, WACrate, PassThroughRate, dCounter, psaCurve);
 
             return bond;
-
         }
     }
 }

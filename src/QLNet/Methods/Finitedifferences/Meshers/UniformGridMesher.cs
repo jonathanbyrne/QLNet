@@ -17,25 +17,30 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences.Operators;
-using System.Collections.Generic;
 
 namespace QLNet.Methods.Finitedifferences.Meshers
 {
     /// <summary>
-    /// uniform grid mesher
+    ///     uniform grid mesher
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class UniformGridMesher : FdmMesher
+    [PublicAPI]
+    public class UniformGridMesher : FdmMesher
     {
+        protected Vector dx_;
+        protected List<List<double>> locations_;
+
         public UniformGridMesher(FdmLinearOpLayout layout, List<Pair<double?, double?>> boundaries)
-        : base(layout)
+            : base(layout)
         {
             dx_ = new Vector(layout.dim().Count);
             locations_ = new InitializedList<List<double>>(layout.dim().Count);
 
             Utils.QL_REQUIRE(boundaries.Count == layout.dim().Count,
-                             () => "inconsistent boundaries given");
+                () => "inconsistent boundaries given");
 
             for (var i = 0; i < layout.dim().Count; ++i)
             {
@@ -50,12 +55,12 @@ namespace QLNet.Methods.Finitedifferences.Meshers
             }
         }
 
-        public override double? dplus(FdmLinearOpIterator iter, int direction) => dx_[direction];
-
         public override double? dminus(FdmLinearOpIterator iter, int direction) => dx_[direction];
 
+        public override double? dplus(FdmLinearOpIterator iter, int direction) => dx_[direction];
+
         public override double location(FdmLinearOpIterator iter,
-                                        int direction) =>
+            int direction) =>
             locations_[direction][iter.coordinates()[direction]];
 
         public override Vector locations(int direction)
@@ -72,8 +77,5 @@ namespace QLNet.Methods.Finitedifferences.Meshers
 
             return retVal;
         }
-
-        protected Vector dx_;
-        protected List<List<double>> locations_;
     }
 }

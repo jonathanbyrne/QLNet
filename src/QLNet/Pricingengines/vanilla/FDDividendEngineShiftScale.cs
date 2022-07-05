@@ -1,37 +1,39 @@
 ﻿using System;
+using JetBrains.Annotations;
 using QLNet.processes;
 
 namespace QLNet.Pricingengines.vanilla
 {
-    [JetBrains.Annotations.PublicAPI] public class FDDividendEngineShiftScale : FDDividendEngineBase
+    [PublicAPI]
+    public class FDDividendEngineShiftScale : FDDividendEngineBase
     {
-        public FDDividendEngineShiftScale(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
-            : base(process, timeSteps, gridPoints, timeDependent) { }
-
-        public override FDVanillaEngine factory2(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent) => throw new NotImplementedException();
-
-        protected override void setGridLimits()
+        private class DividendAdder
         {
-            var underlying = process_.stateVariable().link.value();
-            for (var i = 0; i < events_.Count; i++)
+            private readonly Dividend dividend;
+
+            public DividendAdder(Dividend d)
             {
-                var dividend = events_[i] as Dividend;
-                if (dividend == null)
-                    continue;
-                if (getDividendTime(i) < 0.0)
-                    continue;
-                underlying -= dividend.amount(underlying);
+                dividend = d;
             }
 
-            setGridLimits(underlying, getResidualTime());
-            ensureStrikeInGrid();
+            public double value(double x) => x + dividend.amount(x);
         }
+
+        public FDDividendEngineShiftScale(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
+            : base(process, timeSteps, gridPoints, timeDependent)
+        {
+        }
+
+        public override FDVanillaEngine factory2(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent) => throw new NotImplementedException();
 
         protected override void executeIntermediateStep(int step)
         {
             var dividend = events_[step] as Dividend;
             if (dividend == null)
+            {
                 return;
+            }
+
             var adder = new DividendAdder(dividend);
             sMin_ = adder.value(sMin_);
             sMax_ = adder.value(sMax_);
@@ -48,15 +50,27 @@ namespace QLNet.Pricingengines.vanilla
             stepCondition_.applyTo(prices_.values(), getDividendTime(step));
         }
 
-        class DividendAdder
+        protected override void setGridLimits()
         {
-            private Dividend dividend;
-
-            public DividendAdder(Dividend d)
+            var underlying = process_.stateVariable().link.value();
+            for (var i = 0; i < events_.Count; i++)
             {
-                dividend = d;
+                var dividend = events_[i] as Dividend;
+                if (dividend == null)
+                {
+                    continue;
+                }
+
+                if (getDividendTime(i) < 0.0)
+                {
+                    continue;
+                }
+
+                underlying -= dividend.amount(underlying);
             }
-            public double value(double x) => x + dividend.amount(x);
+
+            setGridLimits(underlying, getResidualTime());
+            ensureStrikeInGrid();
         }
     }
 }

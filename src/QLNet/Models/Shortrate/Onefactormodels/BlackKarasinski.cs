@@ -17,28 +17,25 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System;
+using JetBrains.Annotations;
+using QLNet.Math.Optimization;
 using QLNet.Math.Solvers1d;
 using QLNet.Methods.lattices;
 using QLNet.Termstructures;
-using System;
-using QLNet.Math.Optimization;
 
 namespace QLNet.Models.Shortrate.Onefactormodels
 {
-
-    [JetBrains.Annotations.PublicAPI] public class BlackKarasinski : OneFactorModel,
-       ITermStructureConsistentModel
+    [PublicAPI]
+    public class BlackKarasinski : OneFactorModel,
+        ITermStructureConsistentModel
     {
-        private double a() => a_.value(0.0);
-
-        private double sigma() => sigma_.value(0.0);
-
-        Parameter a_;
-        Parameter sigma_;
+        private Parameter a_;
+        private Parameter sigma_;
 
         public BlackKarasinski(Handle<YieldTermStructure> termStructure,
-                               double a, double sigma)
-           : base(2)
+            double a, double sigma)
+            : base(2)
         {
             a_ = arguments_[0];
             sigma_ = arguments_[1];
@@ -50,23 +47,26 @@ namespace QLNet.Models.Shortrate.Onefactormodels
         }
 
         public BlackKarasinski(Handle<YieldTermStructure> termStructure)
-           : this(termStructure, 0.1, 0.1)
-        { }
+            : this(termStructure, 0.1, 0.1)
+        {
+        }
+
+        public override ShortRateDynamics dynamics() => throw new NotImplementedException("no defined process for Black-Karasinski");
 
         public override Lattice tree(TimeGrid grid)
         {
             var phi = new TermStructureFittingParameter(termStructure());
 
             ShortRateDynamics numericDynamics =
-               new Dynamics(phi, a(), sigma());
+                new Dynamics(phi, a(), sigma());
 
             var trinomial =
-               new TrinomialTree(numericDynamics.process(), grid);
+                new TrinomialTree(numericDynamics.process(), grid);
             var numericTree =
-               new ShortRateTree(trinomial, numericDynamics, grid);
+                new ShortRateTree(trinomial, numericDynamics, grid);
 
             var impl =
-               (TermStructureFittingParameter.NumericalImpl)phi.implementation();
+                (TermStructureFittingParameter.NumericalImpl)phi.implementation();
             impl.reset();
             var value = 1.0;
             var vMin = -50.0;
@@ -82,12 +82,16 @@ namespace QLNet.Models.Shortrate.Onefactormodels
                 value = s1d.solve(finder, 1e-7, value, vMin, vMax);
                 impl.setvalue(grid[i], value);
             }
+
             return numericTree;
         }
 
-        public override ShortRateDynamics dynamics() => throw new NotImplementedException("no defined process for Black-Karasinski");
+        private double a() => a_.value(0.0);
+
+        private double sigma() => sigma_.value(0.0);
 
         #region ITermStructureConsistentModel
+
         public Handle<YieldTermStructure> termStructure() => termStructure_;
 
         public Handle<YieldTermStructure> termStructure_ { get; set; }

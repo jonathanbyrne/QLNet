@@ -123,7 +123,9 @@ namespace QLNet.Tests
                 disc = ir.discountFactor(d1, d2);
                 error = System.Math.Abs(disc - 1.0 / compoundf);
                 if (error > 1e-15)
+                {
                     QAssert.Fail(ir + "  1.0/compound_factor: " + 1.0 / compoundf);
+                }
 
                 // check that the equivalent InterestRate with *same* daycounter,
                 // compounding, and frequency is the *same* InterestRate
@@ -131,13 +133,24 @@ namespace QLNet.Tests
                 ir2 = ir.equivalentRate(ir.dayCounter(), ir.compounding(), ir.frequency(), d1, d2);
                 error = System.Math.Abs(ir.rate() - ir2.rate());
                 if (error > 1e-15)
+                {
                     QAssert.Fail("original interest rate: " + ir + " equivalent interest rate: " + ir2 + " rate error: " + error);
+                }
+
                 if (ir.dayCounter() != ir2.dayCounter())
+                {
                     QAssert.Fail("day counter error original interest rate: " + ir + " equivalent interest rate: " + ir2);
+                }
+
                 if (ir.compounding() != ir2.compounding())
+                {
                     QAssert.Fail("compounding error original interest rate: " + ir + " equivalent interest rate: " + ir2);
+                }
+
                 if (ir.frequency() != ir2.frequency())
+                {
                     QAssert.Fail("frequency error original interest rate: " + ir + " equivalent interest rate: " + ir2);
+                }
 
                 // check that the equivalent rate with *same* daycounter,
                 // compounding, and frequency is the *same* rate
@@ -145,7 +158,9 @@ namespace QLNet.Tests
                 r2 = ir.equivalentRate(ir.dayCounter(), ir.compounding(), ir.frequency(), d1, d2).value();
                 error = System.Math.Abs(ir.rate() - r2);
                 if (error > 1e-15)
+                {
                     QAssert.Fail("original rate: " + ir + " equivalent rate: " + r2 + " error: " + error);
+                }
 
                 // check that the equivalent InterestRate with *different*
                 // compounding, and frequency is the *expected* InterestRate
@@ -155,13 +170,24 @@ namespace QLNet.Tests
                 r3 = roundingPrecision.Round(ir3.rate());
                 error = System.Math.Abs(r3 - expectedIR.rate());
                 if (error > 1.0e-17)
+                {
                     QAssert.Fail("original interest rate: " + ir + " calculated equivalent interest rate: " + ir3 + " truncated equivalent rate: " + r3 + " expected equivalent interest rate: " + expectedIR + " rate error: " + error);
+                }
+
                 if (ir3.dayCounter() != expectedIR.dayCounter())
+                {
                     QAssert.Fail("day counter error original interest rate: " + ir3 + " equivalent interest rate: " + expectedIR);
+                }
+
                 if (ir3.compounding() != expectedIR.compounding())
+                {
                     QAssert.Fail("compounding error original interest rate: " + ir3 + " equivalent interest rate: " + expectedIR);
+                }
+
                 if (ir3.frequency() != expectedIR.frequency())
+                {
                     QAssert.Fail("frequency error original interest rate: " + ir3 + " equivalent interest rate: " + expectedIR);
+                }
 
                 // check that the equivalent rate with *different*
                 // compounding, and frequency is the *expected* rate
@@ -170,8 +196,9 @@ namespace QLNet.Tests
                 r3 = roundingPrecision.Round(r3);
                 error = System.Math.Abs(r3 - cases[i].expected);
                 if (error > 1.0e-17)
+                {
                     QAssert.Fail("calculated equivalent rate: " + r3 + " expected equivalent rate: " + cases[i].expected + " error: " + error);
-
+                }
             }
 
         }

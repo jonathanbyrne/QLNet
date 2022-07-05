@@ -18,6 +18,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Pricingengines.Swap;
 using QLNet.Time;
@@ -25,13 +26,28 @@ using QLNet.Time;
 namespace QLNet.Instruments
 {
     /// <summary>
-    /// Helper class to instantiate standard market swaption.
+    ///     Helper class to instantiate standard market swaption.
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class MakeSwaption
+    [PublicAPI]
+    public class MakeSwaption
     {
+        private Settlement.Type delivery_;
+        private IPricingEngine engine_;
+        private Exercise exercise_;
+        private Date exerciseDate_;
+        private Date fixingDate_;
+        private double nominal_;
+        private BusinessDayConvention optionConvention_;
+        private Period optionTenor_;
+        private Settlement.Method settlementMethod_;
+        private double? strike_;
+        private SwapIndex swapIndex_;
+        private VanillaSwap underlyingSwap_;
+        private VanillaSwap.Type underlyingType_;
+
         public MakeSwaption(SwapIndex swapIndex,
-                            Period optionTenor,
-                            double? strike = null)
+            Period optionTenor,
+            double? strike = null)
         {
             swapIndex_ = swapIndex;
             delivery_ = Settlement.Type.Physical;
@@ -45,8 +61,8 @@ namespace QLNet.Instruments
         }
 
         public MakeSwaption(SwapIndex swapIndex,
-                            Date fixingDate,
-                            double? strike = null)
+            Date fixingDate,
+            double? strike = null)
         {
             swapIndex_ = swapIndex;
             delivery_ = Settlement.Type.Physical;
@@ -56,48 +72,6 @@ namespace QLNet.Instruments
             strike_ = strike;
             underlyingType_ = VanillaSwap.Type.Payer;
             nominal_ = 1.0;
-        }
-
-        public MakeSwaption withSettlementType(Settlement.Type delivery)
-        {
-            delivery_ = delivery;
-            return this;
-        }
-
-        public MakeSwaption withSettlementMethod(Settlement.Method settlementMethod)
-        {
-            settlementMethod_ = settlementMethod;
-            return this;
-        }
-
-        public MakeSwaption withOptionConvention(BusinessDayConvention bdc)
-        {
-            optionConvention_ = bdc;
-            return this;
-        }
-
-        public MakeSwaption withExerciseDate(Date exerciseDate)
-        {
-            exerciseDate_ = exerciseDate;
-            return this;
-        }
-
-        public MakeSwaption withUnderlyingType(VanillaSwap.Type type)
-        {
-            underlyingType_ = type;
-            return this;
-        }
-
-        public MakeSwaption withPricingEngine(IPricingEngine engine)
-        {
-            engine_ = engine;
-            return this;
-        }
-
-        public MakeSwaption withNominal(double n)
-        {
-            nominal_ = n;
-            return this;
         }
 
         // swap creator
@@ -116,7 +90,7 @@ namespace QLNet.Instruments
             else
             {
                 Utils.QL_REQUIRE(exerciseDate_ <= fixingDate_, () =>
-                                 "exercise date (" + exerciseDate_ + ") must be less " + "than or equal to fixing date (" + fixingDate_ + ")");
+                    "exercise date (" + exerciseDate_ + ") must be less " + "than or equal to fixing date (" + fixingDate_ + ")");
                 exercise_ = new EuropeanExercise(exerciseDate_);
             }
 
@@ -125,46 +99,73 @@ namespace QLNet.Instruments
             {
                 // ATM on the forecasting curve
                 Utils.QL_REQUIRE(!swapIndex_.forwardingTermStructure().empty(), () =>
-                                 "no forecasting term structure set to " + swapIndex_.name());
+                    "no forecasting term structure set to " + swapIndex_.name());
                 var temp = swapIndex_.underlyingSwap(fixingDate_);
                 temp.setPricingEngine(new DiscountingSwapEngine(swapIndex_.forwardingTermStructure()));
                 usedStrike = temp.fairRate();
             }
             else
+            {
                 usedStrike = strike_.Value;
+            }
 
             var bdc = swapIndex_.fixedLegConvention();
             underlyingSwap_ = new MakeVanillaSwap(swapIndex_.tenor(),
-                                                  swapIndex_.iborIndex(),
-                                                  usedStrike)
-            .withEffectiveDate(swapIndex_.valueDate(fixingDate_))
-            .withFixedLegCalendar(swapIndex_.fixingCalendar())
-            .withFixedLegDayCount(swapIndex_.dayCounter())
-            .withFixedLegConvention(bdc)
-            .withFixedLegTerminationDateConvention(bdc)
-            .withType(underlyingType_)
-            .withNominal(nominal_);
+                    swapIndex_.iborIndex(),
+                    usedStrike)
+                .withEffectiveDate(swapIndex_.valueDate(fixingDate_))
+                .withFixedLegCalendar(swapIndex_.fixingCalendar())
+                .withFixedLegDayCount(swapIndex_.dayCounter())
+                .withFixedLegConvention(bdc)
+                .withFixedLegTerminationDateConvention(bdc)
+                .withType(underlyingType_)
+                .withNominal(nominal_);
 
             var swaption = new Swaption(underlyingSwap_, exercise_, delivery_, settlementMethod_);
             swaption.setPricingEngine(engine_);
             return swaption;
         }
 
-        private SwapIndex swapIndex_;
-        private Settlement.Type delivery_;
-        private Settlement.Method settlementMethod_;
-        private VanillaSwap underlyingSwap_;
+        public MakeSwaption withExerciseDate(Date exerciseDate)
+        {
+            exerciseDate_ = exerciseDate;
+            return this;
+        }
 
-        private Period optionTenor_;
-        private BusinessDayConvention optionConvention_;
-        private Date fixingDate_;
-        private Date exerciseDate_;
-        private Exercise exercise_;
+        public MakeSwaption withNominal(double n)
+        {
+            nominal_ = n;
+            return this;
+        }
 
-        private double? strike_;
-        private VanillaSwap.Type underlyingType_;
-        private double nominal_;
+        public MakeSwaption withOptionConvention(BusinessDayConvention bdc)
+        {
+            optionConvention_ = bdc;
+            return this;
+        }
 
-        IPricingEngine engine_;
+        public MakeSwaption withPricingEngine(IPricingEngine engine)
+        {
+            engine_ = engine;
+            return this;
+        }
+
+        public MakeSwaption withSettlementMethod(Settlement.Method settlementMethod)
+        {
+            settlementMethod_ = settlementMethod;
+            return this;
+        }
+
+        public MakeSwaption withSettlementType(Settlement.Type delivery)
+        {
+            delivery_ = delivery;
+            return this;
+        }
+
+        public MakeSwaption withUnderlyingType(VanillaSwap.Type type)
+        {
+            underlyingType_ = type;
+            return this;
+        }
     }
 }

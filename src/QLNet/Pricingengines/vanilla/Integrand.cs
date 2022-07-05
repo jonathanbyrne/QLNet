@@ -1,10 +1,13 @@
+using JetBrains.Annotations;
+
 namespace QLNet.Pricingengines.vanilla
 {
-    [JetBrains.Annotations.PublicAPI] public class Integrand
+    [PublicAPI]
+    public class Integrand
     {
+        private double drift_;
         private Payoff payoff_;
         private double s0_;
-        private double drift_;
         private double variance_;
 
         public Integrand(Payoff payoff, double s0, double drift, double variance)
@@ -14,6 +17,7 @@ namespace QLNet.Pricingengines.vanilla
             drift_ = drift;
             variance_ = variance;
         }
+
         public double value(double x)
         {
             var temp = s0_ * System.Math.Exp(x);

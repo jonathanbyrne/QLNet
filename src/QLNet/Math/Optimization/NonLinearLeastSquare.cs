@@ -1,33 +1,38 @@
+using JetBrains.Annotations;
+
 namespace QLNet.Math.Optimization
 {
-    [JetBrains.Annotations.PublicAPI] public class NonLinearLeastSquare
+    [PublicAPI]
+    public class NonLinearLeastSquare
     {
-        //! solution vector
-        private Vector results_;
-        private Vector initialValue_;
-        //! least square residual norm
-        private double resnorm_;
-        //! Exit flag of the optimization process
-        private int exitFlag_;
         //! required accuracy of the solver
         private double accuracy_;
         private double bestAccuracy_;
+        //constraint
+        private Constraint c_;
+        //! Exit flag of the optimization process
+        private int exitFlag_;
+        private Vector initialValue_;
         //! maximum and real number of iterations
         private int maxIterations_;
         //! Optimization method
         private OptimizationMethod om_;
-        //constraint
-        private Constraint c_;
+        //! least square residual norm
+        private double resnorm_;
+        //! solution vector
+        private Vector results_;
 
         //! Default constructor
         public NonLinearLeastSquare(Constraint c, double accuracy)
             : this(c, accuracy, 100)
         {
         }
+
         public NonLinearLeastSquare(Constraint c)
             : this(c, 1e-4, 100)
         {
         }
+
         public NonLinearLeastSquare(Constraint c, double accuracy, int maxiter)
         {
             exitFlag_ = -1;
@@ -36,6 +41,7 @@ namespace QLNet.Math.Optimization
             om_ = new ConjugateGradient();
             c_ = c;
         }
+
         //! Default constructor
         public NonLinearLeastSquare(Constraint c, double accuracy, int maxiter, OptimizationMethod om)
         {
@@ -45,6 +51,12 @@ namespace QLNet.Math.Optimization
             om_ = om;
             c_ = c;
         }
+
+        //! return exit flag
+        public int exitFlag() => exitFlag_;
+
+        //! return last function value
+        public double lastValue() => bestAccuracy_;
 
         //! Solve least square problem using numerix solver
         public Vector perform(ref LeastSquareProblem lsProblem)
@@ -68,21 +80,15 @@ namespace QLNet.Math.Optimization
             return results_;
         }
 
-        public void setInitialValue(Vector initialValue)
-        {
-            initialValue_ = initialValue;
-        }
+        //! return the least square residual norm
+        public double residualNorm() => resnorm_;
 
         //! return the results
         public Vector results() => results_;
 
-        //! return the least square residual norm
-        public double residualNorm() => resnorm_;
-
-        //! return last function value
-        public double lastValue() => bestAccuracy_;
-
-        //! return exit flag
-        public int exitFlag() => exitFlag_;
+        public void setInitialValue(Vector initialValue)
+        {
+            initialValue_ = initialValue;
+        }
     }
 }

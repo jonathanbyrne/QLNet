@@ -17,6 +17,9 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
 using QLNet.Instruments;
@@ -28,37 +31,65 @@ using QLNet.Models.Shortrate.Onefactormodels;
 using QLNet.Models.Shortrate.Twofactorsmodels;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Utilities
 {
-    [JetBrains.Annotations.PublicAPI] public class FdmAffineModelSwapInnerValue<ModelType> : FdmInnerValueCalculator where ModelType : ITermStructureConsistentModel, IAffineModel
+    [PublicAPI]
+    public class FdmAffineModelSwapInnerValue<ModelType> : FdmInnerValueCalculator where ModelType : ITermStructureConsistentModel, IAffineModel
     {
+        protected int direction_;
+        protected ModelType disModel_, fwdModel_;
+        protected RelinkableHandle<YieldTermStructure> disTs_ = new RelinkableHandle<YieldTermStructure>(), fwdTs_ = new RelinkableHandle<YieldTermStructure>();
+        protected Dictionary<double, Date> exerciseDates_;
+        protected IborIndex index_;
+        protected FdmMesher mesher_;
+        protected VanillaSwap swap_;
+
         public FdmAffineModelSwapInnerValue(
-           ModelType disModel,
-           ModelType fwdModel,
-           VanillaSwap swap,
-           Dictionary<double, Date> exerciseDates,
-           FdmMesher mesher,
-           int direction)
+            ModelType disModel,
+            ModelType fwdModel,
+            VanillaSwap swap,
+            Dictionary<double, Date> exerciseDates,
+            FdmMesher mesher,
+            int direction)
         {
             disModel_ = disModel;
             fwdModel_ = fwdModel;
             mesher_ = mesher;
             direction_ = direction;
             swap_ = new VanillaSwap(swap.swapType,
-                                    swap.nominal,
-                                    swap.fixedSchedule(),
-                                    swap.fixedRate,
-                                    swap.fixedDayCount(),
-                                    swap.floatingSchedule(),
-                                    swap.iborIndex().clone(fwdTs_),
-                                    swap.spread,
-                                    swap.floatingDayCount(),
-                                    null);
+                swap.nominal,
+                swap.fixedSchedule(),
+                swap.fixedRate,
+                swap.fixedDayCount(),
+                swap.floatingSchedule(),
+                swap.iborIndex().clone(fwdTs_),
+                swap.spread,
+                swap.floatingDayCount());
             exerciseDates_ = exerciseDates;
+        }
+
+        public override double avgInnerValue(FdmLinearOpIterator iter, double t) => innerValue(iter, t);
+
+        public Vector getState(ModelType model, double t, FdmLinearOpIterator iter)
+        {
+            if (model.GetType().Equals(typeof(HullWhite)))
+            {
+                var retVal = new Vector(1, (model as HullWhite).dynamics().shortRate(t,
+                    mesher_.location(iter, direction_)));
+                return retVal;
+            }
+
+            if (model.GetType().Equals(typeof(G2)))
+            {
+                var retVal = new Vector(2);
+                retVal[0] = mesher_.location(iter, direction_);
+                retVal[1] = mesher_.location(iter, direction_ + 1);
+
+                return retVal;
+            }
+
+            return new Vector();
         }
 
         public override double innerValue(FdmLinearOpIterator iter, double t)
@@ -71,20 +102,19 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             if (disTs_.empty() || iterExerciseDate != disTs_.currentLink().referenceDate())
             {
                 var discount
-                   = disModel_.termStructure();
+                    = disModel_.termStructure();
 
                 disTs_.linkTo(new FdmAffineModelTermStructure(disRate,
-                                                              discount.currentLink().calendar(), discount.currentLink().dayCounter(),
-                                                              iterExerciseDate, discount.currentLink().referenceDate(),
-                                                              disModel_));
+                    discount.currentLink().calendar(), discount.currentLink().dayCounter(),
+                    iterExerciseDate, discount.currentLink().referenceDate(),
+                    disModel_));
 
                 var fwd = fwdModel_.termStructure();
 
                 fwdTs_.linkTo(new FdmAffineModelTermStructure(fwdRate,
-                                                              fwd.currentLink().calendar(), fwd.currentLink().dayCounter(),
-                                                              iterExerciseDate, fwd.currentLink().referenceDate(),
-                                                              fwdModel_));
-
+                    fwd.currentLink().calendar(), fwd.currentLink().dayCounter(),
+                    iterExerciseDate, fwd.currentLink().referenceDate(),
+                    fwdModel_));
             }
             else
             {
@@ -98,46 +128,22 @@ namespace QLNet.Methods.Finitedifferences.Utilities
                 for (var i = 0; i < swap_.leg(j).Count; ++i)
                 {
                     npv += (swap_.leg(j)[i] as Coupon).accrualStartDate() >= iterExerciseDate
-                           ? swap_.leg(j)[i].amount() * disTs_.currentLink().discount(swap_.leg(j)[i].date())
-                           : 0.0;
+                        ? swap_.leg(j)[i].amount() * disTs_.currentLink().discount(swap_.leg(j)[i].date())
+                        : 0.0;
                 }
+
                 if (j == 0)
+                {
                     npv *= -1.0;
+                }
             }
+
             if (swap_.swapType == VanillaSwap.Type.Receiver)
+            {
                 npv *= -1.0;
+            }
 
             return System.Math.Max(0.0, npv);
         }
-        public override double avgInnerValue(FdmLinearOpIterator iter, double t) => innerValue(iter, t);
-
-        public Vector getState(ModelType model, double t, FdmLinearOpIterator iter)
-        {
-            if (model.GetType().Equals(typeof(HullWhite)))
-            {
-                var retVal = new Vector(1, (model as HullWhite).dynamics().shortRate(t,
-                                                                                        mesher_.location(iter, direction_)));
-                return retVal;
-            }
-            else if (model.GetType().Equals(typeof(G2)))
-            {
-                var retVal = new Vector(2);
-                retVal[0] = mesher_.location(iter, direction_);
-                retVal[1] = mesher_.location(iter, direction_ + 1);
-
-                return retVal;
-            }
-            else
-                return new Vector();
-        }
-
-        protected RelinkableHandle<YieldTermStructure> disTs_ = new RelinkableHandle<YieldTermStructure>(), fwdTs_ = new RelinkableHandle<YieldTermStructure>();
-        protected ModelType disModel_, fwdModel_;
-
-        protected IborIndex index_;
-        protected VanillaSwap swap_;
-        protected Dictionary<double, Date> exerciseDates_;
-        protected FdmMesher mesher_;
-        protected int direction_;
     }
 }

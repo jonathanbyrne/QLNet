@@ -16,17 +16,23 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Time;
 using QLNet.Time.DayCounters;
-using System;
 
 namespace QLNet.Instruments.Bonds
 {
-    [JetBrains.Annotations.PublicAPI] public class PSACurve : IPrepayModel
+    [PublicAPI]
+    public class PSACurve : IPrepayModel
     {
+        private double _multi;
+        private Date _startDate;
 
         public PSACurve(Date startdate)
-           : this(startdate, 1) { }
+            : this(startdate, 1)
+        {
+        }
 
         public PSACurve(Date startdate, double multiplier)
         {
@@ -43,8 +49,5 @@ namespace QLNet.Instruments.Bonds
         }
 
         public double getSMM(Date valDate) => 1 - System.Math.Pow(1 - getCPR(valDate), 1 / 12d);
-
-        private Date _startDate;
-        private double _multi;
     }
 }

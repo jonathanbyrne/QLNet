@@ -18,14 +18,13 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Indexes;
-using QLNet.Time;
-using System;
 
 namespace QLNet.Cashflows
 {
-
     //! Digital-payoff coupon
     //    ! Implementation of a floating-rate coupon with digital call/put option.
     //        Payoffs:
@@ -68,27 +67,67 @@ namespace QLNet.Cashflows
     //        - the correctness of the returned value is tested by the relationship
     //          between prices in case of different replication types.
     //
-    [JetBrains.Annotations.PublicAPI] public class DigitalCoupon : FloatingRateCoupon
+    [PublicAPI]
+    public class DigitalCoupon : FloatingRateCoupon
     {
+        //! multiplicative factor of call payoff
+        protected double callCsi_;
+        //! digital call option payoff rate, if any
+        protected double callDigitalPayoff_;
+        //! the left and right gaps applied in payoff replication for call
+        protected double callLeftEps_;
+        protected double callRightEps_;
+        //! strike rate for the the call option
+        protected double callStrike_;
+        protected bool hasCallStrike_;
+        //!
+        protected bool hasPutStrike_;
+        //! inclusion flag og the call payoff if the call option ends at-the-money
+        protected bool isCallATMIncluded_;
+        //! digital call option ExerciseType: if true, cash-or-nothing, if false asset-or-nothing
+        protected bool isCallCashOrNothing_;
+        //! inclusion flag og the put payoff if the put option ends at-the-money
+        protected bool isPutATMIncluded_;
+        //! digital put option ExerciseType: if true, cash-or-nothing, if false asset-or-nothing
+        protected bool isPutCashOrNothing_;
+        //! multiplicative factor of put payoff
+        protected double putCsi_;
+        //! digital put option payoff rate, if any
+        protected double putDigitalPayoff_;
+        //! the left and right gaps applied in payoff replication for puf
+        protected double putLeftEps_;
+        protected double putRightEps_;
+        //! strike rate for the the put option
+        protected double putStrike_;
+        //! Type of replication
+        protected Replication.Type replicationType_;
+
+        // Data members
+        protected FloatingRateCoupon underlying_;
+
         // need by CashFlowVectors
-        public DigitalCoupon() { }
+        public DigitalCoupon()
+        {
+        }
 
         //! Constructors
         //! general constructor
         public DigitalCoupon(FloatingRateCoupon underlying,
-                             double? callStrike = null,
-                             Position.Type callPosition = Position.Type.Long,
-                             bool isCallATMIncluded = false,
-                             double? callDigitalPayoff = null,
-                             double? putStrike = null,
-                             Position.Type putPosition = Position.Type.Long,
-                             bool isPutATMIncluded = false,
-                             double? putDigitalPayoff = null,
-                             DigitalReplication replication = null)
-        : base(underlying.date(), underlying.nominal(), underlying.accrualStartDate(), underlying.accrualEndDate(), underlying.fixingDays, underlying.index(), underlying.gearing(), underlying.spread(), underlying.referencePeriodStart, underlying.referencePeriodEnd, underlying.dayCounter(), underlying.isInArrears())
+            double? callStrike = null,
+            Position.Type callPosition = Position.Type.Long,
+            bool isCallATMIncluded = false,
+            double? callDigitalPayoff = null,
+            double? putStrike = null,
+            Position.Type putPosition = Position.Type.Long,
+            bool isPutATMIncluded = false,
+            double? putDigitalPayoff = null,
+            DigitalReplication replication = null)
+            : base(underlying.date(), underlying.nominal(), underlying.accrualStartDate(), underlying.accrualEndDate(), underlying.fixingDays, underlying.index(), underlying.gearing(), underlying.spread(), underlying.referencePeriodStart, underlying.referencePeriodEnd, underlying.dayCounter(), underlying.isInArrears())
         {
             if (replication == null)
+            {
                 replication = new DigitalReplication();
+            }
 
             underlying_ = underlying;
             callCsi_ = 0.0;
@@ -105,14 +144,17 @@ namespace QLNet.Cashflows
             hasCallStrike_ = false;
             replicationType_ = replication.replicationType();
 
-
             Utils.QL_REQUIRE(replication.gap() > 0.0, () => "Non positive epsilon not allowed");
 
             if (putStrike == null)
+            {
                 Utils.QL_REQUIRE(putDigitalPayoff == null, () => "Put Cash rate non allowed if put strike is null");
+            }
 
             if (callStrike == null)
+            {
                 Utils.QL_REQUIRE(callDigitalPayoff == null, () => "Call Cash rate non allowed if call strike is null");
+            }
 
             if (callStrike != null)
             {
@@ -134,12 +176,14 @@ namespace QLNet.Cashflows
                         Utils.QL_FAIL("unsupported position ExerciseType");
                         break;
                 }
+
                 if (callDigitalPayoff != null)
                 {
                     callDigitalPayoff_ = callDigitalPayoff.GetValueOrDefault();
                     isCallCashOrNothing_ = true;
                 }
             }
+
             if (putStrike != null)
             {
                 Utils.QL_REQUIRE(putStrike >= 0.0, () => "negative put strike not allowed");
@@ -157,6 +201,7 @@ namespace QLNet.Cashflows
                         Utils.QL_FAIL("unsupported position ExerciseType");
                         break;
                 }
+
                 if (putDigitalPayoff != null)
                 {
                     putDigitalPayoff_ = putDigitalPayoff.GetValueOrDefault();
@@ -187,6 +232,7 @@ namespace QLNet.Cashflows
                                 break;
                         }
                     }
+
                     if (hasPutStrike_)
                     {
                         switch (putPosition)
@@ -204,6 +250,7 @@ namespace QLNet.Cashflows
                                 break;
                         }
                     }
+
                     break;
                 case Replication.Type.Super:
                     if (hasCallStrike_)
@@ -223,6 +270,7 @@ namespace QLNet.Cashflows
                                 break;
                         }
                     }
+
                     if (hasPutStrike_)
                     {
                         switch (putPosition)
@@ -240,6 +288,7 @@ namespace QLNet.Cashflows
                                 break;
                         }
                     }
+
                     break;
                 default:
                     Utils.QL_FAIL("unsupported position ExerciseType");
@@ -249,83 +298,21 @@ namespace QLNet.Cashflows
             underlying.registerWith(update);
         }
 
-        // Coupon interface
-        public override double rate()
-        {
-
-            Utils.QL_REQUIRE(underlying_.pricer() != null, () => "pricer not set");
-
-            var fixingDate = underlying_.fixingDate();
-            var today = Settings.evaluationDate();
-            var enforceTodaysHistoricFixings = Settings.enforcesTodaysHistoricFixings;
-            var underlyingRate = underlying_.rate();
-            if (fixingDate < today || fixingDate == today && enforceTodaysHistoricFixings)
-            {
-                // must have been fixed
-                return underlyingRate + callCsi_ * callPayoff() + putCsi_ * putPayoff();
-            }
-            if (fixingDate == today)
-            {
-                // might have been fixed
-                var pastFixing = IndexManager.instance().getHistory(underlying_.index().name())[fixingDate];
-                if (pastFixing != null)
-                {
-                    return underlyingRate + callCsi_ * callPayoff() + putCsi_ * putPayoff();
-                }
-                else
-                    return underlyingRate + callCsi_ * callOptionRate() + putCsi_ * putOptionRate();
-            }
-            return underlyingRate + callCsi_ * callOptionRate() + putCsi_ * putOptionRate();
-        }
-        public override double convexityAdjustment() => underlying_.convexityAdjustment();
-
-        // Digital inspectors
-        public double? callStrike()
-        {
-            if (hasCall())
-                return callStrike_;
-
-            return null;
-        }
-        public double? putStrike()
-        {
-            if (hasPut())
-                return putStrike_;
-
-            return null;
-        }
         public double? callDigitalPayoff()
         {
             if (isCallCashOrNothing_)
+            {
                 return callDigitalPayoff_;
+            }
 
             return null;
         }
-        public double? putDigitalPayoff()
-        {
-            if (isPutCashOrNothing_)
-                return putDigitalPayoff_;
-
-            return null;
-        }
-        public bool hasPut() => hasPutStrike_;
-
-        public bool hasCall() => hasCallStrike_;
-
-        public bool hasCollar() => hasCallStrike_ && hasPutStrike_;
-
-        public bool isLongPut() => putCsi_.IsEqual(1.0);
-
-        public bool isLongCall() => callCsi_.IsEqual(1.0);
-
-        public FloatingRateCoupon underlying() => underlying_;
 
         //        ! Returns the call option rate
         //           (multiplied by: nominal*accrualperiod*discount is the NPV of the option)
         //
         public double callOptionRate()
         {
-
             var callOptionRate = 0.0;
             if (hasCallStrike_)
             {
@@ -343,14 +330,51 @@ namespace QLNet.Cashflows
                     callOptionRate += call;
                 }
             }
+
             return callOptionRate;
         }
+
+        // Digital inspectors
+        public double? callStrike()
+        {
+            if (hasCall())
+            {
+                return callStrike_;
+            }
+
+            return null;
+        }
+
+        public override double convexityAdjustment() => underlying_.convexityAdjustment();
+
+        // Factory - for Leg generators
+        public virtual CashFlow factory(FloatingRateCoupon underlying, double? callStrike, Position.Type callPosition, bool isCallATMIncluded, double? callDigitalPayoff, double? putStrike, Position.Type putPosition, bool isPutATMIncluded, double? putDigitalPayoff, DigitalReplication replication) => new DigitalCoupon(underlying, callStrike, callPosition, isCallATMIncluded, callDigitalPayoff, putStrike, putPosition, isPutATMIncluded, putDigitalPayoff, replication);
+
+        public bool hasCall() => hasCallStrike_;
+
+        public bool hasCollar() => hasCallStrike_ && hasPutStrike_;
+
+        public bool hasPut() => hasPutStrike_;
+
+        public bool isLongCall() => callCsi_.IsEqual(1.0);
+
+        public bool isLongPut() => putCsi_.IsEqual(1.0);
+
+        public double? putDigitalPayoff()
+        {
+            if (isPutCashOrNothing_)
+            {
+                return putDigitalPayoff_;
+            }
+
+            return null;
+        }
+
         //        ! Returns the put option rate
         //           (multiplied by: nominal*accrualperiod*discount is the NPV of the option)
         //
         public double putOptionRate()
         {
-
             var putOptionRate = 0.0;
             if (hasPutStrike_)
             {
@@ -368,56 +392,68 @@ namespace QLNet.Cashflows
                     putOptionRate -= put;
                 }
             }
+
             return putOptionRate;
+        }
+
+        public double? putStrike()
+        {
+            if (hasPut())
+            {
+                return putStrike_;
+            }
+
+            return null;
+        }
+
+        // Coupon interface
+        public override double rate()
+        {
+            Utils.QL_REQUIRE(underlying_.pricer() != null, () => "pricer not set");
+
+            var fixingDate = underlying_.fixingDate();
+            var today = Settings.evaluationDate();
+            var enforceTodaysHistoricFixings = Settings.enforcesTodaysHistoricFixings;
+            var underlyingRate = underlying_.rate();
+            if (fixingDate < today || fixingDate == today && enforceTodaysHistoricFixings)
+            {
+                // must have been fixed
+                return underlyingRate + callCsi_ * callPayoff() + putCsi_ * putPayoff();
+            }
+
+            if (fixingDate == today)
+            {
+                // might have been fixed
+                var pastFixing = IndexManager.instance().getHistory(underlying_.index().name())[fixingDate];
+                if (pastFixing != null)
+                {
+                    return underlyingRate + callCsi_ * callPayoff() + putCsi_ * putPayoff();
+                }
+
+                return underlyingRate + callCsi_ * callOptionRate() + putCsi_ * putOptionRate();
+            }
+
+            return underlyingRate + callCsi_ * callOptionRate() + putCsi_ * putOptionRate();
         }
 
         public override void setPricer(FloatingRateCouponPricer pricer)
         {
             if (pricer_ != null)
+            {
                 pricer_.unregisterWith(update);
+            }
+
             pricer_ = pricer;
             if (pricer_ != null)
+            {
                 pricer_.registerWith(update);
+            }
+
             update();
             underlying_.setPricer(pricer);
         }
 
-        // Factory - for Leg generators
-        public virtual CashFlow factory(FloatingRateCoupon underlying, double? callStrike, Position.Type callPosition, bool isCallATMIncluded, double? callDigitalPayoff, double? putStrike, Position.Type putPosition, bool isPutATMIncluded, double? putDigitalPayoff, DigitalReplication replication) => new DigitalCoupon(underlying, callStrike, callPosition, isCallATMIncluded, callDigitalPayoff, putStrike, putPosition, isPutATMIncluded, putDigitalPayoff, replication);
-
-        // Data members
-        protected FloatingRateCoupon underlying_;
-        //! strike rate for the the call option
-        protected double callStrike_;
-        //! strike rate for the the put option
-        protected double putStrike_;
-        //! multiplicative factor of call payoff
-        protected double callCsi_;
-        //! multiplicative factor of put payoff
-        protected double putCsi_;
-        //! inclusion flag og the call payoff if the call option ends at-the-money
-        protected bool isCallATMIncluded_;
-        //! inclusion flag og the put payoff if the put option ends at-the-money
-        protected bool isPutATMIncluded_;
-        //! digital call option ExerciseType: if true, cash-or-nothing, if false asset-or-nothing
-        protected bool isCallCashOrNothing_;
-        //! digital put option ExerciseType: if true, cash-or-nothing, if false asset-or-nothing
-        protected bool isPutCashOrNothing_;
-        //! digital call option payoff rate, if any
-        protected double callDigitalPayoff_;
-        //! digital put option payoff rate, if any
-        protected double putDigitalPayoff_;
-        //! the left and right gaps applied in payoff replication for call
-        protected double callLeftEps_;
-        protected double callRightEps_;
-        //! the left and right gaps applied in payoff replication for puf
-        protected double putLeftEps_;
-        protected double putRightEps_;
-        //!
-        protected bool hasPutStrike_;
-        protected bool hasCallStrike_;
-        //! Type of replication
-        protected Replication.Type replicationType_;
+        public FloatingRateCoupon underlying() => underlying_;
 
         private double callPayoff()
         {
@@ -433,11 +469,15 @@ namespace QLNet.Cashflows
                 else
                 {
                     if (isCallATMIncluded_ && System.Math.Abs(callStrike_ - underlyingRate) <= 1.0e-16)
+                    {
                         payoff = isCallCashOrNothing_ ? callDigitalPayoff_ : underlyingRate;
+                    }
                 }
             }
+
             return payoff;
         }
+
         private double putPayoff()
         {
             // to use only if index has fixed
@@ -455,13 +495,14 @@ namespace QLNet.Cashflows
                     if (isPutATMIncluded_)
                     {
                         if (System.Math.Abs(putStrike_ - underlyingRate) <= 1.0e-16)
+                        {
                             payoff = isPutCashOrNothing_ ? putDigitalPayoff_ : underlyingRate;
+                        }
                     }
                 }
             }
+
             return payoff;
         }
-
     }
-
 }

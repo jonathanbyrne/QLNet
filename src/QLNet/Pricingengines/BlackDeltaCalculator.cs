@@ -13,11 +13,12 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Math.Distributions;
 using QLNet.Math.Solvers1d;
 using QLNet.Quotes;
-using System;
 
 namespace QLNet.Pricingengines
 {
@@ -26,19 +27,27 @@ namespace QLNet.Pricingengines
         in FX markets, which has special quoation mechanisms, since
         every price can be expressed in both numeraires.
     */
-    [JetBrains.Annotations.PublicAPI] public class BlackDeltaCalculator
+    [PublicAPI]
+    public class BlackDeltaCalculator
     {
+        private double dDiscount_, fDiscount_;
+        private DeltaVolQuote.DeltaType dt_;
+        private double fExpPos_, fExpNeg_;
+        private QLNet.Option.Type ot_;
+        private int phi_;
+        private double stdDev_, spot_, forward_;
+
         // A parsimonious constructor is chosen, which for example
         // doesn't need a strike. The reason for this is, that we'd
         // like this class to calculate deltas for different strikes
         // many times, e.g. in a numerical routine, which will be the
         // case in the smile setup procedure.
         public BlackDeltaCalculator(QLNet.Option.Type ot,
-                                    DeltaVolQuote.DeltaType dt,
-                                    double spot,
-                                    double dDiscount,   // domestic discount
-                                    double fDiscount,   // foreign discount
-                                    double stdDev)
+            DeltaVolQuote.DeltaType dt,
+            double spot,
+            double dDiscount, // domestic discount
+            double fDiscount, // foreign discount
+            double stdDev)
         {
             dt_ = dt;
             ot_ = ot;
@@ -49,7 +58,6 @@ namespace QLNet.Pricingengines
             forward_ = spot * fDiscount / dDiscount;
             phi_ = (int)ot;
 
-
             Utils.QL_REQUIRE(spot_ > 0.0, () => "positive spot value required: " + spot_ + " not allowed");
             Utils.QL_REQUIRE(dDiscount_ > 0.0, () => "positive domestic discount factor required: " + dDiscount_ + " not allowed");
             Utils.QL_REQUIRE(fDiscount_ > 0.0, () => "positive foreign discount factor required: " + fDiscount_ + " not allowed");
@@ -59,43 +67,49 @@ namespace QLNet.Pricingengines
             fExpNeg_ = forward_ * System.Math.Exp(-0.5 * stdDev_ * stdDev_);
         }
 
-        // Give strike, receive delta according to specified ExerciseType
-        public double deltaFromStrike(double strike)
+        // The following function can be calculated without an explicit strike
+        public double atmStrike(DeltaVolQuote.AtmType atmT)
         {
-            Utils.QL_REQUIRE(strike >= 0.0, () => "positive strike value required: " + strike + " not allowed");
-
             var res = 0.0;
 
-            switch (dt_)
+            switch (atmT)
             {
-                case DeltaVolQuote.DeltaType.Spot:
-                    res = phi_ * fDiscount_ * cumD1(strike);
+                case DeltaVolQuote.AtmType.AtmDeltaNeutral:
+                    if (dt_ == DeltaVolQuote.DeltaType.Spot || dt_ == DeltaVolQuote.DeltaType.Fwd)
+                    {
+                        res = fExpPos_;
+                    }
+                    else
+                    {
+                        res = fExpNeg_;
+                    }
+
                     break;
 
-                case DeltaVolQuote.DeltaType.Fwd:
-                    res = phi_ * cumD1(strike);
+                case DeltaVolQuote.AtmType.AtmFwd:
+                    res = forward_;
                     break;
 
-                case DeltaVolQuote.DeltaType.PaSpot:
-                    res = phi_ * fDiscount_ * cumD2(strike) * strike / forward_;
+                case DeltaVolQuote.AtmType.AtmGammaMax:
+                case DeltaVolQuote.AtmType.AtmVegaMax:
+                    res = fExpPos_;
                     break;
 
-                case DeltaVolQuote.DeltaType.PaFwd:
-                    res = phi_ * cumD2(strike) * strike / forward_;
+                case DeltaVolQuote.AtmType.AtmPutCall50:
+                    Utils.QL_REQUIRE(dt_ == DeltaVolQuote.DeltaType.Fwd, () =>
+                        "|PutDelta|=CallDelta=0.50 only possible for forward delta.");
+                    res = fExpPos_;
                     break;
 
                 default:
-                    Utils.QL_FAIL("invalid delta ExerciseType");
+                    Utils.QL_FAIL("invalid atm ExerciseType");
                     break;
             }
-            return res;
 
+            return res;
         }
 
-        // Give delta according to specified ExerciseType, receive strike
-        public double strikeFromDelta(double delta) => strikeFromDelta(delta, dt_);
-
-        public double cumD1(double strike)     // N(d1) or N(-d1)
+        public double cumD1(double strike) // N(d1) or N(-d1)
         {
             var d1_ = 0.0;
             var cum_d1_pos_ = 1.0; // N(d1)
@@ -130,13 +144,11 @@ namespace QLNet.Pricingengines
                 // if Call
                 return cum_d1_pos_;
             }
-            else
-            {
-                return cum_d1_neg_;
-            }
 
+            return cum_d1_neg_;
         }
-        public double cumD2(double strike)     // N(d2) or N(-d2)
+
+        public double cumD2(double strike) // N(d2) or N(-d2)
         {
             var d2_ = 0.0;
             var cum_d2_pos_ = 1.0; // N(d2)
@@ -151,7 +163,6 @@ namespace QLNet.Pricingengines
                     d2_ = System.Math.Log(forward_ / strike) / stdDev_ - 0.5 * stdDev_;
                     return f.value(phi_ * d2_);
                 }
-
             }
             else
             {
@@ -172,13 +183,44 @@ namespace QLNet.Pricingengines
                 // if Call
                 return cum_d2_pos_;
             }
-            else
-            {
-                return cum_d2_neg_;
-            }
+
+            return cum_d2_neg_;
         }
 
-        public double nD1(double strike)       // n(d1)
+        // Give strike, receive delta according to specified ExerciseType
+        public double deltaFromStrike(double strike)
+        {
+            Utils.QL_REQUIRE(strike >= 0.0, () => "positive strike value required: " + strike + " not allowed");
+
+            var res = 0.0;
+
+            switch (dt_)
+            {
+                case DeltaVolQuote.DeltaType.Spot:
+                    res = phi_ * fDiscount_ * cumD1(strike);
+                    break;
+
+                case DeltaVolQuote.DeltaType.Fwd:
+                    res = phi_ * cumD1(strike);
+                    break;
+
+                case DeltaVolQuote.DeltaType.PaSpot:
+                    res = phi_ * fDiscount_ * cumD2(strike) * strike / forward_;
+                    break;
+
+                case DeltaVolQuote.DeltaType.PaFwd:
+                    res = phi_ * cumD2(strike) * strike / forward_;
+                    break;
+
+                default:
+                    Utils.QL_FAIL("invalid delta ExerciseType");
+                    break;
+            }
+
+            return res;
+        }
+
+        public double nD1(double strike) // n(d1)
         {
             var d1_ = 0.0;
             var n_d1_ = 0.0; // n(d1)
@@ -194,9 +236,9 @@ namespace QLNet.Pricingengines
             }
 
             return n_d1_;
-
         }
-        public double nD2(double strike)       // n(d2)
+
+        public double nD2(double strike) // n(d2)
         {
             var d2_ = 0.0;
             var n_d2_ = 0.0; // n(d2)
@@ -214,54 +256,19 @@ namespace QLNet.Pricingengines
             return n_d2_;
         }
 
-        public void setDeltaType(DeltaVolQuote.DeltaType dt) { dt_ = dt; }
+        public void setDeltaType(DeltaVolQuote.DeltaType dt)
+        {
+            dt_ = dt;
+        }
+
         public void setOptionType(QLNet.Option.Type ot)
         {
             ot_ = ot;
             phi_ = (int)ot_;
         }
 
-        // The following function can be calculated without an explicit strike
-        public double atmStrike(DeltaVolQuote.AtmType atmT)
-        {
-            var res = 0.0;
-
-            switch (atmT)
-            {
-                case DeltaVolQuote.AtmType.AtmDeltaNeutral:
-                    if (dt_ == DeltaVolQuote.DeltaType.Spot || dt_ == DeltaVolQuote.DeltaType.Fwd)
-                    {
-                        res = fExpPos_;
-                    }
-                    else
-                    {
-                        res = fExpNeg_;
-                    }
-                    break;
-
-                case DeltaVolQuote.AtmType.AtmFwd:
-                    res = forward_;
-                    break;
-
-                case DeltaVolQuote.AtmType.AtmGammaMax:
-                case DeltaVolQuote.AtmType.AtmVegaMax:
-                    res = fExpPos_;
-                    break;
-
-                case DeltaVolQuote.AtmType.AtmPutCall50:
-                    Utils.QL_REQUIRE(dt_ == DeltaVolQuote.DeltaType.Fwd, () =>
-                                     "|PutDelta|=CallDelta=0.50 only possible for forward delta.");
-                    res = fExpPos_;
-                    break;
-
-                default:
-                    Utils.QL_FAIL("invalid atm ExerciseType");
-                    break;
-            }
-
-            return res;
-        }
-
+        // Give delta according to specified ExerciseType, receive strike
+        public double strikeFromDelta(double delta) => strikeFromDelta(delta, dt_);
 
         // alternative delta ExerciseType
         private double strikeFromDelta(double delta, DeltaVolQuote.DeltaType dt)
@@ -302,7 +309,7 @@ namespace QLNet.Pricingengines
                     // solved without any problems, but also numerically.
 
                     var f1 = new BlackDeltaPremiumAdjustedSolverClass(
-                       ot_, dt, spot_, dDiscount_, fDiscount_, stdDev_, delta);
+                        ot_, dt, spot_, dDiscount_, fDiscount_, stdDev_, delta);
 
                     var solver = new Brent();
                     solver.setMaxEvaluations(1000);
@@ -327,24 +334,20 @@ namespace QLNet.Pricingengines
                         res = solver.solve(f1, accuracy, rightLimit, 0.0, spot_ * 100.0);
                         break;
                     }
-                    else
-                    {
-                        // find out the left limit which is the strike
-                        // corresponding to the value where premium adjusted
-                        // deltas have their maximum.
+                    // find out the left limit which is the strike
+                    // corresponding to the value where premium adjusted
+                    // deltas have their maximum.
 
-                        var g = new BlackDeltaPremiumAdjustedMaxStrikeClass(
-                           ot_, dt, spot_, dDiscount_, fDiscount_, stdDev_);
+                    var g = new BlackDeltaPremiumAdjustedMaxStrikeClass(
+                        ot_, dt, spot_, dDiscount_, fDiscount_, stdDev_);
 
-                        leftLimit = solver.solve(g, accuracy, rightLimit * 0.5, 0.0, rightLimit);
+                    leftLimit = solver.solve(g, accuracy, rightLimit * 0.5, 0.0, rightLimit);
 
-                        var guess = leftLimit + (rightLimit - leftLimit) * 0.5;
+                    var guess = leftLimit + (rightLimit - leftLimit) * 0.5;
 
-                        res = solver.solve(f1, accuracy, guess, leftLimit, rightLimit);
-                    } // end if phi<0 else
+                    res = solver.solve(f1, accuracy, guess, leftLimit, rightLimit);
 
                     break;
-
 
                 default:
                     Utils.QL_FAIL("invalid delta ExerciseType");
@@ -353,14 +356,5 @@ namespace QLNet.Pricingengines
 
             return res;
         }
-
-        private DeltaVolQuote.DeltaType dt_;
-        private QLNet.Option.Type ot_;
-        private double dDiscount_, fDiscount_;
-
-        private double stdDev_, spot_, forward_;
-        private int phi_;
-        private double fExpPos_, fExpNeg_;
-
     }
 }

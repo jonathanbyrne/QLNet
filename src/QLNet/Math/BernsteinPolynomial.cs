@@ -13,14 +13,13 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+
+using JetBrains.Annotations;
 
 namespace QLNet.Math
 {
-    [JetBrains.Annotations.PublicAPI] public class BernsteinPolynomial
+    [PublicAPI]
+    public class BernsteinPolynomial
     {
         public static double get(uint i, uint n, double x)
         {

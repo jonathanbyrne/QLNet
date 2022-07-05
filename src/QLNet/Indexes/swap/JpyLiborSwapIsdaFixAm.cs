@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Indexes.Ibor;
 using QLNet.Termstructures;
@@ -26,21 +27,25 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.swap
 {
-    [JetBrains.Annotations.PublicAPI] public class JpyLiborSwapIsdaFixAm : SwapIndex
+    [PublicAPI]
+    public class JpyLiborSwapIsdaFixAm : SwapIndex
     {
         public JpyLiborSwapIsdaFixAm(Period tenor)
-           : this(tenor, new Handle<YieldTermStructure>()) { }
+            : this(tenor, new Handle<YieldTermStructure>())
+        {
+        }
 
         public JpyLiborSwapIsdaFixAm(Period tenor, Handle<YieldTermStructure> h)
-           : base("JpyLiborSwapIsdaFixAm", // familyName
-                  tenor,
-                  2, // settlementDays
-                  new JPYCurrency(),
-                  new TARGET(),
-                  new Period(6, TimeUnit.Months), // fixedLegTenor
-                  BusinessDayConvention.ModifiedFollowing, // fixedLegConvention
-                  new ActualActual(ActualActual.Convention.ISDA), // fixedLegDaycounter
-                  new JPYLibor(new Period(6, TimeUnit.Months), h))
-        { }
+            : base("JpyLiborSwapIsdaFixAm", // familyName
+                tenor,
+                2, // settlementDays
+                new JPYCurrency(),
+                new TARGET(),
+                new Period(6, TimeUnit.Months), // fixedLegTenor
+                BusinessDayConvention.ModifiedFollowing, // fixedLegConvention
+                new ActualActual(ActualActual.Convention.ISDA), // fixedLegDaycounter
+                new JPYLibor(new Period(6, TimeUnit.Months), h))
+        {
+        }
     }
 }

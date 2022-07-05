@@ -24,6 +24,8 @@ namespace QLNet.Instruments
 {
     public abstract class Claim : IObservable, IObserver
     {
+        public abstract double amount(Date defaultDate, double notional, double recoveryRate);
+
         #region Observer & Observable
 
         private readonly WeakEventSource eventSource = new WeakEventSource();
@@ -34,9 +36,15 @@ namespace QLNet.Instruments
             remove => eventSource.Unsubscribe(value);
         }
 
-        public void registerWith(Callback handler) { notifyObserversEvent += handler; }
+        public void registerWith(Callback handler)
+        {
+            notifyObserversEvent += handler;
+        }
 
-        public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
+        public void unregisterWith(Callback handler)
+        {
+            notifyObserversEvent -= handler;
+        }
 
         protected void notifyObservers()
         {
@@ -49,8 +57,6 @@ namespace QLNet.Instruments
         }
 
         #endregion Observer & Observable
-
-        public abstract double amount(Date defaultDate, double notional, double recoveryRate);
     }
 
     //! Claim on a notional

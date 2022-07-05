@@ -16,12 +16,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.Pricingengines;
 using QLNet.processes;
-using QLNet.Time;
-using System;
 
 namespace QLNet.Pricingengines.vanilla
 {
@@ -31,7 +30,8 @@ namespace QLNet.Pricingengines.vanilla
         \test the correctness of the returned value is tested by
               reproducing results available in literature.
     */
-    [JetBrains.Annotations.PublicAPI] public class BaroneAdesiWhaleyApproximationEngine : OneAssetOption.Engine
+    [PublicAPI]
+    public class BaroneAdesiWhaleyApproximationEngine : OneAssetOption.Engine
     {
         private GeneralizedBlackScholesProcess process_;
 
@@ -44,9 +44,8 @@ namespace QLNet.Pricingengines.vanilla
 
         // critical commodity price
         public static double criticalPrice(StrikedTypePayoff payoff, double riskFreeDiscount, double dividendDiscount,
-                                           double variance, double tolerance)
+            double variance, double tolerance)
         {
-
             // Calculation of seed value, Si
             var n = 2.0 * System.Math.Log(dividendDiscount / riskFreeDiscount) / variance;
             var m = -2.0 * System.Math.Log(riskFreeDiscount) / variance;
@@ -61,7 +60,7 @@ namespace QLNet.Pricingengines.vanilla
                     h = -(bT + 2.0 * System.Math.Sqrt(variance)) * payoff.strike() /
                         (Su - payoff.strike());
                     Si = payoff.strike() + (Su - payoff.strike()) *
-                         (1.0 - System.Math.Exp(h));
+                        (1.0 - System.Math.Exp(h));
                     break;
                 case QLNet.Option.Type.Put:
                     qu = (-(n - 1.0) - System.Math.Sqrt((n - 1.0) * (n - 1.0) + 4.0 * m)) / 2.0;
@@ -75,7 +74,6 @@ namespace QLNet.Pricingengines.vanilla
                     break;
             }
 
-
             // Newton Raphson algorithm for finding critical price Si
             double Q, LHS, RHS, bi;
             var forwardSi = Si * dividendDiscount / riskFreeDiscount;
@@ -83,12 +81,12 @@ namespace QLNet.Pricingengines.vanilla
                      System.Math.Sqrt(variance);
             var cumNormalDist = new CumulativeNormalDistribution();
             var K = !Utils.close(riskFreeDiscount, 1.0, 1000)
-                       ? -2.0 * System.Math.Log(riskFreeDiscount)
-                       / (variance * (1.0 - riskFreeDiscount))
-                       : 2.0 / variance;
+                ? -2.0 * System.Math.Log(riskFreeDiscount)
+                  / (variance * (1.0 - riskFreeDiscount))
+                : 2.0 / variance;
 
             var temp = Utils.blackFormula(payoff.optionType(), payoff.strike(),
-                                             forwardSi, System.Math.Sqrt(variance)) * riskFreeDiscount;
+                forwardSi, System.Math.Sqrt(variance)) * riskFreeDiscount;
             switch (payoff.optionType())
             {
                 case QLNet.Option.Type.Call:
@@ -97,7 +95,7 @@ namespace QLNet.Pricingengines.vanilla
                     RHS = temp + (1 - dividendDiscount * cumNormalDist.value(d1)) * Si / Q;
                     bi = dividendDiscount * cumNormalDist.value(d1) * (1 - 1 / Q) +
                          (1 - dividendDiscount *
-                          cumNormalDist.derivative(d1) / System.Math.Sqrt(variance)) / Q;
+                             cumNormalDist.derivative(d1) / System.Math.Sqrt(variance)) / Q;
                     while (System.Math.Abs(LHS - RHS) / payoff.strike() > tolerance)
                     {
                         Si = (payoff.strike() + RHS - bi * Si) / (1 - bi);
@@ -106,13 +104,14 @@ namespace QLNet.Pricingengines.vanilla
                              / System.Math.Sqrt(variance);
                         LHS = Si - payoff.strike();
                         var temp2 = Utils.blackFormula(payoff.optionType(), payoff.strike(),
-                                                          forwardSi, System.Math.Sqrt(variance)) * riskFreeDiscount;
+                            forwardSi, System.Math.Sqrt(variance)) * riskFreeDiscount;
                         RHS = temp2 + (1 - dividendDiscount * cumNormalDist.value(d1)) * Si / Q;
                         bi = dividendDiscount * cumNormalDist.value(d1) * (1 - 1 / Q)
                              + (1 - dividendDiscount *
-                                cumNormalDist.derivative(d1) / System.Math.Sqrt(variance))
+                                 cumNormalDist.derivative(d1) / System.Math.Sqrt(variance))
                              / Q;
                     }
+
                     break;
                 case QLNet.Option.Type.Put:
                     Q = (-(n - 1.0) - System.Math.Sqrt((n - 1.0) * (n - 1.0) + 4 * K)) / 2;
@@ -120,7 +119,7 @@ namespace QLNet.Pricingengines.vanilla
                     RHS = temp - (1 - dividendDiscount * cumNormalDist.value(-d1)) * Si / Q;
                     bi = -dividendDiscount * cumNormalDist.value(-d1) * (1 - 1 / Q)
                          - (1 + dividendDiscount * cumNormalDist.derivative(-d1)
-                            / System.Math.Sqrt(variance)) / Q;
+                             / System.Math.Sqrt(variance)) / Q;
                     while (System.Math.Abs(LHS - RHS) / payoff.strike() > tolerance)
                     {
                         Si = (payoff.strike() - RHS + bi * Si) / (1 + bi);
@@ -129,12 +128,13 @@ namespace QLNet.Pricingengines.vanilla
                              / System.Math.Sqrt(variance);
                         LHS = payoff.strike() - Si;
                         var temp2 = Utils.blackFormula(payoff.optionType(), payoff.strike(),
-                                                          forwardSi, System.Math.Sqrt(variance)) * riskFreeDiscount;
+                            forwardSi, System.Math.Sqrt(variance)) * riskFreeDiscount;
                         RHS = temp2 - (1 - dividendDiscount * cumNormalDist.value(-d1)) * Si / Q;
                         bi = -dividendDiscount * cumNormalDist.value(-d1) * (1 - 1 / Q)
                              - (1 + dividendDiscount * cumNormalDist.derivative(-d1)
-                                / System.Math.Sqrt(variance)) / Q;
+                                 / System.Math.Sqrt(variance)) / Q;
                     }
+
                     break;
                 default:
                     Utils.QL_FAIL("unknown option ExerciseType");
@@ -146,7 +146,6 @@ namespace QLNet.Pricingengines.vanilla
 
         public override void calculate()
         {
-
             Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.American, () => "not an American Option");
 
             var ex = arguments_.exercise as AmericanExercise;
@@ -197,15 +196,15 @@ namespace QLNet.Pricingengines.vanilla
                 var cumNormalDist = new CumulativeNormalDistribution();
                 var tolerance = 1e-6;
                 var Sk = criticalPrice(payoff, riskFreeDiscount,
-                                          dividendDiscount, variance, tolerance);
+                    dividendDiscount, variance, tolerance);
                 var forwardSk = Sk * dividendDiscount / riskFreeDiscount;
                 var d1 = (System.Math.Log(forwardSk / payoff.strike()) + 0.5 * variance)
                          / System.Math.Sqrt(variance);
                 var n = 2.0 * System.Math.Log(dividendDiscount / riskFreeDiscount) / variance;
                 var K = !Utils.close(riskFreeDiscount, 1.0, 1000)
-                           ? -2.0 * System.Math.Log(riskFreeDiscount)
-                           / (variance * (1.0 - riskFreeDiscount))
-                           : 2.0 / variance;
+                    ? -2.0 * System.Math.Log(riskFreeDiscount)
+                      / (variance * (1.0 - riskFreeDiscount))
+                    : 2.0 / variance;
                 double Q, a;
                 switch (payoff.optionType())
                 {
@@ -221,6 +220,7 @@ namespace QLNet.Pricingengines.vanilla
                         {
                             results_.value = spot - payoff.strike();
                         }
+
                         break;
                     case QLNet.Option.Type.Put:
                         Q = (-(n - 1.0) - System.Math.Sqrt((n - 1.0) * (n - 1.0) + 4.0 * K)) / 2.0;
@@ -235,6 +235,7 @@ namespace QLNet.Pricingengines.vanilla
                         {
                             results_.value = payoff.strike() - spot;
                         }
+
                         break;
                     default:
                         Utils.QL_FAIL("unknown option ExerciseType");

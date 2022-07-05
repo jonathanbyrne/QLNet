@@ -1,8 +1,10 @@
+using JetBrains.Annotations;
 using QLNet.Termstructures.Yield;
 
 namespace QLNet.Termstructures
 {
-    [JetBrains.Annotations.PublicAPI] public class IterativeBootstrapForYield : IterativeBootstrap<PiecewiseYieldCurve, YieldTermStructure>
+    [PublicAPI]
+    public class IterativeBootstrapForYield : IterativeBootstrap<PiecewiseYieldCurve, YieldTermStructure>
     {
     }
 }

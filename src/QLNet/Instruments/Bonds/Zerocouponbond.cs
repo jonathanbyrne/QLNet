@@ -17,7 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Instruments;
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet.Instruments.Bonds
@@ -27,11 +27,12 @@ namespace QLNet.Instruments.Bonds
 
         \test calculations are tested by checking results against cached values.
     */
-    [JetBrains.Annotations.PublicAPI] public class ZeroCouponBond : Bond
+    [PublicAPI]
+    public class ZeroCouponBond : Bond
     {
         public ZeroCouponBond(int settlementDays, Calendar calendar, double faceAmount, Date maturityDate,
-                              BusinessDayConvention paymentConvention, double redemption, Date issueDate)
-           : base(settlementDays, calendar, issueDate)
+            BusinessDayConvention paymentConvention, double redemption, Date issueDate)
+            : base(settlementDays, calendar, issueDate)
         {
             maturityDate_ = maturityDate;
             var redemptionDate = calendar_.adjust(maturityDate, paymentConvention);

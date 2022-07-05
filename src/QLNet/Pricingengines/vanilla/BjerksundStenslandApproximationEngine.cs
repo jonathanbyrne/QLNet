@@ -16,11 +16,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
 using QLNet.processes;
-using QLNet.Time;
-using System;
 
 namespace QLNet.Pricingengines.vanilla
 {
@@ -30,8 +30,11 @@ namespace QLNet.Pricingengines.vanilla
         \test the correctness of the returned value is tested by
               reproducing results available in literature.
     */
-    [JetBrains.Annotations.PublicAPI] public class BjerksundStenslandApproximationEngine : OneAssetOption.Engine
+    [PublicAPI]
+    public class BjerksundStenslandApproximationEngine : OneAssetOption.Engine
     {
+        // helper functions
+        private CumulativeNormalDistribution cumNormalDist = new CumulativeNormalDistribution();
         private GeneralizedBlackScholesProcess process_;
 
         public BjerksundStenslandApproximationEngine(GeneralizedBlackScholesProcess process)
@@ -43,7 +46,6 @@ namespace QLNet.Pricingengines.vanilla
 
         public override void calculate()
         {
-
             Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.American, () => "not an American Option");
 
             var ex = arguments_.exercise as AmericanExercise;
@@ -107,25 +109,8 @@ namespace QLNet.Pricingengines.vanilla
             }
         }
 
-
-        // helper functions
-        private CumulativeNormalDistribution cumNormalDist = new CumulativeNormalDistribution();
-
-        double phi(double S, double gamma, double H, double I, double rT, double bT, double variance)
+        private double americanCallApproximation(double S, double X, double rfD, double dD, double variance)
         {
-
-            var lambda = -rT + gamma * bT + 0.5 * gamma * (gamma - 1.0) * variance;
-            var d = -(System.Math.Log(S / H) + (bT + (gamma - 0.5) * variance)) / System.Math.Sqrt(variance);
-            var kappa = 2.0 * bT / variance + (2.0 * gamma - 1.0);
-            return System.Math.Exp(lambda) * (cumNormalDist.value(d)
-                                       - System.Math.Pow(I / S, kappa) *
-                                       cumNormalDist.value(d - 2.0 * System.Math.Log(I / S) / System.Math.Sqrt(variance)));
-        }
-
-
-        double americanCallApproximation(double S, double X, double rfD, double dD, double variance)
-        {
-
             var bT = System.Math.Log(dD / rfD);
             var rT = System.Math.Log(1.0 / rfD);
 
@@ -141,18 +126,25 @@ namespace QLNet.Pricingengines.vanilla
             {
                 return S - X;
             }
-            else
-            {
-                // investigate what happen to alpha for dD->0.0
-                var alpha = (I - X) * System.Math.Pow(I, -beta);
-                return (I - X) * System.Math.Pow(S / I, beta)
-                       * (1 - phi(S, beta, I, I, rT, bT, variance))
-                       + S * phi(S, 1.0, I, I, rT, bT, variance)
-                       - S * phi(S, 1.0, X, I, rT, bT, variance)
-                       - X * phi(S, 0.0, I, I, rT, bT, variance)
-                       + X * phi(S, 0.0, X, I, rT, bT, variance);
-            }
+
+            // investigate what happen to alpha for dD->0.0
+            var alpha = (I - X) * System.Math.Pow(I, -beta);
+            return (I - X) * System.Math.Pow(S / I, beta)
+                           * (1 - phi(S, beta, I, I, rT, bT, variance))
+                   + S * phi(S, 1.0, I, I, rT, bT, variance)
+                   - S * phi(S, 1.0, X, I, rT, bT, variance)
+                   - X * phi(S, 0.0, I, I, rT, bT, variance)
+                   + X * phi(S, 0.0, X, I, rT, bT, variance);
         }
 
+        private double phi(double S, double gamma, double H, double I, double rT, double bT, double variance)
+        {
+            var lambda = -rT + gamma * bT + 0.5 * gamma * (gamma - 1.0) * variance;
+            var d = -(System.Math.Log(S / H) + (bT + (gamma - 0.5) * variance)) / System.Math.Sqrt(variance);
+            var kappa = 2.0 * bT / variance + (2.0 * gamma - 1.0);
+            return System.Math.Exp(lambda) * (cumNormalDist.value(d)
+                                              - System.Math.Pow(I / S, kappa) *
+                                              cumNormalDist.value(d - 2.0 * System.Math.Log(I / S) / System.Math.Sqrt(variance)));
+        }
     }
 }

@@ -18,26 +18,27 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Time.Calendars;
 
 namespace QLNet.Time.DayCounters
 {
     //! Business/252 day count convention
-    [JetBrains.Annotations.PublicAPI] public class Business252 : DayCounter
+    [PublicAPI]
+    public class Business252 : DayCounter
     {
+        private Calendar calendar_;
+
         public Business252(Calendar c = null)
         {
             calendar_ = c ?? new Brazil();
             dayCounter_ = this;
         }
 
-        public override string name() => "Business/252(" + calendar_.name() + ")";
-
         public override int dayCount(Date d1, Date d2) => calendar_.businessDaysBetween(d1, d2);
 
+        public override string name() => "Business/252(" + calendar_.name() + ")";
+
         public override double yearFraction(Date d1, Date d2, Date d3, Date d4) => dayCount(d1, d2) / 252.0;
-
-        private Calendar calendar_;
-
     }
 }

@@ -4,11 +4,15 @@ namespace QLNet
 {
     public abstract class IborCouponPricer : FloatingRateCouponPricer
     {
+        private Handle<OptionletVolatilityStructure> capletVol_;
+
         protected IborCouponPricer(Handle<OptionletVolatilityStructure> v = null)
         {
             capletVol_ = v ?? new Handle<OptionletVolatilityStructure>();
             if (!capletVol_.empty())
+            {
                 capletVol_.registerWith(update);
+            }
         }
 
         public Handle<OptionletVolatilityStructure> capletVolatility() => capletVol_;
@@ -18,10 +22,11 @@ namespace QLNet
             capletVol_.unregisterWith(update);
             capletVol_ = v ?? new Handle<OptionletVolatilityStructure>();
             if (!capletVol_.empty())
+            {
                 capletVol_.registerWith(update);
+            }
 
             update();
         }
-        private Handle<OptionletVolatilityStructure> capletVol_;
     }
 }

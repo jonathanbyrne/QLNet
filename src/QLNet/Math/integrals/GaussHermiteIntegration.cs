@@ -1,8 +1,13 @@
-﻿namespace QLNet.Math.integrals
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.integrals
 {
-    [JetBrains.Annotations.PublicAPI] public class GaussHermiteIntegration : GaussianQuadrature
+    [PublicAPI]
+    public class GaussHermiteIntegration : GaussianQuadrature
     {
         public GaussHermiteIntegration(int n, double mu = 0.0)
-            : base(n, new GaussHermitePolynomial(mu)) { }
+            : base(n, new GaussHermitePolynomial(mu))
+        {
+        }
     }
 }

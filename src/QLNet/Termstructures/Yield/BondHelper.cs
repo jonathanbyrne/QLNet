@@ -18,12 +18,11 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Instruments;
-using QLNet.Quotes;
-using QLNet.Termstructures;
-using System;
 using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Instruments;
 using QLNet.Pricingengines.Bond;
+using QLNet.Quotes;
 
 namespace QLNet.Termstructures.Yield
 {
@@ -31,8 +30,13 @@ namespace QLNet.Termstructures.Yield
     /*! \warning This class assumes that the reference date
                  does not change between calls of setTermStructure().
     */
-    [JetBrains.Annotations.PublicAPI] public class BondHelper : RateHelper
+    [PublicAPI]
+    public class BondHelper : RateHelper
     {
+        protected Bond bond_;
+        protected RelinkableHandle<YieldTermStructure> termStructureHandle_;
+        protected bool useCleanPrice_;
+
         /*! \warning Setting a pricing engine to the passed bond from
                      external code will cause the bootstrap to fail or
                      to give wrong results. It is advised to discard
@@ -40,7 +44,7 @@ namespace QLNet.Termstructures.Yield
                      helper has sole ownership of it.
         */
         public BondHelper(Handle<Quote> price, Bond bond, bool useCleanPrice = true)
-           : base(price)
+            : base(price)
         {
             bond_ = bond;
 
@@ -55,6 +59,20 @@ namespace QLNet.Termstructures.Yield
             useCleanPrice_ = useCleanPrice;
         }
 
+        public Bond bond() => bond_;
+
+        public override double impliedQuote()
+        {
+            Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
+            // we didn't register as observers - force calculation
+            bond_.recalculate();
+            if (useCleanPrice_)
+            {
+                return bond_.cleanPrice();
+            }
+
+            return bond_.dirtyPrice();
+        }
 
         // RateHelper interface
         public override void setTermStructure(YieldTermStructure t)
@@ -64,25 +82,7 @@ namespace QLNet.Termstructures.Yield
             base.setTermStructure(t);
         }
 
-        public override double impliedQuote()
-        {
-            Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
-            // we didn't register as observers - force calculation
-            bond_.recalculate();
-            if (useCleanPrice_)
-                return bond_.cleanPrice();
-            else
-                return bond_.dirtyPrice();
-        }
-
-        public Bond bond() => bond_;
-
         public bool useCleanPrice() => useCleanPrice_;
-
-        protected Bond bond_;
-        protected RelinkableHandle<YieldTermStructure> termStructureHandle_;
-        protected bool useCleanPrice_;
-
     }
 
     //! Fixed-coupon bond helper for curve bootstrap

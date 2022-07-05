@@ -18,11 +18,16 @@
 */
 
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Methods.Finitedifferences.Operators
 {
-    [JetBrains.Annotations.PublicAPI] public class FdmLinearOpIterator
+    [PublicAPI]
+    public class FdmLinearOpIterator
     {
+        protected List<int> dim_, coordinates_;
+        protected int index_;
+
         public FdmLinearOpIterator(int index = 0)
         {
             index_ = index;
@@ -49,40 +54,49 @@ namespace QLNet.Methods.Finitedifferences.Operators
             swap(iter);
         }
 
+        public static bool operator ==(FdmLinearOpIterator a, FdmLinearOpIterator b) => a.index_ == b.index_;
+
         public static FdmLinearOpIterator operator ++(FdmLinearOpIterator a)
         {
             ++a.index_;
             for (var i = 0; i < a.dim_.Count; ++i)
             {
                 if (++a.coordinates_[i] == a.dim_[i])
+                {
                     a.coordinates_[i] = 0;
+                }
                 else
+                {
                     break;
+                }
             }
+
             return a;
         }
 
         public static bool operator !=(FdmLinearOpIterator a, FdmLinearOpIterator b) => a.index_ != b.index_;
 
-        public static bool operator ==(FdmLinearOpIterator a, FdmLinearOpIterator b) => a.index_ == b.index_;
-
-        public override int GetHashCode() => 0;
+        public List<int> coordinates() => coordinates_;
 
         public override bool Equals(object obj)
         {
             if (obj == null)
+            {
                 return false;
+            }
 
             var iter = obj as FdmLinearOpIterator;
             if (iter == null)
+            {
                 return false;
+            }
 
             return iter.index_ == index_;
         }
 
-        public int index() => index_;
+        public override int GetHashCode() => 0;
 
-        public List<int> coordinates() => coordinates_;
+        public int index() => index_;
 
         public void swap(FdmLinearOpIterator iter)
         {
@@ -90,8 +104,5 @@ namespace QLNet.Methods.Finitedifferences.Operators
             Utils.swap(ref iter.dim_, ref dim_);
             Utils.swap(ref iter.coordinates_, ref coordinates_);
         }
-
-        protected List<int> dim_, coordinates_;
-        protected int index_;
     }
 }

@@ -17,10 +17,10 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Quotes;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Termstructures.Volatility.equityfx
 {
@@ -34,15 +34,16 @@ namespace QLNet.Termstructures.Volatility.equityfx
 
         \bug this class is untested, probably unreliable.
     */
-    [JetBrains.Annotations.PublicAPI] public class LocalVolSurface : LocalVolTermStructure
+    [PublicAPI]
+    public class LocalVolSurface : LocalVolTermStructure
     {
-        Handle<BlackVolTermStructure> blackTS_;
-        Handle<YieldTermStructure> riskFreeTS_, dividendTS_;
-        Handle<Quote> underlying_;
+        private Handle<BlackVolTermStructure> blackTS_;
+        private Handle<YieldTermStructure> riskFreeTS_, dividendTS_;
+        private Handle<Quote> underlying_;
 
         public LocalVolSurface(Handle<BlackVolTermStructure> blackTS, Handle<YieldTermStructure> riskFreeTS,
-                               Handle<YieldTermStructure> dividendTS, Handle<Quote> underlying)
-           : base(blackTS.link.businessDayConvention(), blackTS.link.dayCounter())
+            Handle<YieldTermStructure> dividendTS, Handle<Quote> underlying)
+            : base(blackTS.link.businessDayConvention(), blackTS.link.dayCounter())
         {
             blackTS_ = blackTS;
             riskFreeTS_ = riskFreeTS;
@@ -56,8 +57,8 @@ namespace QLNet.Termstructures.Volatility.equityfx
         }
 
         public LocalVolSurface(Handle<BlackVolTermStructure> blackTS, Handle<YieldTermStructure> riskFreeTS,
-                               Handle<YieldTermStructure> dividendTS, double underlying)
-           : base(blackTS.link.businessDayConvention(), blackTS.link.dayCounter())
+            Handle<YieldTermStructure> dividendTS, double underlying)
+            : base(blackTS.link.businessDayConvention(), blackTS.link.dayCounter())
         {
             blackTS_ = blackTS;
             riskFreeTS_ = riskFreeTS;
@@ -70,21 +71,20 @@ namespace QLNet.Termstructures.Volatility.equityfx
             underlying_.registerWith(update);
         }
 
-        // TermStructure interface
-        public override Date referenceDate() => blackTS_.link.referenceDate();
-
         public override DayCounter dayCounter() => blackTS_.link.dayCounter();
 
         public override Date maxDate() => blackTS_.link.maxDate();
 
+        public override double maxStrike() => blackTS_.link.maxStrike();
+
         // VolatilityTermStructure interface
         public override double minStrike() => blackTS_.link.minStrike();
 
-        public override double maxStrike() => blackTS_.link.maxStrike();
+        // TermStructure interface
+        public override Date referenceDate() => blackTS_.link.referenceDate();
 
         protected override double localVolImpl(double t, double underlyingLevel)
         {
-
             var dr = riskFreeTS_.currentLink().discount(t, true);
             var dq = dividendTS_.currentLink().discount(t, true);
             var forwardValue = underlying_.currentLink().value() * dq / dr;
@@ -115,7 +115,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
                 wpt = blackTS_.link.blackVariance(t + dt, strikept, true);
 
                 Utils.QL_REQUIRE(wpt >= w, () =>
-                                 "decreasing variance at strike " + strike + " between time " + t + " and time " + (t + dt));
+                    "decreasing variance at strike " + strike + " between time " + t + " and time " + (t + dt));
                 dwdt = (wpt - w) / dt;
             }
             else
@@ -132,27 +132,25 @@ namespace QLNet.Termstructures.Volatility.equityfx
                 wpt = blackTS_.link.blackVariance(t + dt, strikept, true);
                 wmt = blackTS_.link.blackVariance(t - dt, strikemt, true);
                 Utils.QL_REQUIRE(wpt >= w, () =>
-                                 "decreasing variance at strike " + strike + " between time " + t + " and time " + (t + dt));
+                    "decreasing variance at strike " + strike + " between time " + t + " and time " + (t + dt));
                 Utils.QL_REQUIRE(w >= wmt, () =>
-                                 "decreasing variance at strike " + strike + " between time " + (t - dt) + " and time " + t);
+                    "decreasing variance at strike " + strike + " between time " + (t - dt) + " and time " + t);
                 dwdt = (wpt - wmt) / (2.0 * dt);
             }
 
-            if (dwdy.IsEqual(0.0) && d2wdy2.IsEqual(0.0))   // avoid /w where w might be 0.0
+            if (dwdy.IsEqual(0.0) && d2wdy2.IsEqual(0.0)) // avoid /w where w might be 0.0
             {
                 return System.Math.Sqrt(dwdt);
             }
-            else
-            {
-                var den1 = 1.0 - y / w * dwdy;
-                var den2 = 0.25 * (-0.25 - 1.0 / w + y * y / w / w) * dwdy * dwdy;
-                var den3 = 0.5 * d2wdy2;
-                var den = den1 + den2 + den3;
-                var result = dwdt / den;
-                Utils.QL_REQUIRE(result >= 0.0, () =>
-                                 "negative local vol^2 at strike " + strike + " and time " + t + "; the black vol surface is not smooth enough");
-                return System.Math.Sqrt(result);
-            }
+
+            var den1 = 1.0 - y / w * dwdy;
+            var den2 = 0.25 * (-0.25 - 1.0 / w + y * y / w / w) * dwdy * dwdy;
+            var den3 = 0.5 * d2wdy2;
+            var den = den1 + den2 + den3;
+            var result = dwdt / den;
+            Utils.QL_REQUIRE(result >= 0.0, () =>
+                "negative local vol^2 at strike " + strike + " and time " + t + "; the black vol surface is not smooth enough");
+            return System.Math.Sqrt(result);
         }
     }
 }

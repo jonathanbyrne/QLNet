@@ -113,7 +113,9 @@ namespace QLNet.Tests
                     for (var j = 0; j < tenors.swaps.Count; j++)
                         // every handle must be reassigned, as the ones created by
                         // default are all linked together.
+                    {
                         volsHandle[i][j] = new Handle<Quote>(new SimpleQuote(vols[i, j]));
+                    }
                 }
             }
         }
@@ -164,11 +166,16 @@ namespace QLNet.Tests
 
                 Settings.setEvaluationDate(referenceDate);
                 if (referenceDateFloating && initialVol == newVol)
+                {
                     QAssert.Fail(description +
                                  " the volatility should change when the reference date is changed !");
+                }
+
                 if (!referenceDateFloating && initialVol != newVol)
+                {
                     QAssert.Fail(description +
                                  " the volatility should not change when the reference date is changed !");
+                }
 
                 // test market data change...
                 if (mktDataFloating)
@@ -183,8 +190,10 @@ namespace QLNet.Tests
                     sq.setValue(initialVolatility);
 
                     if (initialVol == newVol)
+                    {
                         QAssert.Fail(description + " the volatility should change when" +
                                      " the market data is changed !");
+                    }
                 }
             }
 
@@ -197,21 +206,26 @@ namespace QLNet.Tests
                     var optionDate =
                        vol.optionDateFromTenor(atm.tenors.options[i]);
                     if (optionDate != vol.optionDates()[i])
+                    {
                         QAssert.Fail(
-                           "optionDateFromTenor failure for " +
-                           description + ":" +
-                           "\n       option tenor: " + atm.tenors.options[i] +
-                           "\nactual option date : " + optionDate +
-                           "\n  exp. option date : " + vol.optionDates()[i]);
+                            "optionDateFromTenor failure for " +
+                            description + ":" +
+                            "\n       option tenor: " + atm.tenors.options[i] +
+                            "\nactual option date : " + optionDate +
+                            "\n  exp. option date : " + vol.optionDates()[i]);
+                    }
+
                     var optionTime = vol.timeFromReference(optionDate);
                     if (optionTime != vol.optionTimes()[i])
+                    {
                         QAssert.Fail(
-                           "timeFromReference failure for " +
-                           description + ":" +
-                           "\n       option tenor: " + atm.tenors.options[i] +
-                           "\n       option date : " + optionDate +
-                           "\nactual option time : " + optionTime +
-                           "\n  exp. option time : " + vol.optionTimes()[i]);
+                            "timeFromReference failure for " +
+                            description + ":" +
+                            "\n       option tenor: " + atm.tenors.options[i] +
+                            "\n       option date : " + optionDate +
+                            "\nactual option time : " + optionTime +
+                            "\n  exp. option time : " + vol.optionTimes()[i]);
+                    }
                 }
 
                 var engine = new BlackSwaptionEngine(
@@ -223,11 +237,13 @@ namespace QLNet.Tests
                     var swapLength = vol.swapLength(atm.tenors.swaps[j]);
 
                     if (swapLength != atm.tenors.swaps[j].length())
+                    {
                         QAssert.Fail("convertSwapTenor failure for " +
                                      description + ":" +
                                      "\n        swap tenor : " + atm.tenors.swaps[j] +
                                      "\n actual swap length: " + swapLength +
                                      "\n   exp. swap length: " + atm.tenors.swaps[j].length());
+                    }
 
                     SwapIndex swapIndex = new EuriborSwapIsdaFixA(atm.tenors.swaps[j], termStructure);
 
@@ -240,15 +256,17 @@ namespace QLNet.Tests
                                                 atm.tenors.swaps[j], 0.05, true);
                         error = System.Math.Abs(expVol - actVol);
                         if (error > tolerance)
+                        {
                             QAssert.Fail(
-                               "recovery of atm vols failed for " +
-                               description + ":" +
-                               "\noption tenor = " + atm.tenors.options[i] +
-                               "\n swap length = " + atm.tenors.swaps[j] +
-                               "\nexpected vol = " + expVol +
-                               "\n  actual vol = " + actVol +
-                               "\n       error = " + error +
-                               "\n   tolerance = " + tolerance);
+                                "recovery of atm vols failed for " +
+                                description + ":" +
+                                "\noption tenor = " + atm.tenors.options[i] +
+                                "\n swap length = " + atm.tenors.swaps[j] +
+                                "\nexpected vol = " + expVol +
+                                "\n  actual vol = " + actVol +
+                                "\n       error = " + error +
+                                "\n   tolerance = " + tolerance);
+                        }
 
                         var optionDate =
                            vol.optionDateFromTenor(atm.tenors.options[i]);
@@ -256,33 +274,37 @@ namespace QLNet.Tests
                                                 atm.tenors.swaps[j], 0.05, true);
                         error = System.Math.Abs(expVol - actVol);
                         if (error > tolerance)
+                        {
                             QAssert.Fail(
-                               "recovery of atm vols failed for " +
-                               description + ":" +
-                               "\noption tenor: " + atm.tenors.options[i] +
-                               "\noption date : " + optionDate +
-                               "\n  swap tenor: " + atm.tenors.swaps[j] +
-                               "\n   exp. vol: " + expVol +
-                               "\n actual vol: " + actVol +
-                               "\n      error: " + error +
-                               "\n  tolerance: " + tolerance);
+                                "recovery of atm vols failed for " +
+                                description + ":" +
+                                "\noption tenor: " + atm.tenors.options[i] +
+                                "\noption date : " + optionDate +
+                                "\n  swap tenor: " + atm.tenors.swaps[j] +
+                                "\n   exp. vol: " + expVol +
+                                "\n actual vol: " + actVol +
+                                "\n      error: " + error +
+                                "\n  tolerance: " + tolerance);
+                        }
 
                         var optionTime = vol.timeFromReference(optionDate);
                         actVol = vol.volatility(optionTime, swapLength,
                                                 0.05, true);
                         error = System.Math.Abs(expVol - actVol);
                         if (error > tolerance)
+                        {
                             QAssert.Fail(
-                               "recovery of atm vols failed for " +
-                               description + ":" +
-                               "\noption tenor: " + atm.tenors.options[i] +
-                               "\noption time : " + optionTime +
-                               "\n  swap tenor: " + atm.tenors.swaps[j] +
-                               "\n swap length: " + swapLength +
-                               "\n    exp. vol: " + expVol +
-                               "\n  actual vol: " + actVol +
-                               "\n       error: " + error +
-                               "\n   tolerance: " + tolerance);
+                                "recovery of atm vols failed for " +
+                                description + ":" +
+                                "\noption tenor: " + atm.tenors.options[i] +
+                                "\noption time : " + optionTime +
+                                "\n  swap tenor: " + atm.tenors.swaps[j] +
+                                "\n swap length: " + swapLength +
+                                "\n    exp. vol: " + expVol +
+                                "\n  actual vol: " + actVol +
+                                "\n       error: " + error +
+                                "\n   tolerance: " + tolerance);
+                        }
 
                         // ATM swaption
                         var swaption = new MakeSwaption(
@@ -292,23 +314,27 @@ namespace QLNet.Tests
 
                         var exerciseDate = swaption.exercise().dates().First();
                         if (exerciseDate != vol.optionDates()[i])
+                        {
                             QAssert.Fail(
-                               "optionDateFromTenor mismatch for " +
-                               description + ":" +
-                               "\n      option tenor: " + atm.tenors.options[i] +
-                               "\nactual option date: " + exerciseDate +
-                               "\n  exp. option date: " + vol.optionDates()[i]);
+                                "optionDateFromTenor mismatch for " +
+                                description + ":" +
+                                "\n      option tenor: " + atm.tenors.options[i] +
+                                "\nactual option date: " + exerciseDate +
+                                "\n  exp. option date: " + vol.optionDates()[i]);
+                        }
 
                         var start = swaption.underlyingSwap().startDate();
                         var end = swaption.underlyingSwap().maturityDate();
                         var swapLength2 = vol.swapLength(start, end);
                         if (swapLength2 != swapLength)
+                        {
                             QAssert.Fail(
-                               "swapLength failure for " +
-                               description + ":" +
-                               "\n        swap tenor : " + atm.tenors.swaps[j] +
-                               "\n actual swap length: " + swapLength2 +
-                               "\n   exp. swap length: " + swapLength);
+                                "swapLength failure for " +
+                                description + ":" +
+                                "\n        swap tenor : " + atm.tenors.swaps[j] +
+                                "\n actual swap length: " + swapLength2 +
+                                "\n   exp. swap length: " + swapLength);
+                        }
 
                         var npv = swaption.NPV();
                         actVol = swaption.impliedVolatility(npv, termStructure,

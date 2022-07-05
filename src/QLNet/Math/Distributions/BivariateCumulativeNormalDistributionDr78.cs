@@ -16,7 +16,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Distributions
 {
@@ -48,8 +48,27 @@ namespace QLNet.Math.Distributions
               checking it against known good results.
     */
 
-    [JetBrains.Annotations.PublicAPI] public class BivariateCumulativeNormalDistributionDr78
+    [PublicAPI]
+    public class BivariateCumulativeNormalDistributionDr78
     {
+        private static double[] x_ =
+        {
+            0.24840615,
+            0.39233107,
+            0.21141819,
+            0.03324666,
+            0.00082485334
+        };
+        private static double[] y_ =
+        {
+            0.10024215,
+            0.48281397,
+            1.06094980,
+            1.77972940,
+            2.66976040000
+        };
+        private double rho_, rho2_;
+
         public BivariateCumulativeNormalDistributionDr78(double rho)
         {
             rho_ = rho;
@@ -69,10 +88,14 @@ namespace QLNet.Math.Distributions
             var MinCumNormDistAB = System.Math.Min(CumNormDistA, CumNormDistB);
 
             if (1.0 - MaxCumNormDistAB < 1e-15)
+            {
                 return MinCumNormDistAB;
+            }
 
             if (MinCumNormDistAB < 1e-15)
+            {
                 return MinCumNormDistAB;
+            }
 
             var a1 = a / System.Math.Sqrt(2.0 * (1.0 - rho2_));
             var b1 = b / System.Math.Sqrt(2.0 * (1.0 - rho2_));
@@ -89,6 +112,7 @@ namespace QLNet.Math.Distributions
                         sum += x_[i] * x_[j] * System.Math.Exp(a1 * (2.0 * y_[i] - a1) + b1 * (2.0 * y_[j] - b1) + 2.0 * rho_ * (y_[i] - a1) * (y_[j] - b1));
                     }
                 }
+
                 result = System.Math.Sqrt(1.0 - rho2_) / Const.M_PI * sum;
             }
             else if (a <= 0 && b >= 0 && rho_ >= 0)
@@ -124,22 +148,6 @@ namespace QLNet.Math.Distributions
 
             return result;
         }
-
-        private double rho_, rho2_;
-        private static double[] x_ = { 0.24840615,
-                                     0.39233107,
-                                     0.21141819,
-                                     0.03324666,
-                                     0.00082485334
-                                   };
-
-        private static double[] y_ = { 0.10024215,
-                                     0.48281397,
-                                     1.06094980,
-                                     1.77972940,
-                                     2.66976040000
-                                   };
-
     }
 
     //! Cumulative bivariate normal distibution function (West 2004)

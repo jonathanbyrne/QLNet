@@ -13,12 +13,9 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.processes;
-using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace QLNet.Pricingengines.Forward
 {
@@ -31,21 +28,26 @@ namespace QLNet.Pricingengines.Forward
         - the correctness of the returned greeks is tested by
           reproducing numerical derivatives.
     */
-    [JetBrains.Annotations.PublicAPI] public class ForwardPerformanceVanillaEngine : ForwardVanillaEngine
+    [PublicAPI]
+    public class ForwardPerformanceVanillaEngine : ForwardVanillaEngine
     {
         public ForwardPerformanceVanillaEngine(GeneralizedBlackScholesProcess process, GetOriginalEngine getEngine)
-           : base(process, getEngine) { }
+            : base(process, getEngine)
+        {
+        }
+
         public override void calculate()
         {
             setup();
             originalEngine_.calculate();
             getOriginalResults();
         }
+
         protected override void getOriginalResults()
         {
             var rfdc = process_.riskFreeRate().link.dayCounter();
             var resetTime = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(),
-                                                 arguments_.resetDate);
+                arguments_.resetDate);
             var discR = process_.riskFreeRate().link.discount(arguments_.resetDate);
             // it's a performance option
             discR /= process_.stateVariable().link.value();
@@ -54,13 +56,11 @@ namespace QLNet.Pricingengines.Forward
             results_.value = discR * temp;
             results_.delta = 0.0;
             results_.gamma = 0.0;
-            results_.theta = process_.riskFreeRate().link.
-                                  zeroRate(arguments_.resetDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).value()
-                                  * results_.value;
+            results_.theta = process_.riskFreeRate().link.zeroRate(arguments_.resetDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).value()
+                             * results_.value;
             results_.vega = discR * originalResults_.vega;
             results_.rho = -resetTime * results_.value + discR * originalResults_.rho;
             results_.dividendRho = discR * originalResults_.dividendRho;
-
         }
     }
 }

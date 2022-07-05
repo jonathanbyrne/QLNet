@@ -18,8 +18,9 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Methods.montecarlo;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Methods.montecarlo;
 
 namespace QLNet.Math.randomnumbers
 {
@@ -31,13 +32,25 @@ namespace QLNet.Math.randomnumbers
         \test the correctness of the returned values is tested by
               checking them against known good results.
     */
-    [JetBrains.Annotations.PublicAPI] public class MersenneTwisterUniformRng : IRNGTraits
+    [PublicAPI]
+    public class MersenneTwisterUniformRng : IRNGTraits
     {
-        private static int N = 624; // state size
+        // least significant r bits
+        private const ulong LOWER_MASK = 0x7fffffffUL;
+
+        // constant vector a
+        private const ulong MATRIX_A = 0x9908b0dfUL;
+        // most significant w-r bits
+        private const ulong UPPER_MASK = 0x80000000UL;
         private static int M = 397; // shift size
+        private static int N = 624; // state size
+        private List<ulong> mt;
+        private int mti;
 
         /*! if the given seed is 0, a random seed will be chosen based on clock() */
-        public MersenneTwisterUniformRng() : this(0) { }
+        public MersenneTwisterUniformRng() : this(0)
+        {
+        }
 
         public MersenneTwisterUniformRng(ulong seed)
         {
@@ -53,20 +66,25 @@ namespace QLNet.Math.randomnumbers
             int i = 1, j = 0, k = N > seeds.Count ? N : seeds.Count;
             for (; k != 0; k--)
             {
-                mt[i] = (mt[i] ^ (mt[i - 1] ^ mt[i - 1] >> 30) * 1664525UL) + seeds[j] + (ulong)j;         /* non linear */
+                mt[i] = (mt[i] ^ (mt[i - 1] ^ mt[i - 1] >> 30) * 1664525UL) + seeds[j] + (ulong)j; /* non linear */
                 mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
-                i++; j++;
+                i++;
+                j++;
                 if (i >= N)
                 {
                     mt[0] = mt[N - 1];
                     i = 1;
                 }
+
                 if (j >= seeds.Count)
+                {
                     j = 0;
+                }
             }
+
             for (k = N - 1; k != 0; k--)
             {
-                mt[i] = (mt[i] ^ (mt[i - 1] ^ mt[i - 1] >> 30) * 1566083941UL) - (ulong)i;         /* non linear */
+                mt[i] = (mt[i] ^ (mt[i - 1] ^ mt[i - 1] >> 30) * 1566083941UL) - (ulong)i; /* non linear */
                 mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
                 i++;
                 if (i >= N)
@@ -84,14 +102,13 @@ namespace QLNet.Math.randomnumbers
         /*! returns a sample with weight 1.0 containing a random number on (0.0, 1.0)-real-interval  */
         public Sample<double> next() => new Sample<double>(nextReal(), 1.0);
 
-        //! return a random number in the (0.0, 1.0)-interval
-        public double nextReal() => (nextInt32() + 0.5) / 4294967296.0;
-
         //! return  a random number on [0,0xffffffff]-interval
         public ulong nextInt32()
         {
             if (mti == N)
+            {
                 twist(); /* generate N words at a time */
+            }
 
             var y = mt[mti++];
 
@@ -102,6 +119,9 @@ namespace QLNet.Math.randomnumbers
             y ^= y >> 18;
             return y;
         }
+
+        //! return a random number in the (0.0, 1.0)-interval
+        public double nextReal() => (nextInt32() + 0.5) / 4294967296.0;
 
         private void seedInitialization(ulong seed)
         {
@@ -132,25 +152,17 @@ namespace QLNet.Math.randomnumbers
                 y = mt[kk] & UPPER_MASK | mt[kk + 1] & LOWER_MASK;
                 mt[kk] = mt[kk + M] ^ y >> 1 ^ mag01[y & 0x1UL];
             }
+
             for (; kk < N - 1; kk++)
             {
                 y = mt[kk] & UPPER_MASK | mt[kk + 1] & LOWER_MASK;
                 mt[kk] = mt[kk + M - N] ^ y >> 1 ^ mag01[y & 0x1UL];
             }
+
             y = mt[N - 1] & UPPER_MASK | mt[0] & LOWER_MASK;
             mt[N - 1] = mt[M - 1] ^ y >> 1 ^ mag01[y & 0x1UL];
 
             mti = 0;
         }
-
-        private List<ulong> mt;
-        private int mti;
-
-        // constant vector a
-        const ulong MATRIX_A = 0x9908b0dfUL;
-        // most significant w-r bits
-        const ulong UPPER_MASK = 0x80000000UL;
-        // least significant r bits
-        const ulong LOWER_MASK = 0x7fffffffUL;
     }
 }

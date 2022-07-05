@@ -1,12 +1,16 @@
-﻿namespace QLNet.Methods.lattices
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Methods.lattices
 {
-    [JetBrains.Annotations.PublicAPI] public class Tian : BinomialTree<Tian>, ITreeFactory<Tian>
+    [PublicAPI]
+    public class Tian : BinomialTree<Tian>, ITreeFactory<Tian>
     {
         protected double up_, down_, pu_, pd_;
 
         // parameterless constructor is requried for generics
         public Tian()
-        { }
+        {
+        }
 
         public Tian(StochasticProcess1D process, double end, int steps, double strike)
             : base(process, end, steps)
@@ -24,10 +28,10 @@
             Utils.QL_REQUIRE(pu_ >= 0.0, () => "negative probability");
         }
 
-        public override double underlying(int i, int index) => x0_ * System.Math.Pow(down_, i - index) * System.Math.Pow(up_, index);
+        public Tian factory(StochasticProcess1D process, double end, int steps, double strike) => new Tian(process, end, steps, strike);
 
         public override double probability(int i, int j, int branch) => branch == 1 ? pu_ : pd_;
 
-        public Tian factory(StochasticProcess1D process, double end, int steps, double strike) => new Tian(process, end, steps, strike);
+        public override double underlying(int i, int index) => x0_ * System.Math.Pow(down_, i - index) * System.Math.Pow(up_, index);
     }
 }

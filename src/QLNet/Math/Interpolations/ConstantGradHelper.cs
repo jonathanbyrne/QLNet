@@ -1,6 +1,9 @@
-﻿namespace QLNet.Math.Interpolations
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class ConstantGradHelper : ISectionHelper
+    [PublicAPI]
+    public class ConstantGradHelper : ISectionHelper
     {
         private double fPrev_, prevPrimitive_, xPrev_, fGrad_, fNext_;
 
@@ -13,10 +16,10 @@
             fNext_ = fNext;
         }
 
-        public double value(double x) => fPrev_ + (x - xPrev_) * fGrad_;
+        public double fNext() => fNext_;
 
         public double primitive(double x) => prevPrimitive_ + (x - xPrev_) * (fPrev_ + 0.5 * (x - xPrev_) * fGrad_);
 
-        public double fNext() => fNext_;
+        public double value(double x) => fPrev_ + (x - xPrev_) * fGrad_;
     }
 }

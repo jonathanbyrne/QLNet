@@ -236,9 +236,13 @@ namespace QLNet.Tests
                 for (var j = 0; j < yieldCurveModels.Count; ++j)
                 {
                     if (j < yieldCurveModels.Count - 1)
+                    {
                         numericalPricers.Add(new NumericHaganPricer(atmVol, yieldCurveModels[j], zeroMeanRev));
+                    }
                     else
+                    {
                         numericalPricers.Add(new LinearTsrPricer(atmVol, zeroMeanRev));
+                    }
 
                     analyticPricers.Add(new AnalyticHaganPricer(atmVol, yieldCurveModels[j], zeroMeanRev));
                 }
@@ -295,6 +299,7 @@ namespace QLNet.Tests
                 var linearTsr = j == vars.yieldCurveModels.Count - 1;
 
                 if (difference > tol)
+                {
                     QAssert.Fail("\nCoupon payment date: " + paymentDate +
                                  "\nCoupon start date:   " + startDate +
                                  "\nCoupon floor:        " + infiniteFloor +
@@ -308,6 +313,7 @@ namespace QLNet.Tests
                                  "\nAnalytic Pricer:     " + rate1 +
                                  "\ndifference:          " + difference +
                                  "\ntolerance:           " + tol);
+                }
             }
         }
 
@@ -340,10 +346,12 @@ namespace QLNet.Tests
             for (var i = 0; i < n; ++i)
                 // no cap, floor
                 // no gearing, spread
+            {
                 cms.Add(new MakeCms(new Period(swapLengths[i], TimeUnit.Years),
-                                    swapIndex,
-                                    vars.iborIndex, spread,
-                                    new Period(10, TimeUnit.Days)).value());
+                    swapIndex,
+                    vars.iborIndex, spread,
+                    new Period(10, TimeUnit.Days)).value());
+            }
 
             for (var j = 0; j < vars.yieldCurveModels.Count; ++j)
             {
@@ -360,6 +368,7 @@ namespace QLNet.Tests
                     var tol = 2.0e-4;
                     var linearTsr = j == vars.yieldCurveModels.Count - 1;
                     if (difference > tol)
+                    {
                         QAssert.Fail("\nLength in Years:  " + swapLengths[sl] +
                                      "\nswap index:       " + swapIndex.name() +
                                      "\nibor index:       " + vars.iborIndex.name() +
@@ -369,6 +378,7 @@ namespace QLNet.Tests
                                      "\nAnalytic Pricer:  " + priceAn +
                                      "\ndifference:       " + difference +
                                      "\ntolerance:        " + tol);
+                    }
                 }
             }
         }
@@ -430,8 +440,12 @@ namespace QLNet.Tests
                             var tol = 2.0e-5;
                             var linearTsr = k == 0 && j == vars.yieldCurveModels.Count - 1;
                             if (linearTsr)
+                            {
                                 tol = 1.0e-7;
+                            }
+
                             if (difference > tol)
+                            {
                                 QAssert.Fail("\nCoupon payment date: " + paymentDate +
                                              "\nCoupon start date:   " + startDate +
                                              "\nCoupon gearing:      " + gearing +
@@ -447,7 +461,7 @@ namespace QLNet.Tests
                                              "\nFloorlet price:      " + floorletPrice +
                                              "\ndifference:          " + difference +
                                              "\ntolerance:           " + tol);
-
+                            }
                         }
                     }
 

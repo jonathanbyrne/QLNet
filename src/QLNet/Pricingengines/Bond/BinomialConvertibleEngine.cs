@@ -14,6 +14,7 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Instruments.Bonds;
 using QLNet.Methods.lattices;
@@ -22,16 +23,19 @@ using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Termstructures.Yield;
-using QLNet.Time;
 
 namespace QLNet.Pricingengines.Bond
 {
     /// <summary>
-    /// Binomial Tsiveriotis-Fernandes engine for convertible bonds
+    ///     Binomial Tsiveriotis-Fernandes engine for convertible bonds
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    [JetBrains.Annotations.PublicAPI] public class BinomialConvertibleEngine<T> : ConvertibleBond.option.Engine where T : ITree, ITreeFactory<T>, new()
+    [PublicAPI]
+    public class BinomialConvertibleEngine<T> : ConvertibleBond.option.Engine where T : ITree, ITreeFactory<T>, new()
     {
+        private GeneralizedBlackScholesProcess process_;
+        private int timeSteps_;
+
         public BinomialConvertibleEngine(GeneralizedBlackScholesProcess process, int timeSteps)
         {
             process_ = process;
@@ -40,6 +44,7 @@ namespace QLNet.Pricingengines.Bond
             Utils.QL_REQUIRE(timeSteps > 0, () => " timeSteps must be positive");
             process_.registerWith(update);
         }
+
         public override void calculate()
         {
             var rfdc = process_.riskFreeRate().link.dayCounter();
@@ -57,12 +62,14 @@ namespace QLNet.Pricingengines.Bond
 
             // substract dividends
 
-            var args = arguments_ as ConvertibleBond.option.Arguments;
+            var args = arguments_;
 
             for (var i = 0; i < args.dividends.Count; i++)
             {
                 if (args.dividends[i].date() >= referenceDate)
+                {
                     s0 -= args.dividends[i].amount() * process_.riskFreeRate().link.discount(args.dividends[i].date());
+                }
 
                 Utils.QL_REQUIRE(s0 > 0.0, () => "negative value after substracting dividends");
             }
@@ -71,25 +78,25 @@ namespace QLNet.Pricingengines.Bond
 
             var underlying = new Handle<Quote>(new SimpleQuote(s0));
             var flatRiskFree =
-               new Handle<YieldTermStructure>(new FlatForward(referenceDate, riskFreeRate, rfdc));
+                new Handle<YieldTermStructure>(new FlatForward(referenceDate, riskFreeRate, rfdc));
             var flatDividends =
-               new Handle<YieldTermStructure>(new FlatForward(referenceDate, q, divdc));
+                new Handle<YieldTermStructure>(new FlatForward(referenceDate, q, divdc));
             var flatVol =
-               new Handle<BlackVolTermStructure>(new BlackConstantVol(referenceDate, volcal, v, voldc));
+                new Handle<BlackVolTermStructure>(new BlackConstantVol(referenceDate, volcal, v, voldc));
             var payoff = args.payoff as PlainVanillaPayoff;
 
             Utils.QL_REQUIRE(payoff != null, () => " non-plain payoff given ");
 
             var maturity = rfdc.yearFraction(args.settlementDate, maturityDate);
             var bs =
-               new GeneralizedBlackScholesProcess(underlying, flatDividends, flatRiskFree, flatVol);
+                new GeneralizedBlackScholesProcess(underlying, flatDividends, flatRiskFree, flatVol);
 
             var Tree = new T().factory(bs, maturity, timeSteps_, payoff.strike());
 
             var creditSpread = args.creditSpread.link.value();
 
             var lattice = new TsiveriotisFernandesLattice<T>(Tree, riskFreeRate,
-                                                                                        maturity, timeSteps_, creditSpread, v, q);
+                maturity, timeSteps_, creditSpread, v, q);
             var convertible = new DiscretizedConvertible(args, bs, new TimeGrid(maturity, timeSteps_));
             convertible.initialize(lattice, maturity);
             convertible.rollback(0.0);
@@ -97,9 +104,5 @@ namespace QLNet.Pricingengines.Bond
 
             Utils.QL_REQUIRE(results_.value < double.MaxValue, () => "floating-point overflow on tree grid");
         }
-
-        private GeneralizedBlackScholesProcess process_;
-        private int timeSteps_;
-
     }
 }

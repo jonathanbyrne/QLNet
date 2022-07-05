@@ -16,7 +16,8 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using System;
+
+using JetBrains.Annotations;
 using QLNet.Math.Solvers1d;
 
 namespace QLNet.Math
@@ -27,12 +28,12 @@ namespace QLNet.Math
           f(\Delta h) = f_0 + \alpha\cdot (\Delta h)^n + O((\Delta h)^{n+1})
       \f]
      */
-
     /*! References:
         http://en.wikipedia.org/wiki/Richardson_extrapolation
     */
 
-    [JetBrains.Annotations.PublicAPI] public class RichardsonExtrapolation
+    [PublicAPI]
+    public class RichardsonExtrapolation
     {
         /*! Richardon Extrapolation
            \param f function to be extrapolated to delta_h -> 0
@@ -40,6 +41,11 @@ namespace QLNet.Math
            \param n if known, n is the order of convergence
         */
         public delegate double function(double num);
+
+        private double delta_h_;
+        private function f_;
+        private double fdelta_h_;
+        private double? n_;
 
         public RichardsonExtrapolation(function f, double delta_h, double? n = null)
         {
@@ -75,16 +81,11 @@ namespace QLNet.Math
             var fs = f_(delta_h_ / s);
 
             var k = new Brent().solve(new RichardsonEqn(fdelta_h_, ft, fs, t, s),
-                                         1e-8, 0.05, 10);
+                1e-8, 0.05, 10);
 
             var ts = System.Math.Pow(s, k);
 
             return (ts * fs - fdelta_h_) / (ts - 1.0);
         }
-
-        private double delta_h_;
-        private double fdelta_h_;
-        private double? n_;
-        private function f_;
     }
 }

@@ -14,37 +14,40 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-using QLNet.Math;
-using QLNet.Math.Optimization;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Math.Optimization;
 
 namespace QLNet.Math.Interpolations
 {
     //! %Abcd interpolation between discrete points.
     /*! \ingroup interpolations */
-    [JetBrains.Annotations.PublicAPI] public class AbcdInterpolation : Interpolation
+    [PublicAPI]
+    public class AbcdInterpolation : Interpolation
     {
+        private AbcdCoeffHolder coeffs_;
+
         /*! Constructor */
         public AbcdInterpolation(List<double> xBegin, int size, List<double> yBegin,
-                                 double a = -0.06,
-                                 double b = 0.17,
-                                 double c = 0.54,
-                                 double d = 0.17,
-                                 bool aIsFixed = false,
-                                 bool bIsFixed = false,
-                                 bool cIsFixed = false,
-                                 bool dIsFixed = false,
-                                 bool vegaWeighted = false,
-                                 EndCriteria endCriteria = null,
-                                 OptimizationMethod optMethod = null)
+            double a = -0.06,
+            double b = 0.17,
+            double c = 0.54,
+            double d = 0.17,
+            bool aIsFixed = false,
+            bool bIsFixed = false,
+            bool cIsFixed = false,
+            bool dIsFixed = false,
+            bool vegaWeighted = false,
+            EndCriteria endCriteria = null,
+            OptimizationMethod optMethod = null)
         {
             impl_ = new AbcdInterpolationImpl(xBegin, size, yBegin,
-                                              a, b, c, d,
-                                              aIsFixed, bIsFixed,
-                                              cIsFixed, dIsFixed,
-                                              vegaWeighted,
-                                              endCriteria,
-                                              optMethod);
+                a, b, c, d,
+                aIsFixed, bIsFixed,
+                cIsFixed, dIsFixed,
+                vegaWeighted,
+                endCriteria,
+                optMethod);
             impl_.update();
             coeffs_ = ((AbcdInterpolationImpl)impl_).AbcdCoeffHolder();
         }
@@ -58,13 +61,9 @@ namespace QLNet.Math.Interpolations
 
         public double? d() => coeffs_.d_;
 
-        public List<double> k() => coeffs_.k_;
-
-        public double? rmsError() => coeffs_.error_;
-
-        public double? maxError() => coeffs_.maxError_;
-
         public EndCriteria.Type endCriteria() => coeffs_.abcdEndCriteria_;
+
+        public List<double> k() => coeffs_.k_;
 
         public double k(double t, List<double> xBegin, int size)
         {
@@ -72,8 +71,9 @@ namespace QLNet.Math.Interpolations
             return li.value(t);
         }
 
-        private AbcdCoeffHolder coeffs_;
+        public double? maxError() => coeffs_.maxError_;
 
+        public double? rmsError() => coeffs_.error_;
     }
 
     //! %Abcd interpolation factory and traits

@@ -16,10 +16,12 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
-using QLNet.Termstructures;
+
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Math;
+using QLNet.Termstructures;
 
 namespace QLNet.Methods.montecarlo
 {
@@ -35,19 +37,18 @@ namespace QLNet.Methods.montecarlo
         \test the correctness of the returned value is tested by
               reproducing results available in web/literature
     */
-    [JetBrains.Annotations.PublicAPI] public class LongstaffSchwartzPathPricer<PathType> : PathPricer<PathType> where PathType : IPath
+    [PublicAPI]
+    public class LongstaffSchwartzPathPricer<PathType> : PathPricer<PathType> where PathType : IPath
     {
         protected bool calibrationPhase_;
-        protected IEarlyExercisePathPricer<PathType, double> pathPricer_;
-
         protected List<Vector> coeff_;
         protected List<double> dF_;
-
+        protected IEarlyExercisePathPricer<PathType, double> pathPricer_;
         protected List<PathType> paths_ = new List<PathType>();
         protected List<Func<double, double>> v_;
 
         public LongstaffSchwartzPathPricer(TimeGrid times, IEarlyExercisePathPricer<PathType, double> pathPricer,
-                                           YieldTermStructure termStructure)
+            YieldTermStructure termStructure)
         {
             calibrationPhase_ = true;
             pathPricer_ = pathPricer;
@@ -58,46 +59,8 @@ namespace QLNet.Methods.montecarlo
             for (var i = 0; i < times.size() - 1; ++i)
             {
                 dF_[i] = termStructure.discount(times[i + 1])
-                           / termStructure.discount(times[i]);
+                         / termStructure.discount(times[i]);
             }
-        }
-
-
-        public double value(PathType path)
-        {
-            if (calibrationPhase_)
-            {
-                // store paths for the calibration
-                paths_.Add((PathType)path.Clone());
-                // result doesn't matter
-                return 0.0;
-            }
-
-            var len = EarlyExerciseTraits<PathType>.pathLength(path);
-            var price = pathPricer_.value(path, len - 1);
-            for (var i = len - 2; i > 0; --i)
-            {
-                price *= dF_[i];
-
-                var exercise = pathPricer_.value(path, i);
-                if (exercise > 0.0)
-                {
-                    var regValue = pathPricer_.state(path, i);
-
-                    var continuationValue = 0.0;
-                    for (var l = 0; l < v_.Count; ++l)
-                    {
-                        continuationValue += coeff_[i][l] * v_[l](regValue);
-                    }
-
-                    if (continuationValue < exercise)
-                    {
-                        price = exercise;
-                    }
-                }
-            }
-
-            return price * dF_[0];
         }
 
         public void calibrate()
@@ -107,7 +70,9 @@ namespace QLNet.Methods.montecarlo
             var len = EarlyExerciseTraits<PathType>.pathLength(paths_[0]);
 
             for (var i = 0; i < paths_.Count; i++)
+            {
                 prices[i] = pathPricer_.value(paths_[i], len - 1);
+            }
 
             for (var i = len - 2; i > 0; --i)
             {
@@ -147,10 +112,12 @@ namespace QLNet.Methods.montecarlo
                         {
                             continuationValue += coeff_[i][l] * v_[l](x[k]);
                         }
+
                         if (continuationValue < exercise[j])
                         {
                             prices[j] = exercise[j];
                         }
+
                         ++k;
                     }
                 }
@@ -160,6 +127,43 @@ namespace QLNet.Methods.montecarlo
             paths_.Clear();
             // entering the calculation phase
             calibrationPhase_ = false;
+        }
+
+        public double value(PathType path)
+        {
+            if (calibrationPhase_)
+            {
+                // store paths for the calibration
+                paths_.Add((PathType)path.Clone());
+                // result doesn't matter
+                return 0.0;
+            }
+
+            var len = EarlyExerciseTraits<PathType>.pathLength(path);
+            var price = pathPricer_.value(path, len - 1);
+            for (var i = len - 2; i > 0; --i)
+            {
+                price *= dF_[i];
+
+                var exercise = pathPricer_.value(path, i);
+                if (exercise > 0.0)
+                {
+                    var regValue = pathPricer_.state(path, i);
+
+                    var continuationValue = 0.0;
+                    for (var l = 0; l < v_.Count; ++l)
+                    {
+                        continuationValue += coeff_[i][l] * v_[l](regValue);
+                    }
+
+                    if (continuationValue < exercise)
+                    {
+                        price = exercise;
+                    }
+                }
+            }
+
+            return price * dF_[0];
         }
     }
 }

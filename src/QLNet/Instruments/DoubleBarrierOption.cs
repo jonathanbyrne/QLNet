@@ -14,6 +14,7 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
 using QLNet.Pricingengines.barrier;
 using QLNet.processes;
 using QLNet.Quotes;
@@ -25,16 +26,63 @@ namespace QLNet.Instruments
 
         \ingroup instruments
     */
-    [JetBrains.Annotations.PublicAPI] public class DoubleBarrierOption : OneAssetOption
+    [PublicAPI]
+    public class DoubleBarrierOption : OneAssetOption
     {
+        //! %Arguments for double barrier option calculation
+        public new class Arguments : Option.Arguments
+        {
+            public Arguments()
+            {
+                barrier_lo = null;
+                barrier_hi = null;
+                rebate = null;
+            }
+
+            public double? barrier_hi { get; set; }
+
+            public double? barrier_lo { get; set; }
+
+            public DoubleBarrier.Type barrierType { get; set; }
+
+            public double? rebate { get; set; }
+
+            public override void validate()
+            {
+                base.validate();
+
+                Utils.QL_REQUIRE(barrierType == DoubleBarrier.Type.KnockIn ||
+                                 barrierType == DoubleBarrier.Type.KnockOut ||
+                                 barrierType == DoubleBarrier.Type.KIKO ||
+                                 barrierType == DoubleBarrier.Type.KOKI, () =>
+                    "Invalid barrier ExerciseType");
+
+                Utils.QL_REQUIRE(barrier_lo != null, () => "no low barrier given");
+                Utils.QL_REQUIRE(barrier_hi != null, () => "no high barrier given");
+                Utils.QL_REQUIRE(rebate != null, () => "no rebate given");
+            }
+        }
+
+        //! %Double-Barrier-option %engine base class
+        public new class Engine : GenericEngine<Arguments, Results>
+        {
+            protected bool triggered(double underlying) => underlying <= arguments_.barrier_lo || underlying >= arguments_.barrier_hi;
+        }
+
+        protected double barrier_hi_;
+        protected double barrier_lo_;
+
+        // arguments
+        protected DoubleBarrier.Type barrierType_;
+        protected double rebate_;
 
         public DoubleBarrierOption(DoubleBarrier.Type barrierType,
-                                   double barrier_lo,
-                                   double barrier_hi,
-                                   double rebate,
-                                   StrikedTypePayoff payoff,
-                                   Exercise exercise)
-           : base(payoff, exercise)
+            double barrier_lo,
+            double barrier_hi,
+            double rebate,
+            StrikedTypePayoff payoff,
+            Exercise exercise)
+            : base(payoff, exercise)
         {
             barrierType_ = barrierType;
             barrier_lo_ = barrier_lo;
@@ -42,27 +90,15 @@ namespace QLNet.Instruments
             rebate_ = rebate;
         }
 
-        public override void setupArguments(IPricingEngineArguments args)
-        {
-            base.setupArguments(args);
-
-            var moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
-            moreArgs.barrierType = barrierType_;
-            moreArgs.barrier_lo = barrier_lo_;
-            moreArgs.barrier_hi = barrier_hi_;
-            moreArgs.rebate = rebate_;
-        }
-
         /*! \warning see VanillaOption for notes on implied-volatility
                     calculation.
         */
         public double impliedVolatility(double targetValue,
-                                        GeneralizedBlackScholesProcess process,
-                                        double accuracy = 1.0e-4,
-                                        int maxEvaluations = 100,
-                                        double minVol = 1.0e-7,
-                                        double maxVol = 4.0)
+            GeneralizedBlackScholesProcess process,
+            double accuracy = 1.0e-4,
+            int maxEvaluations = 100,
+            double minVol = 1.0e-7,
+            double maxVol = 4.0)
         {
             Utils.QL_REQUIRE(!isExpired(), () => "option expired");
 
@@ -88,49 +124,18 @@ namespace QLNet.Instruments
             }
 
             return ImpliedVolatilityHelper.calculate(this, engine, volQuote, targetValue, accuracy, maxEvaluations, minVol, maxVol);
-
         }
 
-        // arguments
-        protected DoubleBarrier.Type barrierType_;
-        protected double barrier_lo_;
-        protected double barrier_hi_;
-        protected double rebate_;
-
-        //! %Arguments for double barrier option calculation
-        public new class Arguments : Option.Arguments
+        public override void setupArguments(IPricingEngineArguments args)
         {
-            public Arguments()
-            {
-                barrier_lo = null;
-                barrier_hi = null;
-                rebate = null;
-            }
-            public DoubleBarrier.Type barrierType { get; set; }
-            public double? barrier_lo { get; set; }
-            public double? barrier_hi { get; set; }
-            public double? rebate { get; set; }
-            public override void validate()
-            {
-                base.validate();
+            base.setupArguments(args);
 
-                Utils.QL_REQUIRE(barrierType == DoubleBarrier.Type.KnockIn ||
-                                 barrierType == DoubleBarrier.Type.KnockOut ||
-                                 barrierType == DoubleBarrier.Type.KIKO ||
-                                 barrierType == DoubleBarrier.Type.KOKI, () =>
-                                 "Invalid barrier ExerciseType");
-
-                Utils.QL_REQUIRE(barrier_lo != null, () => "no low barrier given");
-                Utils.QL_REQUIRE(barrier_hi != null, () => "no high barrier given");
-                Utils.QL_REQUIRE(rebate != null, () => "no rebate given");
-            }
+            var moreArgs = args as Arguments;
+            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
+            moreArgs.barrierType = barrierType_;
+            moreArgs.barrier_lo = barrier_lo_;
+            moreArgs.barrier_hi = barrier_hi_;
+            moreArgs.rebate = rebate_;
         }
-
-        //! %Double-Barrier-option %engine base class
-        public new class Engine : GenericEngine<Arguments, Results>
-        {
-            protected bool triggered(double underlying) => underlying <= arguments_.barrier_lo || underlying >= arguments_.barrier_hi;
-        }
-
     }
 }

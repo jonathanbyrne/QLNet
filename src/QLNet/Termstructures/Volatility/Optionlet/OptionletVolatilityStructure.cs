@@ -18,7 +18,6 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Termstructures.Volatility;
 using QLNet.Time;
 
 namespace QLNet.Termstructures.Volatility.Optionlet
@@ -29,7 +28,22 @@ namespace QLNet.Termstructures.Volatility.Optionlet
     */
     public abstract class OptionletVolatilityStructure : VolatilityTermStructure
     {
+        public virtual double displacement() => 0.0;
+
+        public virtual VolatilityType volatilityType() => VolatilityType.ShiftedLognormal;
+
+        //! implements the actual smile calculation in derived classes
+        protected abstract SmileSection smileSectionImpl(double optionTime);
+
+        //! implements the actual volatility calculation in derived classes
+        protected abstract double volatilityImpl(double optionTime, double strike);
+
+        protected virtual SmileSection smileSectionImpl(Date optionDate) => smileSectionImpl(timeFromReference(optionDate));
+
+        protected double volatilityImpl(Date optionDate, double strike) => volatilityImpl(timeFromReference(optionDate), strike);
+
         #region Constructors
+
         //! default constructor
         /*! \warning term structures initialized by means of this
                      constructor must manage their own reference date
@@ -37,16 +51,22 @@ namespace QLNet.Termstructures.Volatility.Optionlet
         */
 
         protected OptionletVolatilityStructure(BusinessDayConvention bdc = BusinessDayConvention.Following,
-                                               DayCounter dc = null)
-           : base(bdc, dc) { }
+            DayCounter dc = null)
+            : base(bdc, dc)
+        {
+        }
 
         //! initialize with a fixed reference date
         protected OptionletVolatilityStructure(Date referenceDate, Calendar cal, BusinessDayConvention bdc, DayCounter dc = null)
-           : base(referenceDate, cal, bdc, dc) { }
+            : base(referenceDate, cal, bdc, dc)
+        {
+        }
 
         //! calculate the reference date based on the global evaluation date
         protected OptionletVolatilityStructure(int settlementDays, Calendar cal, BusinessDayConvention bdc, DayCounter dc = null)
-           : base(settlementDays, cal, bdc, dc) { }
+            : base(settlementDays, cal, bdc, dc)
+        {
+        }
 
         #endregion
 
@@ -119,22 +139,5 @@ namespace QLNet.Termstructures.Volatility.Optionlet
         }
 
         #endregion
-
-        public virtual double displacement() => 0.0;
-
-        public virtual VolatilityType volatilityType() => VolatilityType.ShiftedLognormal;
-
-        protected virtual SmileSection smileSectionImpl(Date optionDate) => smileSectionImpl(timeFromReference(optionDate));
-
-        //! implements the actual smile calculation in derived classes
-        protected abstract SmileSection smileSectionImpl(double optionTime);
-
-        protected double volatilityImpl(Date optionDate, double strike) => volatilityImpl(timeFromReference(optionDate), strike);
-
-        //! implements the actual volatility calculation in derived classes
-        protected abstract double volatilityImpl(double optionTime, double strike);
-
-
     }
-
 }

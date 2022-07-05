@@ -17,29 +17,33 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Time;
 
 namespace QLNet.Indexes.Inflation
 {
-
     //! FR HICP index
-    [JetBrains.Annotations.PublicAPI] public class FRHICP : ZeroInflationIndex
+    [PublicAPI]
+    public class FRHICP : ZeroInflationIndex
     {
         public FRHICP(bool interpolated)
-           : this(interpolated, new Handle<ZeroInflationTermStructure>()) { }
+            : this(interpolated, new Handle<ZeroInflationTermStructure>())
+        {
+        }
 
         public FRHICP(bool interpolated,
-                      Handle<ZeroInflationTermStructure> ts)
-           : base("HICP",
-                  new FranceRegion(),
-                  false,
-                  interpolated,
-                  Frequency.Monthly,
-                  new Period(1, TimeUnit.Months),
-                  new EURCurrency(),
-                  ts)
-        { }
+            Handle<ZeroInflationTermStructure> ts)
+            : base("HICP",
+                new FranceRegion(),
+                false,
+                interpolated,
+                Frequency.Monthly,
+                new Period(1, TimeUnit.Months),
+                new EURCurrency(),
+                ts)
+        {
+        }
     }
 
     //! Genuine year-on-year FR HICP (i.e. not a ratio)

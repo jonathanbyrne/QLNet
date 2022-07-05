@@ -17,10 +17,10 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Patterns;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Cashflows
 {
@@ -43,12 +43,11 @@ namespace QLNet.Cashflows
         We add the inverse prices so that conventional caps can be
         priced simply.
     */
-    [JetBrains.Annotations.PublicAPI] public class InflationCouponPricer : IObserver, IObservable
+    [PublicAPI]
+    public class InflationCouponPricer : IObserver, IObservable
     {
-        // Interface
-        public virtual double swapletPrice() => 0;
-
-        public virtual double swapletRate() => 0;
+        protected Date paymentDate_;
+        protected Handle<YieldTermStructure> rateCurve_;
 
         public virtual double capletPrice(double effectiveCap) => 0;
 
@@ -58,30 +57,47 @@ namespace QLNet.Cashflows
 
         public virtual double floorletRate(double effectiveFloor) => 0;
 
-        public virtual void initialize(InflationCoupon i) { }
+        public virtual void initialize(InflationCoupon i)
+        {
+        }
+
+        // Interface
+        public virtual double swapletPrice() => 0;
+
+        public virtual double swapletRate() => 0;
 
         #region Observer & observable
+
         private readonly WeakEventSource eventSource = new WeakEventSource();
+
         public event Callback notifyObserversEvent
         {
             add => eventSource.Subscribe(value);
             remove => eventSource.Unsubscribe(value);
         }
 
-        public void registerWith(Callback handler) { notifyObserversEvent += handler; }
-        public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
+        public void registerWith(Callback handler)
+        {
+            notifyObserversEvent += handler;
+        }
+
+        public void unregisterWith(Callback handler)
+        {
+            notifyObserversEvent -= handler;
+        }
+
         protected void notifyObservers()
         {
             eventSource.Raise();
         }
 
         // observer interface
-        public void update() { notifyObservers(); }
+        public void update()
+        {
+            notifyObservers();
+        }
+
         #endregion
-
-        protected Handle<YieldTermStructure> rateCurve_;
-        protected Date paymentDate_;
-
     }
 
     //! base pricer for capped/floored YoY inflation coupons

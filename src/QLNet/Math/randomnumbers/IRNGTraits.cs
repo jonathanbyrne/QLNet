@@ -1,12 +1,15 @@
-﻿using QLNet.Methods.montecarlo;
+﻿using JetBrains.Annotations;
+using QLNet.Methods.montecarlo;
 
 namespace QLNet.Math.randomnumbers
 {
-    [JetBrains.Annotations.PublicAPI] public interface IRNGTraits
+    [PublicAPI]
+    public interface IRNGTraits
     {
-        ulong nextInt32();
+        IRNGTraits factory(ulong seed);
+
         Sample<double> next();
 
-        IRNGTraits factory(ulong seed);
+        ulong nextInt32();
     }
 }

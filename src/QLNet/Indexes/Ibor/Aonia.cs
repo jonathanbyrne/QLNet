@@ -14,6 +14,7 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Termstructures;
 using QLNet.Time.Calendars;
@@ -26,11 +27,13 @@ namespace QLNet.Indexes.Ibor
 
     See <http://www.isda.org/publications/pdf/Supplement-13-to-2000DefinitionsAnnex.pdf>.
     */
-    [JetBrains.Annotations.PublicAPI] public class Aonia : OvernightIndex
+    [PublicAPI]
+    public class Aonia : OvernightIndex
     {
         public Aonia(Handle<YieldTermStructure> h = null)
-           : base("Aonia", 0, new AUDCurrency(), new Australia(), new Actual365Fixed(),
-                  h ?? new Handle<YieldTermStructure>())
-        { }
+            : base("Aonia", 0, new AUDCurrency(), new Australia(), new Actual365Fixed(),
+                h ?? new Handle<YieldTermStructure>())
+        {
+        }
     }
 }

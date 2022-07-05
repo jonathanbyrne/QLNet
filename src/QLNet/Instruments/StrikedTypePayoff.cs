@@ -1,6 +1,9 @@
-﻿namespace QLNet.Instruments
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class StrikedTypePayoff : TypePayoff
+    [PublicAPI]
+    public class StrikedTypePayoff : TypePayoff
     {
         protected double strike_;
 

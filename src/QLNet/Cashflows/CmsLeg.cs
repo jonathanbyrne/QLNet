@@ -1,10 +1,12 @@
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class CmsLeg : FloatingLegBase
+    [PublicAPI]
+    public class CmsLeg : FloatingLegBase
     {
         public CmsLeg(Schedule schedule, SwapIndex swapIndex)
         {

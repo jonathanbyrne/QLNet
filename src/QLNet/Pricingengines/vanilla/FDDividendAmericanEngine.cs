@@ -17,7 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.processes;
 
@@ -32,16 +32,19 @@ namespace QLNet.Pricingengines.vanilla
         - the invariance of the results upon addition of null
           dividends is tested.
     */
-    [JetBrains.Annotations.PublicAPI] public class FDDividendAmericanEngine : FDEngineAdapter<FDAmericanCondition<FDDividendEngine>, DividendVanillaOption.Engine>,
-      IFDEngine
+    [PublicAPI]
+    public class FDDividendAmericanEngine : FDEngineAdapter<FDAmericanCondition<FDDividendEngine>, DividendVanillaOption.Engine>,
+        IFDEngine
     {
         public FDDividendAmericanEngine()
-        { }
+        {
+        }
 
         public FDDividendAmericanEngine(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100,
-                                        bool timeDependent = false)
-           : base(process, timeSteps, gridPoints, timeDependent)
-        { }
+            bool timeDependent = false)
+            : base(process, timeSteps, gridPoints, timeDependent)
+        {
+        }
 
         public IFDEngine factory(GeneralizedBlackScholesProcess process, int timeSteps = 100, int gridPoints = 100) => new FDDividendAmericanEngine(process, timeSteps, gridPoints);
     }

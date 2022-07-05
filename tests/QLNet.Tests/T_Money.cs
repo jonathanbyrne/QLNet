@@ -43,7 +43,9 @@ namespace QLNet.Tests
             var expected = new Money(x, EUR);
 
             if (calculated != expected)
+            {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
+            }
         }
 
         [Fact]

@@ -17,21 +17,49 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Models;
-using QLNet.Models.Shortrate;
-using System;
+
+using JetBrains.Annotations;
 using QLNet.Math.Optimization;
 using QLNet.processes;
 
 namespace QLNet.Models.Shortrate.Onefactormodels
 {
     /// <summary>
-    /// Vasicek model class
+    ///     Vasicek model class
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class Vasicek : OneFactorAffineModel
+    [PublicAPI]
+    public class Vasicek : OneFactorAffineModel
     {
+        //! Short-rate dynamics in the %Vasicek model
+        /*! The short-rate follows an Ornstein-Uhlenbeck process with mean
+            \f$ b \f$.
+        */
+        [PublicAPI]
+        public class Dynamics : ShortRateDynamics
+        {
+            private double a_, b_, r0_;
+
+            public Dynamics(double a, double b, double sigma, double r0)
+                : base(new OrnsteinUhlenbeckProcess(a, sigma, r0 - b))
+            {
+                a_ = a;
+                b_ = b;
+                r0_ = r0;
+            }
+
+            public override double shortRate(double t, double x) => x + b_;
+
+            public override double variable(double t, double r) => r - b_;
+        }
+
+        protected Parameter a_;
+        protected Parameter b_;
+        protected Parameter lambda_;
+        protected double r0_;
+        protected Parameter sigma_;
+
         public Vasicek(double r0, double a, double b = 0.05, double sigma = 0.01, double lambda = 0.0)
-           : base(4)
+            : base(4)
         {
             r0_ = r0;
             a_ = arguments_[0];
@@ -44,8 +72,12 @@ namespace QLNet.Models.Shortrate.Onefactormodels
             lambda_ = arguments_[3] = new ConstantParameter(lambda, new NoConstraint());
         }
 
+        public double a() => a_.value(0.0);
+
+        public double b() => b_.value(0.0);
+
         public override double discountBondOption(Option.Type type, double strike, double maturity,
-                                                  double bondMaturity)
+            double bondMaturity)
         {
             double v;
             var _a = a();
@@ -62,6 +94,7 @@ namespace QLNet.Models.Shortrate.Onefactormodels
                 v = sigma() * B(maturity, bondMaturity) *
                     System.Math.Sqrt(0.5 * (1.0 - System.Math.Exp(-2.0 * _a * maturity)) / _a);
             }
+
             var f = discountBond(0.0, bondMaturity, r0_);
             var k = discountBond(0.0, maturity, r0_) * strike;
 
@@ -70,6 +103,10 @@ namespace QLNet.Models.Shortrate.Onefactormodels
 
         public override ShortRateDynamics dynamics() => new Dynamics(a(), b(), sigma(), r0_);
 
+        public double lambda() => lambda_.value(0.0);
+
+        public double sigma() => sigma_.value(0.0);
+
         protected override double A(double t, double T)
         {
             var _a = a();
@@ -77,59 +114,23 @@ namespace QLNet.Models.Shortrate.Onefactormodels
             {
                 return 0.0;
             }
-            else
-            {
-                var sigma2 = sigma() * sigma();
-                var bt = B(t, T);
-                return System.Math.Exp((b() + lambda() * sigma() / _a
-                                 - 0.5 * sigma2 / (_a * _a)) * (bt - (T - t))
-                                - 0.25 * sigma2 * bt * bt / _a);
-            }
+
+            var sigma2 = sigma() * sigma();
+            var bt = B(t, T);
+            return System.Math.Exp((b() + lambda() * sigma() / _a
+                                    - 0.5 * sigma2 / (_a * _a)) * (bt - (T - t))
+                                   - 0.25 * sigma2 * bt * bt / _a);
         }
 
         protected override double B(double t, double T)
         {
             var _a = a();
             if (_a < System.Math.Sqrt(Const.QL_EPSILON))
-                return T - t;
-            else
-                return (1.0 - System.Math.Exp(-_a * (T - t))) / _a;
-        }
-
-        public double a() => a_.value(0.0);
-
-        public double b() => b_.value(0.0);
-
-        public double lambda() => lambda_.value(0.0);
-
-        public double sigma() => sigma_.value(0.0);
-
-        protected double r0_;
-        protected Parameter a_;
-        protected Parameter b_;
-        protected Parameter sigma_;
-        protected Parameter lambda_;
-
-        //! Short-rate dynamics in the %Vasicek model
-        /*! The short-rate follows an Ornstein-Uhlenbeck process with mean
-            \f$ b \f$.
-        */
-        [JetBrains.Annotations.PublicAPI] public class Dynamics : ShortRateDynamics
-        {
-            public Dynamics(double a, double b, double sigma, double r0)
-               : base(new OrnsteinUhlenbeckProcess(a, sigma, r0 - b))
             {
-                a_ = a;
-                b_ = b;
-                r0_ = r0;
+                return T - t;
             }
 
-            public override double variable(double t, double r) => r - b_;
-
-            public override double shortRate(double t, double x) => x + b_;
-
-            private double a_, b_, r0_;
+            return (1.0 - System.Math.Exp(-_a * (T - t))) / _a;
         }
     }
 }
-

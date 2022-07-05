@@ -36,18 +36,22 @@ namespace QLNet.Tests
             var expected = 1.0;
             var calculated = Factorial.get(0);
             if (calculated != expected)
+            {
                 QAssert.Fail("Factorial(0) = " + calculated);
+            }
 
             for (uint i = 1; i < 171; ++i)
             {
                 expected *= i;
                 calculated = Factorial.get(i);
                 if (System.Math.Abs(calculated - expected) / expected > 1.0e-9)
+                {
                     QAssert.Fail("Factorial(" + i + ")" +
                                  "\n calculated: " + calculated +
                                  "\n   expected: " + expected +
                                  "\n rel. error: " +
                                  System.Math.Abs(calculated - expected) / expected);
+                }
             }
         }
 
@@ -59,20 +63,24 @@ namespace QLNet.Tests
             var expected = 0.0;
             var calculated = GammaFunction.logValue(1);
             if (System.Math.Abs(calculated) > 1.0e-15)
+            {
                 QAssert.Fail("GammaFunction(1)\n"
                              + "    calculated: " + calculated + "\n"
                              + "    expected:   " + expected);
+            }
 
             for (var i = 2; i < 9000; i++)
             {
                 expected += System.Math.Log(i);
                 calculated = GammaFunction.logValue(i + 1);
                 if (System.Math.Abs(calculated - expected) / expected > 1.0e-9)
+                {
                     QAssert.Fail("GammaFunction(" + i + ")\n"
                                  + "    calculated: " + calculated + "\n"
                                  + "    expected:   " + expected + "\n"
                                  + "    rel. error: "
                                  + System.Math.Abs(calculated - expected) / expected);
+                }
             }
         }
 
@@ -241,18 +249,23 @@ namespace QLNet.Tests
                     var wk = Const.M_PI_2 * (Utils.modifiedBesselFunction_i(-nu, x) * System.Math.Exp(-x) -
                                              Utils.modifiedBesselFunction_i(nu, x) * System.Math.Exp(-x)) / System.Math.Sin(Const.M_PI * nu);
                     if (System.Math.Abs((vi - wi) / (System.Math.Max(System.Math.Exp(x), 1.0) * vi)) > 1E3 * Const.QL_EPSILON)
+                    {
                         QAssert.Fail("failed to verify exponentially weighted"
                                      + "modified Bessel function of first kind"
                                      + "\n order      : " + nu + "\n argument   : "
                                      + x + "\n calcuated  : " + vi
                                      + "\n expecetd   : " + wi);
+                    }
 
                     if (System.Math.Abs((vk - wk) / (System.Math.Max(System.Math.Exp(x), 1.0) * vk)) > 1E3 * Const.QL_EPSILON)
+                    {
                         QAssert.Fail("failed to verify exponentially weighted"
                                      + "modified Bessel function of second kind"
                                      + "\n order      : " + nu + "\n argument   : "
                                      + x + "\n calcuated  : " + vk
                                      + "\n expecetd   : " + wk);
+                    }
+
                     x += 0.5;
                 }
                 nu += 0.5;
@@ -274,19 +287,25 @@ namespace QLNet.Tests
                                                  Utils.modifiedBesselFunction_i(nu, z) * Complex.Exp(-z)) /
                                  System.Math.Sin(Const.M_PI * nu);
                         if (Complex.Abs((vi - wi) / vi) > 1E3 * Const.QL_EPSILON)
+                        {
                             QAssert.Fail("failed to verify exponentially weighted"
                                          + "modified Bessel function of first kind"
                                          + "\n order      : " + nu
                                          + "\n argument   : " + z +
                                          "\n calcuated: "
                                          + vi + "\n expecetd   : " + wi);
+                        }
+
                         if (Complex.Abs((vk - wk) / vk) > 1E3 * Const.QL_EPSILON)
+                        {
                             QAssert.Fail("failed to verify exponentially weighted"
                                          + "modified Bessel function of second kind"
                                          + "\n order      : " + nu
                                          + "\n argument   : " + z +
                                          "\n calcuated: "
                                          + vk + "\n expecetd   : " + wk);
+                        }
+
                         y += 0.5;
                     }
                     x += 0.5;

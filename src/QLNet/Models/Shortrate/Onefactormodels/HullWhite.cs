@@ -16,32 +16,91 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Methods.lattices;
-using QLNet.Models;
-using QLNet.Termstructures;
-using System;
 using QLNet.processes;
+using QLNet.Termstructures;
 
 namespace QLNet.Models.Shortrate.Onefactormodels
 {
     /// <summary>
-    /// Single-factor Hull-White (extended %Vasicek) model class.
-    /// <remarks>
-    /// This class implements the standard single-factor Hull-White model defined by
-    /// dr_t = (\theta(t) - \alpha r_t)dt + \sigma dW_t
-    /// where alpha and sigma are constants.
-    /// calibration results are tested against cached values
-    /// When the term structure is relinked, the r0 parameter of
-    /// the underlying Vasicek model is not updated.
-    /// </remarks>
+    ///     Single-factor Hull-White (extended %Vasicek) model class.
+    ///     <remarks>
+    ///         This class implements the standard single-factor Hull-White model defined by
+    ///         dr_t = (\theta(t) - \alpha r_t)dt + \sigma dW_t
+    ///         where alpha and sigma are constants.
+    ///         calibration results are tested against cached values
+    ///         When the term structure is relinked, the r0 parameter of
+    ///         the underlying Vasicek model is not updated.
+    ///     </remarks>
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class HullWhite : Vasicek, ITermStructureConsistentModel
+    [PublicAPI]
+    public class HullWhite : Vasicek, ITermStructureConsistentModel
     {
+        //! Short-rate dynamics in the Hull-White model
+        public new class Dynamics : ShortRateDynamics
+        {
+            private readonly Parameter fitting_;
+
+            public Dynamics(Parameter fitting, double a, double sigma)
+                : base(new OrnsteinUhlenbeckProcess(a, sigma))
+            {
+                fitting_ = fitting;
+            }
+
+            public override double shortRate(double t, double x) => x + fitting_.value(t);
+
+            public override double variable(double t, double r) => r - fitting_.value(t);
+        }
+
+        //! Analytical term-structure fitting parameter \f$ \varphi(t) \f$.
+        /*! \f$ \varphi(t) \f$ is analytically defined by
+            \f[
+                \varphi(t) = f(t) + \frac{1}{2}[\frac{\sigma(1-e^{-at})}{a}]^2,
+            \f]
+            where \f$ f(t) \f$ is the instantaneous forward rate at \f$ t \f$.
+        */
+        [PublicAPI]
+        public class FittingParameter : TermStructureFittingParameter
+        {
+            private new class Impl : Parameter.Impl
+            {
+                private readonly double a_;
+                private readonly double sigma_;
+                private readonly Handle<YieldTermStructure> termStructure_;
+
+                public Impl(Handle<YieldTermStructure> termStructure,
+                    double a, double sigma)
+                {
+                    termStructure_ = termStructure;
+                    a_ = a;
+                    sigma_ = sigma;
+                }
+
+                public override double value(Vector v, double t)
+                {
+                    var forwardRate =
+                        termStructure_.link.forwardRate(t, t, Compounding.Continuous, Frequency.NoFrequency).rate();
+                    var temp = a_ < System.Math.Sqrt(Const.QL_EPSILON) ? sigma_ * t : sigma_ * (1.0 - System.Math.Exp(-a_ * t)) / a_;
+                    return forwardRate + 0.5 * temp * temp;
+                }
+            }
+
+            public FittingParameter(Handle<YieldTermStructure> termStructure,
+                double a, double sigma)
+                : base(new Impl(termStructure, a, sigma))
+            {
+            }
+        }
+
+        private Parameter phi_;
+
         public HullWhite(Handle<YieldTermStructure> termStructure,
-                         double a, double sigma)
-           : base(termStructure.link.forwardRate(0.0, 0.0, Compounding.Continuous, Frequency.NoFrequency).rate(),
-                  a, 0.0, sigma, 0.0)
+            double a, double sigma)
+            : base(termStructure.link.forwardRate(0.0, 0.0, Compounding.Continuous, Frequency.NoFrequency).rate(),
+                a, 0.0, sigma)
         {
             termStructure_ = termStructure;
             b_ = arguments_[1] = new NullParameter(); //to change
@@ -51,65 +110,14 @@ namespace QLNet.Models.Shortrate.Onefactormodels
         }
 
         public HullWhite(Handle<YieldTermStructure> termStructure,
-                         double a)
-           : this(termStructure, a, 0.01)
-        { }
-
-        public HullWhite(Handle<YieldTermStructure> termStructure)
-           : this(termStructure, 0.1, 0.01)
-        { }
-
-        public override Lattice tree(TimeGrid grid)
+            double a)
+            : this(termStructure, a, 0.01)
         {
-            var phi = new TermStructureFittingParameter(termStructure());
-            ShortRateDynamics numericDynamics = new Dynamics(phi, a(), sigma());
-            var trinomial = new TrinomialTree(numericDynamics.process(), grid);
-            var numericTree = new ShortRateTree(trinomial, numericDynamics, grid);
-            var impl =
-               (TermStructureFittingParameter.NumericalImpl)phi.implementation();
-            impl.reset();
-            for (var i = 0; i < grid.size() - 1; i++)
-            {
-                var discountBond = termStructure().link.discount(grid[i + 1]);
-                var statePrices = numericTree.statePrices(i);
-                var size = numericTree.size(i);
-                var dt = numericTree.timeGrid().dt(i);
-                var dx = trinomial.dx(i);
-                var x = trinomial.underlying(i, 0);
-                var value = 0.0;
-                for (var j = 0; j < size; j++)
-                {
-                    value += statePrices[j] * System.Math.Exp(-x * dt);
-                    x += dx;
-                }
-                value = System.Math.Log(value / discountBond) / dt;
-                impl.setvalue(grid[i], value);
-            }
-            return numericTree;
         }
 
-        public override ShortRateDynamics dynamics() => new Dynamics(phi_, a(), sigma());
-
-        public override double discountBondOption(Option.Type type,
-                                                  double strike,
-                                                  double maturity,
-                                                  double bondMaturity)
+        public HullWhite(Handle<YieldTermStructure> termStructure)
+            : this(termStructure, 0.1, 0.01)
         {
-            var _a = a();
-            double v;
-            if (_a < System.Math.Sqrt(Const.QL_EPSILON))
-            {
-                v = sigma() * B(maturity, bondMaturity) * System.Math.Sqrt(maturity);
-            }
-            else
-            {
-                v = sigma() * B(maturity, bondMaturity) *
-                    System.Math.Sqrt(0.5 * (1.0 - System.Math.Exp(-2.0 * _a * maturity)) / _a);
-            }
-            var f = termStructure().link.discount(bondMaturity);
-            var k = termStructure().link.discount(maturity) * strike;
-
-            return Utils.blackFormula(type, k, f, v);
         }
 
         /*! Futures convexity bias (i.e., the difference between
@@ -121,10 +129,10 @@ namespace QLNet.Models.Shortrate.Onefactormodels
                   deposit day counter, F_quoted is futures' market price.
         */
         public static double convexityBias(double futuresPrice,
-                                           double t,
-                                           double T,
-                                           double sigma,
-                                           double a)
+            double t,
+            double T,
+            double sigma,
+            double a)
         {
             Utils.QL_REQUIRE(futuresPrice >= 0.0, () => "negative futures price (" + futuresPrice + ") not allowed");
             Utils.QL_REQUIRE(t >= 0.0, () => "negative t (" + t + ") not allowed");
@@ -152,10 +160,60 @@ namespace QLNet.Models.Shortrate.Onefactormodels
             return (1.0 - System.Math.Exp(-z)) * (futureRate + 1.0 / (T - t));
         }
 
-        //a voir pour le sealed sinon pb avec classe mere vasicek et constructeur class Hullwithe
-        protected override void generateArguments()
+        public override double discountBondOption(Option.Type type,
+            double strike,
+            double maturity,
+            double bondMaturity)
         {
-            phi_ = new FittingParameter(termStructure(), a(), sigma());
+            var _a = a();
+            double v;
+            if (_a < System.Math.Sqrt(Const.QL_EPSILON))
+            {
+                v = sigma() * B(maturity, bondMaturity) * System.Math.Sqrt(maturity);
+            }
+            else
+            {
+                v = sigma() * B(maturity, bondMaturity) *
+                    System.Math.Sqrt(0.5 * (1.0 - System.Math.Exp(-2.0 * _a * maturity)) / _a);
+            }
+
+            var f = termStructure().link.discount(bondMaturity);
+            var k = termStructure().link.discount(maturity) * strike;
+
+            return Utils.blackFormula(type, k, f, v);
+        }
+
+        public override ShortRateDynamics dynamics() => new Dynamics(phi_, a(), sigma());
+
+        public override Lattice tree(TimeGrid grid)
+        {
+            var phi = new TermStructureFittingParameter(termStructure());
+            ShortRateDynamics numericDynamics = new Dynamics(phi, a(), sigma());
+            var trinomial = new TrinomialTree(numericDynamics.process(), grid);
+            var numericTree = new ShortRateTree(trinomial, numericDynamics, grid);
+            var impl =
+                (TermStructureFittingParameter.NumericalImpl)phi.implementation();
+            impl.reset();
+            for (var i = 0; i < grid.size() - 1; i++)
+            {
+                var discountBond = termStructure().link.discount(grid[i + 1]);
+                var statePrices = numericTree.statePrices(i);
+                var size = numericTree.size(i);
+                var dt = numericTree.timeGrid().dt(i);
+                var dx = trinomial.dx(i);
+                var x = trinomial.underlying(i, 0);
+                var value = 0.0;
+                for (var j = 0; j < size; j++)
+                {
+                    value += statePrices[j] * System.Math.Exp(-x * dt);
+                    x += dx;
+                }
+
+                value = System.Math.Log(value / discountBond) / dt;
+                impl.setvalue(grid[i], value);
+            }
+
+            return numericTree;
         }
 
         protected override double A(double t, double T)
@@ -168,59 +226,10 @@ namespace QLNet.Models.Shortrate.Onefactormodels
             return System.Math.Exp(value) * discount2 / discount1;
         }
 
-        private Parameter phi_;
-
-        //! Short-rate dynamics in the Hull-White model
-        public new class Dynamics : ShortRateDynamics
+        //a voir pour le sealed sinon pb avec classe mere vasicek et constructeur class Hullwithe
+        protected override void generateArguments()
         {
-            public Dynamics(Parameter fitting, double a, double sigma)
-               : base(new OrnsteinUhlenbeckProcess(a, sigma))
-            {
-                fitting_ = fitting;
-            }
-
-            public override double variable(double t, double r) => r - fitting_.value(t);
-
-            public override double shortRate(double t, double x) => x + fitting_.value(t);
-
-            private Parameter fitting_;
-        }
-
-        //! Analytical term-structure fitting parameter \f$ \varphi(t) \f$.
-        /*! \f$ \varphi(t) \f$ is analytically defined by
-            \f[
-                \varphi(t) = f(t) + \frac{1}{2}[\frac{\sigma(1-e^{-at})}{a}]^2,
-            \f]
-            where \f$ f(t) \f$ is the instantaneous forward rate at \f$ t \f$.
-        */
-        [JetBrains.Annotations.PublicAPI] public class FittingParameter : TermStructureFittingParameter
-        {
-            private new class Impl : Parameter.Impl
-            {
-                private Handle<YieldTermStructure> termStructure_;
-                private double a_, sigma_;
-
-                public Impl(Handle<YieldTermStructure> termStructure,
-                            double a, double sigma)
-                {
-                    termStructure_ = termStructure;
-                    a_ = a;
-                    sigma_ = sigma;
-                }
-
-                public override double value(Vector v, double t)
-                {
-                    var forwardRate =
-                       termStructure_.link.forwardRate(t, t, Compounding.Continuous, Frequency.NoFrequency).rate();
-                    var temp = a_ < System.Math.Sqrt(Const.QL_EPSILON) ? sigma_ * t : sigma_ * (1.0 - System.Math.Exp(-a_ * t)) / a_;
-                    return forwardRate + 0.5 * temp * temp;
-                }
-            }
-
-            public FittingParameter(Handle<YieldTermStructure> termStructure,
-                                    double a, double sigma)
-               : base(new Impl(termStructure, a, sigma))
-            { }
+            phi_ = new FittingParameter(termStructure(), a(), sigma());
         }
 
         #region ITermStructureConsistentModel

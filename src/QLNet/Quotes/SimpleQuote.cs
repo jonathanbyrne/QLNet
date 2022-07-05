@@ -16,28 +16,35 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Extensions;
+
 using System;
+using JetBrains.Annotations;
+using QLNet.Extensions;
 
 namespace QLNet.Quotes
 {
     // simple quote class
     //! market element returning a stored value
-    [JetBrains.Annotations.PublicAPI] public class SimpleQuote : Quote
+    [PublicAPI]
+    public class SimpleQuote : Quote
     {
         private double? value_;
 
-        public SimpleQuote() { }
-        public SimpleQuote(double? value) { value_ = value; }
-
-        //! Quote interface
-        public override double value()
+        public SimpleQuote()
         {
-            if (!isValid())
-                throw new ArgumentException("invalid SimpleQuote");
-            return value_.GetValueOrDefault();
         }
+
+        public SimpleQuote(double? value)
+        {
+            value_ = value;
+        }
+
         public override bool isValid() => value_ != null;
+
+        public void reset()
+        {
+            setValue(null);
+        }
 
         //! returns the difference between the new value and the old value
         public double setValue(double? value)
@@ -48,12 +55,19 @@ namespace QLNet.Quotes
                 value_ = value;
                 notifyObservers();
             }
+
             return diff.GetValueOrDefault();
         }
 
-        public void reset()
+        //! Quote interface
+        public override double value()
         {
-            setValue(null);
+            if (!isValid())
+            {
+                throw new ArgumentException("invalid SimpleQuote");
+            }
+
+            return value_.GetValueOrDefault();
         }
     }
 }

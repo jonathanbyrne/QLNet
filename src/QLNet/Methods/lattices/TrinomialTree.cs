@@ -16,27 +16,80 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using System;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Methods.lattices
 {
-    [JetBrains.Annotations.PublicAPI] public class TrinomialTree : Tree<TrinomialTree>
+    [PublicAPI]
+    public class TrinomialTree : Tree<TrinomialTree>
     {
-        public enum Branches { branches = 3 }
-        private List<Branching> branchings_;
-        protected double x0_;
+        public enum Branches
+        {
+            branches = 3
+        }
+
+        /* Branching scheme for a trinomial node.  Each node has three
+           descendants, with the middle branch linked to the node
+           which is closest to the expectation of the variable. */
+        private class Branching
+        {
+            private readonly List<int> k_;
+            private int kMin_, jMin_, kMax_, jMax_;
+            private readonly List<List<double>> probs_;
+
+            public Branching()
+            {
+                k_ = new List<int>();
+                probs_ = new InitializedList<List<double>>(3);
+                kMin_ = int.MaxValue;
+                jMin_ = int.MaxValue;
+                kMax_ = int.MinValue;
+                jMax_ = int.MinValue;
+            }
+
+            public void add
+                (int k, double p1, double p2, double p3)
+            {
+                // store
+                k_.Add(k);
+                probs_[0].Add(p1);
+                probs_[1].Add(p2);
+                probs_[2].Add(p3);
+                // maintain invariants
+                kMin_ = System.Math.Min(kMin_, k);
+                jMin_ = kMin_ - 1;
+                kMax_ = System.Math.Max(kMax_, k);
+                jMax_ = kMax_ + 1;
+            }
+
+            public int descendant(int index, int branch) => k_[index] - jMin_ - 1 + branch;
+
+            public int jMax() => jMax_;
+
+            public int jMin() => jMin_;
+
+            public double probability(int index, int branch) => probs_[branch][index];
+
+            public int size() => jMax_ - jMin_ + 1;
+        }
+
         protected List<double> dx_;
         protected TimeGrid timeGrid_;
+        protected double x0_;
+        private List<Branching> branchings_;
 
         public TrinomialTree(StochasticProcess1D process,
-                             TimeGrid timeGrid)
-           : this(process, timeGrid, false) { }
+            TimeGrid timeGrid)
+            : this(process, timeGrid, false)
+        {
+        }
 
         public TrinomialTree(StochasticProcess1D process,
-                             TimeGrid timeGrid,
-                             bool isPositive /*= false*/)
-           : base(timeGrid.size())
+            TimeGrid timeGrid,
+            bool isPositive /*= false*/)
+            : base(timeGrid.size())
         {
             branchings_ = new List<Branching>();
             dx_ = new InitializedList<double>(1);
@@ -82,6 +135,7 @@ namespace QLNet.Methods.lattices
 
                     branching.add(temp, p1, p2, p3);
                 }
+
                 branchings_.Add(branching);
 
                 jMin = branching.jMin();
@@ -89,68 +143,25 @@ namespace QLNet.Methods.lattices
             }
         }
 
+        public int descendant(int i, int index, int branch) => branchings_[i].descendant(index, branch);
+
         public double dx(int i) => dx_[i];
 
-        public TimeGrid timeGrid() => timeGrid_;
+        public double probability(int i, int index, int branch) => branchings_[i].probability(index, branch);
 
         public int size(int i) => i == 0 ? 1 : branchings_[i - 1].size();
+
+        public TimeGrid timeGrid() => timeGrid_;
 
         public double underlying(int i, int index)
         {
             if (i == 0)
+            {
                 return x0_;
-            else
-                return x0_ + (branchings_[i - 1].jMin() +
-                              (double)index) * dx(i);
-        }
-
-        public int descendant(int i, int index, int branch) => branchings_[i].descendant(index, branch);
-
-        public double probability(int i, int index, int branch) => branchings_[i].probability(index, branch);
-
-        /* Branching scheme for a trinomial node.  Each node has three
-           descendants, with the middle branch linked to the node
-           which is closest to the expectation of the variable. */
-        private class Branching
-        {
-
-            private List<int> k_;
-            private List<List<double>> probs_;
-            private int kMin_, jMin_, kMax_, jMax_;
-
-            public Branching()
-            {
-                k_ = new List<int>();
-                probs_ = new InitializedList<List<double>>(3);
-                kMin_ = int.MaxValue;
-                jMin_ = int.MaxValue;
-                kMax_ = int.MinValue;
-                jMax_ = int.MinValue;
             }
-            public int descendant(int index, int branch) => k_[index] - jMin_ - 1 + branch;
 
-            public double probability(int index, int branch) => probs_[branch][index];
-
-            public int size() => jMax_ - jMin_ + 1;
-
-            public int jMin() => jMin_;
-
-            public int jMax() => jMax_;
-
-            public void add
-               (int k, double p1, double p2, double p3)
-            {
-                // store
-                k_.Add(k);
-                probs_[0].Add(p1);
-                probs_[1].Add(p2);
-                probs_[2].Add(p3);
-                // maintain invariants
-                kMin_ = System.Math.Min(kMin_, k);
-                jMin_ = kMin_ - 1;
-                kMax_ = System.Math.Max(kMax_, k);
-                jMax_ = kMax_ + 1;
-            }
+            return x0_ + (branchings_[i - 1].jMin() +
+                          (double)index) * dx(i);
         }
     }
 }

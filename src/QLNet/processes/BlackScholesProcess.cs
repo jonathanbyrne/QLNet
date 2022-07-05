@@ -17,10 +17,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
-using System;
 using QLNet.Termstructures.Yield;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
@@ -49,23 +50,26 @@ namespace QLNet.processes
         \ingroup processes
     */
 
-    [JetBrains.Annotations.PublicAPI] public class BlackScholesProcess : GeneralizedBlackScholesProcess
+    [PublicAPI]
+    public class BlackScholesProcess : GeneralizedBlackScholesProcess
     {
         public BlackScholesProcess(Handle<Quote> x0,
-                                   Handle<YieldTermStructure> riskFreeTS,
-                                   Handle<BlackVolTermStructure> blackVolTS)
-           : this(x0, riskFreeTS, blackVolTS, new EulerDiscretization())
-        { }
+            Handle<YieldTermStructure> riskFreeTS,
+            Handle<BlackVolTermStructure> blackVolTS)
+            : this(x0, riskFreeTS, blackVolTS, new EulerDiscretization())
+        {
+        }
 
         public BlackScholesProcess(Handle<Quote> x0,
-                                   Handle<YieldTermStructure> riskFreeTS,
-                                   Handle<BlackVolTermStructure> blackVolTS,
-                                   IDiscretization1D d)
-           : base(x0,
-                  // no dividend yield
-                  new Handle<YieldTermStructure>(new FlatForward(0, new NullCalendar(), 0.0, new Actual365Fixed())),
-                  riskFreeTS, blackVolTS, d)
-        { }
+            Handle<YieldTermStructure> riskFreeTS,
+            Handle<BlackVolTermStructure> blackVolTS,
+            IDiscretization1D d)
+            : base(x0,
+                // no dividend yield
+                new Handle<YieldTermStructure>(new FlatForward(0, new NullCalendar(), 0.0, new Actual365Fixed())),
+                riskFreeTS, blackVolTS, d)
+        {
+        }
     }
 
     //! Merton (1973) extension to the Black-Scholes stochastic process

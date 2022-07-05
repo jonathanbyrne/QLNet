@@ -18,11 +18,9 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.processes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Pricingengines.barrier
 {
@@ -47,8 +45,11 @@ namespace QLNet.Pricingengines.barrier
     */
 
     // calc helper object
-    [JetBrains.Annotations.PublicAPI] public class AnalyticDoubleBarrierBinaryEngine : DoubleBarrierOption.Engine
+    [PublicAPI]
+    public class AnalyticDoubleBarrierBinaryEngine : DoubleBarrierOption.Engine
     {
+        protected GeneralizedBlackScholesProcess process_;
+
         public AnalyticDoubleBarrierBinaryEngine(GeneralizedBlackScholesProcess process)
         {
             process_ = process;
@@ -64,13 +65,14 @@ namespace QLNet.Pricingengines.barrier
                 Utils.QL_REQUIRE(ex != null, () => "KIKO/KOKI options must have American exercise");
                 Utils.QL_REQUIRE(ex.dates()[0] <=
                                  process_.blackVolatility().currentLink().referenceDate(),
-                                 () => "American option with window exercise not handled yet");
+                    () => "American option with window exercise not handled yet");
             }
             else
             {
                 var ex = arguments_.exercise as EuropeanExercise;
                 Utils.QL_REQUIRE(ex != null, () => "non-European exercise given");
             }
+
             var payoff = arguments_.payoff as CashOrNothingPayoff;
             Utils.QL_REQUIRE(payoff != null, () => "a cash-or-nothing payoff must be given");
 
@@ -78,23 +80,23 @@ namespace QLNet.Pricingengines.barrier
             Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
 
             var variance =
-               process_.blackVolatility().currentLink().blackVariance(
-                  arguments_.exercise.lastDate(),
-                  payoff.strike());
+                process_.blackVolatility().currentLink().blackVariance(
+                    arguments_.exercise.lastDate(),
+                    payoff.strike());
             var barrier_lo = arguments_.barrier_lo.Value;
             var barrier_hi = arguments_.barrier_hi.Value;
             var barrierType = arguments_.barrierType;
             Utils.QL_REQUIRE(barrier_lo > 0.0,
-                             () => "positive low barrier value required");
+                () => "positive low barrier value required");
             Utils.QL_REQUIRE(barrier_hi > 0.0,
-                             () => "positive high barrier value required");
+                () => "positive high barrier value required");
             Utils.QL_REQUIRE(barrier_lo < barrier_hi,
-                             () => "barrier_lo must be < barrier_hi");
+                () => "barrier_lo must be < barrier_hi");
             Utils.QL_REQUIRE(barrierType == DoubleBarrier.Type.KnockIn ||
                              barrierType == DoubleBarrier.Type.KnockOut ||
                              barrierType == DoubleBarrier.Type.KIKO ||
                              barrierType == DoubleBarrier.Type.KOKI,
-                             () => "Unsupported barrier ExerciseType");
+                () => "Unsupported barrier ExerciseType");
 
             // degenerate cases
             switch (barrierType)
@@ -110,6 +112,7 @@ namespace QLNet.Pricingengines.barrier
                         results_.rho = 0;
                         return;
                     }
+
                     break;
 
                 case DoubleBarrier.Type.KnockIn:
@@ -123,6 +126,7 @@ namespace QLNet.Pricingengines.barrier
                         results_.rho = 0;
                         return;
                     }
+
                     break;
 
                 case DoubleBarrier.Type.KIKO:
@@ -136,7 +140,8 @@ namespace QLNet.Pricingengines.barrier
                         results_.rho = 0;
                         return;
                     }
-                    else if (spot <= barrier_lo)
+
+                    if (spot <= barrier_lo)
                     {
                         // knocked in, pays
                         results_.value = payoff.cashPayoff();
@@ -146,6 +151,7 @@ namespace QLNet.Pricingengines.barrier
                         results_.rho = 0;
                         return;
                     }
+
                     break;
 
                 case DoubleBarrier.Type.KOKI:
@@ -159,7 +165,8 @@ namespace QLNet.Pricingengines.barrier
                         results_.rho = 0;
                         return;
                     }
-                    else if (spot >= barrier_hi)
+
+                    if (spot >= barrier_hi)
                     {
                         // knocked in, pays
                         results_.value = payoff.cashPayoff();
@@ -169,11 +176,12 @@ namespace QLNet.Pricingengines.barrier
                         results_.rho = 0;
                         return;
                     }
+
                     break;
             }
 
             var helper = new AnalyticDoubleBarrierBinaryEngineHelper(process_,
-                  payoff, arguments_);
+                payoff, arguments_);
             switch (barrierType)
             {
                 case DoubleBarrier.Type.KnockOut:
@@ -190,7 +198,5 @@ namespace QLNet.Pricingengines.barrier
                     break;
             }
         }
-
-        protected GeneralizedBlackScholesProcess process_;
     }
 }

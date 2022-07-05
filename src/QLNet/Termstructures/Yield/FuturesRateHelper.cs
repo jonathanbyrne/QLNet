@@ -18,6 +18,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Instruments;
 using QLNet.Quotes;
@@ -26,19 +27,22 @@ using QLNet.Time;
 namespace QLNet.Termstructures.Yield
 {
     //! Rate helper for bootstrapping over interest-rate futures prices
-    [JetBrains.Annotations.PublicAPI] public class FuturesRateHelper : RateHelper
+    [PublicAPI]
+    public class FuturesRateHelper : RateHelper
     {
+        private Handle<Quote> convAdj_;
+        private double yearFraction_;
 
         public FuturesRateHelper(Handle<Quote> price,
-                                 Date iborStartDate,
-                                 int lengthInMonths,
-                                 Calendar calendar,
-                                 BusinessDayConvention convention,
-                                 bool endOfMonth,
-                                 DayCounter dayCounter,
-                                 Handle<Quote> convAdj = null,
-                                 Futures.Type type = Futures.Type.IMM)
-           : base(price)
+            Date iborStartDate,
+            int lengthInMonths,
+            Calendar calendar,
+            BusinessDayConvention convention,
+            bool endOfMonth,
+            DayCounter dayCounter,
+            Handle<Quote> convAdj = null,
+            Futures.Type type = Futures.Type.IMM)
+            : base(price)
         {
             convAdj_ = convAdj ?? new Handle<Quote>();
 
@@ -46,16 +50,17 @@ namespace QLNet.Termstructures.Yield
             {
                 case Futures.Type.IMM:
                     Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
-                                     iborStartDate + " is not a valid IMM date");
+                        iborStartDate + " is not a valid IMM date");
                     break;
                 case Futures.Type.ASX:
                     Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
-                                     iborStartDate + " is not a valid ASX date");
+                        iborStartDate + " is not a valid ASX date");
                     break;
                 default:
                     Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
+
             earliestDate_ = iborStartDate;
             maturityDate_ = calendar.advance(iborStartDate, new Period(lengthInMonths, TimeUnit.Months), convention, endOfMonth);
             yearFraction_ = dayCounter.yearFraction(earliestDate_, maturityDate_);
@@ -64,17 +69,16 @@ namespace QLNet.Termstructures.Yield
             convAdj_.registerWith(update);
         }
 
-
         public FuturesRateHelper(double price,
-                                 Date iborStartDate,
-                                 int lengthInMonths,
-                                 Calendar calendar,
-                                 BusinessDayConvention convention,
-                                 bool endOfMonth,
-                                 DayCounter dayCounter,
-                                 double convexityAdjustment = 0.0,
-                                 Futures.Type type = Futures.Type.IMM)
-           : base(price)
+            Date iborStartDate,
+            int lengthInMonths,
+            Calendar calendar,
+            BusinessDayConvention convention,
+            bool endOfMonth,
+            DayCounter dayCounter,
+            double convexityAdjustment = 0.0,
+            Futures.Type type = Futures.Type.IMM)
+            : base(price)
         {
             convAdj_ = new Handle<Quote>(new SimpleQuote(convexityAdjustment));
 
@@ -82,16 +86,17 @@ namespace QLNet.Termstructures.Yield
             {
                 case Futures.Type.IMM:
                     Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
-                                     iborStartDate + " is not a valid IMM date");
+                        iborStartDate + " is not a valid IMM date");
                     break;
                 case Futures.Type.ASX:
                     Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
-                                     iborStartDate + " is not a valid ASX date");
+                        iborStartDate + " is not a valid ASX date");
                     break;
                 default:
                     Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
+
             earliestDate_ = iborStartDate;
             maturityDate_ = calendar.advance(iborStartDate, new Period(lengthInMonths, TimeUnit.Months), convention, endOfMonth);
             yearFraction_ = dayCounter.yearFraction(earliestDate_, maturityDate_);
@@ -99,12 +104,12 @@ namespace QLNet.Termstructures.Yield
         }
 
         public FuturesRateHelper(Handle<Quote> price,
-                                 Date iborStartDate,
-                                 Date iborEndDate,
-                                 DayCounter dayCounter,
-                                 Handle<Quote> convAdj = null,
-                                 Futures.Type type = Futures.Type.IMM)
-           : base(price)
+            Date iborStartDate,
+            Date iborEndDate,
+            DayCounter dayCounter,
+            Handle<Quote> convAdj = null,
+            Futures.Type type = Futures.Type.IMM)
+            : base(price)
         {
             convAdj_ = convAdj ?? new Handle<Quote>();
 
@@ -112,7 +117,7 @@ namespace QLNet.Termstructures.Yield
             {
                 case Futures.Type.IMM:
                     Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
-                                     iborStartDate + " is not a valid IMM date");
+                        iborStartDate + " is not a valid IMM date");
                     if (iborEndDate == null)
                     {
                         // advance 3 months
@@ -123,15 +128,16 @@ namespace QLNet.Termstructures.Yield
                     else
                     {
                         Utils.QL_REQUIRE(iborEndDate > iborStartDate, () =>
-                                         "end date (" + iborEndDate +
-                                         ") must be greater than start date (" +
-                                         iborStartDate + ")");
+                            "end date (" + iborEndDate +
+                            ") must be greater than start date (" +
+                            iborStartDate + ")");
                         maturityDate_ = iborEndDate;
                     }
+
                     break;
                 case Futures.Type.ASX:
                     Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
-                                     iborStartDate + " is not a valid ASX date");
+                        iborStartDate + " is not a valid ASX date");
                     if (iborEndDate == null)
                     {
                         // advance 3 months
@@ -142,16 +148,18 @@ namespace QLNet.Termstructures.Yield
                     else
                     {
                         Utils.QL_REQUIRE(iborEndDate > iborStartDate, () =>
-                                         "end date (" + iborEndDate +
-                                         ") must be greater than start date (" +
-                                         iborStartDate + ")");
+                            "end date (" + iborEndDate +
+                            ") must be greater than start date (" +
+                            iborStartDate + ")");
                         maturityDate_ = iborEndDate;
                     }
+
                     break;
                 default:
                     Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
+
             earliestDate_ = iborStartDate;
             yearFraction_ = dayCounter.yearFraction(earliestDate_, maturityDate_);
             pillarDate_ = latestDate_ = latestRelevantDate_ = maturityDate_;
@@ -160,12 +168,12 @@ namespace QLNet.Termstructures.Yield
         }
 
         public FuturesRateHelper(double price,
-                                 Date iborStartDate,
-                                 Date iborEndDate,
-                                 DayCounter dayCounter,
-                                 double convAdj = 0,
-                                 Futures.Type type = Futures.Type.IMM)
-           : base(price)
+            Date iborStartDate,
+            Date iborEndDate,
+            DayCounter dayCounter,
+            double convAdj = 0,
+            Futures.Type type = Futures.Type.IMM)
+            : base(price)
         {
             convAdj_ = new Handle<Quote>(new SimpleQuote(convAdj));
 
@@ -173,7 +181,7 @@ namespace QLNet.Termstructures.Yield
             {
                 case Futures.Type.IMM:
                     Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
-                                     iborStartDate + " is not a valid IMM date");
+                        iborStartDate + " is not a valid IMM date");
                     if (iborEndDate == null)
                     {
                         // advance 3 months
@@ -184,15 +192,16 @@ namespace QLNet.Termstructures.Yield
                     else
                     {
                         Utils.QL_REQUIRE(iborEndDate > iborStartDate, () =>
-                                         "end date (" + iborEndDate +
-                                         ") must be greater than start date (" +
-                                         iborStartDate + ")");
+                            "end date (" + iborEndDate +
+                            ") must be greater than start date (" +
+                            iborStartDate + ")");
                         maturityDate_ = iborEndDate;
                     }
+
                     break;
                 case Futures.Type.ASX:
                     Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
-                                     iborStartDate + " is not a valid ASX date");
+                        iborStartDate + " is not a valid ASX date");
                     if (iborEndDate == null)
                     {
                         // advance 3 months
@@ -203,27 +212,29 @@ namespace QLNet.Termstructures.Yield
                     else
                     {
                         Utils.QL_REQUIRE(iborEndDate > iborStartDate, () =>
-                                         "end date (" + iborEndDate +
-                                         ") must be greater than start date (" +
-                                         iborStartDate + ")");
+                            "end date (" + iborEndDate +
+                            ") must be greater than start date (" +
+                            iborStartDate + ")");
                         maturityDate_ = iborEndDate;
                     }
+
                     break;
                 default:
                     Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
+
             earliestDate_ = iborStartDate;
             yearFraction_ = dayCounter.yearFraction(earliestDate_, maturityDate_);
             pillarDate_ = latestDate_ = latestRelevantDate_ = maturityDate_;
         }
 
         public FuturesRateHelper(Handle<Quote> price,
-                                 Date iborStartDate,
-                                 IborIndex i,
-                                 Handle<Quote> convAdj = null,
-                                 Futures.Type type = Futures.Type.IMM)
-           : base(price)
+            Date iborStartDate,
+            IborIndex i,
+            Handle<Quote> convAdj = null,
+            Futures.Type type = Futures.Type.IMM)
+            : base(price)
         {
             convAdj_ = convAdj ?? new Handle<Quote>();
 
@@ -231,16 +242,17 @@ namespace QLNet.Termstructures.Yield
             {
                 case Futures.Type.IMM:
                     Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
-                                     iborStartDate + " is not a valid IMM date");
+                        iborStartDate + " is not a valid IMM date");
                     break;
                 case Futures.Type.ASX:
                     Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
-                                     iborStartDate + " is not a valid ASX date");
+                        iborStartDate + " is not a valid ASX date");
                     break;
                 default:
                     Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
+
             earliestDate_ = iborStartDate;
             var cal = i.fixingCalendar();
             maturityDate_ = cal.advance(iborStartDate, i.tenor(), i.businessDayConvention());
@@ -250,11 +262,11 @@ namespace QLNet.Termstructures.Yield
         }
 
         public FuturesRateHelper(double price,
-                                 Date iborStartDate,
-                                 IborIndex i,
-                                 double convAdj = 0.0,
-                                 Futures.Type type = Futures.Type.IMM)
-           : base(price)
+            Date iborStartDate,
+            IborIndex i,
+            double convAdj = 0.0,
+            Futures.Type type = Futures.Type.IMM)
+            : base(price)
         {
             convAdj_ = new Handle<Quote>(new SimpleQuote(convAdj));
 
@@ -262,22 +274,26 @@ namespace QLNet.Termstructures.Yield
             {
                 case Futures.Type.IMM:
                     Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
-                                     iborStartDate + " is not a valid IMM date");
+                        iborStartDate + " is not a valid IMM date");
                     break;
                 case Futures.Type.ASX:
                     Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
-                                     iborStartDate + " is not a valid ASX date");
+                        iborStartDate + " is not a valid ASX date");
                     break;
                 default:
                     Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
+
             earliestDate_ = iborStartDate;
             var cal = i.fixingCalendar();
             maturityDate_ = cal.advance(iborStartDate, i.tenor(), i.businessDayConvention());
             yearFraction_ = i.dayCounter().yearFraction(earliestDate_, maturityDate_);
             pillarDate_ = latestDate_ = latestRelevantDate_ = maturityDate_;
         }
+
+        //! FuturesRateHelper inspectors
+        public double convexityAdjustment() => convAdj_.empty() ? 0.0 : convAdj_.link.value();
 
         //! RateHelper interface
         public override double impliedQuote()
@@ -285,7 +301,7 @@ namespace QLNet.Termstructures.Yield
             Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
 
             var forwardRate = (termStructure_.discount(earliestDate_) /
-                                  termStructure_.discount(maturityDate_) - 1) / yearFraction_;
+                termStructure_.discount(maturityDate_) - 1) / yearFraction_;
             var convAdj = convAdj_.empty() ? 0 : convAdj_.link.value();
             // Convexity, as FRA/futures adjustment, has been used in the
             // past to take into account futures margining vs FRA.
@@ -293,13 +309,6 @@ namespace QLNet.Termstructures.Yield
             var futureRate = forwardRate + convAdj;
             return 100.0 * (1.0 - futureRate);
         }
-
-        //! FuturesRateHelper inspectors
-        public double convexityAdjustment() => convAdj_.empty() ? 0.0 : convAdj_.link.value();
-
-        private double yearFraction_;
-        private Handle<Quote> convAdj_;
-
     }
 
     // Rate helper with date schedule relative to the global evaluation date

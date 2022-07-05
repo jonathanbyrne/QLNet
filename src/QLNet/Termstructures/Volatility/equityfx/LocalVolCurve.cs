@@ -18,23 +18,23 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Termstructures.Volatility.equityfx
 {
     //! Local volatility curve derived from a Black curve
-    [JetBrains.Annotations.PublicAPI] public class LocalVolCurve : LocalVolTermStructure
+    [PublicAPI]
+    public class LocalVolCurve : LocalVolTermStructure
     {
+        private Handle<BlackVarianceCurve> blackVarianceCurve_;
+
         public LocalVolCurve(Handle<BlackVarianceCurve> curve)
-           : base(curve.link.businessDayConvention(), curve.link.dayCounter())
+            : base(curve.link.businessDayConvention(), curve.link.dayCounter())
         {
             blackVarianceCurve_ = curve;
             blackVarianceCurve_.registerWith(update);
         }
-
-        // TermStructure interface
-        public override Date referenceDate() => blackVarianceCurve_.link.referenceDate();
 
         public override Calendar calendar() => blackVarianceCurve_.link.calendar();
 
@@ -42,10 +42,13 @@ namespace QLNet.Termstructures.Volatility.equityfx
 
         public override Date maxDate() => blackVarianceCurve_.link.maxDate();
 
+        public override double maxStrike() => double.MaxValue;
+
         // VolatilityTermStructure interface
         public override double minStrike() => double.MinValue;
 
-        public override double maxStrike() => double.MaxValue;
+        // TermStructure interface
+        public override Date referenceDate() => blackVarianceCurve_.link.referenceDate();
 
         protected override double localVolImpl(double t, double dummy)
         {
@@ -55,8 +58,5 @@ namespace QLNet.Termstructures.Volatility.equityfx
             var derivative = (var2 - var1) / dt;
             return System.Math.Sqrt(derivative);
         }
-
-        private Handle<BlackVarianceCurve> blackVarianceCurve_;
-
     }
 }

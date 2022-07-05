@@ -86,16 +86,20 @@ namespace QLNet.Tests
                 var tolerance = 1.0e-7;
 
                 if (System.Math.Abs(calculatedNpv - npv) > tolerance)
+                {
                     QAssert.Fail(
-                       "Failed to reproduce NPV with mid-point engine\n"
-                       + "    calculated NPV: " + calculatedNpv + "\n"
-                       + "    expected NPV:   " + npv);
+                        "Failed to reproduce NPV with mid-point engine\n"
+                        + "    calculated NPV: " + calculatedNpv + "\n"
+                        + "    expected NPV:   " + npv);
+                }
 
                 if (System.Math.Abs(calculatedFairRate - fairRate) > tolerance)
+                {
                     QAssert.Fail(
-                       "Failed to reproduce fair rate with mid-point engine\n"
-                       + "    calculated fair rate: " + calculatedFairRate + "\n"
-                       + "    expected fair rate:   " + fairRate);
+                        "Failed to reproduce fair rate with mid-point engine\n"
+                        + "    calculated fair rate: " + calculatedFairRate + "\n"
+                        + "    expected fair rate:   " + fairRate);
+                }
 
                 cds.setPricingEngine(new IntegralCdsEngine(new Period(1, TimeUnit.Days), probabilityCurve,
                                                            recoveryRate, discountCurve));
@@ -105,18 +109,22 @@ namespace QLNet.Tests
                 tolerance = 1.0e-5;
 
                 if (System.Math.Abs(calculatedNpv - npv) > notional * tolerance * 10)
+                {
                     QAssert.Fail(
-                       "Failed to reproduce NPV with integral engine "
-                       + "(step = 1 day)\n"
-                       + "    calculated NPV: " + calculatedNpv + "\n"
-                       + "    expected NPV:   " + npv);
+                        "Failed to reproduce NPV with integral engine "
+                        + "(step = 1 day)\n"
+                        + "    calculated NPV: " + calculatedNpv + "\n"
+                        + "    expected NPV:   " + npv);
+                }
 
                 if (System.Math.Abs(calculatedFairRate - fairRate) > tolerance)
+                {
                     QAssert.Fail(
-                       "Failed to reproduce fair rate with integral engine "
-                       + "(step = 1 day)\n"
-                       + "    calculated fair rate: " + calculatedFairRate + "\n"
-                       + "    expected fair rate:   " + fairRate);
+                        "Failed to reproduce fair rate with integral engine "
+                        + "(step = 1 day)\n"
+                        + "    calculated fair rate: " + calculatedFairRate + "\n"
+                        + "    expected fair rate:   " + fairRate);
+                }
 
                 cds.setPricingEngine(new IntegralCdsEngine(new Period(1, TimeUnit.Weeks), probabilityCurve, recoveryRate, discountCurve));
 
@@ -125,18 +133,22 @@ namespace QLNet.Tests
                 tolerance = 1.0e-5;
 
                 if (System.Math.Abs(calculatedNpv - npv) > notional * tolerance * 10)
+                {
                     QAssert.Fail(
-                       "Failed to reproduce NPV with integral engine "
-                       + "(step = 1 week)\n"
-                       + "    calculated NPV: " + calculatedNpv + "\n"
-                       + "    expected NPV:   " + npv);
+                        "Failed to reproduce NPV with integral engine "
+                        + "(step = 1 week)\n"
+                        + "    calculated NPV: " + calculatedNpv + "\n"
+                        + "    expected NPV:   " + npv);
+                }
 
                 if (System.Math.Abs(calculatedFairRate - fairRate) > tolerance)
+                {
                     QAssert.Fail(
-                       "Failed to reproduce fair rate with integral engine "
-                       + "(step = 1 week)\n"
-                       + "    calculated fair rate: " + calculatedFairRate + "\n"
-                       + "    expected fair rate:   " + fairRate);
+                        "Failed to reproduce fair rate with integral engine "
+                        + "(step = 1 week)\n"
+                        + "    calculated fair rate: " + calculatedFairRate + "\n"
+                        + "    expected fair rate:   " + fairRate);
+                }
             }
         }
 
@@ -263,15 +275,19 @@ namespace QLNet.Tests
                 var tolerance = 1e-9;
 
                 if (System.Math.Abs(npv - calculatedNpv) > tolerance)
+                {
                     QAssert.Fail(
-                       "Failed to reproduce the npv for the given credit-default swap\n"
-                       + "    computed NPV:  " + calculatedNpv + "\n"
-                       + "    Given NPV:     " + npv);
+                        "Failed to reproduce the npv for the given credit-default swap\n"
+                        + "    computed NPV:  " + calculatedNpv + "\n"
+                        + "    Given NPV:     " + npv);
+                }
 
                 if (System.Math.Abs(fairRate - calculatedFairRate) > tolerance)
+                {
                     QAssert.Fail("Failed to reproduce the fair rate for the given credit-default swap\n"
                                  + "    computed fair rate:  " + calculatedFairRate + "\n"
                                  + "    Given fair rate:     " + fairRate);
+                }
             }
         }
 
@@ -432,10 +448,12 @@ namespace QLNet.Tests
                 var tolerance = 1e-10;
 
                 if (System.Math.Abs(fairNPV) > tolerance)
+                {
                     QAssert.Fail(
-                       "Failed to reproduce null NPV with calculated fair spread\n"
-                       + "    calculated spread: " + fairRate + "\n"
-                       + "    calculated NPV:    " + fairNPV);
+                        "Failed to reproduce null NPV with calculated fair spread\n"
+                        + "    calculated spread: " + fairRate + "\n"
+                        + "    calculated NPV:    " + fairNPV);
+                }
             }
         }
 
@@ -496,10 +514,12 @@ namespace QLNet.Tests
                 var tolerance = 1e-10;
 
                 if (System.Math.Abs(fairNPV) > tolerance)
+                {
                     QAssert.Fail(
-                       "Failed to reproduce null NPV with calculated fair upfront\n"
-                       + "    calculated upfront: " + fairUpfront + "\n"
-                       + "    calculated NPV:     " + fairNPV);
+                        "Failed to reproduce null NPV with calculated fair upfront\n"
+                        + "    calculated upfront: " + fairUpfront + "\n"
+                        + "    calculated NPV:     " + fairNPV);
+                }
 
                 // same with null upfront to begin with
                 upfront = 0.0;
@@ -516,10 +536,12 @@ namespace QLNet.Tests
                 fairNPV = fairCds2.NPV();
 
                 if (System.Math.Abs(fairNPV) > tolerance)
+                {
                     QAssert.Fail(
-                       "Failed to reproduce null NPV with calculated fair upfront\n"
-                       + "    calculated upfront: " + fairUpfront + "\n"
-                       + "    calculated NPV:     " + fairNPV);
+                        "Failed to reproduce null NPV with calculated fair upfront\n"
+                        + "    calculated upfront: " + fairUpfront + "\n"
+                        + "    calculated NPV:     " + fairNPV);
+                }
             }
         }
 

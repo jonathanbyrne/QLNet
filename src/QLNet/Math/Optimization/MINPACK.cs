@@ -77,18 +77,19 @@ C translation Copyright (C) Steve Moshier
 What you see here may be used freely but it comes with no support
 or guarantee.
 */
-using QLNet.Extensions;
+
 using System;
 using System.Collections.Generic;
+using QLNet.Extensions;
 
 namespace QLNet.Math.Optimization
 {
     public static class MINPACK
     {
-        /* resolution of arithmetic */
-        const double MACHEP = 1.2e-16;
         /* smallest nonzero number */
-        const double DWARF = 1.0e-38;
+        private const double DWARF = 1.0e-38;
+        /* resolution of arithmetic */
+        private const double MACHEP = 1.2e-16;
 
         /*
         *     **********
@@ -271,15 +272,14 @@ namespace QLNet.Math.Optimization
         *     **********
         */
         public static void lmdif(int m, int n, Vector x, ref Vector fvec, double ftol,
-                                 double xtol, double gtol, int maxfev, double epsfcn,
-                                 Vector diag, int mode, double factor,
-                                 int nprint, ref int info, ref int nfev, ref Matrix fjac,
-                                 int ldfjac, ref List<int> ipvt, ref Vector qtf,
-                                 Vector wa1, Vector wa2, Vector wa3, Vector wa4,
-                                 Func<int, int, Vector, int, Vector> fcn,
-                                 Func<int, int, Vector, int, Matrix> jacFcn)
+            double xtol, double gtol, int maxfev, double epsfcn,
+            Vector diag, int mode, double factor,
+            int nprint, ref int info, ref int nfev, ref Matrix fjac,
+            int ldfjac, ref List<int> ipvt, ref Vector qtf,
+            Vector wa1, Vector wa2, Vector wa3, Vector wa4,
+            Func<int, int, Vector, int, Vector> fcn,
+            Func<int, int, Vector, int, Matrix> jacFcn)
         {
-
             int i, iflag, ij, jj, iter, j, l;
             double actred, delta = 0, dirder, fnorm, fnorm1, gnorm;
             double par, pnorm, prered, ratio;
@@ -303,16 +303,21 @@ namespace QLNet.Math.Optimization
             if (n <= 0 || m < n || ldfjac < m || ftol < zero
                 || xtol < zero || gtol < zero || maxfev <= 0
                 || factor <= zero)
+            {
                 goto L300;
+            }
 
-            if (mode == 2)   /* scaling by diag[] */
+            if (mode == 2) /* scaling by diag[] */
             {
                 for (j = 0; j < n; j++)
                 {
                     if (diag[j] <= 0.0)
+                    {
                         goto L300;
+                    }
                 }
             }
+
             /*
             *     evaluate the function at the starting point
             *     and calculate its norm.
@@ -321,7 +326,10 @@ namespace QLNet.Math.Optimization
             fvec = fcn(m, n, x, iflag);
             nfev = 1;
             if (iflag < 0)
+            {
                 goto L300;
+            }
+
             fnorm = enorm(m, fvec);
             /*
             *     initialize levenberg-marquardt parameter and iteration counter.
@@ -338,13 +346,21 @@ namespace QLNet.Math.Optimization
             *    calculate the jacobian matrix.
             */
             iflag = 2;
-            if (jacFcn != null)   // use user supplied jacobian calculation
+            if (jacFcn != null) // use user supplied jacobian calculation
+            {
                 fjac = jacFcn(m, n, x, iflag);
+            }
             else
+            {
                 fdjac2(m, n, x, fvec, fjac, ldfjac, iflag, epsfcn, ref wa4, fcn);
+            }
+
             nfev += n;
             if (iflag < 0)
+            {
                 goto L300;
+            }
+
             /*
             *    if requested, call fcn to enable printing of iterates.
             */
@@ -355,9 +371,12 @@ namespace QLNet.Math.Optimization
                 {
                     fvec = fcn(m, n, x, iflag);
                     if (iflag < 0)
+                    {
                         goto L300;
+                    }
                 }
             }
+
             /*
             *    compute the qr factorization of the jacobian.
             */
@@ -374,7 +393,9 @@ namespace QLNet.Math.Optimization
                     {
                         diag[j] = wa2[j];
                         if (wa2[j].IsEqual(zero))
+                        {
                             diag[j] = one;
+                        }
                     }
                 }
 
@@ -383,12 +404,16 @@ namespace QLNet.Math.Optimization
                 *    and initialize the step bound delta.
                 */
                 for (j = 0; j < n; j++)
+                {
                     wa3[j] = diag[j] * x[j];
+                }
 
                 xnorm = enorm(n, wa3);
                 delta = factor * xnorm;
                 if (delta.IsEqual(zero))
+                {
                     delta = factor;
+                }
             }
 
             /*
@@ -396,7 +421,10 @@ namespace QLNet.Math.Optimization
             *    qtf.
             */
             for (i = 0; i < m; i++)
+            {
                 wa4[i] = fvec[i];
+            }
+
             jj = 0;
             for (j = 0; j < n; j++)
             {
@@ -408,18 +436,20 @@ namespace QLNet.Math.Optimization
                     for (i = j; i < m; i++)
                     {
                         sum += fjac[ij] * wa4[i];
-                        ij += 1;    /* fjac[i+m*j] */
+                        ij += 1; /* fjac[i+m*j] */
                     }
+
                     temp = -sum / temp3;
                     ij = jj;
                     for (i = j; i < m; i++)
                     {
                         wa4[i] += fjac[ij] * temp;
-                        ij += 1;    /* fjac[i+m*j] */
+                        ij += 1; /* fjac[i+m*j] */
                     }
                 }
+
                 fjac[jj] = wa1[j];
-                jj += m + 1;  /* fjac[j+m*j] */
+                jj += m + 1; /* fjac[j+m*j] */
                 qtf[j] = wa4[j];
             }
 
@@ -442,8 +472,10 @@ namespace QLNet.Math.Optimization
                             sum += fjac[ij] * (qtf[i] / fnorm);
                             ij += 1; /* fjac[i+m*j] */
                         }
+
                         gnorm = dmax1(gnorm, System.Math.Abs(sum / wa2[l]));
                     }
+
                     jj += m;
                 }
             }
@@ -452,16 +484,24 @@ namespace QLNet.Math.Optimization
             *    test for convergence of the gradient norm.
             */
             if (gnorm <= gtol)
+            {
                 info = 4;
+            }
+
             if (info != 0)
+            {
                 goto L300;
+            }
+
             /*
             *    rescale if necessary.
             */
             if (mode != 2)
             {
                 for (j = 0; j < n; j++)
+                {
                     diag[j] = dmax1(diag[j], wa2[j]);
+                }
             }
 
             /*
@@ -481,12 +521,16 @@ namespace QLNet.Math.Optimization
                 wa2[j] = x[j] + wa1[j];
                 wa3[j] = diag[j] * wa1[j];
             }
+
             pnorm = enorm(n, wa3);
             /*
             *       on the first iteration, adjust the initial step bound.
             */
             if (iter == 1)
+            {
                 delta = dmin1(delta, pnorm);
+            }
+
             /*
             *       evaluate the function at x + p and calculate its norm.
             */
@@ -494,7 +538,10 @@ namespace QLNet.Math.Optimization
             wa4 = fcn(m, n, wa2, iflag);
             nfev += 1;
             if (iflag < 0)
+            {
                 goto L300;
+            }
+
             fnorm1 = enorm(m, wa4);
 
             /*
@@ -506,6 +553,7 @@ namespace QLNet.Math.Optimization
                 temp = fnorm1 / fnorm;
                 actred = one - temp * temp;
             }
+
             /*
             *       compute the scaled predicted reduction and
             *       the scaled directional derivative.
@@ -522,8 +570,10 @@ namespace QLNet.Math.Optimization
                     wa3[i] += fjac[ij] * temp;
                     ij += 1; /* fjac[i+m*j] */
                 }
+
                 jj += m;
             }
+
             temp1 = enorm(n, wa3) / fnorm;
             temp2 = System.Math.Sqrt(par) * pnorm / fnorm;
             prered = temp1 * temp1 + temp2 * temp2 / p5;
@@ -534,19 +584,30 @@ namespace QLNet.Math.Optimization
             */
             ratio = zero;
             if (prered.IsNotEqual(zero))
+            {
                 ratio = actred / prered;
+            }
+
             /*
             *       update the step bound.
             */
             if (ratio <= p25)
             {
                 if (actred >= zero)
+                {
                     temp = p5;
+                }
                 else
+                {
                     temp = p5 * dirder / (dirder + p5 * actred);
+                }
+
                 if (p1 * fnorm1 >= fnorm
                     || temp < p1)
+                {
                     temp = p1;
+                }
+
                 delta = temp * dmin1(delta, pnorm / p1);
                 par = par / temp;
             }
@@ -558,6 +619,7 @@ namespace QLNet.Math.Optimization
                     par = p5 * par;
                 }
             }
+
             /*
             *       test for successful iteration.
             */
@@ -571,48 +633,83 @@ namespace QLNet.Math.Optimization
                     x[j] = wa2[j];
                     wa2[j] = diag[j] * x[j];
                 }
+
                 for (i = 0; i < m; i++)
+                {
                     fvec[i] = wa4[i];
+                }
+
                 xnorm = enorm(n, wa2);
                 fnorm = fnorm1;
                 iter += 1;
             }
+
             /*
             *       tests for convergence.
             */
             if (System.Math.Abs(actred) <= ftol
                 && prered <= ftol
                 && p5 * ratio <= one)
+            {
                 info = 1;
+            }
+
             if (delta <= xtol * xnorm)
+            {
                 info = 2;
+            }
+
             if (System.Math.Abs(actred) <= ftol
                 && prered <= ftol
                 && p5 * ratio <= one
                 && info == 2)
+            {
                 info = 3;
+            }
+
             if (info != 0)
+            {
                 goto L300;
+            }
+
             /*
             *       tests for termination and stringent tolerances.
             */
             if (nfev >= maxfev)
+            {
                 info = 5;
+            }
+
             if (System.Math.Abs(actred) <= MACHEP
                 && prered <= MACHEP
                 && p5 * ratio <= one)
+            {
                 info = 6;
+            }
+
             if (delta <= MACHEP * xnorm)
+            {
                 info = 7;
+            }
+
             if (gnorm <= MACHEP)
+            {
                 info = 8;
+            }
+
             if (info != 0)
+            {
                 goto L300;
+            }
+
             /*
             *       end of the inner loop. repeat if iteration unsuccessful.
             */
             if (ratio < p0001)
+            {
                 goto L200;
+            }
+
             /*
             *    end of the outer loop.
             */
@@ -623,247 +720,16 @@ namespace QLNet.Math.Optimization
             *     termination, either normal or user imposed.
             */
             if (iflag < 0)
+            {
                 info = iflag;
+            }
+
             iflag = 0;
             if (nprint > 0)
+            {
                 fvec = fcn(m, n, x, iflag);
-        }
-
-        /*
-        *     **********
-        *
-        *     function enorm
-        *
-        *     given an n-vector x, this function calculates the
-        *     euclidean norm of x.
-        *
-        *     the euclidean norm is computed by accumulating the sum of
-        *     squares in three different sums. the sums of squares for the
-        *     small and large components are scaled so that no overflows
-        *     occur. non-destructive underflows are permitted. underflows
-        *     and overflows do not occur in the computation of the unscaled
-        *     sum of squares for the intermediate components.
-        *     the definitions of small, intermediate and large components
-        *     depend on two constants, rdwarf and rgiant. the main
-        *     restrictions on these constants are that rdwarf**2 not
-        *     underflow and rgiant**2 not overflow. the constants
-        *     given here are suitable for every known computer.
-        *
-        *     the function statement is
-        *
-        *   double precision function enorm(n,x)
-        *
-        *     where
-        *
-        *   n is a positive integer input variable.
-        *
-        *   x is an input array of length n.
-        *
-        *     argonne national laboratory. minpack project. march 1980.
-        *     burton s. garbow, kenneth e. hillstrom, jorge j. more
-        *
-        *     **********
-        */
-        static double enorm(int n, List<double> x)
-        {
-            int i;
-            double agiant, floatn, s1, s2, s3, xabs, x1max, x3max;
-            double ans, temp;
-
-            const double rdwarf = 3.834e-20;
-            const double rgiant = 1.304e19;
-            const double zero = 0.0;
-            const double one = 1.0;
-
-            s1 = zero;
-            s2 = zero;
-            s3 = zero;
-            x1max = zero;
-            x3max = zero;
-            floatn = n;
-            agiant = rgiant / floatn;
-
-            for (i = 0; i < n; i++)
-            {
-                xabs = System.Math.Abs(x[i]);
-                if (xabs > rdwarf && xabs < agiant)
-                {
-                    /*
-                    *       sum for intermediate components.
-                    */
-                    s2 += xabs * xabs;
-                    continue;
-                }
-
-                if (xabs > rdwarf)
-                {
-                    /*
-                    *          sum for large components.
-                    */
-                    if (xabs > x1max)
-                    {
-                        temp = x1max / xabs;
-                        s1 = one + s1 * temp * temp;
-                        x1max = xabs;
-                    }
-                    else
-                    {
-                        temp = xabs / x1max;
-                        s1 += temp * temp;
-                    }
-                    continue;
-                }
-
-                /*
-                *          sum for small components.
-                */
-                if (xabs > x3max)
-                {
-                    temp = x3max / xabs;
-                    s3 = one + s3 * temp * temp;
-                    x3max = xabs;
-                }
-                else
-                {
-                    if (xabs.IsNotEqual(zero))
-                    {
-                        temp = xabs / x3max;
-                        s3 += temp * temp;
-                    }
-                }
-            }
-            /*
-            *     calculation of norm.
-            */
-            if (s1.IsNotEqual(zero))
-            {
-                temp = s1 + s2 / x1max / x1max;
-                ans = x1max * System.Math.Sqrt(temp);
-                return ans;
-            }
-            if (s2.IsNotEqual(zero))
-            {
-                if (s2 >= x3max)
-                    temp = s2 * (one + x3max / s2 * (x3max * s3));
-                else
-                    temp = x3max * (s2 / x3max + x3max * s3);
-                ans = System.Math.Sqrt(temp);
-            }
-            else
-            {
-                ans = x3max * System.Math.Sqrt(s3);
-            }
-            return ans;
-        }
-
-        /*
-        *     **********
-        *
-        *     subroutine fdjac2
-        *
-        *     this subroutine computes a forward-difference approximation
-        *     to the m by n jacobian matrix associated with a specified
-        *     problem of m functions in n variables.
-        *
-        *     the subroutine statement is
-        *
-        *   subroutine fdjac2(fcn,m,n,x,fvec,fjac,ldfjac,iflag,epsfcn,wa)
-        *
-        *     where
-        *
-        *   fcn is the name of the user-supplied subroutine which
-        *     calculates the functions. fcn must be declared
-        *     in an external statement in the user calling
-        *     program, and should be written as follows.
-        *
-        *     subroutine fcn(m,n,x,fvec,iflag)
-        *     integer m,n,iflag
-        *     double precision x(n),fvec(m)
-        *     ----------
-        *     calculate the functions at x and
-        *     return this vector in fvec.
-        *     ----------
-        *     return
-        *     end
-        *
-        *     the value of iflag should not be changed by fcn unless
-        *     the user wants to terminate execution of fdjac2.
-        *     in this case set iflag to a negative integer.
-        *
-        *   m is a positive integer input variable set to the number
-        *     of functions.
-        *
-        *   n is a positive integer input variable set to the number
-        *     of variables. n must not exceed m.
-        *
-        *   x is an input array of length n.
-        *
-        *   fvec is an input array of length m which must contain the
-        *     functions evaluated at x.
-        *
-        *   fjac is an output m by n array which contains the
-        *     approximation to the jacobian matrix evaluated at x.
-        *
-        *   ldfjac is a positive integer input variable not less than m
-        *     which specifies the leading dimension of the array fjac.
-        *
-        *   iflag is an integer variable which can be used to terminate
-        *     the execution of fdjac2. see description of fcn.
-        *
-        *   epsfcn is an input variable used in determining a suitable
-        *     step length for the forward-difference approximation. this
-        *     approximation assumes that the relative errors in the
-        *     functions are of the order of epsfcn. if epsfcn is less
-        *     than the machine precision, it is assumed that the relative
-        *     errors in the functions are of the order of the machine
-        *     precision.
-        *
-        *   wa is a work array of length m.
-        *
-        *     subprograms called
-        *
-        *   user-supplied ...... fcn
-        *
-        *   minpack-supplied ... dpmpar
-        *
-        *   fortran-supplied ... dabs,dmax1,dsqrt
-        *
-        *     argonne national laboratory. minpack project. march 1980.
-        *     burton s. garbow, kenneth e. hillstrom, jorge j. more
-        *
-              **********
-        */
-        static void fdjac2(int m, int n, Vector x, Vector fvec, Matrix fjac, int dummy1,
-                           int iflag, double epsfcn, ref Vector wa,
-                           Func<int, int, Vector, int, Vector> fcn)
-        {
-            int i, j, ij;
-            double eps, h, temp;
-
-            var zero = 0.0;
-
-            temp = dmax1(epsfcn, MACHEP);
-            eps = System.Math.Sqrt(temp);
-            ij = 0;
-            for (j = 0; j < n; j++)
-            {
-                temp = x[j];
-                h = eps * System.Math.Abs(temp);
-                if (h.IsEqual(zero))
-                    h = eps;
-                x[j] = temp + h;
-                wa = fcn(m, n, x, iflag);
-                if (iflag < 0)
-                    return;
-                x[j] = temp;
-                for (i = 0; i < m; i++)
-                {
-                    fjac[ij] = (wa[i] - fvec[i]) / h;
-                    ij += 1;    /* fjac[i+m*j] */
-                }
             }
         }
-
 
         /*
         *     **********
@@ -943,7 +809,7 @@ namespace QLNet.Math.Optimization
         *     **********
         */
         public static void qrfac(int m, int n, Matrix a, int dummy1, int pivot, ref List<int> ipvt,
-                                 int dummy2, ref Vector rdiag, ref Vector acnorm, Vector wa)
+            int dummy2, ref Vector rdiag, ref Vector acnorm, Vector wa)
         {
             int i, ij, jj, j, jp1, k, kmax, minmn;
             double ajnorm, sum, temp;
@@ -962,9 +828,13 @@ namespace QLNet.Math.Optimization
                 rdiag[j] = acnorm[j];
                 wa[j] = rdiag[j];
                 if (pivot != 0)
+                {
                     ipvt[j] = j;
+                }
+
                 ij += m; /* m*j */
             }
+
             /*
             *     reduce a to r with householder transformations.
             */
@@ -972,7 +842,10 @@ namespace QLNet.Math.Optimization
             for (j = 0; j < minmn; j++)
             {
                 if (pivot == 0)
+                {
                     goto L40;
+                }
+
                 /*
                 *    bring the column of largest norm into the pivot position.
                 */
@@ -980,10 +853,15 @@ namespace QLNet.Math.Optimization
                 for (k = j; k < n; k++)
                 {
                     if (rdiag[k] > rdiag[kmax])
+                    {
                         kmax = k;
+                    }
                 }
+
                 if (kmax == j)
+                {
                     goto L40;
+                }
 
                 ij = m * j;
                 jj = m * kmax;
@@ -995,6 +873,7 @@ namespace QLNet.Math.Optimization
                     ij += 1;
                     jj += 1;
                 }
+
                 rdiag[kmax] = rdiag[j];
                 wa[kmax] = wa[j];
                 k = ipvt[j];
@@ -1009,15 +888,22 @@ namespace QLNet.Math.Optimization
                 jj = j + m * j;
                 ajnorm = enorm(m - j, a.GetRange(jj, m - j));
                 if (ajnorm.IsEqual(zero))
+                {
                     goto L100;
+                }
+
                 if (a[jj] < zero)
+                {
                     ajnorm = -ajnorm;
+                }
+
                 ij = jj;
                 for (i = j; i < m; i++)
                 {
                     a[ij] /= ajnorm;
                     ij += 1; /* [i+m*j] */
                 }
+
                 a[jj] += one;
                 /*
                 *    apply the transformation to the remaining columns
@@ -1037,6 +923,7 @@ namespace QLNet.Math.Optimization
                             ij += 1; /* [i+m*k] */
                             jj += 1; /* [i+m*j] */
                         }
+
                         temp = sum / a[j + m * j];
                         ij = j + m * k;
                         jj = j + m * j;
@@ -1046,6 +933,7 @@ namespace QLNet.Math.Optimization
                             ij += 1; /* [i+m*k] */
                             jj += 1; /* [i+m*j] */
                         }
+
                         if (pivot != 0 && rdiag[k].IsNotEqual(zero))
                         {
                             temp = a[j + m * k] / rdiag[k];
@@ -1065,7 +953,6 @@ namespace QLNet.Math.Optimization
                 rdiag[j] = -ajnorm;
             }
         }
-
 
         /*
         *     **********
@@ -1167,9 +1054,10 @@ namespace QLNet.Math.Optimization
                 for (i = j; i < n; i++)
                 {
                     r[ij] = r[ik];
-                    ij += 1;   /* [i+ldr*j] */
+                    ij += 1; /* [i+ldr*j] */
                     ik += ldr; /* [j+ldr*i] */
                 }
+
                 x[j] = r[kk];
                 wa[j] = qtb[j];
                 kk += ldr + 1; /* j+ldr*j */
@@ -1186,9 +1074,15 @@ namespace QLNet.Math.Optimization
                 */
                 l = ipvt[j];
                 if (diag[l].IsEqual(zero))
+                {
                     goto L90;
+                }
+
                 for (k = j; k < n; k++)
+                {
                     sdiag[k] = zero;
+                }
+
                 sdiag[j] = diag[l];
                 /*
                 *    the transformations to eliminate the row of d
@@ -1203,7 +1097,10 @@ namespace QLNet.Math.Optimization
                     *       appropriate element in the current row of d.
                     */
                     if (sdiag[k].IsEqual(zero))
+                    {
                         continue;
+                    }
+
                     kk = k + ldr * k;
                     if (System.Math.Abs(r[kk]) < System.Math.Abs(sdiag[k]))
                     {
@@ -1217,6 +1114,7 @@ namespace QLNet.Math.Optimization
                         cos = p5 / System.Math.Sqrt(p25 + p25 * tan * tan);
                         sin = cos * tan;
                     }
+
                     /*
                     *       compute the modified diagonal element of r and
                     *       the modified element of ((q transpose)*b,0).
@@ -1241,6 +1139,7 @@ namespace QLNet.Math.Optimization
                         }
                     }
                 }
+
                 L90:
                 /*
                 *    store the diagonal element of s and restore
@@ -1250,6 +1149,7 @@ namespace QLNet.Math.Optimization
                 sdiag[j] = r[kk];
                 r[kk] = x[j];
             }
+
             /*
             *     solve the triangular system for z. if the system is
             *     singular, then obtain a least squares solution.
@@ -1258,12 +1158,20 @@ namespace QLNet.Math.Optimization
             for (j = 0; j < n; j++)
             {
                 if (sdiag[j].IsEqual(zero) && nsing == n)
+                {
                     nsing = j;
+                }
+
                 if (nsing < n)
+                {
                     wa[j] = zero;
+                }
             }
+
             if (nsing < 1)
+            {
                 goto L150;
+            }
 
             for (k = 0; k < nsing; k++)
             {
@@ -1279,8 +1187,10 @@ namespace QLNet.Math.Optimization
                         ij += 1; /* [i+ldr*j] */
                     }
                 }
+
                 wa[j] = (wa[j] - sum) / sdiag[j];
             }
+
             L150:
             /*
             *     permute the components of z back to components of x.
@@ -1292,7 +1202,259 @@ namespace QLNet.Math.Optimization
             }
         }
 
+        private static double dmax1(double a, double b) => a >= b ? a : b;
 
+        private static double dmin1(double a, double b) => a <= b ? a : b;
+
+        /*
+        *     **********
+        *
+        *     function enorm
+        *
+        *     given an n-vector x, this function calculates the
+        *     euclidean norm of x.
+        *
+        *     the euclidean norm is computed by accumulating the sum of
+        *     squares in three different sums. the sums of squares for the
+        *     small and large components are scaled so that no overflows
+        *     occur. non-destructive underflows are permitted. underflows
+        *     and overflows do not occur in the computation of the unscaled
+        *     sum of squares for the intermediate components.
+        *     the definitions of small, intermediate and large components
+        *     depend on two constants, rdwarf and rgiant. the main
+        *     restrictions on these constants are that rdwarf**2 not
+        *     underflow and rgiant**2 not overflow. the constants
+        *     given here are suitable for every known computer.
+        *
+        *     the function statement is
+        *
+        *   double precision function enorm(n,x)
+        *
+        *     where
+        *
+        *   n is a positive integer input variable.
+        *
+        *   x is an input array of length n.
+        *
+        *     argonne national laboratory. minpack project. march 1980.
+        *     burton s. garbow, kenneth e. hillstrom, jorge j. more
+        *
+        *     **********
+        */
+        private static double enorm(int n, List<double> x)
+        {
+            int i;
+            double agiant, floatn, s1, s2, s3, xabs, x1max, x3max;
+            double ans, temp;
+
+            const double rdwarf = 3.834e-20;
+            const double rgiant = 1.304e19;
+            const double zero = 0.0;
+            const double one = 1.0;
+
+            s1 = zero;
+            s2 = zero;
+            s3 = zero;
+            x1max = zero;
+            x3max = zero;
+            floatn = n;
+            agiant = rgiant / floatn;
+
+            for (i = 0; i < n; i++)
+            {
+                xabs = System.Math.Abs(x[i]);
+                if (xabs > rdwarf && xabs < agiant)
+                {
+                    /*
+                    *       sum for intermediate components.
+                    */
+                    s2 += xabs * xabs;
+                    continue;
+                }
+
+                if (xabs > rdwarf)
+                {
+                    /*
+                    *          sum for large components.
+                    */
+                    if (xabs > x1max)
+                    {
+                        temp = x1max / xabs;
+                        s1 = one + s1 * temp * temp;
+                        x1max = xabs;
+                    }
+                    else
+                    {
+                        temp = xabs / x1max;
+                        s1 += temp * temp;
+                    }
+
+                    continue;
+                }
+
+                /*
+                *          sum for small components.
+                */
+                if (xabs > x3max)
+                {
+                    temp = x3max / xabs;
+                    s3 = one + s3 * temp * temp;
+                    x3max = xabs;
+                }
+                else
+                {
+                    if (xabs.IsNotEqual(zero))
+                    {
+                        temp = xabs / x3max;
+                        s3 += temp * temp;
+                    }
+                }
+            }
+
+            /*
+            *     calculation of norm.
+            */
+            if (s1.IsNotEqual(zero))
+            {
+                temp = s1 + s2 / x1max / x1max;
+                ans = x1max * System.Math.Sqrt(temp);
+                return ans;
+            }
+
+            if (s2.IsNotEqual(zero))
+            {
+                if (s2 >= x3max)
+                {
+                    temp = s2 * (one + x3max / s2 * (x3max * s3));
+                }
+                else
+                {
+                    temp = x3max * (s2 / x3max + x3max * s3);
+                }
+
+                ans = System.Math.Sqrt(temp);
+            }
+            else
+            {
+                ans = x3max * System.Math.Sqrt(s3);
+            }
+
+            return ans;
+        }
+
+        /*
+        *     **********
+        *
+        *     subroutine fdjac2
+        *
+        *     this subroutine computes a forward-difference approximation
+        *     to the m by n jacobian matrix associated with a specified
+        *     problem of m functions in n variables.
+        *
+        *     the subroutine statement is
+        *
+        *   subroutine fdjac2(fcn,m,n,x,fvec,fjac,ldfjac,iflag,epsfcn,wa)
+        *
+        *     where
+        *
+        *   fcn is the name of the user-supplied subroutine which
+        *     calculates the functions. fcn must be declared
+        *     in an external statement in the user calling
+        *     program, and should be written as follows.
+        *
+        *     subroutine fcn(m,n,x,fvec,iflag)
+        *     integer m,n,iflag
+        *     double precision x(n),fvec(m)
+        *     ----------
+        *     calculate the functions at x and
+        *     return this vector in fvec.
+        *     ----------
+        *     return
+        *     end
+        *
+        *     the value of iflag should not be changed by fcn unless
+        *     the user wants to terminate execution of fdjac2.
+        *     in this case set iflag to a negative integer.
+        *
+        *   m is a positive integer input variable set to the number
+        *     of functions.
+        *
+        *   n is a positive integer input variable set to the number
+        *     of variables. n must not exceed m.
+        *
+        *   x is an input array of length n.
+        *
+        *   fvec is an input array of length m which must contain the
+        *     functions evaluated at x.
+        *
+        *   fjac is an output m by n array which contains the
+        *     approximation to the jacobian matrix evaluated at x.
+        *
+        *   ldfjac is a positive integer input variable not less than m
+        *     which specifies the leading dimension of the array fjac.
+        *
+        *   iflag is an integer variable which can be used to terminate
+        *     the execution of fdjac2. see description of fcn.
+        *
+        *   epsfcn is an input variable used in determining a suitable
+        *     step length for the forward-difference approximation. this
+        *     approximation assumes that the relative errors in the
+        *     functions are of the order of epsfcn. if epsfcn is less
+        *     than the machine precision, it is assumed that the relative
+        *     errors in the functions are of the order of the machine
+        *     precision.
+        *
+        *   wa is a work array of length m.
+        *
+        *     subprograms called
+        *
+        *   user-supplied ...... fcn
+        *
+        *   minpack-supplied ... dpmpar
+        *
+        *   fortran-supplied ... dabs,dmax1,dsqrt
+        *
+        *     argonne national laboratory. minpack project. march 1980.
+        *     burton s. garbow, kenneth e. hillstrom, jorge j. more
+        *
+              **********
+        */
+        private static void fdjac2(int m, int n, Vector x, Vector fvec, Matrix fjac, int dummy1,
+            int iflag, double epsfcn, ref Vector wa,
+            Func<int, int, Vector, int, Vector> fcn)
+        {
+            int i, j, ij;
+            double eps, h, temp;
+
+            var zero = 0.0;
+
+            temp = dmax1(epsfcn, MACHEP);
+            eps = System.Math.Sqrt(temp);
+            ij = 0;
+            for (j = 0; j < n; j++)
+            {
+                temp = x[j];
+                h = eps * System.Math.Abs(temp);
+                if (h.IsEqual(zero))
+                {
+                    h = eps;
+                }
+
+                x[j] = temp + h;
+                wa = fcn(m, n, x, iflag);
+                if (iflag < 0)
+                {
+                    return;
+                }
+
+                x[j] = temp;
+                for (i = 0; i < m; i++)
+                {
+                    fjac[ij] = (wa[i] - fvec[i]) / h;
+                    ij += 1; /* fjac[i+m*j] */
+                }
+            }
+        }
 
         /*     **********
         *
@@ -1389,9 +1551,9 @@ namespace QLNet.Math.Optimization
         *
         *     **********
         */
-        static void lmpar(int n, Matrix r, int ldr, List<int> ipvt, Vector diag,
-                          Vector qtb, double delta, double par, Vector x, Vector sdiag,
-                          Vector wa1, Vector wa2)
+        private static void lmpar(int n, Matrix r, int ldr, List<int> ipvt, Vector diag,
+            Vector qtb, double delta, double par, Vector x, Vector sdiag,
+            Vector wa1, Vector wa2)
         {
             int i, iter, ij, jj, j, jm1, jp1, k, l, nsing;
             double dxnorm, fp, gnorm, parc, parl, paru;
@@ -1411,9 +1573,15 @@ namespace QLNet.Math.Optimization
             {
                 wa1[j] = qtb[j];
                 if (r[jj].IsEqual(zero) && nsing == n)
+                {
                     nsing = j;
+                }
+
                 if (nsing < n)
+                {
                     wa1[j] = zero;
+                }
+
                 jj += ldr + 1; /* [j+ldr*j] */
             }
 
@@ -1442,6 +1610,7 @@ namespace QLNet.Math.Optimization
                 l = ipvt[j];
                 x[l] = wa1[j];
             }
+
             /*
             *     initialize the iteration counter.
             *     evaluate the function at the origin, and test
@@ -1449,13 +1618,17 @@ namespace QLNet.Math.Optimization
             */
             iter = 0;
             for (j = 0; j < n; j++)
+            {
                 wa2[j] = diag[j] * x[j];
+            }
+
             dxnorm = enorm(n, wa2);
             fp = dxnorm - delta;
             if (fp <= p1 * delta)
             {
                 goto L220;
             }
+
             /*
             *     if the jacobian is not rank deficient, the newton
             *     step provides a lower bound, parl, for the zero of
@@ -1469,6 +1642,7 @@ namespace QLNet.Math.Optimization
                     l = ipvt[j];
                     wa1[j] = diag[l] * (wa2[l] / dxnorm);
                 }
+
                 jj = 0;
                 for (j = 0; j < n; j++)
                 {
@@ -1483,12 +1657,15 @@ namespace QLNet.Math.Optimization
                             ij += 1;
                         }
                     }
+
                     wa1[j] = (wa1[j] - sum) / r[j + ldr * j];
                     jj += ldr; /* [i+ldr*j] */
                 }
+
                 temp = enorm(n, wa1);
                 parl = fp / delta / temp / temp;
             }
+
             /*
             *     calculate an upper bound, paru, for the zero of the function.
             */
@@ -1502,14 +1679,19 @@ namespace QLNet.Math.Optimization
                     sum += r[ij] * qtb[i];
                     ij += 1;
                 }
+
                 l = ipvt[j];
                 wa1[j] = sum / diag[l];
                 jj += ldr; /* [i+ldr*j] */
             }
+
             gnorm = enorm(n, wa1);
             paru = gnorm / delta;
             if (paru.IsEqual(zero))
+            {
                 paru = DWARF / dmin1(delta, p1);
+            }
+
             /*
             *     if the input par lies outside of the interval (parl,paru),
             *     set par to the closer endpoint.
@@ -1517,7 +1699,9 @@ namespace QLNet.Math.Optimization
             par = dmax1(par, parl);
             par = dmin1(par, paru);
             if (par.IsEqual(zero))
+            {
                 par = gnorm / dxnorm;
+            }
 
             /*
             *     beginning of an iteration.
@@ -1528,13 +1712,22 @@ namespace QLNet.Math.Optimization
             *    evaluate the function at the current value of par.
             */
             if (par.IsEqual(zero))
+            {
                 par = dmax1(DWARF, p001 * paru);
+            }
+
             temp = System.Math.Sqrt(par);
             for (j = 0; j < n; j++)
+            {
                 wa1[j] = temp * diag[j];
+            }
+
             qrsolv(n, r, ldr, ipvt, wa1, qtb, x, sdiag, wa2);
             for (j = 0; j < n; j++)
+            {
                 wa2[j] = diag[j] * x[j];
+            }
+
             dxnorm = enorm(n, wa2);
             temp = fp;
             fp = dxnorm - delta;
@@ -1546,7 +1739,10 @@ namespace QLNet.Math.Optimization
             if (System.Math.Abs(fp) <= p1 * delta
                 || parl.IsEqual(zero) && fp <= temp && temp < zero
                 || iter == 10)
+            {
                 goto L220;
+            }
+
             /*
             *    compute the newton correction.
             */
@@ -1555,6 +1751,7 @@ namespace QLNet.Math.Optimization
                 l = ipvt[j];
                 wa1[j] = diag[l] * (wa2[l] / dxnorm);
             }
+
             jj = 0;
             for (j = 0; j < n; j++)
             {
@@ -1570,17 +1767,25 @@ namespace QLNet.Math.Optimization
                         ij += 1; /* [i+ldr*j] */
                     }
                 }
+
                 jj += ldr; /* ldr*j */
             }
+
             temp = enorm(n, wa1);
             parc = fp / delta / temp / temp;
             /*
             *    depending on the sign of the function, update parl or paru.
             */
             if (fp > zero)
+            {
                 parl = dmax1(parl, par);
+            }
+
             if (fp < zero)
+            {
                 paru = dmin1(paru, par);
+            }
+
             /*
             *    compute an improved estimate for par.
             */
@@ -1595,16 +1800,13 @@ namespace QLNet.Math.Optimization
             *     termination.
             */
             if (iter == 0)
+            {
                 par = zero;
+            }
         }
 
+        private static int min0(int a, int b) => a <= b ? a : b;
 
-        static double dmax1(double a, double b) => a >= b ? a : b;
-
-        static double dmin1(double a, double b) => a <= b ? a : b;
-
-        static int min0(int a, int b) => a <= b ? a : b;
-
-        static int mod(int k, int m) => k % m;
+        private static int mod(int k, int m) => k % m;
     }
 }

@@ -17,11 +17,12 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.integrals
 {
-
     //! Integral of a one-dimensional function
     //    ! Given a number \f$ N \f$ of intervals, the integral of
     //        a function \f$ f \f$ between \f$ a \f$ and \f$ b \f$ is
@@ -38,12 +39,13 @@ namespace QLNet.Math.integrals
     //        \test the correctness of the result is tested by checking it
     //              against known good values.
     //
-    [JetBrains.Annotations.PublicAPI] public class SegmentIntegral : Integrator
+    [PublicAPI]
+    public class SegmentIntegral : Integrator
     {
         private int intervals_;
 
         public SegmentIntegral(int intervals)
-           : base(1, 1)
+            : base(1, 1)
         {
             intervals_ = intervals;
 
@@ -57,9 +59,11 @@ namespace QLNet.Math.integrals
             var sum = 0.5 * (f(a) + f(b));
             var end = b - 0.5 * dx;
             for (var x = a + dx; x < end; x += dx)
+            {
                 sum += f(x);
+            }
+
             return sum * dx;
         }
     }
-
 }

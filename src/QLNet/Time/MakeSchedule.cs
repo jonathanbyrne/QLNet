@@ -1,66 +1,26 @@
+using JetBrains.Annotations;
 using QLNet.Time.Calendars;
 
 namespace QLNet.Time
 {
     /// <summary>
-    /// This class provides a more comfortable interface to the argument list of Schedule's constructor.
+    ///     This class provides a more comfortable interface to the argument list of Schedule's constructor.
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class MakeSchedule
+    [PublicAPI]
+    public class MakeSchedule
     {
-        public MakeSchedule() { rule_ = DateGeneration.Rule.Backward; endOfMonth_ = false; }
+        private Calendar calendar_;
+        private BusinessDayConvention? convention_, terminationDateConvention_;
+        private Date effectiveDate_, terminationDate_;
+        private bool endOfMonth_;
+        private Date firstDate_, nextToLastDate_;
+        private DateGeneration.Rule rule_;
+        private Period tenor_;
 
-        public MakeSchedule from(Date effectiveDate)
+        public MakeSchedule()
         {
-            effectiveDate_ = effectiveDate;
-            return this;
-        }
-
-        public MakeSchedule to(Date terminationDate)
-        {
-            terminationDate_ = terminationDate;
-            return this;
-        }
-
-        public MakeSchedule withTenor(Period tenor)
-        {
-            tenor_ = tenor;
-            return this;
-        }
-
-        public MakeSchedule withFrequency(Frequency frequency)
-        {
-            tenor_ = new Period(frequency);
-            return this;
-        }
-
-        public MakeSchedule withCalendar(Calendar calendar)
-        {
-            calendar_ = calendar;
-            return this;
-        }
-
-        public MakeSchedule withConvention(BusinessDayConvention conv)
-        {
-            convention_ = conv;
-            return this;
-        }
-
-        public MakeSchedule withTerminationDateConvention(BusinessDayConvention conv)
-        {
-            terminationDateConvention_ = conv;
-            return this;
-        }
-
-        public MakeSchedule withRule(DateGeneration.Rule r)
-        {
-            rule_ = r;
-            return this;
-        }
-
-        public MakeSchedule forwards()
-        {
-            rule_ = DateGeneration.Rule.Forward;
-            return this;
+            rule_ = DateGeneration.Rule.Backward;
+            endOfMonth_ = false;
         }
 
         public MakeSchedule backwards()
@@ -75,21 +35,26 @@ namespace QLNet.Time
             return this;
         }
 
-        public MakeSchedule withFirstDate(Date d)
+        public MakeSchedule forwards()
         {
-            firstDate_ = d;
+            rule_ = DateGeneration.Rule.Forward;
             return this;
         }
 
-        public MakeSchedule withNextToLastDate(Date d)
+        public MakeSchedule from(Date effectiveDate)
         {
-            nextToLastDate_ = d;
+            effectiveDate_ = effectiveDate;
+            return this;
+        }
+
+        public MakeSchedule to(Date terminationDate)
+        {
+            terminationDate_ = terminationDate;
             return this;
         }
 
         public Schedule value()
         {
-
             // check for mandatory arguments
             Utils.QL_REQUIRE(effectiveDate_ != null, () => "effective date not provided");
             Utils.QL_REQUIRE(terminationDate_ != null, () => "termination date not provided");
@@ -140,12 +105,52 @@ namespace QLNet.Time
                 rule_, endOfMonth_, firstDate_, nextToLastDate_);
         }
 
-        private Calendar calendar_;
-        private Date effectiveDate_, terminationDate_;
-        private Period tenor_;
-        private BusinessDayConvention? convention_, terminationDateConvention_;
-        private DateGeneration.Rule rule_;
-        private bool endOfMonth_;
-        private Date firstDate_, nextToLastDate_;
+        public MakeSchedule withCalendar(Calendar calendar)
+        {
+            calendar_ = calendar;
+            return this;
+        }
+
+        public MakeSchedule withConvention(BusinessDayConvention conv)
+        {
+            convention_ = conv;
+            return this;
+        }
+
+        public MakeSchedule withFirstDate(Date d)
+        {
+            firstDate_ = d;
+            return this;
+        }
+
+        public MakeSchedule withFrequency(Frequency frequency)
+        {
+            tenor_ = new Period(frequency);
+            return this;
+        }
+
+        public MakeSchedule withNextToLastDate(Date d)
+        {
+            nextToLastDate_ = d;
+            return this;
+        }
+
+        public MakeSchedule withRule(DateGeneration.Rule r)
+        {
+            rule_ = r;
+            return this;
+        }
+
+        public MakeSchedule withTenor(Period tenor)
+        {
+            tenor_ = tenor;
+            return this;
+        }
+
+        public MakeSchedule withTerminationDateConvention(BusinessDayConvention conv)
+        {
+            terminationDateConvention_ = conv;
+            return this;
+        }
     }
 }

@@ -16,88 +16,214 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System;
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Extensions;
 using QLNet.Indexes;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Instruments
 {
     //! Basis swap. Simple Libor swap vs Libor swap
-    [JetBrains.Annotations.PublicAPI] public class BasisSwap : Swap
+    [PublicAPI]
+    public class BasisSwap : Swap
     {
-        public enum Type { Receiver = -1, Payer = 1 }
+        public enum Type
+        {
+            Receiver = -1,
+            Payer = 1
+        }
 
-        private Type type_;
-        private double spread1_, spread2_;
-        private double nominal_;
+        //! %Arguments for simple swap calculation
+        public new class Arguments : Swap.Arguments
+        {
+            public Arguments()
+            {
+                type = Type.Receiver;
+                nominal = default;
+            }
 
-        private Schedule floating1Schedule_;
-        public Schedule floating1Schedule() => floating1Schedule_;
+            // ****
 
+            public List<double> floating1AccrualTimes { get; set; }
+
+            public List<double> floating1Coupons { get; set; }
+
+            public List<Date> floating1FixingDates { get; set; }
+
+            public List<Date> floating1PayDates { get; set; }
+
+            public List<Date> floating1ResetDates { get; set; }
+
+            public List<double> floating1Spreads { get; set; }
+
+            public List<double> floating2AccrualTimes { get; set; }
+
+            public List<double> floating2Coupons { get; set; }
+
+            public List<Date> floating2FixingDates { get; set; }
+
+            public List<Date> floating2PayDates { get; set; }
+
+            public List<Date> floating2ResetDates { get; set; }
+
+            public List<double> floating2Spreads { get; set; }
+
+            public double nominal { get; set; }
+
+            public Type type { get; set; }
+
+            public override void validate()
+            {
+                base.validate();
+
+                if (nominal.IsEqual(default))
+                {
+                    throw new ArgumentException("nominal null or not set");
+                }
+
+                if (floating1ResetDates.Count != floating1PayDates.Count)
+                {
+                    throw new ArgumentException("number of floating1 start dates different from number of floating1 payment dates");
+                }
+
+                if (floating1PayDates.Count != floating1Coupons.Count)
+                {
+                    throw new ArgumentException("number of floating1 payment dates different from number of floating1 coupon amounts");
+                }
+
+                if (floating2ResetDates.Count != floating2PayDates.Count)
+                {
+                    throw new ArgumentException("number of floating2 start dates different from number of floating2 payment dates");
+                }
+
+                if (floating2PayDates.Count != floating2Coupons.Count)
+                {
+                    throw new ArgumentException("number of floating2 payment dates different from number of floating2 coupon amounts");
+                }
+
+                if (floating1FixingDates.Count != floating1PayDates.Count)
+                {
+                    throw new ArgumentException("number of floating1 fixing dates different from number of floating1 payment dates");
+                }
+
+                if (floating1AccrualTimes.Count != floating1PayDates.Count)
+                {
+                    throw new ArgumentException("number of floating1 accrual Times different from number of floating1 payment dates");
+                }
+
+                if (floating1Spreads.Count != floating1PayDates.Count)
+                {
+                    throw new ArgumentException("number of floating1 spreads different from number of floating1 payment dates");
+                }
+
+                if (floating2FixingDates.Count != floating2PayDates.Count)
+                {
+                    throw new ArgumentException("number of floating2 fixing dates different from number of floating2 payment dates");
+                }
+
+                if (floating2AccrualTimes.Count != floating2PayDates.Count)
+                {
+                    throw new ArgumentException("number of floating2 accrual Times different from number of floating2 payment dates");
+                }
+
+                if (floating2Spreads.Count != floating2PayDates.Count)
+                {
+                    throw new ArgumentException("number of floating2 spreads different from number of floating2 payment dates");
+                }
+            }
+        }
+
+        //! %Results from simple swap calculation
+        public new class Results : Swap.Results
+        {
+            public double? fairLongSpread { get; set; }
+
+            public double? fairShortSpread { get; set; }
+
+            public override void reset()
+            {
+                base.reset();
+                fairLongSpread = null;
+                fairShortSpread = null;
+            }
+        }
+
+        //results
+        private double? fairLongSpread_;
+        private double? fairShortSpread_;
         private DayCounter floating1DayCount_;
-
-        private Schedule floating2Schedule_;
-        public Schedule floating2Schedule() => floating2Schedule_;
-
-        private IborIndex iborIndex1_, iborIndex2_;
+        private Schedule floating1Schedule_;
         private DayCounter floating2DayCount_;
-        private BusinessDayConvention paymentConvention_;
+        private Schedule floating2Schedule_;
+        private IborIndex iborIndex1_, iborIndex2_;
         private int longNo_, shortNo_;
         private double longSpread_, shortSpread_;
+        private BusinessDayConvention paymentConvention_;
 
         // constructor
         public BasisSwap(Type type, double nominal,
-                         Schedule float1Schedule, IborIndex iborIndex1, double spread1, DayCounter float1DayCount,
-                         Schedule float2Schedule, IborIndex iborIndex2, double spread2, DayCounter float2DayCount)
-           : this(type, nominal, float1Schedule, iborIndex1, spread1, float1DayCount,
-                  float2Schedule, iborIndex2, spread2, float2DayCount, null)
-        { }
-        public BasisSwap(Type type, double nominal,
-                         Schedule float1Schedule, IborIndex iborIndex1, double spread1, DayCounter float1DayCount,
-                         Schedule float2Schedule, IborIndex iborIndex2, double spread2, DayCounter float2DayCount,
-                         BusinessDayConvention? paymentConvention) :
-        base(2)
+            Schedule float1Schedule, IborIndex iborIndex1, double spread1, DayCounter float1DayCount,
+            Schedule float2Schedule, IborIndex iborIndex2, double spread2, DayCounter float2DayCount)
+            : this(type, nominal, float1Schedule, iborIndex1, spread1, float1DayCount,
+                float2Schedule, iborIndex2, spread2, float2DayCount, null)
         {
-            type_ = type;
-            nominal_ = nominal;
+        }
+
+        public BasisSwap(Type type, double nominal,
+            Schedule float1Schedule, IborIndex iborIndex1, double spread1, DayCounter float1DayCount,
+            Schedule float2Schedule, IborIndex iborIndex2, double spread2, DayCounter float2DayCount,
+            BusinessDayConvention? paymentConvention) :
+            base(2)
+        {
+            swapType = type;
+            this.nominal = nominal;
             floating1Schedule_ = float1Schedule;
-            spread1_ = spread1;
+            this.spread1 = spread1;
             floating1DayCount_ = float1DayCount;
             iborIndex1_ = iborIndex1;
             floating2Schedule_ = float2Schedule;
-            spread2_ = spread2;
+            this.spread2 = spread2;
             floating2DayCount_ = float2DayCount;
             iborIndex2_ = iborIndex2;
 
             if (paymentConvention.HasValue)
+            {
                 paymentConvention_ = paymentConvention.Value;
+            }
             else
+            {
                 paymentConvention_ = floating1Schedule_.businessDayConvention();
+            }
 
             List<CashFlow> floating1Leg = new IborLeg(float1Schedule, iborIndex1)
-            .withPaymentDayCounter(float1DayCount)
-            .withSpreads(spread1)
-            .withNotionals(nominal)
-            .withPaymentAdjustment(paymentConvention_);
+                .withPaymentDayCounter(float1DayCount)
+                .withSpreads(spread1)
+                .withNotionals(nominal)
+                .withPaymentAdjustment(paymentConvention_);
 
             List<CashFlow> floating2Leg = new IborLeg(float2Schedule, iborIndex2)
-            .withPaymentDayCounter(float2DayCount)
-            .withSpreads(spread2)
-            .withNotionals(nominal)
-            .withPaymentAdjustment(paymentConvention_);
+                .withPaymentDayCounter(float2DayCount)
+                .withSpreads(spread2)
+                .withNotionals(nominal)
+                .withPaymentAdjustment(paymentConvention_);
 
             foreach (var cf in floating1Leg)
+            {
                 cf.registerWith(update);
-            foreach (var cf in floating2Leg)
-                cf.registerWith(update);
+            }
 
+            foreach (var cf in floating2Leg)
+            {
+                cf.registerWith(update);
+            }
 
             legs_[0] = floating1Leg;
             legs_[1] = floating2Leg;
-            if (type_ == Type.Payer)
+            if (swapType == Type.Payer)
             {
                 payer_[0] = -1;
                 payer_[1] = +1;
@@ -117,18 +243,134 @@ namespace QLNet.Instruments
             }
         }
 
+        public double nominal { get; }
+
+        public double spread1 { get; }
+
+        public double spread2 { get; }
+
+        public Type swapType { get; }
+
+        public double fairLongSpread()
+        {
+            calculate();
+            if (fairLongSpread_ == null)
+            {
+                throw new ArgumentException("result not available");
+            }
+
+            return fairLongSpread_.GetValueOrDefault();
+        }
+
+        public double fairShortSpread()
+        {
+            calculate();
+            if (fairShortSpread_ == null)
+            {
+                throw new ArgumentException("result not available");
+            }
+
+            return fairShortSpread_.GetValueOrDefault();
+        }
+
+        public override void fetchResults(IPricingEngineResults r)
+        {
+            base.fetchResults(r);
+
+            if (r is Results results)
+            {
+                fairLongSpread_ = results.fairLongSpread;
+                fairShortSpread_ = results.fairShortSpread;
+            }
+            else
+            {
+                fairLongSpread_ = null;
+                fairShortSpread_ = null;
+            }
+
+            // Long fair spread should be fine - no averaging or compounding
+            if (fairLongSpread_ == null && legBPS_[longNo_] != null)
+            {
+                fairLongSpread_ = longSpread_ - NPV_ / (legBPS_[longNo_] / Const.BASIS_POINT);
+            }
+
+            /* Short fair spread calculation ok if no averaging/compounding OR
+               if there is averaging/compounding and the spread is added after */
+            if (fairShortSpread_ == null && legBPS_[shortNo_] != null)
+            {
+                fairShortSpread_ = shortSpread_ - NPV_ / (legBPS_[shortNo_] / Const.BASIS_POINT);
+            }
+        }
+
+        public List<CashFlow> floating1Leg() => legs_[0];
+
+        ///////////////////////////////////////////////////
+        // results
+        public double floating1LegBPS()
+        {
+            calculate();
+            if (legBPS_[0] == null)
+            {
+                throw new ArgumentException("result not available");
+            }
+
+            return legBPS_[0].GetValueOrDefault();
+        }
+
+        public double floating1LegNPV()
+        {
+            calculate();
+            if (legNPV_[0] == null)
+            {
+                throw new ArgumentException("result not available");
+            }
+
+            return legNPV_[0].GetValueOrDefault();
+        }
+
+        public Schedule floating1Schedule() => floating1Schedule_;
+
+        public List<CashFlow> floating2Leg() => legs_[1];
+
+        public double floating2LegBPS()
+        {
+            calculate();
+            if (legBPS_[1] == null)
+            {
+                throw new ArgumentException("result not available");
+            }
+
+            return legBPS_[1].GetValueOrDefault();
+        }
+
+        public double floating2LegNPV()
+        {
+            calculate();
+            if (legNPV_[1] == null)
+            {
+                throw new ArgumentException("result not available");
+            }
+
+            return legNPV_[1].GetValueOrDefault();
+        }
+
+        public Schedule floating2Schedule() => floating2Schedule_;
+
+        public IborIndex iborIndex1() => iborIndex1_;
+
+        public IborIndex iborIndex2() => iborIndex2_;
 
         public override void setupArguments(IPricingEngineArguments args)
         {
             base.setupArguments(args);
 
-            var arguments = args as Arguments;
-            if (arguments == null)  // it's a swap engine...
+            if (!(args is Arguments arguments)) // it's a swap engine...
+            {
                 return;
+            }
 
-            arguments.type = type_;
-            arguments.nominal = nominal_;
-
+            arguments.type = swapType;
+            arguments.nominal = nominal;
 
             var floating1Coupons = floating1Leg();
 
@@ -187,186 +429,10 @@ namespace QLNet.Instruments
             }
         }
 
-
-        ///////////////////////////////////////////////////
-        // results
-        public double floating1LegBPS()
-        {
-            calculate();
-            if (legBPS_[0] == null)
-                throw new ArgumentException("result not available");
-            return legBPS_[0].GetValueOrDefault();
-        }
-        public double floating1LegNPV()
-        {
-            calculate();
-            if (legNPV_[0] == null)
-                throw new ArgumentException("result not available");
-            return legNPV_[0].GetValueOrDefault();
-        }
-
-        public double floating2LegBPS()
-        {
-            calculate();
-            if (legBPS_[1] == null)
-                throw new ArgumentException("result not available");
-            return legBPS_[1].GetValueOrDefault();
-        }
-        public double floating2LegNPV()
-        {
-            calculate();
-            if (legNPV_[1] == null)
-                throw new ArgumentException("result not available");
-            return legNPV_[1].GetValueOrDefault();
-        }
-
-        public IborIndex iborIndex1() => iborIndex1_;
-
-        public IborIndex iborIndex2() => iborIndex2_;
-
-        public double spread1 => spread1_;
-
-        public double spread2 => spread2_;
-
-        public double nominal => nominal_;
-
-        public Type swapType => type_;
-
-        public List<CashFlow> floating1Leg() => legs_[0];
-
-        public List<CashFlow> floating2Leg() => legs_[1];
-
-        public double fairLongSpread()
-        {
-            calculate();
-            if (fairLongSpread_ == null)
-                throw new ArgumentException("result not available");
-            return fairLongSpread_.GetValueOrDefault();
-        }
-
-        public double fairShortSpread()
-        {
-            calculate();
-            if (fairShortSpread_ == null)
-                throw new ArgumentException("result not available");
-            return fairShortSpread_.GetValueOrDefault();
-        }
-
         protected override void setupExpired()
         {
             base.setupExpired();
             legBPS_[0] = legBPS_[1] = 0.0;
-        }
-
-        public override void fetchResults(IPricingEngineResults r)
-        {
-            base.fetchResults(r);
-            var results = r as Results;
-
-            if (results != null)
-            {
-                fairLongSpread_ = results.fairLongSpread;
-                fairShortSpread_ = results.fairShortSpread;
-            }
-            else
-            {
-                fairLongSpread_ = null;
-                fairShortSpread_ = null;
-            }
-
-            // Long fair spread should be fine - no averaging or compounding
-            if (fairLongSpread_ == null && legBPS_[longNo_] != null)
-            {
-                fairLongSpread_ = longSpread_ - NPV_ / (legBPS_[longNo_] / Const.BASIS_POINT);
-            }
-
-            /* Short fair spread calculation ok if no averaging/compounding OR
-               if there is averaging/compounding and the spread is added after */
-            if (fairShortSpread_ == null && legBPS_[shortNo_] != null)
-            {
-                fairShortSpread_ = shortSpread_ - NPV_ / (legBPS_[shortNo_] / Const.BASIS_POINT);
-            }
-        }
-
-        //results
-        private double? fairLongSpread_;
-        private double? fairShortSpread_;
-
-        //! %Arguments for simple swap calculation
-        public new class Arguments : Swap.Arguments
-        {
-            public Type type { get; set; }
-            public double nominal { get; set; }
-
-            public List<Date> floating1ResetDates { get; set; }
-            public List<Date> floating1PayDates { get; set; }
-            public List<double> floating1Coupons { get; set; }
-
-            public List<Date> floating2ResetDates { get; set; }
-            public List<Date> floating2PayDates { get; set; }
-            public List<double> floating2Coupons { get; set; }
-
-            // ****
-
-            public List<double> floating1AccrualTimes { get; set; }
-            public List<Date> floating1FixingDates { get; set; }
-            public List<double> floating1Spreads { get; set; }
-
-            public List<double> floating2AccrualTimes { get; set; }
-            public List<Date> floating2FixingDates { get; set; }
-            public List<double> floating2Spreads { get; set; }
-
-
-            public Arguments()
-            {
-                type = Type.Receiver;
-                nominal = default;
-            }
-
-            public override void validate()
-            {
-                base.validate();
-
-                if (nominal.IsEqual(default))
-                    throw new ArgumentException("nominal null or not set");
-                if (floating1ResetDates.Count != floating1PayDates.Count)
-                    throw new ArgumentException("number of floating1 start dates different from number of floating1 payment dates");
-                if (floating1PayDates.Count != floating1Coupons.Count)
-                    throw new ArgumentException("number of floating1 payment dates different from number of floating1 coupon amounts");
-                if (floating2ResetDates.Count != floating2PayDates.Count)
-                    throw new ArgumentException("number of floating2 start dates different from number of floating2 payment dates");
-                if (floating2PayDates.Count != floating2Coupons.Count)
-                    throw new ArgumentException("number of floating2 payment dates different from number of floating2 coupon amounts");
-
-
-                if (floating1FixingDates.Count != floating1PayDates.Count)
-                    throw new ArgumentException("number of floating1 fixing dates different from number of floating1 payment dates");
-                if (floating1AccrualTimes.Count != floating1PayDates.Count)
-                    throw new ArgumentException("number of floating1 accrual Times different from number of floating1 payment dates");
-                if (floating1Spreads.Count != floating1PayDates.Count)
-                    throw new ArgumentException("number of floating1 spreads different from number of floating1 payment dates");
-
-                if (floating2FixingDates.Count != floating2PayDates.Count)
-                    throw new ArgumentException("number of floating2 fixing dates different from number of floating2 payment dates");
-                if (floating2AccrualTimes.Count != floating2PayDates.Count)
-                    throw new ArgumentException("number of floating2 accrual Times different from number of floating2 payment dates");
-                if (floating2Spreads.Count != floating2PayDates.Count)
-                    throw new ArgumentException("number of floating2 spreads different from number of floating2 payment dates");
-
-            }
-        }
-
-        //! %Results from simple swap calculation
-        public new class Results : Swap.Results
-        {
-            public double? fairLongSpread { get; set; }
-            public double? fairShortSpread { get; set; }
-            public override void reset()
-            {
-                base.reset();
-                fairLongSpread = null;
-                fairShortSpread = null;
-            }
         }
     }
 }

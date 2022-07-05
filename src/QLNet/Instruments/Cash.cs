@@ -1,22 +1,23 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Time;
 using QLNet.Time.DayCounters;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class Cash : Loan
+    [PublicAPI]
+    public class Cash : Loan
     {
-        private Type type_;
         private double nominal_;
-        private Schedule principalSchedule_;
         private BusinessDayConvention paymentConvention_;
+        private Schedule principalSchedule_;
+        private Type type_;
 
         public Cash(Type type, double nominal,
             Schedule principalSchedule, BusinessDayConvention? paymentConvention) :
             base(1)
         {
-
             type_ = type;
             nominal_ = nominal;
             principalSchedule_ = principalSchedule;

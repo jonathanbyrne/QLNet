@@ -1,12 +1,16 @@
-﻿using QLNet.Currencies;
+﻿using JetBrains.Annotations;
+using QLNet.Currencies;
 using QLNet.Time;
 
 namespace QLNet.Indexes.Inflation
 {
-    [JetBrains.Annotations.PublicAPI] public class YYUSCPIr : YoYInflationIndex
+    [PublicAPI]
+    public class YYUSCPIr : YoYInflationIndex
     {
         public YYUSCPIr(bool interpolated)
-            : this(interpolated, new Handle<YoYInflationTermStructure>()) { }
+            : this(interpolated, new Handle<YoYInflationTermStructure>())
+        {
+        }
 
         public YYUSCPIr(bool interpolated,
             Handle<YoYInflationTermStructure> ts)
@@ -19,6 +23,7 @@ namespace QLNet.Indexes.Inflation
                 new Period(1, TimeUnit.Months),
                 new USDCurrency(),
                 ts)
-        { }
+        {
+        }
     }
 }

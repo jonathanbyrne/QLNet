@@ -1,7 +1,12 @@
-﻿namespace QLNet.Math.integrals
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.integrals
 {
-    [JetBrains.Annotations.PublicAPI] public class GaussChebyshevPolynomial : GaussJacobiPolynomial
+    [PublicAPI]
+    public class GaussChebyshevPolynomial : GaussJacobiPolynomial
     {
-        public GaussChebyshevPolynomial() : base(-0.5, -0.5) { }
+        public GaussChebyshevPolynomial() : base(-0.5, -0.5)
+        {
+        }
     }
 }

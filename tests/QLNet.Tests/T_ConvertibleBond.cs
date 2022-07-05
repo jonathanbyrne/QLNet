@@ -15,6 +15,7 @@
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 using System;
 using System.Collections.Generic;
+using QLNet.Cashflows;
 using Xunit;
 using QLNet.Instruments.Bonds;
 using QLNet.Indexes;

@@ -1,9 +1,13 @@
-﻿using QLNet.Time;
+﻿using JetBrains.Annotations;
+using QLNet.Time;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class FaceValueAccrualClaim : Claim
+    [PublicAPI]
+    public class FaceValueAccrualClaim : Claim
     {
+        private Bond referenceSecurity_;
+
         public FaceValueAccrualClaim(Bond referenceSecurity)
         {
             referenceSecurity_ = referenceSecurity;
@@ -16,7 +20,5 @@ namespace QLNet.Instruments
                           referenceSecurity_.notional(d);
             return notional * (1.0 - recoveryRate - accrual);
         }
-
-        private Bond referenceSecurity_;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Math;
 using QLNet.Math.Interpolations;
@@ -7,9 +8,17 @@ using QLNet.Time;
 
 namespace QLNet.Termstructures.Inflation
 {
-    [JetBrains.Annotations.PublicAPI] public class InterpolatedCPICapFloorTermPriceSurface<Interpolator2D> : CPICapFloorTermPriceSurface
+    [PublicAPI]
+    public class InterpolatedCPICapFloorTermPriceSurface<Interpolator2D> : CPICapFloorTermPriceSurface
         where Interpolator2D : IInterpolationFactory2D, new()
     {
+        // data for surfaces and curve
+        protected List<double> allStrikes_;
+        protected Interpolation2D capPrice_, floorPrice_;
+        protected Matrix cPriceB_;
+        protected Matrix fPriceB_;
+        protected Interpolator2D interpolator2d_;
+
         public InterpolatedCPICapFloorTermPriceSurface(double nominal,
             double startRate,
             Period observationLag,
@@ -30,8 +39,30 @@ namespace QLNet.Termstructures.Inflation
             performCalculations();
         }
 
+        public override double capPrice(Date d, double k)
+        {
+            var t = timeFromReference(d);
+            return capPrice_.value(t, k);
+        }
+
+        public override double floorPrice(Date d, double k)
+        {
+            var t = timeFromReference(d);
+            return floorPrice_.value(t, k);
+        }
+
+        //! remember that the strikes use the quoting convention
+        public override double price(Date d, double k)
+        {
+            var atm = zeroInflationIndex().link.zeroInflationTermStructure().link.zeroRate(d);
+            return k > atm ? capPrice(d, k) : floorPrice(d, k);
+        }
+
         // LazyObject interface
-        public override void update() { notifyObservers(); }
+        public override void update()
+        {
+            notifyObservers();
+        }
 
         //! set up the interpolations for capPrice_ and floorPrice_
         //! since we know ATM, and we have single flows,
@@ -67,6 +98,7 @@ namespace QLNet.Termstructures.Inflation
                     fP[i, j] = fPrice_[i, j];
                 }
             }
+
             for (var i = 0; i < ncK; i++)
             {
                 allStrikes_.Add(cStrikes_[i]);
@@ -104,29 +136,5 @@ namespace QLNet.Termstructures.Inflation
 
             floorPrice_.enableExtrapolation();
         }
-
-        //! remember that the strikes use the quoting convention
-        public override double price(Date d, double k)
-        {
-            var atm = zeroInflationIndex().link.zeroInflationTermStructure().link.zeroRate(d);
-            return k > atm ? capPrice(d, k) : floorPrice(d, k);
-        }
-        public override double capPrice(Date d, double k)
-        {
-            var t = timeFromReference(d);
-            return capPrice_.value(t, k);
-        }
-        public override double floorPrice(Date d, double k)
-        {
-            var t = timeFromReference(d);
-            return floorPrice_.value(t, k);
-        }
-
-        // data for surfaces and curve
-        protected List<double> allStrikes_;
-        protected Matrix cPriceB_;
-        protected Matrix fPriceB_;
-        protected Interpolation2D capPrice_, floorPrice_;
-        protected Interpolator2D interpolator2d_;
     }
 }

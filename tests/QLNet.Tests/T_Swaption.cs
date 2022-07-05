@@ -275,20 +275,24 @@ namespace QLNet.Tests
                             for (var n = 0; n < spreads.Length - 1; n++)
                             {
                                 if (values[n] > values[n + 1])
+                                {
                                     QAssert.Fail("NPV is decreasing with the spread " +
                                                  "in a payer swaption (physical delivered):" +
                                                  "\nexercise date: " + exerciseDate +
                                                  "\nlength:        " + lengths[j] +
                                                  "\nvalue:         " + values[n] + " for spread: " + spreads[n] +
                                                  "\nvalue:         " + values[n + 1] + " for spread: " + spreads[n + 1]);
+                                }
 
                                 if (values_cash[n] > values_cash[n + 1])
+                                {
                                     QAssert.Fail("NPV is decreasing with the spread " +
                                                  "in a payer swaption (cash delivered):" +
                                                  "\nexercise date: " + exerciseDate +
                                                  "\nlength: " + lengths[j] +
                                                  "\nvalue:  " + values_cash[n] + " for spread: " + spreads[n] +
                                                  "\nvalue:  " + values_cash[n + 1] + " for spread: " + spreads[n + 1]);
+                                }
                             }
                         }
                         else
@@ -296,20 +300,24 @@ namespace QLNet.Tests
                             for (var n = 0; n < spreads.Length - 1; n++)
                             {
                                 if (values[n] < values[n + 1])
+                                {
                                     QAssert.Fail("NPV is increasing with the spread " +
                                                  "in a receiver swaption (physical delivered):" +
                                                  "\nexercise date: " + exerciseDate +
                                                  "\nlength: " + lengths[j] +
                                                  "\nvalue:  " + values[n] + " for spread: " + spreads[n] +
                                                  "\nvalue:  " + values[n + 1] + " for spread: " + spreads[n + 1]);
+                                }
 
                                 if (values_cash[n] < values_cash[n + 1])
+                                {
                                     QAssert.Fail("NPV is increasing with the spread " +
                                                  "in a receiver swaption (cash delivered):" +
                                                  "\nexercise date: " + exerciseDate +
                                                  "\nlength: " + lengths[j] +
                                                  "\nvalue:  " + values_cash[n] + " for spread: " + spreads[n] +
                                                  "\nvalue:  " + values_cash[n + 1] + " for spread: " + spreads[n + 1]);
+                                }
                             }
                         }
                     }
@@ -365,6 +373,7 @@ namespace QLNet.Tests
                                                  Settlement.Type.Cash,
                                                  Settlement.Method.ParYieldCurve);
                             if (System.Math.Abs(swaption1.NPV() - swaption2.NPV()) > 1.0e-6)
+                            {
                                 QAssert.Fail("wrong spread treatment:" +
                                              "\nexercise: " + exerciseDate +
                                              "\nlength:   " + lengths[j] +
@@ -372,8 +381,10 @@ namespace QLNet.Tests
                                              "\nspread:   " + spreads[l] +
                                              "\noriginal swaption value:   " + swaption1.NPV() +
                                              "\nequivalent swaption value: " + swaption2.NPV());
+                            }
 
                             if (System.Math.Abs(swaption1_cash.NPV() - swaption2_cash.NPV()) > 1.0e-6)
+                            {
                                 QAssert.Fail("wrong spread treatment:" +
                                              "\nexercise date: " + exerciseDate +
                                              "\nlength: " + lengths[j] +
@@ -381,6 +392,7 @@ namespace QLNet.Tests
                                              "\nspread: " + spreads[l] +
                                              "\nvalue of original swaption:   " + swaption1_cash.NPV() +
                                              "\nvalue of equivalent swaption: " + swaption2_cash.NPV());
+                            }
                         }
                     }
                 }
@@ -414,10 +426,12 @@ namespace QLNet.Tests
 
             // FLOATING_POINT_EXCEPTION
             if (System.Math.Abs(swaption.NPV() - cachedNPV) > 1.0e-12)
+            {
                 QAssert.Fail("failed to reproduce cached swaption value:\n" +
                              //QL_FIXED + std::setprecision(12) +
                              "\ncalculated: " + swaption.NPV() +
                              "\nexpected:   " + cachedNPV);
+            }
         }
 
         [Fact]
@@ -474,6 +488,7 @@ namespace QLNet.Tests
                                     discrepancy /= numericalVegaPerPoint;
                                     var tolerance = 0.015;
                                     if (discrepancy > tolerance)
+                                    {
                                         QAssert.Fail("failed to compute swaption vega:" +
                                                      "\n  option tenor:    " + exercises[i] +
                                                      "\n  volatility:      " + vols[u] +
@@ -487,6 +502,7 @@ namespace QLNet.Tests
                                                      "\n  expected vega:   " + numericalVegaPerPoint +
                                                      "\n  discrepancy:     " + discrepancy +
                                                      "\n  tolerance:       " + tolerance);
+                                    }
                                 }
                             }
                         }

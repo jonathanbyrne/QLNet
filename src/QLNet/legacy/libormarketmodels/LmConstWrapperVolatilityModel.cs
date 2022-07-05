@@ -18,28 +18,31 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
 
 namespace QLNet.legacy.libormarketmodels
 {
     //! caplet const volatility model
-    [JetBrains.Annotations.PublicAPI] public class LmConstWrapperVolatilityModel : LmVolatilityModel
+    [PublicAPI]
+    public class LmConstWrapperVolatilityModel : LmVolatilityModel
     {
+        protected LmVolatilityModel volaModel_;
+
         public LmConstWrapperVolatilityModel(LmVolatilityModel volaModel)
-           : base(volaModel.size(), 0)
+            : base(volaModel.size(), 0)
         {
             volaModel_ = volaModel;
         }
 
-        public override Vector volatility(double t, Vector x = null) => volaModel_.volatility(t, x);
-
-        public override double volatility(int i, double t, Vector x = null) => volaModel_.volatility(i, t, x);
+        public override void generateArguments()
+        {
+        }
 
         public override double integratedVariance(int i, int j, double u, Vector x = null) => volaModel_.integratedVariance(i, j, u, x);
 
-        protected LmVolatilityModel volaModel_;
+        public override Vector volatility(double t, Vector x = null) => volaModel_.volatility(t, x);
 
-        public override void generateArguments()
-        { }
+        public override double volatility(int i, double t, Vector x = null) => volaModel_.volatility(i, t, x);
     }
 }

@@ -1,6 +1,9 @@
-﻿namespace QLNet.Math.integrals
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.integrals
 {
-    [JetBrains.Annotations.PublicAPI] public class DiscreteSimpsonIntegral
+    [PublicAPI]
+    public class DiscreteSimpsonIntegral
     {
         public double value(Vector x, Vector f)
         {
@@ -22,6 +25,7 @@
 
                 acc += k * alpha * f[j] + k * beta * f[j + 1] + k * gamma * f[j + 2];
             }
+
             if (!((n & 1) == 1))
             {
                 acc += 0.5 * (x[n - 1] - x[n - 2]) * (f[n - 1] + f[n - 2]);

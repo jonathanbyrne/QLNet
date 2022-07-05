@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Termstructures;
 using QLNet.Time;
@@ -25,19 +26,20 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.Ibor
 {
-
     //! %DKK %LIBOR rate
     /*! Danish Krona LIBOR discontinued as of 2013.
     */
-    [JetBrains.Annotations.PublicAPI] public class DKKLibor : Libor
+    [PublicAPI]
+    public class DKKLibor : Libor
     {
         public DKKLibor(Period tenor)
-           : base("DKKLibor", tenor, 2, new DKKCurrency(), new Denmark(), new Actual360(), new Handle<YieldTermStructure>())
-        { }
+            : base("DKKLibor", tenor, 2, new DKKCurrency(), new Denmark(), new Actual360(), new Handle<YieldTermStructure>())
+        {
+        }
 
         public DKKLibor(Period tenor, Handle<YieldTermStructure> h)
-           : base("DKKLibor", tenor, 2, new DKKCurrency(), new Denmark(), new Actual360(), h)
-        { }
+            : base("DKKLibor", tenor, 2, new DKKCurrency(), new Denmark(), new Actual360(), h)
+        {
+        }
     }
-
 }

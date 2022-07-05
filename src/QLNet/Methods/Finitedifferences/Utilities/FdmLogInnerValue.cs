@@ -1,13 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math.integrals;
 using QLNet.Methods.Finitedifferences.Meshers;
 using QLNet.Methods.Finitedifferences.Operators;
 
 namespace QLNet.Methods.Finitedifferences.Utilities
 {
-    [JetBrains.Annotations.PublicAPI] public class FdmLogInnerValue : FdmInnerValueCalculator
+    [PublicAPI]
+    public class FdmLogInnerValue : FdmInnerValueCalculator
     {
+        protected List<double> avgInnerValues_;
+        protected int direction_;
+        protected FdmMesher mesher_;
+        protected Payoff payoff_;
+
         public FdmLogInnerValue(Payoff payoff,
             FdmMesher mesher,
             int direction)
@@ -18,11 +25,6 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             avgInnerValues_ = new List<double>();
         }
 
-        public override double innerValue(FdmLinearOpIterator iter, double t)
-        {
-            var s = System.Math.Exp(mesher_.location(iter, direction_));
-            return payoff_.value(s);
-        }
         public override double avgInnerValue(FdmLinearOpIterator iter, double t)
         {
             if (avgInnerValues_.empty())
@@ -33,7 +35,8 @@ namespace QLNet.Methods.Finitedifferences.Utilities
 
                 var layout = mesher_.layout();
                 var endIter = layout.end();
-                for (var new_iter = layout.begin(); new_iter != endIter;
+                for (var new_iter = layout.begin();
+                     new_iter != endIter;
                      ++new_iter)
                 {
                     var xn = new_iter.coordinates()[direction_];
@@ -44,7 +47,14 @@ namespace QLNet.Methods.Finitedifferences.Utilities
                     }
                 }
             }
+
             return avgInnerValues_[iter.coordinates()[direction_]];
+        }
+
+        public override double innerValue(FdmLinearOpIterator iter, double t)
+        {
+            var s = System.Math.Exp(mesher_.location(iter, direction_));
+            return payoff_.value(s);
         }
 
         protected double avgInnerValueCalc(FdmLinearOpIterator iter, double t)
@@ -58,10 +68,12 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             {
                 a -= mesher_.dminus(iter, direction_).Value / 2.0;
             }
+
             if (coord < dim - 1)
             {
                 b += mesher_.dplus(iter, direction_).Value / 2.0;
             }
+
             Func<double, double> f = x => payoff_.value(System.Math.Exp(x));
             double retVal;
             try
@@ -78,10 +90,5 @@ namespace QLNet.Methods.Finitedifferences.Utilities
 
             return retVal;
         }
-
-        protected Payoff payoff_;
-        protected FdmMesher mesher_;
-        protected int direction_;
-        protected List<double> avgInnerValues_;
     }
 }

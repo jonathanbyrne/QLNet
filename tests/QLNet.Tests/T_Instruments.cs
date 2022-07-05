@@ -42,25 +42,34 @@ namespace QLNet.Tests
             s.NPV();
             me1.setValue(3.14);
             if (!f.isUp())
+            {
                 QAssert.Fail("Observer was not notified of instrument change");
+            }
 
             s.NPV();
             f.lower();
             var me2 = new SimpleQuote(0.0);
             h.linkTo(me2);
             if (!f.isUp())
+            {
                 QAssert.Fail("Observer was not notified of instrument change");
+            }
 
             f.lower();
             s.freeze();
             s.NPV();
             me2.setValue(2.71);
             if (f.isUp())
+            {
                 QAssert.Fail("Observer was notified of frozen instrument change");
+            }
+
             s.NPV();
             s.unfreeze();
             if (!f.isUp())
+            {
                 QAssert.Fail("Observer was not notified of instrument change");
+            }
         }
     }
 }

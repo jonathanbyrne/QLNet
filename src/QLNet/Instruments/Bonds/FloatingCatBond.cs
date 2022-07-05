@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
 using QLNet.Time;
@@ -6,9 +7,10 @@ using QLNet.Time;
 namespace QLNet.Instruments.Bonds
 {
     /// <summary>
-    /// floating-rate cat bond (possibly capped and/or floored)
+    ///     floating-rate cat bond (possibly capped and/or floored)
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class FloatingCatBond : CatBond
+    [PublicAPI]
+    public class FloatingCatBond : CatBond
     {
         public FloatingCatBond(int settlementDays,
             double faceAmount,

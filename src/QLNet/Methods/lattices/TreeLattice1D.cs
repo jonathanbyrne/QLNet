@@ -17,23 +17,31 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
 
 namespace QLNet.Methods.lattices
 {
     //! One-dimensional tree-based lattice.
-    [JetBrains.Annotations.PublicAPI] public class TreeLattice1D<T> : TreeLattice<T> where T : IGenericLattice
+    [PublicAPI]
+    public class TreeLattice1D<T> : TreeLattice<T> where T : IGenericLattice
     {
-        public TreeLattice1D(TimeGrid timeGrid, int n) : base(timeGrid, n) { }
+        public TreeLattice1D(TimeGrid timeGrid, int n) : base(timeGrid, n)
+        {
+        }
 
         public override Vector grid(double t)
         {
             var i = timeGrid().index(t);
             var grid = new Vector(impl().size(i));
             for (var j = 0; j < grid.size(); j++)
+            {
                 grid[j] = impl().underlying(i, j);
+            }
+
             return grid;
         }
+
         public virtual double underlying(int i, int index) => impl().underlying(i, index);
     }
 }

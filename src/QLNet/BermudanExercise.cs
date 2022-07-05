@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public class BermudanExercise : EarlyExercise
+    [PublicAPI]
+    public class BermudanExercise : EarlyExercise
     {
-        public BermudanExercise(List<Date> dates) : this(dates, false)
-        {}
-
-        public BermudanExercise(List<Date> dates, bool payoffAtExpiry)
+        public BermudanExercise(List<Date> dates, bool payoffAtExpiry = false)
             : base(Type.Bermudan, payoffAtExpiry)
         {
             Utils.QL_REQUIRE(!dates.empty(), () => "no exercise date given");

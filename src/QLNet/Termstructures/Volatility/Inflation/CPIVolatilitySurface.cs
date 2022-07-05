@@ -18,7 +18,6 @@
 */
 
 using QLNet.Time;
-using System.Collections.Generic;
 
 namespace QLNet.Termstructures.Volatility.Inflation
 {
@@ -29,122 +28,29 @@ namespace QLNet.Termstructures.Volatility.Inflation
     */
     public abstract class CPIVolatilitySurface : VolatilityTermStructure
     {
+        protected double? baseLevel_;
+        protected Frequency frequency_;
+        protected bool indexIsInterpolated_;
+        // so you do not need an index
+        protected Period observationLag_;
         /*! calculates the reference date based on the global
             evaluation date.
         */
 
         protected CPIVolatilitySurface(int settlementDays,
-                                       Calendar cal,
-                                       BusinessDayConvention bdc,
-                                       DayCounter dc,
-                                       Period observationLag,
-                                       Frequency frequency,
-                                       bool indexIsInterpolated)
-           : base(settlementDays, cal, bdc, dc)
+            Calendar cal,
+            BusinessDayConvention bdc,
+            DayCounter dc,
+            Period observationLag,
+            Frequency frequency,
+            bool indexIsInterpolated)
+            : base(settlementDays, cal, bdc, dc)
         {
             baseLevel_ = null;
             observationLag_ = observationLag;
             frequency_ = frequency;
             indexIsInterpolated_ = indexIsInterpolated;
-
         }
-
-        // Volatility
-        /*! by default, inflation is observed with the lag
-            of the term structure.
-
-            Because inflation is highly linked to dates (for
-            interpolation, periods, etc) time-based overload of the
-            methods are not provided.
-        */
-
-        //! Returns the volatility for a given maturity date and strike rate.
-        double volatility(Date maturityDate, double strike,
-                          Period obsLag = null,
-                          bool extrapolate = false)
-        {
-            if (obsLag == null)
-                obsLag = new Period(-1, TimeUnit.Days);
-
-            var useLag = obsLag;
-            if (obsLag == new Period(-1, TimeUnit.Days))
-            {
-                useLag = observationLag();
-            }
-
-            if (indexIsInterpolated())
-            {
-                checkRange(maturityDate - useLag, strike, extrapolate);
-                var t = timeFromReference(maturityDate - useLag);
-                return volatilityImpl(t, strike);
-            }
-            else
-            {
-                var dd = Utils.inflationPeriod(maturityDate - useLag, frequency());
-                checkRange(dd.Key, strike, extrapolate);
-                var t = timeFromReference(dd.Key);
-                return volatilityImpl(t, strike);
-            }
-        }
-
-        //! returns the volatility for a given option tenor and strike rate
-        public double? volatility(Period optionTenor, double strike,
-                                  Period obsLag = null, bool extrapolate = false)
-        {
-            if (obsLag == null)
-                obsLag = new Period(-1, TimeUnit.Days);
-
-            var maturityDate = optionDateFromTenor(optionTenor);
-            return volatility(maturityDate, strike, obsLag, extrapolate);
-        }
-
-        //! Returns the total integrated variance for a given exercise
-        //! date and strike rate.
-        /*! Total integrated variance is useful because it scales out
-            t for the optionlet pricing formulae.  Note that it is
-            called "total" because the surface does not know whether
-            it represents Black, Bachelier or Displaced Diffusion
-            variance.  These are virtual so alternate connections
-            between const vol and total var are possible.
-        */
-        public virtual double totalVariance(Date exerciseDate,
-                                            double strike,
-                                            Period obsLag = null,
-                                            bool extrapolate = false)
-        {
-            if (obsLag == null)
-                obsLag = new Period(-1, TimeUnit.Days);
-
-            var vol = volatility(exerciseDate, strike, obsLag, extrapolate);
-            var t = timeFromBase(exerciseDate, obsLag);
-            return vol * vol * t;
-        }
-
-        //! returns the total integrated variance for a given option
-        //! tenor and strike rate.
-        public virtual double? totalVariance(Period optionTenor,
-                                             double strike,
-                                             Period obsLag = null,
-                                             bool extrapolate = false)
-        {
-            if (obsLag == null)
-                obsLag = new Period(-1, TimeUnit.Days);
-
-            var maturityDate = optionDateFromTenor(optionTenor);
-            return totalVariance(maturityDate, strike, obsLag, extrapolate);
-        }
-
-        // Inspectors
-        /*! The term structure observes with a lag that is usually
-            different from the availability lag of the index.  An
-            inflation rate is given, by default, for the maturity
-            requested assuming this lag.
-        */
-        public virtual Period observationLag() => observationLag_;
-
-        public virtual Frequency frequency() => frequency_;
-
-        public virtual bool indexIsInterpolated() => indexIsInterpolated_;
 
         public virtual Date baseDate()
         {
@@ -156,17 +62,37 @@ namespace QLNet.Termstructures.Volatility.Inflation
             {
                 return referenceDate() - observationLag();
             }
-            else
-            {
-                return Utils.inflationPeriod(referenceDate() - observationLag(),
-                                             frequency()).Key;
-            }
+
+            return Utils.inflationPeriod(referenceDate() - observationLag(),
+                frequency()).Key;
         }
+
+        // acts as zero time value for boostrapping
+        public virtual double? baseLevel()
+        {
+            Utils.QL_REQUIRE(baseLevel_ != null, () => "Base volatility, for baseDate(), not set.");
+            return baseLevel_;
+        }
+
+        public virtual Frequency frequency() => frequency_;
+
+        public virtual bool indexIsInterpolated() => indexIsInterpolated_;
+
+        // Inspectors
+        /*! The term structure observes with a lag that is usually
+            different from the availability lag of the index.  An
+            inflation rate is given, by default, for the maturity
+            requested assuming this lag.
+        */
+        public virtual Period observationLag() => observationLag_;
+
         //! base date will be in the past because of observation lag
         public virtual double timeFromBase(Date maturityDate, Period obsLag = null)
         {
             if (obsLag == null)
+            {
                 obsLag = new Period(-1, TimeUnit.Days);
+            }
 
             var useLag = obsLag;
 
@@ -191,37 +117,57 @@ namespace QLNet.Termstructures.Volatility.Inflation
             return dayCounter().yearFraction(baseDate(), useDate);
         }
 
-        // acts as zero time value for boostrapping
-        public virtual double? baseLevel()
+        //! Returns the total integrated variance for a given exercise
+        //! date and strike rate.
+        /*! Total integrated variance is useful because it scales out
+            t for the optionlet pricing formulae.  Note that it is
+            called "total" because the surface does not know whether
+            it represents Black, Bachelier or Displaced Diffusion
+            variance.  These are virtual so alternate connections
+            between const vol and total var are possible.
+        */
+        public virtual double totalVariance(Date exerciseDate,
+            double strike,
+            Period obsLag = null,
+            bool extrapolate = false)
         {
-            Utils.QL_REQUIRE(baseLevel_ != null, () => "Base volatility, for baseDate(), not set.");
-            return baseLevel_;
+            if (obsLag == null)
+            {
+                obsLag = new Period(-1, TimeUnit.Days);
+            }
+
+            var vol = volatility(exerciseDate, strike, obsLag, extrapolate);
+            var t = timeFromBase(exerciseDate, obsLag);
+            return vol * vol * t;
         }
 
-        protected virtual void checkRange(Date d, double strike, bool extrapolate)
+        //! returns the total integrated variance for a given option
+        //! tenor and strike rate.
+        public virtual double? totalVariance(Period optionTenor,
+            double strike,
+            Period obsLag = null,
+            bool extrapolate = false)
         {
-            Utils.QL_REQUIRE(d >= baseDate(), () =>
-                             "date (" + d + ") is before base date");
-            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || d <= maxDate(), () =>
-                             "date (" + d + ") is past max curve date ("
-                             + maxDate() + ")");
-            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() ||
-                             strike >= minStrike() && strike <= maxStrike(), () =>
-                             "strike (" + strike + ") is outside the curve domain ["
-                             + minStrike() + "," + maxStrike() + "]] at date = " + d);
+            if (obsLag == null)
+            {
+                obsLag = new Period(-1, TimeUnit.Days);
+            }
+
+            var maturityDate = optionDateFromTenor(optionTenor);
+            return totalVariance(maturityDate, strike, obsLag, extrapolate);
         }
 
-        protected virtual void checkRange(double t, double strike, bool extrapolate)
+        //! returns the volatility for a given option tenor and strike rate
+        public double? volatility(Period optionTenor, double strike,
+            Period obsLag = null, bool extrapolate = false)
         {
-            Utils.QL_REQUIRE(t >= timeFromReference(baseDate()), () =>
-                             "time (" + t + ") is before base date");
-            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || t <= maxTime(), () =>
-                             "time (" + t + ") is past max curve time ("
-                             + maxTime() + ")");
-            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() ||
-                             strike >= minStrike() && strike <= maxStrike(), () =>
-                             "strike (" + strike + ") is outside the curve domain ["
-                             + minStrike() + "," + maxStrike() + "] at time = " + t);
+            if (obsLag == null)
+            {
+                obsLag = new Period(-1, TimeUnit.Days);
+            }
+
+            var maturityDate = optionDateFromTenor(optionTenor);
+            return volatility(maturityDate, strike, obsLag, extrapolate);
         }
 
         /*! Implements the actual volatility surface calculation in
@@ -230,10 +176,70 @@ namespace QLNet.Termstructures.Volatility.Inflation
         */
         protected abstract double volatilityImpl(double length, double strike);
 
-        protected double? baseLevel_;
-        // so you do not need an index
-        protected Period observationLag_;
-        protected Frequency frequency_;
-        protected bool indexIsInterpolated_;
+        protected virtual void checkRange(Date d, double strike, bool extrapolate)
+        {
+            Utils.QL_REQUIRE(d >= baseDate(), () =>
+                "date (" + d + ") is before base date");
+            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || d <= maxDate(), () =>
+                "date (" + d + ") is past max curve date ("
+                + maxDate() + ")");
+            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() ||
+                             strike >= minStrike() && strike <= maxStrike(), () =>
+                "strike (" + strike + ") is outside the curve domain ["
+                + minStrike() + "," + maxStrike() + "]] at date = " + d);
+        }
+
+        protected virtual void checkRange(double t, double strike, bool extrapolate)
+        {
+            Utils.QL_REQUIRE(t >= timeFromReference(baseDate()), () =>
+                "time (" + t + ") is before base date");
+            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || t <= maxTime(), () =>
+                "time (" + t + ") is past max curve time ("
+                + maxTime() + ")");
+            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() ||
+                             strike >= minStrike() && strike <= maxStrike(), () =>
+                "strike (" + strike + ") is outside the curve domain ["
+                + minStrike() + "," + maxStrike() + "] at time = " + t);
+        }
+
+        // Volatility
+        /*! by default, inflation is observed with the lag
+            of the term structure.
+
+            Because inflation is highly linked to dates (for
+            interpolation, periods, etc) time-based overload of the
+            methods are not provided.
+        */
+
+        //! Returns the volatility for a given maturity date and strike rate.
+        private double volatility(Date maturityDate, double strike,
+            Period obsLag = null,
+            bool extrapolate = false)
+        {
+            if (obsLag == null)
+            {
+                obsLag = new Period(-1, TimeUnit.Days);
+            }
+
+            var useLag = obsLag;
+            if (obsLag == new Period(-1, TimeUnit.Days))
+            {
+                useLag = observationLag();
+            }
+
+            if (indexIsInterpolated())
+            {
+                checkRange(maturityDate - useLag, strike, extrapolate);
+                var t = timeFromReference(maturityDate - useLag);
+                return volatilityImpl(t, strike);
+            }
+            else
+            {
+                var dd = Utils.inflationPeriod(maturityDate - useLag, frequency());
+                checkRange(dd.Key, strike, extrapolate);
+                var t = timeFromReference(dd.Key);
+                return volatilityImpl(t, strike);
+            }
+        }
     }
 }

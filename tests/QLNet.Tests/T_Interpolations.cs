@@ -77,10 +77,12 @@ namespace QLNet.Tests
                 var result = System.Math.Sqrt(integral.value(make_error_function(f).value, -1.7, 1.9));
                 result /= scaleFactor;
                 if (System.Math.Abs(result - tabulatedErrors[i]) > toleranceOnTabErr[i])
+                {
                     QAssert.Fail("Not-a-knot spline interpolation "
                                  + "\n    sample points:      " + n
                                  + "\n    norm of difference: " + result
                                  + "\n    it should be:       " + tabulatedErrors[i]);
+                }
 
                 // MC not-a-knot
                 f = new CubicInterpolation(x, x.Count, y,
@@ -91,11 +93,13 @@ namespace QLNet.Tests
                 result = System.Math.Sqrt(integral.value(make_error_function(f).value, -1.7, 1.9));
                 result /= scaleFactor;
                 if (System.Math.Abs(result - tabulatedMCErrors[i]) > toleranceOnTabMCErr[i])
+                {
                     QAssert.Fail("MC Not-a-knot spline interpolation "
                                  + "\n    sample points:      " + n
                                  + "\n    norm of difference: " + result
                                  + "\n    it should be:       "
                                  + tabulatedMCErrors[i]);
+                }
             }
         }
 
@@ -746,11 +750,13 @@ namespace QLNet.Tests
             {
                 var expected = 5.0 - x2[i];
                 if (System.Math.Abs(y2[i] - expected) > tolerance)
+                {
                     QAssert.Fail(
-                       "failed to reproduce " + (i + 1) + " expected datum"
-                       + "\n    expected:   " + expected
-                       + "\n    calculated: " + y2[i]
-                       + "\n    error:      " + System.Math.Abs(y2[i] - expected));
+                        "failed to reproduce " + (i + 1) + " expected datum"
+                        + "\n    expected:   " + expected
+                        + "\n    calculated: " + y2[i]
+                        + "\n    error:      " + System.Math.Abs(y2[i] - expected));
+                }
             }
         }
 
@@ -777,11 +783,13 @@ namespace QLNet.Tests
                 calculated = f.value(p);
                 expected = y[i];
                 if (System.Math.Abs(expected - calculated) > tolerance)
+                {
                     QAssert.Fail(
-                       "failed to reproduce " + (i + 1) + " datum"
-                       + "\n    expected:   " + expected
-                       + "\n    calculated: " + calculated
-                       + "\n    error:      " + System.Math.Abs(calculated - expected));
+                        "failed to reproduce " + (i + 1) + " datum"
+                        + "\n    expected:   " + expected
+                        + "\n    calculated: " + calculated
+                        + "\n    error:      " + System.Math.Abs(calculated - expected));
+                }
             }
 
             // at middle points
@@ -791,11 +799,13 @@ namespace QLNet.Tests
                 calculated = f.value(p);
                 expected = y[i + 1];
                 if (System.Math.Abs(expected - calculated) > tolerance)
+                {
                     QAssert.Fail(
-                       "failed to interpolate correctly at " + p
-                       + "\n    expected:   " + expected
-                       + "\n    calculated: " + calculated
-                       + "\n    error:      " + System.Math.Abs(calculated - expected));
+                        "failed to interpolate correctly at " + p
+                                                              + "\n    expected:   " + expected
+                                                              + "\n    calculated: " + calculated
+                                                              + "\n    error:      " + System.Math.Abs(calculated - expected));
+                }
             }
 
             // outside the original range
@@ -805,31 +815,37 @@ namespace QLNet.Tests
             calculated = f.value(p);
             expected = y[0];
             if (System.Math.Abs(expected - calculated) > tolerance)
+            {
                 QAssert.Fail(
-                   "failed to extrapolate correctly at " + p
-                   + "\n    expected:   " + expected
-                   + "\n    calculated: " + calculated
-                   + "\n    error:      " + System.Math.Abs(calculated - expected));
+                    "failed to extrapolate correctly at " + p
+                                                          + "\n    expected:   " + expected
+                                                          + "\n    calculated: " + calculated
+                                                          + "\n    error:      " + System.Math.Abs(calculated - expected));
+            }
 
             p = x[N - 1] + 0.5;
             calculated = f.value(p);
             expected = y[N - 1];
             if (System.Math.Abs(expected - calculated) > tolerance)
+            {
                 QAssert.Fail(
-                   "failed to extrapolate correctly at " + p
-                   + "\n    expected:   " + expected
-                   + "\n    calculated: " + calculated
-                   + "\n    error:      " + System.Math.Abs(calculated - expected));
+                    "failed to extrapolate correctly at " + p
+                                                          + "\n    expected:   " + expected
+                                                          + "\n    calculated: " + calculated
+                                                          + "\n    error:      " + System.Math.Abs(calculated - expected));
+            }
 
             // primitive at original points
             calculated = f.primitive(x[0]);
             expected = 0.0;
             if (System.Math.Abs(expected - calculated) > tolerance)
+            {
                 QAssert.Fail(
-                   "failed to calculate primitive at " + x[0]
-                   + "\n    expected:   " + expected
-                   + "\n    calculated: " + calculated
-                   + "\n    error:      " + System.Math.Abs(calculated - expected));
+                    "failed to calculate primitive at " + x[0]
+                                                        + "\n    expected:   " + expected
+                                                        + "\n    calculated: " + calculated
+                                                        + "\n    error:      " + System.Math.Abs(calculated - expected));
+            }
 
             var sum = 0.0;
             for (i = 1; i < N; i++)
@@ -838,11 +854,13 @@ namespace QLNet.Tests
                 calculated = f.primitive(x[i]);
                 expected = sum;
                 if (System.Math.Abs(expected - calculated) > tolerance)
+                {
                     QAssert.Fail(
-                       "failed to calculate primitive at " + x[i]
-                       + "\n    expected:   " + expected
-                       + "\n    calculated: " + calculated
-                       + "\n    error:      " + System.Math.Abs(calculated - expected));
+                        "failed to calculate primitive at " + x[i]
+                                                            + "\n    expected:   " + expected
+                                                            + "\n    calculated: " + calculated
+                                                            + "\n    error:      " + System.Math.Abs(calculated - expected));
+                }
             }
 
             // primitive at middle points
@@ -855,11 +873,13 @@ namespace QLNet.Tests
                 expected = sum;
                 sum += (x[i + 1] - x[i]) * y[i + 1] / 2;
                 if (System.Math.Abs(expected - calculated) > tolerance)
+                {
                     QAssert.Fail(
-                       "failed to calculate primitive at " + x[i]
-                       + "\n    expected:   " + expected
-                       + "\n    calculated: " + calculated
-                       + "\n    error:      " + System.Math.Abs(calculated - expected));
+                        "failed to calculate primitive at " + x[i]
+                                                            + "\n    expected:   " + expected
+                                                            + "\n    calculated: " + calculated
+                                                            + "\n    error:      " + System.Math.Abs(calculated - expected));
+                }
             }
 
         }
@@ -887,11 +907,13 @@ namespace QLNet.Tests
                 calculated = f.value(p);
                 expected = y[i];
                 if (System.Math.Abs(expected - calculated) > tolerance)
+                {
                     QAssert.Fail(
-                       "failed to reproduce " + (i + 1) + " datum"
-                       + "\n    expected:   " + expected
-                       + "\n    calculated: " + calculated
-                       + "\n    error:      " + System.Math.Abs(calculated - expected));
+                        "failed to reproduce " + (i + 1) + " datum"
+                        + "\n    expected:   " + expected
+                        + "\n    calculated: " + calculated
+                        + "\n    error:      " + System.Math.Abs(calculated - expected));
+                }
             }
 
             // at middle points
@@ -901,11 +923,13 @@ namespace QLNet.Tests
                 calculated = f.value(p);
                 expected = y[i];
                 if (System.Math.Abs(expected - calculated) > tolerance)
+                {
                     QAssert.Fail(
-                       "failed to interpolate correctly at " + p
-                       + "\n    expected:   " + expected
-                       + "\n    calculated: " + calculated
-                       + "\n    error:      " + System.Math.Abs(calculated - expected));
+                        "failed to interpolate correctly at " + p
+                                                              + "\n    expected:   " + expected
+                                                              + "\n    calculated: " + calculated
+                                                              + "\n    error:      " + System.Math.Abs(calculated - expected));
+                }
             }
 
             // outside the original range
@@ -915,31 +939,37 @@ namespace QLNet.Tests
             calculated = f.value(p);
             expected = y[0];
             if (System.Math.Abs(expected - calculated) > tolerance)
+            {
                 QAssert.Fail(
-                   "failed to extrapolate correctly at " + p
-                   + "\n    expected:   " + expected
-                   + "\n    calculated: " + calculated
-                   + "\n    error:      " + System.Math.Abs(calculated - expected));
+                    "failed to extrapolate correctly at " + p
+                                                          + "\n    expected:   " + expected
+                                                          + "\n    calculated: " + calculated
+                                                          + "\n    error:      " + System.Math.Abs(calculated - expected));
+            }
 
             p = x[N - 1] + 0.5;
             calculated = f.value(p);
             expected = y[N - 1];
             if (System.Math.Abs(expected - calculated) > tolerance)
+            {
                 QAssert.Fail(
-                   "failed to extrapolate correctly at " + p
-                   + "\n    expected:   " + expected
-                   + "\n    calculated: " + calculated
-                   + "\n    error:      " + System.Math.Abs(calculated - expected));
+                    "failed to extrapolate correctly at " + p
+                                                          + "\n    expected:   " + expected
+                                                          + "\n    calculated: " + calculated
+                                                          + "\n    error:      " + System.Math.Abs(calculated - expected));
+            }
 
             // primitive at original points
             calculated = f.primitive(x[0]);
             expected = 0.0;
             if (System.Math.Abs(expected - calculated) > tolerance)
+            {
                 QAssert.Fail(
-                   "failed to calculate primitive at " + x[0]
-                   + "\n    expected:   " + expected
-                   + "\n    calculated: " + calculated
-                   + "\n    error:      " + System.Math.Abs(calculated - expected));
+                    "failed to calculate primitive at " + x[0]
+                                                        + "\n    expected:   " + expected
+                                                        + "\n    calculated: " + calculated
+                                                        + "\n    error:      " + System.Math.Abs(calculated - expected));
+            }
 
             var sum = 0.0;
             for (i = 1; i < N; i++)
@@ -948,11 +978,13 @@ namespace QLNet.Tests
                 calculated = f.primitive(x[i]);
                 expected = sum;
                 if (System.Math.Abs(expected - calculated) > tolerance)
+                {
                     QAssert.Fail(
-                       "failed to calculate primitive at " + x[i]
-                       + "\n    expected:   " + expected
-                       + "\n    calculated: " + calculated
-                       + "\n    error:      " + System.Math.Abs(calculated - expected));
+                        "failed to calculate primitive at " + x[i]
+                                                            + "\n    expected:   " + expected
+                                                            + "\n    calculated: " + calculated
+                                                            + "\n    error:      " + System.Math.Abs(calculated - expected));
+                }
             }
 
             // primitive at middle points
@@ -965,11 +997,13 @@ namespace QLNet.Tests
                 expected = sum;
                 sum += (x[i + 1] - x[i]) * y[i] / 2;
                 if (System.Math.Abs(expected - calculated) > tolerance)
+                {
                     QAssert.Fail(
-                       "failed to calculate primitive at " + p
-                       + "\n    expected:   " + expected
-                       + "\n    calculated: " + calculated
-                       + "\n    error:      " + System.Math.Abs(calculated - expected));
+                        "failed to calculate primitive at " + p
+                                                            + "\n    expected:   " + expected
+                                                            + "\n    calculated: " + calculated
+                                                            + "\n    error:      " + System.Math.Abs(calculated - expected));
+                }
             }
         }
 
@@ -1021,10 +1055,12 @@ namespace QLNet.Tests
                                                             initialAlpha, initialBeta,
                                                             initialNu, initialRho);
                 if (System.Math.Abs(volatilities[i] - calculatedVol) > tolerance)
+                {
                     QAssert.Fail("failed to calculate Sabr function at strike " + strikes[i]
-                                 + "\n    expected:   " + volatilities[i]
-                                 + "\n    calculated: " + calculatedVol
-                                 + "\n    error:      " + System.Math.Abs(calculatedVol - volatilities[i]));
+                                                                                + "\n    expected:   " + volatilities[i]
+                                                                                + "\n    calculated: " + calculatedVol
+                                                                                + "\n    error:      " + System.Math.Abs(calculatedVol - volatilities[i]));
+                }
             }
 
             // Test SABR calibration against input parameters
@@ -1130,12 +1166,14 @@ namespace QLNet.Tests
                                     }
 
                                     if (failed)
+                                    {
                                         QAssert.Fail("\nSabr calibration failure:" +
                                                      "\n    isAlphaFixed:    " + isAlphaFixed[k_a] +
                                                      "\n    isBetaFixed:     " + isBetaFixed[k_b] +
                                                      "\n    isNuFixed:       " + isNuFixed[k_n] +
                                                      "\n    isRhoFixed:      " + isRhoFixed[k_r] +
                                                      "\n    vegaWeighted[i]: " + vegaWeighted[i]);
+                                    }
                                 }
                             }
                         }
@@ -1193,10 +1231,12 @@ namespace QLNet.Tests
                                                                          initialAlpha, initialBeta,
                                                                          initialNu, initialRho);
                 if (System.Math.Abs(volatilities[i] - calculatedVol) > tolerance)
+                {
                     QAssert.Fail("failed to calculate Sabr function at strike " + strikes[i]
-                                 + "\n    expected:   " + volatilities[i]
-                                 + "\n    calculated: " + calculatedVol
-                                 + "\n    error:      " + System.Math.Abs(calculatedVol - volatilities[i]));
+                                                                                + "\n    expected:   " + volatilities[i]
+                                                                                + "\n    calculated: " + calculatedVol
+                                                                                + "\n    error:      " + System.Math.Abs(calculatedVol - volatilities[i]));
+                }
             }
 
             // Test SABR calibration against input parameters
@@ -1302,12 +1342,14 @@ namespace QLNet.Tests
                                     }
 
                                     if (failed)
+                                    {
                                         QAssert.Fail("\nSabr calibration failure:" +
                                                      "\n    isAlphaFixed:    " + isAlphaFixed[k_a] +
                                                      "\n    isBetaFixed:     " + isBetaFixed[k_b] +
                                                      "\n    isNuFixed:       " + isNuFixed[k_n] +
                                                      "\n    isRhoFixed:      " + isRhoFixed[k_r] +
                                                      "\n    vegaWeighted[i]: " + vegaWeighted[i]);
+                                    }
                                 }
                             }
                         }
@@ -1585,7 +1627,9 @@ namespace QLNet.Tests
             var f = new Matrix(100, 100);
             for (var i = 0; i < 100; ++i)
                 for (var j = 0; j < 100; ++j)
+                {
                     f[i, j] = y[i] / 10 * System.Math.Sin(x[j]) + System.Math.Cos(y[i]);
+                }
 
             var tol = 0.005;
             var spline = new BicubicSpline(x, x.Count, y, y.Count, f);
@@ -1638,7 +1682,9 @@ namespace QLNet.Tests
             var f = new Matrix(N, N);
             for (var i = 0; i < N; ++i)
                 for (var j = 0; j < N; ++j)
+                {
                     f[i, j] = x[j] * (x[j] + y[i]);
+                }
 
             var spline = new BicubicSpline(x, x.Count, y, y.Count, f);
 
@@ -1650,7 +1696,9 @@ namespace QLNet.Tests
 
             var new_result = spline.value(x[2] + 0.1, y[4]);
             if (System.Math.Abs(old_result - new_result) < 0.5)
+            {
                 QAssert.Fail("Failed to update bicubic spline");
+            }
         }
 
         [Fact]
@@ -1735,7 +1783,10 @@ namespace QLNet.Tests
             List<double> x = new InitializedList<double>(points);
             var dx = (finish - start) / (points - 1);
             for (var i = 0; i < points - 1; i++)
+            {
                 x[i] = start + i * dx;
+            }
+
             x[points - 1] = finish;
             return x;
         }
@@ -1744,7 +1795,10 @@ namespace QLNet.Tests
         {
             List<double> y = new InitializedList<double>(x.Count);
             for (var i = 0; i < x.Count; i++)
+            {
                 y[i] = System.Math.Exp(-x[i] * x[i]);
+            }
+
             return y;
         }
 
@@ -1752,7 +1806,10 @@ namespace QLNet.Tests
         {
             List<double> y = new InitializedList<double>(x.Count);
             for (var i = 0; i < x.Count; i++)
+            {
                 y[i] = -x[i] * x[i];
+            }
+
             return y;
         }
 

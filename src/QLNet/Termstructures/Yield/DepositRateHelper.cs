@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Indexes;
 using QLNet.Quotes;
@@ -5,8 +6,14 @@ using QLNet.Time;
 
 namespace QLNet.Termstructures.Yield
 {
-    [JetBrains.Annotations.PublicAPI] public class DepositRateHelper : RelativeDateRateHelper
+    [PublicAPI]
+    public class DepositRateHelper : RelativeDateRateHelper
     {
+        private Date fixingDate_;
+        private IborIndex iborIndex_;
+        // need to init this because it is used before the handle has any link, i.e. setTermStructure will be used after ctor
+        private RelinkableHandle<YieldTermStructure> termStructureHandle_ = new RelinkableHandle<YieldTermStructure>();
+
         public DepositRateHelper(Handle<Quote> rate,
             Period tenor,
             int fixingDays,
@@ -41,13 +48,13 @@ namespace QLNet.Termstructures.Yield
             iborIndex_ = i.clone(termStructureHandle_);
             initializeDates();
         }
+
         public DepositRateHelper(double rate, IborIndex i)
             : base(rate)
         {
             iborIndex_ = i.clone(termStructureHandle_);
             initializeDates();
         }
-
 
         /////////////////////////////////////////
         //! RateHelper interface
@@ -76,11 +83,5 @@ namespace QLNet.Termstructures.Yield
             maturityDate_ = iborIndex_.maturityDate(earliestDate_);
             pillarDate_ = latestDate_ = latestRelevantDate_ = maturityDate_;
         }
-
-        private Date fixingDate_;
-        private IborIndex iborIndex_;
-        // need to init this because it is used before the handle has any link, i.e. setTermStructure will be used after ctor
-        private RelinkableHandle<YieldTermStructure> termStructureHandle_ = new RelinkableHandle<YieldTermStructure>();
-
     }
 }

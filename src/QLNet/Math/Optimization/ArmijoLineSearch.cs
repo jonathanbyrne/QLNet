@@ -18,7 +18,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Math;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Optimization
 {
@@ -28,20 +28,27 @@ namespace QLNet.Math.Optimization
     // volume 124 of Applied Mathematical Sciences, Springer-Verlag, NY,
     // 1997)
     //
-    [JetBrains.Annotations.PublicAPI] public class ArmijoLineSearch : LineSearch
+    [PublicAPI]
+    public class ArmijoLineSearch : LineSearch
     {
+        private double alpha_;
+        private double beta_;
+
         //! Default constructor
         public ArmijoLineSearch(double eps, double alpha) : this(eps, alpha, 0.65)
-        { }
+        {
+        }
 
         public ArmijoLineSearch(double eps) : this(eps, 0.05, 0.65)
-        { }
+        {
+        }
 
         public ArmijoLineSearch() : this(1e-8, 0.05, 0.65)
-        { }
+        {
+        }
 
         public ArmijoLineSearch(double eps, double alpha, double beta)
-           : base(eps)
+            : base(eps)
         {
             alpha_ = alpha;
             beta_ = beta;
@@ -90,13 +97,14 @@ namespace QLNet.Math.Optimization
                     P.gradient(ref gradient_, xtd_);
                     // and it squared norm
                     maxIter = endCriteria.checkMaxIterations(loopNumber, ref ecType);
-                }
-                while ((qt_ - q0 > -alpha_ * t * qpt_ || qtold - q0 <= -alpha_ * t * qpt_ / beta_) &&
-                       !maxIter);
+                } while ((qt_ - q0 > -alpha_ * t * qpt_ || qtold - q0 <= -alpha_ * t * qpt_ / beta_) &&
+                         !maxIter);
             }
 
             if (maxIter)
+            {
                 succeed_ = false;
+            }
 
             // Compute new gradient
             P.gradient(ref gradient_, xtd_);
@@ -106,8 +114,5 @@ namespace QLNet.Math.Optimization
             // Return new step value
             return t;
         }
-
-        private double alpha_;
-        private double beta_;
     }
 }

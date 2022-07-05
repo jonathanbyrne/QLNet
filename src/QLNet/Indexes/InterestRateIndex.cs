@@ -18,10 +18,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System;
 using QLNet.Currencies;
 using QLNet.Patterns;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Indexes
 {
@@ -29,12 +30,20 @@ namespace QLNet.Indexes
     /*! \todo add methods returning InterestRate */
     public abstract class InterestRateIndex : Index, IObserver
     {
+        private readonly Calendar fixingCalendar_;
+        protected Currency currency_;
+        protected DayCounter dayCounter_;
+        protected string familyName_;
+        protected int fixingDays_;
+        protected string name_;
+        protected Period tenor_;
+
         protected InterestRateIndex(string familyName,
-                                    Period tenor,
-                                    int fixingDays,
-                                    Currency currency,
-                                    Calendar fixingCalendar,
-                                    DayCounter dayCounter)
+            Period tenor,
+            int fixingDays,
+            Currency currency,
+            Calendar fixingCalendar,
+            DayCounter dayCounter)
         {
             familyName_ = familyName;
             tenor_ = tenor;
@@ -43,23 +52,33 @@ namespace QLNet.Indexes
             dayCounter_ = dayCounter;
             fixingCalendar_ = fixingCalendar;
 
-
             tenor_.normalize();
 
             var res = familyName_;
             if (tenor_ == new Period(1, TimeUnit.Days))
             {
                 if (fixingDays_ == 0)
+                {
                     res += "ON";
+                }
                 else if (fixingDays_ == 1)
+                {
                     res += "TN";
+                }
                 else if (fixingDays_ == 2)
+                {
                     res += "SN";
+                }
                 else
+                {
                     res += tenor_.ToShortString();
+                }
             }
             else
+            {
                 res += tenor_.ToShortString();
+            }
+
             res = res + " " + dayCounter_.name();
             name_ = res;
 
@@ -68,12 +87,23 @@ namespace QLNet.Indexes
             IndexManager.instance().notifier(name()).registerWith(update);
         }
 
-        // Index interface
-        public override string name() => name_;
+        // need by CashFlowVectors
+        protected InterestRateIndex()
+        {
+        }
 
-        public override Calendar fixingCalendar() => fixingCalendar_;
+        // Fixing calculations
+        //! It can be overridden to implement particular conventions
+        public abstract double forecastFixing(Date fixingDate);
 
-        public override bool isValidFixingDate(Date fixingDate) => fixingCalendar().isBusinessDay(fixingDate);
+        public abstract Date maturityDate(Date valueDate);
+
+        public Currency currency() => currency_;
+
+        public DayCounter dayCounter() => dayCounter_;
+
+        // Inspectors
+        public string familyName() => familyName_;
 
         public override double fixing(Date fixingDate, bool forecastTodaysFixing = false)
         {
@@ -83,7 +113,9 @@ namespace QLNet.Indexes
 
             if (fixingDate > today ||
                 fixingDate == today && forecastTodaysFixing)
+            {
                 return forecastFixing(fixingDate);
+            }
 
             if (fixingDate < today || Settings.enforcesTodaysHistoricFixings)
             {
@@ -99,34 +131,50 @@ namespace QLNet.Indexes
                 // might have been fixed
                 var result = pastFixing(fixingDate);
                 if (result != null)
+                {
                     return result.Value;
-
+                }
             }
             catch (Exception)
             {
-
             }
+
             return forecastFixing(fixingDate);
         }
 
-        // Observer interface
-        public void update() { notifyObservers(); }
-
-        // Inspectors
-        public string familyName() => familyName_;
-
-        public Period tenor() => tenor_;
-
-        public int fixingDays() => fixingDays_;
+        public override Calendar fixingCalendar() => fixingCalendar_;
 
         public Date fixingDate(Date valueDate)
         {
             var fixingDate = fixingCalendar().advance(valueDate, -fixingDays_, TimeUnit.Days);
             return fixingDate;
         }
-        public Currency currency() => currency_;
 
-        public DayCounter dayCounter() => dayCounter_;
+        public int fixingDays() => fixingDays_;
+
+        public override bool isValidFixingDate(Date fixingDate) => fixingCalendar().isBusinessDay(fixingDate);
+
+        // Index interface
+        public override string name() => name_;
+
+        public virtual double? pastFixing(Date fixingDate)
+        {
+            Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => fixingDate + " is not a valid fixing date");
+            if (timeSeries().ContainsKey(fixingDate))
+            {
+                return timeSeries()[fixingDate];
+            }
+
+            return null;
+        }
+
+        public Period tenor() => tenor_;
+
+        // Observer interface
+        public void update()
+        {
+            notifyObservers();
+        }
 
         // Date calculations
         // These methods can be overridden to implement particular conventions (e.g. EurLibor) */
@@ -135,33 +183,5 @@ namespace QLNet.Indexes
             Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => fixingDate + " is not a valid fixing date");
             return fixingCalendar().advance(fixingDate, fixingDays_, TimeUnit.Days);
         }
-        public abstract Date maturityDate(Date valueDate);
-
-        // Fixing calculations
-        //! It can be overridden to implement particular conventions
-        public abstract double forecastFixing(Date fixingDate);
-        public virtual double? pastFixing(Date fixingDate)
-        {
-            Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => fixingDate + " is not a valid fixing date");
-            if (timeSeries().ContainsKey(fixingDate))
-                return timeSeries()[fixingDate];
-            else
-                return null;
-        }
-
-
-        protected string familyName_;
-        protected Period tenor_;
-        protected int fixingDays_;
-        protected Currency currency_;
-        protected DayCounter dayCounter_;
-        protected string name_;
-
-        private Calendar fixingCalendar_;
-
-
-        // need by CashFlowVectors
-        protected InterestRateIndex() { }
     }
-
 }

@@ -1,21 +1,23 @@
-﻿using QLNet.Time;
+﻿using JetBrains.Annotations;
+using QLNet.Time;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class MakeCash
+    [PublicAPI]
+    public class MakeCash
     {
-        private double nominal_;
+        private Loan.Amortising amortising_;
         private Calendar calendar_;
-        private Date startDate_, endDate_;
-        private Frequency frequency_;
         private BusinessDayConvention convention_;
         private DayCounter dayCounter_;
-        private Loan.Type type_;
-        private Loan.Amortising amortising_;
-        private DateGeneration.Rule rule_;
         private bool endOfMonth_;
+        private Frequency frequency_;
+        private double nominal_;
+        private DateGeneration.Rule rule_;
+        private Date startDate_, endDate_;
+        private Loan.Type type_;
 
         public MakeCash(Date startDate, Date endDate, double nominal)
         {
@@ -33,9 +35,23 @@ namespace QLNet.Instruments
             endOfMonth_ = false;
         }
 
-        public MakeCash withType(Loan.Type type)
+        // Loan creator
+        public static implicit operator Cash(MakeCash o) => o.value();
+
+        public Cash value()
         {
-            type_ = type;
+            var principalPeriod = amortising_ == Loan.Amortising.Bullet ? new Period(Frequency.Once) : new Period(frequency_);
+
+            var principalSchedule = new Schedule(startDate_, endDate_, principalPeriod,
+                calendar_, convention_, convention_, rule_, endOfMonth_);
+
+            var c = new Cash(type_, nominal_, principalSchedule, convention_);
+            return c;
+        }
+
+        public MakeCash withAmortising(Loan.Amortising Amortising)
+        {
+            amortising_ = Amortising;
             return this;
         }
 
@@ -57,41 +73,22 @@ namespace QLNet.Instruments
             return this;
         }
 
-        public MakeCash withRule(DateGeneration.Rule r)
-        {
-            rule_ = r;
-            return this;
-        }
-
         public MakeCash withEndOfMonth(bool flag)
         {
             endOfMonth_ = flag;
             return this;
         }
 
-        public MakeCash withAmortising(Loan.Amortising Amortising)
+        public MakeCash withRule(DateGeneration.Rule r)
         {
-            amortising_ = Amortising;
+            rule_ = r;
             return this;
         }
 
-        // Loan creator
-        public static implicit operator Cash(MakeCash o) => o.value();
-
-        public Cash value()
+        public MakeCash withType(Loan.Type type)
         {
-
-            var principalPeriod = amortising_ == Loan.Amortising.Bullet ?
-                new Period(Frequency.Once) :
-                new Period(frequency_);
-
-            var principalSchedule = new Schedule(startDate_, endDate_, principalPeriod,
-                calendar_, convention_, convention_, rule_, endOfMonth_);
-
-            var c = new Cash(type_, nominal_, principalSchedule, convention_);
-            return c;
-
+            type_ = type;
+            return this;
         }
-
     }
 }

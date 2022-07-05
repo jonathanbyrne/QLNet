@@ -16,33 +16,34 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Models;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Pricingengines.CapFloor
 {
-
-    [JetBrains.Annotations.PublicAPI] public class AnalyticCapFloorEngine : GenericModelEngine<IAffineModel,
-        QLNet.Instruments.CapFloor.Arguments,
-        QLNet.Instruments.CapFloor.Results>
+    [PublicAPI]
+    public class AnalyticCapFloorEngine : GenericModelEngine<IAffineModel,
+        Instruments.CapFloor.Arguments,
+        Instrument.Results>
     {
-
         /*! \note the term structure is only needed when the short-rate
                   model cannot provide one itself.
         */
-
         private Handle<YieldTermStructure> termStructure_;
 
         public AnalyticCapFloorEngine(IAffineModel model)
-           : this(model, new Handle<YieldTermStructure>()) { }
-
+            : this(model, new Handle<YieldTermStructure>())
+        {
+        }
 
         public AnalyticCapFloorEngine(IAffineModel model,
-                                      Handle<YieldTermStructure> termStructure)
-           : base(model)
+            Handle<YieldTermStructure> termStructure)
+            : base(model)
         {
             termStructure_ = termStructure;
             termStructure_.registerWith(update);
@@ -51,7 +52,9 @@ namespace QLNet.Pricingengines.CapFloor
         public override void calculate()
         {
             if (model_ == null)
+            {
                 throw new ArgumentException("null model");
+            }
 
             var referenceDate = new Date();
             var dayCounter = new DayCounter();
@@ -76,11 +79,11 @@ namespace QLNet.Pricingengines.CapFloor
             for (var i = 0; i < nPeriods; i++)
             {
                 var fixingTime =
-                   dayCounter.yearFraction(referenceDate,
-                                           arguments_.fixingDates[i]);
+                    dayCounter.yearFraction(referenceDate,
+                        arguments_.fixingDates[i]);
                 var paymentTime =
-                   dayCounter.yearFraction(referenceDate,
-                                           arguments_.endDates[i]);
+                    dayCounter.yearFraction(referenceDate,
+                        arguments_.endDates[i]);
 #if QL_TODAYS_PAYMENTS
             if (paymentTime >= 0.0)
             {
@@ -100,6 +103,7 @@ namespace QLNet.Pricingengines.CapFloor
                                      * arguments_.gearings[i]
                                      * System.Math.Max(0.0, fixing - strike);
                         }
+
                         if (type == CapFloorType.Floor || type == CapFloorType.Collar)
                         {
                             var discount = model_.link.discount(paymentTime);
@@ -113,16 +117,17 @@ namespace QLNet.Pricingengines.CapFloor
                     else
                     {
                         var maturity =
-                           dayCounter.yearFraction(referenceDate,
-                                                   arguments_.startDates[i]);
+                            dayCounter.yearFraction(referenceDate,
+                                arguments_.startDates[i]);
                         if (type == CapFloorType.Cap || type == CapFloorType.Collar)
                         {
                             var temp = 1.0 + (double)arguments_.capRates[i] * tenor;
                             value += arguments_.nominals[i] *
                                      arguments_.gearings[i] * temp *
                                      model_.link.discountBondOption(QLNet.Option.Type.Put, 1.0 / temp,
-                                                                    maturity, paymentTime);
+                                         maturity, paymentTime);
                         }
+
                         if (type == CapFloorType.Floor || type == CapFloorType.Collar)
                         {
                             var temp = 1.0 + (double)arguments_.floorRates[i] * tenor;
@@ -130,11 +135,12 @@ namespace QLNet.Pricingengines.CapFloor
                             value += arguments_.nominals[i] *
                                      arguments_.gearings[i] * temp * mult *
                                      model_.link.discountBondOption(QLNet.Option.Type.Call, 1.0 / temp,
-                                                                    maturity, paymentTime);
+                                         maturity, paymentTime);
                         }
                     }
                 }
             }
+
             results_.value = value;
         }
     }

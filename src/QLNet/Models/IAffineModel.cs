@@ -1,12 +1,16 @@
-﻿using QLNet.Math;
+﻿using JetBrains.Annotations;
+using QLNet.Math;
 using QLNet.Patterns;
 
 namespace QLNet.Models
 {
-    [JetBrains.Annotations.PublicAPI] public interface IAffineModel : IObservable
+    [PublicAPI]
+    public interface IAffineModel : IObservable
     {
         double discount(double t);
+
         double discountBond(double now, double maturity, Vector factors);
+
         double discountBondOption(Option.Type type, double strike, double maturity, double bondMaturity);
     }
 }

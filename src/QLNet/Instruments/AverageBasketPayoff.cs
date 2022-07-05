@@ -1,9 +1,13 @@
+using JetBrains.Annotations;
 using QLNet.Math;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class AverageBasketPayoff : BasketPayoff
+    [PublicAPI]
+    public class AverageBasketPayoff : BasketPayoff
     {
+        private Vector weights_;
+
         public AverageBasketPayoff(Payoff p, Vector a) : base(p)
         {
             weights_ = a;
@@ -19,7 +23,5 @@ namespace QLNet.Instruments
             var tally = weights_ * a;
             return tally;
         }
-
-        private Vector weights_;
     }
 }

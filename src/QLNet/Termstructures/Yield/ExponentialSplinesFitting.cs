@@ -13,9 +13,10 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.Optimization;
-using System;
 
 namespace QLNet.Termstructures.Yield
 {
@@ -27,13 +28,15 @@ namespace QLNet.Termstructures.Yield
 
         \warning convergence may be slow
     */
-    [JetBrains.Annotations.PublicAPI] public class ExponentialSplinesFitting : FittedBondDiscountCurve.FittingMethod
+    [PublicAPI]
+    public class ExponentialSplinesFitting : FittedBondDiscountCurve.FittingMethod
     {
         public ExponentialSplinesFitting(bool constrainAtZero = true,
-                                         Vector weights = null,
-                                         OptimizationMethod optimizationMethod = null)
-           : base(constrainAtZero, weights, optimizationMethod)
-        { }
+            Vector weights = null,
+            OptimizationMethod optimizationMethod = null)
+            : base(constrainAtZero, weights, optimizationMethod)
+        {
+        }
 
         public override FittedBondDiscountCurve.FittingMethod clone() => MemberwiseClone() as FittedBondDiscountCurve.FittingMethod;
 
@@ -63,9 +66,11 @@ namespace QLNet.Termstructures.Yield
                     d += x[i] * System.Math.Exp(-kappa * (i + 2) * t);
                     coeff += x[i];
                 }
+
                 coeff = 1.0 - coeff;
                 d += coeff * System.Math.Exp(-kappa * t);
             }
+
             return d;
         }
     }

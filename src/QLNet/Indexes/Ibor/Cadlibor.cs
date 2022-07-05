@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Termstructures;
 using QLNet.Time;
@@ -25,28 +26,30 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.Ibor
 {
-
     /// <summary>
-    /// CAD LIBOR rate
-    /// <remarks>
-    /// Conventions are taken from a number of sources including
-    /// OpenGamma "Interest Rate Instruments and Market Conventions
-    /// Guide", BBG, IKON.
-    /// </remarks>
-    /// <remarks>
-    /// Canadian Dollar LIBOR discontinued as of 2013.
-    /// This is the rate fixed in London by BBA. Use CDOR if
-    /// you're interested in the Canadian fixing by IDA.
-    /// </remarks>
+    ///     CAD LIBOR rate
+    ///     <remarks>
+    ///         Conventions are taken from a number of sources including
+    ///         OpenGamma "Interest Rate Instruments and Market Conventions
+    ///         Guide", BBG, IKON.
+    ///     </remarks>
+    ///     <remarks>
+    ///         Canadian Dollar LIBOR discontinued as of 2013.
+    ///         This is the rate fixed in London by BBA. Use CDOR if
+    ///         you're interested in the Canadian fixing by IDA.
+    ///     </remarks>
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class CADLibor : Libor
+    [PublicAPI]
+    public class CADLibor : Libor
     {
         public CADLibor(Period tenor)
-           : base("CADLibor", tenor, 0, new CADCurrency(), new Canada(), new Actual365Fixed(), new Handle<YieldTermStructure>())
-        { }
+            : base("CADLibor", tenor, 0, new CADCurrency(), new Canada(), new Actual365Fixed(), new Handle<YieldTermStructure>())
+        {
+        }
 
         public CADLibor(Period tenor, Handle<YieldTermStructure> h)
-           : base("CADLibor", tenor, 0, new CADCurrency(), new Canada(), new Actual365Fixed(), h)
-        { }
+            : base("CADLibor", tenor, 0, new CADCurrency(), new Canada(), new Actual365Fixed(), h)
+        {
+        }
     }
 }

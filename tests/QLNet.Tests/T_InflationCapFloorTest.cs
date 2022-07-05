@@ -152,7 +152,7 @@ namespace QLNet.Tests
                    iir.frequency(), iir.interpolated(), baseYYRate,
                    new Handle<YieldTermStructure>(nominalTS), helpers);
                 pYYTS.recalculate();
-                yoyTS = pYYTS as YoYInflationTermStructure;
+                yoyTS = pYYTS;
 
 
                 // make sure that the index has the latest yoy term structure

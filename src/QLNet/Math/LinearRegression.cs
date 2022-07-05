@@ -1,12 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math
 {
-    [JetBrains.Annotations.PublicAPI] public class LinearRegression
+    [PublicAPI]
+    public class LinearRegression
     {
-        private LinearLeastSquaresRegression<List<double>> reg_;
+        private class LinearFct
+        {
+            private readonly int i_;
 
+            public LinearFct(int i)
+            {
+                i_ = i;
+            }
+
+            public double value(List<double> x) => x[i_];
+        }
+
+        private LinearLeastSquaresRegression<List<double>> reg_;
 
         //! one dimensional linear regression
         public LinearRegression(List<double> x, List<double> y)
@@ -26,16 +39,16 @@ namespace QLNet.Math
 
         public Vector standardErrors() => reg_.standardErrors();
 
-        class LinearFct
+        private List<List<double>> argumentWrapper(List<double> x)
         {
-            private int i_;
+            var retVal = new List<List<double>>();
 
-            public LinearFct(int i)
+            foreach (var v in x)
             {
-                i_ = i;
+                retVal.Add(new List<double> { v });
             }
 
-            public double value(List<double> x) => x[i_];
+            return retVal;
         }
 
         private List<Func<List<double>, double>> linearFcts(int dims)
@@ -47,16 +60,6 @@ namespace QLNet.Math
             {
                 retVal.Add(new LinearFct(i).value);
             }
-
-            return retVal;
-        }
-
-        private List<List<double>> argumentWrapper(List<double> x)
-        {
-            var retVal = new List<List<double>>();
-
-            foreach (var v in x)
-                retVal.Add(new List<double>() { v });
 
             return retVal;
         }

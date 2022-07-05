@@ -17,24 +17,31 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences.Operators;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Methods.Finitedifferences.Schemes
 {
     /// <summary>
-    /// Douglas operator splitting
+    ///     Douglas operator splitting
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class DouglasScheme : IMixedScheme, ISchemeFactory
+    [PublicAPI]
+    public class DouglasScheme : IMixedScheme, ISchemeFactory
     {
+        protected BoundaryConditionSchemeHelper bcSet_;
+        protected double? dt_;
+        protected FdmLinearOpComposite map_;
+        protected double theta_;
+
         public DouglasScheme()
-        { }
+        {
+        }
 
         public DouglasScheme(double theta,
-                             FdmLinearOpComposite map,
-                             List<BoundaryCondition<FdmLinearOp>> bcSet = null)
+            FdmLinearOpComposite map,
+            List<BoundaryCondition<FdmLinearOp>> bcSet = null)
         {
             dt_ = null;
             theta_ = theta;
@@ -48,10 +55,12 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         {
             var theta = additionalInputs[0] as double?;
             return new DouglasScheme(theta.Value,
-                                     L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
+                L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
         }
 
         #endregion
+
+        protected Vector apply(Vector r) => r - dt_.Value * map_.apply(r);
 
         #region IMixedScheme interface
 
@@ -70,6 +79,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
                 var rhs = y - theta_ * dt_.Value * map_.apply_direction(i, a as Vector);
                 y = map_.solve_splitting(i, rhs, -theta_ * dt_.Value);
             }
+
             bcSet_.applyAfterSolving(y);
 
             a = y;
@@ -81,12 +91,5 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         }
 
         #endregion
-
-        protected Vector apply(Vector r) => r - dt_.Value * map_.apply(r);
-
-        protected double? dt_;
-        protected double theta_;
-        protected FdmLinearOpComposite map_;
-        protected BoundaryConditionSchemeHelper bcSet_;
     }
 }

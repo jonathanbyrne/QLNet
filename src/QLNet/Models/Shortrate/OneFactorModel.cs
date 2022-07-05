@@ -18,6 +18,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.Solvers1d;
 using QLNet.Methods.lattices;
@@ -29,48 +30,75 @@ namespace QLNet.Models.Shortrate
 
     public abstract class OneFactorModel : ShortRateModel
     {
-        protected OneFactorModel(int nArguments) : base(nArguments)
-        { }
-
         //! Base class describing the short-rate dynamics
         public abstract class ShortRateDynamics
         {
-            private StochasticProcess1D process_;
-            //! Returns the risk-neutral dynamics of the state variable
-            public StochasticProcess1D process() => process_;
+            private readonly StochasticProcess1D process_;
 
             protected ShortRateDynamics(StochasticProcess1D process)
             {
                 process_ = process;
             }
 
+            //! Compute short rate from state variable
+            public abstract double shortRate(double t, double variable);
+
             //! Compute state variable from short rate
             public abstract double variable(double t, double r);
 
-            //! Compute short rate from state variable
-            public abstract double shortRate(double t, double variable);
-        }
-
-        //! returns the short-rate dynamics
-        public abstract ShortRateDynamics dynamics();
-
-        //! Return by default a trinomial recombining tree
-        public override Lattice tree(TimeGrid grid)
-        {
-            var trinomial = new TrinomialTree(dynamics().process(), grid);
-            return new ShortRateTree(trinomial, dynamics(), grid);
+            //! Returns the risk-neutral dynamics of the state variable
+            public StochasticProcess1D process() => process_;
         }
 
         //! Recombining trinomial tree discretizing the state variable
-        [JetBrains.Annotations.PublicAPI] public class ShortRateTree : TreeLattice1D<ShortRateTree>, IGenericLattice
+        [PublicAPI]
+        public class ShortRateTree : TreeLattice1D<ShortRateTree>, IGenericLattice
         {
-            protected override ShortRateTree impl() => this;
+            [PublicAPI]
+            public class Helper : ISolver1d
+            {
+                private double discountBondPrice_;
+                private int i_;
+                private int size_;
+                private Vector statePrices_;
+                private TermStructureFittingParameter.NumericalImpl theta_;
+                private ShortRateTree tree_;
+
+                public Helper(int i,
+                    double discountBondPrice,
+                    TermStructureFittingParameter.NumericalImpl theta,
+                    ShortRateTree tree)
+                {
+                    size_ = tree.size(i);
+                    i_ = i;
+                    statePrices_ = tree.statePrices(i);
+                    discountBondPrice_ = discountBondPrice;
+                    theta_ = theta;
+                    tree_ = tree;
+                    theta_.setvalue(tree.timeGrid()[i], 0.0);
+                }
+
+                public override double value(double theta)
+                {
+                    var value = discountBondPrice_;
+                    theta_.change(theta);
+                    for (var j = 0; j < size_; j++)
+                    {
+                        value -= statePrices_[j] * tree_.discount(i_, j);
+                    }
+
+                    return value;
+                }
+            }
+
+            private ShortRateDynamics dynamics_;
+            private TrinomialTree tree_;
 
             //! Plain tree build-up from short-rate dynamics
             public ShortRateTree(TrinomialTree tree,
-                                 ShortRateDynamics dynamics,
-                                 TimeGrid timeGrid)
-               : base(timeGrid, tree.size(1))
+                ShortRateDynamics dynamics,
+                TimeGrid timeGrid)
+                : base(timeGrid, tree.size(1))
             {
                 tree_ = tree;
                 dynamics_ = dynamics;
@@ -78,8 +106,8 @@ namespace QLNet.Models.Shortrate
 
             //! Tree build-up + numerical fitting to term-structure
             public ShortRateTree(TrinomialTree tree, ShortRateDynamics dynamics, TermStructureFittingParameter.NumericalImpl theta,
-                                 TimeGrid timeGrid)
-               : base(timeGrid, tree.size(1))
+                TimeGrid timeGrid)
+                : base(timeGrid, tree.size(1))
             {
                 tree_ = tree;
                 dynamics_ = dynamics;
@@ -98,7 +126,7 @@ namespace QLNet.Models.Shortrate
                 }
             }
 
-            public int size(int i) => tree_.size(i);
+            public int descendant(int i, int index, int branch) => tree_.descendant(i, index, branch);
 
             public double discount(int i, int index)
             {
@@ -107,47 +135,27 @@ namespace QLNet.Models.Shortrate
                 return System.Math.Exp(-r * timeGrid().dt(i));
             }
 
-            public override double underlying(int i, int index) => tree_.underlying(i, index);
-
-            public int descendant(int i, int index, int branch) => tree_.descendant(i, index, branch);
-
             public double probability(int i, int index, int branch) => tree_.probability(i, index, branch);
 
-            private TrinomialTree tree_;
-            private ShortRateDynamics dynamics_;
+            public int size(int i) => tree_.size(i);
 
-            [JetBrains.Annotations.PublicAPI] public class Helper : ISolver1d
-            {
-                private int size_;
-                private int i_;
-                private Vector statePrices_;
-                private double discountBondPrice_;
-                private TermStructureFittingParameter.NumericalImpl theta_;
-                private ShortRateTree tree_;
+            public override double underlying(int i, int index) => tree_.underlying(i, index);
 
-                public Helper(int i,
-                              double discountBondPrice,
-                              TermStructureFittingParameter.NumericalImpl theta,
-                              ShortRateTree tree)
-                {
-                    size_ = tree.size(i);
-                    i_ = i;
-                    statePrices_ = tree.statePrices(i);
-                    discountBondPrice_ = discountBondPrice;
-                    theta_ = theta;
-                    tree_ = tree;
-                    theta_.setvalue(tree.timeGrid()[i], 0.0);
-                }
+            protected override ShortRateTree impl() => this;
+        }
 
-                public override double value(double theta)
-                {
-                    var value = discountBondPrice_;
-                    theta_.change(theta);
-                    for (var j = 0; j < size_; j++)
-                        value -= statePrices_[j] * tree_.discount(i_, j);
-                    return value;
-                }
-            }
+        protected OneFactorModel(int nArguments) : base(nArguments)
+        {
+        }
+
+        //! returns the short-rate dynamics
+        public abstract ShortRateDynamics dynamics();
+
+        //! Return by default a trinomial recombining tree
+        public override Lattice tree(TimeGrid grid)
+        {
+            var trinomial = new TrinomialTree(dynamics().process(), grid);
+            return new ShortRateTree(trinomial, dynamics(), grid);
         }
     }
 }

@@ -16,8 +16,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using System;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
@@ -29,9 +30,9 @@ namespace QLNet.Math.Interpolations
        The kernel in the implementation is kept general, although a Gaussian
        is considered in the cited text.
     */
-    [JetBrains.Annotations.PublicAPI] public class KernelInterpolation : Interpolation
+    [PublicAPI]
+    public class KernelInterpolation : Interpolation
     {
-
         /*! \pre the \f$ x \f$ values must be sorted.
            \pre kernel needs a Real operator()(Real x) implementation
         */
@@ -41,6 +42,4 @@ namespace QLNet.Math.Interpolations
             impl_.update();
         }
     }
-
-
 }

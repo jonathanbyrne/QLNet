@@ -15,49 +15,39 @@
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
-
-    [JetBrains.Annotations.PublicAPI] public class FlatExtrapolator2D : Interpolation2D
+    [PublicAPI]
+    public class FlatExtrapolator2D : Interpolation2D
     {
-        public FlatExtrapolator2D(Interpolation2D decoratedInterpolation)
-        {
-            impl_ = new FlatExtrapolator2DImpl(decoratedInterpolation);
-        }
-
         protected class FlatExtrapolator2DImpl : Impl
         {
+            private readonly Interpolation2D decoratedInterp_;
+
             public FlatExtrapolator2DImpl(Interpolation2D decoratedInterpolation)
             {
                 decoratedInterp_ = decoratedInterpolation;
                 calculate();
             }
-            public double xMin() => decoratedInterp_.xMin();
 
-            public double xMax() => decoratedInterp_.xMax();
-
-            public List<double> xValues() => decoratedInterp_.xValues();
-
-            public int locateX(double x) => decoratedInterp_.locateX(x);
-
-            public double yMin() => decoratedInterp_.yMin();
-
-            public double yMax() => decoratedInterp_.yMax();
-
-            public List<double> yValues() => decoratedInterp_.yValues();
-
-            public int locateY(double y) => decoratedInterp_.locateY(y);
-
-            public Matrix zData() => decoratedInterp_.zData();
-
-            public bool isInRange(double x, double y) => decoratedInterp_.isInRange(x, y);
-
-            public void update() { decoratedInterp_.update(); }
             public void calculate()
             {
                 // Nothing to do here
             }
+
+            public bool isInRange(double x, double y) => decoratedInterp_.isInRange(x, y);
+
+            public int locateX(double x) => decoratedInterp_.locateX(x);
+
+            public int locateY(double y) => decoratedInterp_.locateY(y);
+
+            public void update()
+            {
+                decoratedInterp_.update();
+            }
+
             public double value(double x, double y)
             {
                 x = bindX(x);
@@ -65,24 +55,54 @@ namespace QLNet.Math.Interpolations
                 return decoratedInterp_.value(x, y);
             }
 
-            private Interpolation2D decoratedInterp_;
+            public double xMax() => decoratedInterp_.xMax();
+
+            public double xMin() => decoratedInterp_.xMin();
+
+            public List<double> xValues() => decoratedInterp_.xValues();
+
+            public double yMax() => decoratedInterp_.yMax();
+
+            public double yMin() => decoratedInterp_.yMin();
+
+            public List<double> yValues() => decoratedInterp_.yValues();
+
+            public Matrix zData() => decoratedInterp_.zData();
 
             private double bindX(double x)
             {
                 if (x < xMin())
+                {
                     return xMin();
+                }
+
                 if (x > xMax())
+                {
                     return xMax();
+                }
+
                 return x;
             }
+
             private double bindY(double y)
             {
                 if (y < yMin())
+                {
                     return yMin();
+                }
+
                 if (y > yMax())
+                {
                     return yMax();
+                }
+
                 return y;
             }
+        }
+
+        public FlatExtrapolator2D(Interpolation2D decoratedInterpolation)
+        {
+            impl_ = new FlatExtrapolator2DImpl(decoratedInterpolation);
         }
     }
 }

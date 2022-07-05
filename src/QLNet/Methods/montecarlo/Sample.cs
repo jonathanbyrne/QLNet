@@ -17,20 +17,24 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Methods.montecarlo
 {
     //! weighted sample
     /*! \ingroup mcarlo */
     // todo check for Sample for value types and Sample for object types to take care of proper object copying
-    [JetBrains.Annotations.PublicAPI] public class Sample<T>
+    [PublicAPI]
+    public class Sample<T>
     {
-        public T value { get; set; }
-        public double weight { get; set; }
-
         public Sample(T value_, double weight_)
         {
             value = value_;
             weight = weight_;
         }
+
+        public T value { get; set; }
+
+        public double weight { get; set; }
     }
 }

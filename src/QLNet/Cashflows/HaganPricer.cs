@@ -8,7 +8,37 @@ namespace QLNet.Cashflows
 {
     public abstract class HaganPricer : CmsCouponPricer
     {
-        public override double swapletRate() => swapletPrice() / (coupon_.accrualPeriod() * discount_);
+        protected double annuity_;
+        protected CmsCoupon coupon_;
+        protected double cutoffForCaplet_;
+        protected double cutoffForFloorlet_;
+        protected double discount_;
+        protected Date fixingDate_;
+        protected double gearing_;
+        protected GFunction gFunction_;
+        protected Handle<Quote> meanReversion_;
+        protected GFunctionFactory.YieldCurveModel modelOfYieldCurve_;
+        protected Date paymentDate_;
+        protected YieldTermStructure rateCurve_;
+        protected double spread_;
+        protected double spreadLegValue_;
+        protected double swapRateValue_;
+        protected Period swapTenor_;
+        protected VanillaOptionPricer vanillaOptionPricer_;
+
+        protected HaganPricer(Handle<SwaptionVolatilityStructure> swaptionVol, GFunctionFactory.YieldCurveModel modelOfYieldCurve, Handle<Quote> meanReversion)
+            : base(swaptionVol)
+        {
+            modelOfYieldCurve_ = modelOfYieldCurve;
+            cutoffForCaplet_ = 2;
+            cutoffForFloorlet_ = 0;
+            meanReversion_ = meanReversion;
+
+            if (meanReversion_.link != null)
+            {
+                meanReversion_.registerWith(update);
+            }
+        }
 
         public override double capletPrice(double effectiveCap)
         {
@@ -21,17 +51,16 @@ namespace QLNet.Cashflows
                 var price = gearing_ * Rs * (coupon_.accrualPeriod() * discount_);
                 return price;
             }
-            else
+
+            var cutoffNearZero = 1e-10;
+            double capletPrice = 0;
+            if (effectiveCap < cutoffForCaplet_)
             {
-                var cutoffNearZero = 1e-10;
-                double capletPrice = 0;
-                if (effectiveCap < cutoffForCaplet_)
-                {
-                    var effectiveStrikeForMax = System.Math.Max(effectiveCap, cutoffNearZero);
-                    capletPrice = optionletPrice(QLNet.Option.Type.Call, effectiveStrikeForMax);
-                }
-                return gearing_ * capletPrice;
+                var effectiveStrikeForMax = System.Math.Max(effectiveCap, cutoffNearZero);
+                capletPrice = optionletPrice(Option.Type.Call, effectiveStrikeForMax);
             }
+
+            return gearing_ * capletPrice;
         }
 
         public override double capletRate(double effectiveCap) => capletPrice(effectiveCap) / (coupon_.accrualPeriod() * discount_);
@@ -47,46 +76,19 @@ namespace QLNet.Cashflows
                 var price = gearing_ * Rs * (coupon_.accrualPeriod() * discount_);
                 return price;
             }
-            else
+
+            var cutoffNearZero = 1e-10;
+            double floorletPrice = 0;
+            if (effectiveFloor > cutoffForFloorlet_)
             {
-                var cutoffNearZero = 1e-10;
-                double floorletPrice = 0;
-                if (effectiveFloor > cutoffForFloorlet_)
-                {
-                    var effectiveStrikeForMin = System.Math.Max(effectiveFloor, cutoffNearZero);
-                    floorletPrice = optionletPrice(QLNet.Option.Type.Put, effectiveStrikeForMin);
-                }
-                return gearing_ * floorletPrice;
+                var effectiveStrikeForMin = System.Math.Max(effectiveFloor, cutoffNearZero);
+                floorletPrice = optionletPrice(Option.Type.Put, effectiveStrikeForMin);
             }
+
+            return gearing_ * floorletPrice;
         }
+
         public override double floorletRate(double effectiveFloor) => floorletPrice(effectiveFloor) / (coupon_.accrualPeriod() * discount_);
-
-        //
-        public double meanReversion() => meanReversion_.link.value();
-
-        public void setMeanReversion(Handle<Quote> meanReversion)
-        {
-            if (meanReversion_ != null)
-                meanReversion_.unregisterWith(update);
-            meanReversion_ = meanReversion;
-            if (meanReversion_ != null)
-                meanReversion_.registerWith(update);
-            update();
-        }
-
-        protected HaganPricer(Handle<SwaptionVolatilityStructure> swaptionVol, GFunctionFactory.YieldCurveModel modelOfYieldCurve, Handle<Quote> meanReversion)
-            : base(swaptionVol)
-        {
-            modelOfYieldCurve_ = modelOfYieldCurve;
-            cutoffForCaplet_ = 2;
-            cutoffForFloorlet_ = 0;
-            meanReversion_ = meanReversion;
-
-            if (meanReversion_.link != null)
-                meanReversion_.registerWith(update);
-        }
-
-        protected virtual double optionletPrice(Option.Type optionType, double strike) => throw new NotImplementedException();
 
         public override void initialize(FloatingRateCoupon coupon)
         {
@@ -103,9 +105,13 @@ namespace QLNet.Cashflows
             var today = Settings.evaluationDate();
 
             if (paymentDate_ > today)
+            {
                 discount_ = rateCurve_.discount(paymentDate_);
+            }
             else
+            {
                 discount_ = 1.0;
+            }
 
             spreadLegValue_ = spread_ * coupon_.accrualPeriod() * discount_;
 
@@ -147,26 +153,32 @@ namespace QLNet.Cashflows
                         Utils.QL_FAIL("unknown/illegal gFunction ExerciseType");
                         break;
                 }
+
                 vanillaOptionPricer_ = new BlackVanillaOptionPricer(swapRateValue_, fixingDate_, swapTenor_, swaptionVolatility().link);
             }
         }
 
-        protected YieldTermStructure rateCurve_;
-        protected GFunctionFactory.YieldCurveModel modelOfYieldCurve_;
-        protected GFunction gFunction_;
-        protected CmsCoupon coupon_;
-        protected Date paymentDate_;
-        protected Date fixingDate_;
-        protected double swapRateValue_;
-        protected double discount_;
-        protected double annuity_;
-        protected double gearing_;
-        protected double spread_;
-        protected double spreadLegValue_;
-        protected double cutoffForCaplet_;
-        protected double cutoffForFloorlet_;
-        protected Handle<Quote> meanReversion_;
-        protected Period swapTenor_;
-        protected VanillaOptionPricer vanillaOptionPricer_;
+        //
+        public double meanReversion() => meanReversion_.link.value();
+
+        public void setMeanReversion(Handle<Quote> meanReversion)
+        {
+            if (meanReversion_ != null)
+            {
+                meanReversion_.unregisterWith(update);
+            }
+
+            meanReversion_ = meanReversion;
+            if (meanReversion_ != null)
+            {
+                meanReversion_.registerWith(update);
+            }
+
+            update();
+        }
+
+        public override double swapletRate() => swapletPrice() / (coupon_.accrualPeriod() * discount_);
+
+        protected virtual double optionletPrice(Option.Type optionType, double strike) => throw new NotImplementedException();
     }
 }

@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class BulletPricipalLeg : PrincipalLegBase
+    [PublicAPI]
+    public class BulletPricipalLeg : PrincipalLegBase
     {
         // constructor
         public BulletPricipalLeg(Schedule schedule)

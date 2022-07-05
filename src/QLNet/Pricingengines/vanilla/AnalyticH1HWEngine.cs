@@ -13,11 +13,12 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using System.Numerics;
+using JetBrains.Annotations;
 using QLNet.Math.Distributions;
 using QLNet.Models.Equity;
 using QLNet.Models.Shortrate.Onefactormodels;
-using System;
-using System.Numerics;
 
 namespace QLNet.Pricingengines.vanilla
 {
@@ -41,31 +42,24 @@ namespace QLNet.Pricingengines.vanilla
               the Black-Scholes-Merton Hull-White engine and
               the finite difference Heston-Hull-White engine
     */
-    [JetBrains.Annotations.PublicAPI] public class AnalyticH1HWEngine : AnalyticHestonHullWhiteEngine
+    [PublicAPI]
+    public class AnalyticH1HWEngine : AnalyticHestonHullWhiteEngine
     {
-        public AnalyticH1HWEngine(HestonModel model, HullWhite hullWhiteModel, double rhoSr, int integrationOrder = 144)
-           : base(model, hullWhiteModel, integrationOrder)
-        {
-            rhoSr_ = rhoSr;
-            Utils.QL_REQUIRE(rhoSr_ >= 0.0, () => "Fourier integration is not stable if " +
-                             "the equity interest rate correlation is negative");
-        }
-
-        public AnalyticH1HWEngine(HestonModel model, HullWhite hullWhiteModel, double rhoSr, double relTolerance,
-                                  int maxEvaluations)
-           : base(model, hullWhiteModel, relTolerance, maxEvaluations)
-        {
-            rhoSr_ = rhoSr;
-        }
-
-        protected override Complex addOnTerm(double u, double t, int j) =>
-            base.addOnTerm(u, t, j)
-            + new Fj_Helper(model_, hullWhiteModel_, rhoSr_, t, 0.0, j).value(u);
-
         private class Fj_Helper
         {
+            private readonly double d_;
+            private readonly int j_;
+            private readonly double lambda_;
+            private readonly double eta_;
+            private readonly double rhoSr_;
+            private readonly double term_;
+            private readonly double v0_;
+            private readonly double kappa_;
+            private readonly double theta_;
+            private readonly double gamma_;
+
             public Fj_Helper(Handle<HestonModel> hestonModel, HullWhite hullWhiteModel, double rhoSr, double term,
-                             double strike, int j)
+                double strike, int j)
             {
                 j_ = j;
                 lambda_ = hullWhiteModel.a();
@@ -94,7 +88,7 @@ namespace QLNet.Pricingengines.vanilla
                 {
                     a = System.Math.Sqrt(gamma2 / (2.0 * kappa_))
                         * System.Math.Exp(GammaFunction.logValue(0.5 * (d_ + 1.0))
-                                   - GammaFunction.logValue(0.5 * d_));
+                                          - GammaFunction.logValue(0.5 * d_));
 
                     var t1 = 0.0;
                     var t2 = 1.0 / kappa_;
@@ -107,16 +101,15 @@ namespace QLNet.Pricingengines.vanilla
                 }
 
                 var I4 =
-                   -1.0 / lambda_ * new Complex(u * u, j_ == 1u ? -u : u)
-                   * (b / c * (1.0 - System.Math.Exp(-c * term_))
-                     + a * term_
-                     + a / lambda_ * (System.Math.Exp(-lambda_ * term_) - 1.0)
-                     + b / (c - lambda_) * System.Math.Exp(-c * term_)
-                     * (1.0 - System.Math.Exp(-term_ * (lambda_ - c))));
+                    -1.0 / lambda_ * new Complex(u * u, j_ == 1u ? -u : u)
+                                   * (b / c * (1.0 - System.Math.Exp(-c * term_))
+                                      + a * term_
+                                      + a / lambda_ * (System.Math.Exp(-lambda_ * term_) - 1.0)
+                                      + b / (c - lambda_) * System.Math.Exp(-c * term_)
+                                                          * (1.0 - System.Math.Exp(-term_ * (lambda_ - c))));
 
                 return eta_ * rhoSr_ * I4;
             }
-
 
             private double c(double t) => gamma_ * gamma_ / (4 * kappa_) * (1.0 - System.Math.Exp(-kappa_ * t));
 
@@ -134,10 +127,9 @@ namespace QLNet.Pricingengines.vanilla
                 {
                     double k = i;
                     s = System.Math.Exp(k * System.Math.Log(0.5 * lambdaT) + GammaFunction.logValue(0.5 * (1 + d_) + k)
-                                 - GammaFunction.logValue(k + 1) - GammaFunction.logValue(0.5 * d_ + k));
+                                        - GammaFunction.logValue(k + 1) - GammaFunction.logValue(0.5 * d_ + k));
                     retVal += s;
-                }
-                while (s > double.Epsilon && ++i < maxIter);
+                } while (s > double.Epsilon && ++i < maxIter);
 
                 Utils.QL_REQUIRE(i < maxIter, () => "can not calculate Lambda");
 
@@ -146,15 +138,27 @@ namespace QLNet.Pricingengines.vanilla
             }
 
             private double LambdaApprox(double t) => System.Math.Sqrt(c(t) * (lambda(t) - 1.0) + c(t) * d_ * (1.0 + 1.0 / (2.0 * (d_ + lambda(t)))));
-
-            private int j_;
-            private double lambda_, eta_;
-            private double v0_, kappa_, theta_, gamma_;
-            private double d_;
-            private double rhoSr_;
-            private double term_;
         }
 
         private double rhoSr_;
+
+        public AnalyticH1HWEngine(HestonModel model, HullWhite hullWhiteModel, double rhoSr, int integrationOrder = 144)
+            : base(model, hullWhiteModel, integrationOrder)
+        {
+            rhoSr_ = rhoSr;
+            Utils.QL_REQUIRE(rhoSr_ >= 0.0, () => "Fourier integration is not stable if " +
+                                                  "the equity interest rate correlation is negative");
+        }
+
+        public AnalyticH1HWEngine(HestonModel model, HullWhite hullWhiteModel, double rhoSr, double relTolerance,
+            int maxEvaluations)
+            : base(model, hullWhiteModel, relTolerance, maxEvaluations)
+        {
+            rhoSr_ = rhoSr;
+        }
+
+        protected override Complex addOnTerm(double u, double t, int j) =>
+            base.addOnTerm(u, t, j)
+            + new Fj_Helper(model_, hullWhiteModel_, rhoSr_, t, 0.0, j).value(u);
     }
 }

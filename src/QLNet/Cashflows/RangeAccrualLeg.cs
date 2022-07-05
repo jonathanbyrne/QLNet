@@ -1,13 +1,27 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Indexes;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class RangeAccrualLeg
+    [PublicAPI]
+    public class RangeAccrualLeg
     {
+        private List<int> fixingDays_;
+        private List<double> gearings_;
+        private IborIndex index_;
+        private List<double> lowerTriggers_, upperTriggers_;
+        private List<double> notionals_;
+        private BusinessDayConvention observationConvention_;
+        private Period observationTenor_;
+        private BusinessDayConvention paymentAdjustment_;
+        private DayCounter paymentDayCounter_;
+        private Schedule schedule_;
+        private List<double> spreads_;
+
         public RangeAccrualLeg(Schedule schedule, IborIndex index)
         {
             schedule_ = schedule;
@@ -15,86 +29,7 @@ namespace QLNet.Cashflows
             paymentAdjustment_ = BusinessDayConvention.Following;
             observationConvention_ = BusinessDayConvention.ModifiedFollowing;
         }
-        public RangeAccrualLeg withNotionals(double notional)
-        {
-            notionals_ = new InitializedList<double>(1, notional);
-            return this;
-        }
-        public RangeAccrualLeg withNotionals(List<double> notionals)
-        {
-            notionals_ = notionals;
-            return this;
-        }
-        public RangeAccrualLeg withPaymentDayCounter(DayCounter dayCounter)
-        {
-            paymentDayCounter_ = dayCounter;
-            return this;
-        }
-        public RangeAccrualLeg withPaymentAdjustment(BusinessDayConvention convention)
-        {
-            paymentAdjustment_ = convention;
-            return this;
-        }
-        public RangeAccrualLeg withFixingDays(int fixingDays)
-        {
-            fixingDays_ = new InitializedList<int>(1, fixingDays);
-            return this;
-        }
-        public RangeAccrualLeg withFixingDays(List<int> fixingDays)
-        {
-            fixingDays_ = fixingDays;
-            return this;
-        }
-        public RangeAccrualLeg withGearings(double gearing)
-        {
-            gearings_ = new InitializedList<double>(1, gearing);
-            return this;
-        }
-        public RangeAccrualLeg withGearings(List<double> gearings)
-        {
-            gearings_ = gearings;
-            return this;
-        }
-        public RangeAccrualLeg withSpreads(double spread)
-        {
-            spreads_ = new InitializedList<double>(1, spread);
-            return this;
-        }
-        public RangeAccrualLeg withSpreads(List<double> spreads)
-        {
-            spreads_ = spreads;
-            return this;
-        }
-        public RangeAccrualLeg withLowerTriggers(double trigger)
-        {
-            lowerTriggers_ = new InitializedList<double>(1, trigger);
-            return this;
-        }
-        public RangeAccrualLeg withLowerTriggers(List<double> triggers)
-        {
-            lowerTriggers_ = triggers;
-            return this;
-        }
-        public RangeAccrualLeg withUpperTriggers(double trigger)
-        {
-            upperTriggers_ = new InitializedList<double>(1, trigger);
-            return this;
-        }
-        public RangeAccrualLeg withUpperTriggers(List<double> triggers)
-        {
-            upperTriggers_ = triggers;
-            return this;
-        }
-        public RangeAccrualLeg withObservationTenor(Period tenor)
-        {
-            observationTenor_ = tenor;
-            return this;
-        }
-        public RangeAccrualLeg withObservationConvention(BusinessDayConvention convention)
-        {
-            observationConvention_ = convention;
-            return this;
-        }
+
         public List<CashFlow> Leg()
         {
             Utils.QL_REQUIRE(!notionals_.empty(), () => "no notional given");
@@ -115,7 +50,6 @@ namespace QLNet.Cashflows
 
             var leg = new List<CashFlow>();
 
-
             // the following is not always correct
             var calendar = schedule_.calendar();
 
@@ -133,11 +67,13 @@ namespace QLNet.Cashflows
                     var bdc = schedule_.businessDayConvention();
                     refStart = calendar.adjust(end - schedule_.tenor(), bdc);
                 }
+
                 if (i == n - 1 && !schedule_.isRegular(i + 1))
                 {
                     var bdc = schedule_.businessDayConvention();
                     refEnd = calendar.adjust(start + schedule_.tenor(), bdc);
                 }
+
                 if (gearings_.Get(i, 1.0).IsEqual(0.0))
                 {
                     // fixed coupon
@@ -170,21 +106,104 @@ namespace QLNet.Cashflows
                         upperTriggers_.Get(i)));
                 }
             }
-            return leg;
 
+            return leg;
         }
 
+        public RangeAccrualLeg withFixingDays(int fixingDays)
+        {
+            fixingDays_ = new InitializedList<int>(1, fixingDays);
+            return this;
+        }
 
-        private Schedule schedule_;
-        private IborIndex index_;
-        private List<double> notionals_;
-        private DayCounter paymentDayCounter_;
-        private BusinessDayConvention paymentAdjustment_;
-        private List<int> fixingDays_;
-        private List<double> gearings_;
-        private List<double> spreads_;
-        private List<double> lowerTriggers_, upperTriggers_;
-        private Period observationTenor_;
-        private BusinessDayConvention observationConvention_;
+        public RangeAccrualLeg withFixingDays(List<int> fixingDays)
+        {
+            fixingDays_ = fixingDays;
+            return this;
+        }
+
+        public RangeAccrualLeg withGearings(double gearing)
+        {
+            gearings_ = new InitializedList<double>(1, gearing);
+            return this;
+        }
+
+        public RangeAccrualLeg withGearings(List<double> gearings)
+        {
+            gearings_ = gearings;
+            return this;
+        }
+
+        public RangeAccrualLeg withLowerTriggers(double trigger)
+        {
+            lowerTriggers_ = new InitializedList<double>(1, trigger);
+            return this;
+        }
+
+        public RangeAccrualLeg withLowerTriggers(List<double> triggers)
+        {
+            lowerTriggers_ = triggers;
+            return this;
+        }
+
+        public RangeAccrualLeg withNotionals(double notional)
+        {
+            notionals_ = new InitializedList<double>(1, notional);
+            return this;
+        }
+
+        public RangeAccrualLeg withNotionals(List<double> notionals)
+        {
+            notionals_ = notionals;
+            return this;
+        }
+
+        public RangeAccrualLeg withObservationConvention(BusinessDayConvention convention)
+        {
+            observationConvention_ = convention;
+            return this;
+        }
+
+        public RangeAccrualLeg withObservationTenor(Period tenor)
+        {
+            observationTenor_ = tenor;
+            return this;
+        }
+
+        public RangeAccrualLeg withPaymentAdjustment(BusinessDayConvention convention)
+        {
+            paymentAdjustment_ = convention;
+            return this;
+        }
+
+        public RangeAccrualLeg withPaymentDayCounter(DayCounter dayCounter)
+        {
+            paymentDayCounter_ = dayCounter;
+            return this;
+        }
+
+        public RangeAccrualLeg withSpreads(double spread)
+        {
+            spreads_ = new InitializedList<double>(1, spread);
+            return this;
+        }
+
+        public RangeAccrualLeg withSpreads(List<double> spreads)
+        {
+            spreads_ = spreads;
+            return this;
+        }
+
+        public RangeAccrualLeg withUpperTriggers(double trigger)
+        {
+            upperTriggers_ = new InitializedList<double>(1, trigger);
+            return this;
+        }
+
+        public RangeAccrualLeg withUpperTriggers(List<double> triggers)
+        {
+            upperTriggers_ = triggers;
+            return this;
+        }
     }
 }

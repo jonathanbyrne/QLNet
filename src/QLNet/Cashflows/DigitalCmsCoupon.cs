@@ -18,33 +18,36 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Cashflows
 {
-
     //! Cms-rate coupon with digital digital call/put option
-    [JetBrains.Annotations.PublicAPI] public class DigitalCmsCoupon : DigitalCoupon
+    [PublicAPI]
+    public class DigitalCmsCoupon : DigitalCoupon
     {
         // need by CashFlowVectors
-        public DigitalCmsCoupon() { }
+        public DigitalCmsCoupon()
+        {
+        }
 
         public DigitalCmsCoupon(CmsCoupon underlying,
-                                double? callStrike = null,
-                                Position.Type callPosition = Position.Type.Long,
-                                bool isCallATMIncluded = false,
-                                double? callDigitalPayoff = null,
-                                double? putStrike = null,
-                                Position.Type putPosition = Position.Type.Long,
-                                bool isPutATMIncluded = false,
-                                double? putDigitalPayoff = null,
-                                DigitalReplication replication = null)
-        : base(underlying, callStrike, callPosition, isCallATMIncluded, callDigitalPayoff, putStrike, putPosition, isPutATMIncluded, putDigitalPayoff, replication)
+            double? callStrike = null,
+            Position.Type callPosition = Position.Type.Long,
+            bool isCallATMIncluded = false,
+            double? callDigitalPayoff = null,
+            double? putStrike = null,
+            Position.Type putPosition = Position.Type.Long,
+            bool isPutATMIncluded = false,
+            double? putDigitalPayoff = null,
+            DigitalReplication replication = null)
+            : base(underlying, callStrike, callPosition, isCallATMIncluded, callDigitalPayoff, putStrike, putPosition, isPutATMIncluded, putDigitalPayoff, replication)
         {
         }
 
         // Factory - for Leg generators
         public virtual CashFlow factory(CmsCoupon underlying, double? callStrike, Position.Type callPosition, bool isCallATMIncluded, double? callDigitalPayoff, double? putStrike, Position.Type putPosition, bool isPutATMIncluded, double? putDigitalPayoff, DigitalReplication replication) => new DigitalCmsCoupon(underlying, callStrike, callPosition, isCallATMIncluded, callDigitalPayoff, putStrike, putPosition, isPutATMIncluded, putDigitalPayoff, replication);
     }
-
 
     //! helper class building a sequence of digital ibor-rate coupons
 }

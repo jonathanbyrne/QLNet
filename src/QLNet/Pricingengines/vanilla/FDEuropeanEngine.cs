@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences;
@@ -31,14 +32,18 @@ namespace QLNet.Pricingengines.vanilla
         \test the correctness of the returned value is tested by
               checking it against analytic results.
     */
-    [JetBrains.Annotations.PublicAPI] public class FDEuropeanEngine : FDVanillaEngine, IGenericEngine
+    [PublicAPI]
+    public class FDEuropeanEngine : FDVanillaEngine, IGenericEngine
     {
         private SampledCurve prices_;
 
         public FDEuropeanEngine(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints)
-           : this(process, timeSteps, gridPoints, false) { }
+            : this(process, timeSteps, gridPoints, false)
+        {
+        }
+
         public FDEuropeanEngine(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
-           : base(process, timeSteps, gridPoints, timeDependent)
+            : base(process, timeSteps, gridPoints, timeDependent)
         {
             prices_ = new SampledCurve(gridPoints);
 
@@ -67,13 +72,14 @@ namespace QLNet.Pricingengines.vanilla
             results_.delta = prices_.firstDerivativeAtCenter();
             results_.gamma = prices_.secondDerivativeAtCenter();
             results_.theta = Utils.blackScholesTheta(process_,
-                                                     results_.value.GetValueOrDefault(),
-                                                     results_.delta.GetValueOrDefault(),
-                                                     results_.gamma.GetValueOrDefault());
+                results_.value.GetValueOrDefault(),
+                results_.delta.GetValueOrDefault(),
+                results_.gamma.GetValueOrDefault());
             results_.additionalResults["priceCurve"] = prices_;
         }
 
         #region IGenericEngine copy-cat
+
         protected QLNet.Option.Arguments arguments_ = new QLNet.Option.Arguments();
         protected OneAssetOption.Results results_ = new OneAssetOption.Results();
 
@@ -81,26 +87,44 @@ namespace QLNet.Pricingengines.vanilla
 
         public IPricingEngineResults getResults() => results_;
 
-        public void reset() { results_.reset(); }
+        public void reset()
+        {
+            results_.reset();
+        }
 
         #region Observer & Observable
+
         // observable interface
         private readonly WeakEventSource eventSource = new WeakEventSource();
+
         public event Callback notifyObserversEvent
         {
             add => eventSource.Subscribe(value);
             remove => eventSource.Unsubscribe(value);
         }
 
-        public void registerWith(Callback handler) { notifyObserversEvent += handler; }
-        public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
+        public void registerWith(Callback handler)
+        {
+            notifyObserversEvent += handler;
+        }
+
+        public void unregisterWith(Callback handler)
+        {
+            notifyObserversEvent -= handler;
+        }
+
         protected void notifyObservers()
         {
             eventSource.Raise();
         }
 
-        public void update() { notifyObservers(); }
+        public void update()
+        {
+            notifyObservers();
+        }
+
         #endregion
+
         #endregion
     }
 }

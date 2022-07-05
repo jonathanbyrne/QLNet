@@ -1,11 +1,15 @@
-﻿namespace QLNet.Methods.lattices
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Methods.lattices
 {
-    [JetBrains.Annotations.PublicAPI] public class AdditiveEQPBinomialTree : EqualProbabilitiesBinomialTree<AdditiveEQPBinomialTree>,
+    [PublicAPI]
+    public class AdditiveEQPBinomialTree : EqualProbabilitiesBinomialTree<AdditiveEQPBinomialTree>,
         ITreeFactory<AdditiveEQPBinomialTree>
     {
         // parameterless constructor is requried for generics
         public AdditiveEQPBinomialTree()
-        { }
+        {
+        }
 
         public AdditiveEQPBinomialTree(StochasticProcess1D process, double end, int steps, double strike)
             : base(process, end, steps)

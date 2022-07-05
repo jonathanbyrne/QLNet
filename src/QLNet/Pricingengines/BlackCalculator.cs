@@ -16,12 +16,12 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
 using QLNet.Patterns;
-using System;
-using System.Reflection;
 
 namespace QLNet.Pricingengines
 {
@@ -30,293 +30,12 @@ namespace QLNet.Pricingengines
              the calculation of delta, delta forward, gamma, gamma
              forward, rho, dividend rho, vega, and strike sensitivity.
     */
-    [JetBrains.Annotations.PublicAPI] public class BlackCalculator
+    [PublicAPI]
+    public class BlackCalculator
     {
-        protected double strike_, forward_, stdDev_, discount_, variance_;
-        double D1_, D2_, alpha_, beta_, DalphaDd1_, DbetaDd2_;
-        double n_d1_, cum_d1_, n_d2_, cum_d2_;
-        double X_, DXDs_, DXDstrike_;
-
-        public BlackCalculator(StrikedTypePayoff payoff, double forward, double stdDev, double discount)
+        private class Calculator : IAcyclicVisitor
         {
-            strike_ = payoff.strike();
-            forward_ = forward;
-            stdDev_ = stdDev;
-            discount_ = discount;
-            variance_ = stdDev * stdDev;
-
-            Utils.QL_REQUIRE(forward > 0.0, () => "positive forward value required: " + forward + " not allowed");
-            Utils.QL_REQUIRE(stdDev >= 0.0, () => "non-negative standard deviation required: " + stdDev + " not allowed");
-            Utils.QL_REQUIRE(discount > 0.0, () => "positive discount required: " + discount + " not allowed");
-
-            if (stdDev_ >= Const.QL_EPSILON)
-            {
-                if (strike_.IsEqual(0.0))
-                {
-                    n_d1_ = 0.0;
-                    n_d2_ = 0.0;
-                    cum_d1_ = 1.0;
-                    cum_d2_ = 1.0;
-                }
-                else
-                {
-                    D1_ = System.Math.Log(forward / strike_) / stdDev_ + 0.5 * stdDev_;
-                    D2_ = D1_ - stdDev_;
-                    var f = new CumulativeNormalDistribution();
-                    cum_d1_ = f.value(D1_);
-                    cum_d2_ = f.value(D2_);
-                    n_d1_ = f.derivative(D1_);
-                    n_d2_ = f.derivative(D2_);
-                }
-            }
-            else
-            {
-                if (forward > strike_)
-                {
-                    cum_d1_ = 1.0;
-                    cum_d2_ = 1.0;
-                }
-                else
-                {
-                    cum_d1_ = 0.0;
-                    cum_d2_ = 0.0;
-                }
-                n_d1_ = 0.0;
-                n_d2_ = 0.0;
-            }
-
-            X_ = strike_;
-            DXDstrike_ = 1.0;
-
-            // the following one will probably disappear as soon as
-            // super-share will be properly handled
-            DXDs_ = 0.0;
-
-            // this part is always executed.
-            // in case of plain-vanilla payoffs, it is also the only part
-            // which is executed.
-            switch (payoff.optionType())
-            {
-                case QLNet.Option.Type.Call:
-                    alpha_ = cum_d1_;//  N(d1)
-                    DalphaDd1_ = n_d1_;//  n(d1)
-                    beta_ = -cum_d2_;// -N(d2)
-                    DbetaDd2_ = -n_d2_;// -n(d2)
-                    break;
-                case QLNet.Option.Type.Put:
-                    alpha_ = -1.0 + cum_d1_; // -N(-d1)
-                    DalphaDd1_ = n_d1_;//  n( d1)
-                    beta_ = 1.0 - cum_d2_; //  N(-d2)
-                    DbetaDd2_ = -n_d2_;// -n( d2)
-                    break;
-                default:
-                    Utils.QL_FAIL("invalid option ExerciseType");
-                    break;
-            }
-
-            // now dispatch on ExerciseType.
-
-            var calc = new Calculator(this);
-            payoff.accept(calc);
-        }
-
-        public double value()
-        {
-            var result = discount_ * (forward_ * alpha_ + X_ * beta_);
-            return result;
-        }
-
-        /*! Sensitivity to change in the underlying forward price. */
-        public double deltaForward()
-        {
-
-            var temp = stdDev_ * forward_;
-            var DalphaDforward = DalphaDd1_ / temp;
-            var DbetaDforward = DbetaDd2_ / temp;
-            var temp2 = DalphaDforward * forward_ + alpha_
-                                                  + DbetaDforward * X_; // DXDforward = 0.0
-
-            return discount_ * temp2;
-        }
-
-        /*! Sensitivity to change in the underlying spot price. */
-        public virtual double delta(double spot)
-        {
-            Utils.QL_REQUIRE(spot > 0.0, () => "positive spot value required: " + spot + " not allowed");
-
-            var DforwardDs = forward_ / spot;
-
-            var temp = stdDev_ * spot;
-            var DalphaDs = DalphaDd1_ / temp;
-            var DbetaDs = DbetaDd2_ / temp;
-            var temp2 = DalphaDs * forward_ + alpha_ * DforwardDs
-                                            + DbetaDs * X_ + beta_ * DXDs_;
-
-            return discount_ * temp2;
-        }
-
-        /*! Sensitivity in percent to a percent change in the
-            underlying forward price. */
-        public double elasticityForward()
-        {
-            var val = value();
-            var del = deltaForward();
-            if (val > Const.QL_EPSILON)
-                return del / val * forward_;
-            if (System.Math.Abs(del) < Const.QL_EPSILON)
-                return 0.0;
-            if (del > 0.0)
-                return double.MaxValue;
-            return double.MinValue;
-        }
-
-        /*! Sensitivity in percent to a percent change in the
-            underlying spot price. */
-        public virtual double elasticity(double spot)
-        {
-            var val = value();
-            var del = delta(spot);
-            if (val > Const.QL_EPSILON)
-                return del / val * spot;
-            if (System.Math.Abs(del) < Const.QL_EPSILON)
-                return 0.0;
-            if (del > 0.0)
-                return double.MaxValue;
-            return double.MinValue;
-        }
-
-        /*! Second order derivative with respect to change in the
-            underlying forward price. */
-        public double gammaForward()
-        {
-
-            var temp = stdDev_ * forward_;
-            var DalphaDforward = DalphaDd1_ / temp;
-            var DbetaDforward = DbetaDd2_ / temp;
-
-            var D2alphaDforward2 = -DalphaDforward / forward_ * (1 + D1_ / stdDev_);
-            var D2betaDforward2 = -DbetaDforward / forward_ * (1 + D2_ / stdDev_);
-
-            var temp2 = D2alphaDforward2 * forward_ + 2.0 * DalphaDforward
-                                                    + D2betaDforward2 * X_; // DXDforward = 0.0
-
-            return discount_ * temp2;
-        }
-
-        /*! Second order derivative with respect to change in the
-            underlying spot price. */
-        public virtual double gamma(double spot)
-        {
-
-            Utils.QL_REQUIRE(spot > 0.0, () => "positive spot value required: " + spot + " not allowed");
-
-            var DforwardDs = forward_ / spot;
-
-            var temp = stdDev_ * spot;
-            var DalphaDs = DalphaDd1_ / temp;
-            var DbetaDs = DbetaDd2_ / temp;
-
-            var D2alphaDs2 = -DalphaDs / spot * (1 + D1_ / stdDev_);
-            var D2betaDs2 = -DbetaDs / spot * (1 + D2_ / stdDev_);
-
-            var temp2 = D2alphaDs2 * forward_ + 2.0 * DalphaDs * DforwardDs
-                                              + D2betaDs2 * X_ + 2.0 * DbetaDs * DXDs_;
-
-            return discount_ * temp2;
-        }
-
-        /*! Sensitivity to time to maturity. */
-        public virtual double theta(double spot, double maturity)
-        {
-
-            if (maturity.IsEqual(0.0))
-                return 0.0;
-            Utils.QL_REQUIRE(maturity > 0.0, () => "non negative maturity required: " + maturity + " not allowed");
-
-            return -(System.Math.Log(discount_) * value()
-                     + System.Math.Log(forward_ / spot) * spot * delta(spot)
-                     + 0.5 * variance_ * spot * spot * gamma(spot)) / maturity;
-        }
-
-        /*! Sensitivity to time to maturity per day,
-            assuming 365 day per year. */
-        public virtual double thetaPerDay(double spot, double maturity) => theta(spot, maturity) / 365.0;
-
-        /*! Sensitivity to volatility. */
-        public double vega(double maturity)
-        {
-            Utils.QL_REQUIRE(maturity >= 0.0, () => "negative maturity not allowed");
-
-            var temp = System.Math.Log(strike_ / forward_) / variance_;
-            // actually DalphaDsigma / SQRT(T)
-            var DalphaDsigma = DalphaDd1_ * (temp + 0.5);
-            var DbetaDsigma = DbetaDd2_ * (temp - 0.5);
-
-            var temp2 = DalphaDsigma * forward_ + DbetaDsigma * X_;
-
-            return discount_ * System.Math.Sqrt(maturity) * temp2;
-
-        }
-
-        /*! Sensitivity to discounting rate. */
-        public double rho(double maturity)
-        {
-            Utils.QL_REQUIRE(maturity >= 0.0, () => "negative maturity not allowed");
-
-            // actually DalphaDr / T
-            var DalphaDr = DalphaDd1_ / stdDev_;
-            var DbetaDr = DbetaDd2_ / stdDev_;
-            var temp = DalphaDr * forward_ + alpha_ * forward_ + DbetaDr * X_;
-
-            return maturity * (discount_ * temp - value());
-        }
-
-        /*! Sensitivity to dividend/growth rate. */
-        public double dividendRho(double maturity)
-        {
-            Utils.QL_REQUIRE(maturity >= 0.0, () => "negative maturity not allowed");
-
-            // actually DalphaDq / T
-            var DalphaDq = -DalphaDd1_ / stdDev_;
-            var DbetaDq = -DbetaDd2_ / stdDev_;
-
-            var temp = DalphaDq * forward_ - alpha_ * forward_ + DbetaDq * X_;
-
-            return maturity * discount_ * temp;
-        }
-
-        /*! Probability of being in the money in the bond martingale
-            measure, i.e. N(d2).
-            It is a risk-neutral probability, not the real world one.
-        */
-        public double itmCashProbability() => cum_d2_;
-
-        /*! Probability of being in the money in the asset martingale
-            measure, i.e. N(d1).
-            It is a risk-neutral probability, not the real world one.
-        */
-        public double itmAssetProbability() => cum_d1_;
-
-        /*! Sensitivity to strike. */
-        public double strikeSensitivity()
-        {
-
-            var temp = stdDev_ * strike_;
-            var DalphaDstrike = -DalphaDd1_ / temp;
-            var DbetaDstrike = -DbetaDd2_ / temp;
-
-            var temp2 = DalphaDstrike * forward_ + DbetaDstrike * X_ + beta_ * DXDstrike_;
-
-            return discount_ * temp2;
-        }
-
-        public double alpha() => alpha_;
-
-        public double beta() => beta_;
-
-        class Calculator : IAcyclicVisitor
-        {
-            private BlackCalculator black_;
+            private readonly BlackCalculator black_;
 
             public Calculator(BlackCalculator black)
             {
@@ -325,11 +44,11 @@ namespace QLNet.Pricingengines
 
             public void visit(object o)
             {
-                var types = new Type[] { o.GetType() };
+                var types = new[] { o.GetType() };
                 var methodInfo = Utils.GetMethodInfo(this, "visit", types);
                 if (methodInfo != null)
                 {
-                    methodInfo.Invoke(this, new object[] { o });
+                    methodInfo.Invoke(this, new[] { o });
                 }
             }
 
@@ -388,6 +107,304 @@ namespace QLNet.Pricingengines
                 black_.X_ = payoff.secondStrike();
                 black_.DXDstrike_ = 0.0;
             }
+        }
+
+        protected double strike_, forward_, stdDev_, discount_, variance_;
+        private double D1_, D2_, alpha_, beta_, DalphaDd1_, DbetaDd2_;
+        private double n_d1_, cum_d1_, n_d2_, cum_d2_;
+        private double X_, DXDs_, DXDstrike_;
+
+        public BlackCalculator(StrikedTypePayoff payoff, double forward, double stdDev, double discount)
+        {
+            strike_ = payoff.strike();
+            forward_ = forward;
+            stdDev_ = stdDev;
+            discount_ = discount;
+            variance_ = stdDev * stdDev;
+
+            Utils.QL_REQUIRE(forward > 0.0, () => "positive forward value required: " + forward + " not allowed");
+            Utils.QL_REQUIRE(stdDev >= 0.0, () => "non-negative standard deviation required: " + stdDev + " not allowed");
+            Utils.QL_REQUIRE(discount > 0.0, () => "positive discount required: " + discount + " not allowed");
+
+            if (stdDev_ >= Const.QL_EPSILON)
+            {
+                if (strike_.IsEqual(0.0))
+                {
+                    n_d1_ = 0.0;
+                    n_d2_ = 0.0;
+                    cum_d1_ = 1.0;
+                    cum_d2_ = 1.0;
+                }
+                else
+                {
+                    D1_ = System.Math.Log(forward / strike_) / stdDev_ + 0.5 * stdDev_;
+                    D2_ = D1_ - stdDev_;
+                    var f = new CumulativeNormalDistribution();
+                    cum_d1_ = f.value(D1_);
+                    cum_d2_ = f.value(D2_);
+                    n_d1_ = f.derivative(D1_);
+                    n_d2_ = f.derivative(D2_);
+                }
+            }
+            else
+            {
+                if (forward > strike_)
+                {
+                    cum_d1_ = 1.0;
+                    cum_d2_ = 1.0;
+                }
+                else
+                {
+                    cum_d1_ = 0.0;
+                    cum_d2_ = 0.0;
+                }
+
+                n_d1_ = 0.0;
+                n_d2_ = 0.0;
+            }
+
+            X_ = strike_;
+            DXDstrike_ = 1.0;
+
+            // the following one will probably disappear as soon as
+            // super-share will be properly handled
+            DXDs_ = 0.0;
+
+            // this part is always executed.
+            // in case of plain-vanilla payoffs, it is also the only part
+            // which is executed.
+            switch (payoff.optionType())
+            {
+                case QLNet.Option.Type.Call:
+                    alpha_ = cum_d1_; //  N(d1)
+                    DalphaDd1_ = n_d1_; //  n(d1)
+                    beta_ = -cum_d2_; // -N(d2)
+                    DbetaDd2_ = -n_d2_; // -n(d2)
+                    break;
+                case QLNet.Option.Type.Put:
+                    alpha_ = -1.0 + cum_d1_; // -N(-d1)
+                    DalphaDd1_ = n_d1_; //  n( d1)
+                    beta_ = 1.0 - cum_d2_; //  N(-d2)
+                    DbetaDd2_ = -n_d2_; // -n( d2)
+                    break;
+                default:
+                    Utils.QL_FAIL("invalid option ExerciseType");
+                    break;
+            }
+
+            // now dispatch on ExerciseType.
+
+            var calc = new Calculator(this);
+            payoff.accept(calc);
+        }
+
+        public double alpha() => alpha_;
+
+        public double beta() => beta_;
+
+        /*! Sensitivity to change in the underlying spot price. */
+        public virtual double delta(double spot)
+        {
+            Utils.QL_REQUIRE(spot > 0.0, () => "positive spot value required: " + spot + " not allowed");
+
+            var DforwardDs = forward_ / spot;
+
+            var temp = stdDev_ * spot;
+            var DalphaDs = DalphaDd1_ / temp;
+            var DbetaDs = DbetaDd2_ / temp;
+            var temp2 = DalphaDs * forward_ + alpha_ * DforwardDs
+                                            + DbetaDs * X_ + beta_ * DXDs_;
+
+            return discount_ * temp2;
+        }
+
+        /*! Sensitivity to change in the underlying forward price. */
+        public double deltaForward()
+        {
+            var temp = stdDev_ * forward_;
+            var DalphaDforward = DalphaDd1_ / temp;
+            var DbetaDforward = DbetaDd2_ / temp;
+            var temp2 = DalphaDforward * forward_ + alpha_
+                                                  + DbetaDforward * X_; // DXDforward = 0.0
+
+            return discount_ * temp2;
+        }
+
+        /*! Sensitivity to dividend/growth rate. */
+        public double dividendRho(double maturity)
+        {
+            Utils.QL_REQUIRE(maturity >= 0.0, () => "negative maturity not allowed");
+
+            // actually DalphaDq / T
+            var DalphaDq = -DalphaDd1_ / stdDev_;
+            var DbetaDq = -DbetaDd2_ / stdDev_;
+
+            var temp = DalphaDq * forward_ - alpha_ * forward_ + DbetaDq * X_;
+
+            return maturity * discount_ * temp;
+        }
+
+        /*! Sensitivity in percent to a percent change in the
+            underlying spot price. */
+        public virtual double elasticity(double spot)
+        {
+            var val = value();
+            var del = delta(spot);
+            if (val > Const.QL_EPSILON)
+            {
+                return del / val * spot;
+            }
+
+            if (System.Math.Abs(del) < Const.QL_EPSILON)
+            {
+                return 0.0;
+            }
+
+            if (del > 0.0)
+            {
+                return double.MaxValue;
+            }
+
+            return double.MinValue;
+        }
+
+        /*! Sensitivity in percent to a percent change in the
+            underlying forward price. */
+        public double elasticityForward()
+        {
+            var val = value();
+            var del = deltaForward();
+            if (val > Const.QL_EPSILON)
+            {
+                return del / val * forward_;
+            }
+
+            if (System.Math.Abs(del) < Const.QL_EPSILON)
+            {
+                return 0.0;
+            }
+
+            if (del > 0.0)
+            {
+                return double.MaxValue;
+            }
+
+            return double.MinValue;
+        }
+
+        /*! Second order derivative with respect to change in the
+            underlying spot price. */
+        public virtual double gamma(double spot)
+        {
+            Utils.QL_REQUIRE(spot > 0.0, () => "positive spot value required: " + spot + " not allowed");
+
+            var DforwardDs = forward_ / spot;
+
+            var temp = stdDev_ * spot;
+            var DalphaDs = DalphaDd1_ / temp;
+            var DbetaDs = DbetaDd2_ / temp;
+
+            var D2alphaDs2 = -DalphaDs / spot * (1 + D1_ / stdDev_);
+            var D2betaDs2 = -DbetaDs / spot * (1 + D2_ / stdDev_);
+
+            var temp2 = D2alphaDs2 * forward_ + 2.0 * DalphaDs * DforwardDs
+                                              + D2betaDs2 * X_ + 2.0 * DbetaDs * DXDs_;
+
+            return discount_ * temp2;
+        }
+
+        /*! Second order derivative with respect to change in the
+            underlying forward price. */
+        public double gammaForward()
+        {
+            var temp = stdDev_ * forward_;
+            var DalphaDforward = DalphaDd1_ / temp;
+            var DbetaDforward = DbetaDd2_ / temp;
+
+            var D2alphaDforward2 = -DalphaDforward / forward_ * (1 + D1_ / stdDev_);
+            var D2betaDforward2 = -DbetaDforward / forward_ * (1 + D2_ / stdDev_);
+
+            var temp2 = D2alphaDforward2 * forward_ + 2.0 * DalphaDforward
+                                                    + D2betaDforward2 * X_; // DXDforward = 0.0
+
+            return discount_ * temp2;
+        }
+
+        /*! Probability of being in the money in the asset martingale
+            measure, i.e. N(d1).
+            It is a risk-neutral probability, not the real world one.
+        */
+        public double itmAssetProbability() => cum_d1_;
+
+        /*! Probability of being in the money in the bond martingale
+            measure, i.e. N(d2).
+            It is a risk-neutral probability, not the real world one.
+        */
+        public double itmCashProbability() => cum_d2_;
+
+        /*! Sensitivity to discounting rate. */
+        public double rho(double maturity)
+        {
+            Utils.QL_REQUIRE(maturity >= 0.0, () => "negative maturity not allowed");
+
+            // actually DalphaDr / T
+            var DalphaDr = DalphaDd1_ / stdDev_;
+            var DbetaDr = DbetaDd2_ / stdDev_;
+            var temp = DalphaDr * forward_ + alpha_ * forward_ + DbetaDr * X_;
+
+            return maturity * (discount_ * temp - value());
+        }
+
+        /*! Sensitivity to strike. */
+        public double strikeSensitivity()
+        {
+            var temp = stdDev_ * strike_;
+            var DalphaDstrike = -DalphaDd1_ / temp;
+            var DbetaDstrike = -DbetaDd2_ / temp;
+
+            var temp2 = DalphaDstrike * forward_ + DbetaDstrike * X_ + beta_ * DXDstrike_;
+
+            return discount_ * temp2;
+        }
+
+        /*! Sensitivity to time to maturity. */
+        public virtual double theta(double spot, double maturity)
+        {
+            if (maturity.IsEqual(0.0))
+            {
+                return 0.0;
+            }
+
+            Utils.QL_REQUIRE(maturity > 0.0, () => "non negative maturity required: " + maturity + " not allowed");
+
+            return -(System.Math.Log(discount_) * value()
+                     + System.Math.Log(forward_ / spot) * spot * delta(spot)
+                     + 0.5 * variance_ * spot * spot * gamma(spot)) / maturity;
+        }
+
+        /*! Sensitivity to time to maturity per day,
+            assuming 365 day per year. */
+        public virtual double thetaPerDay(double spot, double maturity) => theta(spot, maturity) / 365.0;
+
+        public double value()
+        {
+            var result = discount_ * (forward_ * alpha_ + X_ * beta_);
+            return result;
+        }
+
+        /*! Sensitivity to volatility. */
+        public double vega(double maturity)
+        {
+            Utils.QL_REQUIRE(maturity >= 0.0, () => "negative maturity not allowed");
+
+            var temp = System.Math.Log(strike_ / forward_) / variance_;
+            // actually DalphaDsigma / SQRT(T)
+            var DalphaDsigma = DalphaDd1_ * (temp + 0.5);
+            var DbetaDsigma = DbetaDd2_ * (temp - 0.5);
+
+            var temp2 = DalphaDsigma * forward_ + DbetaDsigma * X_;
+
+            return discount_ * System.Math.Sqrt(maturity) * temp2;
         }
     }
 }

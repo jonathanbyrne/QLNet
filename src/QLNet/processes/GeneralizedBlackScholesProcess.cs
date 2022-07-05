@@ -1,12 +1,19 @@
-﻿using QLNet.Quotes;
+﻿using JetBrains.Annotations;
+using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Time;
 
 namespace QLNet.processes
 {
-    [JetBrains.Annotations.PublicAPI] public class GeneralizedBlackScholesProcess : StochasticProcess1D
+    [PublicAPI]
+    public class GeneralizedBlackScholesProcess : StochasticProcess1D
     {
+        private Handle<BlackVolTermStructure> blackVolatility_;
+        private RelinkableHandle<LocalVolTermStructure> localVolatility_ = new RelinkableHandle<LocalVolTermStructure>();
+        private Handle<YieldTermStructure> riskFreeRate_, dividendYield_;
+        private bool updated_, isStrikeIndependent_;
+        private Handle<Quote> x0_;
 
         public GeneralizedBlackScholesProcess(Handle<Quote> x0, Handle<YieldTermStructure> dividendTS,
             Handle<YieldTermStructure> riskFreeTS, Handle<BlackVolTermStructure> blackVolTS, IDiscretization1D disc = null)
@@ -33,7 +40,8 @@ namespace QLNet.processes
             riskFreeRate_ = riskFreeTS;
             dividendYield_ = dividendTS;
             blackVolatility_ = blackVolTS;
-            localVolatility_ = localVolTS != null ? localVolTS.empty() ? new RelinkableHandle<LocalVolTermStructure>() : localVolTS
+            localVolatility_ = localVolTS != null
+                ? localVolTS.empty() ? new RelinkableHandle<LocalVolTermStructure>() : localVolTS
                 : new RelinkableHandle<LocalVolTermStructure>();
             updated_ = !localVolatility_.empty();
 
@@ -44,7 +52,14 @@ namespace QLNet.processes
             localVolatility_.registerWith(update);
         }
 
-        public override double x0() => x0_.link.value();
+        public override double apply(double x0, double dx) => x0 * System.Math.Exp(dx);
+
+        public Handle<BlackVolTermStructure> blackVolatility() => blackVolatility_;
+
+        /*! \todo revise extrapolation */
+        public override double diffusion(double t, double x) => localVolatility().link.localVol(t, x, true);
+
+        public Handle<YieldTermStructure> dividendYield() => dividendYield_;
 
         /*! \todo revise extrapolation */
         public override double drift(double t, double x)
@@ -57,10 +72,23 @@ namespace QLNet.processes
                    - 0.5 * sigma * sigma;
         }
 
-        /*! \todo revise extrapolation */
-        public override double diffusion(double t, double x) => localVolatility().link.localVol(t, x, true);
+        public override double evolve(double t0, double x0, double dt, double dw)
+        {
+            localVolatility(); // trigger update
+            if (isStrikeIndependent_)
+            {
+                // exact value for curves
+                var var = variance(t0, x0, dt);
+                var drift = (riskFreeRate_.link.forwardRate(t0, t0 + dt, Compounding.Continuous,
+                                 Frequency.NoFrequency, true).value() -
+                             dividendYield_.link.forwardRate(t0, t0 + dt, Compounding.Continuous,
+                                 Frequency.NoFrequency, true).value()) *
+                    dt - 0.5 * var;
+                return apply(x0, System.Math.Sqrt(var) * dw + drift);
+            }
 
-        public override double apply(double x0, double dx) => x0 * System.Math.Exp(dx);
+            return apply(x0, discretization_.drift(this, t0, x0, dt) + stdDeviation(t0, x0, dt) * dw);
+        }
 
         /*! \warning raises a "not implemented" exception.  It should
                be rewritten to return the expectation E(S) of
@@ -78,70 +106,10 @@ namespace QLNet.processes
                                              dividendYield_.link.forwardRate(
                                                  t0, t0 + dt, Compounding.Continuous, Frequency.NoFrequency, true).value()));
             }
-            else
-            {
-                Utils.QL_FAIL("not implemented");
-                return 0;
-            }
-        }
-        public override double stdDeviation(double t0, double x0, double dt)
-        {
-            localVolatility(); // trigger update
-            if (isStrikeIndependent_)
-            {
-                // exact value for curves
-                return System.Math.Sqrt(variance(t0, x0, dt));
-            }
-            else
-            {
-                return discretization_.diffusion(this, t0, x0, dt);
-            }
-        }
-        public override double variance(double t0, double x0, double dt)
-        {
-            localVolatility(); // trigger update
-            if (isStrikeIndependent_)
-            {
-                // exact value for curves
-                return blackVolatility_.link.blackVariance(t0 + dt, 0.01) -
-                       blackVolatility_.link.blackVariance(t0, 0.01);
-            }
-            else
-            {
-                return discretization_.variance(this, t0, x0, dt);
-            }
-        }
-        public override double evolve(double t0, double x0, double dt, double dw)
-        {
-            localVolatility(); // trigger update
-            if (isStrikeIndependent_)
-            {
-                // exact value for curves
-                var var = variance(t0, x0, dt);
-                var drift = (riskFreeRate_.link.forwardRate(t0, t0 + dt, Compounding.Continuous,
-                                 Frequency.NoFrequency, true).value() -
-                             dividendYield_.link.forwardRate(t0, t0 + dt, Compounding.Continuous,
-                                 Frequency.NoFrequency, true).value()) *
-                    dt - 0.5 * var;
-                return apply(x0, System.Math.Sqrt(var) * dw + drift);
-            }
-            else
-                return apply(x0, discretization_.drift(this, t0, x0, dt) + stdDeviation(t0, x0, dt) * dw);
-        }
-        public override double time(Date d) => riskFreeRate_.link.dayCounter().yearFraction(riskFreeRate_.link.referenceDate(), d);
 
-        public override void update()
-        {
-            updated_ = false;
-            base.update();
+            Utils.QL_FAIL("not implemented");
+            return 0;
         }
-        public Handle<Quote> stateVariable() => x0_;
-
-        public Handle<YieldTermStructure> dividendYield() => dividendYield_;
-
-        public Handle<YieldTermStructure> riskFreeRate() => riskFreeRate_;
-
-        public Handle<BlackVolTermStructure> blackVolatility() => blackVolatility_;
 
         public Handle<LocalVolTermStructure> localVolatility()
         {
@@ -150,8 +118,7 @@ namespace QLNet.processes
                 isStrikeIndependent_ = true;
 
                 // constant Black vol?
-                var constVol = blackVolatility().link as BlackConstantVol;
-                if (constVol != null)
+                if (blackVolatility().link is BlackConstantVol constVol)
                 {
                     // ok, the local vol is constant too.
                     localVolatility_.linkTo(new LocalConstantVol(constVol.referenceDate(),
@@ -162,8 +129,7 @@ namespace QLNet.processes
                 }
 
                 // ok, so it's not constant. Maybe it's strike-independent?
-                var volCurve = blackVolatility().link as BlackVarianceCurve;
-                if (volCurve != null)
+                if (blackVolatility().link is BlackVarianceCurve volCurve)
                 {
                     // ok, we can use the optimized algorithm
                     localVolatility_.linkTo(new LocalVolCurve(new Handle<BlackVarianceCurve>(volCurve)));
@@ -178,16 +144,47 @@ namespace QLNet.processes
                 isStrikeIndependent_ = false;
                 return localVolatility_;
             }
-            else
-            {
-                return localVolatility_;
-            }
+
+            return localVolatility_;
         }
 
-        private Handle<Quote> x0_;
-        private Handle<YieldTermStructure> riskFreeRate_, dividendYield_;
-        private Handle<BlackVolTermStructure> blackVolatility_;
-        private RelinkableHandle<LocalVolTermStructure> localVolatility_ = new RelinkableHandle<LocalVolTermStructure>();
-        private bool updated_, isStrikeIndependent_;
+        public Handle<YieldTermStructure> riskFreeRate() => riskFreeRate_;
+
+        public Handle<Quote> stateVariable() => x0_;
+
+        public override double stdDeviation(double t0, double x0, double dt)
+        {
+            localVolatility(); // trigger update
+            if (isStrikeIndependent_)
+            {
+                // exact value for curves
+                return System.Math.Sqrt(variance(t0, x0, dt));
+            }
+
+            return discretization_.diffusion(this, t0, x0, dt);
+        }
+
+        public override double time(Date d) => riskFreeRate_.link.dayCounter().yearFraction(riskFreeRate_.link.referenceDate(), d);
+
+        public override void update()
+        {
+            updated_ = false;
+            base.update();
+        }
+
+        public override double variance(double t0, double x0, double dt)
+        {
+            localVolatility(); // trigger update
+            if (isStrikeIndependent_)
+            {
+                // exact value for curves
+                return blackVolatility_.link.blackVariance(t0 + dt, 0.01) -
+                       blackVolatility_.link.blackVariance(t0, 0.01);
+            }
+
+            return discretization_.variance(this, t0, x0, dt);
+        }
+
+        public override double x0() => x0_.link.value();
     }
 }

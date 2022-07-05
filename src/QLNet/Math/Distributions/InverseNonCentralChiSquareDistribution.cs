@@ -1,14 +1,30 @@
 ﻿using System;
+using JetBrains.Annotations;
 using QLNet.Math.Solvers1d;
 
 namespace QLNet.Math.Distributions
 {
-    [JetBrains.Annotations.PublicAPI] public class InverseNonCentralChiSquareDistribution
+    [PublicAPI]
+    public class InverseNonCentralChiSquareDistribution
     {
-        private NonCentralChiSquareDistribution nonCentralDist_;
+        private class IncChiQuareFinder : ISolver1d
+        {
+            private readonly Func<double, double> g_;
+            private readonly double y_;
+
+            public IncChiQuareFinder(double y, Func<double, double> g)
+            {
+                y_ = y;
+                g_ = g;
+            }
+
+            public override double value(double x) => g_(x) - y_;
+        }
+
+        private double accuracy_;
         private double guess_;
         private int maxEvaluations_;
-        private double accuracy_;
+        private NonCentralChiSquareDistribution nonCentralDist_;
 
         public InverseNonCentralChiSquareDistribution(double df, double ncp,
             int maxEvaluations,
@@ -22,11 +38,13 @@ namespace QLNet.Math.Distributions
 
         public InverseNonCentralChiSquareDistribution(double df, double ncp, int maxEvaluations)
             : this(df, ncp, maxEvaluations, 1e-8)
-        { }
+        {
+        }
 
         public InverseNonCentralChiSquareDistribution(double df, double ncp)
             : this(df, ncp, 10, 1e-8)
-        { }
+        {
+        }
 
         public double value(double x)
         {
@@ -45,20 +63,6 @@ namespace QLNet.Math.Distributions
             return solver.solve(new IncChiQuareFinder(x, nonCentralDist_.value),
                 accuracy_, 0.75 * upper, evaluations == maxEvaluations_ ? 0.0 : 0.5 * upper,
                 upper);
-        }
-
-        class IncChiQuareFinder : ISolver1d
-        {
-            private double y_;
-            Func<double, double> g_;
-
-            public IncChiQuareFinder(double y, Func<double, double> g)
-            {
-                y_ = y;
-                g_ = g;
-            }
-
-            public override double value(double x) => g_(x) - y_;
         }
     }
 }

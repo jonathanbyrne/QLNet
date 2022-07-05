@@ -17,11 +17,13 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System;
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Instruments
 {
@@ -40,23 +42,117 @@ namespace QLNet.Instruments
               typical VanillaSwap ExerciseType design conventions
               w.r.t. Schedules etc.
     */
-    [JetBrains.Annotations.PublicAPI] public class YearOnYearInflationSwap : Swap
+    [PublicAPI]
+    public class YearOnYearInflationSwap : Swap
     {
-        public enum Type { Receiver = -1, Payer = 1 }
+        public enum Type
+        {
+            Receiver = -1,
+            Payer = 1
+        }
+
+        //! %Arguments for YoY swap calculation
+        public new class Arguments : Swap.Arguments
+        {
+            public Arguments()
+            {
+                type = Type.Receiver;
+                nominal = null;
+            }
+
+            public List<double> fixedCoupons { get; set; }
+
+            public List<Date> fixedPayDates { get; set; }
+
+            public List<Date> fixedResetDates { get; set; }
+
+            public double? nominal { get; set; }
+
+            public Type type { get; set; }
+
+            public List<double> yoyAccrualTimes { get; set; }
+
+            public List<double?> yoyCoupons { get; set; }
+
+            public List<Date> yoyFixingDates { get; set; }
+
+            public List<Date> yoyPayDates { get; set; }
+
+            public List<Date> yoyResetDates { get; set; }
+
+            public List<double> yoySpreads { get; set; }
+
+            public override void validate()
+            {
+                base.validate();
+                Utils.QL_REQUIRE(nominal != null, () => "nominal null or not set");
+                Utils.QL_REQUIRE(fixedResetDates.Count == fixedPayDates.Count, () =>
+                    "number of fixed start dates different from number of fixed payment dates");
+                Utils.QL_REQUIRE(fixedPayDates.Count == fixedCoupons.Count, () =>
+                    "number of fixed payment dates different from number of fixed coupon amounts");
+                Utils.QL_REQUIRE(yoyResetDates.Count == yoyPayDates.Count, () =>
+                    "number of yoy start dates different from number of yoy payment dates");
+                Utils.QL_REQUIRE(yoyFixingDates.Count == yoyPayDates.Count, () =>
+                    "number of yoy fixing dates different from number of yoy payment dates");
+                Utils.QL_REQUIRE(yoyAccrualTimes.Count == yoyPayDates.Count, () =>
+                    "number of yoy accrual Times different from number of yoy payment dates");
+                Utils.QL_REQUIRE(yoySpreads.Count == yoyPayDates.Count, () =>
+                    "number of yoy spreads different from number of yoy payment dates");
+                Utils.QL_REQUIRE(yoyPayDates.Count == yoyCoupons.Count, () =>
+                    "number of yoy payment dates different from number of yoy coupon amounts");
+            }
+        }
+
+        [PublicAPI]
+        public class Engine : GenericEngine<Arguments, Results>
+        {
+        }
+
+        //! %Results from YoY swap calculation
+        public new class Results : Swap.Results
+        {
+            public double? fairRate { get; set; }
+
+            public double? fairSpread { get; set; }
+
+            public override void reset()
+            {
+                base.reset();
+                fairRate = null;
+                fairSpread = null;
+            }
+        }
+
+        // results
+        private double? fairRate_;
+        private double? fairSpread_;
+        private DayCounter fixedDayCount_;
+        private double fixedRate_;
+        private Schedule fixedSchedule_;
+        private double nominal_;
+        private Period observationLag_;
+        private Calendar paymentCalendar_;
+        private BusinessDayConvention paymentConvention_;
+        private double spread_;
+        private Type type_;
+        private DayCounter yoyDayCount_;
+        private YoYInflationIndex yoyIndex_;
+        private Schedule yoySchedule_;
+
         public YearOnYearInflationSwap(
-           Type type,
-           double nominal,
-           Schedule fixedSchedule,
-           double fixedRate,
-           DayCounter fixedDayCount,
-           Schedule yoySchedule,
-           YoYInflationIndex yoyIndex,
-           Period observationLag,
-           double spread,
-           DayCounter yoyDayCount,
-           Calendar paymentCalendar,    // inflation index does not have a calendar
-           BusinessDayConvention paymentConvention = BusinessDayConvention.ModifiedFollowing)
-           : base(2)
+            Type type,
+            double nominal,
+            Schedule fixedSchedule,
+            double fixedRate,
+            DayCounter fixedDayCount,
+            Schedule yoySchedule,
+            YoYInflationIndex yoyIndex,
+            Period observationLag,
+            double spread,
+            DayCounter yoyDayCount,
+            Calendar paymentCalendar, // inflation index does not have a calendar
+            BusinessDayConvention paymentConvention = BusinessDayConvention.ModifiedFollowing)
+            : base(2)
         {
             type_ = type;
             nominal_ = nominal;
@@ -73,18 +169,17 @@ namespace QLNet.Instruments
 
             // N.B. fixed leg gets its calendar from the schedule!
             List<CashFlow> fixedLeg = new FixedRateLeg(fixedSchedule_)
-            .withCouponRates(fixedRate_, fixedDayCount_)   // Simple compounding by default
-            .withNotionals(nominal_)
-            .withPaymentAdjustment(paymentConvention_);
+                .withCouponRates(fixedRate_, fixedDayCount_) // Simple compounding by default
+                .withNotionals(nominal_)
+                .withPaymentAdjustment(paymentConvention_);
 
             List<CashFlow> yoyLeg = new yoyInflationLeg(yoySchedule_, paymentCalendar_, yoyIndex_, observationLag_)
-            .withSpreads(spread_)
-            .withPaymentDayCounter(yoyDayCount_)
-            .withNotionals(nominal_)
-            .withPaymentAdjustment(paymentConvention_);
+                .withSpreads(spread_)
+                .withPaymentDayCounter(yoyDayCount_)
+                .withNotionals(nominal_)
+                .withPaymentAdjustment(paymentConvention_);
 
             yoyLeg.ForEach((i, x) => x.registerWith(update));
-
 
             legs_[0] = fixedLeg;
             legs_[1] = yoyLeg;
@@ -98,15 +193,8 @@ namespace QLNet.Instruments
                 payer_[0] = +1.0;
                 payer_[1] = -1.0;
             }
+        }
 
-        }
-        // results
-        public virtual double fixedLegNPV()
-        {
-            calculate();
-            Utils.QL_REQUIRE(legNPV_[0] != null, () => "result not available");
-            return legNPV_[0].Value;
-        }
         public virtual double fairRate()
         {
             calculate();
@@ -114,56 +202,85 @@ namespace QLNet.Instruments
             return fairRate_.Value;
         }
 
-        public virtual double yoyLegNPV()
-        {
-            calculate();
-            Utils.QL_REQUIRE(legNPV_[1] != null, () => "result not available");
-            return legNPV_[1].Value;
-        }
         public virtual double fairSpread()
         {
             calculate();
             Utils.QL_REQUIRE(fairSpread_ != null, () => "result not available");
             return fairSpread_.Value;
         }
-        // inspectors
-        public virtual Type type() => type_;
 
-        public virtual double nominal() => nominal_;
+        public override void fetchResults(IPricingEngineResults r)
+        {
+            // copy from VanillaSwap
+            // works because similarly simple instrument
+            // that we always expect to be priced with a swap engine
 
-        public virtual Schedule fixedSchedule() => fixedSchedule_;
+            base.fetchResults(r);
 
-        public virtual double fixedRate() => fixedRate_;
+            if (r is Results results)
+            {
+                // might be a swap engine, so no error is thrown
+                fairRate_ = results.fairRate;
+                fairSpread_ = results.fairSpread;
+            }
+            else
+            {
+                fairRate_ = null;
+                fairSpread_ = null;
+            }
+
+            if (fairRate_ == null)
+            {
+                // calculate it from other results
+                if (legBPS_[0] != null)
+                {
+                    fairRate_ = fixedRate_ - NPV_ / (legBPS_[0] / Const.BASIS_POINT);
+                }
+            }
+
+            if (fairSpread_ == null)
+            {
+                // ditto
+                if (legBPS_[1] != null)
+                {
+                    fairSpread_ = spread_ - NPV_ / (legBPS_[1] / Const.BASIS_POINT);
+                }
+            }
+        }
 
         public virtual DayCounter fixedDayCount() => fixedDayCount_;
 
-        public virtual Schedule yoySchedule() => yoySchedule_;
+        public virtual List<CashFlow> fixedLeg() => legs_[0];
 
-        public virtual YoYInflationIndex yoyInflationIndex() => yoyIndex_;
+        // results
+        public virtual double fixedLegNPV()
+        {
+            calculate();
+            Utils.QL_REQUIRE(legNPV_[0] != null, () => "result not available");
+            return legNPV_[0].Value;
+        }
+
+        public virtual double fixedRate() => fixedRate_;
+
+        public virtual Schedule fixedSchedule() => fixedSchedule_;
+
+        public virtual double nominal() => nominal_;
 
         public virtual Period observationLag() => observationLag_;
-
-        public virtual double spread() => spread_;
-
-        public virtual DayCounter yoyDayCount() => yoyDayCount_;
 
         public virtual Calendar paymentCalendar() => paymentCalendar_;
 
         public virtual BusinessDayConvention paymentConvention() => paymentConvention_;
-
-        public virtual List<CashFlow> fixedLeg() => legs_[0];
-
-        public virtual List<CashFlow> yoyLeg() => legs_[1];
 
         // other
         public override void setupArguments(IPricingEngineArguments args)
         {
             base.setupArguments(args);
 
-            var arguments = args as Arguments;
-
-            if (arguments == null)  // it's a swap engine...
+            if (!(args is Arguments arguments)) // it's a swap engine...
+            {
                 return;
+            }
 
             arguments.type = type_;
             arguments.nominal = nominal_;
@@ -207,44 +324,27 @@ namespace QLNet.Instruments
                     arguments.yoyCoupons.Add(null);
                 }
             }
-
         }
-        public override void fetchResults(IPricingEngineResults r)
+
+        public virtual double spread() => spread_;
+
+        // inspectors
+        public virtual Type type() => type_;
+
+        public virtual DayCounter yoyDayCount() => yoyDayCount_;
+
+        public virtual YoYInflationIndex yoyInflationIndex() => yoyIndex_;
+
+        public virtual List<CashFlow> yoyLeg() => legs_[1];
+
+        public virtual double yoyLegNPV()
         {
-            // copy from VanillaSwap
-            // works because similarly simple instrument
-            // that we always expect to be priced with a swap engine
-
-            base.fetchResults(r);
-
-            var results = r as Results;
-            if (results != null)
-            {
-                // might be a swap engine, so no error is thrown
-                fairRate_ = results.fairRate;
-                fairSpread_ = results.fairSpread;
-            }
-            else
-            {
-                fairRate_ = null;
-                fairSpread_ = null;
-            }
-
-            if (fairRate_ == null)
-            {
-                // calculate it from other results
-                if (legBPS_[0] != null)
-                    fairRate_ = fixedRate_ - NPV_ / (legBPS_[0] / Const.BASIS_POINT);
-            }
-            if (fairSpread_ == null)
-            {
-                // ditto
-                if (legBPS_[1] != null)
-                    fairSpread_ = spread_ - NPV_ / (legBPS_[1] / Const.BASIS_POINT);
-            }
-
+            calculate();
+            Utils.QL_REQUIRE(legNPV_[1] != null, () => "result not available");
+            return legNPV_[1].Value;
         }
 
+        public virtual Schedule yoySchedule() => yoySchedule_;
 
         protected override void setupExpired()
         {
@@ -253,79 +353,5 @@ namespace QLNet.Instruments
             fairRate_ = null;
             fairSpread_ = null;
         }
-        private Type type_;
-        private double nominal_;
-        private Schedule fixedSchedule_;
-        private double fixedRate_;
-        private DayCounter fixedDayCount_;
-        private Schedule yoySchedule_;
-        private YoYInflationIndex yoyIndex_;
-        private Period observationLag_;
-        private double spread_;
-        private DayCounter yoyDayCount_;
-        private Calendar paymentCalendar_;
-        private BusinessDayConvention paymentConvention_;
-        // results
-        private double? fairRate_;
-        private double? fairSpread_;
-
-        //! %Arguments for YoY swap calculation
-        public new class Arguments : Swap.Arguments
-        {
-            public Arguments()
-            {
-                type = Type.Receiver;
-                nominal = null;
-            }
-
-            public Type type { get; set; }
-            public double? nominal { get; set; }
-
-            public List<Date> fixedResetDates { get; set; }
-            public List<Date> fixedPayDates { get; set; }
-            public List<double> yoyAccrualTimes { get; set; }
-            public List<Date> yoyResetDates { get; set; }
-            public List<Date> yoyFixingDates { get; set; }
-            public List<Date> yoyPayDates { get; set; }
-
-            public List<double> fixedCoupons { get; set; }
-            public List<double> yoySpreads { get; set; }
-            public List<double?> yoyCoupons { get; set; }
-            public override void validate()
-            {
-                base.validate();
-                Utils.QL_REQUIRE(nominal != null, () => "nominal null or not set");
-                Utils.QL_REQUIRE(fixedResetDates.Count == fixedPayDates.Count, () =>
-                                 "number of fixed start dates different from number of fixed payment dates");
-                Utils.QL_REQUIRE(fixedPayDates.Count == fixedCoupons.Count, () =>
-                                 "number of fixed payment dates different from number of fixed coupon amounts");
-                Utils.QL_REQUIRE(yoyResetDates.Count == yoyPayDates.Count, () =>
-                                 "number of yoy start dates different from number of yoy payment dates");
-                Utils.QL_REQUIRE(yoyFixingDates.Count == yoyPayDates.Count, () =>
-                                 "number of yoy fixing dates different from number of yoy payment dates");
-                Utils.QL_REQUIRE(yoyAccrualTimes.Count == yoyPayDates.Count, () =>
-                                 "number of yoy accrual Times different from number of yoy payment dates");
-                Utils.QL_REQUIRE(yoySpreads.Count == yoyPayDates.Count, () =>
-                                 "number of yoy spreads different from number of yoy payment dates");
-                Utils.QL_REQUIRE(yoyPayDates.Count == yoyCoupons.Count, () =>
-                                 "number of yoy payment dates different from number of yoy coupon amounts");
-            }
-        }
-
-        //! %Results from YoY swap calculation
-        public new class Results : Swap.Results
-        {
-            public double? fairRate { get; set; }
-            public double? fairSpread { get; set; }
-            public override void reset()
-            {
-                base.reset();
-                fairRate = null;
-                fairSpread = null;
-            }
-        }
-
-        [JetBrains.Annotations.PublicAPI] public class Engine : GenericEngine<Arguments, Results> { }
-
     }
 }

@@ -17,17 +17,22 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Math;
-using System;
+
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
+using QLNet.Math;
 
 namespace QLNet.legacy.libormarketmodels
 {
-    [JetBrains.Annotations.PublicAPI] public class LmFixedVolatilityModel : LmVolatilityModel
+    [PublicAPI]
+    public class LmFixedVolatilityModel : LmVolatilityModel
     {
+        private List<double> startTimes_;
+        private Vector volatilities_;
+
         public LmFixedVolatilityModel(Vector volatilities, List<double> startTimes)
-           : base(startTimes.Count, 0)
+            : base(startTimes.Count, 0)
         {
             volatilities_ = volatilities;
             startTimes_ = startTimes;
@@ -35,26 +40,32 @@ namespace QLNet.legacy.libormarketmodels
             Utils.QL_REQUIRE(startTimes_.Count > 1, () => "too few dates");
 
             Utils.QL_REQUIRE(volatilities_.size() == startTimes_.Count, () =>
-                             "volatility array and fixing time array have to have the same size");
+                "volatility array and fixing time array have to have the same size");
 
             for (var i = 1; i < startTimes_.Count; i++)
             {
                 Utils.QL_REQUIRE(startTimes_[i] > startTimes_[i - 1], () =>
-                                 "invalid time (" + startTimes_[i] + ", vs " + startTimes_[i - 1] + ")");
+                    "invalid time (" + startTimes_[i] + ", vs " + startTimes_[i - 1] + ")");
             }
+        }
+
+        public override void generateArguments()
+        {
         }
 
         public override Vector volatility(double t, Vector x = null)
         {
             Utils.QL_REQUIRE(t >= startTimes_.First() && t <= startTimes_.Last(), () =>
-                             "invalid time given for volatility model");
+                "invalid time given for volatility model");
 
             var ti = startTimes_.GetRange(0, startTimes_.Count - 1).BinarySearch(t);
             if (ti < 0)
                 // The upper_bound() algorithm finds the last position in a sequence that value can occupy
                 // without violating the sequence's ordering
                 // if BinarySearch does not find value the value, the index of the next larger item is returned
+            {
                 ti = ~ti - 1;
+            }
 
             // impose limits. we need the one before last at max or the first at min
             ti = System.Math.Max(System.Math.Min(ti, startTimes_.Count - 2), 0);
@@ -72,25 +83,21 @@ namespace QLNet.legacy.libormarketmodels
         public override double volatility(int i, double t, Vector x = null)
         {
             Utils.QL_REQUIRE(t >= startTimes_.First() && t <= startTimes_.Last(), () =>
-                             "invalid time given for volatility model");
+                "invalid time given for volatility model");
 
             var ti = startTimes_.GetRange(0, startTimes_.Count - 1).BinarySearch(t);
             if (ti < 0)
                 // The upper_bound() algorithm finds the last position in a sequence that value can occupy
                 // without violating the sequence's ordering
                 // if BinarySearch does not find value the value, the index of the next larger item is returned
+            {
                 ti = ~ti - 1;
+            }
 
             // impose limits. we need the one before last at max or the first at min
             ti = System.Math.Max(System.Math.Min(ti, startTimes_.Count - 2), 0);
 
             return volatilities_[i - ti];
         }
-
-        public override void generateArguments()
-        { }
-
-        private Vector volatilities_;
-        private List<double> startTimes_;
     }
 }

@@ -17,8 +17,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Time;
+
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -62,39 +63,22 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class Canada : Calendar
+    [PublicAPI]
+    public class Canada : Calendar
     {
         public enum Market
         {
-            Settlement,       //!< generic settlement calendar
-            TSX               //!< Toronto stock exchange calendar
+            Settlement, //!< generic settlement calendar
+            TSX //!< Toronto stock exchange calendar
         }
 
-        public Canada() : this(Market.Settlement) { }
-        public Canada(Market m)
-           : base()
-        {
-            // all calendar instances on the same market share the same
-            // implementation instance
-            switch (m)
-            {
-                case Market.Settlement:
-                    calendar_ = Settlement.Singleton;
-                    break;
-                case Market.TSX:
-                    calendar_ = TSX.Singleton;
-                    break;
-                default:
-                    throw new ArgumentException("Unknown market: " + m);
-            }
-        }
-
-        class Settlement : WesternImpl
+        private class Settlement : WesternImpl
         {
             public static readonly Settlement Singleton = new Settlement();
-            private Settlement() { }
 
-            public override string name() => "Canada";
+            private Settlement()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -109,7 +93,7 @@ namespace QLNet.Time.Calendars
                     || (d == 1 || (d == 2 || d == 3) && w == DayOfWeek.Monday) && m == Month.January
                     // Family Day (third Monday in February, since 2008)
                     || d >= 15 && d <= 21 && w == DayOfWeek.Monday && m == Month.February
-                        && y >= 2008
+                    && y >= 2008
                     // Good Friday
                     || dd == em - 3
                     // Easter Monday
@@ -129,25 +113,31 @@ namespace QLNet.Time.Calendars
                     || d > 7 && d <= 14 && w == DayOfWeek.Monday && m == Month.October
                     // November 11th (possibly moved to Monday)
                     || (d == 11 || (d == 12 || d == 13) && w == DayOfWeek.Monday)
-                        && m == Month.November
+                    && m == Month.November
                     // Christmas (possibly moved to Monday or Tuesday)
                     || (d == 25 || d == 27 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday))
-                        && m == Month.December
+                    && m == Month.December
                     // Boxing Day (possibly moved to Monday or Tuesday)
                     || (d == 26 || d == 28 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday))
-                        && m == Month.December
+                    && m == Month.December
                    )
+                {
                     return false;
+                }
+
                 return true;
             }
+
+            public override string name() => "Canada";
         }
 
-        class TSX : WesternImpl
+        private class TSX : WesternImpl
         {
             public static readonly TSX Singleton = new TSX();
-            private TSX() { }
 
-            public override string name() => "TSX";
+            private TSX()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -162,7 +152,7 @@ namespace QLNet.Time.Calendars
                     || (d == 1 || (d == 2 || d == 3) && w == DayOfWeek.Monday) && m == Month.January
                     // Family Day (third Monday in February, since 2008)
                     || d >= 15 && d <= 21 && w == DayOfWeek.Monday && m == Month.February
-                        && y >= 2008
+                    && y >= 2008
                     // Good Friday
                     || dd == em - 3
                     // Easter Monday
@@ -179,13 +169,39 @@ namespace QLNet.Time.Calendars
                     || d > 7 && d <= 14 && w == DayOfWeek.Monday && m == Month.October
                     // Christmas (possibly moved to Monday or Tuesday)
                     || (d == 25 || d == 27 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday))
-                        && m == Month.December
+                    && m == Month.December
                     // Boxing Day (possibly moved to Monday or Tuesday)
                     || (d == 26 || d == 28 && (w == DayOfWeek.Monday || w == DayOfWeek.Tuesday))
-                        && m == Month.December
+                    && m == Month.December
                    )
+                {
                     return false;
+                }
+
                 return true;
+            }
+
+            public override string name() => "TSX";
+        }
+
+        public Canada() : this(Market.Settlement)
+        {
+        }
+
+        public Canada(Market m)
+        {
+            // all calendar instances on the same market share the same
+            // implementation instance
+            switch (m)
+            {
+                case Market.Settlement:
+                    calendar_ = Settlement.Singleton;
+                    break;
+                case Market.TSX:
+                    calendar_ = TSX.Singleton;
+                    break;
+                default:
+                    throw new ArgumentException("Unknown market: " + m);
             }
         }
     }

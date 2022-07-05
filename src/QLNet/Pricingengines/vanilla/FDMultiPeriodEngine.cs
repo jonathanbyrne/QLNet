@@ -17,65 +17,36 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System;
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences;
 using QLNet.processes;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Pricingengines.vanilla
 {
-    [JetBrains.Annotations.PublicAPI] public class FDMultiPeriodEngine : FDConditionEngineTemplate
+    [PublicAPI]
+    public class FDMultiPeriodEngine : FDConditionEngineTemplate
     {
         protected List<Event> events_ = new List<Event>();
+        protected FiniteDifferenceModel<CrankNicolson<TridiagonalOperator>> model_;
         protected List<double> stoppingTimes_ = new List<double>();
         protected int timeStepPerPeriod_;
-        protected FiniteDifferenceModel<CrankNicolson<TridiagonalOperator>> model_;
 
         // required for generics
-        public FDMultiPeriodEngine() { }
+        public FDMultiPeriodEngine()
+        {
+        }
 
         //protected FDMultiPeriodEngine(GeneralizedBlackScholesProcess process,
         //     int gridPoints = 100, int timeSteps = 100, bool timeDependent = false)
         protected FDMultiPeriodEngine(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
-           : base(process, timeSteps, gridPoints, timeDependent)
+            : base(process, timeSteps, gridPoints, timeDependent)
         {
             timeStepPerPeriod_ = timeSteps;
-        }
-
-        protected virtual void executeIntermediateStep(int step) { throw new NotSupportedException(); }
-
-
-        protected virtual void initializeModel()
-        {
-            model_ = new FiniteDifferenceModel<CrankNicolson<TridiagonalOperator>>(finiteDifferenceOperator_, BCs_);
-        }
-
-        protected double getDividendTime(int i) => stoppingTimes_[i];
-
-        protected virtual void setupArguments(IPricingEngineArguments args, List<Event> schedule)
-        {
-            base.setupArguments(args);
-            events_ = schedule;
-            stoppingTimes_.Clear();
-            var n = schedule.Count;
-            stoppingTimes_ = new List<double>(n);
-            for (var i = 0; i < n; ++i)
-                stoppingTimes_.Add(process_.time(events_[i].date()));
-        }
-
-        public override void setupArguments(IPricingEngineArguments a)
-        {
-            base.setupArguments(a);
-            var args = a as QLNet.Option.Arguments;
-            Utils.QL_REQUIRE(args != null, () => "incorrect argument ExerciseType");
-            events_.Clear();
-
-            var n = args.exercise.dates().Count;
-            stoppingTimes_ = new InitializedList<double>(n);
-            for (var i = 0; i < n; ++i)
-                stoppingTimes_[i] = process_.time(args.exercise.date(i));
         }
 
         public override void calculate(IPricingEngineResults r)
@@ -102,7 +73,9 @@ namespace QLNet.Pricingengines.vanilla
                     firstDateIsZero = true;
                     firstIndex = 0;
                     if (dateNumber >= 2)
+                    {
                         firstNonZeroDate = getDividendTime(1);
+                    }
                 }
 
                 if (System.Math.Abs(getDividendTime(lastIndex) - getResidualTime()) < dateTolerance)
@@ -112,14 +85,18 @@ namespace QLNet.Pricingengines.vanilla
                 }
 
                 if (!firstDateIsZero)
+                {
                     firstNonZeroDate = getDividendTime(0);
+                }
 
                 if (dateNumber >= 2)
                 {
                     for (j = 1; j < dateNumber; j++)
+                    {
                         Utils.QL_REQUIRE(getDividendTime(j - 1) < getDividendTime(j), () =>
-                                         "dates must be in increasing order: " + getDividendTime(j - 1) +
-                                         " is not strictly smaller than " + getDividendTime(j));
+                            "dates must be in increasing order: " + getDividendTime(j - 1) +
+                            " is not strictly smaller than " + getDividendTime(j));
+                    }
                 }
             }
 
@@ -127,7 +104,9 @@ namespace QLNet.Pricingengines.vanilla
 
             // Ensure that dt is always smaller than the first non-zero date
             if (firstNonZeroDate <= dt)
+            {
                 dt = firstNonZeroDate / 2.0;
+            }
 
             setGridLimits();
             initializeInitialCondition();
@@ -138,28 +117,40 @@ namespace QLNet.Pricingengines.vanilla
 
             prices_ = (SampledCurve)intrinsicValues_.Clone();
             if (lastDateIsResTime)
+            {
                 executeIntermediateStep(dateNumber - 1);
+            }
 
             j = lastIndex;
             object temp;
             do
             {
                 if (j == dateNumber - 1)
+                {
                     beginDate = getResidualTime();
+                }
                 else
+                {
                     beginDate = getDividendTime(j + 1);
+                }
 
                 if (j >= 0)
+                {
                     endDate = getDividendTime(j);
+                }
                 else
+                {
                     endDate = dt;
+                }
 
                 temp = prices_.values();
                 model_.rollback(ref temp, beginDate, endDate, timeStepPerPeriod_, stepCondition_);
                 prices_.setValues((Vector)temp);
 
                 if (j >= 0)
+                {
                     executeIntermediateStep(j);
+                }
             } while (--j >= firstIndex);
 
             temp = prices_.values();
@@ -167,12 +158,54 @@ namespace QLNet.Pricingengines.vanilla
             prices_.setValues((Vector)temp);
 
             if (firstDateIsZero)
+            {
                 executeIntermediateStep(0);
+            }
 
             results.value = prices_.valueAtCenter();
             results.delta = prices_.firstDerivativeAtCenter();
             results.gamma = prices_.secondDerivativeAtCenter();
             results.additionalResults["priceCurve"] = prices_;
+        }
+
+        public override void setupArguments(IPricingEngineArguments a)
+        {
+            base.setupArguments(a);
+            var args = a as QLNet.Option.Arguments;
+            Utils.QL_REQUIRE(args != null, () => "incorrect argument ExerciseType");
+            events_.Clear();
+
+            var n = args.exercise.dates().Count;
+            stoppingTimes_ = new InitializedList<double>(n);
+            for (var i = 0; i < n; ++i)
+            {
+                stoppingTimes_[i] = process_.time(args.exercise.date(i));
+            }
+        }
+
+        protected virtual void executeIntermediateStep(int step)
+        {
+            throw new NotSupportedException();
+        }
+
+        protected double getDividendTime(int i) => stoppingTimes_[i];
+
+        protected virtual void initializeModel()
+        {
+            model_ = new FiniteDifferenceModel<CrankNicolson<TridiagonalOperator>>(finiteDifferenceOperator_, BCs_);
+        }
+
+        protected virtual void setupArguments(IPricingEngineArguments args, List<Event> schedule)
+        {
+            base.setupArguments(args);
+            events_ = schedule;
+            stoppingTimes_.Clear();
+            var n = schedule.Count;
+            stoppingTimes_ = new List<double>(n);
+            for (var i = 0; i < n; ++i)
+            {
+                stoppingTimes_.Add(process_.time(events_[i].date()));
+            }
         }
     }
 }

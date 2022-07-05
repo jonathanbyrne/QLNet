@@ -17,13 +17,14 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Math;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Math.Interpolations
 {
     //! Backward-flat interpolation between discrete points
-    [JetBrains.Annotations.PublicAPI] public class BackwardFlatInterpolation : Interpolation
+    [PublicAPI]
+    public class BackwardFlatInterpolation : Interpolation
     {
         /*! \pre the \f$ x \f$ values must be sorted. */
         public BackwardFlatInterpolation(List<double> xBegin, int size, List<double> yBegin)

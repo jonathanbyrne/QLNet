@@ -1,6 +1,9 @@
-﻿namespace QLNet.Math
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math
 {
-    [JetBrains.Annotations.PublicAPI] public interface IKernelFunction
+    [PublicAPI]
+    public interface IKernelFunction
     {
         double value(double x);
     }

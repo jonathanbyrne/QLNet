@@ -17,33 +17,39 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Instruments;
+using QLNet.Methods.Finitedifferences;
 using QLNet.Methods.Finitedifferences.Meshers;
+using QLNet.Methods.Finitedifferences.Operators;
 using QLNet.Methods.Finitedifferences.Solvers;
 using QLNet.Methods.Finitedifferences.StepConditions;
 using QLNet.Methods.Finitedifferences.Utilities;
 using QLNet.processes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 //! Finite-Differences Black Scholes barrier option rebate helper engine
-
 /*!
     \ingroup barrierengines
 */
 
 namespace QLNet.Pricingengines.barrier
 {
-    [JetBrains.Annotations.PublicAPI] public class FdBlackScholesRebateEngine : DividendBarrierOption.Engine
+    [PublicAPI]
+    public class FdBlackScholesRebateEngine : DividendBarrierOption.Engine
     {
+        protected double? illegalLocalVolOverwrite_;
+        protected bool localVol_;
+        protected GeneralizedBlackScholesProcess process_;
+        protected FdmSchemeDesc schemeDesc_;
+        protected int tGrid_, xGrid_, dampingSteps_;
+
         // Constructor
         public FdBlackScholesRebateEngine(
-           GeneralizedBlackScholesProcess process,
-           int tGrid = 100, int xGrid = 100, int dampingSteps = 0,
-           FdmSchemeDesc schemeDesc = null,
-           bool localVol = false,
-           double? illegalLocalVolOverwrite = null)
+            GeneralizedBlackScholesProcess process,
+            int tGrid = 100, int xGrid = 100, int dampingSteps = 0,
+            FdmSchemeDesc schemeDesc = null,
+            bool localVol = false,
+            double? illegalLocalVolOverwrite = null)
         {
             process_ = process;
             tGrid_ = tGrid;
@@ -69,6 +75,7 @@ namespace QLNet.Pricingengines.barrier
             {
                 xMin = System.Math.Log(arguments_.barrier.Value);
             }
+
             if (arguments_.barrierType == Barrier.Type.UpIn
                 || arguments_.barrierType == Barrier.Type.UpOut)
             {
@@ -76,30 +83,30 @@ namespace QLNet.Pricingengines.barrier
             }
 
             Fdm1dMesher equityMesher =
-               new FdmBlackScholesMesher(xGrid_, process_, maturity,
-                                         payoff.strike(), xMin, xMax, 0.0001, 1.5,
-                                         new Pair<double?, double?>(),
-                                         arguments_.cashFlow);
+                new FdmBlackScholesMesher(xGrid_, process_, maturity,
+                    payoff.strike(), xMin, xMax, 0.0001, 1.5,
+                    new Pair<double?, double?>(),
+                    arguments_.cashFlow);
 
             FdmMesher mesher =
-               new FdmMesherComposite(equityMesher);
+                new FdmMesherComposite(equityMesher);
 
             // 2. Calculator
             StrikedTypePayoff rebatePayoff =
-               new CashOrNothingPayoff(QLNet.Option.Type.Call, 0.0, arguments_.rebate.Value);
+                new CashOrNothingPayoff(QLNet.Option.Type.Call, 0.0, arguments_.rebate.Value);
             FdmInnerValueCalculator calculator =
-               new FdmLogInnerValue(rebatePayoff, mesher, 0);
+                new FdmLogInnerValue(rebatePayoff, mesher, 0);
 
             // 3. Step conditions
             Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European,
-                             () => "only european style option are supported");
+                () => "only european style option are supported");
 
             var conditions =
-               FdmStepConditionComposite.vanillaComposite(
-                  arguments_.cashFlow, arguments_.exercise,
-                  mesher, calculator,
-                  process_.riskFreeRate().currentLink().referenceDate(),
-                  process_.riskFreeRate().currentLink().dayCounter());
+                FdmStepConditionComposite.vanillaComposite(
+                    arguments_.cashFlow, arguments_.exercise,
+                    mesher, calculator,
+                    process_.riskFreeRate().currentLink().referenceDate(),
+                    process_.riskFreeRate().currentLink().dayCounter());
 
             // 4. Boundary conditions
             var boundaries = new FdmBoundaryConditionSet();
@@ -107,14 +114,14 @@ namespace QLNet.Pricingengines.barrier
                 || arguments_.barrierType == Barrier.Type.DownOut)
             {
                 boundaries.Add(new FdmDirichletBoundary(mesher, arguments_.rebate.Value, 0,
-                                                        FdmDirichletBoundary.Side.Lower));
-
+                    BoundaryCondition<FdmLinearOp>.Side.Lower));
             }
+
             if (arguments_.barrierType == Barrier.Type.UpIn
                 || arguments_.barrierType == Barrier.Type.UpOut)
             {
                 boundaries.Add(new FdmDirichletBoundary(mesher, arguments_.rebate.Value, 0,
-                                                        FdmDirichletBoundary.Side.Upper));
+                    BoundaryCondition<FdmLinearOp>.Side.Upper));
             }
 
             // 5. Solver
@@ -128,10 +135,10 @@ namespace QLNet.Pricingengines.barrier
             solverDesc.timeSteps = tGrid_;
 
             var solver =
-               new FdmBlackScholesSolver(
-               new Handle<GeneralizedBlackScholesProcess>(process_),
-               payoff.strike(), solverDesc, schemeDesc_,
-               localVol_, illegalLocalVolOverwrite_);
+                new FdmBlackScholesSolver(
+                    new Handle<GeneralizedBlackScholesProcess>(process_),
+                    payoff.strike(), solverDesc, schemeDesc_,
+                    localVol_, illegalLocalVolOverwrite_);
 
             var spot = process_.x0();
             results_.value = solver.valueAt(spot);
@@ -139,11 +146,5 @@ namespace QLNet.Pricingengines.barrier
             results_.gamma = solver.gammaAt(spot);
             results_.theta = solver.thetaAt(spot);
         }
-
-        protected GeneralizedBlackScholesProcess process_;
-        protected int tGrid_, xGrid_, dampingSteps_;
-        protected FdmSchemeDesc schemeDesc_;
-        protected bool localVol_;
-        protected double? illegalLocalVolOverwrite_;
     }
 }

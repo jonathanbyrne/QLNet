@@ -16,13 +16,15 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Quotes;
-using System;
 
 namespace QLNet.Instruments
 {
     //! Simple stock class
-    [JetBrains.Annotations.PublicAPI] public class Stock : Instrument
+    [PublicAPI]
+    public class Stock : Instrument
     {
         private Handle<Quote> quote_;
 

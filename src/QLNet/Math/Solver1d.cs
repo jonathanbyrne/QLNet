@@ -19,7 +19,6 @@
 */
 
 using QLNet.Exceptions;
-using System;
 
 namespace QLNet.Math
 {
@@ -36,14 +35,35 @@ namespace QLNet.Math
 
     public abstract class Solver1D
     {
-        const int MAX_FUNCTION_EVALUATIONS = 100;
-
-        protected double root_, xMin_, xMax_, fxMin_, fxMax_;
-        protected int maxEvaluations_ = MAX_FUNCTION_EVALUATIONS;
+        private const int MAX_FUNCTION_EVALUATIONS = 100;
         protected int evaluationNumber_;
-
+        protected int maxEvaluations_ = MAX_FUNCTION_EVALUATIONS;
+        protected double root_, xMin_, xMax_, fxMin_, fxMax_;
         private double lowerBound_, upperBound_;
-        private bool lowerBoundEnforced_ = false, upperBoundEnforced_ = false;
+        private bool lowerBoundEnforced_, upperBoundEnforced_;
+
+        //! sets the lower bound for the function domain
+        public void setLowerBound(double lowerBound)
+        {
+            lowerBound_ = lowerBound;
+            lowerBoundEnforced_ = true;
+        }
+
+        /*! This method sets the maximum number of function evaluations for the bracketing routine. An error is thrown
+            if a bracket is not found after this number of evaluations.
+        */
+
+        public void setMaxEvaluations(int evaluations)
+        {
+            maxEvaluations_ = evaluations;
+        }
+
+        //! sets the upper bound for the function domain
+        public void setUpperBound(double upperBound)
+        {
+            upperBound_ = upperBound;
+            upperBoundEnforced_ = true;
+        }
 
         /*! This method returns the zero of the function \f$ f \f$, determined with the given accuracy \f$ \epsilon \f$
                     depending on the particular solver, this might mean that the returned \f$ x \f$ is such that \f$ |f(x)| < \epsilon
@@ -68,8 +88,11 @@ namespace QLNet.Math
 
             // monotonically crescent bias, as in optionValue(volatility)
             if (Utils.close(fxMax_, 0.0))
+            {
                 return root_;
-            else if (fxMax_ > 0.0)
+            }
+
+            if (fxMax_ > 0.0)
             {
                 xMin_ = enforceBounds_(root_ - step);
                 fxMin_ = f.value(xMin_);
@@ -89,12 +112,19 @@ namespace QLNet.Math
                 if (fxMin_ * fxMax_ <= 0.0)
                 {
                     if (Utils.close(fxMin_, 0.0))
+                    {
                         return xMin_;
+                    }
+
                     if (Utils.close(fxMax_, 0.0))
+                    {
                         return xMax_;
+                    }
+
                     root_ = (xMax_ + xMin_) / 2.0;
                     return solveImpl(f, accuracy);
                 }
+
                 if (System.Math.Abs(fxMin_) < System.Math.Abs(fxMax_))
                 {
                     xMin_ = enforceBounds_(xMin_ + growthFactor * (xMin_ - xMax_));
@@ -118,14 +148,15 @@ namespace QLNet.Math
                     fxMax_ = f.value(xMax_);
                     flipflop = -1;
                 }
+
                 evaluationNumber_++;
             }
 
             Utils.QL_FAIL("unable to bracket root in " + maxEvaluations_
-                          + " function evaluations (last bracket attempt: " + "f[" + xMin_ + "," + xMax_ +
-                          "] "
-                          + "-> [" + fxMin_ + "," + fxMax_ + "])",
-                          QLNetExceptionEnum.RootNotBracketException);
+                                                       + " function evaluations (last bracket attempt: " + "f[" + xMin_ + "," + xMax_ +
+                                                       "] "
+                                                       + "-> [" + fxMin_ + "," + fxMax_ + "])",
+                QLNetExceptionEnum.RootNotBracketException);
             return 0;
         }
 
@@ -150,22 +181,26 @@ namespace QLNet.Math
 
             Utils.QL_REQUIRE(xMin_ < xMax_, () => "invalid range: xMin_ (" + xMin_ + ") >= xMax_ (" + xMax_ + ")");
             Utils.QL_REQUIRE(!lowerBoundEnforced_ || xMin_ >= lowerBound_, () =>
-                             "xMin_ (" + xMin_ + ") < enforced low bound (" + lowerBound_ + ")");
+                "xMin_ (" + xMin_ + ") < enforced low bound (" + lowerBound_ + ")");
             Utils.QL_REQUIRE(!upperBoundEnforced_ || xMax_ <= upperBound_, () =>
-                             "xMax_ (" + xMax_ + ") > enforced hi bound (" + upperBound_ + ")");
+                "xMax_ (" + xMax_ + ") > enforced hi bound (" + upperBound_ + ")");
 
             fxMin_ = f.value(xMin_);
             if (Utils.close(fxMin_, 0.0))
+            {
                 return xMin_;
+            }
 
             fxMax_ = f.value(xMax_);
             if (Utils.close(fxMax_, 0.0))
+            {
                 return xMax_;
+            }
 
             evaluationNumber_ = 2;
 
             Utils.QL_REQUIRE(fxMin_ * fxMax_ < 0.0, () =>
-                             "root not bracketed: f[" + xMin_ + "," + xMax_ + "] -> [" + fxMin_ + "," + fxMax_ + "]");
+                "root not bracketed: f[" + xMin_ + "," + xMax_ + "] -> [" + fxMin_ + "," + fxMax_ + "]");
             Utils.QL_REQUIRE(guess > xMin_, () => "guess (" + guess + ") < xMin_ (" + xMin_ + ")");
             Utils.QL_REQUIRE(guess < xMax_, () => "guess (" + guess + ") > xMax_ (" + xMax_ + ")");
 
@@ -174,36 +209,21 @@ namespace QLNet.Math
             return solveImpl(f, accuracy);
         }
 
-        /*! This method sets the maximum number of function evaluations for the bracketing routine. An error is thrown
-            if a bracket is not found after this number of evaluations.
-        */
-
-        public void setMaxEvaluations(int evaluations)
-        {
-            maxEvaluations_ = evaluations;
-        }
-
-        //! sets the lower bound for the function domain
-        public void setLowerBound(double lowerBound)
-        {
-            lowerBound_ = lowerBound;
-            lowerBoundEnforced_ = true;
-        }
-
-        //! sets the upper bound for the function domain
-        public void setUpperBound(double upperBound)
-        {
-            upperBound_ = upperBound;
-            upperBoundEnforced_ = true;
-        }
+        protected abstract double solveImpl(ISolver1d f, double xAccuracy);
 
         private double enforceBounds_(double x)
         {
-            if (lowerBoundEnforced_ && x < lowerBound_) return lowerBound_;
-            if (upperBoundEnforced_ && x > upperBound_) return upperBound_;
+            if (lowerBoundEnforced_ && x < lowerBound_)
+            {
+                return lowerBound_;
+            }
+
+            if (upperBoundEnforced_ && x > upperBound_)
+            {
+                return upperBound_;
+            }
+
             return x;
         }
-
-        protected abstract double solveImpl(ISolver1d f, double xAccuracy);
     }
 }

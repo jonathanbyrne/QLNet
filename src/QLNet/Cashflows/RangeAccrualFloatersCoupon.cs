@@ -14,31 +14,42 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System.Collections.Generic;
 
 namespace QLNet.Cashflows
 {
-    [JetBrains.Annotations.PublicAPI] public class RangeAccrualFloatersCoupon : FloatingRateCoupon
+    [PublicAPI]
+    public class RangeAccrualFloatersCoupon : FloatingRateCoupon
     {
+        private double endTime_;
+        private double lowerTrigger_;
+        private List<Date> observationDates_;
+        private int observationsNo_;
+        private Schedule observationsSchedule_;
+        private List<double> observationTimes_;
+        private double startTime_;
+        private double upperTrigger_;
+
         public RangeAccrualFloatersCoupon(Date paymentDate,
-                                          double nominal,
-                                          IborIndex index,
-                                          Date startDate,
-                                          Date endDate,
-                                          int fixingDays,
-                                          DayCounter dayCounter,
-                                          double gearing,
-                                          double spread,
-                                          Date refPeriodStart,
-                                          Date refPeriodEnd,
-                                          Schedule observationsSchedule,
-                                          double lowerTrigger,
-                                          double upperTrigger)
-           : base(paymentDate, nominal, startDate, endDate, fixingDays, index, gearing, spread, refPeriodStart, refPeriodEnd,
-                  dayCounter)
+            double nominal,
+            IborIndex index,
+            Date startDate,
+            Date endDate,
+            int fixingDays,
+            DayCounter dayCounter,
+            double gearing,
+            double spread,
+            Date refPeriodStart,
+            Date refPeriodEnd,
+            Schedule observationsSchedule,
+            double lowerTrigger,
+            double upperTrigger)
+            : base(paymentDate, nominal, startDate, endDate, fixingDays, index, gearing, spread, refPeriodStart, refPeriodEnd,
+                dayCounter)
         {
             observationsSchedule_ = observationsSchedule;
             lowerTrigger_ = lowerTrigger;
@@ -50,7 +61,7 @@ namespace QLNet.Cashflows
 
             observationDates_ = new List<Date>(observationsSchedule_.dates());
             observationDates_.RemoveAt(observationDates_.Count - 1); //remove end date
-            observationDates_.RemoveAt(0);                         //remove start date
+            observationDates_.RemoveAt(0); //remove start date
             observationsNo_ = observationDates_.Count;
 
             var rateCurve = index.forwardingTermStructure();
@@ -65,37 +76,25 @@ namespace QLNet.Cashflows
             }
         }
 
-        public double startTime() => startTime_;
-
         public double endTime() => endTime_;
 
         public double lowerTrigger() => lowerTrigger_;
 
-        public double upperTrigger() => upperTrigger_;
+        public List<Date> observationDates() => observationDates_;
 
         public int observationsNo() => observationsNo_;
 
-        public List<Date> observationDates() => observationDates_;
+        public Schedule observationsSchedule() => observationsSchedule_;
 
         public List<double> observationTimes() => observationTimes_;
-
-        public Schedule observationsSchedule() => observationsSchedule_;
 
         public double priceWithoutOptionality(Handle<YieldTermStructure> discountCurve) =>
             accrualPeriod() * (gearing_ * indexFixing() + spread_) *
             nominal() * discountCurve.link.discount(date());
 
-        private double startTime_;
-        private double endTime_;
+        public double startTime() => startTime_;
 
-        private Schedule observationsSchedule_;
-        private List<Date> observationDates_;
-        private List<double> observationTimes_;
-        private int observationsNo_;
-
-        private double lowerTrigger_;
-        private double upperTrigger_;
-
+        public double upperTrigger() => upperTrigger_;
     }
 
     //! helper class building a sequence of range-accrual floating-rate coupons

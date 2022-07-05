@@ -19,13 +19,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace QLNet.Methods.Finitedifferences.Utilities
 {
     public static class GenericListUtils
     {
+        private static readonly Random generator = new Random(1);
+
         public static T accumulate<T>(this IList<T> list, int first, int last, T init, Func<T, T, T> func)
         {
             var result = init;
@@ -37,12 +37,11 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             return result;
         }
 
-        public static int distance<T>(this IList<T> list, T first, T last)
+        public static IList<T> Clone<T>(this IList<T> input) where T : ICloneable, new()
         {
-            var iFirst = list.IndexOf(first);
-            var iLast = list.IndexOf(last);
-
-            return System.Math.Abs(iLast - iFirst + 1) * (iLast < iFirst ? -1 : 1);
+            IList<T> c = new InitializedList<T>(input.Count);
+            c.ForEach((ii, vv) => c[ii] = (T)input[ii].Clone());
+            return c;
         }
 
         public static void copy<T>(this IList<T> input1, int first1, int last1, int first2, IList<T> output)
@@ -54,6 +53,14 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             }
         }
 
+        public static int distance<T>(this IList<T> list, T first, T last)
+        {
+            var iFirst = list.IndexOf(first);
+            var iLast = list.IndexOf(last);
+
+            return System.Math.Abs(iLast - iFirst + 1) * (iLast < iFirst ? -1 : 1);
+        }
+
         public static double inner_product(this IList<double> input1, int first1, int last1, int first2, IList<double> v, double init)
         {
             var sum = init;
@@ -62,6 +69,7 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             {
                 sum += v[index++] * input1[i];
             }
+
             return sum;
         }
 
@@ -73,10 +81,9 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             {
                 sum += v[index++] * input1[i];
             }
+
             return sum;
         }
-
-        static readonly Random generator = new Random(1);
 
         public static void Shuffle<T>(this IList<T> sequence)
         {
@@ -86,9 +93,9 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             // than the length of the sequence.
             // See: http://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
 
-            var m = 0;                // keeps track of count items shuffled
-            var w = sequence.Count;  // upper bound of shrinking swap range
-            var g = w - 1;            // used to compute the second swap index
+            var m = 0; // keeps track of count items shuffled
+            var w = sequence.Count; // upper bound of shrinking swap range
+            var g = w - 1; // used to compute the second swap index
 
             // perform in-place, partial Fisher-Yates shuffle
             while (m < w)
@@ -100,12 +107,6 @@ namespace QLNet.Methods.Finitedifferences.Utilities
                 ++m;
                 --w;
             }
-        }
-        public static IList<T> Clone<T>(this IList<T> input) where T : ICloneable, new()
-        {
-            IList<T> c = new InitializedList<T>(input.Count);
-            c.ForEach((ii, vv) => c[ii] = (T)input[ii].Clone());
-            return c;
         }
     }
 }

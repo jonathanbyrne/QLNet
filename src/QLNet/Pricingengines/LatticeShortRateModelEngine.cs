@@ -16,37 +16,37 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Models;
-using System;
 
 namespace QLNet.Pricingengines
 {
-
     //! Engine for a short-rate model specialized on a lattice
     /*! Derived engines only need to implement the <tt>calculate()</tt>
         method
     */
-    [JetBrains.Annotations.PublicAPI] public class LatticeShortRateModelEngine<ArgumentsType, ResultsType>
-      : GenericModelEngine<ShortRateModel, ArgumentsType, ResultsType>
+    [PublicAPI]
+    public class LatticeShortRateModelEngine<ArgumentsType, ResultsType>
+        : GenericModelEngine<ShortRateModel, ArgumentsType, ResultsType>
         where ArgumentsType : IPricingEngineArguments, new()
         where ResultsType : IPricingEngineResults, new()
-
     {
+        protected Lattice lattice_;
         protected TimeGrid timeGrid_;
         protected int timeSteps_;
-        protected Lattice lattice_;
 
         public LatticeShortRateModelEngine(ShortRateModel model,
-                                           int timeSteps)
-           : base(model)
+            int timeSteps)
+            : base(model)
         {
             timeSteps_ = timeSteps;
             Utils.QL_REQUIRE(timeSteps > 0, () => "timeSteps must be positive, " + timeSteps + " not allowed");
         }
 
         public LatticeShortRateModelEngine(ShortRateModel model,
-                                           TimeGrid timeGrid)
-           : base(model)
+            TimeGrid timeGrid)
+            : base(model)
         {
             timeGrid_ = new TimeGrid(timeGrid.Last(), timeGrid.size() - 1 /*timeGrid.dt(1) - timeGrid.dt(0)*/);
             timeGrid_ = timeGrid;
@@ -55,15 +55,21 @@ namespace QLNet.Pricingengines
         }
 
         #region PricingEngine
+
         #region Observer & Observable
+
         public override void update()
         {
             if (!timeGrid_.empty())
+            {
                 lattice_ = model_.link.tree(timeGrid_);
+            }
+
             notifyObservers();
         }
+
         #endregion
+
         #endregion
     }
-
 }

@@ -1,15 +1,20 @@
-﻿using QLNet.Math;
+﻿using JetBrains.Annotations;
+using QLNet.Math;
 using QLNet.Quotes;
 
 namespace QLNet.Pricingengines
 {
-    [JetBrains.Annotations.PublicAPI] public class BlackDeltaPremiumAdjustedSolverClass : ISolver1d
+    [PublicAPI]
+    public class BlackDeltaPremiumAdjustedSolverClass : ISolver1d
     {
+        private BlackDeltaCalculator bdc_;
+        private double delta_;
+
         public BlackDeltaPremiumAdjustedSolverClass(QLNet.Option.Type ot,
             DeltaVolQuote.DeltaType dt,
             double spot,
-            double dDiscount,   // domestic discount
-            double fDiscount,   // foreign  discount
+            double dDiscount, // domestic discount
+            double fDiscount, // foreign  discount
             double stdDev,
             double delta)
         {
@@ -18,8 +23,5 @@ namespace QLNet.Pricingengines
         }
 
         public override double value(double strike) => bdc_.deltaFromStrike(strike) - delta_;
-
-        private BlackDeltaCalculator bdc_;
-        private double delta_;
     }
 }

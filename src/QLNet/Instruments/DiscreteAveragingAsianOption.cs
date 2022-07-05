@@ -1,9 +1,11 @@
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class DiscreteAveragingAsianOption : OneAssetOption
+    [PublicAPI]
+    public class DiscreteAveragingAsianOption : OneAssetOption
     {
         public new class Arguments : Option.Arguments
         {
@@ -13,6 +15,15 @@ namespace QLNet.Instruments
                 runningAccumulator = null;
                 pastFixings = null;
             }
+
+            public Average.Type averageType { get; set; }
+
+            public List<Date> fixingDates { get; set; }
+
+            public int? pastFixings { get; set; }
+
+            public double? runningAccumulator { get; set; }
+
             public override void validate()
             {
                 base.validate();
@@ -38,15 +49,16 @@ namespace QLNet.Instruments
 
                 // check fixingTimes_ here
             }
-            public Average.Type averageType { get; set; }
-            public double? runningAccumulator { get; set; }
-            public int? pastFixings { get; set; }
-            public List<Date> fixingDates { get; set; }
         }
 
         public new class Engine : GenericEngine<Arguments, Results>
         {
         }
+
+        protected Average.Type averageType_;
+        protected List<Date> fixingDates_;
+        protected int? pastFixings_;
+        protected double? runningAccumulator_;
 
         public DiscreteAveragingAsianOption(Average.Type averageType, double? runningAccumulator, int? pastFixings, List<Date> fixingDates, StrikedTypePayoff payoff, Exercise exercise)
             : base(payoff, exercise)
@@ -61,7 +73,6 @@ namespace QLNet.Instruments
 
         public override void setupArguments(IPricingEngineArguments args)
         {
-
             base.setupArguments(args);
 
             var moreArgs = args as Arguments;
@@ -72,9 +83,5 @@ namespace QLNet.Instruments
             moreArgs.pastFixings = pastFixings_;
             moreArgs.fixingDates = fixingDates_;
         }
-        protected Average.Type averageType_;
-        protected double? runningAccumulator_;
-        protected int? pastFixings_;
-        protected List<Date> fixingDates_;
     }
 }

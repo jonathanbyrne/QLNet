@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Quotes;
 using QLNet.Time;
 
 namespace QLNet.Instruments.Bonds
 {
-    [JetBrains.Annotations.PublicAPI] public class ConvertibleZeroCouponBond : ConvertibleBond
+    [PublicAPI]
+    public class ConvertibleZeroCouponBond : ConvertibleBond
     {
         public ConvertibleZeroCouponBond(Exercise exercise,
             double conversionRatio,

@@ -1,6 +1,9 @@
-﻿namespace QLNet.Math.Interpolations
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class ConvexMonotone3Helper : ISectionHelper
+    [PublicAPI]
+    public class ConvexMonotone3Helper : ISectionHelper
     {
         private double xPrev_, xScaling_, gPrev_, gNext_, fAverage_, eta3_, prevPrimitive_;
 
@@ -18,18 +21,7 @@
             prevPrimitive_ = prevPrimitive;
         }
 
-        public double value(double x)
-        {
-            var xVal = (x - xPrev_) / xScaling_;
-            if (xVal <= eta3_)
-            {
-                return fAverage_ + gNext_ + (gPrev_ - gNext_) / (eta3_ * eta3_) * (eta3_ - xVal) * (eta3_ - xVal);
-            }
-            else
-            {
-                return fAverage_ + gNext_;
-            }
-        }
+        public double fNext() => fAverage_ + gNext_;
 
         public double primitive(double x)
         {
@@ -39,12 +31,20 @@
                 return prevPrimitive_ + xScaling_ * (fAverage_ * xVal + gNext_ * xVal + (gPrev_ - gNext_) / (eta3_ * eta3_) *
                     (1.0 / 3.0 * xVal * xVal * xVal - eta3_ * xVal * xVal + eta3_ * eta3_ * xVal));
             }
-            else
-            {
-                return prevPrimitive_ + xScaling_ * (fAverage_ * xVal + gNext_ * xVal + (gPrev_ - gNext_) / (eta3_ * eta3_) *
-                    (1.0 / 3.0 * eta3_ * eta3_ * eta3_));
-            }
+
+            return prevPrimitive_ + xScaling_ * (fAverage_ * xVal + gNext_ * xVal + (gPrev_ - gNext_) / (eta3_ * eta3_) *
+                (1.0 / 3.0 * eta3_ * eta3_ * eta3_));
         }
-        public double fNext() => fAverage_ + gNext_;
+
+        public double value(double x)
+        {
+            var xVal = (x - xPrev_) / xScaling_;
+            if (xVal <= eta3_)
+            {
+                return fAverage_ + gNext_ + (gPrev_ - gNext_) / (eta3_ * eta3_) * (eta3_ - xVal) * (eta3_ - xVal);
+            }
+
+            return fAverage_ + gNext_;
+        }
     }
 }

@@ -13,11 +13,11 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
-using QLNet.Instruments;
+
+using System.Numerics;
+using JetBrains.Annotations;
 using QLNet.Models.Equity;
 using QLNet.Models.Shortrate.Onefactormodels;
-using System;
-using System.Numerics;
 
 namespace QLNet.Pricingengines.vanilla
 {
@@ -40,14 +40,18 @@ namespace QLNet.Pricingengines.vanilla
               against QuantLib's analytic Heston and
               Black-Scholes-Merton Hull-White engine
     */
-    [JetBrains.Annotations.PublicAPI] public class AnalyticHestonHullWhiteEngine : AnalyticHestonEngine
+    [PublicAPI]
+    public class AnalyticHestonHullWhiteEngine : AnalyticHestonEngine
     {
+        protected HullWhite hullWhiteModel_;
+        private double a_, sigma_;
+        private double m_;
 
         // see AnalticHestonEninge for usage of different constructors
         public AnalyticHestonHullWhiteEngine(HestonModel hestonModel,
-                                             HullWhite hullWhiteModel,
-                                             int integrationOrder = 144)
-           : base(hestonModel, integrationOrder)
+            HullWhite hullWhiteModel,
+            int integrationOrder = 144)
+            : base(hestonModel, integrationOrder)
         {
             hullWhiteModel_ = hullWhiteModel;
 
@@ -56,26 +60,14 @@ namespace QLNet.Pricingengines.vanilla
         }
 
         public AnalyticHestonHullWhiteEngine(HestonModel hestonModel,
-                                             HullWhite hullWhiteModel,
-                                             double relTolerance, int maxEvaluations)
-           : base(hestonModel, relTolerance, maxEvaluations)
+            HullWhite hullWhiteModel,
+            double relTolerance, int maxEvaluations)
+            : base(hestonModel, relTolerance, maxEvaluations)
         {
             hullWhiteModel_ = hullWhiteModel;
 
             update();
             hullWhiteModel_.registerWith(update);
-        }
-
-        public void setupArguments(QLNet.Option.Arguments args)
-        {
-            arguments_ = args;
-        }
-
-        public override void update()
-        {
-            a_ = hullWhiteModel_.parameters()[0];
-            sigma_ = hullWhiteModel_.parameters()[1];
-            base.update();
         }
 
         public override void calculate()
@@ -95,11 +87,18 @@ namespace QLNet.Pricingengines.vanilla
             base.calculate();
         }
 
+        public void setupArguments(QLNet.Option.Arguments args)
+        {
+            arguments_ = args;
+        }
+
+        public override void update()
+        {
+            a_ = hullWhiteModel_.parameters()[0];
+            sigma_ = hullWhiteModel_.parameters()[1];
+            base.update();
+        }
+
         protected override Complex addOnTerm(double u, double t, int j) => new Complex(-m_ * u * u, u * (m_ - 2 * m_ * (j - 1)));
-
-        protected HullWhite hullWhiteModel_;
-
-        private double m_;
-        private double a_, sigma_;
     }
 }

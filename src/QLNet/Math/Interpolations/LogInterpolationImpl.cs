@@ -17,29 +17,39 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Math;
-using QLNet.Patterns;
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Patterns;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class LogInterpolationImpl<Interpolator> : Interpolation.templateImpl
-      where Interpolator : IInterpolationFactory, new()
+    [PublicAPI]
+    public class LogInterpolationImpl<Interpolator> : Interpolation.templateImpl
+        where Interpolator : IInterpolationFactory, new()
     {
-        private List<double> logY_;
         private Interpolation interpolation_;
+        private List<double> logY_;
 
         public LogInterpolationImpl(List<double> xBegin, int size, List<double> yBegin)
-           : this(xBegin, size, yBegin, FastActivator<Interpolator>.Create())
-        { }
+            : this(xBegin, size, yBegin, FastActivator<Interpolator>.Create())
+        {
+        }
 
         public LogInterpolationImpl(List<double> xBegin, int size, List<double> yBegin, IInterpolationFactory factory)
-           : base(xBegin, size, yBegin)
+            : base(xBegin, size, yBegin)
         {
             logY_ = new InitializedList<double>(size_);
             interpolation_ = factory.interpolate(xBegin_, size, logY_);
         }
+
+        public override double derivative(double x) => value(x) * interpolation_.derivative(x, true);
+
+        public override double primitive(double x) => throw new NotImplementedException("LogInterpolation primitive not implemented");
+
+        public override double secondDerivative(double x) =>
+            derivative(x) * interpolation_.derivative(x, true) +
+            value(x) * interpolation_.secondDerivative(x, true);
 
         public override void update()
         {
@@ -48,18 +58,11 @@ namespace QLNet.Math.Interpolations
                 Utils.QL_REQUIRE(yBegin_[i] > 0.0, () => "invalid value (" + yBegin_[i] + ") at index " + i);
                 logY_[i] = System.Math.Log(yBegin_[i]);
             }
+
             interpolation_.update();
         }
 
         public override double value(double x) => System.Math.Exp(interpolation_.value(x, true));
-
-        public override double primitive(double x) => throw new NotImplementedException("LogInterpolation primitive not implemented");
-
-        public override double derivative(double x) => value(x) * interpolation_.derivative(x, true);
-
-        public override double secondDerivative(double x) =>
-            derivative(x) * interpolation_.derivative(x, true) +
-            value(x) * interpolation_.secondDerivative(x, true);
     }
 
     //! log-linear interpolation factory and traits

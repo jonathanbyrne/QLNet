@@ -17,19 +17,21 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
-using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.Ibor
 {
-    [JetBrains.Annotations.PublicAPI] public class FedFunds : OvernightIndex
+    [PublicAPI]
+    public class FedFunds : OvernightIndex
     {
         public FedFunds(Handle<YieldTermStructure> h = null)
-           : base("FedFunds", 0, new USDCurrency(), new UnitedStates(UnitedStates.Market.Settlement),
-                  new Actual360(), h ?? new Handle<YieldTermStructure>())
-        { }
+            : base("FedFunds", 0, new USDCurrency(), new UnitedStates(UnitedStates.Market.Settlement),
+                new Actual360(), h ?? new Handle<YieldTermStructure>())
+        {
+        }
     }
 }

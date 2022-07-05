@@ -17,13 +17,12 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.Pricingengines;
 using QLNet.processes;
-using QLNet.Time;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Pricingengines.asian
 {
@@ -43,7 +42,8 @@ namespace QLNet.Pricingengines.asian
 
        \ingroup asianengines
     */
-    [JetBrains.Annotations.PublicAPI] public class AnalyticDiscreteGeometricAveragePriceAsianEngine : DiscreteAveragingAsianOption.Engine
+    [PublicAPI]
+    public class AnalyticDiscreteGeometricAveragePriceAsianEngine : DiscreteAveragingAsianOption.Engine
     {
         private GeneralizedBlackScholesProcess process_;
 
@@ -66,7 +66,7 @@ namespace QLNet.Pricingengines.asian
             if (arguments_.averageType == Average.Type.Geometric)
             {
                 Utils.QL_REQUIRE(arguments_.runningAccumulator > 0.0, () =>
-                                 "positive running product required: " + arguments_.runningAccumulator + " not allowed");
+                    "positive running product required: " + arguments_.runningAccumulator + " not allowed");
 
                 runningLog = System.Math.Log(arguments_.runningAccumulator.GetValueOrDefault());
                 pastFixings = arguments_.pastFixings.GetValueOrDefault();
@@ -109,17 +109,18 @@ namespace QLNet.Pricingengines.asian
             var vola = process_.blackVolatility().link.blackVol(arguments_.exercise.lastDate(), payoff.strike());
             var temp = 0.0;
             for (i = pastFixings + 1; i < numberOfFixings; i++)
+            {
                 temp += fixingTimes[i - pastFixings - 1] * (N - i);
+            }
+
             var variance = vola * vola / N / N * (timeSum + 2.0 * temp);
             var dsigG_dsig = System.Math.Sqrt(timeSum + 2.0 * temp) / N;
             var sigG = vola * dsigG_dsig;
             var dmuG_dsig = -(vola * timeSum) / N;
 
             var exDate = arguments_.exercise.lastDate();
-            var dividendRate = process_.dividendYield().link.
-                                  zeroRate(exDate, divdc, Compounding.Continuous, Frequency.NoFrequency).rate();
-            var riskFreeRate = process_.riskFreeRate().link.
-                                  zeroRate(exDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).rate();
+            var dividendRate = process_.dividendYield().link.zeroRate(exDate, divdc, Compounding.Continuous, Frequency.NoFrequency).rate();
+            var riskFreeRate = process_.riskFreeRate().link.zeroRate(exDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).rate();
             var nu = riskFreeRate - dividendRate - 0.5 * vola * vola;
 
             var s = process_.stateVariable().link.value();
@@ -153,30 +154,33 @@ namespace QLNet.Pricingengines.asian
                 Nx_1 = muG > System.Math.Log(payoff.strike()) ? 1.0 : 0.0;
                 nx_1 = 0.0;
             }
+
             results_.vega = forwardPrice * riskFreeDiscount *
                             ((dmuG_dsig + sigG * dsigG_dsig) * Nx_1 + nx_1 * dsigG_dsig);
 
             if (payoff.optionType() == QLNet.Option.Type.Put)
+            {
                 results_.vega -= riskFreeDiscount * forwardPrice *
                                  (dmuG_dsig + sigG * dsigG_dsig);
+            }
 
             var tRho = rfdc.yearFraction(process_.riskFreeRate().link.referenceDate(),
-                                            arguments_.exercise.lastDate());
+                arguments_.exercise.lastDate());
             results_.rho = black.rho(tRho) * timeSum / (N * tRho)
                            - (tRho - timeSum / N) * results_.value;
 
             var tDiv = divdc.yearFraction(
-                             process_.dividendYield().link.referenceDate(),
-                             arguments_.exercise.lastDate());
+                process_.dividendYield().link.referenceDate(),
+                arguments_.exercise.lastDate());
 
             results_.dividendRho = black.dividendRho(tDiv) * timeSum / (N * tDiv);
 
             results_.strikeSensitivity = black.strikeSensitivity();
 
             results_.theta = Utils.blackScholesTheta(process_,
-                                                     results_.value.GetValueOrDefault(),
-                                                     results_.delta.GetValueOrDefault(),
-                                                     results_.gamma.GetValueOrDefault());
+                results_.value.GetValueOrDefault(),
+                results_.delta.GetValueOrDefault(),
+                results_.gamma.GetValueOrDefault());
         }
     }
 }

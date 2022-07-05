@@ -7,7 +7,10 @@ namespace QLNet
         public static double? toNullable(double? val)
         {
             if (val.IsEqual(double.MinValue) || val == null)
+            {
                 return null;
+            }
+
             return val;
         }
     }

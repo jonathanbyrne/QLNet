@@ -1,19 +1,26 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Methods.montecarlo;
 
 namespace QLNet.Pricingengines.barrier
 {
-    [JetBrains.Annotations.PublicAPI] public class BiasedBarrierPathPricer : PathPricer<IPath>
+    [PublicAPI]
+    public class BiasedBarrierPathPricer : PathPricer<IPath>
     {
+        protected double? barrier_;
+        protected Barrier.Type barrierType_;
+        protected List<double> discounts_;
+        protected PlainVanillaPayoff payoff_;
+        protected double? rebate_;
+
         public BiasedBarrierPathPricer(Barrier.Type barrierType,
             double? barrier,
             double? rebate,
             QLNet.Option.Type type,
             double strike,
             List<double> discounts)
-            : base()
         {
             barrierType_ = barrierType;
             barrier_ = barrier;
@@ -48,9 +55,12 @@ namespace QLNet.Pricingengines.barrier
                         {
                             isOptionActive = true;
                             if (knockNode == null)
+                            {
                                 knockNode = i;
+                            }
                         }
                     }
+
                     break;
                 case Barrier.Type.UpIn:
                     isOptionActive = false;
@@ -61,9 +71,12 @@ namespace QLNet.Pricingengines.barrier
                         {
                             isOptionActive = true;
                             if (knockNode == null)
+                            {
                                 knockNode = i;
+                            }
                         }
                     }
+
                     break;
                 case Barrier.Type.DownOut:
                     isOptionActive = true;
@@ -74,9 +87,12 @@ namespace QLNet.Pricingengines.barrier
                         {
                             isOptionActive = false;
                             if (knockNode == null)
+                            {
                                 knockNode = i;
+                            }
                         }
                     }
+
                     break;
                 case Barrier.Type.UpOut:
                     isOptionActive = true;
@@ -87,9 +103,12 @@ namespace QLNet.Pricingengines.barrier
                         {
                             isOptionActive = false;
                             if (knockNode == null)
+                            {
                                 knockNode = i;
+                            }
                         }
                     }
+
                     break;
                 default:
                     Utils.QL_FAIL("unknown barrier ExerciseType");
@@ -100,27 +119,19 @@ namespace QLNet.Pricingengines.barrier
             {
                 return payoff_.value(asset_price) * discounts_.Last();
             }
-            else
+
+            switch (barrierType_)
             {
-                switch (barrierType_)
-                {
-                    case Barrier.Type.UpIn:
-                    case Barrier.Type.DownIn:
-                        return rebate_.GetValueOrDefault() * discounts_.Last();
-                    case Barrier.Type.UpOut:
-                    case Barrier.Type.DownOut:
-                        return rebate_.GetValueOrDefault() * discounts_[(int)knockNode];
-                    default:
-                        Utils.QL_FAIL("unknown barrier ExerciseType");
-                        return -1;
-                }
+                case Barrier.Type.UpIn:
+                case Barrier.Type.DownIn:
+                    return rebate_.GetValueOrDefault() * discounts_.Last();
+                case Barrier.Type.UpOut:
+                case Barrier.Type.DownOut:
+                    return rebate_.GetValueOrDefault() * discounts_[(int)knockNode];
+                default:
+                    Utils.QL_FAIL("unknown barrier ExerciseType");
+                    return -1;
             }
         }
-
-        protected Barrier.Type barrierType_;
-        protected double? barrier_;
-        protected double? rebate_;
-        protected PlainVanillaPayoff payoff_;
-        protected List<double> discounts_;
     }
 }

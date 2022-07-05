@@ -1,10 +1,22 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math.Distributions;
 
 namespace QLNet.Math.Interpolations
 {
-    [JetBrains.Annotations.PublicAPI] public class VannaVolgaInterpolationImpl : Interpolation.templateImpl
+    [PublicAPI]
+    public class VannaVolgaInterpolationImpl : Interpolation.templateImpl
     {
+        private double atmVol_;
+        private double dDiscount_;
+        private double fDiscount_;
+        private double fwd_;
+        private List<double> premiaBS;
+        private List<double> premiaMKT;
+        private double spot_;
+        private double T_;
+        private List<double> vegas;
+
         public VannaVolgaInterpolationImpl(List<double> xBegin, int size, List<double> yBegin,
             double spot, double dDiscount, double fDiscount, double T)
             : base(xBegin, size, yBegin, VannaVolga.requiredPoints)
@@ -21,6 +33,24 @@ namespace QLNet.Math.Interpolations
             Utils.QL_REQUIRE(size == 3, () => "Vanna Volga Interpolator only interpolates 3 volatilities in strike space");
         }
 
+        public override double derivative(double x)
+        {
+            Utils.QL_FAIL("Vanna Volga derivative not implemented");
+            return 0;
+        }
+
+        public override double primitive(double x)
+        {
+            Utils.QL_FAIL("Vanna Volga primitive not implemented");
+            return 0;
+        }
+
+        public override double secondDerivative(double x)
+        {
+            Utils.QL_FAIL("Vanna Volga secondDerivative not implemented");
+            return 0;
+        }
+
         public override void update()
         {
             //atmVol should be the second vol
@@ -28,8 +58,8 @@ namespace QLNet.Math.Interpolations
             fwd_ = spot_ * fDiscount_ / dDiscount_;
             for (var i = 0; i < 3; i++)
             {
-                premiaBS.Add(Utils.blackFormula(QLNet.Option.Type.Call, xBegin_[i], fwd_, atmVol_ * System.Math.Sqrt(T_), dDiscount_));
-                premiaMKT.Add(Utils.blackFormula(QLNet.Option.Type.Call, xBegin_[i], fwd_, yBegin_[i] * System.Math.Sqrt(T_), dDiscount_));
+                premiaBS.Add(Utils.blackFormula(Option.Type.Call, xBegin_[i], fwd_, atmVol_ * System.Math.Sqrt(T_), dDiscount_));
+                premiaMKT.Add(Utils.blackFormula(Option.Type.Call, xBegin_[i], fwd_, yBegin_[i] * System.Math.Sqrt(T_), dDiscount_));
                 vegas.Add(vega(xBegin_[i]));
             }
         }
@@ -46,40 +76,11 @@ namespace QLNet.Math.Interpolations
                      * (System.Math.Log(k / xBegin_[0]) * System.Math.Log(k / xBegin_[1]))
                      / (System.Math.Log(xBegin_[2] / xBegin_[0]) * System.Math.Log(xBegin_[2] / xBegin_[1]));
 
-            var cBS = Utils.blackFormula(QLNet.Option.Type.Call, k, fwd_, atmVol_ * System.Math.Sqrt(T_), dDiscount_);
+            var cBS = Utils.blackFormula(Option.Type.Call, k, fwd_, atmVol_ * System.Math.Sqrt(T_), dDiscount_);
             var c = cBS + x1 * (premiaMKT[0] - premiaBS[0]) + x2 * (premiaMKT[1] - premiaBS[1]) + x3 * (premiaMKT[2] - premiaBS[2]);
-            var std = Utils.blackFormulaImpliedStdDev(QLNet.Option.Type.Call, k, fwd_, c, dDiscount_);
+            var std = Utils.blackFormulaImpliedStdDev(Option.Type.Call, k, fwd_, c, dDiscount_);
             return std / System.Math.Sqrt(T_);
         }
-
-        public override double primitive(double x)
-        {
-            Utils.QL_FAIL("Vanna Volga primitive not implemented");
-            return 0;
-        }
-
-        public override double derivative(double x)
-        {
-            Utils.QL_FAIL("Vanna Volga derivative not implemented");
-            return 0;
-        }
-
-        public override double secondDerivative(double x)
-        {
-            Utils.QL_FAIL("Vanna Volga secondDerivative not implemented");
-            return 0;
-        }
-
-
-        private List<double> premiaBS;
-        private List<double> premiaMKT;
-        private List<double> vegas;
-        private double atmVol_;
-        private double spot_;
-        private double fwd_;
-        private double dDiscount_;
-        private double fDiscount_;
-        private double T_;
 
         private double vega(double k)
         {
@@ -87,6 +88,5 @@ namespace QLNet.Math.Interpolations
             var norm = new NormalDistribution();
             return spot_ * dDiscount_ * System.Math.Sqrt(T_) * norm.value(d1);
         }
-
     }
 }

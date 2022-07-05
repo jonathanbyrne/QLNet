@@ -1,6 +1,10 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class CallabilitySchedule : List<Callability> { }
+    [PublicAPI]
+    public class CallabilitySchedule : List<Callability>
+    {
+    }
 }

@@ -27,16 +27,28 @@ namespace QLNet.Cashflows
     //  still abstract and provides derived classes with methods for accrual period calculations.
     public abstract class Coupon : CashFlow
     {
+        protected Date accrualEndDate_;
+        protected double? accrualPeriod_;
+        protected Date accrualStartDate_;
+        protected Date exCouponDate_;
+        protected double nominal_;
+        protected Date paymentDate_;
+        protected Date refPeriodEnd_;
+        protected Date refPeriodStart_;
+
         // Constructors
-        protected Coupon() { }       // default constructor
-                                     // coupon does not adjust the payment date which must already be a business day
+        protected Coupon()
+        {
+        } // default constructor
+
+        // coupon does not adjust the payment date which must already be a business day
         protected Coupon(Date paymentDate,
-                         double nominal,
-                         Date accrualStartDate,
-                         Date accrualEndDate,
-                         Date refPeriodStart = null,
-                         Date refPeriodEnd = null,
-                         Date exCouponDate = null)
+            double nominal,
+            Date accrualStartDate,
+            Date accrualEndDate,
+            Date refPeriodStart = null,
+            Date refPeriodEnd = null,
+            Date exCouponDate = null)
         {
             paymentDate_ = paymentDate;
             nominal_ = nominal;
@@ -48,9 +60,75 @@ namespace QLNet.Cashflows
             accrualPeriod_ = null;
 
             if (refPeriodStart_ == null)
+            {
                 refPeriodStart_ = accrualStartDate_;
+            }
+
             if (refPeriodEnd_ == null)
+            {
                 refPeriodEnd_ = accrualEndDate_;
+            }
+        }
+
+        //! end date of the reference period
+        public Date referencePeriodEnd => refPeriodEnd_;
+
+        //! start date of the reference period
+        public Date referencePeriodStart => refPeriodStart_;
+
+        //! accrued amount at the given date
+        public abstract double accruedAmount(Date d);
+
+        //! day counter for accrual calculation
+        public abstract DayCounter dayCounter();
+
+        //! accrued rate
+        public abstract double rate();
+
+        //! accrual period in days
+        public int accrualDays() => dayCounter().dayCount(accrualStartDate_, accrualEndDate_);
+
+        //! end of the accrual period
+        public Date accrualEndDate() => accrualEndDate_;
+
+        //! accrual period as fraction of year
+        public double accrualPeriod()
+        {
+            if (accrualPeriod_ == null)
+            {
+                accrualPeriod_ = dayCounter().yearFraction(accrualStartDate_,
+                    accrualEndDate_, refPeriodStart_, refPeriodEnd_);
+            }
+
+            return accrualPeriod_.Value;
+        }
+
+        //! start of the accrual period
+        public Date accrualStartDate() => accrualStartDate_;
+
+        //! accrued days at the given date
+        public int accruedDays(Date d)
+        {
+            if (d <= accrualStartDate_ || d > paymentDate_)
+            {
+                return 0;
+            }
+
+            return dayCounter().dayCount(accrualStartDate_, Date.Min(d, accrualEndDate_));
+        }
+
+        //! accrued period as fraction of year at the given date
+        public double accruedPeriod(Date d)
+        {
+            if (d <= accrualStartDate_ || d > paymentDate_)
+            {
+                return 0.0;
+            }
+
+            return dayCounter().yearFraction(accrualStartDate_,
+                Date.Min(d, accrualEndDate_),
+                refPeriodStart_,
+                refPeriodEnd_);
         }
 
         // Event interface
@@ -61,64 +139,5 @@ namespace QLNet.Cashflows
 
         // Inspectors
         public double nominal() => nominal_;
-
-        //! start of the accrual period
-        public Date accrualStartDate() => accrualStartDate_;
-
-        //! end of the accrual period
-        public Date accrualEndDate() => accrualEndDate_;
-
-        //! start date of the reference period
-        public Date referencePeriodStart => refPeriodStart_;
-
-        //! end date of the reference period
-        public Date referencePeriodEnd => refPeriodEnd_;
-
-        //! accrual period as fraction of year
-        public double accrualPeriod()
-        {
-            if (accrualPeriod_ == null)
-                accrualPeriod_ = dayCounter().yearFraction(accrualStartDate_,
-                                                           accrualEndDate_, refPeriodStart_, refPeriodEnd_);
-            return accrualPeriod_.Value;
-        }
-        //! accrual period in days
-        public int accrualDays() => dayCounter().dayCount(accrualStartDate_, accrualEndDate_);
-
-        //! accrued rate
-        public abstract double rate();
-        //! day counter for accrual calculation
-        public abstract DayCounter dayCounter();
-        //! accrued period as fraction of year at the given date
-        public double accruedPeriod(Date d)
-        {
-            if (d <= accrualStartDate_ || d > paymentDate_)
-                return 0.0;
-            else
-                return dayCounter().yearFraction(accrualStartDate_,
-                                                 Date.Min(d, accrualEndDate_),
-                                                 refPeriodStart_,
-                                                 refPeriodEnd_);
-
-        }
-        //! accrued days at the given date
-        public int accruedDays(Date d)
-        {
-            if (d <= accrualStartDate_ || d > paymentDate_)
-                return 0;
-            else
-                return dayCounter().dayCount(accrualStartDate_, Date.Min(d, accrualEndDate_));
-        }
-        //! accrued amount at the given date
-        public abstract double accruedAmount(Date d);
-
-        protected double nominal_;
-        protected Date paymentDate_;
-        protected Date accrualStartDate_;
-        protected Date accrualEndDate_;
-        protected Date refPeriodStart_;
-        protected Date refPeriodEnd_;
-        protected Date exCouponDate_;
-        protected double? accrualPeriod_;
     }
 }

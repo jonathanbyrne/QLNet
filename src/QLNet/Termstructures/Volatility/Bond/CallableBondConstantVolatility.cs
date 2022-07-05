@@ -17,17 +17,22 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Quotes;
-using QLNet.Termstructures.Volatility;
 using QLNet.Time;
 
 namespace QLNet.Termstructures.Volatility.Bond
 {
     //! Constant callable-bond volatility, no time-strike dependence
-    [JetBrains.Annotations.PublicAPI] public class CallableBondConstantVolatility : CallableBondVolatilityStructure
+    [PublicAPI]
+    public class CallableBondConstantVolatility : CallableBondVolatilityStructure
     {
+        private DayCounter dayCounter_;
+        private Period maxBondTenor_;
+        private Handle<Quote> volatility_;
+
         public CallableBondConstantVolatility(Date referenceDate, double volatility, DayCounter dayCounter)
-           : base(referenceDate)
+            : base(referenceDate)
         {
             volatility_ = new Handle<Quote>(new SimpleQuote(volatility));
             dayCounter_ = dayCounter;
@@ -35,7 +40,7 @@ namespace QLNet.Termstructures.Volatility.Bond
         }
 
         public CallableBondConstantVolatility(Date referenceDate, Handle<Quote> volatility, DayCounter dayCounter)
-           : base(referenceDate)
+            : base(referenceDate)
         {
             volatility_ = volatility;
             dayCounter_ = dayCounter;
@@ -44,7 +49,7 @@ namespace QLNet.Termstructures.Volatility.Bond
         }
 
         public CallableBondConstantVolatility(int settlementDays, Calendar calendar, double volatility, DayCounter dayCounter)
-           : base(settlementDays, calendar)
+            : base(settlementDays, calendar)
         {
             volatility_ = new Handle<Quote>(new SimpleQuote(volatility));
             dayCounter_ = dayCounter;
@@ -52,7 +57,7 @@ namespace QLNet.Termstructures.Volatility.Bond
         }
 
         public CallableBondConstantVolatility(int settlementDays, Calendar calendar, Handle<Quote> volatility, DayCounter dayCounter)
-           : base(settlementDays, calendar)
+            : base(settlementDays, calendar)
         {
             volatility_ = volatility;
             dayCounter_ = dayCounter;
@@ -63,28 +68,25 @@ namespace QLNet.Termstructures.Volatility.Bond
         // TermStructure interface
         public override DayCounter dayCounter() => dayCounter_;
 
-        public override Date maxDate() => Date.maxDate();
+        public override double maxBondLength() => double.MaxValue;
 
         // CallableBondConstantVolatility interface
         public override Period maxBondTenor() => maxBondTenor_;
 
-        public override double maxBondLength() => double.MaxValue;
-
-        public override double minStrike() => double.MinValue;
+        public override Date maxDate() => Date.maxDate();
 
         public override double maxStrike() => double.MaxValue;
 
-        protected override double volatilityImpl(double d1, double d2, double d3) => volatility_.link.value();
+        public override double minStrike() => double.MinValue;
 
         protected override SmileSection smileSectionImpl(double optionTime, double bondLength)
         {
             var atmVol = volatility_.link.value();
             return new FlatSmileSection(optionTime, atmVol, dayCounter_);
         }
-        protected override double volatilityImpl(Date d, Period p, double d1) => volatility_.link.value();
 
-        private Handle<Quote> volatility_;
-        private DayCounter dayCounter_;
-        private Period maxBondTenor_;
+        protected override double volatilityImpl(double d1, double d2, double d3) => volatility_.link.value();
+
+        protected override double volatilityImpl(Date d, Period p, double d1) => volatility_.link.value();
     }
 }

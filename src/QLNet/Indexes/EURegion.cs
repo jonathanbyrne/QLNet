@@ -1,6 +1,9 @@
-﻿namespace QLNet.Indexes
+﻿using JetBrains.Annotations;
+
+namespace QLNet.Indexes
 {
-    [JetBrains.Annotations.PublicAPI] public class EURegion : Region
+    [PublicAPI]
+    public class EURegion : Region
     {
         public EURegion()
         {

@@ -16,8 +16,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Time;
+
 using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Time.Calendars
 {
@@ -43,33 +44,21 @@ namespace QLNet.Time.Calendars
 
         \ingroup calendars
     */
-    [JetBrains.Annotations.PublicAPI] public class Ukraine : Calendar
+    [PublicAPI]
+    public class Ukraine : Calendar
     {
-        public Ukraine(Market m = Market.USE)
-        {
-            // all calendar instances on the same market share the same implementation instance
-            switch (m)
-            {
-                case Market.USE:
-                    calendar_ = Impl.Singleton;
-                    break;
-                default:
-                    Utils.QL_FAIL("unknown market");
-                    break;
-            }
-        }
-
         public enum Market
         {
-            USE    //!< Ukrainian stock exchange
+            USE //!< Ukrainian stock exchange
         }
 
-        class Impl : OrthodoxImpl
+        private class Impl : OrthodoxImpl
         {
             public static readonly Impl Singleton = new Impl();
-            private Impl() { }
 
-            public override string name() => "Ukrainian stock exchange";
+            private Impl()
+            {
+            }
 
             public override bool isBusinessDay(Date date)
             {
@@ -82,13 +71,13 @@ namespace QLNet.Time.Calendars
                 if (isWeekend(w)
                     // New Year's Day (possibly moved to Monday)
                     || (d == 1 || (d == 2 || d == 3) && w == DayOfWeek.Monday)
-                        && m == Month.January
+                    && m == Month.January
                     // Orthodox Christmas
                     || (d == 7 || (d == 8 || d == 9) && w == DayOfWeek.Monday)
-                        && m == Month.January
+                    && m == Month.January
                     // Women's Day
                     || (d == 8 || (d == 9 || d == 10) && w == DayOfWeek.Monday)
-                        && m == Month.March
+                    && m == Month.March
                     // Orthodox Easter Monday
                     || dd == em
                     // Holy Trinity Day
@@ -103,8 +92,27 @@ namespace QLNet.Time.Calendars
                     || d == 24 && m == Month.August
                     // Defender's Day (since 2015)
                     || d == 14 && m == Month.October && y >= 2015)
+                {
                     return false;
+                }
+
                 return true;
+            }
+
+            public override string name() => "Ukrainian stock exchange";
+        }
+
+        public Ukraine(Market m = Market.USE)
+        {
+            // all calendar instances on the same market share the same implementation instance
+            switch (m)
+            {
+                case Market.USE:
+                    calendar_ = Impl.Singleton;
+                    break;
+                default:
+                    Utils.QL_FAIL("unknown market");
+                    break;
             }
         }
     }

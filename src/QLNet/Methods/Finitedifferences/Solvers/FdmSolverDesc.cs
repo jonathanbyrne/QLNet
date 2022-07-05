@@ -25,54 +25,18 @@ namespace QLNet.Methods.Finitedifferences.Solvers
 {
     public struct FdmSolverDesc
     {
-        private FdmMesher _mesher;
-        private FdmBoundaryConditionSet _bcSet;
-        private FdmStepConditionComposite _condition;
-        private FdmInnerValueCalculator _calculator;
-        private double _maturity;
-        private int _timeSteps;
-        private int _dampingSteps;
+        public FdmBoundaryConditionSet bcSet { get; set; }
 
-        public FdmMesher mesher
-        {
-            get => _mesher;
-            set => _mesher = value;
-        }
+        public FdmInnerValueCalculator calculator { get; set; }
 
-        public FdmBoundaryConditionSet bcSet
-        {
-            get => _bcSet;
-            set => _bcSet = value;
-        }
+        public FdmStepConditionComposite condition { get; set; }
 
-        public FdmStepConditionComposite condition
-        {
-            get => _condition;
-            set => _condition = value;
-        }
+        public int dampingSteps { get; set; }
 
-        public FdmInnerValueCalculator calculator
-        {
-            get => _calculator;
-            set => _calculator = value;
-        }
+        public double maturity { get; set; }
 
-        public double maturity
-        {
-            get => _maturity;
-            set => _maturity = value;
-        }
+        public FdmMesher mesher { get; set; }
 
-        public int timeSteps
-        {
-            get => _timeSteps;
-            set => _timeSteps = value;
-        }
-
-        public int dampingSteps
-        {
-            get => _dampingSteps;
-            set => _dampingSteps = value;
-        }
+        public int timeSteps { get; set; }
     }
 }

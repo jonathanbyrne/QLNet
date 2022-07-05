@@ -17,8 +17,9 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Math.randomnumbers;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Math.randomnumbers;
 
 namespace QLNet.Methods.montecarlo
 {
@@ -31,16 +32,17 @@ namespace QLNet.Methods.montecarlo
         \test the generated paths are checked against cached results
     */
 
-    [JetBrains.Annotations.PublicAPI] public class PathGenerator<GSG> : IPathGenerator<GSG> where GSG : IRNG
+    [PublicAPI]
+    public class PathGenerator<GSG> : IPathGenerator<GSG> where GSG : IRNG
     {
-        private bool brownianBridge_;
-        private GSG generator_;
-        private int dimension_;
-        private TimeGrid timeGrid_;
-        private StochasticProcess1D process_;
-        private Sample<IPath> next_;
-        private List<double> temp_;
         private BrownianBridge bb_;
+        private bool brownianBridge_;
+        private int dimension_;
+        private GSG generator_;
+        private Sample<IPath> next_;
+        private StochasticProcess1D process_;
+        private List<double> temp_;
+        private TimeGrid timeGrid_;
 
         // constructors
         public PathGenerator(StochasticProcess process, double length, int timeSteps, GSG generator, bool brownianBridge)
@@ -54,7 +56,7 @@ namespace QLNet.Methods.montecarlo
             temp_ = new InitializedList<double>(dimension_);
             bb_ = new BrownianBridge(timeGrid_);
             Utils.QL_REQUIRE(dimension_ == timeSteps, () =>
-                             "sequence generator dimensionality (" + dimension_ + ") != timeSteps (" + timeSteps + ")");
+                "sequence generator dimensionality (" + dimension_ + ") != timeSteps (" + timeSteps + ")");
         }
 
         public PathGenerator(StochasticProcess process, TimeGrid timeGrid, GSG generator, bool brownianBridge)
@@ -69,19 +71,19 @@ namespace QLNet.Methods.montecarlo
             bb_ = new BrownianBridge(timeGrid_);
 
             Utils.QL_REQUIRE(dimension_ == timeGrid_.size() - 1, () =>
-                             "sequence generator dimensionality (" + dimension_ + ") != timeSteps (" + (timeGrid_.size() - 1) + ")");
+                "sequence generator dimensionality (" + dimension_ + ") != timeSteps (" + (timeGrid_.size() - 1) + ")");
         }
 
-        public Sample<IPath> next() => next(false);
-
         public Sample<IPath> antithetic() => next(true);
+
+        public Sample<IPath> next() => next(false);
 
         private Sample<IPath> next(bool antithetic)
         {
             var sequence_ =
-               antithetic
-               ? generator_.lastSequence()
-               : generator_.nextSequence();
+                antithetic
+                    ? generator_.lastSequence()
+                    : generator_.nextSequence();
 
             if (brownianBridge_)
             {
@@ -102,10 +104,11 @@ namespace QLNet.Methods.montecarlo
                 var t = timeGrid_[i - 1];
                 var dt = timeGrid_.dt(i - 1);
                 path[i] = process_.evolve(t, path[i - 1], dt,
-                                          antithetic
-                                          ? -temp_[i - 1]
-                                          : temp_[i - 1]);
+                    antithetic
+                        ? -temp_[i - 1]
+                        : temp_[i - 1]);
             }
+
             return next_;
         }
     }

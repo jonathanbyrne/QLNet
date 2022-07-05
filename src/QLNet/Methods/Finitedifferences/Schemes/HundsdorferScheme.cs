@@ -17,24 +17,31 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences.Operators;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Methods.Finitedifferences.Schemes
 {
     /// <summary>
-    /// Hundsdorfer operator splitting
+    ///     Hundsdorfer operator splitting
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class HundsdorferScheme : IMixedScheme, ISchemeFactory
+    [PublicAPI]
+    public class HundsdorferScheme : IMixedScheme, ISchemeFactory
     {
+        protected BoundaryConditionSchemeHelper bcSet_;
+        protected double? dt_;
+        protected FdmLinearOpComposite map_;
+        protected double theta_, mu_;
+
         public HundsdorferScheme()
-        { }
+        {
+        }
 
         public HundsdorferScheme(double theta, double mu,
-                                 FdmLinearOpComposite map,
-                                 List<BoundaryCondition<FdmLinearOp>> bcSet = null)
+            FdmLinearOpComposite map,
+            List<BoundaryCondition<FdmLinearOp>> bcSet = null)
         {
             dt_ = null;
             theta_ = theta;
@@ -50,7 +57,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
             var theta = additionalInputs[0] as double?;
             var mu = additionalInputs[1] as double?;
             return new HundsdorferScheme(theta.Value, mu.Value,
-                                         L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
+                L as FdmLinearOpComposite, bcs as List<BoundaryCondition<FdmLinearOp>>);
         }
 
         #endregion
@@ -85,6 +92,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
                 var rhs = yt - theta_ * dt_.Value * map_.apply_direction(i, y);
                 yt = map_.solve_splitting(i, rhs, -theta_ * dt_.Value);
             }
+
             bcSet_.applyAfterSolving(yt);
 
             a = yt;
@@ -96,10 +104,5 @@ namespace QLNet.Methods.Finitedifferences.Schemes
         }
 
         #endregion
-
-        protected double? dt_;
-        protected double theta_, mu_;
-        protected FdmLinearOpComposite map_;
-        protected BoundaryConditionSchemeHelper bcSet_;
     }
 }

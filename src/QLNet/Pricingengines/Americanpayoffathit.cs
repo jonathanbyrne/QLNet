@@ -16,43 +16,39 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using System;
 
 namespace QLNet.Pricingengines
 {
-
     //! Analytic formula for American exercise payoff at-hit options
     //! \todo calculate greeks
-    [JetBrains.Annotations.PublicAPI] public class AmericanPayoffAtHit
+    [PublicAPI]
+    public class AmericanPayoffAtHit
     {
-        private double spot_;
-        private double discount_;
-        private double dividendDiscount_;
-        private double variance_;
-        private double stdDev_;
-
-        private double strike_;
-        private double K_;
-
-        private double mu_;
-        private double lambda_;
-        private double muPlusLambda_;
-        private double muMinusLambda_;
-        private double log_H_S_;
-
-        private double D1_;
-        private double D2_;
-
         private double alpha_;
         private double beta_;
+        private double D1_;
+        private double D2_;
         private double DalphaDd1_;
         private double DbetaDd2_;
-
-        private bool inTheMoney_;
+        private double discount_;
+        private double dividendDiscount_;
         private double forward_;
+        private bool inTheMoney_;
+        private double K_;
+        private double lambda_;
+        private double log_H_S_;
+        private double mu_;
+        private double muMinusLambda_;
+        private double muPlusLambda_;
+        private double spot_;
+        private double stdDev_;
+        private double strike_;
+        private double variance_;
         private double X_;
 
         public AmericanPayoffAtHit(double spot, double discount, double dividendDiscount, double variance, StrikedTypePayoff payoff)
@@ -71,7 +67,6 @@ namespace QLNet.Pricingengines
 
             var type = payoff.optionType();
             strike_ = payoff.strike();
-
 
             log_H_S_ = System.Math.Log(strike_ / spot_);
 
@@ -95,6 +90,7 @@ namespace QLNet.Pricingengines
                     mu_ = System.Math.Log(dividendDiscount_ / discount_) / variance_ - 0.5;
                     lambda_ = System.Math.Sqrt(mu_ * mu_ - 2.0 * System.Math.Log(discount_) / variance_);
                 }
+
                 D1_ = log_H_S_ / stdDev_ + lambda_ * stdDev_;
                 D2_ = D1_ - 2.0 * lambda_ * stdDev_;
                 var f = new CumulativeNormalDistribution();
@@ -118,10 +114,10 @@ namespace QLNet.Pricingengines
                     cum_d1_ = 0.0;
                     cum_d2_ = 0.0;
                 }
+
                 n_d1 = 0.0;
                 n_d2 = 0.0;
             }
-
 
             switch (type)
             {
@@ -142,6 +138,7 @@ namespace QLNet.Pricingengines
                         beta_ = 0.5;
                         DbetaDd2_ = 0.0;
                     }
+
                     break;
                 // down-and-in cash-(at-hit)-or-nothing option
                 // a.k.a. american put with cash-or-nothing payoff
@@ -160,12 +157,12 @@ namespace QLNet.Pricingengines
                         beta_ = 0.5;
                         DbetaDd2_ = 0.0;
                     }
+
                     break;
                 default:
                     Utils.QL_FAIL("invalid option ExerciseType");
                     break;
             }
-
 
             muPlusLambda_ = mu_ + lambda_;
             muMinusLambda_ = mu_ - lambda_;
@@ -182,18 +179,15 @@ namespace QLNet.Pricingengines
                 X_ = System.Math.Pow(strike_ / spot_, muMinusLambda_);
             }
 
-
             // Binary Cash-Or-Nothing payoff?
-            var coo = payoff as CashOrNothingPayoff;
-            if (coo != null)
+            if (payoff is CashOrNothingPayoff coo)
             {
                 K_ = coo.cashPayoff();
             }
 
             // Binary Asset-Or-Nothing payoff?
-            var aoo = payoff as AssetOrNothingPayoff;
 
-            if (aoo != null)
+            if (payoff is AssetOrNothingPayoff aoo)
             {
                 if (inTheMoney_)
                 {
@@ -205,9 +199,6 @@ namespace QLNet.Pricingengines
                 }
             }
         }
-
-        // inline definitions
-        public double value() => K_ * (forward_ * alpha_ + X_ * beta_);
 
         public double delta()
         {
@@ -259,7 +250,6 @@ namespace QLNet.Pricingengines
             }
 
             return K_ * (D2alphaDs2 * forward_ + DalphaDs * DforwardDs + DalphaDs * DforwardDs + alpha_ * D2forwardDs2 + D2betaDs2 * X_ + DbetaDs * DXDs + DbetaDs * DXDs + beta_ * D2XDs2);
-
         }
 
         public double rho(double maturity)
@@ -284,6 +274,8 @@ namespace QLNet.Pricingengines
 
             return maturity * K_ * (DalphaDr * forward_ + alpha_ * DforwardDr + DbetaDr * X_ + beta_ * DXDr);
         }
-    }
 
+        // inline definitions
+        public double value() => K_ * (forward_ * alpha_ + X_ * beta_);
+    }
 }

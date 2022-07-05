@@ -18,38 +18,43 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Cashflows;
 using QLNet.Indexes;
 using QLNet.Time;
-using System.Collections.Generic;
-using QLNet.Cashflows;
 
 namespace QLNet.Instruments
 {
     //! Overnight indexed swap: fix vs compounded overnight rate
-    [JetBrains.Annotations.PublicAPI] public class OvernightIndexedSwap : Swap
+    [PublicAPI]
+    public class OvernightIndexedSwap : Swap
     {
-        private Type type_;
-        private double fixedNominal_;
-        private double overnightNominal_;
-        private Frequency fixedPaymentFrequency_;
-        private Frequency overnightPaymentFrequency_;
-        private double fixedRate_;
-        private DayCounter fixedDC_;
-        private OvernightIndex overnightIndex_;
-        private double spread_;
+        public enum Type
+        {
+            Receiver = -1,
+            Payer = 1
+        }
 
-        public enum Type { Receiver = -1, Payer = 1 }
+        private DayCounter fixedDC_;
+        private double fixedNominal_;
+        private Frequency fixedPaymentFrequency_;
+        private double fixedRate_;
+        private OvernightIndex overnightIndex_;
+        private double overnightNominal_;
+        private Frequency overnightPaymentFrequency_;
+        private double spread_;
+        private Type type_;
 
         public OvernightIndexedSwap(Type type,
-                                    double nominal,
-                                    Schedule schedule,
-                                    double fixedRate,
-                                    DayCounter fixedDC,
-                                    OvernightIndex overnightIndex,
-                                    double spread) :
-           base(2)
+            double nominal,
+            Schedule schedule,
+            double fixedRate,
+            DayCounter fixedDC,
+            OvernightIndex overnightIndex,
+            double spread) :
+            base(2)
         {
-
             type_ = type;
             fixedNominal_ = nominal;
             overnightNominal_ = nominal;
@@ -61,20 +66,24 @@ namespace QLNet.Instruments
             spread_ = spread;
 
             if (fixedDC_ == null)
+            {
                 fixedDC_ = overnightIndex_.dayCounter();
+            }
 
             legs_[0] = new FixedRateLeg(schedule)
-            .withCouponRates(fixedRate_, fixedDC_)
-            .withNotionals(nominal);
+                .withCouponRates(fixedRate_, fixedDC_)
+                .withNotionals(nominal);
 
             legs_[1] = new OvernightLeg(schedule, overnightIndex_)
-            .withNotionals(nominal)
-            .withSpreads(spread_);
+                .withNotionals(nominal)
+                .withSpreads(spread_);
 
             for (var j = 0; j < 2; ++j)
             {
                 for (var i = 0; i < legs_[j].Count; i++)
+                {
                     legs_[j][i].registerWith(update);
+                }
             }
 
             switch (type_)
@@ -94,17 +103,16 @@ namespace QLNet.Instruments
         }
 
         public OvernightIndexedSwap(Type type,
-                                    double fixedNominal,
-                                    Schedule fixedSchedule,
-                                    double fixedRate,
-                                    DayCounter fixedDC,
-                                    double overnightNominal,
-                                    Schedule overnightSchedule,
-                                    OvernightIndex overnightIndex,
-                                    double spread) :
-           base(2)
+            double fixedNominal,
+            Schedule fixedSchedule,
+            double fixedRate,
+            DayCounter fixedDC,
+            double overnightNominal,
+            Schedule overnightSchedule,
+            OvernightIndex overnightIndex,
+            double spread) :
+            base(2)
         {
-
             type_ = type;
             fixedNominal_ = fixedNominal;
             overnightNominal_ = overnightNominal;
@@ -116,20 +124,24 @@ namespace QLNet.Instruments
             spread_ = spread;
 
             if (fixedDC_ == null)
+            {
                 fixedDC_ = overnightIndex_.dayCounter();
+            }
 
             legs_[0] = new FixedRateLeg(fixedSchedule)
-            .withCouponRates(fixedRate_, fixedDC_)
-            .withNotionals(fixedNominal_);
+                .withCouponRates(fixedRate_, fixedDC_)
+                .withNotionals(fixedNominal_);
 
             legs_[1] = new OvernightLeg(overnightSchedule, overnightIndex_)
-            .withNotionals(overnightNominal_)
-            .withSpreads(spread_);
+                .withNotionals(overnightNominal_)
+                .withSpreads(spread_);
 
             for (var j = 0; j < 2; ++j)
             {
                 for (var i = 0; i < legs_[j].Count; i++)
+                {
                     legs_[j][i].registerWith(update);
+                }
             }
 
             switch (type_)
@@ -145,29 +157,8 @@ namespace QLNet.Instruments
                 default:
                     Utils.QL_FAIL("Unknown overnight-swap ExerciseType");
                     break;
-
             }
         }
-
-        public Type type() => type_;
-
-        public double fixedNominal() => fixedNominal_;
-
-        public double overnightNominal() => overnightNominal_;
-
-        public Frequency fixedPaymentFrequency() => fixedPaymentFrequency_;
-
-        public Frequency overnightPaymentFrequency() => overnightPaymentFrequency_;
-
-        public double fixedRate() => fixedRate_;
-
-        public DayCounter fixedDayCount() => fixedDC_;
-
-        public double spread() => spread_;
-
-        public List<CashFlow> fixedLeg() => legs_[0];
-
-        public List<CashFlow> overnightLeg() => legs_[1];
 
         public double? fairRate()
         {
@@ -181,18 +172,15 @@ namespace QLNet.Instruments
             return spread_ - NPV_ / (overnightLegBPS() / Const.BASIS_POINT);
         }
 
+        public DayCounter fixedDayCount() => fixedDC_;
+
+        public List<CashFlow> fixedLeg() => legs_[0];
+
         public double? fixedLegBPS()
         {
             calculate();
             Utils.QL_REQUIRE(legBPS_[0] != null, () => "result not available");
             return legBPS_[0];
-        }
-
-        public double? overnightLegBPS()
-        {
-            calculate();
-            Utils.QL_REQUIRE(legBPS_[1] != null, () => "result not available");
-            return legBPS_[1];
         }
 
         public double? fixedLegNPV()
@@ -202,11 +190,34 @@ namespace QLNet.Instruments
             return legNPV_[0];
         }
 
+        public double fixedNominal() => fixedNominal_;
+
+        public Frequency fixedPaymentFrequency() => fixedPaymentFrequency_;
+
+        public double fixedRate() => fixedRate_;
+
+        public List<CashFlow> overnightLeg() => legs_[1];
+
+        public double? overnightLegBPS()
+        {
+            calculate();
+            Utils.QL_REQUIRE(legBPS_[1] != null, () => "result not available");
+            return legBPS_[1];
+        }
+
         public double? overnightLegNPV()
         {
             calculate();
             Utils.QL_REQUIRE(legNPV_[1] != null, () => "result not available");
             return legNPV_[1];
         }
+
+        public double overnightNominal() => overnightNominal_;
+
+        public Frequency overnightPaymentFrequency() => overnightPaymentFrequency_;
+
+        public double spread() => spread_;
+
+        public Type type() => type_;
     }
 }

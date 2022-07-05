@@ -5,18 +5,14 @@ namespace QLNet.legacy.libormarketmodels
 {
     public abstract class LfmCovarianceParameterization
     {
-        protected int size_;
         protected int factors_;
+        protected int size_;
 
         protected LfmCovarianceParameterization(int size, int factors)
         {
             size_ = size;
             factors_ = factors;
         }
-
-        public int size() => size_;
-
-        public int factors() => factors_;
 
         public abstract Matrix diffusion(double t);
 
@@ -30,6 +26,8 @@ namespace QLNet.legacy.libormarketmodels
             var result = sigma * Matrix.transpose(sigma);
             return result;
         }
+
+        public int factors() => factors_;
 
         public virtual Matrix integratedCovariance(double t, Vector x = null)
         {
@@ -52,10 +50,14 @@ namespace QLNet.legacy.libormarketmodels
                     {
                         tmp[i, j] += integrator.value(helper.value, k * t / 64.0, (k + 1) * t / 64.0);
                     }
+
                     tmp[j, i] = tmp[i, j];
                 }
             }
+
             return tmp;
         }
+
+        public int size() => size_;
     }
 }

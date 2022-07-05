@@ -21,7 +21,6 @@
 
 namespace QLNet.Cashflows
 {
-
     //! Digital option replication strategy
     //    ! Specification of replication strategies used to price
     //        the embedded digital option in a digital coupon.

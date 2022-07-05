@@ -1,9 +1,14 @@
-﻿using QLNet.Math.integrals;
+﻿using JetBrains.Annotations;
+using QLNet.Math.integrals;
 
 namespace QLNet.Math.Distributions
 {
-    [JetBrains.Annotations.PublicAPI] public class BivariateCumulativeNormalDistributionWe04DP
+    [PublicAPI]
+    public class BivariateCumulativeNormalDistributionWe04DP
     {
+        private double correlation_;
+        private CumulativeNormalDistribution cumnorm_ = new CumulativeNormalDistribution();
+
         public BivariateCumulativeNormalDistributionWe04DP(double rho)
         {
             correlation_ = rho;
@@ -29,7 +34,7 @@ namespace QLNet.Math.Distributions
 
                Change some magic numbers to M_PI */
 
-            var gaussLegendreQuad = new TabulatedGaussLegendre(20);
+            var gaussLegendreQuad = new TabulatedGaussLegendre();
             if (System.Math.Abs(correlation_) < 0.3)
             {
                 gaussLegendreQuad.order(6);
@@ -53,6 +58,7 @@ namespace QLNet.Math.Distributions
                     BVN = gaussLegendreQuad.value(f.value);
                     BVN *= asr * (0.25 / Const.M_PI);
                 }
+
                 BVN += cumnorm_.value(-h) * cumnorm_.value(-k);
             }
             else
@@ -62,6 +68,7 @@ namespace QLNet.Math.Distributions
                     k *= -1;
                     hk *= -1;
                 }
+
                 if (System.Math.Abs(correlation_) < 1)
                 {
                     var Ass = (1 - correlation_) * (1 + correlation_);
@@ -76,6 +83,7 @@ namespace QLNet.Math.Distributions
                               (1 - c * (bs - Ass) * (1 - d * bs / 5) / 3 +
                                c * d * Ass * Ass / 5);
                     }
+
                     if (-hk < 100)
                     {
                         var B = System.Math.Sqrt(bs);
@@ -83,6 +91,7 @@ namespace QLNet.Math.Distributions
                                cumnorm_.value(-B / a) * B *
                                (1 - c * bs * (1 - d * bs / 5) / 3);
                     }
+
                     a /= 2;
                     var f = new eqn6(a, c, d, bs, hk);
                     BVN += gaussLegendreQuad.value(f.value);
@@ -112,10 +121,8 @@ namespace QLNet.Math.Distributions
                     }
                 }
             }
-            return BVN;
 
+            return BVN;
         }
-        private double correlation_;
-        private CumulativeNormalDistribution cumnorm_ = new CumulativeNormalDistribution();
     }
 }

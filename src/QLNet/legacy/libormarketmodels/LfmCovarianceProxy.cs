@@ -16,47 +16,37 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.integrals;
-using System;
 
 namespace QLNet.legacy.libormarketmodels
 {
-    [JetBrains.Annotations.PublicAPI] public class LfmCovarianceProxy : LfmCovarianceParameterization
+    [PublicAPI]
+    public class LfmCovarianceProxy : LfmCovarianceParameterization
     {
-        public LmVolatilityModel volaModel { get; set; }
-        public LmCorrelationModel corrModel { get; set; }
-        public LmVolatilityModel volaModel_ { get; set; }
-        public LmCorrelationModel corrModel_ { get; set; }
-
         public LfmCovarianceProxy(LmVolatilityModel volaModel,
-                                  LmCorrelationModel corrModel)
-           : base(corrModel.size(), corrModel.factors())
+            LmCorrelationModel corrModel)
+            : base(corrModel.size(), corrModel.factors())
         {
             volaModel_ = volaModel;
             corrModel_ = corrModel;
 
             Utils.QL_REQUIRE(volaModel_.size() == corrModel_.size(), () =>
-                             "different size for the volatility (" + volaModel_.size() + ") and correlation (" + corrModel_.size() + ") models");
+                "different size for the volatility (" + volaModel_.size() + ") and correlation (" + corrModel_.size() + ") models");
         }
 
-        public LmVolatilityModel volatilityModel() => volaModel_;
+        public LmCorrelationModel corrModel { get; set; }
+
+        public LmCorrelationModel corrModel_ { get; set; }
+
+        public LmVolatilityModel volaModel { get; set; }
+
+        public LmVolatilityModel volaModel_ { get; set; }
 
         public LmCorrelationModel correlationModel() => corrModel_;
-
-        public override Matrix diffusion(double t) => diffusion(t, null);
-
-        public override Matrix diffusion(double t, Vector x)
-        {
-            var pca = corrModel_.pseudoSqrt(t, x);
-            var vol = volaModel_.volatility(t, x);
-            for (var i = 0; i < size_; ++i)
-            {
-                for (var j = 0; j < size_; ++j)
-                    pca[i, j] = pca[i, j] * vol[i];
-            }
-            return pca;
-        }
 
         public override Matrix covariance(double t, Vector x)
         {
@@ -71,7 +61,25 @@ namespace QLNet.legacy.libormarketmodels
                     tmp[i, j] = volatility[i] * correlation[i, j] * volatility[j];
                 }
             }
+
             return tmp;
+        }
+
+        public override Matrix diffusion(double t) => diffusion(t, null);
+
+        public override Matrix diffusion(double t, Vector x)
+        {
+            var pca = corrModel_.pseudoSqrt(t, x);
+            var vol = volaModel_.volatility(t, x);
+            for (var i = 0; i < size_; ++i)
+            {
+                for (var j = 0; j < size_; ++j)
+                {
+                    pca[i, j] = pca[i, j] * vol[i];
+                }
+            }
+
+            return pca;
         }
 
         public double integratedCovariance(int i, int j, double t) => integratedCovariance(i, j, t, new Vector());
@@ -98,9 +106,9 @@ namespace QLNet.legacy.libormarketmodels
 
             try
             {
-                Utils.QL_REQUIRE(x.empty() != false, () => "can not handle given x here");
+                Utils.QL_REQUIRE(x.empty(), () => "can not handle given x here");
             }
-            catch   //OK x empty
+            catch //OK x empty
             {
             }
 
@@ -112,7 +120,10 @@ namespace QLNet.legacy.libormarketmodels
             {
                 tmp += integrator.value(helper.value, k * t / 64.0, (k + 1) * t / 64.0);
             }
+
             return tmp;
         }
+
+        public LmVolatilityModel volatilityModel() => volaModel_;
     }
 }

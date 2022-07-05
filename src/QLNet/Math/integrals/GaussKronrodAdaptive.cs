@@ -1,20 +1,22 @@
 using System;
+using JetBrains.Annotations;
 using QLNet.Exceptions;
 
 namespace QLNet.Math.integrals
 {
-    [JetBrains.Annotations.PublicAPI] public class GaussKronrodAdaptive : Integrator
+    [PublicAPI]
+    public class GaussKronrodAdaptive : Integrator
     {
         public GaussKronrodAdaptive(double absoluteAccuracy, int maxEvaluations) : base(absoluteAccuracy, maxEvaluations)
         {
             Utils.QL_REQUIRE(maxEvaluations >= 15, () =>
                 "required maxEvaluations (" + maxEvaluations + ") not allowed. It must be >= 15");
         }
+
         protected override double integrate(Func<double, double> f, double a, double b) => integrateRecursively(f, a, b, absoluteAccuracy().GetValueOrDefault());
 
         private double integrateRecursively(Func<double, double> f, double a, double b, double tolerance)
         {
-
             var halflength = (b - a) / 2;
             var center = (a + b) / 2;
 
@@ -60,12 +62,10 @@ namespace QLNet.Math.integrals
             {
                 return k15;
             }
-            else
-            {
-                Utils.QL_REQUIRE(numberOfEvaluations() + 30 <= maxEvaluations(), () =>
-                    "maximum number of function evaluations " + "exceeded", QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
-                return integrateRecursively(f, a, center, tolerance / 2) + integrateRecursively(f, center, b, tolerance / 2);
-            }
+
+            Utils.QL_REQUIRE(numberOfEvaluations() + 30 <= maxEvaluations(), () =>
+                "maximum number of function evaluations " + "exceeded", QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
+            return integrateRecursively(f, a, center, tolerance / 2) + integrateRecursively(f, center, b, tolerance / 2);
         }
     }
 }

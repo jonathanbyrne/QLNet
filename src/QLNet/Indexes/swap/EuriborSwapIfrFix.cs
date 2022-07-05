@@ -1,4 +1,5 @@
-﻿using QLNet.Currencies;
+﻿using JetBrains.Annotations;
+using QLNet.Currencies;
 using QLNet.Termstructures;
 using QLNet.Time;
 using QLNet.Time.Calendars;
@@ -6,10 +7,13 @@ using QLNet.Time.DayCounters;
 
 namespace QLNet.Indexes.swap
 {
-    [JetBrains.Annotations.PublicAPI] public class EuriborSwapIfrFix : SwapIndex
+    [PublicAPI]
+    public class EuriborSwapIfrFix : SwapIndex
     {
         public EuriborSwapIfrFix(Period tenor)
-            : this(tenor, new Handle<YieldTermStructure>()) { }
+            : this(tenor, new Handle<YieldTermStructure>())
+        {
+        }
 
         public EuriborSwapIfrFix(Period tenor, Handle<YieldTermStructure> h)
             : base("EuriborSwapIfrFix", // familyName
@@ -20,15 +24,13 @@ namespace QLNet.Indexes.swap
                 new Period(1, TimeUnit.Years), // fixedLegTenor
                 BusinessDayConvention.ModifiedFollowing, // fixedLegConvention
                 new Thirty360(Thirty360.Thirty360Convention.BondBasis), // fixedLegDaycounter
-                tenor > new Period(1, TimeUnit.Years) ?
-                    new Euribor(new Period(6, TimeUnit.Months), h) :
-                    new Euribor(new Period(3, TimeUnit.Months), h))
-        { }
+                tenor > new Period(1, TimeUnit.Years) ? new Euribor(new Period(6, TimeUnit.Months), h) : new Euribor(new Period(3, TimeUnit.Months), h))
+        {
+        }
 
         public EuriborSwapIfrFix(Period tenor,
             Handle<YieldTermStructure> forwarding,
             Handle<YieldTermStructure> discounting)
-
             : base("EuriborSwapIfrFix", // familyName
                 tenor,
                 2, // settlementDays
@@ -37,11 +39,9 @@ namespace QLNet.Indexes.swap
                 new Period(1, TimeUnit.Years), // fixedLegTenor
                 BusinessDayConvention.ModifiedFollowing, // fixedLegConvention
                 new Thirty360(Thirty360.Thirty360Convention.BondBasis), // fixedLegDaycounter
-                tenor > new Period(1, TimeUnit.Years) ?
-                    new Euribor(new Period(6, TimeUnit.Months), forwarding) :
-                    new Euribor(new Period(3, TimeUnit.Months), forwarding),
+                tenor > new Period(1, TimeUnit.Years) ? new Euribor(new Period(6, TimeUnit.Months), forwarding) : new Euribor(new Period(3, TimeUnit.Months), forwarding),
                 discounting)
-        { }
-
+        {
+        }
     }
 }

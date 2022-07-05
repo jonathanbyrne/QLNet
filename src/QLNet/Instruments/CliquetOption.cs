@@ -14,8 +14,9 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-using QLNet.Time;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using QLNet.Time;
 
 namespace QLNet.Instruments
 {
@@ -31,23 +32,9 @@ namespace QLNet.Instruments
 
         \ingroup instruments
     */
-    [JetBrains.Annotations.PublicAPI] public class CliquetOption : OneAssetOption
+    [PublicAPI]
+    public class CliquetOption : OneAssetOption
     {
-        public CliquetOption(PercentageStrikePayoff payoff, EuropeanExercise maturity, List<Date> resetDates)
-           : base(payoff, maturity)
-        {
-            resetDates_ = new List<Date>(resetDates);
-        }
-        public override void setupArguments(IPricingEngineArguments args)
-        {
-            base.setupArguments(args);
-            // set accrued coupon, last fixing, caps, floors
-            var moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong engine ExerciseType");
-            moreArgs.resetDates = new List<Date>(resetDates_);
-        }
-        private List<Date> resetDates_;
-
         //! %Arguments for cliquet option calculation
         // should inherit from a strikeless version of VanillaOption::arguments
         public new class Arguments : Option.Arguments
@@ -61,6 +48,21 @@ namespace QLNet.Instruments
                 globalCap = null;
                 globalFloor = null;
             }
+
+            public double? accruedCoupon { get; set; }
+
+            public double? globalCap { get; set; }
+
+            public double? globalFloor { get; set; }
+
+            public double? lastFixing { get; set; }
+
+            public double? localCap { get; set; }
+
+            public double? localFloor { get; set; }
+
+            public List<Date> resetDates { get; set; }
+
             public override void validate()
             {
                 var moneyness = payoff as PercentageStrikePayoff;
@@ -78,18 +80,28 @@ namespace QLNet.Instruments
                     Utils.QL_REQUIRE(i == 0 || resetDates[i] > resetDates[i - 1], () => "unsorted reset dates");
                 }
             }
-            public double? accruedCoupon { get; set; }
-            public double? lastFixing { get; set; }
-            public double? localCap { get; set; }
-            public double? localFloor { get; set; }
-            public double? globalCap { get; set; }
-            public double? globalFloor { get; set; }
-            public List<Date> resetDates { get; set; }
         }
 
         //! Cliquet %engine base class
         public new class Engine : GenericEngine<Arguments, Results>
-        { }
-    }
+        {
+        }
 
+        private List<Date> resetDates_;
+
+        public CliquetOption(PercentageStrikePayoff payoff, EuropeanExercise maturity, List<Date> resetDates)
+            : base(payoff, maturity)
+        {
+            resetDates_ = new List<Date>(resetDates);
+        }
+
+        public override void setupArguments(IPricingEngineArguments args)
+        {
+            base.setupArguments(args);
+            // set accrued coupon, last fixing, caps, floors
+            var moreArgs = args as Arguments;
+            Utils.QL_REQUIRE(moreArgs != null, () => "wrong engine ExerciseType");
+            moreArgs.resetDates = new List<Date>(resetDates_);
+        }
+    }
 }

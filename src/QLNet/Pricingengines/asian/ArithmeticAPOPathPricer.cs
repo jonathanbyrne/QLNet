@@ -1,16 +1,17 @@
-﻿using QLNet.Extensions;
+﻿using JetBrains.Annotations;
+using QLNet.Extensions;
 using QLNet.Instruments;
 using QLNet.Methods.montecarlo;
 
 namespace QLNet.Pricingengines.asian
 {
-    [JetBrains.Annotations.PublicAPI] public class ArithmeticAPOPathPricer : PathPricer<IPath>
+    [PublicAPI]
+    public class ArithmeticAPOPathPricer : PathPricer<IPath>
     {
-
-        private PlainVanillaPayoff payoff_;
         private double discount_;
-        private double runningSum_;
         private int pastFixings_;
+        private PlainVanillaPayoff payoff_;
+        private double runningSum_;
 
         public ArithmeticAPOPathPricer(QLNet.Option.Type type,
             double strike,
@@ -29,13 +30,16 @@ namespace QLNet.Pricingengines.asian
             double strike,
             double discount,
             double runningSum)
-            : this(type, strike, discount, runningSum, 0) { }
+            : this(type, strike, discount, runningSum, 0)
+        {
+        }
 
         public ArithmeticAPOPathPricer(QLNet.Option.Type type,
             double strike,
             double discount)
-            : this(type, strike, discount, 0.0, 0) { }
-
+            : this(type, strike, discount, 0.0, 0)
+        {
+        }
 
         public double value(Path path)
         {
@@ -48,18 +52,24 @@ namespace QLNet.Pricingengines.asian
             {
                 // include initial fixing
                 for (var i = 0; i < path.length(); i++)
+                {
                     sum += path[i];
+                }
+
                 fixings = pastFixings_ + n;
             }
             else
             {
                 for (var i = 1; i < path.length(); i++)
+                {
                     sum += path[i];
+                }
+
                 fixings = pastFixings_ + n - 1;
             }
+
             var averagePrice = sum / fixings;
             return discount_ * payoff_.value(averagePrice);
-
         }
 
         public double value(IPath path) => value((Path)path);

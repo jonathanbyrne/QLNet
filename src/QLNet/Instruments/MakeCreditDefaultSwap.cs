@@ -14,6 +14,7 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
 using QLNet.Time;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
@@ -21,10 +22,22 @@ using QLNet.Time.DayCounters;
 namespace QLNet.Instruments
 {
     /// <summary>
-    /// This class provides a more comfortable way to instantiate standard cds.
+    ///     This class provides a more comfortable way to instantiate standard cds.
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class MakeCreditDefaultSwap
+    [PublicAPI]
+    public class MakeCreditDefaultSwap
     {
+        private double couponRate_;
+        private Period couponTenor_;
+        private DayCounter dayCounter_;
+        private IPricingEngine engine_;
+        private DayCounter lastPeriodDayCounter_;
+        private double nominal_;
+        private Protection.Side side_;
+        private Period tenor_;
+        private Date termDate_;
+        private double upfrontRate_;
+
         public MakeCreditDefaultSwap(Period tenor, double couponRate)
         {
             side_ = Protection.Side.Buyer;
@@ -36,6 +49,7 @@ namespace QLNet.Instruments
             dayCounter_ = new Actual360();
             lastPeriodDayCounter_ = new Actual360(true);
         }
+
         public MakeCreditDefaultSwap(Date termDate, double couponRate)
         {
             side_ = Protection.Side.Buyer;
@@ -64,44 +78,37 @@ namespace QLNet.Instruments
             }
 
             var schedule = new Schedule(start, end, couponTenor_, new WeekendsOnly(),
-                                             BusinessDayConvention.Following, BusinessDayConvention.Unadjusted, DateGeneration.Rule.CDS,
-                                             false, null, null);
+                BusinessDayConvention.Following, BusinessDayConvention.Unadjusted, DateGeneration.Rule.CDS,
+                false);
 
             var cds = new CreditDefaultSwap(side_, nominal_, upfrontRate_, couponRate_, schedule,
-                                                          BusinessDayConvention.Following, dayCounter_, true, true, start, upfrontDate, null, lastPeriodDayCounter_);
+                BusinessDayConvention.Following, dayCounter_, true, true, start, upfrontDate, null, lastPeriodDayCounter_);
 
             cds.setPricingEngine(engine_);
             return cds;
         }
 
-        public MakeCreditDefaultSwap withUpfrontRate(double upfrontRate)
-        {
-            upfrontRate_ = upfrontRate;
-            return this;
-        }
-        public MakeCreditDefaultSwap withSide(Protection.Side side)
-        {
-            side_ = side;
-            return this;
-        }
-        public MakeCreditDefaultSwap withNominal(double nominal)
-        {
-            nominal_ = nominal;
-            return this;
-        }
         public MakeCreditDefaultSwap withCouponTenor(Period couponTenor)
         {
             couponTenor_ = couponTenor;
             return this;
         }
+
         public MakeCreditDefaultSwap withDayCounter(DayCounter dayCounter)
         {
             dayCounter_ = dayCounter;
             return this;
         }
+
         public MakeCreditDefaultSwap withLastPeriodDayCounter(DayCounter lastPeriodDayCounter)
         {
             lastPeriodDayCounter_ = lastPeriodDayCounter;
+            return this;
+        }
+
+        public MakeCreditDefaultSwap withNominal(double nominal)
+        {
+            nominal_ = nominal;
             return this;
         }
 
@@ -111,16 +118,16 @@ namespace QLNet.Instruments
             return this;
         }
 
-        private Protection.Side side_;
-        double nominal_;
-        Period tenor_;
-        Date termDate_;
-        Period couponTenor_;
-        double couponRate_;
-        double upfrontRate_;
-        DayCounter dayCounter_;
-        DayCounter lastPeriodDayCounter_;
+        public MakeCreditDefaultSwap withSide(Protection.Side side)
+        {
+            side_ = side;
+            return this;
+        }
 
-        IPricingEngine engine_;
+        public MakeCreditDefaultSwap withUpfrontRate(double upfrontRate)
+        {
+            upfrontRate_ = upfrontRate;
+            return this;
+        }
     }
 }

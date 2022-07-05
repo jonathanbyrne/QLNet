@@ -18,14 +18,16 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using JetBrains.Annotations;
 using QLNet.Math;
-using System;
 
 namespace QLNet.Methods.Finitedifferences
 {
     //! Zero exercise condition.
     /*! Used in CEV models */
-    [JetBrains.Annotations.PublicAPI] public class ZeroCondition<array_type> : IStepCondition<array_type> where array_type : Vector
+    [PublicAPI]
+    public class ZeroCondition<array_type> : IStepCondition<array_type> where array_type : Vector
     {
         public void applyTo(object a, double t)
         {

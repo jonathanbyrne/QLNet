@@ -13,17 +13,23 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Pricingengines.vanilla;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Pricingengines.barrier
 {
-    [JetBrains.Annotations.PublicAPI] public class DiscretizedBarrierOption : DiscretizedAsset
+    [PublicAPI]
+    public class DiscretizedBarrierOption : DiscretizedAsset
     {
+        private BarrierOption.Arguments arguments_;
+        private List<double> stoppingTimes_;
+        private DiscretizedVanillaOption vanilla_;
+
         public DiscretizedBarrierOption(BarrierOption.Arguments args, StochasticProcess process, TimeGrid grid = null)
         {
             arguments_ = args;
@@ -43,18 +49,7 @@ namespace QLNet.Pricingengines.barrier
             }
         }
 
-        public override void reset(int size)
-        {
-            vanilla_.initialize(method(), time());
-            values_ = new Vector(size, 0.0);
-            adjustValues();
-        }
-
-        public Vector vanilla() => vanilla_.values();
-
         public BarrierOption.Arguments arguments() => arguments_;
-
-        public override List<double> mandatoryTimes() => stoppingTimes_;
 
         public void checkBarrier(Vector optvalues, Vector grid)
         {
@@ -66,11 +61,17 @@ namespace QLNet.Pricingengines.barrier
                 case Exercise.Type.American:
                     if (now <= stoppingTimes_[1] &&
                         now >= stoppingTimes_[0])
+                    {
                         stoppingTime = true;
+                    }
+
                     break;
                 case Exercise.Type.European:
                     if (isOnTime(stoppingTimes_[0]))
+                    {
                         stoppingTime = true;
+                    }
+
                     break;
                 case Exercise.Type.Bermudan:
                     for (var i = 0; i < stoppingTimes_.Count; i++)
@@ -81,11 +82,13 @@ namespace QLNet.Pricingengines.barrier
                             break;
                         }
                     }
+
                     break;
                 default:
                     Utils.QL_FAIL("invalid option ExerciseType");
                     break;
             }
+
             for (var j = 0; j < optvalues.size(); j++)
             {
                 switch (arguments_.barrierType)
@@ -99,18 +102,26 @@ namespace QLNet.Pricingengines.barrier
                                 optvalues[j] = System.Math.Max(vanilla_.values()[j], arguments_.payoff.value(grid[j]));
                             }
                             else
+                            {
                                 optvalues[j] = vanilla_.values()[j];
+                            }
                         }
                         else if (endTime)
+                        {
                             optvalues[j] = arguments_.rebate.GetValueOrDefault();
+                        }
+
                         break;
                     case Barrier.Type.DownOut:
                         if (grid[j] <= arguments_.barrier)
+                        {
                             optvalues[j] = arguments_.rebate.GetValueOrDefault(); // knocked out
+                        }
                         else if (stoppingTime)
                         {
                             optvalues[j] = System.Math.Max(optvalues[j], arguments_.payoff.value(grid[j]));
                         }
+
                         break;
                     case Barrier.Type.UpIn:
                         if (grid[j] >= arguments_.barrier)
@@ -121,16 +132,26 @@ namespace QLNet.Pricingengines.barrier
                                 optvalues[j] = System.Math.Max(vanilla_.values()[j], arguments_.payoff.value(grid[j]));
                             }
                             else
+                            {
                                 optvalues[j] = vanilla_.values()[j];
+                            }
                         }
                         else if (endTime)
+                        {
                             optvalues[j] = arguments_.rebate.GetValueOrDefault();
+                        }
+
                         break;
                     case Barrier.Type.UpOut:
                         if (grid[j] >= arguments_.barrier)
+                        {
                             optvalues[j] = arguments_.rebate.GetValueOrDefault(); // knocked out
+                        }
                         else if (stoppingTime)
+                        {
                             optvalues[j] = System.Math.Max(optvalues[j], arguments_.payoff.value(grid[j]));
+                        }
+
                         break;
                     default:
                         Utils.QL_FAIL("invalid barrier ExerciseType");
@@ -139,6 +160,17 @@ namespace QLNet.Pricingengines.barrier
             }
         }
 
+        public override List<double> mandatoryTimes() => stoppingTimes_;
+
+        public override void reset(int size)
+        {
+            vanilla_.initialize(method(), time());
+            values_ = new Vector(size, 0.0);
+            adjustValues();
+        }
+
+        public Vector vanilla() => vanilla_.values();
+
         protected override void postAdjustValuesImpl()
         {
             if (arguments_.barrierType == Barrier.Type.DownIn ||
@@ -146,13 +178,9 @@ namespace QLNet.Pricingengines.barrier
             {
                 vanilla_.rollback(time());
             }
+
             var grid = method().grid(time());
             checkBarrier(values_, grid);
         }
-
-        private BarrierOption.Arguments arguments_;
-        private List<double> stoppingTimes_;
-        private DiscretizedVanillaOption vanilla_;
-
     }
 }

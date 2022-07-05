@@ -16,31 +16,45 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Extensions;
-using QLNet.Instruments;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
 using QLNet.Time.Calendars;
 
 namespace QLNet.Instruments.Bonds
 {
-    [JetBrains.Annotations.PublicAPI] public class AmortizingBond : Bond
+    [PublicAPI]
+    public class AmortizingBond : Bond
     {
+        protected Calendar _calendar;
+        protected double _couponRate;
+        protected DayCounter _dCounter;
+        protected double _faceValue;
+        protected bool _isPremium;
+        protected Date _issueDate;
+        protected double _marketValue;
+        protected Date _maturityDate;
+        protected AmortizingMethod _method;
+        protected double _originalPayment;
+        protected Frequency _payFrequency;
+        protected Date _tradeDate;
+        protected double _yield;
 
         public AmortizingBond(double FaceValue,
-                              double MarketValue,
-                              double CouponRate,
-                              Date IssueDate,
-                              Date MaturityDate,
-                              Date TradeDate,
-                              Frequency payFrequency,
-                              DayCounter dCounter,
-                              AmortizingMethod Method,
-                              Calendar calendar,
-                              double gYield = 0) :
-           base(0, new TARGET(), IssueDate)
+            double MarketValue,
+            double CouponRate,
+            Date IssueDate,
+            Date MaturityDate,
+            Date TradeDate,
+            Frequency payFrequency,
+            DayCounter dCounter,
+            AmortizingMethod Method,
+            Calendar calendar,
+            double gYield = 0) :
+            base(0, new TARGET(), IssueDate)
         {
             _faceValue = FaceValue;
             _marketValue = MarketValue;
@@ -58,9 +72,13 @@ namespace QLNet.Instruments.Bonds
             _originalPayment = _faceValue * _couponRate / (double)_payFrequency;
 
             if (gYield.IsEqual(0.0))
+            {
                 _yield = calculateYield();
+            }
             else
+            {
                 _yield = gYield;
+            }
 
             // We can have several method here
             //  Straight-Line Amortization , Effective Interest Rate, Rule 78
@@ -70,28 +88,76 @@ namespace QLNet.Instruments.Bonds
                 case AmortizingMethod.EffectiveInterestRate:
                     addEffectiveInterestRateAmortizing();
                     break;
-                default:
-                    break;
+            }
+        }
+
+        public double AmortizationValue(Date d)
+        {
+            // Check Date
+            if (d < _tradeDate || d > _maturityDate)
+            {
+                return 0;
             }
 
+            double totAmortized = 0;
+            var lastDate = _tradeDate;
+            foreach (var c in cashflows_)
+            {
+                if (c.date() <= d)
+                {
+                    lastDate = c.date();
+                    if (c is AmortizingPayment)
+                    {
+                        totAmortized += (c as AmortizingPayment).amount();
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (lastDate < d)
+            {
+                // lastDate < d let calculate last interest
+
+                // Base Interest
+                var r1 = new InterestRate(_couponRate, _dCounter, Compounding.Simple, _payFrequency);
+                var c1 = new FixedRateCoupon(d, _faceValue, r1, lastDate, d);
+                var baseInterest = c1.amount();
+
+                //
+                var r2 = new InterestRate(_yield, _dCounter, Compounding.Simple, _payFrequency);
+                var c2 = new FixedRateCoupon(d, _marketValue, r2, lastDate, d);
+                var yieldInterest = c2.amount();
+
+                totAmortized += System.Math.Abs(baseInterest - yieldInterest);
+            }
+
+            if (_isPremium)
+            {
+                return _marketValue - totAmortized;
+            }
+
+            return _marketValue + totAmortized;
         }
 
         public bool isPremium() => _isPremium;
 
-        void addEffectiveInterestRateAmortizing()
-        {
+        public double Yield() => _yield;
 
+        private void addEffectiveInterestRateAmortizing()
+        {
             // Amortizing Schedule
             var schedule = new Schedule(_tradeDate, _maturityDate, new Period(_payFrequency),
-                                             _calendar, BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
-                                             DateGeneration.Rule.Backward, false);
+                _calendar, BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
+                DateGeneration.Rule.Backward, false);
             var currentNominal = _marketValue;
             var prevDate = _tradeDate;
             var actualDate = _tradeDate;
 
             for (var i = 1; i < schedule.Count; ++i)
             {
-
                 actualDate = schedule[i];
                 var rate = new InterestRate(_yield, _dCounter, Compounding.Simple, Frequency.Annual);
                 var rate2 = new InterestRate(_couponRate, _dCounter, Compounding.Simple, Frequency.Annual);
@@ -116,10 +182,13 @@ namespace QLNet.Instruments.Bonds
 
                 var p = new AmortizingPayment(amort, actualDate);
                 if (_isPremium)
+                {
                     currentNominal -= System.Math.Abs(amort);
+                }
                 else
+                {
                     currentNominal += System.Math.Abs(amort);
-
+                }
 
                 cashflows_.Add(r2);
                 cashflows_.Add(p);
@@ -128,71 +197,21 @@ namespace QLNet.Instruments.Bonds
 
             // Add single redemption for yield calculation
             setSingleRedemption(_faceValue, 100, _maturityDate);
-
         }
-
-        public double AmortizationValue(Date d)
-        {
-            // Check Date
-            if (d < _tradeDate || d > _maturityDate)
-                return 0;
-
-            double totAmortized = 0;
-            var lastDate = _tradeDate;
-            foreach (var c in cashflows_)
-            {
-                if (c.date() <= d)
-                {
-                    lastDate = c.date();
-                    if (c is AmortizingPayment)
-                        totAmortized += (c as AmortizingPayment).amount();
-                }
-                else
-                    break;
-            }
-
-
-            if (lastDate < d)
-            {
-                // lastDate < d let calculate last interest
-
-                // Base Interest
-                var r1 = new InterestRate(_couponRate, _dCounter, Compounding.Simple, _payFrequency);
-                var c1 = new FixedRateCoupon(d, _faceValue, r1, lastDate, d);
-                var baseInterest = c1.amount();
-
-                //
-                var r2 = new InterestRate(_yield, _dCounter, Compounding.Simple, _payFrequency);
-                var c2 = new FixedRateCoupon(d, _marketValue, r2, lastDate, d);
-                var yieldInterest = c2.amount();
-
-                totAmortized += System.Math.Abs(baseInterest - yieldInterest);
-            }
-
-
-            if (_isPremium)
-                return _marketValue - totAmortized;
-            else
-                return _marketValue + totAmortized;
-
-        }
-
-        public double Yield() => _yield;
 
         private double calculateYield()
         {
             // We create a bond cashflow from issue to maturity just
             // to calculate effective rate ( the rate that discount _marketValue )
             var schedule = new Schedule(_issueDate, _maturityDate, new Period(_payFrequency),
-                                             _calendar, BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
-                                             DateGeneration.Rule.Backward, false);
-
+                _calendar, BusinessDayConvention.Unadjusted, BusinessDayConvention.Unadjusted,
+                DateGeneration.Rule.Backward, false);
 
             List<CashFlow> cashflows = new FixedRateLeg(schedule)
-            .withCouponRates(_couponRate, _dCounter)
-            .withPaymentCalendar(_calendar)
-            .withNotionals(_faceValue)
-            .withPaymentAdjustment(BusinessDayConvention.Unadjusted);
+                .withCouponRates(_couponRate, _dCounter)
+                .withPaymentCalendar(_calendar)
+                .withNotionals(_faceValue)
+                .withPaymentAdjustment(BusinessDayConvention.Unadjusted);
 
             // Add single redemption for yield calculation
             var r = new Redemption(_faceValue, _maturityDate);
@@ -201,7 +220,7 @@ namespace QLNet.Instruments.Bonds
             // Calculate Amortizing Yield ( Effective Rate )
             var testDate = CashFlows.previousCashFlowDate(cashflows, false, _tradeDate);
             return CashFlows.yield(cashflows, _marketValue, _dCounter, Compounding.Simple, _payFrequency,
-                                   false, testDate);
+                false, testDate);
         }
 
         // temporary testing function
@@ -216,20 +235,5 @@ namespace QLNet.Instruments.Bonds
             var yieldB = TotalAnnualizedReturn / (_faceValue - AnnualizedCapitalGain);
             return (yieldA + yieldB) / 2;
         }
-
-        protected double _faceValue;
-        protected double _marketValue;
-        protected double _couponRate;
-        protected Date _issueDate;
-        protected Date _maturityDate;
-        protected Date _tradeDate;
-        protected Frequency _payFrequency;
-        protected DayCounter _dCounter;
-        protected AmortizingMethod _method;
-        protected Calendar _calendar;
-        protected double _yield;
-        protected double _originalPayment;
-        protected bool _isPremium;
-
     }
 }

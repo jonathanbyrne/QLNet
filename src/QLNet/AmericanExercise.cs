@@ -1,8 +1,10 @@
-﻿using QLNet.Time;
+﻿using JetBrains.Annotations;
+using QLNet.Time;
 
 namespace QLNet
 {
-    [JetBrains.Annotations.PublicAPI] public class AmericanExercise : EarlyExercise
+    [PublicAPI]
+    public class AmericanExercise : EarlyExercise
     {
         public AmericanExercise(Date earliestDate, Date latestDate, bool payoffAtExpiry = false)
             : base(Type.American, payoffAtExpiry)

@@ -17,42 +17,41 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using System;
+using System.Linq;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Models;
-using QLNet.Pricingengines;
 using QLNet.Termstructures;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Pricingengines.Swap
 {
     /// <summary>
-    /// Numerical lattice engine for swaps
+    ///     Numerical lattice engine for swaps
     /// </summary>
-    [JetBrains.Annotations.PublicAPI] public class TreeVanillaSwapEngine : LatticeShortRateModelEngine<VanillaSwap.Arguments, VanillaSwap.Results>
+    [PublicAPI]
+    public class TreeVanillaSwapEngine : LatticeShortRateModelEngine<VanillaSwap.Arguments, VanillaSwap.Results>
     {
         private Handle<YieldTermStructure> termStructure_;
-
         /* Constructors
             \note the term structure is only needed when the short-rate
                   model cannot provide one itself.
         */
 
         public TreeVanillaSwapEngine(ShortRateModel model,
-                                     int timeSteps,
-                                     Handle<YieldTermStructure> termStructure)
-           : base(model, timeSteps)
+            int timeSteps,
+            Handle<YieldTermStructure> termStructure)
+            : base(model, timeSteps)
         {
             termStructure_ = termStructure;
             termStructure_.registerWith(update);
         }
 
         public TreeVanillaSwapEngine(ShortRateModel model,
-                                     TimeGrid timeGrid,
-                                     Handle<YieldTermStructure> termStructure)
-           : base(model, timeGrid)
+            TimeGrid timeGrid,
+            Handle<YieldTermStructure> termStructure)
+            : base(model, timeGrid)
         {
             termStructure_ = termStructure;
             termStructure_.registerWith(update);
@@ -61,13 +60,15 @@ namespace QLNet.Pricingengines.Swap
         public override void calculate()
         {
             if (model_ == null)
+            {
                 throw new ArgumentException("no model specified");
+            }
 
             Date referenceDate;
             DayCounter dayCounter;
 
             var tsmodel =
-               (ITermStructureConsistentModel)model_.link;
+                (ITermStructureConsistentModel)model_.link;
             try
             {
                 if (tsmodel != null)

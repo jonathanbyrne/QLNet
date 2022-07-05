@@ -1,12 +1,16 @@
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Instruments.Bonds;
 using QLNet.Quotes;
 using QLNet.Time;
 
 namespace QLNet.Termstructures.Yield
 {
-    [JetBrains.Annotations.PublicAPI] public class FixedRateBondHelper : BondHelper
+    [PublicAPI]
+    public class FixedRateBondHelper : BondHelper
     {
+        protected FixedRateBond fixedRateBond_;
+
         public FixedRateBondHelper(Handle<Quote> price,
             int settlementDays,
             double faceAmount,
@@ -32,7 +36,5 @@ namespace QLNet.Termstructures.Yield
         }
 
         public FixedRateBond fixedRateBond() => fixedRateBond_;
-
-        protected FixedRateBond fixedRateBond_;
     }
 }

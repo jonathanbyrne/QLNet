@@ -16,18 +16,25 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.matrixutilities;
 using QLNet.Methods.Finitedifferences.Meshers;
 using QLNet.Methods.Finitedifferences.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QLNet.Methods.Finitedifferences.Operators
 {
-    [JetBrains.Annotations.PublicAPI] public class TripleBandLinearOp : FdmLinearOp
+    [PublicAPI]
+    public class TripleBandLinearOp : FdmLinearOp
     {
+        protected int direction_;
+        protected List<int> i0_, i2_;
+        protected List<double> lower_, diag_, upper_;
+        protected FdmMesher mesher_;
+        protected List<int> reverseIndex_;
+
         public TripleBandLinearOp(int direction, FdmMesher mesher)
         {
             direction_ = direction;
@@ -89,125 +96,10 @@ namespace QLNet.Methods.Finitedifferences.Operators
 
         protected TripleBandLinearOp()
         {
-
-        }
-
-        public override Vector apply(Vector r)
-        {
-            var index = mesher_.layout();
-
-            Utils.QL_REQUIRE(r.size() == index.size(), () => "inconsistent length of r");
-
-            var retVal = new Vector(r.size());
-            //#pragma omp parallel for
-            for (var i = 0; i < index.size(); ++i)
-            {
-                retVal[i] = r[i0_[i]] * lower_[i] + r[i] * diag_[i] + r[i2_[i]] * upper_[i];
-            }
-
-            return retVal;
-        }
-
-        public override SparseMatrix toMatrix()
-        {
-            var index = mesher_.layout();
-            var n = index.size();
-
-            var retVal = new SparseMatrix(n, n);
-            for (var i = 0; i < n; ++i)
-            {
-                retVal[i, i0_[i]] += lower_[i];
-                retVal[i, i] += diag_[i];
-                retVal[i, i2_[i]] += upper_[i];
-            }
-
-            return retVal;
-        }
-
-        public Vector solve_splitting(Vector r, double a, double b = 1.0)
-        {
-            var layout = mesher_.layout();
-            Utils.QL_REQUIRE(r.size() == layout.size(), () => "inconsistent size of rhs");
-
-            for (var iter = layout.begin();
-                 iter != layout.end(); ++iter)
-            {
-                var coordinates = iter.coordinates();
-                Utils.QL_REQUIRE(coordinates[direction_] != 0
-                                 || lower_[iter.index()] == 0, () => "removing non zero entry!");
-                Utils.QL_REQUIRE(coordinates[direction_] != layout.dim()[direction_] - 1
-                                 || upper_[iter.index()] == 0, () => "removing non zero entry!");
-            }
-
-            Vector retVal = new Vector(r.size()), tmp = new Vector(r.size());
-
-            // Thomson algorithm to solve a tridiagonal system.
-            // Example code taken from Tridiagonalopertor and
-            // changed to fit for the triple band operator.
-            var rim1 = reverseIndex_[0];
-            var bet = 1.0 / (a * diag_[rim1] + b);
-            Utils.QL_REQUIRE(bet != 0.0, () => "division by zero");
-            retVal[reverseIndex_[0]] = r[rim1] * bet;
-
-            for (var j = 1; j <= layout.size() - 1; j++)
-            {
-                var ri = reverseIndex_[j];
-                tmp[j] = a * upper_[rim1] * bet;
-
-                bet = b + a * (diag_[ri] - tmp[j] * lower_[ri]);
-                Utils.QL_REQUIRE(bet != 0.0, () => "division by zero"); //QL_ENSURE
-                bet = 1.0 / bet;
-
-                retVal[ri] = (r[ri] - a * lower_[ri] * retVal[rim1]) * bet;
-                rim1 = ri;
-            }
-            // cannot be j>=0 with Size j
-            for (var j = layout.size() - 2; j > 0; --j)
-                retVal[reverseIndex_[j]] -= tmp[j + 1] * retVal[reverseIndex_[j + 1]];
-            retVal[reverseIndex_[0]] -= tmp[1] * retVal[reverseIndex_[1]];
-
-            return retVal;
-        }
-
-        public TripleBandLinearOp mult(Vector u)
-        {
-            var retVal = new TripleBandLinearOp(direction_, mesher_);
-
-            var size = mesher_.layout().size();
-            //#pragma omp parallel for
-            for (var i = 0; i < size; ++i)
-            {
-                var s = u[i];
-                retVal.lower_[i] = lower_[i] * s;
-                retVal.diag_[i] = diag_[i] * s;
-                retVal.upper_[i] = upper_[i] * s;
-            }
-
-            return retVal;
-        }
-
-        public TripleBandLinearOp multR(Vector u)
-        {
-            var layout = mesher_.layout();
-            var size = layout.size();
-            Utils.QL_REQUIRE(u.size() == size, () => "inconsistent size of rhs");
-            var retVal = new TripleBandLinearOp(direction_, mesher_);
-
-            for (var i = 0; i < size; ++i)
-            {
-                var sm1 = i > 0 ? u[i - 1] : 1.0;
-                var s0 = u[i];
-                var sp1 = i < size - 1 ? u[i + 1] : 1.0;
-                retVal.lower_[i] = lower_[i] * sm1;
-                retVal.diag_[i] = diag_[i] * s0;
-                retVal.upper_[i] = upper_[i] * sp1;
-            }
-
-            return retVal;
         }
 
         public TripleBandLinearOp add
-           (TripleBandLinearOp m)
+            (TripleBandLinearOp m)
         {
             var retVal = new TripleBandLinearOp(direction_, mesher_);
             var size = mesher_.layout().size();
@@ -223,9 +115,8 @@ namespace QLNet.Methods.Finitedifferences.Operators
         }
 
         public TripleBandLinearOp add
-           (Vector u)
+            (Vector u)
         {
-
             var retVal = new TripleBandLinearOp(direction_, mesher_);
 
             var size = mesher_.layout().size();
@@ -235,6 +126,22 @@ namespace QLNet.Methods.Finitedifferences.Operators
                 retVal.lower_[i] = lower_[i];
                 retVal.upper_[i] = upper_[i];
                 retVal.diag_[i] = diag_[i] + u[i];
+            }
+
+            return retVal;
+        }
+
+        public override Vector apply(Vector r)
+        {
+            var index = mesher_.layout();
+
+            Utils.QL_REQUIRE(r.size() == index.size(), () => "inconsistent length of r");
+
+            var retVal = new Vector(r.size());
+            //#pragma omp parallel for
+            for (var i = 0; i < index.size(); ++i)
+            {
+                retVal[i] = r[i0_[i]] * lower_[i] + r[i] * diag_[i] + r[i2_[i]] * upper_[i];
             }
 
             return retVal;
@@ -297,6 +204,93 @@ namespace QLNet.Methods.Finitedifferences.Operators
             }
         }
 
+        public TripleBandLinearOp mult(Vector u)
+        {
+            var retVal = new TripleBandLinearOp(direction_, mesher_);
+
+            var size = mesher_.layout().size();
+            //#pragma omp parallel for
+            for (var i = 0; i < size; ++i)
+            {
+                var s = u[i];
+                retVal.lower_[i] = lower_[i] * s;
+                retVal.diag_[i] = diag_[i] * s;
+                retVal.upper_[i] = upper_[i] * s;
+            }
+
+            return retVal;
+        }
+
+        public TripleBandLinearOp multR(Vector u)
+        {
+            var layout = mesher_.layout();
+            var size = layout.size();
+            Utils.QL_REQUIRE(u.size() == size, () => "inconsistent size of rhs");
+            var retVal = new TripleBandLinearOp(direction_, mesher_);
+
+            for (var i = 0; i < size; ++i)
+            {
+                var sm1 = i > 0 ? u[i - 1] : 1.0;
+                var s0 = u[i];
+                var sp1 = i < size - 1 ? u[i + 1] : 1.0;
+                retVal.lower_[i] = lower_[i] * sm1;
+                retVal.diag_[i] = diag_[i] * s0;
+                retVal.upper_[i] = upper_[i] * sp1;
+            }
+
+            return retVal;
+        }
+
+        public Vector solve_splitting(Vector r, double a, double b = 1.0)
+        {
+            var layout = mesher_.layout();
+            Utils.QL_REQUIRE(r.size() == layout.size(), () => "inconsistent size of rhs");
+
+            for (var iter = layout.begin();
+                 iter != layout.end();
+                 ++iter)
+            {
+                var coordinates = iter.coordinates();
+                Utils.QL_REQUIRE(coordinates[direction_] != 0
+                                 || lower_[iter.index()] == 0, () => "removing non zero entry!");
+                Utils.QL_REQUIRE(coordinates[direction_] != layout.dim()[direction_] - 1
+                                 || upper_[iter.index()] == 0, () => "removing non zero entry!");
+            }
+
+            Vector retVal = new Vector(r.size()), tmp = new Vector(r.size());
+
+            // Thomson algorithm to solve a tridiagonal system.
+            // Example code taken from Tridiagonalopertor and
+            // changed to fit for the triple band operator.
+            var rim1 = reverseIndex_[0];
+            var bet = 1.0 / (a * diag_[rim1] + b);
+            Utils.QL_REQUIRE(bet != 0.0, () => "division by zero");
+            retVal[reverseIndex_[0]] = r[rim1] * bet;
+
+            for (var j = 1; j <= layout.size() - 1; j++)
+            {
+                var ri = reverseIndex_[j];
+                tmp[j] = a * upper_[rim1] * bet;
+
+                bet = b + a * (diag_[ri] - tmp[j] * lower_[ri]);
+                Utils.QL_REQUIRE(bet != 0.0, () => "division by zero"); //QL_ENSURE
+                bet = 1.0 / bet;
+
+                retVal[ri] = (r[ri] - a * lower_[ri] * retVal[rim1]) * bet;
+                rim1 = ri;
+            }
+
+            // cannot be j>=0 with Size j
+            for (var j = layout.size() - 2; j > 0; --j)
+            {
+                retVal[reverseIndex_[j]] -= tmp[j + 1] * retVal[reverseIndex_[j + 1]];
+            }
+
+            retVal[reverseIndex_[0]] -= tmp[1] * retVal[reverseIndex_[1]];
+
+            return retVal;
+        }
+
         public void swap(TripleBandLinearOp m)
         {
             Utils.swap(ref mesher_, ref m.mesher_);
@@ -309,7 +303,24 @@ namespace QLNet.Methods.Finitedifferences.Operators
             Utils.swap(ref upper_, ref m.upper_);
         }
 
+        public override SparseMatrix toMatrix()
+        {
+            var index = mesher_.layout();
+            var n = index.size();
+
+            var retVal = new SparseMatrix(n, n);
+            for (var i = 0; i < n; ++i)
+            {
+                retVal[i, i0_[i]] += lower_[i];
+                retVal[i, i] += diag_[i];
+                retVal[i, i2_[i]] += upper_[i];
+            }
+
+            return retVal;
+        }
+
         #region IOperator interface
+
         public override int size() => 0;
 
         public override IOperator identity(int size) => null;
@@ -321,22 +332,19 @@ namespace QLNet.Methods.Finitedifferences.Operators
         public override IOperator multiply(double a, IOperator D) => null;
 
         public override IOperator add
-           (IOperator A, IOperator B) =>
+            (IOperator A, IOperator B) =>
             null;
 
         public override IOperator subtract(IOperator A, IOperator B) => null;
 
         public override bool isTimeDependent() => false;
 
-        public override void setTime(double t) { }
+        public override void setTime(double t)
+        {
+        }
+
         public override object Clone() => MemberwiseClone();
 
         #endregion
-
-        protected int direction_;
-        protected List<int> i0_, i2_;
-        protected List<int> reverseIndex_;
-        protected List<double> lower_, diag_, upper_;
-        protected FdmMesher mesher_;
     }
 }

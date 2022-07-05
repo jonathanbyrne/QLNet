@@ -14,8 +14,8 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
+using JetBrains.Annotations;
 using QLNet.Currencies;
-using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time;
 using QLNet.Time.Calendars;
@@ -28,17 +28,18 @@ namespace QLNet.Indexes.Ibor
 
         See <http://www.afma.com.au/data/BBSW>.
     */
-    [JetBrains.Annotations.PublicAPI] public class Bbsw : IborIndex
+    [PublicAPI]
+    public class Bbsw : IborIndex
     {
         public Bbsw(Period tenor, Handle<YieldTermStructure> h = null)
-           : base("Bbsw", tenor,
-                  0, // settlement days
-                  new AUDCurrency(), new Australia(),
-                  BusinessDayConvention.HalfMonthModifiedFollowing, true,
-                  new Actual365Fixed(), h ?? new Handle<YieldTermStructure>())
+            : base("Bbsw", tenor,
+                0, // settlement days
+                new AUDCurrency(), new Australia(),
+                BusinessDayConvention.HalfMonthModifiedFollowing, true,
+                new Actual365Fixed(), h ?? new Handle<YieldTermStructure>())
         {
             Utils.QL_REQUIRE(this.tenor().units() != TimeUnit.Days, () =>
-                             "for daily tenors (" + this.tenor() + ") dedicated DailyTenor constructor must be used");
+                "for daily tenors (" + this.tenor() + ") dedicated DailyTenor constructor must be used");
         }
     }
 

@@ -1,10 +1,14 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace QLNet.Instruments
 {
-    [JetBrains.Annotations.PublicAPI] public class FloatingTypePayoff : TypePayoff
+    [PublicAPI]
+    public class FloatingTypePayoff : TypePayoff
     {
-        public FloatingTypePayoff(Option.Type type) : base(type) { }
+        public FloatingTypePayoff(Option.Type type) : base(type)
+        {
+        }
 
         // Payoff interface
         public override string name() => "FloatingType";

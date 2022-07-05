@@ -17,13 +17,15 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System;
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences;
 using QLNet.processes;
 using QLNet.Time;
-using System;
-using System.Collections.Generic;
 
 namespace QLNet.Pricingengines.vanilla
 {
@@ -32,30 +34,25 @@ namespace QLNet.Pricingengines.vanilla
 
         \ingroup vanillaengines
     */
-    [JetBrains.Annotations.PublicAPI] public class FDVanillaEngine
+    [PublicAPI]
+    public class FDVanillaEngine
     {
-        protected GeneralizedBlackScholesProcess process_;
-        protected int timeSteps_, gridPoints_;
-        protected bool timeDependent_;
-        protected Date exerciseDate_;
-        protected Payoff payoff_;
-        protected TridiagonalOperator finiteDifferenceOperator_;
-        public SampledCurve intrinsicValues_ { get; set; }
-
+        // temporaries
+        private const double safetyZoneFactor_ = 1.1;
         protected List<BoundaryCondition<IOperator>> BCs_;
+        protected Date exerciseDate_;
+        protected TridiagonalOperator finiteDifferenceOperator_;
+        protected Payoff payoff_;
+        protected GeneralizedBlackScholesProcess process_;
         // temporaries
         protected double sMin_, center_, sMax_;
-
-        // temporaries
-        const double safetyZoneFactor_ = 1.1;
+        protected bool timeDependent_;
+        protected int timeSteps_, gridPoints_;
 
         // required for generics and template iheritance
-        public FDVanillaEngine() { }
-        // this should be defined as new in each deriving class which use template iheritance
-        // in order to return a proper class to wrap
-        public virtual FDVanillaEngine factory(GeneralizedBlackScholesProcess process,
-                                               int timeSteps, int gridPoints, bool timeDependent) =>
-            new FDVanillaEngine(process, timeSteps, gridPoints, timeDependent);
+        public FDVanillaEngine()
+        {
+        }
 
         public FDVanillaEngine(GeneralizedBlackScholesProcess process, int timeSteps, int gridPoints, bool timeDependent)
         {
@@ -67,7 +64,76 @@ namespace QLNet.Pricingengines.vanilla
             BCs_ = new InitializedList<BoundaryCondition<IOperator>>(2);
         }
 
+        public SampledCurve intrinsicValues_ { get; set; }
+
+        public virtual void calculate(IPricingEngineResults r)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void ensureStrikeInGrid()
+        {
+            // ensure strike is included in the grid
+            if (!(payoff_ is StrikedTypePayoff striked_payoff))
+            {
+                return;
+            }
+
+            var requiredGridValue = striked_payoff.strike();
+
+            if (sMin_ > requiredGridValue / safetyZoneFactor_)
+            {
+                sMin_ = requiredGridValue / safetyZoneFactor_;
+                // enforce central placement of the underlying
+                sMax_ = center_ / (sMin_ / center_);
+            }
+
+            if (sMax_ < requiredGridValue * safetyZoneFactor_)
+            {
+                sMax_ = requiredGridValue * safetyZoneFactor_;
+                // enforce central placement of the underlying
+                sMin_ = center_ / (sMax_ / center_);
+            }
+        }
+
+        // this should be defined as new in each deriving class which use template iheritance
+        // in order to return a proper class to wrap
+        public virtual FDVanillaEngine factory(GeneralizedBlackScholesProcess process,
+            int timeSteps, int gridPoints, bool timeDependent) =>
+            new FDVanillaEngine(process, timeSteps, gridPoints, timeDependent);
+
+        public double getResidualTime() => process_.time(exerciseDate_);
+
         public Vector grid() => intrinsicValues_.grid();
+
+        public virtual void setupArguments(IPricingEngineArguments a)
+        {
+            var args = a as QLNet.Option.Arguments;
+            Utils.QL_REQUIRE(args != null, () => "incorrect argument ExerciseType");
+
+            exerciseDate_ = args.exercise.lastDate();
+            payoff_ = args.payoff;
+        }
+
+        protected void initializeBoundaryConditions()
+        {
+            BCs_[0] = new NeumannBC(intrinsicValues_.value(1) - intrinsicValues_.value(0), BoundaryCondition<IOperator>.Side.Lower);
+            BCs_[1] = new NeumannBC(intrinsicValues_.value(intrinsicValues_.size() - 1) -
+                                    intrinsicValues_.value(intrinsicValues_.size() - 2),
+                BoundaryCondition<IOperator>.Side.Upper);
+        }
+
+        protected void initializeInitialCondition()
+        {
+            intrinsicValues_.setLogGrid(sMin_, sMax_);
+            intrinsicValues_.sample(payoff_.value);
+        }
+
+        protected void initializeOperator()
+        {
+            finiteDifferenceOperator_ = OperatorFactory.getOperator(process_, intrinsicValues_.grid(),
+                getResidualTime(), timeDependent_);
+        }
 
         protected virtual void setGridLimits()
         {
@@ -95,73 +161,17 @@ namespace QLNet.Pricingengines.vanilla
             sMax_ = center_ * minMaxFactor; // underlying grid max value
         }
 
-        public void ensureStrikeInGrid()
-        {
-            // ensure strike is included in the grid
-            var striked_payoff = payoff_ as StrikedTypePayoff;
-            if (striked_payoff == null)
-                return;
-
-            var requiredGridValue = striked_payoff.strike();
-
-            if (sMin_ > requiredGridValue / safetyZoneFactor_)
-            {
-                sMin_ = requiredGridValue / safetyZoneFactor_;
-                // enforce central placement of the underlying
-                sMax_ = center_ / (sMin_ / center_);
-            }
-            if (sMax_ < requiredGridValue * safetyZoneFactor_)
-            {
-                sMax_ = requiredGridValue * safetyZoneFactor_;
-                // enforce central placement of the underlying
-                sMin_ = center_ / (sMax_ / center_);
-            }
-        }
-
-        protected void initializeInitialCondition()
-        {
-            intrinsicValues_.setLogGrid(sMin_, sMax_);
-            intrinsicValues_.sample(payoff_.value);
-        }
-
-        protected void initializeOperator()
-        {
-            finiteDifferenceOperator_ = OperatorFactory.getOperator(process_, intrinsicValues_.grid(),
-                                                                    getResidualTime(), timeDependent_);
-        }
-
-        protected void initializeBoundaryConditions()
-        {
-            BCs_[0] = new NeumannBC(intrinsicValues_.value(1) - intrinsicValues_.value(0), NeumannBC.Side.Lower);
-            BCs_[1] = new NeumannBC(intrinsicValues_.value(intrinsicValues_.size() - 1) -
-                                    intrinsicValues_.value(intrinsicValues_.size() - 2),
-                                    NeumannBC.Side.Upper);
-        }
-
-        public double getResidualTime() => process_.time(exerciseDate_);
-
         // safety check to be sure we have enough grid points.
         private int safeGridPoints(int gridPoints, double residualTime)
         {
             const int minGridPoints = 10;
             const int minGridPointsPerYear = 2;
             return System.Math.Max(gridPoints,
-                            residualTime > 1 ?
-                            (int)(minGridPoints + (residualTime - 1.0) * minGridPointsPerYear)
-                            : minGridPoints);
+                residualTime > 1
+                    ? (int)(minGridPoints + (residualTime - 1.0) * minGridPointsPerYear)
+                    : minGridPoints);
         }
-
-        public virtual void setupArguments(IPricingEngineArguments a)
-        {
-            var args = a as QLNet.Option.Arguments;
-            Utils.QL_REQUIRE(args != null, () => "incorrect argument ExerciseType");
-
-            exerciseDate_ = args.exercise.lastDate();
-            payoff_ = args.payoff;
-        }
-        public virtual void calculate(IPricingEngineResults r) { throw new NotSupportedException(); }
     }
-
 
     // this is the interface to allow generic use of FDAmericanEngine and FDShoutEngine
     // those engines are shortcuts to FDEngineAdapter

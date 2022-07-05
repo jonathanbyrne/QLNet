@@ -1,10 +1,16 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Time;
 
 namespace QLNet.Instruments.Bonds
 {
-    [JetBrains.Annotations.PublicAPI] public class EventSet : CatRisk
+    [PublicAPI]
+    public class EventSet : CatRisk
     {
+        private List<KeyValuePair<Date, double>> events_;
+        private Date eventsEnd_;
+        private Date eventsStart_;
+
         public EventSet(List<KeyValuePair<Date, double>> events, Date eventsStart, Date eventsEnd)
         {
             events_ = events;
@@ -13,9 +19,5 @@ namespace QLNet.Instruments.Bonds
         }
 
         public override CatSimulation newSimulation(Date start, Date end) => new EventSetSimulation(events_, eventsStart_, eventsEnd_, start, end);
-
-        private List<KeyValuePair<Date, double>> events_;
-        private Date eventsStart_;
-        private Date eventsEnd_;
     }
 }

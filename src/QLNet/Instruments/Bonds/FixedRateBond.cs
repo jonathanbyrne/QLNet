@@ -17,16 +17,19 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using QLNet.Instruments;
-using QLNet.Time;
-using System;
+
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using QLNet.Cashflows;
+using QLNet.Time;
 
 namespace QLNet.Instruments.Bonds
 {
-    [JetBrains.Annotations.PublicAPI] public class FixedRateBond : Bond
+    [PublicAPI]
+    public class FixedRateBond : Bond
     {
+        protected DayCounter dayCounter_;
+        protected Frequency frequency_;
         //! fixed-rate bond
         /*! \ingroup instruments
 
@@ -34,33 +37,32 @@ namespace QLNet.Instruments.Bonds
                   cached values.
         */
 
-
         //! simple annual compounding coupon rates
         public FixedRateBond(int settlementDays, double faceAmount, Schedule schedule, List<double> coupons,
-                             DayCounter accrualDayCounter, BusinessDayConvention paymentConvention = BusinessDayConvention.Following,
-                             double redemption = 100, Date issueDate = null, Calendar paymentCalendar = null,
-                             Period exCouponPeriod = null,
-                             Calendar exCouponCalendar = null,
-                             BusinessDayConvention exCouponConvention = BusinessDayConvention.Unadjusted,
-                             bool exCouponEndOfMonth = false)
-           : base(settlementDays, paymentCalendar ?? schedule.calendar(),
-                  issueDate)
+            DayCounter accrualDayCounter, BusinessDayConvention paymentConvention = BusinessDayConvention.Following,
+            double redemption = 100, Date issueDate = null, Calendar paymentCalendar = null,
+            Period exCouponPeriod = null,
+            Calendar exCouponCalendar = null,
+            BusinessDayConvention exCouponConvention = BusinessDayConvention.Unadjusted,
+            bool exCouponEndOfMonth = false)
+            : base(settlementDays, paymentCalendar ?? schedule.calendar(),
+                issueDate)
         {
             frequency_ = schedule.tenor().frequency();
             dayCounter_ = accrualDayCounter;
             maturityDate_ = schedule.endDate();
 
             cashflows_ = new FixedRateLeg(schedule)
-            .withCouponRates(coupons, accrualDayCounter)
-            .withExCouponPeriod(exCouponPeriod,
-                                exCouponCalendar,
-                                exCouponConvention,
-                                exCouponEndOfMonth)
-            .withPaymentCalendar(calendar_)
-            .withNotionals(faceAmount)
-            .withPaymentAdjustment(paymentConvention);
+                .withCouponRates(coupons, accrualDayCounter)
+                .withExCouponPeriod(exCouponPeriod,
+                    exCouponCalendar,
+                    exCouponConvention,
+                    exCouponEndOfMonth)
+                .withPaymentCalendar(calendar_)
+                .withNotionals(faceAmount)
+                .withPaymentAdjustment(paymentConvention);
 
-            addRedemptionsToCashflows(new List<double>() { redemption });
+            addRedemptionsToCashflows(new List<double> { redemption });
 
             Utils.QL_REQUIRE(cashflows().Count != 0, () => "bond with no cashflows!");
             Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
@@ -69,29 +71,28 @@ namespace QLNet.Instruments.Bonds
         /*! simple annual compounding coupon rates
             with internal schedule calculation */
         public FixedRateBond(int settlementDays,
-                             Calendar calendar,
-                             double faceAmount,
-                             Date startDate,
-                             Date maturityDate,
-                             Period tenor,
-                             List<double> coupons,
-                             DayCounter accrualDayCounter,
-                             BusinessDayConvention accrualConvention = BusinessDayConvention.Following,
-                             BusinessDayConvention paymentConvention = BusinessDayConvention.Following,
-                             double redemption = 100,
-                             Date issueDate = null,
-                             Date stubDate = null,
-                             DateGeneration.Rule rule = DateGeneration.Rule.Backward,
-                             bool endOfMonth = false,
-                             Calendar paymentCalendar = null,
-                             Period exCouponPeriod = null,
-                             Calendar exCouponCalendar = null,
-                             BusinessDayConvention exCouponConvention = BusinessDayConvention.Unadjusted,
-                             bool exCouponEndOfMonth = false)
-           : base(settlementDays, paymentCalendar ?? calendar,
-                  issueDate)
+            Calendar calendar,
+            double faceAmount,
+            Date startDate,
+            Date maturityDate,
+            Period tenor,
+            List<double> coupons,
+            DayCounter accrualDayCounter,
+            BusinessDayConvention accrualConvention = BusinessDayConvention.Following,
+            BusinessDayConvention paymentConvention = BusinessDayConvention.Following,
+            double redemption = 100,
+            Date issueDate = null,
+            Date stubDate = null,
+            DateGeneration.Rule rule = DateGeneration.Rule.Backward,
+            bool endOfMonth = false,
+            Calendar paymentCalendar = null,
+            Period exCouponPeriod = null,
+            Calendar exCouponCalendar = null,
+            BusinessDayConvention exCouponConvention = BusinessDayConvention.Unadjusted,
+            bool exCouponEndOfMonth = false)
+            : base(settlementDays, paymentCalendar ?? calendar,
+                issueDate)
         {
-
             frequency_ = tenor.frequency();
             dayCounter_ = accrualDayCounter;
             maturityDate_ = maturityDate;
@@ -100,7 +101,6 @@ namespace QLNet.Instruments.Bonds
 
             switch (rule)
             {
-
                 case DateGeneration.Rule.Backward:
                     firstDate = null;
                     nextToLastDate = stubDate;
@@ -123,74 +123,64 @@ namespace QLNet.Instruments.Bonds
                     break;
             }
 
-
             var schedule = new Schedule(startDate, maturityDate_, tenor,
-                                             calendar, accrualConvention, accrualConvention,
-                                             rule, endOfMonth,
-                                             firstDate, nextToLastDate);
-
+                calendar, accrualConvention, accrualConvention,
+                rule, endOfMonth,
+                firstDate, nextToLastDate);
 
             cashflows_ = new FixedRateLeg(schedule)
-            .withCouponRates(coupons, accrualDayCounter)
-            .withExCouponPeriod(exCouponPeriod,
-                                exCouponCalendar,
-                                exCouponConvention,
-                                exCouponEndOfMonth)
-            .withPaymentCalendar(calendar_)
-            .withNotionals(faceAmount)
-            .withPaymentAdjustment(paymentConvention);
+                .withCouponRates(coupons, accrualDayCounter)
+                .withExCouponPeriod(exCouponPeriod,
+                    exCouponCalendar,
+                    exCouponConvention,
+                    exCouponEndOfMonth)
+                .withPaymentCalendar(calendar_)
+                .withNotionals(faceAmount)
+                .withPaymentAdjustment(paymentConvention);
 
-            addRedemptionsToCashflows(new List<double>() { redemption });
-
+            addRedemptionsToCashflows(new List<double> { redemption });
 
             Utils.QL_REQUIRE(cashflows().Count != 0, () => "bond with no cashflows!");
             Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
         }
 
         public FixedRateBond(int settlementDays,
-                             double faceAmount,
-                             Schedule schedule,
-                             List<InterestRate> coupons,
-                             BusinessDayConvention paymentConvention = BusinessDayConvention.Following,
-                             double redemption = 100,
-                             Date issueDate = null,
-                             Calendar paymentCalendar = null,
-                             Period exCouponPeriod = null,
-                             Calendar exCouponCalendar = null,
-                             BusinessDayConvention exCouponConvention = BusinessDayConvention.Unadjusted,
-                             bool exCouponEndOfMonth = false)
-
-           : base(settlementDays, paymentCalendar ?? schedule.calendar(),
-                  issueDate)
+            double faceAmount,
+            Schedule schedule,
+            List<InterestRate> coupons,
+            BusinessDayConvention paymentConvention = BusinessDayConvention.Following,
+            double redemption = 100,
+            Date issueDate = null,
+            Calendar paymentCalendar = null,
+            Period exCouponPeriod = null,
+            Calendar exCouponCalendar = null,
+            BusinessDayConvention exCouponConvention = BusinessDayConvention.Unadjusted,
+            bool exCouponEndOfMonth = false)
+            : base(settlementDays, paymentCalendar ?? schedule.calendar(),
+                issueDate)
         {
-
             frequency_ = schedule.tenor().frequency();
             dayCounter_ = coupons[0].dayCounter();
             maturityDate_ = schedule.endDate();
 
             cashflows_ = new FixedRateLeg(schedule)
-            .withCouponRates(coupons)
-            .withExCouponPeriod(exCouponPeriod,
-                                exCouponCalendar,
-                                exCouponConvention,
-                                exCouponEndOfMonth)
-            .withPaymentCalendar(calendar_)
-            .withNotionals(faceAmount)
-            .withPaymentAdjustment(paymentConvention);
+                .withCouponRates(coupons)
+                .withExCouponPeriod(exCouponPeriod,
+                    exCouponCalendar,
+                    exCouponConvention,
+                    exCouponEndOfMonth)
+                .withPaymentCalendar(calendar_)
+                .withNotionals(faceAmount)
+                .withPaymentAdjustment(paymentConvention);
 
-            addRedemptionsToCashflows(new List<double>() { redemption });
-
+            addRedemptionsToCashflows(new List<double> { redemption });
 
             Utils.QL_REQUIRE(cashflows().Count != 0, () => "bond with no cashflows!");
             Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
         }
 
-        public Frequency frequency() => frequency_;
-
         public DayCounter dayCounter() => dayCounter_;
 
-        protected Frequency frequency_;
-        protected DayCounter dayCounter_;
-
+        public Frequency frequency() => frequency_;
     }
 }

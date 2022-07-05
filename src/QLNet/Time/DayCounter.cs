@@ -16,51 +16,67 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
-using System;
+
+using JetBrains.Annotations;
 
 namespace QLNet.Time
 {
     // This class provides methods for determining the length of a time period according to given market convention,
     // both as a number of days and as a year fraction.
-    [JetBrains.Annotations.PublicAPI] public class DayCounter
+    [PublicAPI]
+    public class DayCounter
     {
         // this is a placeholder for actual day counters for Singleton pattern use
         protected DayCounter dayCounter_;
+
+        // constructors
+        /*! The default constructor returns a day counter with a null implementation, which is therefore unusable except as a
+            placeholder. */
+        public DayCounter()
+        {
+        }
+
+        public DayCounter(DayCounter d)
+        {
+            dayCounter_ = d;
+        }
+
         public DayCounter dayCounter
         {
             get => dayCounter_;
             set => dayCounter_ = value;
         }
 
-        // constructors
-        /*! The default constructor returns a day counter with a null implementation, which is therefore unusable except as a
-            placeholder. */
-        public DayCounter() { }
-        public DayCounter(DayCounter d) { dayCounter_ = d; }
-
         // comparison based on name
         // Returns <tt>true</tt> iff the two day counters belong to the same derived class.
         public static bool operator ==(DayCounter d1, DayCounter d2) =>
-            (object)d1 == null || (object)d2 == null ?
-                (object)d1 == null && (object)d2 == null :
-                d1.empty() && d2.empty() || !d1.empty() && !d2.empty() && d1.name() == d2.name();
+            (object)d1 == null || (object)d2 == null ? (object)d1 == null && (object)d2 == null : d1.empty() && d2.empty() || !d1.empty() && !d2.empty() && d1.name() == d2.name();
 
         public static bool operator !=(DayCounter d1, DayCounter d2) => !(d1 == d2);
-
-        public bool empty() => dayCounter_ == null;
-
-        public virtual string name()
-        {
-            if (empty())
-                return "No implementation provided";
-            return dayCounter_.name();
-        }
 
         public virtual int dayCount(Date d1, Date d2)
         {
             Utils.QL_REQUIRE(!empty(), () => "No implementation provided");
             return dayCounter_.dayCount(d1, d2);
         }
+
+        public bool empty() => dayCounter_ == null;
+
+        public override bool Equals(object o) => this == (DayCounter)o;
+
+        public override int GetHashCode() => 0;
+
+        public virtual string name()
+        {
+            if (empty())
+            {
+                return "No implementation provided";
+            }
+
+            return dayCounter_.name();
+        }
+
+        public override string ToString() => name();
 
         public double yearFraction(Date d1, Date d2) => yearFraction(d1, d2, d1, d2);
 
@@ -69,11 +85,5 @@ namespace QLNet.Time
             Utils.QL_REQUIRE(!empty(), () => "No implementation provided");
             return dayCounter_.yearFraction(d1, d2, refPeriodStart, refPeriodEnd);
         }
-
-        public override bool Equals(object o) => this == (DayCounter)o;
-
-        public override int GetHashCode() => 0;
-
-        public override string ToString() => name();
     }
 }

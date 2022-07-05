@@ -18,6 +18,8 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
+
 namespace QLNet.Math.Optimization
 {
     //! Multi-dimensional steepest-descent class
@@ -25,11 +27,13 @@ namespace QLNet.Math.Optimization
 
         search direction \f$ = - f'(x) \f$
     */
-    [JetBrains.Annotations.PublicAPI] public class SteepestDescent : LineSearchBasedMethod
+    [PublicAPI]
+    public class SteepestDescent : LineSearchBasedMethod
     {
         public SteepestDescent(LineSearch lineSearch = null)
-           : base(lineSearch)
-        { }
+            : base(lineSearch)
+        {
+        }
 
         protected override Vector getUpdatedDirection(Problem P, double gold2, Vector gradient) => lineSearch_.lastGradient() * -1;
     }

@@ -13,10 +13,11 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
+
+using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.Optimization;
 using QLNet.processes;
-using System;
 
 namespace QLNet.Models.Equity
 {
@@ -30,10 +31,38 @@ namespace QLNet.Models.Equity
 
         \test calibration is tested against known good values.
     */
-    [JetBrains.Annotations.PublicAPI] public class HestonModel : CalibratedModel
+    [PublicAPI]
+    public class HestonModel : CalibratedModel
     {
+        [PublicAPI]
+        public class FellerConstraint : Constraint
+        {
+            private class Impl : IConstraint
+            {
+                public Vector lowerBound(Vector parameters) => new Vector(parameters.size(), double.MinValue);
+
+                public bool test(Vector param)
+                {
+                    var theta = param[0];
+                    var kappa = param[1];
+                    var sigma = param[2];
+
+                    return sigma >= 0.0 && sigma * sigma < 2.0 * kappa * theta;
+                }
+
+                public Vector upperBound(Vector parameters) => new Vector(parameters.size(), double.MaxValue);
+            }
+
+            public FellerConstraint()
+                : base(new Impl())
+            {
+            }
+        }
+
+        protected HestonProcess process_;
+
         public HestonModel(HestonProcess process)
-           : base(5)
+            : base(5)
         {
             process_ = process;
 
@@ -47,59 +76,33 @@ namespace QLNet.Models.Equity
             process_.riskFreeRate().registerWith(update);
             process_.dividendYield().registerWith(update);
             process_.s0().registerWith(update);
-
         }
-
-        // variance mean version level
-        public double theta() => arguments_[0].value(0.0);
 
         // variance mean reversion speed
         public double kappa() => arguments_[1].value(0.0);
 
-        // volatility of the volatility
-        public double sigma() => arguments_[2].value(0.0);
+        // underlying process
+        public HestonProcess process() => process_;
 
         // correlation
         public double rho() => arguments_[3].value(0.0);
 
+        // volatility of the volatility
+        public double sigma() => arguments_[2].value(0.0);
+
+        // variance mean version level
+        public double theta() => arguments_[0].value(0.0);
+
         // spot variance
         public double v0() => arguments_[4].value(0.0);
-
-        // underlying process
-        public HestonProcess process() => process_;
-
-        [JetBrains.Annotations.PublicAPI] public class FellerConstraint : Constraint
-        {
-            private class Impl : IConstraint
-            {
-                public bool test(Vector param)
-                {
-                    var theta = param[0];
-                    var kappa = param[1];
-                    var sigma = param[2];
-
-                    return sigma >= 0.0 && sigma * sigma < 2.0 * kappa * theta;
-                }
-
-                public Vector upperBound(Vector parameters) => new Vector(parameters.size(), double.MaxValue);
-
-                public Vector lowerBound(Vector parameters) => new Vector(parameters.size(), double.MinValue);
-            }
-
-            public FellerConstraint()
-               : base(new Impl())
-            { }
-
-        }
 
         protected override void generateArguments()
         {
             process_ = new HestonProcess(process_.riskFreeRate(),
-                                         process_.dividendYield(),
-                                         process_.s0(),
-                                         v0(), kappa(), theta(),
-                                         sigma(), rho());
+                process_.dividendYield(),
+                process_.s0(),
+                v0(), kappa(), theta(),
+                sigma(), rho());
         }
-        protected HestonProcess process_;
     }
 }

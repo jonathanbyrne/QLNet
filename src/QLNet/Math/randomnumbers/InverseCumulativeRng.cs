@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Methods.montecarlo;
 using QLNet.Patterns;
 
@@ -32,10 +33,11 @@ namespace QLNet.Math.randomnumbers
         The inverse cumulative distribution is supplied by IC.
     */
 
-    [JetBrains.Annotations.PublicAPI] public class InverseCumulativeRng<RNG, IC> where RNG : IRNGTraits where IC : IValue, new()
+    [PublicAPI]
+    public class InverseCumulativeRng<RNG, IC> where RNG : IRNGTraits where IC : IValue, new()
     {
-        private RNG uniformGenerator_;
         private IC ICND_ = FastActivator<IC>.Create();
+        private RNG uniformGenerator_;
 
         public InverseCumulativeRng(RNG uniformGenerator)
         {

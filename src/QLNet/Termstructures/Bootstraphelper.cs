@@ -17,10 +17,12 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
+
+using System;
+using JetBrains.Annotations;
 using QLNet.Patterns;
 using QLNet.Quotes;
 using QLNet.Time;
-using System;
 
 namespace QLNet.Termstructures
 {
@@ -29,36 +31,93 @@ namespace QLNet.Termstructures
        It is advised that a bootstrap helper for an instrument contains an instance of the actual instrument
      * class to ensure consistancy between the algorithms used during bootstrapping
        and later instrument pricing. This is not yet fully enforced in the available rate helpers. */
-    [JetBrains.Annotations.PublicAPI] public class BootstrapHelper<TS> : IObservable, IObserver
+    [PublicAPI]
+    public class BootstrapHelper<TS> : IObservable, IObserver
     {
-        protected Handle<Quote> quote_;
-        protected TS termStructure_;
         protected Date earliestDate_, latestDate_;
         protected Date maturityDate_, latestRelevantDate_, pillarDate_;
+        protected Handle<Quote> quote_;
+        protected TS termStructure_;
 
-        public BootstrapHelper() { } // required for generics
+        public BootstrapHelper()
+        {
+        } // required for generics
 
         public BootstrapHelper(Handle<Quote> quote)
         {
             quote_ = quote;
             quote_.registerWith(update);
         }
+
         public BootstrapHelper(double quote)
         {
             quote_ = new Handle<Quote>(new SimpleQuote(quote));
         }
 
+        // earliest relevant date
+        // The earliest date at which discounts are needed by the helper in order to provide a quote.
+        public virtual Date earliestDate() => earliestDate_;
+
+        public virtual double impliedQuote() => throw new NotSupportedException();
+
+        // latest relevant date
+        /* The latest date at which discounts are needed by the helper in order to provide a quote.
+         * It does not necessarily equal the maturity of the underlying instrument. */
+        public virtual Date latestDate()
+        {
+            if (latestDate_ == null)
+            {
+                return pillarDate_;
+            }
+
+            return latestDate_;
+        }
+
+        //! latest relevant date
+        /*! The latest date at which data are needed by the helper
+            in order to provide a quote. It does not necessarily
+            equal the maturity of the underlying instrument.
+        */
+        public virtual Date latestRelevantDate()
+        {
+            if (latestRelevantDate_ == null)
+            {
+                return latestDate();
+            }
+
+            return latestRelevantDate_;
+        }
+
+        //! instrument's maturity date
+        public virtual Date maturityDate()
+        {
+            if (maturityDate_ == null)
+            {
+                return latestRelevantDate();
+            }
+
+            return maturityDate_;
+        }
+
+        //! pillar date
+        public virtual Date pillarDate()
+        {
+            if (pillarDate_ == null)
+            {
+                return latestDate();
+            }
+
+            return pillarDate_;
+        }
 
         //! BootstrapHelper interface
         public Handle<Quote> quote() => quote_;
 
         public double quoteError() => quote_.link.value() - impliedQuote();
 
-        public double quoteValue() => quote_.link.value();
-
         public bool quoteIsValid() => quote_.link.isValid();
 
-        public virtual double impliedQuote() => throw new NotSupportedException();
+        public double quoteValue() => quote_.link.value();
 
         //! sets the term structure to be used for pricing
         /*! \warning Being a pointer and not a shared_ptr, the term
@@ -73,69 +132,43 @@ namespace QLNet.Termstructures
         public virtual void setTermStructure(TS ts)
         {
             if (ts == null)
+            {
                 throw new ArgumentException("null term structure given");
+            }
+
             termStructure_ = ts;
         }
 
-        // earliest relevant date
-        // The earliest date at which discounts are needed by the helper in order to provide a quote.
-        public virtual Date earliestDate() => earliestDate_;
-
-        //! instrument's maturity date
-        public virtual Date maturityDate()
-        {
-            if (maturityDate_ == null)
-                return latestRelevantDate();
-            return maturityDate_;
-        }
-
-        //! latest relevant date
-        /*! The latest date at which data are needed by the helper
-            in order to provide a quote. It does not necessarily
-            equal the maturity of the underlying instrument.
-        */
-        public virtual Date latestRelevantDate()
-        {
-            if (latestRelevantDate_ == null)
-                return latestDate();
-            return latestRelevantDate_;
-        }
-
-        //! pillar date
-        public virtual Date pillarDate()
-        {
-            if (pillarDate_ == null)
-                return latestDate();
-            return pillarDate_;
-        }
-
-        // latest relevant date
-        /* The latest date at which discounts are needed by the helper in order to provide a quote.
-         * It does not necessarily equal the maturity of the underlying instrument. */
-        public virtual Date latestDate()
-        {
-            if (latestDate_ == null)
-                return pillarDate_;
-            return latestDate_;
-        }
-
-
         #region observer interface
+
         private readonly WeakEventSource eventSource = new WeakEventSource();
+
         public event Callback notifyObserversEvent
         {
             add => eventSource.Subscribe(value);
             remove => eventSource.Unsubscribe(value);
         }
 
-        public void registerWith(Callback handler) { notifyObserversEvent += handler; }
-        public void unregisterWith(Callback handler) { notifyObserversEvent -= handler; }
+        public void registerWith(Callback handler)
+        {
+            notifyObserversEvent += handler;
+        }
+
+        public void unregisterWith(Callback handler)
+        {
+            notifyObserversEvent -= handler;
+        }
+
         protected void notifyObservers()
         {
             eventSource.Raise();
         }
 
-        public virtual void update() { notifyObservers(); }
+        public virtual void update()
+        {
+            notifyObservers();
+        }
+
         #endregion
     }
 }

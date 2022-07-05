@@ -17,6 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+using JetBrains.Annotations;
 using QLNet.Quotes;
 using QLNet.Time;
 
@@ -29,20 +30,21 @@ namespace QLNet.Termstructures.Volatility.equityfx
         same when volatility is at most time dependent, so this class
         is basically a proxy for BlackVolatilityTermStructure.
     */
-    [JetBrains.Annotations.PublicAPI] public class LocalConstantVol : LocalVolTermStructure
+    [PublicAPI]
+    public class LocalConstantVol : LocalVolTermStructure
     {
-        Handle<Quote> volatility_;
-        DayCounter dayCounter_;
+        private DayCounter dayCounter_;
+        private Handle<Quote> volatility_;
 
         public LocalConstantVol(Date referenceDate, double volatility, DayCounter dc)
-           : base(referenceDate)
+            : base(referenceDate)
         {
             volatility_ = new Handle<Quote>(new SimpleQuote(volatility));
             dayCounter_ = dc;
         }
 
         public LocalConstantVol(Date referenceDate, Handle<Quote> volatility, DayCounter dc)
-           : base(referenceDate)
+            : base(referenceDate)
         {
             volatility_ = volatility;
             dayCounter_ = dc;
@@ -51,14 +53,14 @@ namespace QLNet.Termstructures.Volatility.equityfx
         }
 
         public LocalConstantVol(int settlementDays, Calendar calendar, double volatility, DayCounter dayCounter)
-           : base(settlementDays, calendar)
+            : base(settlementDays, calendar)
         {
             volatility_ = new Handle<Quote>(new SimpleQuote(volatility));
             dayCounter_ = dayCounter;
         }
 
         public LocalConstantVol(int settlementDays, Calendar calendar, Handle<Quote> volatility, DayCounter dayCounter)
-           : base(settlementDays, calendar)
+            : base(settlementDays, calendar)
         {
             volatility_ = volatility;
             dayCounter_ = dayCounter;
@@ -71,10 +73,10 @@ namespace QLNet.Termstructures.Volatility.equityfx
 
         public override Date maxDate() => Date.maxDate();
 
+        public override double maxStrike() => double.MaxValue;
+
         // VolatilityTermStructure interface
         public override double minStrike() => double.MinValue;
-
-        public override double maxStrike() => double.MaxValue;
 
         protected override double localVolImpl(double t, double s) => volatility_.link.value();
     }
