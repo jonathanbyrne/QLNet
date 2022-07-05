@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using QLNet.Extensions;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 using QLNet.Methods.Finitedifferences.Utilities;
 
 namespace QLNet.Math.Optimization
@@ -137,7 +137,7 @@ namespace QLNet.Math.Optimization
 
             public Configuration withCrossoverProbability(double p)
             {
-                Utils.QL_REQUIRE(p >= 0.0 && p <= 1.0,
+                QLNet.Utils.QL_REQUIRE(p >= 0.0 && p <= 1.0,
                     () => "Crossover probability (" + p
                                                     + ") must be in [0,1] range");
                 crossoverProbability = p;
@@ -152,7 +152,7 @@ namespace QLNet.Math.Optimization
 
             public Configuration withPopulationMembers(int n)
             {
-                Utils.QL_REQUIRE(n > 0, () => "Positive number of population members required");
+                QLNet.Utils.QL_REQUIRE(n > 0, () => "Positive number of population members required");
                 populationMembers = n;
                 return this;
             }
@@ -165,7 +165,7 @@ namespace QLNet.Math.Optimization
 
             public Configuration withStepsizeWeight(double w)
             {
-                Utils.QL_REQUIRE(w >= 0 && w <= 2.0,
+                QLNet.Utils.QL_REQUIRE(w >= 0 && w <= 2.0,
                     () => "Step size weight (" + w
                                                + ") must be in [0,2] range");
                 stepsizeWeight = w;
@@ -463,8 +463,8 @@ namespace QLNet.Math.Optimization
                     break;
 
                 default:
-                    Utils.QL_FAIL("Unknown strategy ("
-                                  + Convert.ToInt32(configuration().strategy) + ")");
+                    QLNet.Utils.QL_FAIL("Unknown strategy ("
+                                                 + Convert.ToInt32(configuration().strategy) + ")");
                     break;
             }
 
@@ -615,8 +615,8 @@ namespace QLNet.Math.Optimization
 
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown crossover ExerciseType ("
-                                  + Convert.ToInt32(configuration().crossoverType) + ")");
+                    QLNet.Utils.QL_FAIL("Unknown crossover ExerciseType ("
+                                                 + Convert.ToInt32(configuration().crossoverType) + ")");
                     break;
             }
 

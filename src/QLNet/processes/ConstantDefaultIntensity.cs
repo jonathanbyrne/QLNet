@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace QLNet.processes
+namespace QLNet.Processes
 {
     [PublicAPI]
     public class ConstantDefaultIntensity : Defaultable

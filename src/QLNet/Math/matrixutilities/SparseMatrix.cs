@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 
-namespace QLNet.Math.matrixutilities
+namespace QLNet.Math.MatrixUtilities
 {
     //general sparse matrix taken from http://www.blackbeltcoder.com/Articles/algorithms/creating-a-sparse-matrix-in-net and completed for QLNet
     [PublicAPI]
@@ -140,7 +140,7 @@ namespace QLNet.Math.matrixutilities
 
         public static SparseMatrix operator *(SparseMatrix m1, SparseMatrix m2)
         {
-            Utils.QL_REQUIRE(m1.columns() == m2.rows() && m1.rows() == m2.columns(), () => "invalid dimensions");
+            QLNet.Utils.QL_REQUIRE(m1.columns() == m2.rows() && m1.rows() == m2.columns(), () => "invalid dimensions");
             var result = new SparseMatrix(m1.rows(), m2.columns());
 
             foreach (var row in m1._rows)

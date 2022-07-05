@@ -79,11 +79,11 @@ namespace QLNet.Termstructures
             {
                 Date m1 = ts_.instruments_[i - 1].latestDate(),
                     m2 = ts_.instruments_[i].latestDate();
-                Utils.QL_REQUIRE(m1 != m2, () => "two instruments have the same maturity (" + m1 + ")");
+                QLNet.Utils.QL_REQUIRE(m1 != m2, () => "two instruments have the same maturity (" + m1 + ")");
             }
 
             // check that there is no instruments with invalid quote
-            Utils.QL_REQUIRE((i = ts_.instruments_.FindIndex(x => !x.quoteIsValid())) == -1, () =>
+            QLNet.Utils.QL_REQUIRE((i = ts_.instruments_.FindIndex(x => !x.quoteIsValid())) == -1, () =>
                 "instrument " + i + " (maturity: " + ts_.instruments_[i].latestDate() + ") has an invalid quote");
 
             // setup instruments and register with them
@@ -92,7 +92,7 @@ namespace QLNet.Termstructures
             // set initial guess only if the current curve cannot be used as guess
             if (validCurve_)
             {
-                Utils.QL_REQUIRE(ts_.data_.Count == nInsts + 1, () =>
+                QLNet.Utils.QL_REQUIRE(ts_.data_.Count == nInsts + 1, () =>
                     "dimension mismatch: expected " + nInsts + 1 + ", actual " + ts_.data_.Count);
             }
             else
@@ -161,7 +161,7 @@ namespace QLNet.Termstructures
                 var endType = solver.minimize(toSolve, endCriteria);
 
                 // check the end criteria
-                Utils.QL_REQUIRE(endType == EndCriteria.Type.StationaryFunctionAccuracy ||
+                QLNet.Utils.QL_REQUIRE(endType == EndCriteria.Type.StationaryFunctionAccuracy ||
                                  endType == EndCriteria.Type.StationaryFunctionValue, () =>
                     "Unable to strip yieldcurve to required accuracy ");
                 ++iInst;
@@ -175,10 +175,10 @@ namespace QLNet.Termstructures
             ts_ = ts;
 
             var n = ts_.instruments_.Count;
-            Utils.QL_REQUIRE(n >= ts_.interpolator_.requiredPoints, () =>
+            QLNet.Utils.QL_REQUIRE(n >= ts_.interpolator_.requiredPoints, () =>
                 "not enough instruments: " + n + " provided, " + ts_.interpolator_.requiredPoints + " required");
 
-            Utils.QL_REQUIRE(n > localisation_, () =>
+            QLNet.Utils.QL_REQUIRE(n > localisation_, () =>
                 "not enough instruments: " + n + " provided, " + localisation_ + " required.");
 
             ts_.instruments_.ForEach((i, x) => ts_.registerWith(x));

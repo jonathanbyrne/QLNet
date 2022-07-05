@@ -23,7 +23,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Extensions;
-using QLNet.Pricingengines.Bond;
+using QLNet.PricingEngines.Bond;
 using QLNet.Time;
 
 namespace QLNet.Instruments
@@ -50,11 +50,11 @@ namespace QLNet.Instruments
 
             public virtual void validate()
             {
-                Utils.QL_REQUIRE(settlementDate != null, () => "no settlement date provided");
-                Utils.QL_REQUIRE(!cashflows.empty(), () => "no cash flow provided");
+                QLNet.Utils.QL_REQUIRE(settlementDate != null, () => "no settlement date provided");
+                QLNet.Utils.QL_REQUIRE(!cashflows.empty(), () => "no cash flow provided");
                 for (var i = 0; i < cashflows.Count; ++i)
                 {
-                    Utils.QL_REQUIRE(cashflows[i] != null, () => "null cash flow provided");
+                    QLNet.Utils.QL_REQUIRE(cashflows[i] != null, () => "null cash flow provided");
                 }
             }
         }
@@ -80,7 +80,7 @@ namespace QLNet.Instruments
             base.fetchResults(r);
 
             var results = r as Results;
-            Utils.QL_REQUIRE(results != null, () => "wrong result ExerciseType");
+            QLNet.Utils.QL_REQUIRE(results != null, () => "wrong result ExerciseType");
 
             settlementValue_ = results.settlementValue;
         }
@@ -121,7 +121,7 @@ namespace QLNet.Instruments
         public override void setupArguments(IPricingEngineArguments args)
         {
             var arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
+            QLNet.Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
 
             arguments.settlementDate = settlementDate();
             arguments.cashflows = cashflows_;
@@ -209,10 +209,10 @@ namespace QLNet.Instruments
                     notionals_.Add(coupon.nominal());
                     lastPaymentDate = coupon.date();
                 }
-                else if (!Utils.close(notional, notionals_.Last()))
+                else if (!Math.Utils.close(notional, notionals_.Last()))
                 {
                     // ...or if it has changed.
-                    Utils.QL_REQUIRE(notional < notionals_.Last(), () => "increasing coupon notionals");
+                    QLNet.Utils.QL_REQUIRE(notional < notionals_.Last(), () => "increasing coupon notionals");
                     notionals_.Add(coupon.nominal());
                     // in this case, we also add the last valid date for
                     // the previous one...
@@ -228,7 +228,7 @@ namespace QLNet.Instruments
                 }
             }
 
-            Utils.QL_REQUIRE(!notionals_.empty(), () => "no coupons provided");
+            QLNet.Utils.QL_REQUIRE(!notionals_.empty(), () => "no coupons provided");
             notionals_.Add(0.0);
             notionalSchedule_.Add(lastPaymentDate);
         }
@@ -293,7 +293,7 @@ namespace QLNet.Instruments
                 cashflows_.Sort();
                 if (issueDate_ != null)
                 {
-                    Utils.QL_REQUIRE(issueDate_ < cashflows_[0].date(), () =>
+                    QLNet.Utils.QL_REQUIRE(issueDate_ < cashflows_[0].date(), () =>
                         "issue date (" + issueDate_ +
                         ") must be earlier than first payment date (" +
                         cashflows_[0].date() + ")");
@@ -339,7 +339,7 @@ namespace QLNet.Instruments
 
                 if (issueDate_ != null)
                 {
-                    Utils.QL_REQUIRE(issueDate_ < cashflows_[0].date(), () =>
+                    QLNet.Utils.QL_REQUIRE(issueDate_ < cashflows_[0].date(), () =>
                         "issue date (" + issueDate_ +
                         ") must be earlier than first payment date (" +
                         cashflows_[0].date() + ")");
@@ -408,7 +408,7 @@ namespace QLNet.Instruments
         // returns the redemption, if only one is defined
         public CashFlow redemption()
         {
-            Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemption cash flows given");
+            QLNet.Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemption cash flows given");
             return redemptions_.Last();
         }
 
@@ -468,7 +468,7 @@ namespace QLNet.Instruments
         public double settlementValue()
         {
             calculate();
-            Utils.QL_REQUIRE(settlementValue_ != null, () => "settlement value not provided");
+            QLNet.Utils.QL_REQUIRE(settlementValue_ != null, () => "settlement value not provided");
             return settlementValue_.Value;
         }
 

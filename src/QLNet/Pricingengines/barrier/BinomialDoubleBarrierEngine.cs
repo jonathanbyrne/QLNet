@@ -19,12 +19,12 @@ using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Methods.lattices;
-using QLNet.processes;
+using QLNet.Processes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Termstructures.Yield;
 
-namespace QLNet.Pricingengines.barrier
+namespace QLNet.PricingEngines.barrier
 {
     //! Pricing engine for double barrier options using binomial trees
     /*! \ingroup barrierengines
@@ -67,9 +67,9 @@ namespace QLNet.Pricingengines.barrier
             getTree_ = getTree;
             getAsset_ = getAsset;
 
-            Utils.QL_REQUIRE(timeSteps > 0, () =>
+            QLNet.Utils.QL_REQUIRE(timeSteps > 0, () =>
                 "timeSteps must be positive, " + timeSteps + " not allowed");
-            Utils.QL_REQUIRE(maxTimeSteps == 0 || maxTimeSteps >= timeSteps, () =>
+            QLNet.Utils.QL_REQUIRE(maxTimeSteps == 0 || maxTimeSteps >= timeSteps, () =>
                 "maxTimeSteps must be zero or greater than or equal to timeSteps, " + maxTimeSteps + " not allowed");
             if (maxTimeSteps_ == 0)
             {
@@ -87,7 +87,7 @@ namespace QLNet.Pricingengines.barrier
             var volcal = process_.blackVolatility().link.calendar();
 
             var s0 = process_.stateVariable().link.value();
-            Utils.QL_REQUIRE(s0 > 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(s0 > 0.0, () => "negative or null underlying given");
             var v = process_.blackVolatility().link.blackVol(arguments_.exercise.lastDate(), s0);
             var maturityDate = arguments_.exercise.lastDate();
             var r = process_.riskFreeRate().link.zeroRate(maturityDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).value();
@@ -100,7 +100,7 @@ namespace QLNet.Pricingengines.barrier
             var flatVol = new Handle<BlackVolTermStructure>(new BlackConstantVol(referenceDate, volcal, v, voldc));
 
             var payoff = arguments_.payoff as StrikedTypePayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
             var maturity = rfdc.yearFraction(referenceDate, maturityDate);
 
@@ -124,7 +124,7 @@ namespace QLNet.Pricingengines.barrier
             // option values (p2) at this point
             option.rollback(grid[2]);
             var va2 = new Vector(option.values());
-            Utils.QL_REQUIRE(va2.size() == 3, () => "Expect 3 nodes in grid at second step");
+            QLNet.Utils.QL_REQUIRE(va2.size() == 3, () => "Expect 3 nodes in grid at second step");
             var p2u = va2[2]; // up
             var p2m = va2[1]; // mid
             var p2d = va2[0]; // down (low)
@@ -141,7 +141,7 @@ namespace QLNet.Pricingengines.barrier
             // this point
             option.rollback(grid[1]);
             var va = new Vector(option.values());
-            Utils.QL_REQUIRE(va.size() == 2, () => "Expect 2 nodes in grid at first step");
+            QLNet.Utils.QL_REQUIRE(va.size() == 2, () => "Expect 2 nodes in grid at first step");
             var p1u = va[1];
             var p1d = va[0];
             var s1u = lattice.underlying(1, 1); // up (high) price

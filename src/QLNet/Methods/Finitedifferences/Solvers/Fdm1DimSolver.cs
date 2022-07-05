@@ -94,7 +94,7 @@ namespace QLNet.Methods.Finitedifferences.Solvers
 
         public double thetaAt(double x)
         {
-            Utils.QL_REQUIRE(conditions_.stoppingTimes().First() > 0.0,
+            QLNet.Utils.QL_REQUIRE(conditions_.stoppingTimes().First() > 0.0,
                 () => "stopping time at zero-> can't calculate theta");
 
             calculate();

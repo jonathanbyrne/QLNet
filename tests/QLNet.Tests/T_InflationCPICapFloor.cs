@@ -26,7 +26,7 @@ using QLNet.Math;
 using QLNet.Quotes;
 using QLNet.Cashflows;
 using QLNet.Indexes.Inflation;
-using QLNet.Pricingengines.inflation;
+using QLNet.PricingEngines.inflation;
 using QLNet.Termstructures.Yield;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
@@ -367,8 +367,8 @@ namespace QLNet.Tests
                     var a = common.fPriceUK[i, j];
                     var b = cpiSurf.floorPrice(t, qK);
 
-                    Utils.QL_REQUIRE(System.Math.Abs(a - b) < 1e-7, () => "cannot reproduce cpi floor data from surface: "
-                                     + a + " vs constructed = " + b);
+                    QLNet.Utils.QL_REQUIRE(System.Math.Abs(a - b) < 1e-7, () => "cannot reproduce cpi floor data from surface: "
+                                                                                         + a + " vs constructed = " + b);
                 }
 
             }

@@ -143,13 +143,13 @@ namespace QLNet.Instruments
             observationLag_ = observationLag;
             observationInterpolation_ = observationInterpolation;
 
-            Utils.QL_REQUIRE(fixCalendar_ != null, () => "CPICapFloor: fixing calendar may not be null.");
-            Utils.QL_REQUIRE(payCalendar_ != null, () => "CPICapFloor: payment calendar may not be null.");
+            QLNet.Utils.QL_REQUIRE(fixCalendar_ != null, () => "CPICapFloor: fixing calendar may not be null.");
+            QLNet.Utils.QL_REQUIRE(payCalendar_ != null, () => "CPICapFloor: payment calendar may not be null.");
 
             if (observationInterpolation_ == InterpolationType.Flat ||
                 observationInterpolation_ == InterpolationType.AsIndex && !infIndex_.link.interpolated())
             {
-                Utils.QL_REQUIRE(observationLag_ >= infIndex_.link.availabilityLag(), () =>
+                QLNet.Utils.QL_REQUIRE(observationLag_ >= infIndex_.link.availabilityLag(), () =>
                     "CPIcapfloor's observationLag must be at least availabilityLag of inflation index: "
                     + "when the observation is effectively flat"
                     + observationLag_ + " vs " + infIndex_.link.availabilityLag());
@@ -158,7 +158,7 @@ namespace QLNet.Instruments
             if (observationInterpolation_ == InterpolationType.Linear ||
                 observationInterpolation_ == InterpolationType.AsIndex && infIndex_.link.interpolated())
             {
-                Utils.QL_REQUIRE(observationLag_ > infIndex_.link.availabilityLag(), () =>
+                QLNet.Utils.QL_REQUIRE(observationLag_ > infIndex_.link.availabilityLag(), () =>
                     "CPIcapfloor's observationLag must be greater then availabilityLag of inflation index: "
                     + "when the observation is effectively linear"
                     + observationLag_ + " vs " + infIndex_.link.availabilityLag());
@@ -183,7 +183,7 @@ namespace QLNet.Instruments
         {
             // correct PricingEngine?
             var arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType, not CPICapFloor.Arguments");
+            QLNet.Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType, not CPICapFloor.Arguments");
 
             // data move
             arguments.type = type_;

@@ -124,7 +124,7 @@ namespace QLNet.Instruments
             if (infIndex_.interpolated())
             {
                 var pShift = new Period(infIndex_.frequency());
-                Utils.QL_REQUIRE(observationLag_ - pShift > infIndex_.availabilityLag(), () =>
+                QLNet.Utils.QL_REQUIRE(observationLag_ - pShift > infIndex_.availabilityLag(), () =>
                     "inconsistency between swap observation of index " + observationLag_ +
                     " index availability " + infIndex_.availabilityLag() +
                     " interpolated index period " + pShift +
@@ -133,7 +133,7 @@ namespace QLNet.Instruments
             }
             else
             {
-                Utils.QL_REQUIRE(infIndex_.availabilityLag() < observationLag_, () =>
+                QLNet.Utils.QL_REQUIRE(infIndex_.availabilityLag() < observationLag_, () =>
                     "index tries to observe inflation fixings that do not yet exist: "
                     + " availability lag " + infIndex_.availabilityLag()
                     + " versus obs lag = " + observationLag_);
@@ -170,7 +170,7 @@ namespace QLNet.Instruments
             // At this point the index may not be able to forecast
             // i.e. do not want to force the existence of an inflation
             // term structure before allowing users to create instruments.
-            var T = Utils.inflationYearFraction(infIndex_.frequency(), infIndex_.interpolated(),
+            var T = Termstructures.Utils.inflationYearFraction(infIndex_.frequency(), infIndex_.interpolated(),
                 dayCounter_, baseDate_, obsDate_);
             // N.B. the -1.0 is because swaps only exchange growth, not notionals as well
             var fixedAmount = nominal * (System.Math.Pow(1.0 + fixedRate, T) - 1.0);
@@ -195,7 +195,7 @@ namespace QLNet.Instruments
                     payer_[1] = +1.0;
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown zero-inflation-swap ExerciseType");
+                    QLNet.Utils.QL_FAIL("Unknown zero-inflation-swap ExerciseType");
                     break;
             }
         }
@@ -259,14 +259,14 @@ namespace QLNet.Instruments
         public double fixedLegNPV()
         {
             calculate();
-            Utils.QL_REQUIRE(legNPV_[0] != null, () => "result not available");
+            QLNet.Utils.QL_REQUIRE(legNPV_[0] != null, () => "result not available");
             return legNPV_[0].Value;
         }
 
         public double inflationLegNPV()
         {
             calculate();
-            Utils.QL_REQUIRE(legNPV_[1] != null, () => "result not available");
+            QLNet.Utils.QL_REQUIRE(legNPV_[1] != null, () => "result not available");
             return legNPV_[1].Value;
         }
 
@@ -278,11 +278,11 @@ namespace QLNet.Instruments
             // _knowing_ the time from base to obs (etc).
 
             var icf = legs_[1][0] as IndexedCashFlow;
-            Utils.QL_REQUIRE(icf != null, () => "failed to downcast to IndexedCashFlow in ::fairRate()");
+            QLNet.Utils.QL_REQUIRE(icf != null, () => "failed to downcast to IndexedCashFlow in ::fairRate()");
 
             // +1 because the IndexedCashFlow has growthOnly=true
             var growth = icf.amount() / icf.notional() + 1.0;
-            var T = Utils.inflationYearFraction(infIndex_.frequency(),
+            var T = Termstructures.Utils.inflationYearFraction(infIndex_.frequency(),
                 infIndex_.interpolated(),
                 dayCounter_, baseDate_, obsDate_);
 

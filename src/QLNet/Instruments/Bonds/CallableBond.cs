@@ -75,10 +75,10 @@ namespace QLNet.Instruments.Bonds
 
             public override void validate()
             {
-                Utils.QL_REQUIRE(settlementDate != null, () => "null settlement date");
-                Utils.QL_REQUIRE(redemption >= 0.0, () => "positive redemption required: " + redemption + " not allowed");
-                Utils.QL_REQUIRE(callabilityDates.Count == callabilityPrices.Count, () => "different number of callability dates and prices");
-                Utils.QL_REQUIRE(couponDates.Count == couponAmounts.Count, () => "different number of coupon dates and amounts");
+                QLNet.Utils.QL_REQUIRE(settlementDate != null, () => "null settlement date");
+                QLNet.Utils.QL_REQUIRE(redemption >= 0.0, () => "positive redemption required: " + redemption + " not allowed");
+                QLNet.Utils.QL_REQUIRE(callabilityDates.Count == callabilityPrices.Count, () => "different number of callability dates and prices");
+                QLNet.Utils.QL_REQUIRE(couponDates.Count == couponAmounts.Count, () => "different number of coupon dates and amounts");
             }
         }
 
@@ -114,7 +114,7 @@ namespace QLNet.Instruments.Bonds
                 vol_ = new SimpleQuote(0.0);
                 bond.blackVolQuote_.linkTo(vol_);
 
-                Utils.QL_REQUIRE(bond.blackEngine_ != null, () => "Must set blackEngine_ to use impliedVolatility");
+                QLNet.Utils.QL_REQUIRE(bond.blackEngine_ != null, () => "Must set blackEngine_ to use impliedVolatility");
 
                 engine_ = bond.blackEngine_;
                 bond.setupArguments(engine_.getArguments());
@@ -209,7 +209,7 @@ namespace QLNet.Instruments.Bonds
                         putCallSchedule_[i].date());
                 }
 
-                Utils.QL_REQUIRE(finalOptionDate <= maturityDate_, () => "Bond cannot mature before last call/put date");
+                QLNet.Utils.QL_REQUIRE(finalOptionDate <= maturityDate_, () => "Bond cannot mature before last call/put date");
             }
 
             // derived classes must set cashflows_ and frequency_
@@ -349,7 +349,7 @@ namespace QLNet.Instruments.Bonds
             double maxVol)
         {
             calculate();
-            Utils.QL_REQUIRE(!isExpired(), () => "instrument expired");
+            QLNet.Utils.QL_REQUIRE(!isExpired(), () => "instrument expired");
             var guess = 0.5 * (minVol + maxVol);
             blackDiscountCurve_.linkTo(discountCurve, false);
             var f = new ImpliedVolHelper(this, targetValue);

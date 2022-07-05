@@ -53,12 +53,12 @@ namespace QLNet.Cashflows
             double previousVariance,
             double nextVariance)
         {
-            var nextCall = Utils.blackFormula(Option.Type.Call, nextStrike, nextForward,
+            var nextCall = PricingEngines.Utils.blackFormula(Option.Type.Call, nextStrike, nextForward,
                 System.Math.Sqrt(nextVariance), deflator);
-            var previousCall = Utils.blackFormula(Option.Type.Call, previousStrike, previousForward,
+            var previousCall = PricingEngines.Utils.blackFormula(Option.Type.Call, previousStrike, previousForward,
                 System.Math.Sqrt(previousVariance), deflator);
 
-            Utils.QL_REQUIRE(nextCall < previousCall, () =>
+            QLNet.Utils.QL_REQUIRE(nextCall < previousCall, () =>
                 "RangeAccrualPricerByBgm::callSpreadPrice: nextCall > previousCall" +
                 "\n nextCall: strike :" + nextStrike + "; variance: " + nextVariance +
                 " adjusted initial value " + nextForward +
@@ -131,9 +131,9 @@ namespace QLNet.Cashflows
             var phi = new CumulativeNormalDistribution();
             var result = deflator * phi.value(d2);
 
-            Utils.QL_REQUIRE(result > 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(result > 0.0, () =>
                 "RangeAccrualPricerByBgm::digitalPriceWithoutSmile: result< 0. Result:" + result);
-            Utils.QL_REQUIRE(result / deflator <= 1.0, () =>
+            QLNet.Utils.QL_REQUIRE(result / deflator <= 1.0, () =>
                 "RangeAccrualPricerByBgm::digitalPriceWithoutSmile: result/deflator > 1. Ratio: "
                 + result / deflator + " result: " + result + " deflator: " + deflator);
 
@@ -185,9 +185,9 @@ namespace QLNet.Cashflows
                          smileCorrection(strike, initialValue, expiry, deflator);
             }
 
-            Utils.QL_REQUIRE(result > -System.Math.Pow(eps_, .5), () =>
+            QLNet.Utils.QL_REQUIRE(result > -System.Math.Pow(eps_, .5), () =>
                 "RangeAccrualPricerByBgm::digitalPriceWithSmile: result< 0 Result:" + result);
-            Utils.QL_REQUIRE(result / deflator <= 1.0 + System.Math.Pow(eps_, .2), () =>
+            QLNet.Utils.QL_REQUIRE(result / deflator <= 1.0 + System.Math.Pow(eps_, .2), () =>
                 "RangeAccrualPricerByBgm::digitalPriceWithSmile: result/deflator > 1. Ratio: "
                 + result / deflator + " result: " + result + " deflator: " + deflator);
 
@@ -200,7 +200,7 @@ namespace QLNet.Cashflows
             var lowerPrice = digitalPrice(lowerTrigger, initialValue, expiry, deflator);
             var upperPrice = digitalPrice(upperTrigger, initialValue, expiry, deflator);
             var result = lowerPrice - upperPrice;
-            Utils.QL_REQUIRE(result > 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(result > 0.0, () =>
                 "RangeAccrualPricerByBgm::digitalRangePrice:\n digitalPrice(" + upperTrigger +
                 "): " + upperPrice + " >  digitalPrice(" + lowerTrigger + "): " + lowerPrice);
             return result;
@@ -308,7 +308,7 @@ namespace QLNet.Cashflows
 
             result *= deflator;
 
-            Utils.QL_REQUIRE(System.Math.Abs(result / deflator) <= 1.0 + System.Math.Pow(eps_, .2), () =>
+            QLNet.Utils.QL_REQUIRE(System.Math.Abs(result / deflator) <= 1.0 + System.Math.Pow(eps_, .2), () =>
                 "RangeAccrualPricerByBgm::smileCorrection: abs(result/deflator) > 1. Ratio: "
                 + result / deflator + " result: " + result + " deflator: " + deflator);
 

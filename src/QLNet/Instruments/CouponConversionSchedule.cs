@@ -17,7 +17,7 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
 
-namespace QLNet
+namespace QLNet.Instruments
 {
     [PublicAPI]
     public class CouponConversionSchedule : List<CouponConversion>

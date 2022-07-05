@@ -20,7 +20,7 @@ using QLNet.Extensions;
 using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Math.Solvers1d;
-using QLNet.Pricingengines.CapFloor;
+using QLNet.PricingEngines.CapFloor;
 using QLNet.Quotes;
 using QLNet.Termstructures.Volatility.CapFloor;
 using QLNet.Time;
@@ -104,7 +104,7 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             stripper1_.registerWith(update);
             atmCapFloorTermVolCurve_.registerWith(update);
 
-            Utils.QL_REQUIRE(dc_ == atmCapFloorTermVolCurve.link.dayCounter(), () => "different day counters provided");
+            QLNet.Utils.QL_REQUIRE(dc_ == atmCapFloorTermVolCurve.link.dayCounter(), () => "different day counters provided");
         }
 
         public List<double> atmCapFloorPrices()

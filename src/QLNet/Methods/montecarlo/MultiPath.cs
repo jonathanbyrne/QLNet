@@ -45,7 +45,7 @@ namespace QLNet.Methods.montecarlo
                 multiPath_.Add(new Path(timeGrid));
             }
 
-            Utils.QL_REQUIRE(nAsset > 0, () => "number of asset must be positive");
+            QLNet.Utils.QL_REQUIRE(nAsset > 0, () => "number of asset must be positive");
         }
 
         public MultiPath(List<Path> multiPath)

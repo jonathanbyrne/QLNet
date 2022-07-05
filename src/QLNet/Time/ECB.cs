@@ -42,7 +42,7 @@ namespace QLNet.Time
         */
         public static string code(Date ecbDate)
         {
-            Utils.QL_REQUIRE(isECBdate(ecbDate), () => ecbDate + " is not a valid ECB date");
+            QLNet.Utils.QL_REQUIRE(isECBdate(ecbDate), () => ecbDate + " is not a valid ECB date");
 
             var ECBcode = string.Empty;
             var y = ecbDate.year() % 100;
@@ -91,7 +91,7 @@ namespace QLNet.Time
                     ECBcode += "DEC" + padding + y;
                     break;
                 default:
-                    Utils.QL_FAIL("not an ECB month (and it should have been)");
+                    QLNet.Utils.QL_FAIL("not an ECB month (and it should have been)");
                     break;
             }
 
@@ -114,7 +114,7 @@ namespace QLNet.Time
         */
         public static Date date(string ecbCode, Date refDate = null)
         {
-            Utils.QL_REQUIRE(isECBcode(ecbCode), () => ecbCode + " is not a valid ECB code");
+            QLNet.Utils.QL_REQUIRE(isECBcode(ecbCode), () => ecbCode + " is not a valid ECB code");
 
             var code = ecbCode.ToUpper();
             var monthString = code.Substring(0, 3);
@@ -169,7 +169,7 @@ namespace QLNet.Time
             }
             else
             {
-                Utils.QL_FAIL("not an ECB month (and it should have been)");
+                QLNet.Utils.QL_FAIL("not an ECB month (and it should have been)");
             }
 
             // lexical_cast causes compilation errors with x64
@@ -331,7 +331,7 @@ namespace QLNet.Time
         //! next ECB code following the given code
         public static string nextCode(string ecbCode)
         {
-            Utils.QL_REQUIRE(isECBcode(ecbCode), () =>
+            QLNet.Utils.QL_REQUIRE(isECBcode(ecbCode), () =>
                 ecbCode + " is not a valid ECB code");
 
             var code = ecbCode.ToUpper();
@@ -395,7 +395,7 @@ namespace QLNet.Time
             }
             else
             {
-                Utils.QL_FAIL("not an ECB month (and it should have been)");
+                QLNet.Utils.QL_FAIL("not an ECB month (and it should have been)");
             }
 
 #if QL_EXTRA_SAFETY_CHECKS
@@ -413,7 +413,7 @@ namespace QLNet.Time
 
             var i = knownDates().FindIndex(x => x > d);
 
-            Utils.QL_REQUIRE(i != -1, () =>
+            QLNet.Utils.QL_REQUIRE(i != -1, () =>
                 "ECB dates after " + knownDates().Last() + " are unknown");
             return knownDates()[i];
         }
@@ -428,7 +428,7 @@ namespace QLNet.Time
 
             var i = knownDates().FindIndex(x => x > d);
 
-            Utils.QL_REQUIRE(i != -1, () =>
+            QLNet.Utils.QL_REQUIRE(i != -1, () =>
                 "ECB dates after " + knownDates().Last() + " are unknown");
 
             return new List<Date>(knownDates().GetRange(i, knownDates().Count - i));

@@ -19,7 +19,7 @@
 
 using JetBrains.Annotations;
 using QLNet.Indexes;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.Swap;
 using QLNet.Termstructures;
 using QLNet.Time;
 

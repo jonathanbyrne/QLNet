@@ -28,7 +28,7 @@ using QLNet.Termstructures;
 using QLNet.Time;
 using QLNet.Time.DayCounters;
 
-namespace QLNet.Pricingengines.Bond
+namespace QLNet.PricingEngines.Bond
 {
     //! Bond adapters of CashFlows functions
     /*! See CashFlows for functions' documentation.
@@ -47,7 +47,7 @@ namespace QLNet.Pricingengines.Bond
 
         public static DateTime WeightedAverageLife(DateTime today, List<double> amounts, List<DateTime> schedule)
         {
-            Utils.QL_REQUIRE(amounts.Count == schedule.Count, () => "Amount list is incompatible with schedule");
+            QLNet.Utils.QL_REQUIRE(amounts.Count == schedule.Count, () => "Amount list is incompatible with schedule");
 
             var totAmount = amounts.Where((t, x) => schedule[x] > today).Sum();
 
@@ -188,7 +188,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -203,7 +203,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -218,7 +218,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -233,7 +233,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -248,7 +248,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -263,7 +263,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -278,7 +278,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -293,7 +293,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -308,7 +308,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -327,7 +327,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " settlementDate date (maturity being " +
                     bond.maturityDate() + ")",
@@ -345,7 +345,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -360,7 +360,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -389,7 +389,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -410,7 +410,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -431,7 +431,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -453,7 +453,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -472,7 +472,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -491,7 +491,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -511,7 +511,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -536,7 +536,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);
@@ -555,7 +555,7 @@ namespace QLNet.Pricingengines.Bond
                 settlementDate = bond.settlementDate();
             }
 
-            Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
+            QLNet.Utils.QL_REQUIRE(isTradable(bond, settlementDate), () =>
                     "non tradable at " + settlementDate +
                     " (maturity being " + bond.maturityDate() + ")",
                 QLNetExceptionEnum.NotTradableException);

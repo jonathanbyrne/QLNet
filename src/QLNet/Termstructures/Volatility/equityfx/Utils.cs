@@ -1,6 +1,6 @@
 ﻿using QLNet.Time;
 
-namespace QLNet
+namespace QLNet.Termstructures.Volatility.equityfx
 {
     public partial class Utils
     {

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using QLNet.Indexes;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
@@ -24,7 +25,7 @@ namespace QLNet.Cashflows
 
         public override List<CashFlow> value()
         {
-            Utils.QL_REQUIRE(!notionals_.empty(), () => "no notional given");
+            QLNet.Utils.QL_REQUIRE(!notionals_.empty(), () => "no notional given");
 
             var cashflows = new List<CashFlow>();
 

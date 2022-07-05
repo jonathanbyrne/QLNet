@@ -61,7 +61,7 @@ namespace QLNet.Math.integrals
                 i++;
             } while (i < maxEvaluations());
 
-            Utils.QL_FAIL("max number of iterations reached");
+            QLNet.Utils.QL_FAIL("max number of iterations reached");
             return 0;
         }
     }

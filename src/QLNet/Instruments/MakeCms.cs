@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.Swap;
 using QLNet.Termstructures;
 using QLNet.Time;
 using QLNet.Time.DayCounters;
@@ -199,17 +199,17 @@ namespace QLNet.Instruments
 
             if (couponPricer_ != null)
             {
-                Utils.setCouponPricer(cmsLeg, couponPricer_);
+                Cashflows.Utils.setCouponPricer(cmsLeg, couponPricer_);
             }
 
             double? usedSpread = iborSpread_;
             if (useAtmSpread_)
             {
-                Utils.QL_REQUIRE(!iborIndex_.forwardingTermStructure().empty(), () =>
+                QLNet.Utils.QL_REQUIRE(!iborIndex_.forwardingTermStructure().empty(), () =>
                     "null term structure set to this instance of " + iborIndex_.name());
-                Utils.QL_REQUIRE(!swapIndex_.forwardingTermStructure().empty(), () =>
+                QLNet.Utils.QL_REQUIRE(!swapIndex_.forwardingTermStructure().empty(), () =>
                     "null term structure set to this instance of " + swapIndex_.name());
-                Utils.QL_REQUIRE(couponPricer_ != null, () => "no CmsCouponPricer set (yet)");
+                QLNet.Utils.QL_REQUIRE(couponPricer_ != null, () => "no CmsCouponPricer set (yet)");
                 List<CashFlow> fLeg = new IborLeg(floatSchedule, iborIndex_)
                     .withPaymentDayCounter(floatDayCount_)
                     .withFixingDays(iborIndex_.fixingDays())
@@ -220,7 +220,7 @@ namespace QLNet.Instruments
 
                 if (iborCouponPricer_ != null)
                 {
-                    Utils.setCouponPricer(fLeg, iborCouponPricer_);
+                    Cashflows.Utils.setCouponPricer(fLeg, iborCouponPricer_);
                 }
 
                 var temp = new Swap(cmsLeg, fLeg);
@@ -232,7 +232,7 @@ namespace QLNet.Instruments
             }
             else
             {
-                Utils.QL_REQUIRE(usedSpread.HasValue, () => "null spread set");
+                QLNet.Utils.QL_REQUIRE(usedSpread.HasValue, () => "null spread set");
             }
 
             List<CashFlow> floatLeg = new IborLeg(floatSchedule, iborIndex_)
@@ -247,7 +247,7 @@ namespace QLNet.Instruments
 
             if (iborCouponPricer_ != null)
             {
-                Utils.setCouponPricer(floatLeg, iborCouponPricer_);
+                Cashflows.Utils.setCouponPricer(floatLeg, iborCouponPricer_);
             }
 
             Swap swap;

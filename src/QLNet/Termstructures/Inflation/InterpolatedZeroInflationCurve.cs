@@ -42,13 +42,13 @@ namespace QLNet.Termstructures.Inflation
             data_ = rates;
             interpolator_ = interpolator ?? FastActivator<Interpolator>.Create();
 
-            Utils.QL_REQUIRE(dates_.Count > 1, () => "too few dates: " + dates_.Count);
+            QLNet.Utils.QL_REQUIRE(dates_.Count > 1, () => "too few dates: " + dates_.Count);
 
             // check that the data starts from the beginning,
             // i.e. referenceDate - lag, at least must be in the relevant
             // period
             var lim = Utils.inflationPeriod(yTS.link.referenceDate() - observationLag(), frequency);
-            Utils.QL_REQUIRE(lim.Key <= dates_[0] && dates_[0] <= lim.Value, () =>
+            QLNet.Utils.QL_REQUIRE(lim.Key <= dates_[0] && dates_[0] <= lim.Value, () =>
                 "first data date is not in base period, date: " + dates_[0]
                                                                 + " not within [" + lim.Key + "," + lim.Value + "]");
 
@@ -63,7 +63,7 @@ namespace QLNet.Termstructures.Inflation
                 }
             }
 
-            Utils.QL_REQUIRE(data_.Count == dates_.Count, () =>
+            QLNet.Utils.QL_REQUIRE(data_.Count == dates_.Count, () =>
                 "indices/dates count mismatch: "
                 + data_.Count + " vs " + dates_.Count);
 
@@ -71,14 +71,14 @@ namespace QLNet.Termstructures.Inflation
             times_[0] = timeFromReference(dates_[0]);
             for (var i = 1; i < dates_.Count; i++)
             {
-                Utils.QL_REQUIRE(dates_[i] > dates_[i - 1], () => "dates not sorted");
+                QLNet.Utils.QL_REQUIRE(dates_[i] > dates_[i - 1], () => "dates not sorted");
 
                 // but must be greater than -1
-                Utils.QL_REQUIRE(data_[i] > -1.0, () => "zero inflation data < -100 %");
+                QLNet.Utils.QL_REQUIRE(data_[i] > -1.0, () => "zero inflation data < -100 %");
 
                 // this can be negative
                 times_[i] = timeFromReference(dates_[i]);
-                Utils.QL_REQUIRE(!Utils.close(times_[i], times_[i - 1]), () =>
+                QLNet.Utils.QL_REQUIRE(!Math.Utils.close(times_[i], times_[i - 1]), () =>
                     "two dates correspond to the same time " +
                     "under this curve's day count convention");
             }

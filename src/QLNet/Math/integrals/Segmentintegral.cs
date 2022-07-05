@@ -49,7 +49,7 @@ namespace QLNet.Math.integrals
         {
             intervals_ = intervals;
 
-            Utils.QL_REQUIRE(intervals > 0, () => "at least 1 interval needed, 0 given");
+            QLNet.Utils.QL_REQUIRE(intervals > 0, () => "at least 1 interval needed, 0 given");
         }
 
         // inline and template definitions

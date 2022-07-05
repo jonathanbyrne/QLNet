@@ -78,7 +78,7 @@ namespace QLNet.legacy.libormarketmodels
             var accrualEndTimes
                 = process_.accrualEndTimes();
 
-            Utils.QL_REQUIRE(accrualStartTimes.First() <= maturity && accrualStartTimes.Last() >= maturity, () =>
+            QLNet.Utils.QL_REQUIRE(accrualStartTimes.First() <= maturity && accrualStartTimes.Last() >= maturity, () =>
                 "capet maturity does not fit to the process");
 
             var i = accrualStartTimes.BinarySearch(maturity);
@@ -93,9 +93,9 @@ namespace QLNet.legacy.libormarketmodels
             // impose limits. we need the one before last at max or the first at min
             i = System.Math.Max(System.Math.Min(i, accrualStartTimes.Count - 1), 0);
 
-            Utils.QL_REQUIRE(i < process_.size()
-                             && System.Math.Abs(maturity - accrualStartTimes[i]) < 100 * Const.QL_EPSILON
-                             && System.Math.Abs(bondMaturity - accrualEndTimes[i]) < 100 * Const.QL_EPSILON, () =>
+            QLNet.Utils.QL_REQUIRE(i < process_.size()
+                                            && System.Math.Abs(maturity - accrualStartTimes[i]) < 100 * Const.QL_EPSILON
+                                            && System.Math.Abs(bondMaturity - accrualEndTimes[i]) < 100 * Const.QL_EPSILON, () =>
                 "irregular fixings are not (yet) supported");
 
             var tenor = accrualEndTimes[i] - accrualStartTimes[i];
@@ -104,7 +104,7 @@ namespace QLNet.legacy.libormarketmodels
             var var = covarProxy_.integratedCovariance(i, i, process_.fixingTimes()[i]);
             var dis = process_.index().forwardingTermStructure().link.discount(bondMaturity);
 
-            var black = Utils.blackFormula(
+            var black = PricingEngines.Utils.blackFormula(
                 type == Option.Type.Put ? Option.Type.Call : Option.Type.Put,
                 capRate, forward, System.Math.Sqrt(var));
 
@@ -211,7 +211,7 @@ namespace QLNet.legacy.libormarketmodels
         public Vector w_0(int alpha, int beta)
         {
             var omega = new Vector(beta + 1, 0.0);
-            Utils.QL_REQUIRE(alpha < beta, () => "alpha needs to be smaller than beta");
+            QLNet.Utils.QL_REQUIRE(alpha < beta, () => "alpha needs to be smaller than beta");
 
             var s = 0.0;
             for (var k = alpha + 1; k <= beta; ++k)

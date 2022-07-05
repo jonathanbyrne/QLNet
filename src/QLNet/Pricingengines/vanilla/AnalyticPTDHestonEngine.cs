@@ -20,7 +20,7 @@ using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Models.Equity;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! analytic piecewise constant time dependent Heston-model engine
 
@@ -78,7 +78,7 @@ namespace QLNet.Pricingengines.vanilla
                         Compounding.Continuous, Frequency.NoFrequency).rate();
                 }
 
-                Utils.QL_REQUIRE(term_ < model_.link.timeGrid().Last(), () => "maturity is too large");
+                QLNet.Utils.QL_REQUIRE(term_ < model_.link.timeGrid().Last(), () => "maturity is too large");
             }
 
             public double value(double phi)
@@ -149,15 +149,15 @@ namespace QLNet.Pricingengines.vanilla
         public override void calculate()
         {
             // this is an european option pricer
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
 
             // plain vanilla
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
             var v0 = model_.link.v0();
             var spotPrice = model_.link.s0();
-            Utils.QL_REQUIRE(spotPrice > 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(spotPrice > 0.0, () => "negative or null underlying given");
 
             var strike = payoff.strike();
             var term = model_.link.riskFreeRate().link.dayCounter().yearFraction(
@@ -204,7 +204,7 @@ namespace QLNet.Pricingengines.vanilla
                                      - strike * riskFreeDiscount * (p2 - 0.5);
                     break;
                 default:
-                    Utils.QL_FAIL("unknown option ExerciseType");
+                    QLNet.Utils.QL_FAIL("unknown option ExerciseType");
                     break;
             }
         }

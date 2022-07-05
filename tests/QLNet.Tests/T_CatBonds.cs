@@ -21,7 +21,7 @@ using Calendar = QLNet.Time.Calendar;
 using QLNet.Instruments.Bonds;
 using QLNet.Indexes;
 using QLNet.Indexes.Ibor;
-using QLNet.Pricingengines.Bond;
+using QLNet.PricingEngines.Bond;
 using QLNet.Time.Calendars;
 using QLNet.Time;
 using QLNet.Termstructures.Volatility.Optionlet;
@@ -197,11 +197,11 @@ namespace QLNet.Tests
 
             IPricingEngine bondEngine = new DiscountingBondEngine(riskFreeRate);
             bond1.setPricingEngine(bondEngine);
-            Utils.setCouponPricer(bond1.cashflows(), pricer);
+            Cashflows.Utils.setCouponPricer(bond1.cashflows(), pricer);
 
             IPricingEngine catBondEngine = new MonteCarloCatBondEngine(noCatRisk, riskFreeRate);
             catBond1.setPricingEngine(catBondEngine);
-            Utils.setCouponPricer(catBond1.cashflows(), pricer);
+            Cashflows.Utils.setCouponPricer(catBond1.cashflows(), pricer);
 
 #if QL_USE_INDEXED_COUPON
          double cachedPrice1 = 99.874645;
@@ -244,11 +244,11 @@ namespace QLNet.Tests
 
             IPricingEngine bondEngine2 = new DiscountingBondEngine(discountCurve);
             bond2.setPricingEngine(bondEngine2);
-            Utils.setCouponPricer(bond2.cashflows(), pricer);
+            Cashflows.Utils.setCouponPricer(bond2.cashflows(), pricer);
 
             IPricingEngine catBondEngine2 = new MonteCarloCatBondEngine(noCatRisk, discountCurve);
             catBond2.setPricingEngine(catBondEngine2);
-            Utils.setCouponPricer(catBond2.cashflows(), pricer);
+            Cashflows.Utils.setCouponPricer(catBond2.cashflows(), pricer);
 
 #if QL_USE_INDEXED_COUPON
          double cachedPrice2 = 97.955904;
@@ -293,10 +293,10 @@ namespace QLNet.Tests
                                                            100.0, new Date(30, Month.November, 2004));
 
             bond3.setPricingEngine(bondEngine2);
-            Utils.setCouponPricer(bond3.cashflows(), pricer);
+            Cashflows.Utils.setCouponPricer(bond3.cashflows(), pricer);
 
             catBond3.setPricingEngine(catBondEngine2);
-            Utils.setCouponPricer(catBond3.cashflows(), pricer);
+            Cashflows.Utils.setCouponPricer(catBond3.cashflows(), pricer);
 
 #if QL_USE_INDEXED_COUPON
          double cachedPrice3 = 98.495458;
@@ -364,7 +364,7 @@ namespace QLNet.Tests
 
             IPricingEngine catBondEngine = new MonteCarloCatBondEngine(doomCatRisk, discountCurve);
             catBond.setPricingEngine(catBondEngine);
-            Utils.setCouponPricer(catBond.cashflows(), pricer);
+            Cashflows.Utils.setCouponPricer(catBond.cashflows(), pricer);
 
             var price = catBond.cleanPrice();
             QAssert.AreEqual(0, price);
@@ -427,7 +427,7 @@ namespace QLNet.Tests
 
             IPricingEngine catBondEngine = new MonteCarloCatBondEngine(doomCatRisk, discountCurve);
             catBond.setPricingEngine(catBondEngine);
-            Utils.setCouponPricer(catBond.cashflows(), pricer);
+            Cashflows.Utils.setCouponPricer(catBond.cashflows(), pricer);
 
             var price = catBond.cleanPrice();
             var yield = catBond.yield(new ActualActual(ActualActual.Convention.ISMA), Compounding.Simple, Frequency.Annual);
@@ -508,7 +508,7 @@ namespace QLNet.Tests
 
             IPricingEngine catBondEngine = new MonteCarloCatBondEngine(doomCatRisk, discountCurve);
             catBond.setPricingEngine(catBondEngine);
-            Utils.setCouponPricer(catBond.cashflows(), pricer);
+            Cashflows.Utils.setCouponPricer(catBond.cashflows(), pricer);
 
             var price = catBond.cleanPrice();
             var yield = catBond.yield(new ActualActual(ActualActual.Convention.ISMA), Compounding.Simple, Frequency.Annual);

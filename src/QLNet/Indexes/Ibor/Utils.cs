@@ -1,7 +1,7 @@
 using System;
 using QLNet.Time;
 
-namespace QLNet
+namespace QLNet.Indexes.Ibor
 {
     public static partial class Utils
     {

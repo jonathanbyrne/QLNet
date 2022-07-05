@@ -20,7 +20,7 @@ using QLNet.Math;
 using QLNet.Math.Distributions;
 using QLNet.Math.Solvers1d;
 
-namespace QLNet
+namespace QLNet.PricingEngines
 {
     public partial class Utils
     {
@@ -33,7 +33,7 @@ namespace QLNet
             private readonly double undiscountedBlackPrice_;
             private readonly double signedMoneyness_;
 
-            public BlackImpliedStdDevHelper(Option.Type optionType,
+            public BlackImpliedStdDevHelper(QLNet.Option.Type optionType,
                 double strike,
                 double forward,
                 double undiscountedBlackPrice,
@@ -45,7 +45,7 @@ namespace QLNet
                 undiscountedBlackPrice_ = undiscountedBlackPrice;
                 N_ = new CumulativeNormalDistribution();
                 checkParameters(strike, forward, displacement);
-                QL_REQUIRE(undiscountedBlackPrice >= 0.0, () =>
+                QLNet.Utils.QL_REQUIRE(undiscountedBlackPrice >= 0.0, () =>
                     "undiscounted Black price (" +
                     undiscountedBlackPrice + ") must be non-negative");
                 signedMoneyness_ = (int)optionType * System.Math.Log((forward + displacement) / (strike + displacement));
@@ -64,7 +64,7 @@ namespace QLNet
             public override double value(double stdDev)
             {
 #if QL_EXTRA_SAFETY_CHECKS
-            Utils.QL_REQUIRE(stdDev >= 0.0, () => "stdDev (" + stdDev + ") must be non-negative");
+            QLNet.Utils.QL_REQUIRE(stdDev >= 0.0, () => "stdDev (" + stdDev + ") must be non-negative");
 #endif
                 if (stdDev.IsEqual(0.0))
                 {
@@ -90,15 +90,15 @@ namespace QLNet
                percentage volatility. Standard deviation is
                absoluteVolatility*sqrt(timeToMaturity)
         */
-        public static double bachelierBlackFormula(Option.Type optionType,
+        public static double bachelierBlackFormula(QLNet.Option.Type optionType,
             double strike,
             double forward,
             double stdDev,
             double discount = 1.0)
         {
-            QL_REQUIRE(stdDev >= 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(stdDev >= 0.0, () =>
                 "stdDev (" + stdDev + ") must be non-negative");
-            QL_REQUIRE(discount > 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(discount > 0.0, () =>
                 "discount (" + discount + ") must be positive");
             double d = (forward - strike) * (int)optionType, h = d / stdDev;
             if (stdDev.IsEqual(0.0))
@@ -108,7 +108,7 @@ namespace QLNet
 
             var phi = new CumulativeNormalDistribution();
             var result = discount * (stdDev * phi.derivative(h) + d * phi.value(h));
-            QL_REQUIRE(result >= 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(result >= 0.0, () =>
                 "negative value (" + result + ") for " +
                 stdDev + " stdDev, " +
                 optionType + " option, " +
@@ -130,7 +130,7 @@ namespace QLNet
            Implied Volatility Under Arithmetic Brownian Motion”,
            Applied Math. Finance, 16(3), pp. 261-268.
         */
-        public static double bachelierBlackFormulaImpliedVol(Option.Type optionType,
+        public static double bachelierBlackFormulaImpliedVol(QLNet.Option.Type optionType,
             double strike,
             double forward,
             double tte,
@@ -139,12 +139,12 @@ namespace QLNet
         {
             var SQRT_QL_EPSILON = System.Math.Sqrt(Const.QL_EPSILON);
 
-            QL_REQUIRE(tte > 0.0, () => "tte (" + tte + ") must be positive");
+            QLNet.Utils.QL_REQUIRE(tte > 0.0, () => "tte (" + tte + ") must be positive");
 
             var forwardPremium = bachelierPrice / discount;
 
             double straddlePremium;
-            if (optionType == Option.Type.Call)
+            if (optionType == QLNet.Option.Type.Call)
             {
                 straddlePremium = 2.0 * forwardPremium - (forward - strike);
             }
@@ -154,8 +154,8 @@ namespace QLNet
             }
 
             var nu = (forward - strike) / straddlePremium;
-            QL_REQUIRE(nu <= 1.0, () => "nu (" + nu + ") must be <= 1.0");
-            QL_REQUIRE(nu >= -1.0, () => "nu (" + nu + ") must be >= -1.0");
+            QLNet.Utils.QL_REQUIRE(nu <= 1.0, () => "nu (" + nu + ") must be <= 1.0");
+            QLNet.Utils.QL_REQUIRE(nu >= -1.0, () => "nu (" + nu + ") must be >= -1.0");
 
             nu = System.Math.Max(-1.0 + Const.QL_EPSILON, System.Math.Min(nu, 1.0 - Const.QL_EPSILON));
 
@@ -182,9 +182,9 @@ namespace QLNet
             double stdDev,
             double discount = 1.0)
         {
-            QL_REQUIRE(stdDev >= 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(stdDev >= 0.0, () =>
                 "stdDev (" + stdDev + ") must be non-negative");
-            QL_REQUIRE(discount > 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(discount > 0.0, () =>
                 "discount (" + discount + ") must be positive");
 
             if (stdDev.IsEqual(0.0))
@@ -207,7 +207,7 @@ namespace QLNet
           \warning instead of volatility it uses standard deviation,
                    i.e. volatility*sqrt(timeToMaturity)
         */
-        public static double blackFormula(Option.Type optionType,
+        public static double blackFormula(QLNet.Option.Type optionType,
             double strike,
             double forward,
             double stdDev,
@@ -215,8 +215,8 @@ namespace QLNet
             double displacement = 0.0)
         {
             checkParameters(strike, forward, displacement);
-            QL_REQUIRE(stdDev >= 0.0, () => "stdDev (" + stdDev + ") must be non-negative");
-            QL_REQUIRE(discount > 0.0, () => "discount (" + discount + ") must be positive");
+            QLNet.Utils.QL_REQUIRE(stdDev >= 0.0, () => "stdDev (" + stdDev + ") must be non-negative");
+            QLNet.Utils.QL_REQUIRE(discount > 0.0, () => "discount (" + discount + ") must be positive");
 
             if (stdDev.IsEqual(0.0))
             {
@@ -230,7 +230,7 @@ namespace QLNet
             // so returning forward*discount is OK
             if (strike.IsEqual(0.0))
             {
-                return (optionType == Option.Type.Call ? forward * discount : 0.0);
+                return (optionType == QLNet.Option.Type.Call ? forward * discount : 0.0);
             }
 
             var d1 = System.Math.Log(forward / strike) / stdDev + 0.5 * stdDev;
@@ -239,7 +239,7 @@ namespace QLNet
             var nd1 = phi.value((int)optionType * d1);
             var nd2 = phi.value((int)optionType * d2);
             var result = discount * (int)optionType * (forward * nd1 - strike * nd2);
-            QL_REQUIRE(result >= 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(result >= 0.0, () =>
                 "negative value (" + result + ") for " +
                 stdDev + " stdDev, " +
                 optionType + " option, " +
@@ -259,7 +259,7 @@ namespace QLNet
               It is a risk-neutral probability, not the real world one.
                \warning instead of volatility it uses standard deviation, i.e. volatility*sqrt(timeToMaturity)
         */
-        public static double blackFormulaCashItmProbability(Option.Type optionType,
+        public static double blackFormulaCashItmProbability(QLNet.Option.Type optionType,
             double strike,
             double forward,
             double stdDev,
@@ -275,7 +275,7 @@ namespace QLNet
             strike = strike + displacement;
             if (strike.IsEqual(0.0))
             {
-                return (optionType == Option.Type.Call ? 1.0 : 0.0);
+                return (optionType == QLNet.Option.Type.Call ? 1.0 : 0.0);
             }
 
             var d2 = System.Math.Log(forward / strike) / stdDev - 0.5 * stdDev;
@@ -293,7 +293,7 @@ namespace QLNet
         /*! Black 1976 implied standard deviation,
               i.e. volatility*sqrt(timeToMaturity)
         */
-        public static double blackFormulaImpliedStdDev(Option.Type optionType,
+        public static double blackFormulaImpliedStdDev(QLNet.Option.Type optionType,
             double strike,
             double forward,
             double blackPrice,
@@ -305,14 +305,14 @@ namespace QLNet
         {
             checkParameters(strike, forward, displacement);
 
-            QL_REQUIRE(discount > 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(discount > 0.0, () =>
                 "discount (" + discount + ") must be positive");
 
-            QL_REQUIRE(blackPrice >= 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(blackPrice >= 0.0, () =>
                 "option price (" + blackPrice + ") must be non-negative");
             // check the price of the "other" option implied by put-call paity
             var otherOptionPrice = blackPrice - (int)optionType * (forward - strike) * discount;
-            QL_REQUIRE(otherOptionPrice >= 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(otherOptionPrice >= 0.0, () =>
                 "negative " + (-1 * (int)optionType) +
                 " price (" + otherOptionPrice +
                 ") implied by put-call parity. No solution exists for " +
@@ -324,15 +324,15 @@ namespace QLNet
             // solve for the out-of-the-money option which has
             // greater vega/price ratio, i.e.
             // it is numerically more robust for implied vol calculations
-            if (optionType == Option.Type.Put && strike > forward)
+            if (optionType == QLNet.Option.Type.Put && strike > forward)
             {
-                optionType = Option.Type.Call;
+                optionType = QLNet.Option.Type.Call;
                 blackPrice = otherOptionPrice;
             }
 
-            if (optionType == Option.Type.Call && strike < forward)
+            if (optionType == QLNet.Option.Type.Call && strike < forward)
             {
-                optionType = Option.Type.Put;
+                optionType = QLNet.Option.Type.Put;
                 blackPrice = otherOptionPrice;
             }
 
@@ -345,7 +345,7 @@ namespace QLNet
             }
             else
             {
-                QL_REQUIRE(guess >= 0.0, () => "stdDev guess (" + guess + ") must be non-negative");
+                QLNet.Utils.QL_REQUIRE(guess >= 0.0, () => "stdDev guess (" + guess + ") must be non-negative");
             }
 
             var f = new BlackImpliedStdDevHelper(optionType, strike, forward, blackPrice / discount);
@@ -353,7 +353,7 @@ namespace QLNet
             solver.setMaxEvaluations(maxIterations);
             double minSdtDev = 0.0, maxStdDev = 24.0; // 24 = 300% * sqrt(60)
             var stdDev = solver.solve(f, accuracy, guess.Value, minSdtDev, maxStdDev);
-            QL_REQUIRE(stdDev >= 0.0, () => "stdDev (" + stdDev + ") must be non-negative");
+            QLNet.Utils.QL_REQUIRE(stdDev >= 0.0, () => "stdDev (" + stdDev + ") must be non-negative");
             return stdDev;
         }
 
@@ -375,7 +375,7 @@ namespace QLNet
             (1988) approximation for at-the-money forward option, with the
             extended moneyness approximation by Corrado and Miller (1996)
         */
-        public static double blackFormulaImpliedStdDevApproximation(Option.Type optionType,
+        public static double blackFormulaImpliedStdDevApproximation(QLNet.Option.Type optionType,
             double strike,
             double forward,
             double blackPrice,
@@ -383,9 +383,9 @@ namespace QLNet
             double displacement = 0.0)
         {
             checkParameters(strike, forward, displacement);
-            QL_REQUIRE(blackPrice >= 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(blackPrice >= 0.0, () =>
                 "blackPrice (" + blackPrice + ") must be non-negative");
-            QL_REQUIRE(discount > 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(discount > 0.0, () =>
                 "discount (" + discount + ") must be positive");
 
             double stdDev;
@@ -417,7 +417,7 @@ namespace QLNet
                 stdDev = temp / (forward + strike);
             }
 
-            QL_REQUIRE(stdDev >= 0.0, () => "stdDev (" + stdDev + ") must be non-negative");
+            QLNet.Utils.QL_REQUIRE(stdDev >= 0.0, () => "stdDev (" + stdDev + ") must be non-negative");
             return stdDev;
         }
 
@@ -437,7 +437,7 @@ namespace QLNet
             2001, 89-100. The atm option price must be known to use this
             method.
         */
-        public static double blackFormulaImpliedStdDevChambers(Option.Type optionType,
+        public static double blackFormulaImpliedStdDevChambers(QLNet.Option.Type optionType,
             double strike,
             double forward,
             double blackPrice,
@@ -446,11 +446,11 @@ namespace QLNet
             double displacement = 0.0)
         {
             checkParameters(strike, forward, displacement);
-            QL_REQUIRE(blackPrice >= 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(blackPrice >= 0.0, () =>
                 "blackPrice (" + blackPrice + ") must be non-negative");
-            QL_REQUIRE(blackAtmPrice >= 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(blackAtmPrice >= 0.0, () =>
                 "blackAtmPrice (" + blackAtmPrice + ") must be non-negative");
-            QL_REQUIRE(discount > 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(discount > 0.0, () =>
                 "discount (" + discount + ") must be positive");
 
             double stdDev;
@@ -465,7 +465,7 @@ namespace QLNet
             var priceAtmVol = blackFormula(optionType, strike, forward, s0);
             var dc = blackPrice - priceAtmVol;
 
-            if (close(dc, 0.0))
+            if (Math.Utils.close(dc, 0.0))
             {
                 stdDev = s0;
             }
@@ -487,7 +487,7 @@ namespace QLNet
                 stdDev = s0 + ds;
             }
 
-            QL_REQUIRE(stdDev >= 0.0, () => "stdDev (" + stdDev + ") must be non-negative");
+            QLNet.Utils.QL_REQUIRE(stdDev >= 0.0, () => "stdDev (" + stdDev + ") must be non-negative");
             return stdDev;
         }
 
@@ -514,9 +514,9 @@ namespace QLNet
             double displacement = 0.0)
         {
             checkParameters(strike, forward, displacement);
-            QL_REQUIRE(stdDev >= 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(stdDev >= 0.0, () =>
                 "stdDev (" + stdDev + ") must be non-negative");
-            QL_REQUIRE(discount > 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(discount > 0.0, () =>
                 "discount (" + discount + ") must be positive");
 
             forward = forward + displacement;
@@ -551,9 +551,9 @@ namespace QLNet
             double displacement)
         {
             checkParameters(strike, forward, displacement);
-            QL_REQUIRE(stdDev >= 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(stdDev >= 0.0, () =>
                 "stdDev (" + stdDev + ") must be non-negative");
-            QL_REQUIRE(discount > 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(discount > 0.0, () =>
                 "discount (" + discount + ") must be positive");
 
             forward = forward + displacement;
@@ -590,11 +590,11 @@ namespace QLNet
 
         public static void checkParameters(double strike, double forward, double displacement)
         {
-            QL_REQUIRE(displacement >= 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(displacement >= 0.0, () =>
                 "displacement (" + displacement + ") must be non-negative");
-            QL_REQUIRE(strike + displacement >= 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(strike + displacement >= 0.0, () =>
                 "strike + displacement (" + strike + " + " + displacement + ") must be non-negative");
-            QL_REQUIRE(forward + displacement > 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(forward + displacement > 0.0, () =>
                 "forward + displacement (" + forward + " + " + displacement + ") must be positive");
         }
 
@@ -620,7 +620,7 @@ namespace QLNet
             const double B8 = -2.067719486400926e+2;
             const double B9 = 1.174240599306013e+1;
 
-            QL_REQUIRE(eta >= 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(eta >= 0.0, () =>
                 "eta (" + eta + ") must be non-negative");
 
             var num = A0 + eta * (A1 + eta * (A2 + eta * (A3 + eta * (A4 + eta

@@ -190,7 +190,7 @@ namespace QLNet.Termstructures.Yield
 
         public override double impliedQuote()
         {
-            Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
+            QLNet.Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
             // we didn't register as observers - force calculation
             swap_.recalculate(); // it is from lazy objects
             // weak implementation... to be improved
@@ -255,17 +255,17 @@ namespace QLNet.Termstructures.Yield
                     break;
                 case Pillar.Choice.CustomDate:
                     // pillarDate_ already assigned at construction time
-                    Utils.QL_REQUIRE(pillarDate_ >= earliestDate_, () =>
+                    QLNet.Utils.QL_REQUIRE(pillarDate_ >= earliestDate_, () =>
                         "pillar date (" + pillarDate_ + ") must be later " +
                         "than or equal to the instrument's earliest date (" +
                         earliestDate_ + ")");
-                    Utils.QL_REQUIRE(pillarDate_ <= latestRelevantDate_, () =>
+                    QLNet.Utils.QL_REQUIRE(pillarDate_ <= latestRelevantDate_, () =>
                         "pillar date (" + pillarDate_ + ") must be before " +
                         "or equal to the instrument's latest relevant date (" +
                         latestRelevantDate_ + ")");
                     break;
                 default:
-                    Utils.QL_FAIL("unknown Pillar::Choice(" + pillarChoice_ + ")");
+                    QLNet.Utils.QL_FAIL("unknown Pillar::Choice(" + pillarChoice_ + ")");
                     break;
             }
 

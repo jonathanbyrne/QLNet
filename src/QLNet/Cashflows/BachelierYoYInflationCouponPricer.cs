@@ -13,7 +13,7 @@ namespace QLNet.Cashflows
 
         protected override double optionletPriceImp(Option.Type optionType, double effStrike,
             double forward, double stdDev) =>
-            Utils.bachelierBlackFormula(optionType,
+            PricingEngines.Utils.bachelierBlackFormula(optionType,
                 effStrike,
                 forward,
                 stdDev);

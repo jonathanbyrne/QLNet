@@ -37,7 +37,7 @@ namespace QLNet.Methods.Finitedifferences.Meshers
             mesher_ = mesher;
             for (var i = 0; i < mesher.Count; ++i)
             {
-                Utils.QL_REQUIRE(mesher[i].size() == layout.dim()[i],
+                QLNet.Utils.QL_REQUIRE(mesher[i].size() == layout.dim()[i],
                     () => "size of 1d mesher " + i + " does not fit to layout");
             }
         }

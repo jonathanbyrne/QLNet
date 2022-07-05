@@ -3,7 +3,7 @@ using QLNet.Extensions;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Time;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     [PublicAPI]
     public class ShiftedBlackVolTermStructure : BlackVolTermStructure

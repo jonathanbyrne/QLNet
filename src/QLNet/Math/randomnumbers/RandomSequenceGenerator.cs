@@ -22,7 +22,7 @@ using JetBrains.Annotations;
 using QLNet.Methods.montecarlo;
 using QLNet.Patterns;
 
-namespace QLNet.Math.randomnumbers
+namespace QLNet.Math.RandomNumbers
 {
     /*! Random sequence generator based on a pseudo-random number generator RNG.
         Do not use with low-discrepancy sequence generator.
@@ -49,7 +49,7 @@ namespace QLNet.Math.randomnumbers
             sequence_ = new Sample<List<double>>(ls, 1.0);
             int32Sequence_ = new InitializedList<ulong>(dimensionality);
 
-            Utils.QL_REQUIRE(dimensionality > 0, () => "dimensionality must be greater than 0");
+            QLNet.Utils.QL_REQUIRE(dimensionality > 0, () => "dimensionality must be greater than 0");
         }
 
         public RandomSequenceGenerator(int dimensionality, ulong seed)

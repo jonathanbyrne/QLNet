@@ -35,11 +35,11 @@ namespace QLNet.Math.Interpolations
             quadraticity_ = quadraticity;
             monotonicity_ = monotonicity;
 
-            Utils.QL_REQUIRE(monotonicity_ >= 0 && monotonicity_ <= 1, () => "Monotonicity must lie between 0 and 1");
-            Utils.QL_REQUIRE(quadraticity_ >= 0 && quadraticity_ <= 1, () => "Quadraticity must lie between 0 and 1");
-            Utils.QL_REQUIRE(size_ >= 2, () => "Single point provided, not supported by convex " +
-                                               "monotone method as first point is ignored");
-            Utils.QL_REQUIRE(size_ - preExistingHelpers.Count > 1, () => "Too many existing helpers have been supplied");
+            QLNet.Utils.QL_REQUIRE(monotonicity_ >= 0 && monotonicity_ <= 1, () => "Monotonicity must lie between 0 and 1");
+            QLNet.Utils.QL_REQUIRE(quadraticity_ >= 0 && quadraticity_ <= 1, () => "Quadraticity must lie between 0 and 1");
+            QLNet.Utils.QL_REQUIRE(size_ >= 2, () => "Single point provided, not supported by convex " +
+                                                              "monotone method as first point is ignored");
+            QLNet.Utils.QL_REQUIRE(size_ - preExistingHelpers.Count > 1, () => "Too many existing helpers have been supplied");
         }
 
         public override double derivative(double x) => throw new NotImplementedException("Convex-monotone spline derivative not implemented");

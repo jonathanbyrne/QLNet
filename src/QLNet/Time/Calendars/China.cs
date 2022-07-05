@@ -373,7 +373,7 @@ namespace QLNet.Time.Calendars
                     calendar_ = IbImpl.Singleton;
                     break;
                 default:
-                    Utils.QL_FAIL("unknown market");
+                    QLNet.Utils.QL_FAIL("unknown market");
                     break;
             }
         }

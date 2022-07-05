@@ -74,14 +74,14 @@ namespace QLNet.Math.Interpolations
             public bool isInRange(double x, double y)
             {
                 double x1 = xMin(), x2 = xMax();
-                var xIsInrange = x >= x1 && x <= x2 || Utils.close(x, x1) || Utils.close(x, x2);
+                var xIsInrange = x >= x1 && x <= x2 || Math.Utils.close(x, x1) || Math.Utils.close(x, x2);
                 if (!xIsInrange)
                 {
                     return false;
                 }
 
                 double y1 = yMin(), y2 = yMax();
-                return y >= y1 && y <= y2 || Utils.close(y, y1) || Utils.close(y, y2);
+                return y >= y1 && y <= y2 || Math.Utils.close(y, y1) || Math.Utils.close(y, y2);
             }
 
             public int locateX(double x)

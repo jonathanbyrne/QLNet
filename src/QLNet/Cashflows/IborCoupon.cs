@@ -79,7 +79,7 @@ namespace QLNet.Cashflows
 
             var dc = index_.dayCounter();
             spanningTime_ = dc.yearFraction(fixingValueDate_, fixingEndDate_);
-            Utils.QL_REQUIRE(spanningTime_ > 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(spanningTime_ > 0.0, () =>
                 "\n cannot calculate forward rate between " +
                 fixingValueDate_ + " and " + fixingEndDate_ +
                 ":\n non positive time (" + spanningTime_ +
@@ -117,7 +117,7 @@ namespace QLNet.Cashflows
             {
                 // do not catch exceptions
                 var result = index_.pastFixing(fixingDate_);
-                Utils.QL_REQUIRE(result != null, () => "Missing " + index_.name() + " fixing for " + fixingDate_);
+                QLNet.Utils.QL_REQUIRE(result != null, () => "Missing " + index_.name() + " fixing for " + fixingDate_);
                 return result.Value;
             }
 

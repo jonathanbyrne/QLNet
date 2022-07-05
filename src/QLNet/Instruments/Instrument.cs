@@ -193,7 +193,7 @@ namespace QLNet.Instruments
         public Date valuationDate()
         {
             calculate();
-            Utils.QL_REQUIRE(valuationDate_ != null, () => "valuation date not provided");
+            QLNet.Utils.QL_REQUIRE(valuationDate_ != null, () => "valuation date not provided");
             return valuationDate_;
         }
 

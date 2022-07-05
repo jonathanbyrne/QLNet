@@ -102,7 +102,7 @@ namespace QLNet
 
         public void postAdjustValues()
         {
-            if (!Utils.close(time(), latestPostAdjustment_))
+            if (!Math.Utils.close(time(), latestPostAdjustment_))
             {
                 postAdjustValuesImpl();
                 latestPostAdjustment_ = time();
@@ -119,7 +119,7 @@ namespace QLNet
 
         public void preAdjustValues()
         {
-            if (!Utils.close(time(), latestPreAdjustment_))
+            if (!Math.Utils.close(time(), latestPreAdjustment_))
             {
                 preAdjustValuesImpl();
                 latestPreAdjustment_ = time();
@@ -154,7 +154,7 @@ namespace QLNet
         protected bool isOnTime(double t)
         {
             var grid = method().timeGrid();
-            return Utils.close(grid[grid.index(t)], time());
+            return Math.Utils.close(grid[grid.index(t)], time());
         }
 
         /*! This method performs the actual post-adjustment */

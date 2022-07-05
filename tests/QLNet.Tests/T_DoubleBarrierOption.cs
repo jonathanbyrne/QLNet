@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using QLNet.Quotes;
 using QLNet.Time;
 using QLNet.Instruments;
-using QLNet.Pricingengines.barrier;
+using QLNet.PricingEngines.barrier;
+using QLNet.Processes;
 using QLNet.Termstructures;
-using QLNet.processes;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Time.DayCounters;
 
@@ -424,7 +424,7 @@ namespace QLNet.Tests
                     var doubleBarrierOption = new DoubleBarrierOption(barrierType,
                                                                                       values[i].barrier1, values[i].barrier2, values[i].rebate, payoff, exercise);
 
-                    var bsVanillaPrice = Utils.blackFormula(values[i].type, values[i].strike,
+                    var bsVanillaPrice = PricingEngines.Utils.blackFormula(values[i].type, values[i].strike,
                                                                spot.value() * qTS.discount(values[i].t) / rTS.discount(values[i].t),
                                                                values[i].v * System.Math.Sqrt(values[i].t), rTS.discount(values[i].t));
 

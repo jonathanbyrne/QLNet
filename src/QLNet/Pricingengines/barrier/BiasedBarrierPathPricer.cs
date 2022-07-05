@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Methods.montecarlo;
 
-namespace QLNet.Pricingengines.barrier
+namespace QLNet.PricingEngines.barrier
 {
     [PublicAPI]
     public class BiasedBarrierPathPricer : PathPricer<IPath>
@@ -28,16 +28,16 @@ namespace QLNet.Pricingengines.barrier
             payoff_ = new PlainVanillaPayoff(type, strike);
             discounts_ = discounts;
 
-            Utils.QL_REQUIRE(strike >= 0.0,
+            QLNet.Utils.QL_REQUIRE(strike >= 0.0,
                 () => "strike less than zero not allowed");
-            Utils.QL_REQUIRE(barrier > 0.0,
+            QLNet.Utils.QL_REQUIRE(barrier > 0.0,
                 () => "barrier less/equal zero not allowed");
         }
 
         public double value(IPath path)
         {
             var n = path.length();
-            Utils.QL_REQUIRE(n > 1, () => "the path cannot be empty");
+            QLNet.Utils.QL_REQUIRE(n > 1, () => "the path cannot be empty");
 
             var isOptionActive = false;
             int? knockNode = null;
@@ -111,7 +111,7 @@ namespace QLNet.Pricingengines.barrier
 
                     break;
                 default:
-                    Utils.QL_FAIL("unknown barrier ExerciseType");
+                    QLNet.Utils.QL_FAIL("unknown barrier ExerciseType");
                     break;
             }
 
@@ -129,7 +129,7 @@ namespace QLNet.Pricingengines.barrier
                 case Barrier.Type.DownOut:
                     return rebate_.GetValueOrDefault() * discounts_[(int)knockNode];
                 default:
-                    Utils.QL_FAIL("unknown barrier ExerciseType");
+                    QLNet.Utils.QL_FAIL("unknown barrier ExerciseType");
                     return -1;
             }
         }

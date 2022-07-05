@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using QLNet.Instruments;
 using QLNet.Time;
 
-namespace QLNet
+namespace QLNet.Cashflows
 {
     //! Predetermined cash flow
     /*! This cash flow pays a predetermined amount at a given date. */
@@ -51,7 +51,7 @@ namespace QLNet
         //! helper function building a sequence of fixed dividends
         public static DividendSchedule DividendVector(List<Date> dividendDates, List<double> dividends)
         {
-            QL_REQUIRE(dividendDates.Count == dividends.Count, () => "size mismatch between dividend dates and amounts");
+            QLNet.Utils.QL_REQUIRE(dividendDates.Count == dividends.Count, () => "size mismatch between dividend dates and amounts");
 
             var items = new DividendSchedule();
             for (var i = 0; i < dividendDates.Count; i++)

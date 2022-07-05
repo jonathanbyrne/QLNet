@@ -79,7 +79,7 @@ namespace QLNet.Math.Optimization
             var icount = 0;
             while (!valid)
             {
-                Utils.QL_REQUIRE(icount <= 200, () => "can't update linesearch");
+                QLNet.Utils.QL_REQUIRE(icount <= 200, () => "can't update linesearch");
                 diff *= 0.5;
                 icount++;
                 newParams = data + diff * direction;

@@ -19,6 +19,7 @@ using Xunit;
 using QLNet.Time;
 using QLNet.Cashflows;
 using QLNet.Indexes;
+using QLNet.Indexes.Ibor;
 using QLNet.Indexes.swap;
 using QLNet.Instruments;
 using QLNet.Termstructures.Volatility.swaption;
@@ -359,9 +360,9 @@ namespace QLNet.Tests
                 vars.analyticPricers[j].setSwaptionVolatility(vars.atmVol);
                 for (var sl = 0; sl < n; ++sl)
                 {
-                    Utils.setCouponPricer(cms[sl].leg(0), vars.numericalPricers[j]);
+                    Cashflows.Utils.setCouponPricer(cms[sl].leg(0), vars.numericalPricers[j]);
                     var priceNum = cms[sl].NPV();
-                    Utils.setCouponPricer(cms[sl].leg(0), vars.analyticPricers[j]);
+                    Cashflows.Utils.setCouponPricer(cms[sl].leg(0), vars.analyticPricers[j]);
                     var priceAn = cms[sl].NPV();
 
                     var difference = System.Math.Abs(priceNum - priceAn);

@@ -44,8 +44,8 @@ namespace QLNet.Instruments.Bonds
 
             addRedemptionsToCashflows(new InitializedList<double>(1, redemption));
 
-            Utils.QL_REQUIRE(!cashflows().empty(), () => "bond with no cashflows!");
-            Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
+            QLNet.Utils.QL_REQUIRE(!cashflows().empty(), () => "bond with no cashflows!");
+            QLNet.Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
 
             iborIndex.registerWith(update);
         }
@@ -91,11 +91,11 @@ namespace QLNet.Instruments.Bonds
                 case DateGeneration.Rule.ThirdWednesday:
                 case DateGeneration.Rule.Twentieth:
                 case DateGeneration.Rule.TwentiethIMM:
-                    Utils.QL_FAIL("stub date (" + stubDate + ") not allowed with " +
-                                  rule + " DateGeneration.Rule");
+                    QLNet.Utils.QL_FAIL("stub date (" + stubDate + ") not allowed with " +
+                                                 rule + " DateGeneration.Rule");
                     break;
                 default:
-                    Utils.QL_FAIL("unknown DateGeneration::Rule (" + rule + ")");
+                    QLNet.Utils.QL_FAIL("unknown DateGeneration::Rule (" + rule + ")");
                     break;
             }
 
@@ -116,8 +116,8 @@ namespace QLNet.Instruments.Bonds
 
             addRedemptionsToCashflows(new InitializedList<double>(1, redemption));
 
-            Utils.QL_REQUIRE(!cashflows().empty(), () => "bond with no cashflows!");
-            Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
+            QLNet.Utils.QL_REQUIRE(!cashflows().empty(), () => "bond with no cashflows!");
+            QLNet.Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
 
             iborIndex.registerWith(update);
         }

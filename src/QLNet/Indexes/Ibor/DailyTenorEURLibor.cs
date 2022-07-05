@@ -1,12 +1,11 @@
 using JetBrains.Annotations;
 using QLNet.Currencies;
-using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
 
-namespace QLNet
+namespace QLNet.Indexes.Ibor
 {
     [PublicAPI]
     public class DailyTenorEURLibor : IborIndex

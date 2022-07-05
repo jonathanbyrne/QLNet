@@ -56,11 +56,11 @@ namespace QLNet.Math.statistics
         public void add
             (double value, double weight)
         {
-            Utils.QL_REQUIRE(weight >= 0.0, () => "negative weight (" + weight + ") not allowed");
+            QLNet.Utils.QL_REQUIRE(weight >= 0.0, () => "negative weight (" + weight + ") not allowed");
 
             var oldSamples = sampleNumber_;
             sampleNumber_++;
-            Utils.QL_REQUIRE(sampleNumber_ > oldSamples, () => "maximum number of samples reached");
+            QLNet.Utils.QL_REQUIRE(sampleNumber_ > oldSamples, () => "maximum number of samples reached");
 
             sampleWeight_ += weight;
 
@@ -120,11 +120,11 @@ namespace QLNet.Math.statistics
         {
             if (downsideSampleWeight_.IsEqual(0.0))
             {
-                Utils.QL_REQUIRE(sampleWeight_ > 0.0, () => "sampleWeight_=0, insufficient");
+                QLNet.Utils.QL_REQUIRE(sampleWeight_ > 0.0, () => "sampleWeight_=0, insufficient");
                 return 0.0;
             }
 
-            Utils.QL_REQUIRE(downsideSampleNumber_ > 1, () => "sample number below zero <=1, insufficient");
+            QLNet.Utils.QL_REQUIRE(downsideSampleNumber_ > 1, () => "sample number below zero <=1, insufficient");
             return downsideSampleNumber_ / (downsideSampleNumber_ - 1.0) *
                    (downsideQuadraticSum_ / downsideSampleWeight_);
         }
@@ -134,7 +134,7 @@ namespace QLNet.Math.statistics
         public double errorEstimate()
         {
             var var = variance();
-            Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
+            QLNet.Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
             return System.Math.Sqrt(var / samples());
         }
 
@@ -143,7 +143,7 @@ namespace QLNet.Math.statistics
         */
         public double kurtosis()
         {
-            Utils.QL_REQUIRE(sampleNumber_ > 3, () => "sample number <=3, insufficient");
+            QLNet.Utils.QL_REQUIRE(sampleNumber_ > 3, () => "sample number <=3, insufficient");
 
             var m = mean();
             var v = variance();
@@ -172,7 +172,7 @@ namespace QLNet.Math.statistics
         /*! returns the maximum sample value */
         public double max()
         {
-            Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
+            QLNet.Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
             return max_;
         }
 
@@ -181,14 +181,14 @@ namespace QLNet.Math.statistics
         */
         public double mean()
         {
-            Utils.QL_REQUIRE(sampleWeight_ > 0.0, () => "sampleWeight_=0, insufficient");
+            QLNet.Utils.QL_REQUIRE(sampleWeight_ > 0.0, () => "sampleWeight_=0, insufficient");
             return sum_ / sampleWeight_;
         }
 
         /*! returns the minimum sample value */
         public double min()
         {
-            Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
+            QLNet.Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
             return min_;
         }
 
@@ -218,7 +218,7 @@ namespace QLNet.Math.statistics
         */
         public double skewness()
         {
-            Utils.QL_REQUIRE(sampleNumber_ > 2, () => "sample number <=2, insufficient");
+            QLNet.Utils.QL_REQUIRE(sampleNumber_ > 2, () => "sample number <=2, insufficient");
 
             var s = standardDeviation();
             if (s.IsEqual(0.0))
@@ -245,15 +245,15 @@ namespace QLNet.Math.statistics
         */
         public double variance()
         {
-            Utils.QL_REQUIRE(sampleWeight_ > 0.0, () => "sampleWeight_=0, insufficient");
-            Utils.QL_REQUIRE(sampleNumber_ > 1, () => "sample number <=1, insufficient");
+            QLNet.Utils.QL_REQUIRE(sampleWeight_ > 0.0, () => "sampleWeight_=0, insufficient");
+            QLNet.Utils.QL_REQUIRE(sampleNumber_ > 1, () => "sample number <=1, insufficient");
 
             var m = mean();
             var v = quadraticSum_ / sampleWeight_;
             v -= m * m;
             v *= sampleNumber_ / (sampleNumber_ - 1.0);
 
-            Utils.QL_REQUIRE(v >= 0.0, () => "negative variance (" + v + ")");
+            QLNet.Utils.QL_REQUIRE(v >= 0.0, () => "negative variance (" + v + ")");
             return v;
         }
 

@@ -20,7 +20,7 @@
 
 using JetBrains.Annotations;
 using QLNet.Indexes;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.Swap;
 using QLNet.Time;
 
 namespace QLNet.Instruments
@@ -89,7 +89,7 @@ namespace QLNet.Instruments
             }
             else
             {
-                Utils.QL_REQUIRE(exerciseDate_ <= fixingDate_, () =>
+                QLNet.Utils.QL_REQUIRE(exerciseDate_ <= fixingDate_, () =>
                     "exercise date (" + exerciseDate_ + ") must be less " + "than or equal to fixing date (" + fixingDate_ + ")");
                 exercise_ = new EuropeanExercise(exerciseDate_);
             }
@@ -98,7 +98,7 @@ namespace QLNet.Instruments
             if (strike_ == null)
             {
                 // ATM on the forecasting curve
-                Utils.QL_REQUIRE(!swapIndex_.forwardingTermStructure().empty(), () =>
+                QLNet.Utils.QL_REQUIRE(!swapIndex_.forwardingTermStructure().empty(), () =>
                     "no forecasting term structure set to " + swapIndex_.name());
                 var temp = swapIndex_.underlyingSwap(fixingDate_);
                 temp.setPricingEngine(new DiscountingSwapEngine(swapIndex_.forwardingTermStructure()));

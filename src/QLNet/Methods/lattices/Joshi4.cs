@@ -15,7 +15,7 @@ namespace QLNet.Methods.lattices
         public Joshi4(StochasticProcess1D process, double end, int steps, double strike)
             : base(process, end, steps % 2 != 0 ? steps : steps + 1)
         {
-            Utils.QL_REQUIRE(strike > 0.0, () => "strike must be positive");
+            QLNet.Utils.QL_REQUIRE(strike > 0.0, () => "strike must be positive");
 
             var oddSteps = steps % 2 != 0 ? steps : steps + 1;
             var variance = process.variance(0.0, x0_, end);

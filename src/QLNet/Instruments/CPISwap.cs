@@ -157,8 +157,8 @@ namespace QLNet.Instruments
             observationLag_ = observationLag;
             observationInterpolation_ = observationInterpolation;
 
-            Utils.QL_REQUIRE(floatSchedule_.Count > 0, () => "empty float schedule");
-            Utils.QL_REQUIRE(fixedSchedule_.Count > 0, () => "empty fixed schedule");
+            QLNet.Utils.QL_REQUIRE(floatSchedule_.Count > 0, () => "empty float schedule");
+            QLNet.Utils.QL_REQUIRE(fixedSchedule_.Count > 0, () => "empty fixed schedule");
             // todo if roll!=unadjusted then need calendars ...
 
             inflationNominal_ = inflationNominal ?? nominal_;
@@ -246,14 +246,14 @@ namespace QLNet.Instruments
         public virtual double fairRate()
         {
             calculate();
-            Utils.QL_REQUIRE(fairRate_ != null, () => "result not available");
+            QLNet.Utils.QL_REQUIRE(fairRate_ != null, () => "result not available");
             return fairRate_.GetValueOrDefault();
         }
 
         public virtual double fairSpread()
         {
             calculate();
-            Utils.QL_REQUIRE(fairSpread_ != null, () => "result not available");
+            QLNet.Utils.QL_REQUIRE(fairSpread_ != null, () => "result not available");
             return fairSpread_.GetValueOrDefault();
         }
 
@@ -305,7 +305,7 @@ namespace QLNet.Instruments
         public virtual double fixedLegNPV()
         {
             calculate();
-            Utils.QL_REQUIRE(legNPV_[0] != null, () => "result not available");
+            QLNet.Utils.QL_REQUIRE(legNPV_[0] != null, () => "result not available");
             return legNPV_[0].GetValueOrDefault();
         }
 
@@ -329,7 +329,7 @@ namespace QLNet.Instruments
         public virtual double floatLegNPV()
         {
             calculate();
-            Utils.QL_REQUIRE(legNPV_[1] != null, () => "result not available");
+            QLNet.Utils.QL_REQUIRE(legNPV_[1] != null, () => "result not available");
             return legNPV_[1].GetValueOrDefault();
         }
 

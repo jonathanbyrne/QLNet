@@ -20,7 +20,7 @@
 using JetBrains.Annotations;
 using QLNet.Extensions;
 
-namespace QLNet.Math.matrixutilities
+namespace QLNet.Math.MatrixUtilities
 {
     //! Singular value decomposition
     /*! Refer to Golub and Van Loan: Matrix computation,

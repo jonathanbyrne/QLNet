@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Math;
-using QLNet.processes;
+using QLNet.Processes;
 
 namespace QLNet.Instruments.Bonds
 {
@@ -118,7 +118,7 @@ namespace QLNet.Instruments.Bonds
             for (var i = 0; i < arguments_.dividends.Count; i++)
             {
                 var dividendTime = dividendTimes_[i];
-                if (dividendTime >= t || Utils.close(dividendTime, t))
+                if (dividendTime >= t || Math.Utils.close(dividendTime, t))
                 {
                     var d = arguments_.dividends[i];
                     var dividendDiscount = process_.riskFreeRate().currentLink().discount(dividendTime) /
@@ -185,7 +185,7 @@ namespace QLNet.Instruments.Bonds
 
                     break;
                 default:
-                    Utils.QL_FAIL("unknown callability ExerciseType ");
+                    QLNet.Utils.QL_FAIL("unknown callability ExerciseType ");
                     break;
             }
         }
@@ -280,7 +280,7 @@ namespace QLNet.Instruments.Bonds
 
                     break;
                 default:
-                    Utils.QL_FAIL("invalid option ExerciseType ");
+                    QLNet.Utils.QL_FAIL("invalid option ExerciseType ");
                     break;
             }
 

@@ -81,42 +81,42 @@ namespace QLNet.Termstructures.Inflation
             bdc_ = bdc;
 
             // does the index have a TS?
-            Utils.QL_REQUIRE(!zii_.link.zeroInflationTermStructure().empty(), () => "ZITS missing from index");
-            Utils.QL_REQUIRE(!nominalTermStructure().empty(), () => "nominal TS missing");
+            QLNet.Utils.QL_REQUIRE(!zii_.link.zeroInflationTermStructure().empty(), () => "ZITS missing from index");
+            QLNet.Utils.QL_REQUIRE(!nominalTermStructure().empty(), () => "nominal TS missing");
 
             // data consistency checking, enough data?
-            Utils.QL_REQUIRE(fStrikes_.Count > 1, () => "not enough floor strikes");
-            Utils.QL_REQUIRE(cStrikes_.Count > 1, () => "not enough cap strikes");
-            Utils.QL_REQUIRE(cfMaturities_.Count > 1, () => "not enough maturities");
-            Utils.QL_REQUIRE(fStrikes_.Count == fPrice.rows(), () => "floor strikes vs floor price rows not equal");
-            Utils.QL_REQUIRE(cStrikes_.Count == cPrice.rows(), () => "cap strikes vs cap price rows not equal");
-            Utils.QL_REQUIRE(cfMaturities_.Count == fPrice.columns(), () => "maturities vs floor price columns not equal");
-            Utils.QL_REQUIRE(cfMaturities_.Count == cPrice.columns(), () => "maturities vs cap price columns not equal");
+            QLNet.Utils.QL_REQUIRE(fStrikes_.Count > 1, () => "not enough floor strikes");
+            QLNet.Utils.QL_REQUIRE(cStrikes_.Count > 1, () => "not enough cap strikes");
+            QLNet.Utils.QL_REQUIRE(cfMaturities_.Count > 1, () => "not enough maturities");
+            QLNet.Utils.QL_REQUIRE(fStrikes_.Count == fPrice.rows(), () => "floor strikes vs floor price rows not equal");
+            QLNet.Utils.QL_REQUIRE(cStrikes_.Count == cPrice.rows(), () => "cap strikes vs cap price rows not equal");
+            QLNet.Utils.QL_REQUIRE(cfMaturities_.Count == fPrice.columns(), () => "maturities vs floor price columns not equal");
+            QLNet.Utils.QL_REQUIRE(cfMaturities_.Count == cPrice.columns(), () => "maturities vs cap price columns not equal");
 
             // data has correct properties (positive, monotonic)?
             for (var j = 0; j < cfMaturities_.Count; j++)
             {
-                Utils.QL_REQUIRE(cfMaturities[j] > new Period(0, TimeUnit.Days), () => "non-positive maturities");
+                QLNet.Utils.QL_REQUIRE(cfMaturities[j] > new Period(0, TimeUnit.Days), () => "non-positive maturities");
                 if (j > 0)
                 {
-                    Utils.QL_REQUIRE(cfMaturities[j] > cfMaturities[j - 1], () => "non-increasing maturities");
+                    QLNet.Utils.QL_REQUIRE(cfMaturities[j] > cfMaturities[j - 1], () => "non-increasing maturities");
                 }
 
                 for (var i = 0; i < fPrice_.rows(); i++)
                 {
-                    Utils.QL_REQUIRE(fPrice_[i, j] > 0.0, () => "non-positive floor price: " + fPrice_[i, j]);
+                    QLNet.Utils.QL_REQUIRE(fPrice_[i, j] > 0.0, () => "non-positive floor price: " + fPrice_[i, j]);
                     if (i > 0)
                     {
-                        Utils.QL_REQUIRE(fPrice_[i, j] >= fPrice_[i - 1, j], () => "non-increasing floor prices");
+                        QLNet.Utils.QL_REQUIRE(fPrice_[i, j] >= fPrice_[i - 1, j], () => "non-increasing floor prices");
                     }
                 }
 
                 for (var i = 0; i < cPrice_.rows(); i++)
                 {
-                    Utils.QL_REQUIRE(cPrice_[i, j] > 0.0, () => "non-positive cap price: " + cPrice_[i, j]);
+                    QLNet.Utils.QL_REQUIRE(cPrice_[i, j] > 0.0, () => "non-positive cap price: " + cPrice_[i, j]);
                     if (i > 0)
                     {
-                        Utils.QL_REQUIRE(cPrice_[i, j] <= cPrice_[i - 1, j], () => "non-decreasing cap prices: "
+                        QLNet.Utils.QL_REQUIRE(cPrice_[i, j] <= cPrice_[i - 1, j], () => "non-decreasing cap prices: "
                                                                                    + cPrice_[i, j] + " then " + cPrice_[i - 1, j]);
                     }
                 }
@@ -143,10 +143,10 @@ namespace QLNet.Termstructures.Inflation
             }
 
             // final consistency checking
-            Utils.QL_REQUIRE(cfStrikes_.Count > 2, () => "overall not enough strikes");
+            QLNet.Utils.QL_REQUIRE(cfStrikes_.Count > 2, () => "overall not enough strikes");
             for (var i = 1; i < cfStrikes_.Count; i++)
             {
-                Utils.QL_REQUIRE(cfStrikes_[i] > cfStrikes_[i - 1], () => "cfStrikes not increasing");
+                QLNet.Utils.QL_REQUIRE(cfStrikes_[i] > cfStrikes_[i - 1], () => "cfStrikes not increasing");
             }
         }
 

@@ -16,12 +16,12 @@
 
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.processes;
+using QLNet.Processes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Termstructures.Yield;
 
-namespace QLNet.Pricingengines.Forward
+namespace QLNet.PricingEngines.Forward
 {
     //! %Forward engine for vanilla options
     /*! \ingroup forwardengines
@@ -95,7 +95,7 @@ namespace QLNet.Pricingengines.Forward
         protected void setup()
         {
             var argumentsPayoff = arguments_.payoff as StrikedTypePayoff;
-            Utils.QL_REQUIRE(argumentsPayoff != null, () => "wrong payoff given");
+            QLNet.Utils.QL_REQUIRE(argumentsPayoff != null, () => "wrong payoff given");
 
             StrikedTypePayoff payoff = new PlainVanillaPayoff(argumentsPayoff.optionType(),
                 arguments_.moneyness * process_.x0());
@@ -104,7 +104,7 @@ namespace QLNet.Pricingengines.Forward
             // the right level is needed in order to interpolate
             // the vol
             var spot = process_.stateVariable();
-            Utils.QL_REQUIRE(spot.link.value() >= 0.0, () => "negative or null underlting given");
+            QLNet.Utils.QL_REQUIRE(spot.link.value() >= 0.0, () => "negative or null underlting given");
             var dividendYield = new Handle<YieldTermStructure>(
                 new ImpliedTermStructure(process_.dividendYield(), arguments_.resetDate));
             var riskFreeRate = new Handle<YieldTermStructure>(
@@ -124,9 +124,9 @@ namespace QLNet.Pricingengines.Forward
             originalEngine_.reset();
 
             originalArguments_ = originalEngine_.getArguments() as QLNet.Option.Arguments;
-            Utils.QL_REQUIRE(originalArguments_ != null, () => "wrong engine ExerciseType");
+            QLNet.Utils.QL_REQUIRE(originalArguments_ != null, () => "wrong engine ExerciseType");
             originalResults_ = originalEngine_.getResults() as OneAssetOption.Results;
-            Utils.QL_REQUIRE(originalResults_ != null, () => "wrong engine ExerciseType");
+            QLNet.Utils.QL_REQUIRE(originalResults_ != null, () => "wrong engine ExerciseType");
 
             originalArguments_.payoff = payoff;
             originalArguments_.exercise = arguments_.exercise;

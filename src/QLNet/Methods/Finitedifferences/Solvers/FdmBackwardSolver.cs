@@ -147,7 +147,7 @@ namespace QLNet.Methods.Finitedifferences.Solvers
                 }
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown scheme ExerciseType");
+                    QLNet.Utils.QL_FAIL("Unknown scheme ExerciseType");
                     break;
             }
         }

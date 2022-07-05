@@ -1,9 +1,9 @@
 ﻿using JetBrains.Annotations;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 using QLNet.Math.statistics;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     [PublicAPI]
     public class MakeMCAmericanEngine<RNG> : MakeMCAmericanEngine<RNG, Statistics>

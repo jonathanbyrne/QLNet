@@ -19,7 +19,7 @@
 
 using JetBrains.Annotations;
 using QLNet.Indexes;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.Swap;
 using QLNet.Termstructures;
 using QLNet.Time;
 
@@ -140,8 +140,8 @@ namespace QLNet.Instruments
                 if (engine_ == null)
                 {
                     var disc = overnightIndex_.forwardingTermStructure();
-                    Utils.QL_REQUIRE(!disc.empty(), () => "null term structure set to this instance of " +
-                                                          overnightIndex_.name());
+                    QLNet.Utils.QL_REQUIRE(!disc.empty(), () => "null term structure set to this instance of " +
+                                                                         overnightIndex_.name());
                     var includeSettlementDateFlows = false;
                     IPricingEngine engine = new DiscountingSwapEngine(disc, includeSettlementDateFlows);
                     temp.setPricingEngine(engine);

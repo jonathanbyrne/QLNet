@@ -19,11 +19,10 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.Termstructures;
 using QLNet.Termstructures.Inflation;
 using QLNet.Time;
 
-namespace QLNet
+namespace QLNet.Termstructures
 {
     //! Interface for inflation term structures.
     //! \ingroup inflationtermstructures
@@ -140,7 +139,7 @@ namespace QLNet
             seasonality_ = seasonality;
             if (seasonality_ != null)
             {
-                Utils.QL_REQUIRE(seasonality_.isConsistent(this),
+                QLNet.Utils.QL_REQUIRE(seasonality_.isConsistent(this),
                     () => "Seasonality inconsistent with " + "inflation term structure");
             }
 
@@ -150,9 +149,9 @@ namespace QLNet
         // range-checking
         protected override void checkRange(Date d, bool extrapolate)
         {
-            Utils.QL_REQUIRE(d >= baseDate(), () => "date (" + d + ") is before base date");
+            QLNet.Utils.QL_REQUIRE(d >= baseDate(), () => "date (" + d + ") is before base date");
 
-            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || d <= maxDate(), () =>
+            QLNet.Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || d <= maxDate(), () =>
                 "date (" + d + ") is past max curve date (" + maxDate() + ")");
         }
 

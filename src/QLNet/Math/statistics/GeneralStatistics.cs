@@ -56,7 +56,7 @@ namespace QLNet.Math.statistics
         public void add
             (double value, double weight)
         {
-            Utils.QL_REQUIRE(weight >= 0.0, () => "negative weight not allowed");
+            QLNet.Utils.QL_REQUIRE(weight >= 0.0, () => "negative weight not allowed");
             samples_.Add(new KeyValuePair<double, double>(value, weight));
 
             sorted_ = false;
@@ -126,7 +126,7 @@ namespace QLNet.Math.statistics
             if (kurtosis_ == null)
             {
                 var N = samples();
-                Utils.QL_REQUIRE(N > 3, () => "sample number <=3, unsufficient");
+                QLNet.Utils.QL_REQUIRE(N > 3, () => "sample number <=3, unsufficient");
 
                 var x = expectationValue(y => System.Math.Pow(y.Key * y.Value - mean(), 4), y => true).Key;
                 var sigma2 = variance();
@@ -143,7 +143,7 @@ namespace QLNet.Math.statistics
         /*! returns the maximum sample value */
         public double max()
         {
-            Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
+            QLNet.Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
             return samples_.Max(x => x.Key);
         }
 
@@ -154,7 +154,7 @@ namespace QLNet.Math.statistics
             if (mean_ == null)
             {
                 var N = samples();
-                Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
+                QLNet.Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
                 // eat our own dog food
                 mean_ = expectationValue(x => x.Key * x.Value, x => true).Key;
             }
@@ -165,7 +165,7 @@ namespace QLNet.Math.statistics
         /*! returns the minimum sample value */
         public double min()
         {
-            Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
+            QLNet.Utils.QL_REQUIRE(samples() > 0, () => "empty sample set");
             return samples_.Min(x => x.Key);
         }
 
@@ -174,10 +174,10 @@ namespace QLNet.Math.statistics
         */
         public double percentile(double percent)
         {
-            Utils.QL_REQUIRE(percent > 0.0 && percent <= 1.0, () => "percentile (" + percent + ") must be in (0.0, 1.0]");
+            QLNet.Utils.QL_REQUIRE(percent > 0.0 && percent <= 1.0, () => "percentile (" + percent + ") must be in (0.0, 1.0]");
 
             var sampleWeight = weightSum();
-            Utils.QL_REQUIRE(sampleWeight > 0, () => "empty sample set");
+            QLNet.Utils.QL_REQUIRE(sampleWeight > 0, () => "empty sample set");
 
             sort();
 
@@ -212,7 +212,7 @@ namespace QLNet.Math.statistics
             if (skewness_ == null)
             {
                 var N = samples();
-                Utils.QL_REQUIRE(N > 2, () => "sample number <=2, unsufficient");
+                QLNet.Utils.QL_REQUIRE(N > 2, () => "sample number <=2, unsufficient");
 
                 var x = expectationValue(y => System.Math.Pow(y.Key * y.Value - mean(), 3), y => true).Key;
                 var sigma = standardDeviation();
@@ -242,10 +242,10 @@ namespace QLNet.Math.statistics
         */
         public double topPercentile(double percent)
         {
-            Utils.QL_REQUIRE(percent > 0.0 && percent <= 1.0, () => "percentile (" + percent + ") must be in (0.0, 1.0]");
+            QLNet.Utils.QL_REQUIRE(percent > 0.0 && percent <= 1.0, () => "percentile (" + percent + ") must be in (0.0, 1.0]");
 
             var sampleWeight = weightSum();
-            Utils.QL_REQUIRE(sampleWeight > 0, () => "empty sample set");
+            QLNet.Utils.QL_REQUIRE(sampleWeight > 0, () => "empty sample set");
 
             sort();
 
@@ -266,7 +266,7 @@ namespace QLNet.Math.statistics
             if (variance_ == null)
             {
                 var N = samples();
-                Utils.QL_REQUIRE(N > 1, () => "sample number <=1, unsufficient");
+                QLNet.Utils.QL_REQUIRE(N > 1, () => "sample number <=1, unsufficient");
                 // Subtract the mean and square. Repeat on the whole range.
                 // Hopefully, the whole thing will be inlined in a single loop.
                 var s2 = expectationValue(x => System.Math.Pow(x.Key * x.Value - mean(), 2), x => true).Key;

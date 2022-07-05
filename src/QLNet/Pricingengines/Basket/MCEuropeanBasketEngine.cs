@@ -14,7 +14,7 @@
 //  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
-namespace QLNet.Pricingengines.Basket
+namespace QLNet.PricingEngines.Basket
 {
     //! Pricing engine for European basket options using Monte Carlo simulation
     /*! \ingroup basketengines

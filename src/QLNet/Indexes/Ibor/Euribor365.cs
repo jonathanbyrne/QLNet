@@ -1,12 +1,11 @@
 using JetBrains.Annotations;
 using QLNet.Currencies;
-using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
 
-namespace QLNet
+namespace QLNet.Indexes.Ibor
 {
     [PublicAPI]
     public class Euribor365 : IborIndex
@@ -21,7 +20,7 @@ namespace QLNet
                 new EURCurrency(), new TARGET(), Utils.euriborConvention(tenor), Utils.euriborEOM(tenor),
                 new Actual365Fixed(), h)
         {
-            Utils.QL_REQUIRE(this.tenor().units() != TimeUnit.Days, () =>
+            QLNet.Utils.QL_REQUIRE(this.tenor().units() != TimeUnit.Days, () =>
                 "for daily tenors (" + this.tenor() + ") dedicated DailyTenor constructor must be used");
         }
     }

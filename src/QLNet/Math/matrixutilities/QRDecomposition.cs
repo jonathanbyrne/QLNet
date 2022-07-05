@@ -20,10 +20,9 @@
 
 using System.Collections.Generic;
 using QLNet.Extensions;
-using QLNet.Math;
 using QLNet.Math.Optimization;
 
-namespace QLNet
+namespace QLNet.Math.MatrixUtilities
 {
     public static partial class MatrixUtilities
     {
@@ -152,8 +151,8 @@ namespace QLNet
                 d = new Vector();
             }
 
-            Utils.QL_REQUIRE(b.Count == m, () => "dimensions of A and b don't match");
-            Utils.QL_REQUIRE(d.Count == n || d.empty(), () => "dimensions of A and d don't match");
+            QLNet.Utils.QL_REQUIRE(b.Count == m, () => "dimensions of A and b don't match");
+            QLNet.Utils.QL_REQUIRE(d.Count == n || d.empty(), () => "dimensions of A and d don't match");
 
             Matrix q = new Matrix(m, n), r = new Matrix(n, n);
 

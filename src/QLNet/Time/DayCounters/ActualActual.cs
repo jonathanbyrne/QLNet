@@ -258,7 +258,7 @@ namespace QLNet.Time.DayCounters
             private double yearFractionWithReferenceDates<T>(T impl,
                 Date d1, Date d2, Date d3, Date d4) where T : DayCounter
             {
-                Utils.QL_REQUIRE(d1 <= d2, () =>
+                QLNet.Utils.QL_REQUIRE(d1 <= d2, () =>
                     "This function is only correct if d1 <= d2\n" +
                     "d1: " + d1 + " d2: " + d2);
 
@@ -307,7 +307,7 @@ namespace QLNet.Time.DayCounters
                 var refPeriodStart = d3 ?? d1;
                 var refPeriodEnd = d4 ?? d2;
 
-                Utils.QL_REQUIRE(refPeriodEnd > refPeriodStart && refPeriodEnd > d1, () =>
+                QLNet.Utils.QL_REQUIRE(refPeriodEnd > refPeriodStart && refPeriodEnd > d1, () =>
                     "Invalid reference period: date 1: " + d1 + ", date 2: " + d2 +
                     ", reference period start: " + refPeriodStart + ", reference period end: " + refPeriodEnd);
 
@@ -353,7 +353,7 @@ namespace QLNet.Time.DayCounters
 
                 // here refPeriodEnd is the last (notional?) payment date
                 // d1 < refPeriodEnd < d2 AND refPeriodStart < refPeriodEnd
-                Utils.QL_REQUIRE(refPeriodStart <= d1, () => "invalid dates: d1 < refPeriodStart < refPeriodEnd < d2");
+                QLNet.Utils.QL_REQUIRE(refPeriodStart <= d1, () => "invalid dates: d1 < refPeriodStart < refPeriodEnd < d2");
 
                 // now it is: refPeriodStart <= d1 < refPeriodEnd < d2
 

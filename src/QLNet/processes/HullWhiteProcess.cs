@@ -17,7 +17,7 @@
 using JetBrains.Annotations;
 using QLNet.Termstructures;
 
-namespace QLNet.processes
+namespace QLNet.Processes
 {
     //! Hull-White stochastic process
     [PublicAPI]
@@ -34,8 +34,8 @@ namespace QLNet.processes
             a_ = a;
             sigma_ = sigma;
 
-            Utils.QL_REQUIRE(a_ >= 0.0, () => "negative a given");
-            Utils.QL_REQUIRE(sigma_ >= 0.0, () => "negative sigma given");
+            QLNet.Utils.QL_REQUIRE(a_ >= 0.0, () => "negative a given");
+            QLNet.Utils.QL_REQUIRE(sigma_ >= 0.0, () => "negative sigma given");
         }
 
         public double a() => a_;

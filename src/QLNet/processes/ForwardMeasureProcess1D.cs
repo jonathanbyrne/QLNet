@@ -1,7 +1,7 @@
 ﻿using System;
 using JetBrains.Annotations;
 
-namespace QLNet.processes
+namespace QLNet.Processes
 {
     [PublicAPI]
     public class ForwardMeasureProcess1D : StochasticProcess1D

@@ -1,7 +1,7 @@
 ﻿using JetBrains.Annotations;
 using QLNet.Time;
 
-namespace QLNet
+namespace QLNet.Cashflows
 {
     [PublicAPI]
     public class FixedDividend : Dividend

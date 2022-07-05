@@ -1,5 +1,6 @@
 ﻿using JetBrains.Annotations;
 using QLNet.Currencies;
+using QLNet.Termstructures;
 using QLNet.Time;
 using QLNet.Time.Calendars;
 
@@ -38,7 +39,7 @@ namespace QLNet.Indexes
         {
             var today = Settings.evaluationDate();
             var todayMinusLag = today - availabilityLag_;
-            var limm = Utils.inflationPeriod(todayMinusLag, frequency_);
+            var limm = Termstructures.Utils.inflationPeriod(todayMinusLag, frequency_);
             var lastFix = limm.Key - 1;
 
             var flatMustForecastOn = lastFix + 1;
@@ -60,9 +61,9 @@ namespace QLNet.Indexes
                 if (interpolated())
                 {
                     // IS ratio, IS interpolated
-                    var lim = Utils.inflationPeriod(fixingDate, frequency_);
+                    var lim = Termstructures.Utils.inflationPeriod(fixingDate, frequency_);
                     var fixMinus1Y = new NullCalendar().advance(fixingDate, new Period(-1, TimeUnit.Years), BusinessDayConvention.ModifiedFollowing);
-                    var limBef = Utils.inflationPeriod(fixMinus1Y, frequency_);
+                    var limBef = Termstructures.Utils.inflationPeriod(fixMinus1Y, frequency_);
                     double dp = lim.Value + 1 - lim.Key;
                     double dpBef = limBef.Value + 1 - limBef.Key;
                     double dl = fixingDate - lim.Key;
@@ -72,16 +73,16 @@ namespace QLNet.Indexes
                     // recall that they are stored flat for every day
                     var limFirstFix =
                         IndexManager.instance().getHistory(name())[lim.Key];
-                    Utils.QL_REQUIRE(limFirstFix != null, () => "Missing " + name() + " fixing for " + lim.Key);
+                    QLNet.Utils.QL_REQUIRE(limFirstFix != null, () => "Missing " + name() + " fixing for " + lim.Key);
                     var limSecondFix =
                         IndexManager.instance().getHistory(name())[lim.Value + 1];
-                    Utils.QL_REQUIRE(limSecondFix != null, () => "Missing " + name() + " fixing for " + lim.Value + 1);
+                    QLNet.Utils.QL_REQUIRE(limSecondFix != null, () => "Missing " + name() + " fixing for " + lim.Value + 1);
                     var limBefFirstFix =
                         IndexManager.instance().getHistory(name())[limBef.Key];
-                    Utils.QL_REQUIRE(limBefFirstFix != null, () => "Missing " + name() + " fixing for " + limBef.Key);
+                    QLNet.Utils.QL_REQUIRE(limBefFirstFix != null, () => "Missing " + name() + " fixing for " + limBef.Key);
                     var limBefSecondFix =
                         IndexManager.instance().getHistory(name())[limBef.Value + 1];
-                    Utils.QL_REQUIRE(limBefSecondFix != null, () => "Missing " + name() + " fixing for " + limBef.Value + 1);
+                    QLNet.Utils.QL_REQUIRE(limBefSecondFix != null, () => "Missing " + name() + " fixing for " + limBef.Value + 1);
 
                     var linearNow = limFirstFix.Value + (limSecondFix.Value - limFirstFix.Value) * dl / dp;
                     var linearBef = limBefFirstFix.Value + (limBefSecondFix.Value - limBefFirstFix.Value) * dlBef / dpBef;
@@ -92,10 +93,10 @@ namespace QLNet.Indexes
 
                 // IS ratio, NOT interpolated
                 var pastFixing = IndexManager.instance().getHistory(name())[fixingDate];
-                Utils.QL_REQUIRE(pastFixing != null, () => "Missing " + name() + " fixing for " + fixingDate);
+                QLNet.Utils.QL_REQUIRE(pastFixing != null, () => "Missing " + name() + " fixing for " + fixingDate);
                 var previousDate = fixingDate - new Period(1, TimeUnit.Years);
                 var previousFixing = IndexManager.instance().getHistory(name())[previousDate];
-                Utils.QL_REQUIRE(previousFixing != null, () => "Missing " + name() + " fixing for " + previousDate);
+                QLNet.Utils.QL_REQUIRE(previousFixing != null, () => "Missing " + name() + " fixing for " + previousDate);
                 return pastFixing.Value / previousFixing.Value - 1.0;
             }
 
@@ -103,13 +104,13 @@ namespace QLNet.Indexes
             if (interpolated())
             {
                 // NOT ratio, IS interpolated
-                var lim = Utils.inflationPeriod(fixingDate, frequency_);
+                var lim = Termstructures.Utils.inflationPeriod(fixingDate, frequency_);
                 double dp = lim.Value + 1 - lim.Key;
                 double dl = fixingDate - lim.Key;
                 var limFirstFix = IndexManager.instance().getHistory(name())[lim.Key];
-                Utils.QL_REQUIRE(limFirstFix != null, () => "Missing " + name() + " fixing for " + lim.Key);
+                QLNet.Utils.QL_REQUIRE(limFirstFix != null, () => "Missing " + name() + " fixing for " + lim.Key);
                 var limSecondFix = IndexManager.instance().getHistory(name())[lim.Value + 1];
-                Utils.QL_REQUIRE(limSecondFix != null, () => "Missing " + name() + " fixing for " + lim.Value + 1);
+                QLNet.Utils.QL_REQUIRE(limSecondFix != null, () => "Missing " + name() + " fixing for " + lim.Value + 1);
                 var linearNow = limFirstFix.Value + (limSecondFix.Value - limFirstFix.Value) * dl / dp;
                 return linearNow;
             }
@@ -118,7 +119,7 @@ namespace QLNet.Indexes
                 // NOT ratio, NOT interpolated
                 // so just flat
                 var pastFixing = IndexManager.instance().getHistory(name())[fixingDate];
-                Utils.QL_REQUIRE(pastFixing != null, () => "Missing " + name() + " fixing for " + fixingDate);
+                QLNet.Utils.QL_REQUIRE(pastFixing != null, () => "Missing " + name() + " fixing for " + fixingDate);
                 return pastFixing.Value;
             }
         }
@@ -139,7 +140,7 @@ namespace QLNet.Indexes
             {
                 // if the value is not interpolated use the starting value
                 // by internal convention this will be consistent
-                var lim = Utils.inflationPeriod(fixingDate, frequency_);
+                var lim = Termstructures.Utils.inflationPeriod(fixingDate, frequency_);
                 d = lim.Key;
             }
 

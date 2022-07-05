@@ -97,7 +97,7 @@ namespace QLNet.Instruments
                     payer_[1] = -1.0;
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown overnight-swap ExerciseType");
+                    QLNet.Utils.QL_FAIL("Unknown overnight-swap ExerciseType");
                     break;
             }
         }
@@ -155,7 +155,7 @@ namespace QLNet.Instruments
                     payer_[1] = -1.0;
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown overnight-swap ExerciseType");
+                    QLNet.Utils.QL_FAIL("Unknown overnight-swap ExerciseType");
                     break;
             }
         }
@@ -179,14 +179,14 @@ namespace QLNet.Instruments
         public double? fixedLegBPS()
         {
             calculate();
-            Utils.QL_REQUIRE(legBPS_[0] != null, () => "result not available");
+            QLNet.Utils.QL_REQUIRE(legBPS_[0] != null, () => "result not available");
             return legBPS_[0];
         }
 
         public double? fixedLegNPV()
         {
             calculate();
-            Utils.QL_REQUIRE(legNPV_[0] != null, () => "result not available");
+            QLNet.Utils.QL_REQUIRE(legNPV_[0] != null, () => "result not available");
             return legNPV_[0];
         }
 
@@ -201,14 +201,14 @@ namespace QLNet.Instruments
         public double? overnightLegBPS()
         {
             calculate();
-            Utils.QL_REQUIRE(legBPS_[1] != null, () => "result not available");
+            QLNet.Utils.QL_REQUIRE(legBPS_[1] != null, () => "result not available");
             return legBPS_[1];
         }
 
         public double? overnightLegNPV()
         {
             calculate();
-            Utils.QL_REQUIRE(legNPV_[1] != null, () => "result not available");
+            QLNet.Utils.QL_REQUIRE(legNPV_[1] != null, () => "result not available");
             return legNPV_[1];
         }
 

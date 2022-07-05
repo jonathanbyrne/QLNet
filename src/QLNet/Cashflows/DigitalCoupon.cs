@@ -144,25 +144,25 @@ namespace QLNet.Cashflows
             hasCallStrike_ = false;
             replicationType_ = replication.replicationType();
 
-            Utils.QL_REQUIRE(replication.gap() > 0.0, () => "Non positive epsilon not allowed");
+            QLNet.Utils.QL_REQUIRE(replication.gap() > 0.0, () => "Non positive epsilon not allowed");
 
             if (putStrike == null)
             {
-                Utils.QL_REQUIRE(putDigitalPayoff == null, () => "Put Cash rate non allowed if put strike is null");
+                QLNet.Utils.QL_REQUIRE(putDigitalPayoff == null, () => "Put Cash rate non allowed if put strike is null");
             }
 
             if (callStrike == null)
             {
-                Utils.QL_REQUIRE(callDigitalPayoff == null, () => "Call Cash rate non allowed if call strike is null");
+                QLNet.Utils.QL_REQUIRE(callDigitalPayoff == null, () => "Call Cash rate non allowed if call strike is null");
             }
 
             if (callStrike != null)
             {
-                Utils.QL_REQUIRE(callStrike >= 0.0, () => "negative call strike not allowed");
+                QLNet.Utils.QL_REQUIRE(callStrike >= 0.0, () => "negative call strike not allowed");
 
                 hasCallStrike_ = true;
                 callStrike_ = callStrike.GetValueOrDefault();
-                Utils.QL_REQUIRE(callStrike_ >= replication.gap() / 2.0, () => "call strike < eps/2");
+                QLNet.Utils.QL_REQUIRE(callStrike_ >= replication.gap() / 2.0, () => "call strike < eps/2");
 
                 switch (callPosition)
                 {
@@ -173,7 +173,7 @@ namespace QLNet.Cashflows
                         callCsi_ = -1.0;
                         break;
                     default:
-                        Utils.QL_FAIL("unsupported position ExerciseType");
+                        QLNet.Utils.QL_FAIL("unsupported position ExerciseType");
                         break;
                 }
 
@@ -186,7 +186,7 @@ namespace QLNet.Cashflows
 
             if (putStrike != null)
             {
-                Utils.QL_REQUIRE(putStrike >= 0.0, () => "negative put strike not allowed");
+                QLNet.Utils.QL_REQUIRE(putStrike >= 0.0, () => "negative put strike not allowed");
                 hasPutStrike_ = true;
                 putStrike_ = putStrike.GetValueOrDefault();
                 switch (putPosition)
@@ -198,7 +198,7 @@ namespace QLNet.Cashflows
                         putCsi_ = -1.0;
                         break;
                     default:
-                        Utils.QL_FAIL("unsupported position ExerciseType");
+                        QLNet.Utils.QL_FAIL("unsupported position ExerciseType");
                         break;
                 }
 
@@ -228,7 +228,7 @@ namespace QLNet.Cashflows
                                 callRightEps_ = 0.0;
                                 break;
                             default:
-                                Utils.QL_FAIL("unsupported position ExerciseType");
+                                QLNet.Utils.QL_FAIL("unsupported position ExerciseType");
                                 break;
                         }
                     }
@@ -246,7 +246,7 @@ namespace QLNet.Cashflows
                                 putRightEps_ = replication.gap();
                                 break;
                             default:
-                                Utils.QL_FAIL("unsupported position ExerciseType");
+                                QLNet.Utils.QL_FAIL("unsupported position ExerciseType");
                                 break;
                         }
                     }
@@ -266,7 +266,7 @@ namespace QLNet.Cashflows
                                 callRightEps_ = replication.gap();
                                 break;
                             default:
-                                Utils.QL_FAIL("unsupported position ExerciseType");
+                                QLNet.Utils.QL_FAIL("unsupported position ExerciseType");
                                 break;
                         }
                     }
@@ -284,14 +284,14 @@ namespace QLNet.Cashflows
                                 putRightEps_ = 0.0;
                                 break;
                             default:
-                                Utils.QL_FAIL("unsupported position ExerciseType");
+                                QLNet.Utils.QL_FAIL("unsupported position ExerciseType");
                                 break;
                         }
                     }
 
                     break;
                 default:
-                    Utils.QL_FAIL("unsupported position ExerciseType");
+                    QLNet.Utils.QL_FAIL("unsupported position ExerciseType");
                     break;
             }
 
@@ -409,7 +409,7 @@ namespace QLNet.Cashflows
         // Coupon interface
         public override double rate()
         {
-            Utils.QL_REQUIRE(underlying_.pricer() != null, () => "pricer not set");
+            QLNet.Utils.QL_REQUIRE(underlying_.pricer() != null, () => "pricer not set");
 
             var fixingDate = underlying_.fixingDate();
             var today = Settings.evaluationDate();

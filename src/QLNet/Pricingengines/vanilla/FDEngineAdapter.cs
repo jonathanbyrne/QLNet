@@ -1,8 +1,8 @@
 ﻿using JetBrains.Annotations;
 using QLNet.Patterns;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     [PublicAPI]
     public class FDEngineAdapter<Base, Engine> : FDVanillaEngine, IGenericEngine

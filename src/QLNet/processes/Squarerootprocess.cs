@@ -19,7 +19,7 @@
 
 using JetBrains.Annotations;
 
-namespace QLNet.processes
+namespace QLNet.Processes
 {
     //! Square-root process class
     //    ! This class describes a square-root process governed by

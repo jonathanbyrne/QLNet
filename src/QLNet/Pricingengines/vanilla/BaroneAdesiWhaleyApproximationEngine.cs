@@ -20,9 +20,9 @@
 using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Barone-Adesi and Whaley pricing engine for American options (1987)
     /*! \ingroup vanillaengines
@@ -70,7 +70,7 @@ namespace QLNet.Pricingengines.vanilla
                     Si = Su + (payoff.strike() - Su) * System.Math.Exp(h);
                     break;
                 default:
-                    Utils.QL_FAIL("unknown option ExerciseType");
+                    QLNet.Utils.QL_FAIL("unknown option ExerciseType");
                     break;
             }
 
@@ -80,7 +80,7 @@ namespace QLNet.Pricingengines.vanilla
             var d1 = (System.Math.Log(forwardSi / payoff.strike()) + 0.5 * variance) /
                      System.Math.Sqrt(variance);
             var cumNormalDist = new CumulativeNormalDistribution();
-            var K = !Utils.close(riskFreeDiscount, 1.0, 1000)
+            var K = !Math.Utils.close(riskFreeDiscount, 1.0, 1000)
                 ? -2.0 * System.Math.Log(riskFreeDiscount)
                   / (variance * (1.0 - riskFreeDiscount))
                 : 2.0 / variance;
@@ -137,7 +137,7 @@ namespace QLNet.Pricingengines.vanilla
 
                     break;
                 default:
-                    Utils.QL_FAIL("unknown option ExerciseType");
+                    QLNet.Utils.QL_FAIL("unknown option ExerciseType");
                     break;
             }
 
@@ -146,21 +146,21 @@ namespace QLNet.Pricingengines.vanilla
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.American, () => "not an American Option");
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.American, () => "not an American Option");
 
             var ex = arguments_.exercise as AmericanExercise;
-            Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
+            QLNet.Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
 
-            Utils.QL_REQUIRE(!ex.payoffAtExpiry(), () => "payoff at expiry not handled");
+            QLNet.Utils.QL_REQUIRE(!ex.payoffAtExpiry(), () => "payoff at expiry not handled");
 
             var payoff = arguments_.payoff as StrikedTypePayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
             var variance = process_.blackVolatility().link.blackVariance(ex.lastDate(), payoff.strike());
             var dividendDiscount = process_.dividendYield().link.discount(ex.lastDate());
             var riskFreeDiscount = process_.riskFreeRate().link.discount(ex.lastDate());
             var spot = process_.stateVariable().link.value();
-            Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
             var forwardPrice = spot * dividendDiscount / riskFreeDiscount;
             var black = new BlackCalculator(payoff, forwardPrice, System.Math.Sqrt(variance), riskFreeDiscount);
 
@@ -201,7 +201,7 @@ namespace QLNet.Pricingengines.vanilla
                 var d1 = (System.Math.Log(forwardSk / payoff.strike()) + 0.5 * variance)
                          / System.Math.Sqrt(variance);
                 var n = 2.0 * System.Math.Log(dividendDiscount / riskFreeDiscount) / variance;
-                var K = !Utils.close(riskFreeDiscount, 1.0, 1000)
+                var K = !Math.Utils.close(riskFreeDiscount, 1.0, 1000)
                     ? -2.0 * System.Math.Log(riskFreeDiscount)
                       / (variance * (1.0 - riskFreeDiscount))
                     : 2.0 / variance;
@@ -238,7 +238,7 @@ namespace QLNet.Pricingengines.vanilla
 
                         break;
                     default:
-                        Utils.QL_FAIL("unknown option ExerciseType");
+                        QLNet.Utils.QL_FAIL("unknown option ExerciseType");
                         break;
                 }
             } // end of "early exercise can be optimal"

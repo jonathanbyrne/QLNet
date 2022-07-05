@@ -161,7 +161,7 @@ namespace QLNet.Math
 
                     break;
                 default:
-                    Utils.QL_FAIL("unknown rounding method");
+                    QLNet.Utils.QL_FAIL("unknown rounding method");
                     break;
             }
 

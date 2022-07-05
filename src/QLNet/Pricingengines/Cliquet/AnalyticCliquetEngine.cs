@@ -16,9 +16,9 @@
 
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.Cliquet
+namespace QLNet.PricingEngines.Cliquet
 {
     //! Pricing engine for Cliquet options using analytical formulae
     /*! \ingroup cliquetengines
@@ -42,25 +42,25 @@ namespace QLNet.Pricingengines.Cliquet
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.accruedCoupon == null &&
-                             arguments_.lastFixing == null, () =>
+            QLNet.Utils.QL_REQUIRE(arguments_.accruedCoupon == null &&
+                                   arguments_.lastFixing == null, () =>
                 "this engine cannot price options already started");
-            Utils.QL_REQUIRE(arguments_.localCap == null &&
-                             arguments_.localFloor == null &&
-                             arguments_.globalCap == null &&
-                             arguments_.globalFloor == null, () =>
+            QLNet.Utils.QL_REQUIRE(arguments_.localCap == null &&
+                                   arguments_.localFloor == null &&
+                                   arguments_.globalCap == null &&
+                                   arguments_.globalFloor == null, () =>
                 "this engine cannot price capped/floored options");
 
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
 
             var moneyness = arguments_.payoff as PercentageStrikePayoff;
-            Utils.QL_REQUIRE(moneyness != null, () => "wrong payoff given");
+            QLNet.Utils.QL_REQUIRE(moneyness != null, () => "wrong payoff given");
 
             var resetDates = arguments_.resetDates;
             resetDates.Add(arguments_.exercise.lastDate());
 
             var underlying = process_.stateVariable().link.value();
-            Utils.QL_REQUIRE(underlying > 0.0, () => "negative or null underlying");
+            QLNet.Utils.QL_REQUIRE(underlying > 0.0, () => "negative or null underlying");
             var strike = underlying * moneyness.strike();
             StrikedTypePayoff payoff = new PlainVanillaPayoff(moneyness.optionType(), strike);
 

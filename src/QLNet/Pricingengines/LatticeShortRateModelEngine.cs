@@ -20,7 +20,7 @@
 using JetBrains.Annotations;
 using QLNet.Models;
 
-namespace QLNet.Pricingengines
+namespace QLNet.PricingEngines
 {
     //! Engine for a short-rate model specialized on a lattice
     /*! Derived engines only need to implement the <tt>calculate()</tt>
@@ -41,7 +41,7 @@ namespace QLNet.Pricingengines
             : base(model)
         {
             timeSteps_ = timeSteps;
-            Utils.QL_REQUIRE(timeSteps > 0, () => "timeSteps must be positive, " + timeSteps + " not allowed");
+            QLNet.Utils.QL_REQUIRE(timeSteps > 0, () => "timeSteps must be positive, " + timeSteps + " not allowed");
         }
 
         public LatticeShortRateModelEngine(ShortRateModel model,

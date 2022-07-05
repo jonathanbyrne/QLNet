@@ -60,7 +60,7 @@ namespace QLNet.Cashflows
                 .value();
 
             valueDates_ = sch.dates();
-            Utils.QL_REQUIRE(valueDates_.Count >= 2, () => "degenerate schedule");
+            QLNet.Utils.QL_REQUIRE(valueDates_.Count >= 2, () => "degenerate schedule");
 
             // fixing dates
             n_ = valueDates_.Count - 1;

@@ -17,12 +17,12 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 using QLNet.Instruments;
-using QLNet.Pricingengines.Forward;
+using QLNet.PricingEngines.Forward;
 using QLNet.Methods.lattices;
 using QLNet.Time;
-using QLNet.Pricingengines.vanilla;
+using QLNet.PricingEngines.vanilla;
+using QLNet.Processes;
 using QLNet.Termstructures;
-using QLNet.processes;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Quotes;
 using QLNet.Time.DayCounters;
@@ -455,7 +455,7 @@ namespace QLNet.Tests
                 {
                     delta = null;
                 }
-                Utils.QL_REQUIRE(delta == null, () => "Forward delta invalid");
+                QLNet.Utils.QL_REQUIRE(delta == null, () => "Forward delta invalid");
             }
 
             double? rho = 0;
@@ -475,7 +475,7 @@ namespace QLNet.Tests
                 {
                     rho = null;
                 }
-                Utils.QL_REQUIRE(rho == null, () => "Forward rho invalid");
+                QLNet.Utils.QL_REQUIRE(rho == null, () => "Forward rho invalid");
             }
 
             double? divRho = 0;
@@ -495,7 +495,7 @@ namespace QLNet.Tests
                 {
                     divRho = null;
                 }
-                Utils.QL_REQUIRE(divRho == null, () => "Forward dividendRho invalid");
+                QLNet.Utils.QL_REQUIRE(divRho == null, () => "Forward dividendRho invalid");
             }
 
             double? vega = 0;
@@ -515,7 +515,7 @@ namespace QLNet.Tests
                 {
                     vega = null;
                 }
-                Utils.QL_REQUIRE(vega == null, () => "Forward vega invalid");
+                QLNet.Utils.QL_REQUIRE(vega == null, () => "Forward vega invalid");
             }
         }
     }

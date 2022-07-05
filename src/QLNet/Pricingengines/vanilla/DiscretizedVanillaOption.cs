@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Math;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     [PublicAPI]
     public class DiscretizedVanillaOption : DiscretizedAsset
@@ -83,7 +83,7 @@ namespace QLNet.Pricingengines.vanilla
 
                     break;
                 default:
-                    Utils.QL_FAIL("invalid option ExerciseType");
+                    QLNet.Utils.QL_FAIL("invalid option ExerciseType");
                     break;
             }
         }

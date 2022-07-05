@@ -30,8 +30,8 @@ using QLNet.Instruments.Bonds;
 using QLNet.Indexes;
 using QLNet.Indexes.Ibor;
 using QLNet.Patterns;
-using QLNet.Pricingengines.Bond;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.Bond;
+using QLNet.PricingEngines.Swap;
 using QLNet.Time.DayCounters;
 using QLNet.Termstructures;
 using QLNet.Quotes;
@@ -307,7 +307,7 @@ namespace QLNet.Tests
             // "Testing consistency of piecewise-log-linear zero-yield curve...");
 
             // if rates can be negative it makes no sense to interpolate loglinearly
-            if (Utils.is_QL_NEGATIVE_RATES())
+            if (QLNet.Utils.is_QL_NEGATIVE_RATES())
             {
                 return;
             }
@@ -905,7 +905,7 @@ namespace QLNet.Tests
             var t = 2.718;
             var r1 = curve.zeroRate(t, Compounding.Continuous).value();
             var r2 = copiedCurve.zeroRate(t, Compounding.Continuous).value();
-            if (!Utils.close(r1, r2))
+            if (!Math.Utils.close(r1, r2))
             {
                 QAssert.Fail("failed to link original and copied curve");
             }
@@ -919,11 +919,11 @@ namespace QLNet.Tests
             // curve should not.
             var r3 = curve.zeroRate(t, Compounding.Continuous).value();
             var r4 = copiedCurve.zeroRate(t, Compounding.Continuous).value();
-            if (Utils.close(r1, r3))
+            if (Math.Utils.close(r1, r3))
             {
                 QAssert.Fail("failed to modify original curve");
             }
-            if (!Utils.close(r2, r4))
+            if (!Math.Utils.close(r2, r4))
             {
                 QAssert.Fail("failed to break link between original and copied curve");
             }

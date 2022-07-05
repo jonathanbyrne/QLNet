@@ -15,9 +15,9 @@
 //  FOR A PARTICULAR PURPOSE.  See the license for more details.
 
 using JetBrains.Annotations;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.Forward
+namespace QLNet.PricingEngines.Forward
 {
     //! %Forward performance engine for vanilla options
     /*! \ingroup forwardengines

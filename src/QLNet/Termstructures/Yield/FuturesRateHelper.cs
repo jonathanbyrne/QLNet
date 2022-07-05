@@ -49,15 +49,15 @@ namespace QLNet.Termstructures.Yield
             switch (type)
             {
                 case Futures.Type.IMM:
-                    Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
+                    QLNet.Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
                         iborStartDate + " is not a valid IMM date");
                     break;
                 case Futures.Type.ASX:
-                    Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
+                    QLNet.Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
                         iborStartDate + " is not a valid ASX date");
                     break;
                 default:
-                    Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
+                    QLNet.Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
 
@@ -85,15 +85,15 @@ namespace QLNet.Termstructures.Yield
             switch (type)
             {
                 case Futures.Type.IMM:
-                    Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
+                    QLNet.Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
                         iborStartDate + " is not a valid IMM date");
                     break;
                 case Futures.Type.ASX:
-                    Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
+                    QLNet.Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
                         iborStartDate + " is not a valid ASX date");
                     break;
                 default:
-                    Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
+                    QLNet.Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
 
@@ -116,7 +116,7 @@ namespace QLNet.Termstructures.Yield
             switch (type)
             {
                 case Futures.Type.IMM:
-                    Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
+                    QLNet.Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
                         iborStartDate + " is not a valid IMM date");
                     if (iborEndDate == null)
                     {
@@ -127,7 +127,7 @@ namespace QLNet.Termstructures.Yield
                     }
                     else
                     {
-                        Utils.QL_REQUIRE(iborEndDate > iborStartDate, () =>
+                        QLNet.Utils.QL_REQUIRE(iborEndDate > iborStartDate, () =>
                             "end date (" + iborEndDate +
                             ") must be greater than start date (" +
                             iborStartDate + ")");
@@ -136,7 +136,7 @@ namespace QLNet.Termstructures.Yield
 
                     break;
                 case Futures.Type.ASX:
-                    Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
+                    QLNet.Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
                         iborStartDate + " is not a valid ASX date");
                     if (iborEndDate == null)
                     {
@@ -147,7 +147,7 @@ namespace QLNet.Termstructures.Yield
                     }
                     else
                     {
-                        Utils.QL_REQUIRE(iborEndDate > iborStartDate, () =>
+                        QLNet.Utils.QL_REQUIRE(iborEndDate > iborStartDate, () =>
                             "end date (" + iborEndDate +
                             ") must be greater than start date (" +
                             iborStartDate + ")");
@@ -156,7 +156,7 @@ namespace QLNet.Termstructures.Yield
 
                     break;
                 default:
-                    Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
+                    QLNet.Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
 
@@ -180,7 +180,7 @@ namespace QLNet.Termstructures.Yield
             switch (type)
             {
                 case Futures.Type.IMM:
-                    Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
+                    QLNet.Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
                         iborStartDate + " is not a valid IMM date");
                     if (iborEndDate == null)
                     {
@@ -191,7 +191,7 @@ namespace QLNet.Termstructures.Yield
                     }
                     else
                     {
-                        Utils.QL_REQUIRE(iborEndDate > iborStartDate, () =>
+                        QLNet.Utils.QL_REQUIRE(iborEndDate > iborStartDate, () =>
                             "end date (" + iborEndDate +
                             ") must be greater than start date (" +
                             iborStartDate + ")");
@@ -200,7 +200,7 @@ namespace QLNet.Termstructures.Yield
 
                     break;
                 case Futures.Type.ASX:
-                    Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
+                    QLNet.Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
                         iborStartDate + " is not a valid ASX date");
                     if (iborEndDate == null)
                     {
@@ -211,7 +211,7 @@ namespace QLNet.Termstructures.Yield
                     }
                     else
                     {
-                        Utils.QL_REQUIRE(iborEndDate > iborStartDate, () =>
+                        QLNet.Utils.QL_REQUIRE(iborEndDate > iborStartDate, () =>
                             "end date (" + iborEndDate +
                             ") must be greater than start date (" +
                             iborStartDate + ")");
@@ -220,7 +220,7 @@ namespace QLNet.Termstructures.Yield
 
                     break;
                 default:
-                    Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
+                    QLNet.Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
 
@@ -241,15 +241,15 @@ namespace QLNet.Termstructures.Yield
             switch (type)
             {
                 case Futures.Type.IMM:
-                    Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
+                    QLNet.Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
                         iborStartDate + " is not a valid IMM date");
                     break;
                 case Futures.Type.ASX:
-                    Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
+                    QLNet.Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
                         iborStartDate + " is not a valid ASX date");
                     break;
                 default:
-                    Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
+                    QLNet.Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
 
@@ -273,15 +273,15 @@ namespace QLNet.Termstructures.Yield
             switch (type)
             {
                 case Futures.Type.IMM:
-                    Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
+                    QLNet.Utils.QL_REQUIRE(IMM.isIMMdate(iborStartDate, false), () =>
                         iborStartDate + " is not a valid IMM date");
                     break;
                 case Futures.Type.ASX:
-                    Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
+                    QLNet.Utils.QL_REQUIRE(ASX.isASXdate(iborStartDate, false), () =>
                         iborStartDate + " is not a valid ASX date");
                     break;
                 default:
-                    Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
+                    QLNet.Utils.QL_FAIL("unknown futures ExerciseType (" + type + ")");
                     break;
             }
 
@@ -298,7 +298,7 @@ namespace QLNet.Termstructures.Yield
         //! RateHelper interface
         public override double impliedQuote()
         {
-            Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
+            QLNet.Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
 
             var forwardRate = (termStructure_.discount(earliestDate_) /
                 termStructure_.discount(maturityDate_) - 1) / yearFraction_;

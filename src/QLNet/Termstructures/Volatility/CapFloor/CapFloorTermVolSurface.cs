@@ -64,7 +64,7 @@ namespace QLNet.Termstructures.Volatility.CapFloor
             initializeOptionDatesAndTimes();
             for (var i = 0; i < nOptionTenors_; ++i)
             {
-                Utils.QL_REQUIRE(volHandles_[i].Count == nStrikes_, () =>
+                QLNet.Utils.QL_REQUIRE(volHandles_[i].Count == nStrikes_, () =>
                     i + 1 + " row of vol handles has size " +
                     volHandles_[i].Count + " instead of " + nStrikes_);
             }
@@ -102,7 +102,7 @@ namespace QLNet.Termstructures.Volatility.CapFloor
             initializeOptionDatesAndTimes();
             for (var i = 0; i < nOptionTenors_; ++i)
             {
-                Utils.QL_REQUIRE(volHandles_[i].Count == nStrikes_, () =>
+                QLNet.Utils.QL_REQUIRE(volHandles_[i].Count == nStrikes_, () =>
                     i + 1 + " row of vol handles has size " + volHandles_[i].Count + " instead of " + nStrikes_);
             }
 
@@ -253,27 +253,27 @@ namespace QLNet.Termstructures.Volatility.CapFloor
 
         private void checkInputs()
         {
-            Utils.QL_REQUIRE(!optionTenors_.empty(), () => "empty option tenor vector");
-            Utils.QL_REQUIRE(nOptionTenors_ == vols_.rows(), () =>
+            QLNet.Utils.QL_REQUIRE(!optionTenors_.empty(), () => "empty option tenor vector");
+            QLNet.Utils.QL_REQUIRE(nOptionTenors_ == vols_.rows(), () =>
                 "mismatch between number of option tenors (" +
                 nOptionTenors_ + ") and number of volatility rows (" +
                 vols_.rows() + ")");
-            Utils.QL_REQUIRE(optionTenors_[0] > new Period(0, TimeUnit.Days), () =>
+            QLNet.Utils.QL_REQUIRE(optionTenors_[0] > new Period(0, TimeUnit.Days), () =>
                 "negative first option tenor: " + optionTenors_[0]);
             for (var i = 1; i < nOptionTenors_; ++i)
             {
-                Utils.QL_REQUIRE(optionTenors_[i] > optionTenors_[i - 1], () =>
+                QLNet.Utils.QL_REQUIRE(optionTenors_[i] > optionTenors_[i - 1], () =>
                     "non increasing option tenor: " + i +
                     " is " + optionTenors_[i - 1] + ", " +
                     (i + 1) + " is " + optionTenors_[i]);
             }
 
-            Utils.QL_REQUIRE(nStrikes_ == vols_.columns(), () =>
+            QLNet.Utils.QL_REQUIRE(nStrikes_ == vols_.columns(), () =>
                 "mismatch between strikes(" + strikes_.Count +
                 ") and vol columns (" + vols_.columns() + ")");
             for (var j = 1; j < nStrikes_; ++j)
             {
-                Utils.QL_REQUIRE(strikes_[j - 1] < strikes_[j], () =>
+                QLNet.Utils.QL_REQUIRE(strikes_[j - 1] < strikes_[j], () =>
                     "non increasing strikes: " + j +
                     " is " + strikes_[j - 1] + ", " +
                     (j + 1) + " is " + strikes_[j]);

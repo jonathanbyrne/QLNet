@@ -53,7 +53,7 @@ namespace QLNet.Methods.montecarlo
                 values_ = new Vector(timeGrid_.size());
             }
 
-            Utils.QL_REQUIRE(values_.size() == timeGrid_.size(), () => "different number of times and asset values");
+            QLNet.Utils.QL_REQUIRE(values_.size() == timeGrid_.size(), () => "different number of times and asset values");
         }
 
         //! asset value at the \f$ i \f$-th point

@@ -25,9 +25,9 @@ namespace QLNet.Math.Interpolations
             M_ = new Matrix(xySize_, xySize_);
             kernel_ = kernel;
 
-            Utils.QL_REQUIRE(zData.rows() == xSize_, () =>
+            QLNet.Utils.QL_REQUIRE(zData.rows() == xSize_, () =>
                 "Z value matrix has wrong number of rows");
-            Utils.QL_REQUIRE(zData.columns() == ySize_, () =>
+            QLNet.Utils.QL_REQUIRE(zData.columns() == ySize_, () =>
                 "Z value matrix has wrong number of columns");
         }
 
@@ -128,7 +128,7 @@ namespace QLNet.Math.Interpolations
                 } // end i
             } // end j
 
-            alphaVec_ = MatrixUtilities.qrSolve(M_, yVec_);
+            alphaVec_ = MatrixUtilities.MatrixUtilities.qrSolve(M_, yVec_);
 
             // check if inversion worked up to a reasonable precision.
             // I've chosen not to check determinant(M_)!=0 before solving
@@ -136,7 +136,7 @@ namespace QLNet.Math.Interpolations
             var diffVec = Vector.Abs(M_ * alphaVec_ - yVec_);
             for (var i = 0; i < diffVec.size(); ++i)
             {
-                Utils.QL_REQUIRE(diffVec[i] < invPrec_, () =>
+                QLNet.Utils.QL_REQUIRE(diffVec[i] < invPrec_, () =>
                     "inversion failed in 2d kernel interpolation");
             }
         }

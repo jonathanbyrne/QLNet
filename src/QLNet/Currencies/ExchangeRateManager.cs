@@ -201,7 +201,7 @@ namespace QLNet.Currencies
                 return rate;
             }
 
-            Utils.QL_FAIL("no direct conversion available from " + source.code + " to " + target.code + " for " + date);
+            QLNet.Utils.QL_FAIL("no direct conversion available from " + source.code + " to " + target.code + " for " + date);
             return null;
         }
 
@@ -284,7 +284,7 @@ namespace QLNet.Currencies
             }
 
             // if the loop completed, we have no way to return the requested rate.
-            Utils.QL_FAIL("no conversion available from " + source.code + " to " + target.code + " for " + date);
+            QLNet.Utils.QL_FAIL("no conversion available from " + source.code + " to " + target.code + " for " + date);
             return null;
         }
     }

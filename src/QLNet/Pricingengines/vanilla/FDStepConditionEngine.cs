@@ -22,9 +22,9 @@ using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Finite-differences pricing engine for American-style vanilla options
     [PublicAPI]
@@ -91,7 +91,7 @@ namespace QLNet.Pricingengines.vanilla
             controlPrices_.setValues(arraySet[1]);
 
             var striked_payoff = payoff_ as StrikedTypePayoff;
-            Utils.QL_REQUIRE(striked_payoff != null, () => "non-striked payoff given");
+            QLNet.Utils.QL_REQUIRE(striked_payoff != null, () => "non-striked payoff given");
 
             var variance = process_.blackVolatility().link.blackVariance(exerciseDate_, striked_payoff.strike());
             var dividendDiscount = process_.dividendYield().link.discount(exerciseDate_);

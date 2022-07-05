@@ -23,12 +23,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using QLNet.Instruments;
+using QLNet.Math.RandomNumbers;
 using QLNet.Time;
-using QLNet.Math.randomnumbers;
 using QLNet.Math.statistics;
-using QLNet.Pricingengines.asian;
+using QLNet.PricingEngines.asian;
+using QLNet.Processes;
 using QLNet.Termstructures;
-using QLNet.processes;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Quotes;
 using QLNet.Termstructures.Yield;
@@ -84,7 +84,7 @@ namespace QLNet.Tests
             }
             else
             {
-                Utils.QL_FAIL("unknown averaging");
+                QLNet.Utils.QL_FAIL("unknown averaging");
             }
 
             return string.Empty;

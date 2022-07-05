@@ -19,9 +19,9 @@
 
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Pricing engine for European vanilla options using analytical formulae
     /*! \ingroup vanillaengines
@@ -64,16 +64,16 @@ namespace QLNet.Pricingengines.vanilla
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
 
             var payoff = arguments_.payoff as StrikedTypePayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
             var variance = process_.blackVolatility().link.blackVariance(arguments_.exercise.lastDate(), payoff.strike());
             var dividendDiscount = process_.dividendYield().link.discount(arguments_.exercise.lastDate());
             var riskFreeDiscount = process_.riskFreeRate().link.discount(arguments_.exercise.lastDate());
             var spot = process_.stateVariable().link.value();
-            Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
             var forwardPrice = spot * dividendDiscount / riskFreeDiscount;
 
             var black = new BlackCalculator(payoff, forwardPrice, System.Math.Sqrt(variance), riskFreeDiscount);

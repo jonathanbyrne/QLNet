@@ -123,7 +123,7 @@ namespace QLNet.Models
                 }
                     break;
                 default:
-                    Utils.QL_FAIL("unknown Calibration Error Type");
+                    QLNet.Utils.QL_FAIL("unknown Calibration Error Type");
                     break;
             }
 

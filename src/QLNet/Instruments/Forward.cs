@@ -124,7 +124,7 @@ namespace QLNet.Instruments
 
         protected override void performCalculations()
         {
-            Utils.QL_REQUIRE(!discountCurve_.empty(), () => "no discounting term structure set to Forward");
+            QLNet.Utils.QL_REQUIRE(!discountCurve_.empty(), () => "no discounting term structure set to Forward");
 
             var ftpayoff = payoff_ as ForwardTypePayoff;
             var fwdValue = forwardValue();

@@ -54,7 +54,7 @@ namespace QLNet.Methods.Finitedifferences.Utilities
                     && iter.coordinates()[direction]
                     == layout.dim()[direction] - 1)
                 {
-                    Utils.QL_REQUIRE(hyperSize > i, () => "index missmatch");
+                    QLNet.Utils.QL_REQUIRE(hyperSize > i, () => "index missmatch");
                     indices_[i++] = iter.index();
                 }
             }

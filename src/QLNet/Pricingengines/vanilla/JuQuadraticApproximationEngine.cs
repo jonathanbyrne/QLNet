@@ -20,9 +20,9 @@
 using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Pricing engine for American options with Ju quadratic approximation
     //    ! Reference:
@@ -60,23 +60,23 @@ namespace QLNet.Pricingengines.vanilla
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.American, () => "not an American Option");
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.American, () => "not an American Option");
 
             var ex = arguments_.exercise as AmericanExercise;
 
-            Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
+            QLNet.Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
 
-            Utils.QL_REQUIRE(!ex.payoffAtExpiry(), () => "payoff at expiry not handled");
+            QLNet.Utils.QL_REQUIRE(!ex.payoffAtExpiry(), () => "payoff at expiry not handled");
 
             var payoff = arguments_.payoff as StrikedTypePayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
             var variance = process_.blackVolatility().link.blackVariance(ex.lastDate(), payoff.strike());
             var dividendDiscount = process_.dividendYield().link.discount(ex.lastDate());
             var riskFreeDiscount = process_.riskFreeRate().link.discount(ex.lastDate());
             var spot = process_.stateVariable().link.value();
 
-            Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
 
             var forwardPrice = spot * dividendDiscount / riskFreeDiscount;
             var black = new BlackCalculator(payoff, forwardPrice, System.Math.Sqrt(variance), riskFreeDiscount);
@@ -132,7 +132,7 @@ namespace QLNet.Pricingengines.vanilla
                         phi = -1;
                         break;
                     default:
-                        Utils.QL_FAIL("invalid option ExerciseType");
+                        QLNet.Utils.QL_FAIL("invalid option ExerciseType");
                         break;
                 }
 

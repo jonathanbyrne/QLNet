@@ -20,7 +20,7 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Math;
-using QLNet.Math.matrixutilities;
+using QLNet.Math.MatrixUtilities;
 using QLNet.Methods.Finitedifferences.Meshers;
 using QLNet.Methods.Finitedifferences.Utilities;
 
@@ -61,9 +61,9 @@ namespace QLNet.Methods.Finitedifferences.Operators
             a22_ = new InitializedList<double>(mesher.layout().size());
             mesher_ = mesher;
 
-            Utils.QL_REQUIRE(d0_ != d1_
-                             && d0_ < mesher.layout().dim().Count
-                             && d1_ < mesher.layout().dim().Count,
+            QLNet.Utils.QL_REQUIRE(d0_ != d1_
+                                            && d0_ < mesher.layout().dim().Count
+                                            && d1_ < mesher.layout().dim().Count,
                 () => "inconsistent derivative directions");
 
             var layout = mesher.layout();
@@ -129,8 +129,8 @@ namespace QLNet.Methods.Finitedifferences.Operators
         public override Vector apply(Vector r)
         {
             var index = mesher_.layout();
-            Utils.QL_REQUIRE(r.size() == index.size(), () => "inconsistent length of r "
-                                                             + r.size() + " vs " + index.size());
+            QLNet.Utils.QL_REQUIRE(r.size() == index.size(), () => "inconsistent length of r "
+                                                                            + r.size() + " vs " + index.size());
 
             var retVal = new Vector(r.size());
 
@@ -176,28 +176,28 @@ namespace QLNet.Methods.Finitedifferences.Operators
 
         public void swap(NinePointLinearOp m)
         {
-            Utils.swap(ref d0_, ref m.d0_);
-            Utils.swap(ref d1_, ref m.d1_);
+            QLNet.Utils.swap(ref d0_, ref m.d0_);
+            QLNet.Utils.swap(ref d1_, ref m.d1_);
 
-            Utils.swap(ref i00_, ref m.i00_);
-            Utils.swap(ref i10_, ref m.i10_);
-            Utils.swap(ref i20_, ref m.i20_);
-            Utils.swap(ref i01_, ref m.i01_);
-            Utils.swap(ref i21_, ref m.i21_);
-            Utils.swap(ref i02_, ref m.i02_);
-            Utils.swap(ref i12_, ref m.i12_);
-            Utils.swap(ref i22_, ref m.i22_);
-            Utils.swap(ref a00_, ref m.a00_);
-            Utils.swap(ref a10_, ref m.a10_);
-            Utils.swap(ref a20_, ref m.a20_);
-            Utils.swap(ref a01_, ref m.a01_);
-            Utils.swap(ref a21_, ref m.a21_);
-            Utils.swap(ref a02_, ref m.a02_);
-            Utils.swap(ref a12_, ref m.a12_);
-            Utils.swap(ref a22_, ref m.a22_);
-            Utils.swap(ref a11_, ref m.a11_);
+            QLNet.Utils.swap(ref i00_, ref m.i00_);
+            QLNet.Utils.swap(ref i10_, ref m.i10_);
+            QLNet.Utils.swap(ref i20_, ref m.i20_);
+            QLNet.Utils.swap(ref i01_, ref m.i01_);
+            QLNet.Utils.swap(ref i21_, ref m.i21_);
+            QLNet.Utils.swap(ref i02_, ref m.i02_);
+            QLNet.Utils.swap(ref i12_, ref m.i12_);
+            QLNet.Utils.swap(ref i22_, ref m.i22_);
+            QLNet.Utils.swap(ref a00_, ref m.a00_);
+            QLNet.Utils.swap(ref a10_, ref m.a10_);
+            QLNet.Utils.swap(ref a20_, ref m.a20_);
+            QLNet.Utils.swap(ref a01_, ref m.a01_);
+            QLNet.Utils.swap(ref a21_, ref m.a21_);
+            QLNet.Utils.swap(ref a02_, ref m.a02_);
+            QLNet.Utils.swap(ref a12_, ref m.a12_);
+            QLNet.Utils.swap(ref a22_, ref m.a22_);
+            QLNet.Utils.swap(ref a11_, ref m.a11_);
 
-            Utils.swap(ref mesher_, ref m.mesher_);
+            QLNet.Utils.swap(ref mesher_, ref m.mesher_);
         }
 
         public override SparseMatrix toMatrix()

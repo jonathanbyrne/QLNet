@@ -62,7 +62,7 @@ namespace QLNet.Math.Solvers1d
                 // Convergence check
                 xAcc1 = 2.0 * Const.QL_EPSILON * System.Math.Abs(root_) + 0.5 * xAccuracy;
                 xMid = (xMax_ - root_) / 2.0;
-                if (System.Math.Abs(xMid) <= xAcc1 || Utils.close(froot, 0.0))
+                if (System.Math.Abs(xMid) <= xAcc1 || Math.Utils.close(froot, 0.0))
                 {
                     return root_;
                 }
@@ -72,7 +72,7 @@ namespace QLNet.Math.Solvers1d
                 {
                     // Attempt inverse quadratic interpolation
                     s = froot / fxMin_;
-                    if (Utils.close(xMin_, xMax_))
+                    if (Math.Utils.close(xMin_, xMax_))
                     {
                         p = 2.0 * xMid * s;
                         q = 1.0 - s;
@@ -126,7 +126,7 @@ namespace QLNet.Math.Solvers1d
                 evaluationNumber_++;
             }
 
-            Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
+            QLNet.Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
                 QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
             return 0;
         }

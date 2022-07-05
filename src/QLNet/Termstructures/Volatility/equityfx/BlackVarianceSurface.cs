@@ -83,11 +83,11 @@ namespace QLNet.Termstructures.Volatility.equityfx
             dates_ = dates;
             volatilities_ = blackVolMatrix;
 
-            Utils.QL_REQUIRE(dates.Count == blackVolMatrix.columns(), () =>
+            QLNet.Utils.QL_REQUIRE(dates.Count == blackVolMatrix.columns(), () =>
                 "mismatch between date vector and vol matrix colums");
-            Utils.QL_REQUIRE(strikes_.Count == blackVolMatrix.rows(), () =>
+            QLNet.Utils.QL_REQUIRE(strikes_.Count == blackVolMatrix.rows(), () =>
                 "mismatch between money-strike vector and vol matrix rows");
-            Utils.QL_REQUIRE(dates[0] >= referenceDate, () =>
+            QLNet.Utils.QL_REQUIRE(dates[0] >= referenceDate, () =>
                 "cannot have dates[0] < referenceDate");
 
             int i, j;
@@ -102,7 +102,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
             for (j = 1; j <= blackVolMatrix.columns(); j++)
             {
                 times_[j] = timeFromReference(dates[j - 1]);
-                Utils.QL_REQUIRE(times_[j] > times_[j - 1],
+                QLNet.Utils.QL_REQUIRE(times_[j] > times_[j - 1],
                     () => "dates must be sorted unique!");
                 for (i = 0; i < blackVolMatrix.rows(); i++)
                 {

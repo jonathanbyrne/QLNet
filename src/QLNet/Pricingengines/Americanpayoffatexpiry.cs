@@ -23,7 +23,7 @@ using QLNet.Extensions;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
 
-namespace QLNet.Pricingengines
+namespace QLNet.PricingEngines
 {
     //! Analytic formula for American exercise payoff at-expiry options
     //! \todo calculate greeks
@@ -60,10 +60,10 @@ namespace QLNet.Pricingengines
             variance_ = variance;
             knock_in_ = knock_in;
 
-            Utils.QL_REQUIRE(spot_ > 0.0, () => "positive spot value required");
-            Utils.QL_REQUIRE(discount_ > 0.0, () => "positive discount required");
-            Utils.QL_REQUIRE(dividendDiscount_ > 0.0, () => "positive dividend discount required");
-            Utils.QL_REQUIRE(variance_ >= 0.0, () => "negative variance not allowed");
+            QLNet.Utils.QL_REQUIRE(spot_ > 0.0, () => "positive spot value required");
+            QLNet.Utils.QL_REQUIRE(discount_ > 0.0, () => "positive discount required");
+            QLNet.Utils.QL_REQUIRE(dividendDiscount_ > 0.0, () => "positive dividend discount required");
+            QLNet.Utils.QL_REQUIRE(variance_ >= 0.0, () => "negative variance not allowed");
 
             stdDev_ = System.Math.Sqrt(variance_);
             var type = payoff.optionType();
@@ -126,7 +126,7 @@ namespace QLNet.Pricingengines
 
                     break;
                 default:
-                    Utils.QL_FAIL("invalid option ExerciseType");
+                    QLNet.Utils.QL_FAIL("invalid option ExerciseType");
                     break;
             }
 
@@ -213,7 +213,7 @@ namespace QLNet.Pricingengines
 
                     break;
                 default:
-                    Utils.QL_FAIL("invalid option ExerciseType");
+                    QLNet.Utils.QL_FAIL("invalid option ExerciseType");
                     break;
             }
 

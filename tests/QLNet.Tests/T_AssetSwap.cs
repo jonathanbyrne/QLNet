@@ -22,10 +22,11 @@ using Xunit;
 using QLNet.Instruments;
 using QLNet.Cashflows;
 using QLNet.Indexes;
+using QLNet.Indexes.Ibor;
 using QLNet.Instruments.Bonds;
 using QLNet.Time;
-using QLNet.Pricingengines.Bond;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.Bond;
+using QLNet.PricingEngines.Swap;
 using QLNet.Time.DayCounters;
 using QLNet.Termstructures.Volatility.swaption;
 using QLNet.Termstructures;
@@ -527,7 +528,7 @@ namespace QLNet.Tests
 
             floatingBond1.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(27, Month.March, 2007), 0.0402);
             var floatingBondPrice1 = floatingBond1.cleanPrice();
             var floatingBondAssetSwap1 = new AssetSwap(payFixedRate, floatingBond1, floatingBondPrice1, vars.iborIndex, vars.spread,
@@ -566,7 +567,7 @@ namespace QLNet.Tests
 
             floatingBond2.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(22, Month.March, 2007), 0.04013);
             var currentCoupon = 0.04013 + 0.0025;
             var floatingCurrentCoupon = floatingBond2.nextCouponRate();
@@ -619,7 +620,7 @@ namespace QLNet.Tests
 
             cmsBond1.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(18, Month.August, 2006), 0.04158);
             var cmsBondPrice1 = cmsBond1.cleanPrice();
             var cmsBondAssetSwap1 = new AssetSwap(payFixedRate, cmsBond1, cmsBondPrice1, vars.iborIndex, vars.spread,
@@ -655,7 +656,7 @@ namespace QLNet.Tests
 
             cmsBond2.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(04, Month.May, 2006), 0.04217);
             var cmsBondPrice2 = cmsBond2.cleanPrice();
             var cmsBondAssetSwap2 = new AssetSwap(payFixedRate, cmsBond2, cmsBondPrice2, vars.iborIndex, vars.spread,
@@ -854,7 +855,7 @@ namespace QLNet.Tests
 
             floatingBond1.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(27, Month.March, 2007), 0.0402);
             // market price observed on 7th June 2007
             var floatingBondMktPrice1 = 101.64;
@@ -906,7 +907,7 @@ namespace QLNet.Tests
 
             floatingBond2.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(22, Month.March, 2007), 0.04013);
             // market price observed on 7th June 2007
             var floatingBondMktPrice2 = 101.248;
@@ -957,7 +958,7 @@ namespace QLNet.Tests
 
             cmsBond1.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(18, Month.August, 2006), 0.04158);
             var cmsBondMktPrice1 = 88.45; // market price observed on 7th June 2007
             var cmsBondMktFullPrice1 = cmsBondMktPrice1 + cmsBond1.accruedAmount();
@@ -1007,7 +1008,7 @@ namespace QLNet.Tests
 
             cmsBond2.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(04, Month.May, 2006), 0.04217);
             var cmsBondMktPrice2 = 94.08; // market price observed on 7th June 2007
             var cmsBondMktFullPrice2 = cmsBondMktPrice2 + cmsBond2.accruedAmount();
@@ -1220,7 +1221,7 @@ namespace QLNet.Tests
 
             floatingBond1.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(27, Month.March, 2007), 0.0402);
             var floatingBondImpliedValue1 = floatingBond1.cleanPrice();
             // standard market conventions:
@@ -1257,7 +1258,7 @@ namespace QLNet.Tests
 
             floatingBond2.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(22, Month.March, 2007), 0.04013);
             var floatingBondImpliedValue2 = floatingBond2.cleanPrice();
             // standard market conventions:
@@ -1293,7 +1294,7 @@ namespace QLNet.Tests
 
             cmsBond1.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(18, Month.August, 2006), 0.04158);
             var cmsBondImpliedValue1 = cmsBond1.cleanPrice();
             var cmsBondSettlementDate1 = cmsBond1.settlementDate();
@@ -1329,7 +1330,7 @@ namespace QLNet.Tests
 
             cmsBond2.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(04, Month.May, 2006), 0.04217);
             var cmsBondImpliedValue2 = cmsBond2.cleanPrice();
             var cmsBondSettlementDate2 = cmsBond2.settlementDate();
@@ -1519,7 +1520,7 @@ namespace QLNet.Tests
                                           floatingBondMaturityDate1, floatingBondStartDate1, floatingBondLeg1);
             floatingBond1.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(27, Month.March, 2007), 0.0402);
             var floatingBondPrice1 = floatingBond1.cleanPrice();
             var floatingBondAssetSwap1 = new AssetSwap(payFixeddouble,
@@ -1565,7 +1566,7 @@ namespace QLNet.Tests
                                           floatingBondMaturityDate2, floatingBondStartDate2, floatingBondLeg2);
             floatingBond2.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(22, Month.March, 2007), 0.04013);
             var currentCoupon = 0.04013 + 0.0025;
             var floatingCurrentCoupon = floatingBond2.nextCouponRate();
@@ -1624,7 +1625,7 @@ namespace QLNet.Tests
                                      cmsBondMaturityDate1, cmsBondStartDate1, cmsBondLeg1);
             cmsBond1.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(18, Month.August, 2006), 0.04158);
             var cmsBondPrice1 = cmsBond1.cleanPrice();
             var cmsBondAssetSwap1 = new AssetSwap(payFixeddouble,
@@ -1667,7 +1668,7 @@ namespace QLNet.Tests
                                      cmsBondMaturityDate2, cmsBondStartDate2, cmsBondLeg2);
             cmsBond2.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(04, Month.May, 2006), 0.04217);
             var cmsBondPrice2 = cmsBond2.cleanPrice();
             var cmsBondAssetSwap2 = new AssetSwap(payFixeddouble,
@@ -1891,7 +1892,7 @@ namespace QLNet.Tests
                                           floatingBondStartDate1, floatingBondLeg1);
             floatingBond1.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(27, Month.March, 2007), 0.0402);
             // market price observed on 7th June 2007
             var floatingBondMktPrice1 = 101.64;
@@ -1952,7 +1953,7 @@ namespace QLNet.Tests
                                           floatingBondStartDate2, floatingBondLeg2);
             floatingBond2.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(22, Month.March, 2007), 0.04013);
             // market price observed on 7th June 2007
             var floatingBondMktPrice2 = 101.248;
@@ -2010,7 +2011,7 @@ namespace QLNet.Tests
                                      cmsBondLeg1);
             cmsBond1.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(18, Month.August, 2006), 0.04158);
             var cmsBondMktPrice1 = 88.45; // market price observed on 7th June 2007
             var cmsBondMktFullPrice1 = cmsBondMktPrice1 + cmsBond1.accruedAmount();
@@ -2065,7 +2066,7 @@ namespace QLNet.Tests
                                      cmsBondLeg2);
             cmsBond2.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(04, Month.May, 2006), 0.04217);
             var cmsBondMktPrice2 = 94.08; // market price observed on 7th June 2007
             var cmsBondMktFullPrice2 = cmsBondMktPrice2 + cmsBond2.accruedAmount();
@@ -2302,7 +2303,7 @@ namespace QLNet.Tests
                                           floatingBondLeg1);
             floatingBond1.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(27, Month.March, 2007), 0.0402);
             var floatingBondImpliedValue1 = floatingBond1.cleanPrice();
             // standard market conventions:
@@ -2343,7 +2344,7 @@ namespace QLNet.Tests
                                           floatingBondStartDate2, floatingBondLeg2);
             floatingBond2.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(22, Month.March, 2007), 0.04013);
             var floatingBondImpliedValue2 = floatingBond2.cleanPrice();
             // standard market conventions:
@@ -2384,7 +2385,7 @@ namespace QLNet.Tests
                                      cmsBondLeg1);
             cmsBond1.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(18, Month.August, 2006), 0.04158);
             var cmsBondImpliedValue1 = cmsBond1.cleanPrice();
             var cmsBondSettlementDate1 = cmsBond1.settlementDate();
@@ -2425,7 +2426,7 @@ namespace QLNet.Tests
                                      cmsBondMaturityDate2, cmsBondStartDate2, cmsBondLeg2);
             cmsBond2.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(04, Month.May, 2006), 0.04217);
             var cmsBondImpliedValue2 = cmsBond2.cleanPrice();
             var cmsBondSettlementDate2 = cmsBond2.settlementDate();
@@ -2673,8 +2674,8 @@ namespace QLNet.Tests
                                                                  100.0, new Date(29, Month.September, 2003));
             floatingSpecializedBond1.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
-            Utils.setCouponPricer(floatingSpecializedBond1.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingSpecializedBond1.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(27, Month.March, 2007), 0.0402);
             var floatingBondTheoValue1 = floatingBond1.cleanPrice();
             var floatingSpecializedBondTheoValue1 =
@@ -2746,8 +2747,8 @@ namespace QLNet.Tests
                                                                  100.0, new Date(24, Month.September, 2004));
             floatingSpecializedBond2.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
-            Utils.setCouponPricer(floatingSpecializedBond2.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingSpecializedBond2.cashflows(), vars.pricer);
 
             vars.iborIndex.addFixing(new Date(22, Month.March, 2007), 0.04013);
 
@@ -2819,8 +2820,8 @@ namespace QLNet.Tests
                                                          100.0, new Date(22, Month.August, 2005));
             cmsSpecializedBond1.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
-            Utils.setCouponPricer(cmsSpecializedBond1.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsSpecializedBond1.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(18, Month.August, 2006), 0.04158);
             var cmsBondTheoValue1 = cmsBond1.cleanPrice();
             var cmsSpecializedBondTheoValue1 = cmsSpecializedBond1.cleanPrice();
@@ -2881,8 +2882,8 @@ namespace QLNet.Tests
                                                        inArrears, 100.0, new Date(06, Month.May, 2005));
             cmsSpecializedBond2.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
-            Utils.setCouponPricer(cmsSpecializedBond2.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsSpecializedBond2.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(04, Month.May, 2006), 0.04217);
             var cmsBondTheoValue2 = cmsBond2.cleanPrice();
             var cmsSpecializedBondTheoValue2 = cmsSpecializedBond2.cleanPrice();
@@ -3254,8 +3255,8 @@ namespace QLNet.Tests
                                                                  100.0, new Date(29, Month.September, 2003));
             floatingSpecializedBond1.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
-            Utils.setCouponPricer(floatingSpecializedBond1.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingBond1.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingSpecializedBond1.cashflows(), vars.pricer);
             vars.iborIndex.addFixing(new Date(27, Month.March, 2007), 0.0402);
             var floatingBondPrice1 = floatingBond1.cleanPrice();
             var floatingSpecializedBondPrice1 = floatingSpecializedBond1.cleanPrice();
@@ -3358,8 +3359,8 @@ namespace QLNet.Tests
                                                                  100.0, new Date(24, Month.September, 2004));
             floatingSpecializedBond2.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
-            Utils.setCouponPricer(floatingSpecializedBond2.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingBond2.cashflows(), vars.pricer);
+            Cashflows.Utils.setCouponPricer(floatingSpecializedBond2.cashflows(), vars.pricer);
 
             vars.iborIndex.addFixing(new Date(22, Month.March, 2007), 0.04013);
 
@@ -3463,8 +3464,8 @@ namespace QLNet.Tests
             cmsSpecializedBond1.setPricingEngine(bondEngine);
 
 
-            Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
-            Utils.setCouponPricer(cmsSpecializedBond1.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsBond1.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsSpecializedBond1.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(18, Month.August, 2006), 0.04158);
             var cmsBondPrice1 = cmsBond1.cleanPrice();
             var cmsSpecializedBondPrice1 = cmsSpecializedBond1.cleanPrice();
@@ -3559,8 +3560,8 @@ namespace QLNet.Tests
                                                         100.0, new Date(06, Month.May, 2005));
             cmsSpecializedBond2.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
-            Utils.setCouponPricer(cmsSpecializedBond2.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsBond2.cashflows(), vars.cmspricer);
+            Cashflows.Utils.setCouponPricer(cmsSpecializedBond2.cashflows(), vars.cmspricer);
             vars.swapIndex.addFixing(new Date(04, Month.May, 2006), 0.04217);
             var cmsBondPrice2 = cmsBond2.cleanPrice();
             var cmsSpecializedBondPrice2 = cmsSpecializedBond2.cleanPrice();

@@ -38,7 +38,7 @@ namespace QLNet.Indexes.Ibor
                 BusinessDayConvention.ModifiedFollowing, true,
                 new Actual365Fixed(), h ?? new Handle<YieldTermStructure>())
         {
-            Utils.QL_REQUIRE(this.tenor().units() != TimeUnit.Days, () =>
+            QLNet.Utils.QL_REQUIRE(this.tenor().units() != TimeUnit.Days, () =>
                 "for daily tenors (" + this.tenor() + ") dedicated DailyTenor constructor must be used");
         }
     }

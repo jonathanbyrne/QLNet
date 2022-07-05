@@ -27,10 +27,10 @@ using QLNet.Methods.Finitedifferences.Operators;
 using QLNet.Methods.Finitedifferences.Solvers;
 using QLNet.Methods.Finitedifferences.StepConditions;
 using QLNet.Methods.Finitedifferences.Utilities;
-using QLNet.Pricingengines.vanilla;
-using QLNet.processes;
+using QLNet.PricingEngines.vanilla;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.barrier
+namespace QLNet.PricingEngines.barrier
 {
     /// <summary>
     ///     Finite-Differences Black Scholes barrier option engine
@@ -112,7 +112,7 @@ namespace QLNet.Pricingengines.barrier
                 stoppingTimes.Add(dividendCondition.dividendTimes());
             }
 
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European,
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European,
                 () => "only european style option are supported");
 
             var conditions =

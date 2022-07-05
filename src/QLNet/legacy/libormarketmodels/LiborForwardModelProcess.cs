@@ -22,7 +22,7 @@ using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
 using QLNet.Math;
-using QLNet.processes;
+using QLNet.Processes;
 using QLNet.Time;
 
 namespace QLNet.legacy.libormarketmodels
@@ -50,7 +50,7 @@ namespace QLNet.legacy.libormarketmodels
             var dayCounter = index.dayCounter();
             IList<CashFlow> flows = cashFlows(1);
 
-            Utils.QL_REQUIRE(size_ == flows.Count, () => "wrong number of cashflows");
+            QLNet.Utils.QL_REQUIRE(size_ == flows.Count, () => "wrong number of cashflows");
 
             var settlement = index_.forwardingTermStructure().link.referenceDate();
             Date startDate;
@@ -61,7 +61,7 @@ namespace QLNet.legacy.libormarketmodels
             {
                 var coupon = (IborCoupon)flows[i];
 
-                Utils.QL_REQUIRE(coupon.date() == coupon.accrualEndDate(), () => "irregular coupon types are not suppported");
+                QLNet.Utils.QL_REQUIRE(coupon.date() == coupon.accrualEndDate(), () => "irregular coupon types are not suppported");
 
                 initialValues_[i] = coupon.rate();
                 accrualPeriod_[i] = coupon.accrualPeriod();

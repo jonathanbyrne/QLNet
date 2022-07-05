@@ -188,7 +188,7 @@ namespace QLNet.Models
                 additionalConstraint = new Constraint();
             }
 
-            Utils.QL_REQUIRE(weights.empty() || weights.Count == instruments.Count, () =>
+            QLNet.Utils.QL_REQUIRE(weights.empty() || weights.Count == instruments.Count, () =>
                 "mismatch between number of instruments (" +
                 instruments.Count + ") and weights(" +
                 weights.Count + ")");
@@ -252,12 +252,12 @@ namespace QLNet.Models
             {
                 for (var j = 0; j < arguments_[i].size(); ++j)
                 {
-                    Utils.QL_REQUIRE(p != parameters.Count, () => "parameter array too small");
+                    QLNet.Utils.QL_REQUIRE(p != parameters.Count, () => "parameter array too small");
                     arguments_[i].setParam(j, parameters[p++]);
                 }
             }
 
-            Utils.QL_REQUIRE(p == parameters.Count, () => "parameter array too big!");
+            QLNet.Utils.QL_REQUIRE(p == parameters.Count, () => "parameter array too big!");
             update();
         }
 

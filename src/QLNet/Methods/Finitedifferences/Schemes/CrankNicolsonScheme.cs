@@ -75,7 +75,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
 
         public void step(ref object a, double t, double theta = 1.0)
         {
-            Utils.QL_REQUIRE(t - dt_ > -1e-8, () => "a step towards negative time given");
+            QLNet.Utils.QL_REQUIRE(t - dt_ > -1e-8, () => "a step towards negative time given");
             if (theta_ != 1.0)
             {
                 explicit_.step(ref a, t, 1.0 - theta_);

@@ -22,13 +22,13 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 using QLNet.Math.statistics;
 using QLNet.Methods.montecarlo;
 using QLNet.Patterns;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.asian
+namespace QLNet.PricingEngines.asian
 {
     //! Pricing engine for discrete average Asians using Monte Carlo simulation
     /*! \warning control-variate calculation is disabled under VC++6.
@@ -87,7 +87,7 @@ namespace QLNet.Pricingengines.asian
         protected override double? controlVariateValue()
         {
             var controlPE = controlPricingEngine();
-            Utils.QL_REQUIRE(controlPE != null, () => "engine does not provide control variation pricing engine");
+            QLNet.Utils.QL_REQUIRE(controlPE != null, () => "engine does not provide control variation pricing engine");
 
             var controlArguments =
                 (DiscreteAveragingAsianOption.Arguments)controlPE.getArguments();

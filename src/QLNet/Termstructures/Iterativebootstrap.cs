@@ -70,7 +70,7 @@ namespace QLNet.Termstructures
             {
                 var helper = ts_.instruments_[j];
                 // check for valid quote
-                Utils.QL_REQUIRE(helper.quote().link.isValid(), () =>
+                QLNet.Utils.QL_REQUIRE(helper.quote().link.isValid(), () =>
                     j + 1 + " instrument (maturity: " +
                     helper.pillarDate() + ") has an invalid quote");
                 // don't try this at home!
@@ -155,7 +155,7 @@ namespace QLNet.Termstructures
                             continue;
                         }
 
-                        Utils.QL_FAIL(iteration + 1 + " iteration: failed " +
+                        QLNet.Utils.QL_FAIL(iteration + 1 + " iteration: failed " +
                                       "at " + i + " alive instrument, " +
                                       "maturity " + ts_.instruments_[i - 1].pillarDate() +
                                       ", reference date " + ts_.dates_[0] +
@@ -180,7 +180,7 @@ namespace QLNet.Termstructures
                     break;
                 }
 
-                Utils.QL_REQUIRE(iteration < maxIterations, () =>
+                QLNet.Utils.QL_REQUIRE(iteration < maxIterations, () =>
                     "convergence not reached after " + iteration +
                     " iterations; last improvement " + change +
                     ", required accuracy " + accuracy);
@@ -195,9 +195,9 @@ namespace QLNet.Termstructures
             ts_ = ts;
 
             n_ = ts_.instruments_.Count;
-            Utils.QL_REQUIRE(n_ > 0, () => "no bootstrap helpers given");
+            QLNet.Utils.QL_REQUIRE(n_ > 0, () => "no bootstrap helpers given");
 
-            Utils.QL_REQUIRE(n_ + 1 >= ts_.interpolator_.requiredPoints, () =>
+            QLNet.Utils.QL_REQUIRE(n_ + 1 >= ts_.interpolator_.requiredPoints, () =>
                 "not enough instruments: " + n_ + " provided, " + (ts_.interpolator_.requiredPoints - 1) + " required");
 
             ts_.instruments_.ForEach((i, x) => ts_.registerWith(x));
@@ -209,7 +209,7 @@ namespace QLNet.Termstructures
         {
             // skip expired helpers
             var firstDate = ts_.initialDate();
-            Utils.QL_REQUIRE(ts_.instruments_[n_ - 1].pillarDate() > firstDate, () => "all instruments expired");
+            QLNet.Utils.QL_REQUIRE(ts_.instruments_[n_ - 1].pillarDate() > firstDate, () => "all instruments expired");
             firstAliveHelper_ = 0;
             while (ts_.instruments_[firstAliveHelper_].pillarDate() <= firstDate)
             {
@@ -217,7 +217,7 @@ namespace QLNet.Termstructures
             }
 
             alive_ = n_ - firstAliveHelper_;
-            Utils.QL_REQUIRE(alive_ >= ts_.interpolator_.requiredPoints - 1, () =>
+            QLNet.Utils.QL_REQUIRE(alive_ >= ts_.interpolator_.requiredPoints - 1, () =>
                 "not enough alive instruments: " + alive_ +
                 " provided, " + (ts_.interpolator_.requiredPoints - 1) +
                 " required");
@@ -246,11 +246,11 @@ namespace QLNet.Termstructures
                 dates[i] = helper.pillarDate();
                 times[i] = ts_.timeFromReference(dates[i]);
                 // check for duplicated maturity
-                Utils.QL_REQUIRE(dates[i - 1] != dates[i], () => "more than one instrument with maturity " + dates[i]);
+                QLNet.Utils.QL_REQUIRE(dates[i - 1] != dates[i], () => "more than one instrument with maturity " + dates[i]);
                 latestRelevantDate = helper.latestRelevantDate();
                 // check that the helper is really extending the curve, i.e. that
                 // pillar-sorted helpers are also sorted by latestRelevantDate
-                Utils.QL_REQUIRE(latestRelevantDate > maxDate, () =>
+                QLNet.Utils.QL_REQUIRE(latestRelevantDate > maxDate, () =>
                     j + 1 + " instrument (pillar: " +
                     dates[i] + ") has latestRelevantDate (" +
                     latestRelevantDate + ") before or equal to " +

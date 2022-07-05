@@ -72,7 +72,7 @@ namespace QLNet.Cashflows
             fixedRate_ = fixedRate;
             spread_ = spread;
             observationInterpolation_ = observationInterpolation;
-            Utils.QL_REQUIRE(System.Math.Abs(baseCPI_) > 1e-16, () => "|baseCPI_| < 1e-16, future divide-by-zero problem");
+            QLNet.Utils.QL_REQUIRE(System.Math.Abs(baseCPI_) > 1e-16, () => "|baseCPI_| < 1e-16, future divide-by-zero problem");
         }
 
         //! adjusted fixing (already divided by the base fixing)
@@ -122,7 +122,7 @@ namespace QLNet.Cashflows
             else
             {
                 // work out what it should be
-                var dd = Utils.inflationPeriod(d, cpiIndex().frequency());
+                var dd = Termstructures.Utils.inflationPeriod(d, cpiIndex().frequency());
                 var indexStart = cpiIndex().fixing(dd.Key);
                 if (observationInterpolation() == InterpolationType.Linear)
                 {

@@ -12,8 +12,8 @@ namespace QLNet.Math.Distributions
         public BivariateCumulativeNormalDistributionWe04DP(double rho)
         {
             correlation_ = rho;
-            Utils.QL_REQUIRE(rho >= -1.0, () => "rho must be >= -1.0 (" + rho + " not allowed)");
-            Utils.QL_REQUIRE(rho <= 1.0, () => "rho must be <= 1.0 (" + rho + " not allowed)");
+            QLNet.Utils.QL_REQUIRE(rho >= -1.0, () => "rho must be >= -1.0 (" + rho + " not allowed)");
+            QLNet.Utils.QL_REQUIRE(rho <= 1.0, () => "rho must be <= 1.0 (" + rho + " not allowed)");
         }
 
         // function

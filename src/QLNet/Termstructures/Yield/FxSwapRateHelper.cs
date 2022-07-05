@@ -54,9 +54,9 @@ namespace QLNet.Termstructures.Yield
         // RateHelper interface
         public override double impliedQuote()
         {
-            Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
+            QLNet.Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
 
-            Utils.QL_REQUIRE(!collHandle_.empty(), () => "collateral term structure not set");
+            QLNet.Utils.QL_REQUIRE(!collHandle_.empty(), () => "collateral term structure not set");
 
             var d1 = collHandle_.link.discount(earliestDate_);
             var d2 = collHandle_.link.discount(latestDate_);

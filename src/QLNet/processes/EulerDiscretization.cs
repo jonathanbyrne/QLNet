@@ -20,7 +20,7 @@
 using JetBrains.Annotations;
 using QLNet.Math;
 
-namespace QLNet.processes
+namespace QLNet.Processes
 {
     //! Euler discretization for stochastic processes
     [PublicAPI]

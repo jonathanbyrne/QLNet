@@ -16,9 +16,9 @@
 
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Analytic pricing engine for American vanilla options with digital payoff
     /*! \ingroup vanillaengines
@@ -56,15 +56,15 @@ namespace QLNet.Pricingengines.vanilla
         public override void calculate()
         {
             var ex = arguments_.exercise as AmericanExercise;
-            Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
-            Utils.QL_REQUIRE(ex.dates()[0] <= process_.blackVolatility().link.referenceDate(), () =>
+            QLNet.Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
+            QLNet.Utils.QL_REQUIRE(ex.dates()[0] <= process_.blackVolatility().link.referenceDate(), () =>
                 "American option with window exercise not handled yet");
 
             var payoff = arguments_.payoff as StrikedTypePayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
             var spot = process_.stateVariable().link.value();
-            Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
 
             var variance = process_.blackVolatility().link.blackVariance(ex.lastDate(), payoff.strike());
             var dividendDiscount = process_.dividendYield().link.discount(ex.lastDate());

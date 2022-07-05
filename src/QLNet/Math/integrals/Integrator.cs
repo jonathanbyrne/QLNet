@@ -36,7 +36,7 @@ namespace QLNet.Math.integrals
             maxEvaluations_ = maxEvaluations;
             if (absoluteAccuracy != null)
             {
-                Utils.QL_REQUIRE(absoluteAccuracy > double.Epsilon, () =>
+                QLNet.Utils.QL_REQUIRE(absoluteAccuracy > double.Epsilon, () =>
                     "required tolerance (" + absoluteAccuracy + ") not allowed. It must be > " + double.Epsilon);
             }
         }

@@ -19,9 +19,9 @@
 
 using System;
 using System.Collections.Generic;
+using QLNet.Math.RandomNumbers;
 using Xunit;
 using QLNet.Math.statistics;
-using QLNet.Math.randomnumbers;
 
 namespace QLNet.Tests
 {
@@ -115,7 +115,7 @@ namespace QLNet.Tests
             for (var j = 1; j < 5; j++)
             {
                 // five cycle
-                points = (int)(Utils.Pow(2.0, j) - 1);  // base 2
+                points = (int)(QLNet.Utils.Pow(2.0, j) - 1);  // base 2
                 for (; k < points; k++)
                 {
                     point = rsg.nextSequence().value;
@@ -156,7 +156,7 @@ namespace QLNet.Tests
 
             dimensionality = 1;
             rsg = new SobolRsg(dimensionality);
-            points = (int)Utils.Pow(2.0, 5) - 1;  // five cycles
+            points = (int)QLNet.Utils.Pow(2.0, 5) - 1;  // five cycles
             for (i = 0; i < points; i++)
             {
                 point = rsg.nextSequence().value;
@@ -510,7 +510,7 @@ namespace QLNet.Tests
 
                 for (j = jMin; j < jMin + sampleLoops; j++)
                 {
-                    var points = (int)Utils.Pow(2.0, j) - 1;
+                    var points = (int)QLNet.Utils.Pow(2.0, j) - 1;
                     for (; k < points; k++)
                     {
                         point = rsg.nextSequence().value;

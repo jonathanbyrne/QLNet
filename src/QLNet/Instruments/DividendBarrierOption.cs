@@ -43,7 +43,7 @@ namespace QLNet.Instruments
 
                 for (var i = 0; i < cashFlow.Count; i++)
                 {
-                    Utils.QL_REQUIRE(cashFlow[i].date() <= exerciseDate, () =>
+                    QLNet.Utils.QL_REQUIRE(cashFlow[i].date() <= exerciseDate, () =>
                         "the " + (i + 1) + " dividend date (" + cashFlow[i].date() + ") is later than the exercise date ("
                         + exerciseDate + ")");
                 }
@@ -66,7 +66,7 @@ namespace QLNet.Instruments
             List<double> dividends)
             : base(barrierType, barrier, rebate, payoff, exercise)
         {
-            cashFlow_ = Utils.DividendVector(dividendDates, dividends);
+            cashFlow_ = Cashflows.Utils.DividendVector(dividendDates, dividends);
         }
 
         public override void setupArguments(IPricingEngineArguments args)
@@ -74,7 +74,7 @@ namespace QLNet.Instruments
             base.setupArguments(args);
 
             var arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong engine ExerciseType");
+            QLNet.Utils.QL_REQUIRE(arguments != null, () => "wrong engine ExerciseType");
 
             arguments.cashFlow = cashFlow_;
         }

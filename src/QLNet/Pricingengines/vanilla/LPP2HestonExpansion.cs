@@ -1,6 +1,6 @@
 ﻿using JetBrains.Annotations;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     [PublicAPI]
     public class LPP2HestonExpansion : HestonExpansion

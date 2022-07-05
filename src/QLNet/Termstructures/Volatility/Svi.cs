@@ -20,22 +20,21 @@
 */
 
 using System.Collections.Generic;
-using QLNet.Termstructures.Volatility;
 
-namespace QLNet
+namespace QLNet.Termstructures.Volatility
 {
     public partial class Utils
     {
         public static void checkSviParameters(double a, double b, double sigma, double rho, double m)
         {
-            QL_REQUIRE(b >= 0.0, () => "b (" + b + ") must be non negative");
-            QL_REQUIRE(System.Math.Abs(rho) < 1.0, () => "rho (" + rho + ") must be in (-1,1)");
-            QL_REQUIRE(sigma > 0.0, () => "sigma (" + sigma + ") must be positive");
-            QL_REQUIRE(a + b * sigma * System.Math.Sqrt(1.0 - rho * rho) >= 0.0,
+            QLNet.Utils.QL_REQUIRE(b >= 0.0, () => "b (" + b + ") must be non negative");
+            QLNet.Utils.QL_REQUIRE(System.Math.Abs(rho) < 1.0, () => "rho (" + rho + ") must be in (-1,1)");
+            QLNet.Utils.QL_REQUIRE(sigma > 0.0, () => "sigma (" + sigma + ") must be positive");
+            QLNet.Utils.QL_REQUIRE(a + b * sigma * System.Math.Sqrt(1.0 - rho * rho) >= 0.0,
                 () => "a + b sigma sqrt(1-rho^2) (a=" + a + ", b=" + b + ", sigma="
                       + sigma + ", rho=" + rho
                       + ") must be non negative");
-            QL_REQUIRE(b * (1.0 + System.Math.Abs(rho)) < 4.0,
+            QLNet.Utils.QL_REQUIRE(b * (1.0 + System.Math.Abs(rho)) < 4.0,
                 () => "b(1+|rho|) must be less than 4");
         }
 

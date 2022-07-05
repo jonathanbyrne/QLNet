@@ -42,7 +42,7 @@ namespace QLNet.Tests
             var calculated = eur_usd.exchange(m1);
             var expected = new Money(m1.value * eur_usd.rate, USD);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -50,7 +50,7 @@ namespace QLNet.Tests
             calculated = eur_usd.exchange(m2);
             expected = new Money(m2.value / eur_usd.rate, EUR);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -78,7 +78,7 @@ namespace QLNet.Tests
             var calculated = derived.exchange(m1);
             var expected = new Money(m1.value * eur_usd.rate / eur_gbp.rate, USD);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -86,7 +86,7 @@ namespace QLNet.Tests
             calculated = derived.exchange(m2);
             expected = new Money(m2.value * eur_gbp.rate / eur_usd.rate, GBP);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -117,7 +117,7 @@ namespace QLNet.Tests
             var calculated = eur_usd.exchange(m1);
             var expected = new Money(m1.value * eur_usd1.rate, USD);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -126,7 +126,7 @@ namespace QLNet.Tests
             calculated = eur_usd.exchange(m1);
             expected = new Money(m1.value / eur_usd2.rate, USD);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -136,7 +136,7 @@ namespace QLNet.Tests
             calculated = usd_eur.exchange(m2);
             expected = new Money(m2.value / eur_usd1.rate, EUR);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -146,7 +146,7 @@ namespace QLNet.Tests
             calculated = usd_eur.exchange(m2);
             expected = new Money(m2.value * eur_usd2.rate, EUR);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -178,7 +178,7 @@ namespace QLNet.Tests
             var calculated = itl_usd.exchange(m1);
             var expected = new Money(m1.value * eur_usd1.rate / 1936.27, USD);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -187,7 +187,7 @@ namespace QLNet.Tests
             calculated = itl_usd.exchange(m1);
             expected = new Money(m1.value * eur_usd2.rate / 1936.27, USD);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -197,7 +197,7 @@ namespace QLNet.Tests
             calculated = usd_itl.exchange(m2);
             expected = new Money(m2.value * 1936.27 / eur_usd1.rate, ITL);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -207,7 +207,7 @@ namespace QLNet.Tests
             calculated = usd_itl.exchange(m2);
             expected = new Money(m2.value * 1936.27 / eur_usd2.rate, ITL);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -266,7 +266,7 @@ namespace QLNet.Tests
             var calculated = usd_sek.exchange(m1);
             var expected = new Money(m1.value * usd_chf1.rate / chf_sek1.rate, SEK);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -275,7 +275,7 @@ namespace QLNet.Tests
             calculated = usd_sek.exchange(m5);
             expected = new Money(m5.value * usd_chf2.rate / chf_sek2.rate, USD);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -286,7 +286,7 @@ namespace QLNet.Tests
             calculated = eur_sek.exchange(m2);
             expected = new Money(m2.value * eur_usd1.rate * usd_chf1.rate / chf_sek1.rate, SEK);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -295,7 +295,7 @@ namespace QLNet.Tests
             calculated = eur_sek.exchange(m5);
             expected = new Money(m5.value * eur_usd2.rate * usd_chf2.rate / chf_sek2.rate, EUR);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -306,7 +306,7 @@ namespace QLNet.Tests
             calculated = eur_jpy.exchange(m2);
             expected = new Money(m2.value * eur_usd1.rate * usd_chf1.rate * jpy_sek1.rate / chf_sek1.rate, JPY);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -315,7 +315,7 @@ namespace QLNet.Tests
             calculated = eur_jpy.exchange(m6);
             expected = new Money(m6.value * jpy_sek2.rate * eur_usd2.rate * usd_chf2.rate / chf_sek2.rate, EUR);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -326,7 +326,7 @@ namespace QLNet.Tests
             calculated = gbp_jpy.exchange(m3);
             expected = new Money(m3.value * eur_gbp1.rate * eur_usd1.rate * usd_chf1.rate * jpy_sek1.rate / chf_sek1.rate, JPY);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }
@@ -335,7 +335,7 @@ namespace QLNet.Tests
             calculated = gbp_jpy.exchange(m6);
             expected = new Money(m6.value * jpy_sek2.rate * eur_usd2.rate * usd_chf2.rate * eur_gbp2.rate / chf_sek2.rate, GBP);
 
-            if (!Utils.close(calculated, expected))
+            if (!Math.Utils.close(calculated, expected))
             {
                 QAssert.Fail("Wrong result: expected: " + expected + " calculated: " + calculated);
             }

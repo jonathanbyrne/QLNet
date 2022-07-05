@@ -33,7 +33,7 @@ namespace QLNet.Termstructures.Volatility.swaption
         //! implements the conversion between swap tenor and swap (time) length
         public double swapLength(Period swapTenor)
         {
-            Utils.QL_REQUIRE(swapTenor.length() > 0, () => "non-positive swap tenor (" + swapTenor + ") given");
+            QLNet.Utils.QL_REQUIRE(swapTenor.length() > 0, () => "non-positive swap tenor (" + swapTenor + ") given");
             switch (swapTenor.units())
             {
                 case TimeUnit.Months:
@@ -41,7 +41,7 @@ namespace QLNet.Termstructures.Volatility.swaption
                 case TimeUnit.Years:
                     return swapTenor.length();
                 default:
-                    Utils.QL_FAIL("invalid Time Unit (" + swapTenor.units() + ") for swap length");
+                    QLNet.Utils.QL_FAIL("invalid Time Unit (" + swapTenor.units() + ") for swap length");
                     return 0;
             }
         }
@@ -49,7 +49,7 @@ namespace QLNet.Termstructures.Volatility.swaption
         //! implements the conversion between swap dates and swap (time) length
         public double swapLength(Date start, Date end)
         {
-            Utils.QL_REQUIRE(end > start, () => "swap end date (" + end + ") must be greater than start (" + start + ")");
+            QLNet.Utils.QL_REQUIRE(end > start, () => "swap end date (" + end + ") must be greater than start (" + start + ")");
             var result = (end - start) / 365.25 * 12.0; // month unit
             result = new ClosestRounding(0).Round(result);
             result /= 12.0; // year unit
@@ -65,15 +65,15 @@ namespace QLNet.Termstructures.Volatility.swaption
 
         protected void checkSwapTenor(Period swapTenor, bool extrapolate)
         {
-            Utils.QL_REQUIRE(swapTenor.length() > 0, () => "non-positive swap tenor (" + swapTenor + ") given");
-            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || swapTenor <= maxSwapTenor(), () =>
+            QLNet.Utils.QL_REQUIRE(swapTenor.length() > 0, () => "non-positive swap tenor (" + swapTenor + ") given");
+            QLNet.Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || swapTenor <= maxSwapTenor(), () =>
                 "swap tenor (" + swapTenor + ") is past max tenor (" + maxSwapTenor() + ")");
         }
 
         protected void checkSwapTenor(double swapLength, bool extrapolate)
         {
-            Utils.QL_REQUIRE(swapLength > 0.0, () => "non-positive swap length (" + swapLength + ") given");
-            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || swapLength <= maxSwapLength(), () =>
+            QLNet.Utils.QL_REQUIRE(swapLength > 0.0, () => "non-positive swap length (" + swapLength + ") given");
+            QLNet.Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || swapLength <= maxSwapLength(), () =>
                 "swap tenor (" + swapLength + ") is past max tenor (" + maxSwapLength() + ")");
         }
 
@@ -81,7 +81,7 @@ namespace QLNet.Termstructures.Volatility.swaption
 
         protected virtual double shiftImpl(double optionTime, double swapLength)
         {
-            Utils.QL_REQUIRE(volatilityType() == VolatilityType.ShiftedLognormal, () =>
+            QLNet.Utils.QL_REQUIRE(volatilityType() == VolatilityType.ShiftedLognormal, () =>
                 "shift parameter only makes sense for lognormal volatilities");
             return 0.0;
         }

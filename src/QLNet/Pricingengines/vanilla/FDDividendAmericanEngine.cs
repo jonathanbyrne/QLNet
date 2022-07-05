@@ -19,9 +19,9 @@
 
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Finite-differences pricing engine for dividend American options
     /*! \ingroup vanillaengines

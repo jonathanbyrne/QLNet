@@ -22,7 +22,7 @@ using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
 using QLNet.Methods.Finitedifferences.Utilities;
-using QLNet.processes;
+using QLNet.Processes;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
@@ -53,7 +53,7 @@ namespace QLNet.Methods.Finitedifferences.Meshers
             : base(size)
         {
             var S = process.x0();
-            Utils.QL_REQUIRE(S > 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(S > 0.0, () => "negative or null underlying given");
 
             dividendSchedule = dividendSchedule == null ? new DividendSchedule() : dividendSchedule;
             var intermediateSteps = new List<pair_double>();

@@ -21,14 +21,14 @@ namespace QLNet.Instruments.Bonds
             outstandings_ = outstandings;
             quotes_ = cleanPriceQuotes;
 
-            Utils.QL_REQUIRE(!btps_.empty(), () => "empty RendistatoCalculator Basket");
+            QLNet.Utils.QL_REQUIRE(!btps_.empty(), () => "empty RendistatoCalculator Basket");
             var k = btps_.Count;
 
-            Utils.QL_REQUIRE(outstandings_.Count == k, () =>
+            QLNet.Utils.QL_REQUIRE(outstandings_.Count == k, () =>
                 "mismatch between number of BTPs (" + k +
                 ") and number of outstandings (" +
                 outstandings_.Count + ")");
-            Utils.QL_REQUIRE(quotes_.Count == k, () =>
+            QLNet.Utils.QL_REQUIRE(quotes_.Count == k, () =>
                 "mismatch between number of BTPs (" + k +
                 ") and number of clean prices quotes (" +
                 quotes_.Count + ")");
@@ -36,7 +36,7 @@ namespace QLNet.Instruments.Bonds
             // require non-negative outstanding
             for (var i = 0; i < k; ++i)
             {
-                Utils.QL_REQUIRE(outstandings[i] >= 0, () =>
+                QLNet.Utils.QL_REQUIRE(outstandings[i] >= 0, () =>
                     "negative outstanding for " + i +
                     " bond, maturity " + btps[i].maturityDate());
                 // add check for prices ??
@@ -44,7 +44,7 @@ namespace QLNet.Instruments.Bonds
 
             // TODO: filter out expired bonds, zero outstanding bond, etc
 
-            Utils.QL_REQUIRE(!btps_.empty(), () => "invalid bonds only in RendistatoCalculator Basket");
+            QLNet.Utils.QL_REQUIRE(!btps_.empty(), () => "invalid bonds only in RendistatoCalculator Basket");
             n_ = btps_.Count;
 
             outstanding_ = 0.0;

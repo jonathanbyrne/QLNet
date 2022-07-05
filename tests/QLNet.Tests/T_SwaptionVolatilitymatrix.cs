@@ -23,7 +23,7 @@ using System.Linq;
 using Xunit;
 using QLNet.Time;
 using QLNet.Termstructures.Volatility.swaption;
-using QLNet.Pricingengines.swaption;
+using QLNet.PricingEngines.swaption;
 using QLNet.Termstructures;
 using QLNet.Math;
 using QLNet.Indexes;

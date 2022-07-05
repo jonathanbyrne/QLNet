@@ -19,8 +19,9 @@ using QLNet.Cashflows;
 using Xunit;
 using QLNet.Instruments;
 using QLNet.Indexes;
-using QLNet.Pricingengines.CapFloor;
-using QLNet.Pricingengines.Swap;
+using QLNet.Indexes.Ibor;
+using QLNet.PricingEngines.CapFloor;
+using QLNet.PricingEngines.Swap;
 using QLNet.Time;
 using QLNet.Termstructures.Volatility.Optionlet;
 using QLNet.Termstructures;
@@ -123,7 +124,7 @@ namespace QLNet.Tests
                 .withCaps(caps)
                 .withNotionals(nominals)
                 .withPaymentAdjustment(convention);
-                Utils.setCouponPricer(iborLeg, pricer);
+                Cashflows.Utils.setCouponPricer(iborLeg, pricer);
                 return iborLeg;
             }
 
@@ -150,7 +151,7 @@ namespace QLNet.Tests
                                             new InitializedList<double>(1, floorStrike));
                         break;
                     default:
-                        Utils.QL_FAIL("unknown cap/floor ExerciseType");
+                        QLNet.Utils.QL_FAIL("unknown cap/floor ExerciseType");
                         break;
                 }
                 result.setPricingEngine(makeEngine(vol));

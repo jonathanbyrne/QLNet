@@ -1,7 +1,7 @@
 ﻿using JetBrains.Annotations;
 using QLNet.Termstructures;
 
-namespace QLNet.processes
+namespace QLNet.Processes
 {
     [PublicAPI]
     public class HullWhiteForwardProcess : ForwardMeasureProcess1D

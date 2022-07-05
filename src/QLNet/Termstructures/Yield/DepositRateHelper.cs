@@ -60,7 +60,7 @@ namespace QLNet.Termstructures.Yield
         //! RateHelper interface
         public override double impliedQuote()
         {
-            Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
+            QLNet.Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
             // the forecast fixing flag is set to true because
             // we do not want to take fixing into account
             return iborIndex_.fixing(fixingDate_, true);

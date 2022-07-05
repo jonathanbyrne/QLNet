@@ -1,4 +1,4 @@
-﻿namespace QLNet
+﻿namespace QLNet.Methods.Finitedifferences.Meshers
 {
     public static partial class Utils
     {

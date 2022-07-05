@@ -15,9 +15,9 @@ namespace QLNet.Math.integrals
             alpha_ = alpha;
             beta_ = beta;
 
-            Utils.QL_REQUIRE(alpha_ + beta_ > -2.0, () => "alpha+beta must be bigger than -2");
-            Utils.QL_REQUIRE(alpha_ > -1.0, () => "alpha must be bigger than -1");
-            Utils.QL_REQUIRE(beta_ > -1.0, () => "beta  must be bigger than -1");
+            QLNet.Utils.QL_REQUIRE(alpha_ + beta_ > -2.0, () => "alpha+beta must be bigger than -2");
+            QLNet.Utils.QL_REQUIRE(alpha_ > -1.0, () => "alpha must be bigger than -1");
+            QLNet.Utils.QL_REQUIRE(beta_ > -1.0, () => "beta  must be bigger than -1");
         }
 
         public override double alpha(int i)
@@ -29,7 +29,7 @@ namespace QLNet.Math.integrals
             {
                 if (num.IsNotEqual(0.0))
                 {
-                    Utils.QL_FAIL("can't compute a_k for jacobi integration");
+                    QLNet.Utils.QL_FAIL("can't compute a_k for jacobi integration");
                 }
                 else
                 {
@@ -37,7 +37,7 @@ namespace QLNet.Math.integrals
                     num = 2 * beta_;
                     denom = 2 * (2.0 * i + alpha_ + beta_ + 1);
 
-                    Utils.QL_REQUIRE(denom.IsNotEqual(0.0), () => "can't compute a_k for jacobi integration");
+                    QLNet.Utils.QL_REQUIRE(denom.IsNotEqual(0.0), () => "can't compute a_k for jacobi integration");
                 }
             }
 
@@ -54,7 +54,7 @@ namespace QLNet.Math.integrals
             {
                 if (num.IsNotEqual(0.0))
                 {
-                    Utils.QL_FAIL("can't compute b_k for jacobi integration");
+                    QLNet.Utils.QL_FAIL("can't compute b_k for jacobi integration");
                 }
                 else
                 {
@@ -62,7 +62,7 @@ namespace QLNet.Math.integrals
                     num = 4.0 * i * (i + beta_) * (2.0 * i + 2 * alpha_ + beta_);
                     denom = 2.0 * (2.0 * i + alpha_ + beta_);
                     denom *= denom - 1;
-                    Utils.QL_REQUIRE(denom.IsNotEqual(0.0), () => "can't compute b_k for jacobi integration");
+                    QLNet.Utils.QL_REQUIRE(denom.IsNotEqual(0.0), () => "can't compute b_k for jacobi integration");
                 }
             }
 

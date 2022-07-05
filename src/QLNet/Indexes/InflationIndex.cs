@@ -76,7 +76,7 @@ namespace QLNet.Indexes
         */
         public override void addFixing(Date fixingDate, double fixing, bool forceOverwrite = false)
         {
-            var lim = Utils.inflationPeriod(fixingDate, frequency_);
+            var lim = Termstructures.Utils.inflationPeriod(fixingDate, frequency_);
             var n = lim.Value - lim.Key + 1;
             var dates = new List<Date>(n);
             var rates = new List<double>(n);

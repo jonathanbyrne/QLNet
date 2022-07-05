@@ -25,7 +25,7 @@ using QLNet.Termstructures;
 using QLNet.Time;
 using Vector = QLNet.Math.Vector;
 
-namespace QLNet.processes
+namespace QLNet.Processes
 {
     //! Square-root stochastic-volatility Heston process
     // This class describes the square root stochastic volatility
@@ -123,7 +123,7 @@ namespace QLNet.processes
                         return s;
                     }
                     default:
-                        Utils.QL_FAIL("unknown integration method");
+                        QLNet.Utils.QL_FAIL("unknown integration method");
                         break;
                 }
 
@@ -207,8 +207,8 @@ namespace QLNet.processes
                            - ga * (1.0 + Complex.Exp(-ga * dt)) / (1.0 - Complex.Exp(-ga * dt))))
                        * Complex.Exp(nu * log_z) / Complex.Pow(z, nu)
                        * (nu_t > 1e-8
-                           ? Utils.modifiedBesselFunction_i(nu, Complex.Sqrt(nu_0 * nu_t) * alpha)
-                             / Utils.modifiedBesselFunction_i(nu, Complex.Sqrt(nu_0 * nu_t) * beta)
+                           ? Math.Utils.modifiedBesselFunction_i(nu, Complex.Sqrt(nu_0 * nu_t) * alpha)
+                             / Math.Utils.modifiedBesselFunction_i(nu, Complex.Sqrt(nu_0 * nu_t) * beta)
                            : Complex.Pow(alpha / beta, nu)
                        );
             }
@@ -336,8 +336,8 @@ namespace QLNet.processes
                            - ga * (1.0 + Complex.Exp(-ga * dt)) / (1.0 - Complex.Exp(-ga * dt))))
                        * Complex.Exp(nu * log_z) / Complex.Pow(z, nu)
                        * (nu_t > 1e-8
-                           ? Utils.modifiedBesselFunction_i(nu, Complex.Sqrt(nu_0 * nu_t) * alpha)
-                             / Utils.modifiedBesselFunction_i(nu, Complex.Sqrt(nu_0 * nu_t) * beta)
+                           ? Math.Utils.modifiedBesselFunction_i(nu, Complex.Sqrt(nu_0 * nu_t) * alpha)
+                             / Math.Utils.modifiedBesselFunction_i(nu, Complex.Sqrt(nu_0 * nu_t) * beta)
                            : Complex.Pow(alpha / beta, nu)
                        );
             }
@@ -517,7 +517,7 @@ namespace QLNet.processes
                         if (discretization_ == Discretization.QuadraticExponentialMartingale)
                         {
                             // martingale correction
-                            Utils.QL_REQUIRE(A < 1 / (2 * a), () => "illegal value");
+                            QLNet.Utils.QL_REQUIRE(A < 1 / (2 * a), () => "illegal value");
                             k0 = -A * b2 * a / (1 - 2 * A * a) + 0.5 * System.Math.Log(1 - 2 * A * a)
                                  - (k1 + 0.5 * k3) * x0[1];
                         }
@@ -534,7 +534,7 @@ namespace QLNet.processes
                         if (discretization_ == Discretization.QuadraticExponentialMartingale)
                         {
                             // martingale correction
-                            Utils.QL_REQUIRE(A < beta, () => "illegal value");
+                            QLNet.Utils.QL_REQUIRE(A < beta, () => "illegal value");
                             k0 = -System.Math.Log(p + beta * (1 - p) / (beta - A)) - (k1 + 0.5 * k3) * x0[1];
                         }
 
@@ -575,7 +575,7 @@ namespace QLNet.processes
                 }
                     break;
                 default:
-                    Utils.QL_FAIL("unknown discretization schema");
+                    QLNet.Utils.QL_FAIL("unknown discretization schema");
                     break;
             }
 

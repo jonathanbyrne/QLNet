@@ -109,7 +109,7 @@ namespace QLNet.Cashflows
 
         public override double rate()
         {
-            Utils.QL_REQUIRE(pricer_ != null, () => "pricer not set");
+            QLNet.Utils.QL_REQUIRE(pricer_ != null, () => "pricer not set");
 
             // we know it is the correct ExerciseType because checkPricerImpl checks on setting
             // in general pricer_ will be a derived class, as will *this on calling
@@ -119,7 +119,7 @@ namespace QLNet.Cashflows
 
         public void setPricer(InflationCouponPricer pricer)
         {
-            Utils.QL_REQUIRE(checkPricerImpl(pricer), () => "pricer given is wrong ExerciseType");
+            QLNet.Utils.QL_REQUIRE(checkPricerImpl(pricer), () => "pricer given is wrong ExerciseType");
 
             if (pricer_ != null)
             {

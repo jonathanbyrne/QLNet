@@ -19,12 +19,12 @@
 
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 using QLNet.Math.statistics;
 using QLNet.Methods.montecarlo;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.asian
+namespace QLNet.PricingEngines.asian
 {
     //!  Monte Carlo pricing engine for discrete arithmetic average price Asian
     /*!  Monte Carlo pricing engine for discrete arithmetic average price
@@ -64,10 +64,10 @@ namespace QLNet.Pricingengines.asian
         protected override PathPricer<IPath> controlPathPricer()
         {
             var payoff = (PlainVanillaPayoff)arguments_.payoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
             var exercise = (EuropeanExercise)arguments_.exercise;
-            Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
+            QLNet.Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
 
             // for seasoned option the geometric strike might be rescaled
             // to obtain an equivalent arithmetic strike.
@@ -83,10 +83,10 @@ namespace QLNet.Pricingengines.asian
         protected override PathPricer<IPath> pathPricer()
         {
             var payoff = (PlainVanillaPayoff)arguments_.payoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
             var exercise = (EuropeanExercise)arguments_.exercise;
-            Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
+            QLNet.Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
 
             return new ArithmeticAPOPathPricer(
                 payoff.optionType(),

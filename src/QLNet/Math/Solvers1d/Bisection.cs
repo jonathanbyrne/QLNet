@@ -59,13 +59,13 @@ namespace QLNet.Math.Solvers1d
                     root_ = xMid;
                 }
 
-                if (System.Math.Abs(dx) < xAccuracy || Utils.close(fMid, 0.0))
+                if (System.Math.Abs(dx) < xAccuracy || Math.Utils.close(fMid, 0.0))
                 {
                     return root_;
                 }
             }
 
-            Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
+            QLNet.Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
                 QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
             return 0;
         }

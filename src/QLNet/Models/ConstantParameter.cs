@@ -22,7 +22,7 @@ namespace QLNet.Models
         {
             params_[0] = value;
 
-            Utils.QL_REQUIRE(testParams(params_), () => ": invalid value");
+            QLNet.Utils.QL_REQUIRE(testParams(params_), () => ": invalid value");
         }
     }
 }

@@ -2,7 +2,7 @@
 using JetBrains.Annotations;
 using QLNet.Methods.montecarlo;
 
-namespace QLNet.Math.randomnumbers
+namespace QLNet.Math.RandomNumbers
 {
     [PublicAPI]
     public interface IRNG

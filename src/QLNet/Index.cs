@@ -73,7 +73,7 @@ namespace QLNet
                     {
                         target[d] = source[d];
                     }
-                    else if (Utils.close(target[d].GetValueOrDefault(), source[d].GetValueOrDefault()))
+                    else if (Math.Utils.close(target[d].GetValueOrDefault(), source[d].GetValueOrDefault()))
                     {
                     }
                     else
@@ -126,7 +126,7 @@ namespace QLNet
         // Check if index allows for native fixings
         private void checkNativeFixingsAllowed()
         {
-            Utils.QL_REQUIRE(allowsNativeFixings(), () =>
+            QLNet.Utils.QL_REQUIRE(allowsNativeFixings(), () =>
                 "native fixings not allowed for " + name() + "; refer to underlying indices instead");
         }
 

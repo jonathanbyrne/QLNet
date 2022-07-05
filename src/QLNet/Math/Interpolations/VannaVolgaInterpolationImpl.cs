@@ -30,24 +30,24 @@ namespace QLNet.Math.Interpolations
             premiaMKT = new List<double>();
             vegas = new List<double>();
 
-            Utils.QL_REQUIRE(size == 3, () => "Vanna Volga Interpolator only interpolates 3 volatilities in strike space");
+            QLNet.Utils.QL_REQUIRE(size == 3, () => "Vanna Volga Interpolator only interpolates 3 volatilities in strike space");
         }
 
         public override double derivative(double x)
         {
-            Utils.QL_FAIL("Vanna Volga derivative not implemented");
+            QLNet.Utils.QL_FAIL("Vanna Volga derivative not implemented");
             return 0;
         }
 
         public override double primitive(double x)
         {
-            Utils.QL_FAIL("Vanna Volga primitive not implemented");
+            QLNet.Utils.QL_FAIL("Vanna Volga primitive not implemented");
             return 0;
         }
 
         public override double secondDerivative(double x)
         {
-            Utils.QL_FAIL("Vanna Volga secondDerivative not implemented");
+            QLNet.Utils.QL_FAIL("Vanna Volga secondDerivative not implemented");
             return 0;
         }
 
@@ -58,8 +58,8 @@ namespace QLNet.Math.Interpolations
             fwd_ = spot_ * fDiscount_ / dDiscount_;
             for (var i = 0; i < 3; i++)
             {
-                premiaBS.Add(Utils.blackFormula(Option.Type.Call, xBegin_[i], fwd_, atmVol_ * System.Math.Sqrt(T_), dDiscount_));
-                premiaMKT.Add(Utils.blackFormula(Option.Type.Call, xBegin_[i], fwd_, yBegin_[i] * System.Math.Sqrt(T_), dDiscount_));
+                premiaBS.Add(PricingEngines.Utils.blackFormula(Option.Type.Call, xBegin_[i], fwd_, atmVol_ * System.Math.Sqrt(T_), dDiscount_));
+                premiaMKT.Add(PricingEngines.Utils.blackFormula(Option.Type.Call, xBegin_[i], fwd_, yBegin_[i] * System.Math.Sqrt(T_), dDiscount_));
                 vegas.Add(vega(xBegin_[i]));
             }
         }
@@ -76,9 +76,9 @@ namespace QLNet.Math.Interpolations
                      * (System.Math.Log(k / xBegin_[0]) * System.Math.Log(k / xBegin_[1]))
                      / (System.Math.Log(xBegin_[2] / xBegin_[0]) * System.Math.Log(xBegin_[2] / xBegin_[1]));
 
-            var cBS = Utils.blackFormula(Option.Type.Call, k, fwd_, atmVol_ * System.Math.Sqrt(T_), dDiscount_);
+            var cBS = PricingEngines.Utils.blackFormula(Option.Type.Call, k, fwd_, atmVol_ * System.Math.Sqrt(T_), dDiscount_);
             var c = cBS + x1 * (premiaMKT[0] - premiaBS[0]) + x2 * (premiaMKT[1] - premiaBS[1]) + x3 * (premiaMKT[2] - premiaBS[2]);
-            var std = Utils.blackFormulaImpliedStdDev(Option.Type.Call, k, fwd_, c, dDiscount_);
+            var std = PricingEngines.Utils.blackFormulaImpliedStdDev(Option.Type.Call, k, fwd_, c, dDiscount_);
             return std / System.Math.Sqrt(T_);
         }
 

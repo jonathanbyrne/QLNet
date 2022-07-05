@@ -21,7 +21,7 @@
 using JetBrains.Annotations;
 using QLNet.Patterns;
 
-namespace QLNet.Pricingengines
+namespace QLNet.PricingEngines
 {
     [PublicAPI]
     public class GenericModelEngine<ModelType, ArgumentsType, ResultsType>

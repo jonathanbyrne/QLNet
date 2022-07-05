@@ -21,7 +21,7 @@
 using JetBrains.Annotations;
 using QLNet.Currencies;
 using QLNet.Indexes;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.Swap;
 using QLNet.Termstructures;
 using QLNet.Time;
 using QLNet.Time.DayCounters;
@@ -153,7 +153,7 @@ namespace QLNet.Instruments
                 }
                 else
                 {
-                    Utils.QL_FAIL("unknown fixed leg default tenor for " + curr);
+                    QLNet.Utils.QL_FAIL("unknown fixed leg default tenor for " + curr);
                 }
             }
 
@@ -191,7 +191,7 @@ namespace QLNet.Instruments
                 }
                 else
                 {
-                    Utils.QL_FAIL("unknown fixed leg day counter for " + curr);
+                    QLNet.Utils.QL_FAIL("unknown fixed leg day counter for " + curr);
                 }
             }
 
@@ -204,7 +204,7 @@ namespace QLNet.Instruments
                 if (engine_ == null)
                 {
                     var disc = iborIndex_.forwardingTermStructure();
-                    Utils.QL_REQUIRE(!disc.empty(), () =>
+                    QLNet.Utils.QL_REQUIRE(!disc.empty(), () =>
                         "null term structure set to this instance of " + iborIndex_.name());
                     var includeSettlementDateFlows = false;
                     IPricingEngine engine = new DiscountingSwapEngine(disc, includeSettlementDateFlows);

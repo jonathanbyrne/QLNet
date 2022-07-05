@@ -43,7 +43,7 @@ namespace QLNet.Math.Optimization
             parametersFreedoms_ = parametersFreedoms;
             costFunction_ = costFunction;
 
-            Utils.QL_REQUIRE(fixedParameters_.Count == parametersFreedoms_.Count, () =>
+            QLNet.Utils.QL_REQUIRE(fixedParameters_.Count == parametersFreedoms_.Count, () =>
                 "fixedParameters_.Count!=parametersFreedoms_.Count");
 
             for (var i = 0; i < parametersFreedoms_.Count; i++)
@@ -54,14 +54,14 @@ namespace QLNet.Math.Optimization
                 }
             }
 
-            Utils.QL_REQUIRE(numberOfFreeParameters_ > 0, () => "numberOfFreeParameters==0");
+            QLNet.Utils.QL_REQUIRE(numberOfFreeParameters_ > 0, () => "numberOfFreeParameters==0");
         }
 
         //! returns whole set of parameters corresponding to the set
         // of projected parameters
         public Vector include(Vector projectedParameters)
         {
-            Utils.QL_REQUIRE(projectedParameters.Count == numberOfFreeParameters_, () =>
+            QLNet.Utils.QL_REQUIRE(projectedParameters.Count == numberOfFreeParameters_, () =>
                 "projectedParameters.Count!=numberOfFreeParameters");
 
             var y = new Vector(fixedParameters_);
@@ -81,7 +81,7 @@ namespace QLNet.Math.Optimization
         // to set of parameters
         public Vector project(Vector parameters)
         {
-            Utils.QL_REQUIRE(parameters.Count == parametersFreedoms_.Count, () => "parameters.Count!=parametersFreedoms_.Count");
+            QLNet.Utils.QL_REQUIRE(parameters.Count == parametersFreedoms_.Count, () => "parameters.Count!=parametersFreedoms_.Count");
 
             var projectedParameters = new Vector(numberOfFreeParameters_);
             var i = 0;
@@ -111,7 +111,7 @@ namespace QLNet.Math.Optimization
 
         private void mapFreeParameters(Vector parametersValues)
         {
-            Utils.QL_REQUIRE(parametersValues.Count == numberOfFreeParameters_, () =>
+            QLNet.Utils.QL_REQUIRE(parametersValues.Count == numberOfFreeParameters_, () =>
                 "parametersValues.Count!=numberOfFreeParameters");
 
             var i = 0;

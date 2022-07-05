@@ -31,11 +31,11 @@ namespace QLNet.Math.statistics
             {
                 // stat wasn't initialized yet
                 var dimension = begin.Count;
-                Utils.QL_REQUIRE(dimension > 0, () => "sample error: end<=begin");
+                QLNet.Utils.QL_REQUIRE(dimension > 0, () => "sample error: end<=begin");
                 reset(dimension);
             }
 
-            Utils.QL_REQUIRE(begin.Count == dimension_, () =>
+            QLNet.Utils.QL_REQUIRE(begin.Count == dimension_, () =>
                 "sample size mismatch: " + dimension_ + " required, " + begin.Count + " provided");
 
             quadraticSum_ += weight * Matrix.outerProduct(begin, begin);
@@ -93,10 +93,10 @@ namespace QLNet.Math.statistics
         public Matrix covariance()
         {
             var sampleWeight = weightSum();
-            Utils.QL_REQUIRE(sampleWeight > 0.0, () => "sampleWeight=0, unsufficient");
+            QLNet.Utils.QL_REQUIRE(sampleWeight > 0.0, () => "sampleWeight=0, unsufficient");
 
             double sampleNumber = samples();
-            Utils.QL_REQUIRE(sampleNumber > 1.0, () => "sample number <=1, unsufficient");
+            QLNet.Utils.QL_REQUIRE(sampleNumber > 1.0, () => "sample number <=1, unsufficient");
 
             var m = mean();
             var inv = 1.0 / sampleWeight;
@@ -264,7 +264,7 @@ namespace QLNet.Math.statistics
             // do not check for null - in this case we throw anyways
             for (var i = 0; i < dimension_; i++)
             {
-                var methodInfo = Utils.GetMethodInfo(stats_[i], method);
+                var methodInfo = QLNet.Utils.GetMethodInfo(stats_[i], method);
                 results_[i] = (double)methodInfo.Invoke(stats_[i], new object[] { });
             }
 
@@ -277,7 +277,7 @@ namespace QLNet.Math.statistics
             // do not check for null - in this case we throw anyways
             for (var i = 0; i < dimension_; i++)
             {
-                var methodInfo = Utils.GetMethodInfo(stats_[i], method);
+                var methodInfo = QLNet.Utils.GetMethodInfo(stats_[i], method);
                 results_[i] = (double)methodInfo.Invoke(stats_[i], new object[] { x });
             }
 

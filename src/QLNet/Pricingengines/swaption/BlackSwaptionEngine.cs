@@ -26,7 +26,7 @@ using QLNet.Termstructures.Volatility.Optionlet;
 using QLNet.Termstructures.Volatility.swaption;
 using QLNet.Time;
 
-namespace QLNet.Pricingengines.swaption
+namespace QLNet.PricingEngines.swaption
 {
     /*! Generic Black-style-formula swaption engine
         This is the base class for the Black and Bachelier swaption engines */
@@ -60,7 +60,7 @@ namespace QLNet.Pricingengines.swaption
             CashAnnuityModel model = CashAnnuityModel.DiscountCurve)
             : base(discountCurve, vol, displacement, model)
         {
-            Utils.QL_REQUIRE(vol.link.volatilityType() == VolatilityType.ShiftedLognormal,
+            QLNet.Utils.QL_REQUIRE(vol.link.volatilityType() == VolatilityType.ShiftedLognormal,
                 () => "BlackSwaptionEngine requires (shifted) lognormal input volatility");
         }
     }

@@ -149,17 +149,17 @@ namespace QLNet.Termstructures.Credit
 
         private void initialize()
         {
-            Utils.QL_REQUIRE(dates_.Count >= interpolator_.requiredPoints, () => "not enough input dates given");
-            Utils.QL_REQUIRE(data_.Count == dates_.Count, () => "dates/data count mismatch");
+            QLNet.Utils.QL_REQUIRE(dates_.Count >= interpolator_.requiredPoints, () => "not enough input dates given");
+            QLNet.Utils.QL_REQUIRE(data_.Count == dates_.Count, () => "dates/data count mismatch");
 
             times_.Add(0.0);
             for (var i = 1; i < dates_.Count; ++i)
             {
-                Utils.QL_REQUIRE(dates_[i] > dates_[i - 1], () => "invalid date (" + dates_[i] + ", vs " + dates_[i - 1] + ")");
+                QLNet.Utils.QL_REQUIRE(dates_[i] > dates_[i - 1], () => "invalid date (" + dates_[i] + ", vs " + dates_[i - 1] + ")");
                 times_.Add(dayCounter().yearFraction(dates_[0], dates_[i]));
-                Utils.QL_REQUIRE(!Utils.close(times_[i], times_[i - 1]), () => "two dates correspond to the same time " +
+                QLNet.Utils.QL_REQUIRE(!Math.Utils.close(times_[i], times_[i - 1]), () => "two dates correspond to the same time " +
                                                                                "under this curve's day count convention");
-                Utils.QL_REQUIRE(data_[i] >= 0.0, () => "negative hazard rate");
+                QLNet.Utils.QL_REQUIRE(data_[i] >= 0.0, () => "negative hazard rate");
             }
 
             setupInterpolation();

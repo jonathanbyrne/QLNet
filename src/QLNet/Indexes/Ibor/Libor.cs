@@ -19,12 +19,11 @@
 
 using JetBrains.Annotations;
 using QLNet.Currencies;
-using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time;
 using QLNet.Time.Calendars;
 
-namespace QLNet
+namespace QLNet.Indexes.Ibor
 {
     //! base class for all ICE LIBOR indexes but the EUR, O/N, and S/N ones
     /*! LIBOR fixed by ICE.
@@ -51,9 +50,9 @@ namespace QLNet
             financialCenterCalendar_ = financialCenterCalendar;
             jointCalendar_ = new JointCalendar(new UnitedKingdom(UnitedKingdom.Market.Exchange),
                 financialCenterCalendar, JointCalendar.JointCalendarRule.JoinHolidays);
-            Utils.QL_REQUIRE(this.tenor().units() != TimeUnit.Days, () =>
+            QLNet.Utils.QL_REQUIRE(this.tenor().units() != TimeUnit.Days, () =>
                 "for daily tenors (" + this.tenor() + ") dedicated DailyTenor constructor must be used");
-            Utils.QL_REQUIRE(currency != new EURCurrency(), () =>
+            QLNet.Utils.QL_REQUIRE(currency != new EURCurrency(), () =>
                 "for EUR Libor dedicated EurLibor constructor must be used");
         }
 
@@ -79,7 +78,7 @@ namespace QLNet
         */
         public override Date valueDate(Date fixingDate)
         {
-            Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => "Fixing date " + fixingDate + " is not valid");
+            QLNet.Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => "Fixing date " + fixingDate + " is not valid");
 
             // http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1412 :
             // For all currencies other than EUR and GBP the period between
@@ -112,7 +111,7 @@ namespace QLNet
                 case TimeUnit.Years:
                     return BusinessDayConvention.ModifiedFollowing;
                 default:
-                    QL_FAIL("invalid time units");
+                    QLNet.Utils.QL_FAIL("invalid time units");
                     return BusinessDayConvention.Unadjusted;
             }
         }
@@ -128,7 +127,7 @@ namespace QLNet
                 case TimeUnit.Years:
                     return true;
                 default:
-                    QL_FAIL("invalid time units");
+                    QLNet.Utils.QL_FAIL("invalid time units");
                     return false;
             }
         }

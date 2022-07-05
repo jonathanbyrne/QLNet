@@ -21,9 +21,9 @@
 using System;
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.asian
+namespace QLNet.PricingEngines.asian
 {
     //! Pricing engine for European continuous geometric average price Asian
     /*! This class implements a continuous geometric average price
@@ -54,13 +54,13 @@ namespace QLNet.Pricingengines.asian
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.averageType == Average.Type.Geometric, () => "not a geometric average option");
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European Option");
+            QLNet.Utils.QL_REQUIRE(arguments_.averageType == Average.Type.Geometric, () => "not a geometric average option");
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European Option");
 
             var exercise = arguments_.exercise.lastDate();
 
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
             var volatility = process_.blackVolatility().link.blackVol(exercise, payoff.strike());
             var variance = process_.blackVolatility().link.blackVariance(exercise, payoff.strike());
@@ -83,7 +83,7 @@ namespace QLNet.Pricingengines.asian
             var dividendDiscount = System.Math.Exp(-dividendYield * t_q);
 
             var spot = process_.stateVariable().link.value();
-            Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying");
+            QLNet.Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying");
 
             var forward = spot * dividendDiscount / riskFreeDiscount;
 

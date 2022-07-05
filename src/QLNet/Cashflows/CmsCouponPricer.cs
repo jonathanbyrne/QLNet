@@ -1,6 +1,6 @@
 using QLNet.Termstructures.Volatility.swaption;
 
-namespace QLNet
+namespace QLNet.Cashflows
 {
     public abstract class CmsCouponPricer : FloatingRateCouponPricer
     {

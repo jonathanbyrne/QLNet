@@ -74,8 +74,8 @@ namespace QLNet.Math.Distributions
             rho_ = rho;
             rho2_ = rho * rho;
 
-            Utils.QL_REQUIRE(rho >= -1.0, () => "rho must be >= -1.0 (" + rho + " not allowed)");
-            Utils.QL_REQUIRE(rho <= 1.0, () => "rho must be <= 1.0 (" + rho + " not allowed)");
+            QLNet.Utils.QL_REQUIRE(rho >= -1.0, () => "rho must be >= -1.0 (" + rho + " not allowed)");
+            QLNet.Utils.QL_REQUIRE(rho <= 1.0, () => "rho must be <= 1.0 (" + rho + " not allowed)");
         }
 
         // function
@@ -143,7 +143,7 @@ namespace QLNet.Math.Distributions
             }
             else
             {
-                Utils.QL_FAIL("case not handled");
+                QLNet.Utils.QL_FAIL("case not handled");
             }
 
             return result;

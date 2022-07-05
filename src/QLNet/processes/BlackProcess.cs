@@ -3,7 +3,7 @@ using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
 
-namespace QLNet.processes
+namespace QLNet.Processes
 {
     [PublicAPI]
     public class BlackProcess : GeneralizedBlackScholesProcess

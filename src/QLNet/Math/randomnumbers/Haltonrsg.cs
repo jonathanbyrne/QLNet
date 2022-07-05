@@ -31,7 +31,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Methods.montecarlo;
 
-namespace QLNet.Math.randomnumbers
+namespace QLNet.Math.RandomNumbers
 {
     //! Halton low-discrepancy sequence generator
     /*! Halton algorithm for low-discrepancy sequence.  For more
@@ -65,7 +65,7 @@ namespace QLNet.Math.randomnumbers
             randomStart_ = new InitializedList<ulong>(dimensionality, 0UL);
             randomShift_ = new InitializedList<double>(dimensionality, 0.0);
 
-            Utils.QL_REQUIRE(dimensionality > 0, () => "dimensionality must be greater than 0");
+            QLNet.Utils.QL_REQUIRE(dimensionality > 0, () => "dimensionality must be greater than 0");
 
             if (randomStart || randomShift)
             {

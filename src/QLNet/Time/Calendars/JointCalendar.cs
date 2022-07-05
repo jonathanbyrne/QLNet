@@ -90,7 +90,7 @@ namespace QLNet.Time.Calendars
 
                         return false;
                     default:
-                        Utils.QL_FAIL("unknown joint calendar rule");
+                        QLNet.Utils.QL_FAIL("unknown joint calendar rule");
                         return false;
                 }
             }
@@ -120,7 +120,7 @@ namespace QLNet.Time.Calendars
 
                         return true;
                     default:
-                        Utils.QL_FAIL("unknown joint calendar rule");
+                        QLNet.Utils.QL_FAIL("unknown joint calendar rule");
                         return false;
                 }
             }
@@ -137,7 +137,7 @@ namespace QLNet.Time.Calendars
                         result += "JoinBusinessDays(";
                         break;
                     default:
-                        Utils.QL_FAIL("unknown joint calendar rule");
+                        QLNet.Utils.QL_FAIL("unknown joint calendar rule");
                         break;
                 }
 

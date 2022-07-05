@@ -19,13 +19,13 @@ using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
 using QLNet.Instruments;
-using QLNet.Pricingengines.swaption;
+using QLNet.PricingEngines.swaption;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Credit;
 using QLNet.Time;
 
-namespace QLNet.Pricingengines.Swap
+namespace QLNet.PricingEngines.Swap
 {
     /*! Bilateral (CVA and DVA) default adjusted vanilla swap pricing
      engine. Collateral is not considered. No wrong way risk is
@@ -150,9 +150,9 @@ namespace QLNet.Pricingengines.Swap
         {
             /* both DTS, YTS ref dates and pricing date consistency
             checks? settlement... */
-            Utils.QL_REQUIRE(!discountCurve_.empty(), () => "no discount term structure set");
-            Utils.QL_REQUIRE(!defaultTS_.empty(), () => "no ctpty default term structure set");
-            Utils.QL_REQUIRE(!swaptionletEngine_.empty(), () => "no swap option engine set");
+            QLNet.Utils.QL_REQUIRE(!discountCurve_.empty(), () => "no discount term structure set");
+            QLNet.Utils.QL_REQUIRE(!defaultTS_.empty(), () => "no ctpty default term structure set");
+            QLNet.Utils.QL_REQUIRE(!swaptionletEngine_.empty(), () => "no swap option engine set");
 
             var priceDate = defaultTS_.link.referenceDate();
 

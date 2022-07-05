@@ -22,7 +22,7 @@ using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Math.Solvers1d;
 using QLNet.Models.Equity;
-using QLNet.Pricingengines.vanilla;
+using QLNet.PricingEngines.vanilla;
 using QLNet.Time;
 using QLNet.Time.Calendars;
 
@@ -58,7 +58,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
             private double blackValue(Option.Type optionType, double strike,
                 double forward, double maturity,
                 double vol, double discount, double npv) =>
-                Utils.blackFormula(optionType, strike, forward,
+                PricingEngines.Utils.blackFormula(optionType, strike, forward,
                     System.Math.Max(0.0, vol) * System.Math.Sqrt(maturity),
                     discount) - npv;
         }

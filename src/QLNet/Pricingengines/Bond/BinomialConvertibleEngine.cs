@@ -18,13 +18,13 @@ using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Instruments.Bonds;
 using QLNet.Methods.lattices;
-using QLNet.processes;
+using QLNet.Processes;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Termstructures.Yield;
 
-namespace QLNet.Pricingengines.Bond
+namespace QLNet.PricingEngines.Bond
 {
     /// <summary>
     ///     Binomial Tsiveriotis-Fernandes engine for convertible bonds
@@ -41,7 +41,7 @@ namespace QLNet.Pricingengines.Bond
             process_ = process;
             timeSteps_ = timeSteps;
 
-            Utils.QL_REQUIRE(timeSteps > 0, () => " timeSteps must be positive");
+            QLNet.Utils.QL_REQUIRE(timeSteps > 0, () => " timeSteps must be positive");
             process_.registerWith(update);
         }
 
@@ -53,7 +53,7 @@ namespace QLNet.Pricingengines.Bond
             var volcal = process_.blackVolatility().link.calendar();
 
             var s0 = process_.x0();
-            Utils.QL_REQUIRE(s0 > 0.0, () => "negative or null underlying");
+            QLNet.Utils.QL_REQUIRE(s0 > 0.0, () => "negative or null underlying");
             var v = process_.blackVolatility().link.blackVol(arguments_.exercise.lastDate(), s0);
             var maturityDate = arguments_.exercise.lastDate();
             var riskFreeRate = process_.riskFreeRate().link.zeroRate(maturityDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).value();
@@ -71,7 +71,7 @@ namespace QLNet.Pricingengines.Bond
                     s0 -= args.dividends[i].amount() * process_.riskFreeRate().link.discount(args.dividends[i].date());
                 }
 
-                Utils.QL_REQUIRE(s0 > 0.0, () => "negative value after substracting dividends");
+                QLNet.Utils.QL_REQUIRE(s0 > 0.0, () => "negative value after substracting dividends");
             }
 
             // binomial trees with constant coefficient
@@ -85,7 +85,7 @@ namespace QLNet.Pricingengines.Bond
                 new Handle<BlackVolTermStructure>(new BlackConstantVol(referenceDate, volcal, v, voldc));
             var payoff = args.payoff as PlainVanillaPayoff;
 
-            Utils.QL_REQUIRE(payoff != null, () => " non-plain payoff given ");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => " non-plain payoff given ");
 
             var maturity = rfdc.yearFraction(args.settlementDate, maturityDate);
             var bs =
@@ -102,7 +102,7 @@ namespace QLNet.Pricingengines.Bond
             convertible.rollback(0.0);
             results_.value = convertible.presentValue();
 
-            Utils.QL_REQUIRE(results_.value < double.MaxValue, () => "floating-point overflow on tree grid");
+            QLNet.Utils.QL_REQUIRE(results_.value < double.MaxValue, () => "floating-point overflow on tree grid");
         }
     }
 }

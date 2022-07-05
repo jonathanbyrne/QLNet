@@ -19,9 +19,9 @@
 using System;
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.Basket
+namespace QLNet.PricingEngines.Basket
 {
     //! Pricing engine for spread option on two futures
     /*! This class implements formulae from
@@ -55,16 +55,16 @@ namespace QLNet.Pricingengines.Basket
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European Option");
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European Option");
 
             var exercise = arguments_.exercise as EuropeanExercise;
-            Utils.QL_REQUIRE(exercise != null, () => "not an European Option");
+            QLNet.Utils.QL_REQUIRE(exercise != null, () => "not an European Option");
 
             var spreadPayoff = arguments_.payoff as SpreadBasketPayoff;
-            Utils.QL_REQUIRE(spreadPayoff != null, () => " spread payoff expected");
+            QLNet.Utils.QL_REQUIRE(spreadPayoff != null, () => " spread payoff expected");
 
             var payoff = spreadPayoff.basePayoff() as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
             var strike = payoff.strike();
 
             var f1 = process1_.stateVariable().link.value();

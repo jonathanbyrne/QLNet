@@ -20,7 +20,7 @@ using JetBrains.Annotations;
 using QLNet.Methods.montecarlo;
 using QLNet.Models.MarketModels.BrownianGenerators;
 
-namespace QLNet.Math.randomnumbers
+namespace QLNet.Math.RandomNumbers
 {
     // Interface class to map the functionality of SobolBrownianGenerator
     // to the "conventional" sequence generator interface

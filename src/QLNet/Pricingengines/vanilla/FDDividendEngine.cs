@@ -19,9 +19,9 @@
 */
 
 using JetBrains.Annotations;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Abstract base class for dividend engines
     /*! \todo The dividend class really needs to be made more

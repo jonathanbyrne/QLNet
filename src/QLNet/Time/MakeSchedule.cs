@@ -56,9 +56,9 @@ namespace QLNet.Time
         public Schedule value()
         {
             // check for mandatory arguments
-            Utils.QL_REQUIRE(effectiveDate_ != null, () => "effective date not provided");
-            Utils.QL_REQUIRE(terminationDate_ != null, () => "termination date not provided");
-            Utils.QL_REQUIRE((object)tenor_ != null, () => "tenor/frequency not provided");
+            QLNet.Utils.QL_REQUIRE(effectiveDate_ != null, () => "effective date not provided");
+            QLNet.Utils.QL_REQUIRE(terminationDate_ != null, () => "termination date not provided");
+            QLNet.Utils.QL_REQUIRE((object)tenor_ != null, () => "tenor/frequency not provided");
 
             // if no calendar was set...
             if (calendar_ == null)

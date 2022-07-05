@@ -25,10 +25,9 @@ using QLNet.Math;
 using QLNet.Math.Interpolations;
 using QLNet.Math.ODE;
 using QLNet.Math.Solvers1d;
-using QLNet.Methods.Finitedifferences.Meshers;
 using QLNet.Methods.Finitedifferences.Utilities;
 
-namespace QLNet
+namespace QLNet.Methods.Finitedifferences.Meshers
 {
     [PublicAPI]
     public class Concentrating1dMesher : Fdm1dMesher
@@ -105,7 +104,7 @@ namespace QLNet
             bool requireCPoint = false)
             : base(size)
         {
-            Utils.QL_REQUIRE(end > start, () => "end must be larger than start");
+            QLNet.Utils.QL_REQUIRE(end > start, () => "end must be larger than start");
             if (cPoints == null)
             {
                 cPoints = new Pair<double?, double?>();
@@ -114,13 +113,13 @@ namespace QLNet
             var cPoint = cPoints.first;
             var density = cPoints.second == null ? null : cPoints.second * (end - start);
 
-            Utils.QL_REQUIRE(cPoint == null || (cPoint >= start && cPoint <= end),
+            QLNet.Utils.QL_REQUIRE(cPoint == null || (cPoint >= start && cPoint <= end),
                 () => "cPoint must be between start and end");
-            Utils.QL_REQUIRE(density == null || density > 0.0,
+            QLNet.Utils.QL_REQUIRE(density == null || density > 0.0,
                 () => "density > 0 required");
-            Utils.QL_REQUIRE(cPoint == null || density != null,
+            QLNet.Utils.QL_REQUIRE(cPoint == null || density != null,
                 () => "density must be given if cPoint is given");
-            Utils.QL_REQUIRE(!requireCPoint || cPoint != null,
+            QLNet.Utils.QL_REQUIRE(!requireCPoint || cPoint != null,
                 () => "cPoint is required in grid but not given");
 
             var dx = 1.0 / (size - 1);
@@ -136,7 +135,7 @@ namespace QLNet
                 {
                     u.Add(0.0);
                     z.Add(0.0);
-                    if (!Utils.close(cPoint.Value, start) && !Utils.close(cPoint.Value, end))
+                    if (!Math.Utils.close(cPoint.Value, start) && !Math.Utils.close(cPoint.Value, end))
                     {
                         var z0 = -c1 / (c2 - c1);
                         var u0 =
@@ -185,7 +184,7 @@ namespace QLNet
             double tol = 1e-8)
             : base(size)
         {
-            Utils.QL_REQUIRE(end > start, () => "end must be larger than start");
+            QLNet.Utils.QL_REQUIRE(end > start, () => "end must be larger than start");
 
             List<double?> points = new List<double?>(), betas = new List<double?>();
             foreach (var iter in cPoints)

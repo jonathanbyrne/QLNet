@@ -28,7 +28,7 @@ using QLNet.Termstructures;
 using QLNet.Indexes;
 using QLNet.Indexes.Inflation;
 using QLNet.Cashflows;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.Swap;
 using QLNet.Quotes;
 using QLNet.Termstructures.Yield;
 using QLNet.Time.Calendars;
@@ -154,7 +154,7 @@ namespace QLNet.Tests
             }
 
             var todayMinusLag = evaluationDate - iir.availabilityLag();
-            var lim1 = Utils.inflationPeriod(todayMinusLag, iir.frequency());
+            var lim1 = Termstructures.Utils.inflationPeriod(todayMinusLag, iir.frequency());
             todayMinusLag = lim1.Key;
 
             var eps = 1.0e-8;
@@ -163,11 +163,11 @@ namespace QLNet.Tests
             // (no TS so can't forecast).
             for (var i = 0; i < rpiSchedule.Count - 1; i++)
             {
-                var lim = Utils.inflationPeriod(rpiSchedule[i],
+                var lim = Termstructures.Utils.inflationPeriod(rpiSchedule[i],
                                                                      iir.frequency());
                 for (var d = lim.Key; d <= lim.Value; d++)
                 {
-                    if (d < Utils.inflationPeriod(todayMinusLag, iir.frequency()).Key)
+                    if (d < Termstructures.Utils.inflationPeriod(todayMinusLag, iir.frequency()).Key)
                     {
                         if (System.Math.Abs(iir.fixing(d) - fixData[i]) > eps)
                         {
@@ -299,7 +299,7 @@ namespace QLNet.Tests
                     if (!ii.interpolated()) // because fixing constant over period
                     {
                         t = hz.link.dayCounter().yearFraction(bd,
-                            Utils.inflationPeriod(d, ii.frequency()).Key);
+                            Termstructures.Utils.inflationPeriod(d, ii.frequency()).Key);
                     }
 
                     var calc = bf * System.Math.Pow(1 + z, t);
@@ -327,7 +327,7 @@ namespace QLNet.Tests
                 var fixDate = new Date(1, Month.August, 2014);
                 var payDate = new UnitedKingdom().adjust(fixDate + new Period(3, TimeUnit.Months), BusinessDayConvention.ModifiedFollowing);
                 var ind = ii as Index;
-                Utils.QL_REQUIRE(ind != null, () => "dynamic_pointer_cast to Index from InflationIndex failed");
+                QLNet.Utils.QL_REQUIRE(ind != null, () => "dynamic_pointer_cast to Index from InflationIndex failed");
 
                 var notional = 1000000.0;//1m
                 var iicf = new IndexedCashFlow(notional, ind, baseDate, fixDate, payDate);
@@ -343,7 +343,7 @@ namespace QLNet.Tests
                 // first make one ...
 
                 var zii = ii;
-                Utils.QL_REQUIRE(zii != null, () => "dynamic_pointer_cast to ZeroInflationIndex from UKRPI failed");
+                QLNet.Utils.QL_REQUIRE(zii != null, () => "dynamic_pointer_cast to ZeroInflationIndex from UKRPI failed");
                 var nzcis =
                    new ZeroCouponInflationSwap(ZeroCouponInflationSwap.Type.Payer,
                                                1000000.0,
@@ -373,7 +373,7 @@ namespace QLNet.Tests
 
                 //Seasonality factors NOT normalized
                 //and UKRPI is not interpolated
-                var trueBaseDate = Utils.inflationPeriod(hz.link.baseDate(), ii.frequency()).Value;
+                var trueBaseDate = Termstructures.Utils.inflationPeriod(hz.link.baseDate(), ii.frequency()).Value;
                 var seasonallityBaseDate = new Date(31, Month.January, trueBaseDate.year());
                 var seasonalityFactors = new List<double>(12);
                 seasonalityFactors.Add(1.003245);
@@ -416,7 +416,7 @@ namespace QLNet.Tests
             };
 
                 hz.link.setSeasonality(seasonality_1);
-                Utils.QL_REQUIRE(hz.link.hasSeasonality(), () => "[44] incorrectly believes NO seasonality correction");
+                QLNet.Utils.QL_REQUIRE(hz.link.hasSeasonality(), () => "[44] incorrectly believes NO seasonality correction");
 
                 double[] seasonalityFixing_1 =
                 {
@@ -491,9 +491,9 @@ namespace QLNet.Tests
 
                 //Testing Unset function
                 //
-                Utils.QL_REQUIRE(hz.link.hasSeasonality(), () => "[4] incorrectly believes NO seasonality correction");
+                QLNet.Utils.QL_REQUIRE(hz.link.hasSeasonality(), () => "[4] incorrectly believes NO seasonality correction");
                 hz.link.setSeasonality();
-                Utils.QL_REQUIRE(!hz.link.hasSeasonality(), () => "[5] incorrectly believes HAS seasonality correction");
+                QLNet.Utils.QL_REQUIRE(!hz.link.hasSeasonality(), () => "[5] incorrectly believes HAS seasonality correction");
 
                 double[] seasonalityFixing_unset =
                 {
@@ -607,7 +607,7 @@ namespace QLNet.Tests
                 // Test zero coupon swap
 
                 var ziiyes = iiyes;
-                Utils.QL_REQUIRE(ziiyes != null, () => "dynamic_pointer_cast to ZeroInflationIndex from UKRPI-I failed");
+                QLNet.Utils.QL_REQUIRE(ziiyes != null, () => "dynamic_pointer_cast to ZeroInflationIndex from UKRPI-I failed");
                 var nzcisyes = new ZeroCouponInflationSwap(ZeroCouponInflationSwap.Type.Payer,
                                                                                1000000.0,
                                                                                evaluationDate,
@@ -747,7 +747,7 @@ namespace QLNet.Tests
                 }
 
                 var todayMinusLag = evaluationDate - iir.availabilityLag();
-                var lim0 = Utils.inflationPeriod(todayMinusLag, iir.frequency());
+                var lim0 = Termstructures.Utils.inflationPeriod(todayMinusLag, iir.frequency());
                 todayMinusLag = lim0.Value + 1 - 2 * new Period(iir.frequency());
 
                 var eps = 1.0e-8;
@@ -757,8 +757,8 @@ namespace QLNet.Tests
                 // (no TS so can't forecast).
                 for (var i = 13; i < rpiSchedule.Count; i++)
                 {
-                    var lim = Utils.inflationPeriod(rpiSchedule[i], iir.frequency());
-                    var limBef = Utils.inflationPeriod(rpiSchedule[i - 12], iir.frequency());
+                    var lim = Termstructures.Utils.inflationPeriod(rpiSchedule[i], iir.frequency());
+                    var limBef = Termstructures.Utils.inflationPeriod(rpiSchedule[i - 12], iir.frequency());
                     for (var d = lim.Key; d <= lim.Value; d++)
                     {
                         if (d < todayMinusLag)

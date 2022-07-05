@@ -75,8 +75,8 @@ namespace QLNet.Methods.Finitedifferences
             lowerDiagonal_ = low.Clone();
             upperDiagonal_ = high.Clone();
 
-            Utils.QL_REQUIRE(low.Count == mid.Count - 1, () => "wrong size for lower diagonal vector");
-            Utils.QL_REQUIRE(high.Count == mid.Count - 1, () => "wrong size for upper diagonal vector");
+            QLNet.Utils.QL_REQUIRE(low.Count == mid.Count - 1, () => "wrong size for lower diagonal vector");
+            QLNet.Utils.QL_REQUIRE(high.Count == mid.Count - 1, () => "wrong size for upper diagonal vector");
         }
 
         public IOperator add
@@ -95,7 +95,7 @@ namespace QLNet.Methods.Finitedifferences
         //! apply operator to a given array
         public Vector applyTo(Vector v)
         {
-            Utils.QL_REQUIRE(v.Count == size(), () => "vector of the wrong size (" + v.Count + "instead of " + size() + ")");
+            QLNet.Utils.QL_REQUIRE(v.Count == size(), () => "vector of the wrong size (" + v.Count + "instead of " + size() + ")");
 
             var result = new Vector(size());
 
@@ -156,7 +156,7 @@ namespace QLNet.Methods.Finitedifferences
 
         public void setMidRow(int i, double valA, double valB, double valC)
         {
-            Utils.QL_REQUIRE(i >= 1 && i <= size() - 2, () => "out of range in TridiagonalSystem::setMidRow");
+            QLNet.Utils.QL_REQUIRE(i >= 1 && i <= size() - 2, () => "out of range in TridiagonalSystem::setMidRow");
             lowerDiagonal_[i - 1] = valA;
             diagonal_[i] = valB;
             upperDiagonal_[i] = valC;
@@ -185,19 +185,19 @@ namespace QLNet.Methods.Finitedifferences
         //! solve linear system for a given right-hand side
         public Vector solveFor(Vector rhs)
         {
-            Utils.QL_REQUIRE(rhs.Count == size(), () => "rhs has the wrong size");
+            QLNet.Utils.QL_REQUIRE(rhs.Count == size(), () => "rhs has the wrong size");
 
             Vector result = new Vector(size()), tmp = new Vector(size());
 
             var bet = diagonal_[0];
-            Utils.QL_REQUIRE(bet.IsNotEqual(0.0), () => "division by zero");
+            QLNet.Utils.QL_REQUIRE(bet.IsNotEqual(0.0), () => "division by zero");
             result[0] = rhs[0] / bet;
 
             for (var j = 1; j < size(); j++)
             {
                 tmp[j] = upperDiagonal_[j - 1] / bet;
                 bet = diagonal_[j] - lowerDiagonal_[j - 1] * tmp[j];
-                Utils.QL_REQUIRE(bet.IsNotEqual(0.0), () => "division by zero");
+                QLNet.Utils.QL_REQUIRE(bet.IsNotEqual(0.0), () => "division by zero");
                 result[j] = (rhs[j] - lowerDiagonal_[j - 1] * result[j - 1]) / bet;
             }
 
@@ -214,7 +214,7 @@ namespace QLNet.Methods.Finitedifferences
         //! solve linear system with SOR approach
         public Vector SOR(Vector rhs, double tol)
         {
-            Utils.QL_REQUIRE(rhs.Count == size(), () => "rhs has the wrong size");
+            QLNet.Utils.QL_REQUIRE(rhs.Count == size(), () => "rhs has the wrong size");
 
             // initial guess
             var result = rhs.Clone();
@@ -226,7 +226,7 @@ namespace QLNet.Methods.Finitedifferences
             int i;
             for (var sorIteration = 0; err > tol; sorIteration++)
             {
-                Utils.QL_REQUIRE(sorIteration < 100000, () =>
+                QLNet.Utils.QL_REQUIRE(sorIteration < 100000, () =>
                     "tolerance (" + tol + ") not reached in " + sorIteration + " iterations. " + "The error still is " + err);
 
                 temp = omega * (rhs[0] -

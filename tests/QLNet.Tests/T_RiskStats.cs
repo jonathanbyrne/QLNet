@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using QLNet.Math.Distributions;
+using QLNet.Math.RandomNumbers;
 using QLNet.Math.statistics;
 
 namespace QLNet.Tests

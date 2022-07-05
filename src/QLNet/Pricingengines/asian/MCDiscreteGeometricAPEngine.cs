@@ -19,12 +19,12 @@
 
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 using QLNet.Math.statistics;
 using QLNet.Methods.montecarlo;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.asian
+namespace QLNet.PricingEngines.asian
 {
     /// <summary>
     ///     Analytic engine for discrete geometric average price Asian
@@ -62,10 +62,10 @@ namespace QLNet.Pricingengines.asian
         protected override PathPricer<IPath> pathPricer()
         {
             var payoff = (PlainVanillaPayoff)arguments_.payoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
             var exercise = (EuropeanExercise)arguments_.exercise;
-            Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
+            QLNet.Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
 
             return (PathPricer<IPath>)new GeometricAPOPathPricer(
                 payoff.optionType(),

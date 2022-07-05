@@ -22,7 +22,7 @@ using QLNet.Instruments;
 using QLNet.Math.integrals;
 using QLNet.Models.Equity;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! analytic Heston-model engine based on Fourier transform
     /*! Integration detail:
@@ -112,7 +112,7 @@ namespace QLNet.Pricingengines.vanilla
             // non adaptive integration algorithms based on Gaussian quadrature
             public static Integration gaussLaguerre(int intOrder = 128)
             {
-                Utils.QL_REQUIRE(intOrder <= 192, () => "maximum integraton order (192) exceeded");
+                QLNet.Utils.QL_REQUIRE(intOrder <= 192, () => "maximum integraton order (192) exceeded");
                 return new Integration(Algorithm.GaussLaguerre, new GaussLaguerreIntegration(intOrder));
             }
 
@@ -151,7 +151,7 @@ namespace QLNet.Pricingengines.vanilla
                         retVal = integrator_.value(new integrand2(c_inf, f).value, 0.0, 1.0);
                         break;
                     default:
-                        Utils.QL_FAIL("unknwon integration algorithm");
+                        QLNet.Utils.QL_FAIL("unknwon integration algorithm");
                         break;
                 }
 
@@ -176,7 +176,7 @@ namespace QLNet.Pricingengines.vanilla
                     return gaussianQuadrature_.order();
                 }
 
-                Utils.QL_FAIL("neither Integrator nor GaussianQuadrature given");
+                QLNet.Utils.QL_FAIL("neither Integrator nor GaussianQuadrature given");
                 return 0; // jfc
             }
         }
@@ -403,7 +403,7 @@ namespace QLNet.Pricingengines.vanilla
                     ).Imaginary / phi;
                 }
 
-                Utils.QL_FAIL("unknown complex logarithm formula");
+                QLNet.Utils.QL_FAIL("unknown complex logarithm formula");
                 return 0;
             }
         }
@@ -488,8 +488,8 @@ namespace QLNet.Pricingengines.vanilla
             cpxLog_ = cpxLog;
             integration_ = integration; // TODO check
 
-            Utils.QL_REQUIRE(cpxLog_ != ComplexLogFormula.BranchCorrection
-                             || !integration.isAdaptiveIntegration(), () =>
+            QLNet.Utils.QL_REQUIRE(cpxLog_ != ComplexLogFormula.BranchCorrection
+                                   || !integration.isAdaptiveIntegration(), () =>
                 "Branch correction does not work in conjunction with adaptive integration methods");
         }
 
@@ -533,7 +533,7 @@ namespace QLNet.Pricingengines.vanilla
                     value = spotPrice * dividendDiscount * (p1 - 0.5) - strikePrice * riskFreeDiscount * (p2 - 0.5);
                     break;
                 default:
-                    Utils.QL_FAIL("unknown option ExerciseType");
+                    QLNet.Utils.QL_FAIL("unknown option ExerciseType");
                     break;
             }
         }
@@ -541,11 +541,11 @@ namespace QLNet.Pricingengines.vanilla
         public override void calculate()
         {
             // this is a european option pricer
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
 
             // plain vanilla
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non plain vanilla payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non plain vanilla payoff given");
 
             var process = model_.link.process();
 
@@ -553,7 +553,7 @@ namespace QLNet.Pricingengines.vanilla
             var dividendDiscount = process.dividendYield().link.discount(arguments_.exercise.lastDate());
 
             var spotPrice = process.s0().link.value();
-            Utils.QL_REQUIRE(spotPrice > 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(spotPrice > 0.0, () => "negative or null underlying given");
 
             var strikePrice = payoff.strike();
             var term = process.time(arguments_.exercise.lastDate());

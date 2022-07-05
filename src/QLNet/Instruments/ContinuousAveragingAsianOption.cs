@@ -42,7 +42,7 @@ namespace QLNet.Instruments
             public override void validate()
             {
                 base.validate();
-                Utils.QL_REQUIRE(averageType != Average.Type.NULL, () => "unspecified average ExerciseType");
+                QLNet.Utils.QL_REQUIRE(averageType != Average.Type.NULL, () => "unspecified average ExerciseType");
             }
         }
 
@@ -62,7 +62,7 @@ namespace QLNet.Instruments
             base.setupArguments(args);
 
             var moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
+            QLNet.Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
             moreArgs.averageType = averageType_;
         }
     }

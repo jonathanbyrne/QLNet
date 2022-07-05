@@ -19,6 +19,7 @@
 
 using JetBrains.Annotations;
 using QLNet.Currencies;
+using QLNet.Indexes.Ibor;
 using QLNet.Termstructures;
 using QLNet.Time;
 using QLNet.Time.Calendars;

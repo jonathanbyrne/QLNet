@@ -2,7 +2,7 @@
 using QLNet.Indexes;
 using QLNet.Termstructures.Volatility.Inflation;
 
-namespace QLNet.Pricingengines.inflation
+namespace QLNet.PricingEngines.inflation
 {
     [PublicAPI]
     public class YoYInflationBachelierCapFloorEngine : YoYInflationCapFloorEngine

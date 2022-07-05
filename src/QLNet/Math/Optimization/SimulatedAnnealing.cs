@@ -21,7 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 
 namespace QLNet.Math.Optimization
 {

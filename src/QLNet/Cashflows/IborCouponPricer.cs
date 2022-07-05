@@ -1,6 +1,6 @@
 using QLNet.Termstructures.Volatility.Optionlet;
 
-namespace QLNet
+namespace QLNet.Cashflows
 {
     public abstract class IborCouponPricer : FloatingRateCouponPricer
     {

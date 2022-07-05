@@ -44,7 +44,7 @@ namespace QLNet.Math.Optimization
         public virtual Vector lowerBound(Vector parameters)
         {
             var result = impl_.lowerBound(parameters);
-            Utils.QL_REQUIRE(parameters.size() == result.size(), () =>
+            QLNet.Utils.QL_REQUIRE(parameters.size() == result.size(), () =>
                 "lower bound size (" + result.size()
                                      + ") not equal to params size ("
                                      + parameters.size() + ")");
@@ -64,7 +64,7 @@ namespace QLNet.Math.Optimization
             {
                 if (icount > 200)
                 {
-                    Utils.QL_FAIL("can't update parameter vector");
+                    QLNet.Utils.QL_FAIL("can't update parameter vector");
                 }
 
                 diff *= 0.5;
@@ -81,7 +81,7 @@ namespace QLNet.Math.Optimization
         public virtual Vector upperBound(Vector parameters)
         {
             var result = impl_.upperBound(parameters);
-            Utils.QL_REQUIRE(parameters.size() == result.size(), () =>
+            QLNet.Utils.QL_REQUIRE(parameters.size() == result.size(), () =>
                 "upper bound size (" + result.size()
                                      + ") not equal to params size ("
                                      + parameters.size() + ")");

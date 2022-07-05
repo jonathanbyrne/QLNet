@@ -66,18 +66,18 @@ namespace QLNet.Instruments
             public override void validate()
             {
                 var moneyness = payoff as PercentageStrikePayoff;
-                Utils.QL_REQUIRE(moneyness != null, () => "wrong payoff ExerciseType");
-                Utils.QL_REQUIRE(moneyness.strike() > 0.0, () => "negative or zero moneyness given");
-                Utils.QL_REQUIRE(accruedCoupon == null || accruedCoupon >= 0.0, () => "negative accrued coupon");
-                Utils.QL_REQUIRE(localCap == null || localCap >= 0.0, () => "negative local cap");
-                Utils.QL_REQUIRE(localFloor == null || localFloor >= 0.0, () => "negative local floor");
-                Utils.QL_REQUIRE(globalCap == null || globalCap >= 0.0, () => "negative global cap");
-                Utils.QL_REQUIRE(globalFloor == null || globalFloor >= 0.0, () => "negative global floor");
-                Utils.QL_REQUIRE(!resetDates.empty(), () => "no reset dates given");
+                QLNet.Utils.QL_REQUIRE(moneyness != null, () => "wrong payoff ExerciseType");
+                QLNet.Utils.QL_REQUIRE(moneyness.strike() > 0.0, () => "negative or zero moneyness given");
+                QLNet.Utils.QL_REQUIRE(accruedCoupon == null || accruedCoupon >= 0.0, () => "negative accrued coupon");
+                QLNet.Utils.QL_REQUIRE(localCap == null || localCap >= 0.0, () => "negative local cap");
+                QLNet.Utils.QL_REQUIRE(localFloor == null || localFloor >= 0.0, () => "negative local floor");
+                QLNet.Utils.QL_REQUIRE(globalCap == null || globalCap >= 0.0, () => "negative global cap");
+                QLNet.Utils.QL_REQUIRE(globalFloor == null || globalFloor >= 0.0, () => "negative global floor");
+                QLNet.Utils.QL_REQUIRE(!resetDates.empty(), () => "no reset dates given");
                 for (var i = 0; i < resetDates.Count; ++i)
                 {
-                    Utils.QL_REQUIRE(exercise.lastDate() > resetDates[i], () => "reset date greater or equal to maturity");
-                    Utils.QL_REQUIRE(i == 0 || resetDates[i] > resetDates[i - 1], () => "unsorted reset dates");
+                    QLNet.Utils.QL_REQUIRE(exercise.lastDate() > resetDates[i], () => "reset date greater or equal to maturity");
+                    QLNet.Utils.QL_REQUIRE(i == 0 || resetDates[i] > resetDates[i - 1], () => "unsorted reset dates");
                 }
             }
         }
@@ -100,7 +100,7 @@ namespace QLNet.Instruments
             base.setupArguments(args);
             // set accrued coupon, last fixing, caps, floors
             var moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong engine ExerciseType");
+            QLNet.Utils.QL_REQUIRE(moreArgs != null, () => "wrong engine ExerciseType");
             moreArgs.resetDates = new List<Date>(resetDates_);
         }
     }

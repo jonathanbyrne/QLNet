@@ -21,9 +21,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using QLNet;
+using QLNet.Math.RandomNumbers;
 using QLNet.Math.statistics;
 using QLNet.Patterns;
-using QLNet.Math.randomnumbers;
 
 namespace QLNet.Tests
 {
@@ -117,7 +117,7 @@ namespace QLNet.Tests
 
         internal void TEST_INC_STAT(double expr, double expected)
         {
-            if (!Utils.close_enough(expr, expected))
+            if (!Math.Utils.close_enough(expr, expected))
             {
                 QAssert.Fail(" (" + expr + ") can not be reproduced against cached result (" + expected + ")");
             }

@@ -20,13 +20,13 @@
 
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 using QLNet.Math.statistics;
 using QLNet.Methods.montecarlo;
 using QLNet.Patterns;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! American Monte Carlo engine
     /*! References:
@@ -78,10 +78,10 @@ namespace QLNet.Pricingengines.vanilla
         protected override PathPricer<IPath> controlPathPricer()
         {
             var payoff = arguments_.payoff as StrikedTypePayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "StrikedTypePayoff needed for control variate");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "StrikedTypePayoff needed for control variate");
 
             var process = process_ as GeneralizedBlackScholesProcess;
-            Utils.QL_REQUIRE(process != null, () => "generalized Black-Scholes process required");
+            QLNet.Utils.QL_REQUIRE(process != null, () => "generalized Black-Scholes process required");
 
             return new EuropeanPathPricer(payoff.optionType(), payoff.strike(),
                 process.riskFreeRate().link.discount(timeGrid().Last()));
@@ -90,7 +90,7 @@ namespace QLNet.Pricingengines.vanilla
         protected override IPricingEngine controlPricingEngine()
         {
             var process = process_ as GeneralizedBlackScholesProcess;
-            Utils.QL_REQUIRE(process != null, () => "generalized Black-Scholes process required");
+            QLNet.Utils.QL_REQUIRE(process != null, () => "generalized Black-Scholes process required");
 
             return new AnalyticEuropeanEngine(process);
         }
@@ -99,7 +99,7 @@ namespace QLNet.Pricingengines.vanilla
         {
             var controlPE = controlPricingEngine();
 
-            Utils.QL_REQUIRE(controlPE != null, () => "engine does not provide control variation pricing engine");
+            QLNet.Utils.QL_REQUIRE(controlPE != null, () => "engine does not provide control variation pricing engine");
 
             var controlArguments = controlPE.getArguments() as QLNet.Option.Arguments;
             controlArguments = arguments_;
@@ -115,11 +115,11 @@ namespace QLNet.Pricingengines.vanilla
         protected override LongstaffSchwartzPathPricer<IPath> lsmPathPricer()
         {
             var process = process_ as GeneralizedBlackScholesProcess;
-            Utils.QL_REQUIRE(process != null, () => "generalized Black-Scholes process required");
+            QLNet.Utils.QL_REQUIRE(process != null, () => "generalized Black-Scholes process required");
 
             var exercise = arguments_.exercise as EarlyExercise;
-            Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
-            Utils.QL_REQUIRE(!exercise.payoffAtExpiry(), () => "payoff at expiry not handled");
+            QLNet.Utils.QL_REQUIRE(exercise != null, () => "wrong exercise given");
+            QLNet.Utils.QL_REQUIRE(!exercise.payoffAtExpiry(), () => "payoff at expiry not handled");
 
             var earlyExercisePathPricer = new AmericanPathPricer(arguments_.payoff, polynomOrder_, polynomType_);
 
@@ -164,8 +164,8 @@ namespace QLNet.Pricingengines.vanilla
         // conversion to pricing engine
         public IPricingEngine value()
         {
-            Utils.QL_REQUIRE(steps_ != null || stepsPerYear_ != null, () => "number of steps not given");
-            Utils.QL_REQUIRE(steps_ == null || stepsPerYear_ == null, () => "number of steps overspecified");
+            QLNet.Utils.QL_REQUIRE(steps_ != null || stepsPerYear_ != null, () => "number of steps not given");
+            QLNet.Utils.QL_REQUIRE(steps_ == null || stepsPerYear_ == null, () => "number of steps overspecified");
 
             return new MCAmericanEngine<RNG, S>(process_, steps_, stepsPerYear_, antithetic_, controlVariate_, samples_, tolerance_,
                 maxSamples_, seed_, polynomOrder_, polynomType_, calibrationSamples_);
@@ -173,8 +173,8 @@ namespace QLNet.Pricingengines.vanilla
 
         public MakeMCAmericanEngine<RNG, S> withAbsoluteTolerance(double tolerance)
         {
-            Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
-            Utils.QL_REQUIRE(FastActivator<RNG>.Create().allowsErrorEstimate != 0, () => "chosen random generator policy does not allow an error estimate");
+            QLNet.Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
+            QLNet.Utils.QL_REQUIRE(FastActivator<RNG>.Create().allowsErrorEstimate != 0, () => "chosen random generator policy does not allow an error estimate");
 
             tolerance_ = tolerance;
             return this;
@@ -220,7 +220,7 @@ namespace QLNet.Pricingengines.vanilla
 
         public MakeMCAmericanEngine<RNG, S> withSamples(int samples)
         {
-            Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
+            QLNet.Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
             samples_ = samples;
             return this;
         }

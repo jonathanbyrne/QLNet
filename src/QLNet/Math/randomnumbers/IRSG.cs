@@ -1,6 +1,6 @@
 ﻿using JetBrains.Annotations;
 
-namespace QLNet.Math.randomnumbers
+namespace QLNet.Math.RandomNumbers
 {
     [PublicAPI]
     public interface IRSG

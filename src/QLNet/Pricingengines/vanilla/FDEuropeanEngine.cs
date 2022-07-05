@@ -22,9 +22,9 @@ using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences;
 using QLNet.Patterns;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Pricing engine for European options using finite-differences
     /*! \ingroup vanillaengines

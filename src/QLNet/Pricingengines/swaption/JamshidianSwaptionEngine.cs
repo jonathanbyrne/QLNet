@@ -30,7 +30,7 @@ using QLNet.Models.Shortrate;
 using QLNet.Termstructures;
 using QLNet.Time;
 
-namespace QLNet.Pricingengines.swaption
+namespace QLNet.PricingEngines.swaption
 {
     //! Jamshidian swaption engine
     /*! \ingroup swaptionengines
@@ -101,13 +101,13 @@ namespace QLNet.Pricingengines.swaption
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.settlementMethod != Settlement.Method.ParYieldCurve, () =>
+            QLNet.Utils.QL_REQUIRE(arguments_.settlementMethod != Settlement.Method.ParYieldCurve, () =>
                 "cash-settled (ParYieldCurve) swaptions not priced by Jamshidian engine");
 
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () =>
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () =>
                 "cannot use the Jamshidian decomposition on exotic swaptions");
 
-            Utils.QL_REQUIRE(arguments_.swap.spread.IsEqual(0.0), () =>
+            QLNet.Utils.QL_REQUIRE(arguments_.swap.spread.IsEqual(0.0), () =>
                 "non zero spread (" + arguments_.swap.spread + ") not allowed");
 
             Date referenceDate;

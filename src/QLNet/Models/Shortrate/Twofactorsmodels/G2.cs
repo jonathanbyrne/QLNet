@@ -26,7 +26,7 @@ using QLNet.Math.Distributions;
 using QLNet.Math.integrals;
 using QLNet.Math.Optimization;
 using QLNet.Math.Solvers1d;
-using QLNet.processes;
+using QLNet.Processes;
 using QLNet.Termstructures;
 
 // Two-factor additive Gaussian Model G2 + +
@@ -338,7 +338,7 @@ namespace QLNet.Models.Shortrate.Twofactorsmodels
             double maturity,
             Vector factors)
         {
-            Utils.QL_REQUIRE(factors.size() > 1, () => "g2 model needs two factors to compute discount bond");
+            QLNet.Utils.QL_REQUIRE(factors.size() > 1, () => "g2 model needs two factors to compute discount bond");
             return discountBond(now, maturity, factors[0], factors[1]);
         }
 
@@ -353,7 +353,7 @@ namespace QLNet.Models.Shortrate.Twofactorsmodels
             var f = termStructure().link.discount(bondMaturity);
             var k = termStructure().link.discount(maturity) * strike;
 
-            return Utils.blackFormula(type, k, f, v);
+            return PricingEngines.Utils.blackFormula(type, k, f, v);
         }
 
         public override ShortRateDynamics dynamics() => new Dynamics(phi_, a(), sigma(), b(), eta(), rho());

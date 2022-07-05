@@ -19,10 +19,9 @@
 */
 
 using System.Collections.Generic;
-using QLNet.Math.randomnumbers;
 using QLNet.Methods.montecarlo;
 
-namespace QLNet
+namespace QLNet.Math.RandomNumbers
 {
     //! Sobol low-discrepancy sequence generator
     /*! A Gray code counter and bitwise operations are used for very
@@ -151,8 +150,8 @@ namespace QLNet
                 directionIntegers_[i] = new InitializedList<ulong>(bits_);
             }
 
-            Utils.QL_REQUIRE(dimensionality > 0, () => "dimensionality must be greater than 0");
-            Utils.QL_REQUIRE(dimensionality <= PPMT_MAX_DIM, () =>
+            QLNet.Utils.QL_REQUIRE(dimensionality > 0, () => "dimensionality must be greater than 0");
+            QLNet.Utils.QL_REQUIRE(dimensionality <= PPMT_MAX_DIM, () =>
                 "dimensionality " + dimensionality + " exceeds the number of available " +
                 "primitive polynomials modulo two (" + PPMT_MAX_DIM + ")");
 
@@ -468,7 +467,7 @@ namespace QLNet
             // increment the counter
             sequenceCounter_++;
             // did we overflow?
-            Utils.QL_REQUIRE(sequenceCounter_ != 0, () => "period exceeded");
+            QLNet.Utils.QL_REQUIRE(sequenceCounter_ != 0, () => "period exceeded");
 
             // instead of using the counter n as new unique generating integer
             // for the n-th draw use the Gray code G(n) as proposed

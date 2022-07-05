@@ -21,14 +21,14 @@ using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Math.Distributions;
 using QLNet.Math.Interpolations;
-using QLNet.processes;
+using QLNet.Processes;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
 
-namespace QLNet.Pricingengines.barrier
+namespace QLNet.PricingEngines.barrier
 {
     [PublicAPI]
     public class VannaVolgaDoubleBarrierEngine : GenericEngine<DoubleBarrierOption.Arguments, OneAssetOption.Results>
@@ -70,15 +70,15 @@ namespace QLNet.Pricingengines.barrier
             series_ = series;
             getOriginalEngine_ = getEngine;
 
-            Utils.QL_REQUIRE(vol25Put_.link.delta().IsEqual(-0.25), () => "25 delta put is required by vanna volga method");
-            Utils.QL_REQUIRE(vol25Call_.link.delta().IsEqual(0.25), () => "25 delta call is required by vanna volga method");
+            QLNet.Utils.QL_REQUIRE(vol25Put_.link.delta().IsEqual(-0.25), () => "25 delta put is required by vanna volga method");
+            QLNet.Utils.QL_REQUIRE(vol25Call_.link.delta().IsEqual(0.25), () => "25 delta call is required by vanna volga method");
 
-            Utils.QL_REQUIRE(vol25Put_.link.maturity().IsEqual(vol25Call_.link.maturity()) &&
-                             vol25Put_.link.maturity().IsEqual(atmVol_.link.maturity()), () =>
+            QLNet.Utils.QL_REQUIRE(vol25Put_.link.maturity().IsEqual(vol25Call_.link.maturity()) &&
+                                   vol25Put_.link.maturity().IsEqual(atmVol_.link.maturity()), () =>
                 "Maturity of 3 vols are not the same");
 
-            Utils.QL_REQUIRE(!domesticTS_.empty(), () => "domestic yield curve is not defined");
-            Utils.QL_REQUIRE(!foreignTS_.empty(), () => "foreign yield curve is not defined");
+            QLNet.Utils.QL_REQUIRE(!domesticTS_.empty(), () => "domestic yield curve is not defined");
+            QLNet.Utils.QL_REQUIRE(!foreignTS_.empty(), () => "foreign yield curve is not defined");
 
             atmVol_.registerWith(update);
             vol25Put_.registerWith(update);
@@ -95,8 +95,8 @@ namespace QLNet.Pricingengines.barrier
             var spotShift_delta = 0.0001 * spotFX_.link.value();
             var sigmaShift_vanna = 0.0001;
 
-            Utils.QL_REQUIRE(arguments_.barrierType == DoubleBarrier.Type.KnockIn ||
-                             arguments_.barrierType == DoubleBarrier.Type.KnockOut, () =>
+            QLNet.Utils.QL_REQUIRE(arguments_.barrierType == DoubleBarrier.Type.KnockIn ||
+                                   arguments_.barrierType == DoubleBarrier.Type.KnockOut, () =>
                 "Only same ExerciseType barrier supported");
 
             var x0Quote = new Handle<Quote>(new SimpleQuote(spotFX_.link.value()));
@@ -144,7 +144,7 @@ namespace QLNet.Pricingengines.barrier
             var interpolation = vannaVolga.interpolate(strikes, strikes.Count, vols);
             interpolation.enableExtrapolation();
             var payoff = arguments_.payoff as StrikedTypePayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "invalid payoff");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "invalid payoff");
             var strikeVol = interpolation.value(payoff.strike());
             // Vanilla option price
             var vanillaOption = Utils.blackFormula(payoff.optionType(), payoff.strike(),

@@ -1,7 +1,7 @@
 ﻿using System;
 using JetBrains.Annotations;
 
-namespace QLNet
+namespace QLNet.Instruments
 {
     [PublicAPI]
     public class CouponConversion

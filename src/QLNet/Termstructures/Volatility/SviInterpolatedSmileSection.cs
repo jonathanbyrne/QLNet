@@ -148,7 +148,7 @@ namespace QLNet.Termstructures.Volatility
                 exerciseTime(), forwardValue_, a_, b_, sigma_, rho_, m_, isAFixed_,
                 isBFixed_, isSigmaFixed_, isRhoFixed_, isMFixed_, vegaWeighted_,
                 endCriteria_, method_);
-            Utils.swap(ref tmp, ref sviInterpolation_);
+            QLNet.Utils.swap(ref tmp, ref sviInterpolation_);
         }
 
         protected override void performCalculations()

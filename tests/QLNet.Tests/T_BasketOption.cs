@@ -19,12 +19,12 @@
 using System;
 using System.Collections.Generic;
 using Xunit;
-using QLNet.processes;
 using QLNet.Instruments;
 using QLNet.Time;
 using QLNet.Termstructures;
 using QLNet.Math;
-using QLNet.Pricingengines.Basket;
+using QLNet.PricingEngines.Basket;
+using QLNet.Processes;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Quotes;
 using QLNet.Time.DayCounters;
@@ -83,7 +83,7 @@ namespace QLNet.Tests
                 case BasketType.SpreadBasket:
                     return new SpreadBasketPayoff(p);
             }
-            Utils.QL_FAIL("unknown basket option ExerciseType");
+            QLNet.Utils.QL_FAIL("unknown basket option ExerciseType");
             return null;
         }
         public string basketTypeToString(BasketType basketType)
@@ -97,7 +97,7 @@ namespace QLNet.Tests
                 case BasketType.SpreadBasket:
                     return "Spread";
             }
-            Utils.QL_FAIL("unknown basket option ExerciseType");
+            QLNet.Utils.QL_FAIL("unknown basket option ExerciseType");
             return string.Empty;
         }
 
@@ -285,7 +285,7 @@ namespace QLNet.Tests
                         break;
 
                     default:
-                        Utils.QL_FAIL("unknown basket ExerciseType");
+                        QLNet.Utils.QL_FAIL("unknown basket ExerciseType");
                         break;
                 }
 

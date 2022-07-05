@@ -22,8 +22,8 @@ namespace QLNet.Termstructures.Yield
             method_ = method;
             discountingCurve_ = discountCurve;
 
-            Utils.QL_REQUIRE(method != null, () => "Fitting method is empty");
-            Utils.QL_REQUIRE(!discountingCurve_.empty(), () => "Discounting curve cannot be empty");
+            QLNet.Utils.QL_REQUIRE(method != null, () => "Fitting method is empty");
+            QLNet.Utils.QL_REQUIRE(!discountingCurve_.empty(), () => "Discounting curve cannot be empty");
         }
 
         public override FittedBondDiscountCurve.FittingMethod clone() => MemberwiseClone() as FittedBondDiscountCurve.FittingMethod;

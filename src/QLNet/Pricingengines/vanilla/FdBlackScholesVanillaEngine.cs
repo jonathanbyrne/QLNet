@@ -23,9 +23,9 @@ using QLNet.Methods.Finitedifferences.Meshers;
 using QLNet.Methods.Finitedifferences.Solvers;
 using QLNet.Methods.Finitedifferences.StepConditions;
 using QLNet.Methods.Finitedifferences.Utilities;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     [PublicAPI]
     public class FdBlackScholesVanillaEngine : DividendVanillaOption.Engine
@@ -115,11 +115,11 @@ namespace QLNet.Pricingengines.vanilla
                         }
                     }
 
-                    Utils.QL_REQUIRE(process_.x0() + spotAdjustment > 0.0,
+                    QLNet.Utils.QL_REQUIRE(process_.x0() + spotAdjustment > 0.0,
                         () => "spot minus dividends becomes negative");
                     break;
                 default:
-                    Utils.QL_FAIL("unknwon cash dividend model");
+                    QLNet.Utils.QL_FAIL("unknwon cash dividend model");
                     break;
             }
 

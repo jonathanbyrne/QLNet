@@ -1,4 +1,4 @@
-﻿namespace QLNet.Pricingengines.vanilla
+﻿namespace QLNet.PricingEngines.vanilla
 {
     public abstract class HestonExpansion
     {

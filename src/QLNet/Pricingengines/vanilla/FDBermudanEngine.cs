@@ -22,9 +22,9 @@ using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences;
 using QLNet.Patterns;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Finite-differences Bermudan engine
     /*! \ingroup vanillaengines */

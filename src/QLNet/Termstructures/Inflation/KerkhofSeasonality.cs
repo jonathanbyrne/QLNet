@@ -29,7 +29,7 @@ namespace QLNet.Termstructures.Inflation
                 dir = 0; // We calculate invers Factor in loop
             }
 
-            Utils.QL_REQUIRE(seasonalityFactors().Count == 12 &&
+            QLNet.Utils.QL_REQUIRE(seasonalityFactors().Count == 12 &&
                              factorPeriod.units() == TimeUnit.Months, () =>
                 "12 monthly seasonal factors needed for Kerkhof Seasonality:" +
                 " got " + seasonalityFactors().Count);
@@ -62,7 +62,7 @@ namespace QLNet.Termstructures.Inflation
             }
             else
             {
-                Utils.QL_FAIL("Seasonal Kerkhof model is not defined on YoY rates");
+                QLNet.Utils.QL_FAIL("Seasonal Kerkhof model is not defined on YoY rates");
             }
 
             return (rate + 1) * f - 1;

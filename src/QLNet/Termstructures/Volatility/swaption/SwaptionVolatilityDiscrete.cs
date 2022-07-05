@@ -171,33 +171,33 @@ namespace QLNet.Termstructures.Volatility.swaption
 
         private void checkOptionDates()
         {
-            Utils.QL_REQUIRE(optionDates_[0] > referenceDate(), () =>
+            QLNet.Utils.QL_REQUIRE(optionDates_[0] > referenceDate(), () =>
                 "first option date (" + optionDates_[0] + ") must be greater than reference date (" + referenceDate() + ")");
             for (var i = 1; i < nOptionTenors_; ++i)
             {
-                Utils.QL_REQUIRE(optionDates_[i] > optionDates_[i - 1], () =>
+                QLNet.Utils.QL_REQUIRE(optionDates_[i] > optionDates_[i - 1], () =>
                     "non increasing option dates: " + i + " is " + optionDates_[i - 1] + ", " + i + 1 + " is " + optionDates_[i]);
             }
         }
 
         private void checkOptionTenors()
         {
-            Utils.QL_REQUIRE(optionTenors_[0] > new Period(0, TimeUnit.Days), () =>
+            QLNet.Utils.QL_REQUIRE(optionTenors_[0] > new Period(0, TimeUnit.Days), () =>
                 "first option tenor is negative (" + optionTenors_[0] + ")");
             for (var i = 1; i < nOptionTenors_; ++i)
             {
-                Utils.QL_REQUIRE(optionTenors_[i] > optionTenors_[i - 1], () =>
+                QLNet.Utils.QL_REQUIRE(optionTenors_[i] > optionTenors_[i - 1], () =>
                     "non increasing option tenor: " + i + " is " + optionTenors_[i - 1] + ", " + i + 1 + " is " + optionTenors_[i]);
             }
         }
 
         private void checkSwapTenors()
         {
-            Utils.QL_REQUIRE(swapTenors_[0] > new Period(0, TimeUnit.Days), () =>
+            QLNet.Utils.QL_REQUIRE(swapTenors_[0] > new Period(0, TimeUnit.Days), () =>
                 "first swap tenor is negative (" + swapTenors_[0] + ")");
             for (var i = 1; i < nSwapTenors_; ++i)
             {
-                Utils.QL_REQUIRE(swapTenors_[i] > swapTenors_[i - 1], () =>
+                QLNet.Utils.QL_REQUIRE(swapTenors_[i] > swapTenors_[i - 1], () =>
                     "non increasing swap tenor: " + i + " is " + swapTenors_[i - 1] + ", " + i + 1 + " is " + swapTenors_[i]);
             }
         }

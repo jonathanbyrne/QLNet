@@ -19,7 +19,7 @@ namespace QLNet.Instruments
             targetValue_ = targetValue;
 
             results_ = engine_.getResults() as Instrument.Results;
-            Utils.QL_REQUIRE(results_ != null, () => "pricing engine does not supply needed results");
+            QLNet.Utils.QL_REQUIRE(results_ != null, () => "pricing engine does not supply needed results");
         }
 
         public override double value(double x)

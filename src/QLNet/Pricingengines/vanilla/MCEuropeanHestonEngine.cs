@@ -16,12 +16,12 @@
 
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 using QLNet.Math.statistics;
 using QLNet.Methods.montecarlo;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Monte Carlo Heston-model engine for European options
     /*! \ingroup vanillaengines
@@ -50,10 +50,10 @@ namespace QLNet.Pricingengines.vanilla
         protected override PathPricer<IPath> pathPricer()
         {
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
             var process = process_ as HestonProcess;
-            Utils.QL_REQUIRE(process != null, () => "Heston process required");
+            QLNet.Utils.QL_REQUIRE(process != null, () => "Heston process required");
 
             return new EuropeanHestonPathPricer(payoff.optionType(),
                 payoff.strike(),

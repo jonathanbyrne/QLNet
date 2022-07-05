@@ -155,24 +155,24 @@ namespace QLNet.Termstructures.Yield
 
         private void initialize()
         {
-            Utils.QL_REQUIRE(dates_.Count >= interpolator_.requiredPoints,
+            QLNet.Utils.QL_REQUIRE(dates_.Count >= interpolator_.requiredPoints,
                 () => "not enough input dates givesn");
-            Utils.QL_REQUIRE(data_.Count == dates_.Count,
+            QLNet.Utils.QL_REQUIRE(data_.Count == dates_.Count,
                 () => "dates/data count mismatch");
 
             times_ = new InitializedList<double>(dates_.Count);
             times_[0] = 0.0;
             for (var i = 1; i < dates_.Count; i++)
             {
-                Utils.QL_REQUIRE(dates_[i] > dates_[i - 1],
+                QLNet.Utils.QL_REQUIRE(dates_[i] > dates_[i - 1],
                     () => "invalid date (" + dates_[i] + ", vs " + dates_[i - 1] + ")");
                 times_[i] = dayCounter().yearFraction(dates_[0], dates_[i]);
-                Utils.QL_REQUIRE(!Utils.close(times_[i], times_[i - 1]),
+                QLNet.Utils.QL_REQUIRE(!Math.Utils.close(times_[i], times_[i - 1]),
                     () => "two dates correspond to the same time " +
                           "under this curve's day count convention");
 
 #if !QL_NEGATIVE_RATES
-            Utils.QL_REQUIRE(this.data_[i] >= 0.0, () => "negative forward");
+            QLNet.Utils.QL_REQUIRE(this.data_[i] >= 0.0, () => "negative forward");
 #endif
             }
 

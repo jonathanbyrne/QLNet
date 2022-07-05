@@ -86,7 +86,7 @@ namespace QLNet.Math.Distributions
             }
 
             L_End:
-            Utils.QL_REQUIRE(bound <= errmax, () => "didn't converge");
+            QLNet.Utils.QL_REQUIRE(bound <= errmax, () => "didn't converge");
             return ans;
         }
     }

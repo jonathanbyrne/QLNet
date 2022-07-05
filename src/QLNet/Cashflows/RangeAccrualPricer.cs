@@ -25,39 +25,39 @@ namespace QLNet.Cashflows
 
         public override double capletPrice(double effectiveCap)
         {
-            Utils.QL_FAIL("RangeAccrualPricer::capletPrice not implemented");
+            QLNet.Utils.QL_FAIL("RangeAccrualPricer::capletPrice not implemented");
             return 0;
         }
 
         public override double capletRate(double effectiveCap)
         {
-            Utils.QL_FAIL("RangeAccrualPricer::capletRate not implemented");
+            QLNet.Utils.QL_FAIL("RangeAccrualPricer::capletRate not implemented");
             return 0;
         }
 
         public override double floorletPrice(double effectiveFloor)
         {
-            Utils.QL_FAIL("RangeAccrualPricer::floorletPrice not implemented");
+            QLNet.Utils.QL_FAIL("RangeAccrualPricer::floorletPrice not implemented");
             return 0;
         }
 
         public override double floorletRate(double effectiveFloor)
         {
-            Utils.QL_FAIL("RangeAccrualPricer::floorletRate not implemented");
+            QLNet.Utils.QL_FAIL("RangeAccrualPricer::floorletRate not implemented");
             return 0;
         }
 
         public override void initialize(FloatingRateCoupon coupon)
         {
             coupon_ = coupon as RangeAccrualFloatersCoupon;
-            Utils.QL_REQUIRE(coupon_ != null, () => "range-accrual coupon required");
+            QLNet.Utils.QL_REQUIRE(coupon_ != null, () => "range-accrual coupon required");
             gearing_ = coupon_.gearing();
             spread_ = coupon_.spread();
 
             var paymentDate = coupon_.date();
 
             var index = coupon_.index() as IborIndex;
-            Utils.QL_REQUIRE(index != null, () => "invalid index");
+            QLNet.Utils.QL_REQUIRE(index != null, () => "invalid index");
             var rateCurve = index.forwardingTermStructure();
             discount_ = rateCurve.link.discount(paymentDate);
             accrualFactor_ = coupon_.accrualPeriod();
@@ -71,7 +71,7 @@ namespace QLNet.Cashflows
             observationsNo_ = coupon_.observationsNo();
 
             var observationDates = coupon_.observationsSchedule().dates();
-            Utils.QL_REQUIRE(observationDates.Count == observationsNo_ + 2, () => "incompatible size of initialValues vector");
+            QLNet.Utils.QL_REQUIRE(observationDates.Count == observationsNo_ + 2, () => "incompatible size of initialValues vector");
             initialValues_ = new InitializedList<double>(observationDates.Count, 0.0);
 
             var calendar = index.fixingCalendar();

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Math.Optimization;
+using QLNet.Termstructures.Volatility;
 using QLNet.Termstructures.Volatility.Optionlet;
 
 namespace QLNet.Math.Interpolations

@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Instruments;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.Swap;
 using QLNet.Quotes;
 using QLNet.Time;
 using QLNet.Time.Calendars;
@@ -51,7 +51,7 @@ namespace QLNet.Termstructures.Yield
         // RateHelper interface
         public override double impliedQuote()
         {
-            Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
+            QLNet.Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
             // we didn't register as observers - force calculation
             swap_.recalculate();
             return swap_.fairLiborFraction();

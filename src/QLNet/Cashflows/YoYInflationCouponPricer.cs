@@ -68,7 +68,7 @@ namespace QLNet.Cashflows
 
         public virtual void setCapletVolatility(Handle<YoYOptionletVolatilitySurface> capletVol)
         {
-            Utils.QL_REQUIRE(!capletVol.empty(), () => "empty capletVol handle");
+            QLNet.Utils.QL_REQUIRE(!capletVol.empty(), () => "empty capletVol handle");
 
             capletVol_ = capletVol;
             capletVol_.registerWith(update);
@@ -124,7 +124,7 @@ namespace QLNet.Cashflows
             }
 
             // not yet determined, use Black/DD1/Bachelier/whatever from Impl
-            Utils.QL_REQUIRE(!capletVolatility().empty(), () => "missing optionlet volatility");
+            QLNet.Utils.QL_REQUIRE(!capletVolatility().empty(), () => "missing optionlet volatility");
 
             var stdDev = System.Math.Sqrt(capletVolatility().link.totalVariance(fixingDate, effStrike));
 
@@ -140,7 +140,7 @@ namespace QLNet.Cashflows
         protected virtual double optionletPriceImp(Option.Type t, double strike,
             double forward, double stdDev)
         {
-            Utils.QL_FAIL("you must implement this to get a vol-dependent price");
+            QLNet.Utils.QL_FAIL("you must implement this to get a vol-dependent price");
             return 0;
         }
     }

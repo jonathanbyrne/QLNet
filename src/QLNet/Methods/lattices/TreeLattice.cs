@@ -41,7 +41,7 @@ namespace QLNet.Methods.lattices
         public TreeLattice(TimeGrid timeGrid, int n) : base(timeGrid)
         {
             n_ = n;
-            Utils.QL_REQUIRE(n > 0, () => "there is no zeronomial lattice!");
+            QLNet.Utils.QL_REQUIRE(n > 0, () => "there is no zeronomial lattice!");
             statePrices_ = new InitializedList<Vector>(1, new Vector(1, 1.0));
             statePricesLimit_ = 0;
         }
@@ -58,12 +58,12 @@ namespace QLNet.Methods.lattices
         {
             var from = asset.time();
 
-            if (Utils.close(from, to))
+            if (Math.Utils.close(from, to))
             {
                 return;
             }
 
-            Utils.QL_REQUIRE(from > to, () => "cannot roll the asset back to" + to + " (it is already at t = " + from + ")");
+            QLNet.Utils.QL_REQUIRE(from > to, () => "cannot roll the asset back to" + to + " (it is already at t = " + from + ")");
 
             var iFrom = t_.index(from);
             var iTo = t_.index(to);

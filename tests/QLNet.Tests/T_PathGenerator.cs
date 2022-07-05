@@ -20,12 +20,12 @@
 using System;
 using System.Collections.Generic;
 using Xunit;
-using QLNet.Math.randomnumbers;
 using QLNet.Methods.montecarlo;
 using QLNet.Math.Distributions;
 using QLNet.Termstructures;
 using QLNet.Math;
-using QLNet.processes;
+using QLNet.Math.RandomNumbers;
+using QLNet.Processes;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Quotes;
 using QLNet.Time;
@@ -78,7 +78,7 @@ namespace QLNet.Tests
 
             var sample = generator.next();
             var value = sample.value as Path;
-            Utils.QL_REQUIRE(value != null, () => "Invalid Path");
+            QLNet.Utils.QL_REQUIRE(value != null, () => "Invalid Path");
             var calculated = value.back();
             var error = System.Math.Abs(calculated - expected);
             var tolerance = 2.0e-8;
@@ -96,7 +96,7 @@ namespace QLNet.Tests
 
             sample = generator.antithetic();
             value = sample.value as Path;
-            Utils.QL_REQUIRE(value != null, () => "Invalid Path");
+            QLNet.Utils.QL_REQUIRE(value != null, () => "Invalid Path");
             calculated = value.back();
             error = System.Math.Abs(calculated - antithetic);
             tolerance = 2.0e-7;
@@ -141,7 +141,7 @@ namespace QLNet.Tests
 
             var sample = generator.next();
             var value = sample.value as MultiPath;
-            Utils.QL_REQUIRE(value != null, () => "Invalid Path");
+            QLNet.Utils.QL_REQUIRE(value != null, () => "Invalid Path");
             var calculated = new Vector(assets);
             double error, tolerance = 2.0e-7;
 
@@ -167,7 +167,7 @@ namespace QLNet.Tests
 
             sample = generator.antithetic();
             value = sample.value as MultiPath;
-            Utils.QL_REQUIRE(value != null, () => "Invalid Path");
+            QLNet.Utils.QL_REQUIRE(value != null, () => "Invalid Path");
             for (var j = 0; j < assets; j++)
             {
                 calculated[j] = value[j].back();

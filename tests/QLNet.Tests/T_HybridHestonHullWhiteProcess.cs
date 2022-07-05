@@ -17,21 +17,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
-using QLNet.Math.randomnumbers;
 using QLNet.Methods.montecarlo;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.processes;
 using QLNet.Models.Equity;
 using QLNet.Math.statistics;
 using QLNet.Time;
 using QLNet.Math.Interpolations;
 using QLNet.Termstructures;
 using QLNet.Math;
+using QLNet.Math.RandomNumbers;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Quotes;
 using QLNet.Models.Shortrate.Onefactormodels;
-using QLNet.Pricingengines.vanilla;
+using QLNet.PricingEngines.vanilla;
+using QLNet.Processes;
 using QLNet.Termstructures.Yield;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
@@ -297,7 +297,7 @@ namespace QLNet.Tests
             {
                 var path = generator.next();
                 var value = path.value as MultiPath;
-                Utils.QL_REQUIRE(value != null, () => "Invalid Path");
+                QLNet.Utils.QL_REQUIRE(value != null, () => "Invalid Path");
 
                 for (var j = 1; j < m; ++j)
                 {
@@ -665,7 +665,7 @@ namespace QLNet.Tests
 
                 var path = antithetic ? generator.antithetic() : generator.next();
                 var value = path.value as MultiPath;
-                Utils.QL_REQUIRE(value != null, () => "Invalid Path");
+                QLNet.Utils.QL_REQUIRE(value != null, () => "Invalid Path");
 
                 double payoff = 0;
                 for (var j = 1; j <= maturity; ++j)

@@ -20,15 +20,15 @@
         {
             if (settlementType == Type.Physical)
             {
-                Utils.QL_REQUIRE(settlementMethod == Method.PhysicalOTC ||
-                                 settlementMethod == Method.PhysicalCleared,
+                QLNet.Utils.QL_REQUIRE(settlementMethod == Method.PhysicalOTC ||
+                                                settlementMethod == Method.PhysicalCleared,
                     () => "invalid settlement method for physical settlement");
             }
 
             if (settlementType == Type.Cash)
             {
-                Utils.QL_REQUIRE(settlementMethod == Method.CollateralizedCashPrice ||
-                                 settlementMethod == Method.ParYieldCurve,
+                QLNet.Utils.QL_REQUIRE(settlementMethod == Method.CollateralizedCashPrice ||
+                                                settlementMethod == Method.ParYieldCurve,
                     () => "invalid settlement method for cash settlement");
             }
         }

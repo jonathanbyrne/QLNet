@@ -20,7 +20,7 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Math;
-using QLNet.Math.matrixutilities;
+using QLNet.Math.MatrixUtilities;
 using QLNet.Methods.Finitedifferences.Meshers;
 using QLNet.Methods.Finitedifferences.Utilities;
 
@@ -135,7 +135,7 @@ namespace QLNet.Methods.Finitedifferences.Operators
         {
             var index = mesher_.layout();
 
-            Utils.QL_REQUIRE(r.size() == index.size(), () => "inconsistent length of r");
+            QLNet.Utils.QL_REQUIRE(r.size() == index.size(), () => "inconsistent length of r");
 
             var retVal = new Vector(r.size());
             //#pragma omp parallel for
@@ -225,7 +225,7 @@ namespace QLNet.Methods.Finitedifferences.Operators
         {
             var layout = mesher_.layout();
             var size = layout.size();
-            Utils.QL_REQUIRE(u.size() == size, () => "inconsistent size of rhs");
+            QLNet.Utils.QL_REQUIRE(u.size() == size, () => "inconsistent size of rhs");
             var retVal = new TripleBandLinearOp(direction_, mesher_);
 
             for (var i = 0; i < size; ++i)
@@ -244,17 +244,17 @@ namespace QLNet.Methods.Finitedifferences.Operators
         public Vector solve_splitting(Vector r, double a, double b = 1.0)
         {
             var layout = mesher_.layout();
-            Utils.QL_REQUIRE(r.size() == layout.size(), () => "inconsistent size of rhs");
+            QLNet.Utils.QL_REQUIRE(r.size() == layout.size(), () => "inconsistent size of rhs");
 
             for (var iter = layout.begin();
                  iter != layout.end();
                  ++iter)
             {
                 var coordinates = iter.coordinates();
-                Utils.QL_REQUIRE(coordinates[direction_] != 0
-                                 || lower_[iter.index()] == 0, () => "removing non zero entry!");
-                Utils.QL_REQUIRE(coordinates[direction_] != layout.dim()[direction_] - 1
-                                 || upper_[iter.index()] == 0, () => "removing non zero entry!");
+                QLNet.Utils.QL_REQUIRE(coordinates[direction_] != 0
+                                                || lower_[iter.index()] == 0, () => "removing non zero entry!");
+                QLNet.Utils.QL_REQUIRE(coordinates[direction_] != layout.dim()[direction_] - 1
+                                                || upper_[iter.index()] == 0, () => "removing non zero entry!");
             }
 
             Vector retVal = new Vector(r.size()), tmp = new Vector(r.size());
@@ -264,7 +264,7 @@ namespace QLNet.Methods.Finitedifferences.Operators
             // changed to fit for the triple band operator.
             var rim1 = reverseIndex_[0];
             var bet = 1.0 / (a * diag_[rim1] + b);
-            Utils.QL_REQUIRE(bet != 0.0, () => "division by zero");
+            QLNet.Utils.QL_REQUIRE(bet != 0.0, () => "division by zero");
             retVal[reverseIndex_[0]] = r[rim1] * bet;
 
             for (var j = 1; j <= layout.size() - 1; j++)
@@ -273,7 +273,7 @@ namespace QLNet.Methods.Finitedifferences.Operators
                 tmp[j] = a * upper_[rim1] * bet;
 
                 bet = b + a * (diag_[ri] - tmp[j] * lower_[ri]);
-                Utils.QL_REQUIRE(bet != 0.0, () => "division by zero"); //QL_ENSURE
+                QLNet.Utils.QL_REQUIRE(bet != 0.0, () => "division by zero"); //QL_ENSURE
                 bet = 1.0 / bet;
 
                 retVal[ri] = (r[ri] - a * lower_[ri] * retVal[rim1]) * bet;
@@ -293,14 +293,14 @@ namespace QLNet.Methods.Finitedifferences.Operators
 
         public void swap(TripleBandLinearOp m)
         {
-            Utils.swap(ref mesher_, ref m.mesher_);
-            Utils.swap(ref direction_, ref m.direction_);
-            Utils.swap(ref i0_, ref m.i0_);
-            Utils.swap(ref i2_, ref m.i2_);
-            Utils.swap(ref reverseIndex_, ref m.reverseIndex_);
-            Utils.swap(ref lower_, ref m.lower_);
-            Utils.swap(ref diag_, ref m.diag_);
-            Utils.swap(ref upper_, ref m.upper_);
+            QLNet.Utils.swap(ref mesher_, ref m.mesher_);
+            QLNet.Utils.swap(ref direction_, ref m.direction_);
+            QLNet.Utils.swap(ref i0_, ref m.i0_);
+            QLNet.Utils.swap(ref i2_, ref m.i2_);
+            QLNet.Utils.swap(ref reverseIndex_, ref m.reverseIndex_);
+            QLNet.Utils.swap(ref lower_, ref m.lower_);
+            QLNet.Utils.swap(ref diag_, ref m.diag_);
+            QLNet.Utils.swap(ref upper_, ref m.upper_);
         }
 
         public override SparseMatrix toMatrix()

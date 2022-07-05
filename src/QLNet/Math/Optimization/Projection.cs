@@ -34,7 +34,7 @@ namespace QLNet.Math.Optimization
             actualParameters_ = parameterValues;
             fixParameters_ = fixParameters ?? new InitializedList<bool>(actualParameters_.size(), false);
 
-            Utils.QL_REQUIRE(fixedParameters_.size() == fixParameters_.Count, () =>
+            QLNet.Utils.QL_REQUIRE(fixedParameters_.size() == fixParameters_.Count, () =>
                 "fixedParameters_.size()!=parametersFreedoms_.size()");
             for (var i = 0; i < fixParameters_.Count; i++)
             {
@@ -44,14 +44,14 @@ namespace QLNet.Math.Optimization
                 }
             }
 
-            Utils.QL_REQUIRE(numberOfFreeParameters_ > 0, () => "numberOfFreeParameters==0");
+            QLNet.Utils.QL_REQUIRE(numberOfFreeParameters_ > 0, () => "numberOfFreeParameters==0");
         }
 
         //! returns whole set of parameters corresponding to the set
         // of projected parameters
         public virtual Vector include(Vector projectedParameters)
         {
-            Utils.QL_REQUIRE(projectedParameters.size() == numberOfFreeParameters_, () =>
+            QLNet.Utils.QL_REQUIRE(projectedParameters.size() == numberOfFreeParameters_, () =>
                 "projectedParameters.size()!=numberOfFreeParameters");
             var y = new Vector(fixedParameters_);
             var i = 0;
@@ -70,7 +70,7 @@ namespace QLNet.Math.Optimization
         // to set of parameters
         public virtual Vector project(Vector parameters)
         {
-            Utils.QL_REQUIRE(parameters.size() == fixParameters_.Count, () => "parameters.size()!=parametersFreedoms_.size()");
+            QLNet.Utils.QL_REQUIRE(parameters.size() == fixParameters_.Count, () => "parameters.size()!=parametersFreedoms_.size()");
             var projectedParameters = new Vector(numberOfFreeParameters_);
             var i = 0;
             for (var j = 0; j < fixParameters_.Count; j++)
@@ -86,7 +86,7 @@ namespace QLNet.Math.Optimization
 
         protected void mapFreeParameters(Vector parameterValues)
         {
-            Utils.QL_REQUIRE(parameterValues.size() == numberOfFreeParameters_, () =>
+            QLNet.Utils.QL_REQUIRE(parameterValues.size() == numberOfFreeParameters_, () =>
                 "parameterValues.size()!=numberOfFreeParameters");
             var i = 0;
             for (var j = 0; j < actualParameters_.size(); j++)

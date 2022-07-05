@@ -26,11 +26,11 @@ namespace QLNet.Cashflows
             interpolation_ = interpolation;
             frequency_ = frequency;
 
-            Utils.QL_REQUIRE(System.Math.Abs(baseFixing_) > 1e-16, () => "|baseFixing|<1e-16, future divide-by-zero error");
+            QLNet.Utils.QL_REQUIRE(System.Math.Abs(baseFixing_) > 1e-16, () => "|baseFixing|<1e-16, future divide-by-zero error");
 
             if (interpolation_ != InterpolationType.AsIndex)
             {
-                Utils.QL_REQUIRE(frequency_ != Frequency.NoFrequency, () => "non-index interpolation w/o frequency");
+                QLNet.Utils.QL_REQUIRE(frequency_ != Frequency.NoFrequency, () => "non-index interpolation w/o frequency");
             }
         }
 
@@ -48,7 +48,7 @@ namespace QLNet.Cashflows
             else
             {
                 // work out what it should be
-                var dd = Utils.inflationPeriod(fixingDate(), frequency());
+                var dd = Termstructures.Utils.inflationPeriod(fixingDate(), frequency());
                 var indexStart = index().fixing(dd.Key);
                 if (interpolation() == InterpolationType.Linear)
                 {
@@ -75,7 +75,7 @@ namespace QLNet.Cashflows
         //! you may not have a valid date
         public override Date baseDate()
         {
-            Utils.QL_FAIL("no base date specified");
+            QLNet.Utils.QL_FAIL("no base date specified");
             return null;
         }
 

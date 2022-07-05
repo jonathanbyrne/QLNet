@@ -101,7 +101,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
         public double blackForwardVol(Date date1, Date date2, double strike, bool extrapolate = false)
         {
             // (redundant) date-based checks
-            Utils.QL_REQUIRE(date1 <= date2, () => date1 + " later than " + date2);
+            QLNet.Utils.QL_REQUIRE(date1 <= date2, () => date1 + " later than " + date2);
             checkRange(date2, extrapolate);
 
             // using the time implementation
@@ -113,7 +113,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
         //! forward (at-the-money) volatility
         public double blackForwardVol(double time1, double time2, double strike, bool extrapolate = false)
         {
-            Utils.QL_REQUIRE(time1 <= time2, () => time1 + " later than " + time2);
+            QLNet.Utils.QL_REQUIRE(time1 <= time2, () => time1 + " later than " + time2);
             checkRange(time2, extrapolate);
             checkStrike(strike, extrapolate);
             if (time2.IsEqual(time1))
@@ -129,7 +129,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
                     var epsilon = System.Math.Min(1.0e-5, time1);
                     var var1 = blackVarianceImpl(time1 - epsilon, strike);
                     var var2 = blackVarianceImpl(time1 + epsilon, strike);
-                    Utils.QL_REQUIRE(var2 >= var1, () => "variances must be non-decreasing");
+                    QLNet.Utils.QL_REQUIRE(var2 >= var1, () => "variances must be non-decreasing");
                     return System.Math.Sqrt((var2 - var1) / (2 * epsilon));
                 }
             }
@@ -137,7 +137,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
             {
                 var var1 = blackVarianceImpl(time1, strike);
                 var var2 = blackVarianceImpl(time2, strike);
-                Utils.QL_REQUIRE(var2 >= var1, () => "variances must be non-decreasing");
+                QLNet.Utils.QL_REQUIRE(var2 >= var1, () => "variances must be non-decreasing");
                 return System.Math.Sqrt((var2 - var1) / (time2 - time1));
             }
         }
@@ -146,7 +146,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
         public double blackForwardVariance(Date date1, Date date2, double strike, bool extrapolate = false)
         {
             // (redundant) date-based checks
-            Utils.QL_REQUIRE(date1 <= date2, () => date1 + " later than " + date2);
+            QLNet.Utils.QL_REQUIRE(date1 <= date2, () => date1 + " later than " + date2);
             checkRange(date2, extrapolate);
 
             // using the time implementation
@@ -158,12 +158,12 @@ namespace QLNet.Termstructures.Volatility.equityfx
         //! forward (at-the-money) variance
         public double blackForwardVariance(double time1, double time2, double strike, bool extrapolate = false)
         {
-            Utils.QL_REQUIRE(time1 <= time2, () => time1 + " later than " + time2);
+            QLNet.Utils.QL_REQUIRE(time1 <= time2, () => time1 + " later than " + time2);
             checkRange(time2, extrapolate);
             checkStrike(strike, extrapolate);
             var v1 = blackVarianceImpl(time1, strike);
             var v2 = blackVarianceImpl(time2, strike);
-            Utils.QL_REQUIRE(v2 >= v1, () => "variances must be non-decreasing");
+            QLNet.Utils.QL_REQUIRE(v2 >= v1, () => "variances must be non-decreasing");
             return v2 - v1;
         }
 

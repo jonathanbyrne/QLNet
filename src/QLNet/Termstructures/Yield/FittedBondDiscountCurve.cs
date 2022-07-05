@@ -20,7 +20,7 @@ using JetBrains.Annotations;
 using QLNet.Exceptions;
 using QLNet.Math;
 using QLNet.Math.Optimization;
-using QLNet.Pricingengines.Bond;
+using QLNet.PricingEngines.Bond;
 using QLNet.Time;
 
 namespace QLNet.Termstructures.Yield
@@ -348,7 +348,7 @@ namespace QLNet.Termstructures.Yield
                     weights_ /= System.Math.Sqrt(squaredSum);
                 }
 
-                Utils.QL_REQUIRE(weights_.size() == n, () =>
+                QLNet.Utils.QL_REQUIRE(weights_.size() == n, () =>
                     "Given weights do not cover all boostrapping helpers");
             }
         }
@@ -443,7 +443,7 @@ namespace QLNet.Termstructures.Yield
 
         protected override void performCalculations()
         {
-            Utils.QL_REQUIRE(!bondHelpers_.empty(), () => "no bondHelpers given");
+            QLNet.Utils.QL_REQUIRE(!bondHelpers_.empty(), () => "no bondHelpers given");
 
             maxDate_ = Date.minDate();
             var refDate = referenceDate();
@@ -452,15 +452,15 @@ namespace QLNet.Termstructures.Yield
             for (var i = 0; i < bondHelpers_.Count; ++i)
             {
                 var bond = bondHelpers_[i].bond();
-                Utils.QL_REQUIRE(bondHelpers_[i].quote().link.isValid(), () =>
+                QLNet.Utils.QL_REQUIRE(bondHelpers_[i].quote().link.isValid(), () =>
                     i + 1 + " bond (maturity: " +
                     bond.maturityDate() + ") has an invalid price quote");
                 var bondSettlement = bond.settlementDate();
-                Utils.QL_REQUIRE(bondSettlement >= refDate, () =>
+                QLNet.Utils.QL_REQUIRE(bondSettlement >= refDate, () =>
                     i + 1 + " bond settlemente date (" +
                     bondSettlement + ") before curve reference date (" +
                     refDate + ")");
-                Utils.QL_REQUIRE(BondFunctions.isTradable(bond, bondSettlement), () =>
+                QLNet.Utils.QL_REQUIRE(BondFunctions.isTradable(bond, bondSettlement), () =>
                         i + 1 + " bond non tradable at " +
                         bondSettlement + " settlement date (maturity" +
                         " being " + bond.maturityDate() + ")",

@@ -65,7 +65,7 @@ namespace QLNet
             if (comp_ == Compounding.Compounded || comp_ == Compounding.SimpleThenCompounded)
             {
                 freqMakesSense_ = true;
-                Utils.QL_REQUIRE(freq != Frequency.Once && freq != Frequency.NoFrequency, () => "frequency not allowed for this interest rate");
+                QLNet.Utils.QL_REQUIRE(freq != Frequency.Once && freq != Frequency.NoFrequency, () => "frequency not allowed for this interest rate");
                 freq_ = (double)freq;
             }
         }
@@ -95,7 +95,7 @@ namespace QLNet
         //! discount factor implied by the rate compounded between two dates
         public double discountFactor(Date d1, Date d2, Date refStart = null, Date refEnd = null)
         {
-            Utils.QL_REQUIRE(d2 >= d1, () => "d1 (" + d1 + ") later than d2 (" + d2 + ")");
+            QLNet.Utils.QL_REQUIRE(d2 >= d1, () => "d1 (" + d1 + ") later than d2 (" + d2 + ")");
             var t = dc_.yearFraction(d1, d2, refStart, refEnd);
             return discountFactor(t);
         }
@@ -109,8 +109,8 @@ namespace QLNet
         */
         public double compoundFactor(double t)
         {
-            Utils.QL_REQUIRE(t >= 0.0, () => "negative time not allowed");
-            Utils.QL_REQUIRE(r_ != null, () => "null interest rate");
+            QLNet.Utils.QL_REQUIRE(t >= 0.0, () => "negative time not allowed");
+            QLNet.Utils.QL_REQUIRE(r_ != null, () => "null interest rate");
             switch (comp_)
             {
                 case Compounding.Simple:
@@ -127,7 +127,7 @@ namespace QLNet
 
                     return System.Math.Pow(1.0 + r_.Value / freq_, freq_ * t);
                 default:
-                    Utils.QL_FAIL("unknown compounding convention");
+                    QLNet.Utils.QL_FAIL("unknown compounding convention");
                     return 0;
             }
         }
@@ -138,7 +138,7 @@ namespace QLNet
         */
         public double compoundFactor(Date d1, Date d2, Date refStart = null, Date refEnd = null)
         {
-            Utils.QL_REQUIRE(d2 >= d1, () => "d1 (" + d1 + ") later than d2 (" + d2 + ")");
+            QLNet.Utils.QL_REQUIRE(d2 >= d1, () => "d1 (" + d1 + ") later than d2 (" + d2 + ")");
             var t = dc_.yearFraction(d1, d2, refStart, refEnd);
             return compoundFactor(t);
         }
@@ -155,17 +155,17 @@ namespace QLNet
         */
         public static InterestRate impliedRate(double compound, DayCounter resultDC, Compounding comp, Frequency freq, double t)
         {
-            Utils.QL_REQUIRE(compound > 0.0, () => "positive compound factor required");
+            QLNet.Utils.QL_REQUIRE(compound > 0.0, () => "positive compound factor required");
 
             double r = 0;
             if (compound.IsEqual(1.0))
             {
-                Utils.QL_REQUIRE(t >= 0.0, () => "non negative time (" + t + ") required");
+                QLNet.Utils.QL_REQUIRE(t >= 0.0, () => "non negative time (" + t + ") required");
                 r = 0.0;
             }
             else
             {
-                Utils.QL_REQUIRE(t > 0.0, () => "positive time (" + t + ") required");
+                QLNet.Utils.QL_REQUIRE(t > 0.0, () => "positive time (" + t + ") required");
                 switch (comp)
                 {
                     case Compounding.Simple:
@@ -189,7 +189,7 @@ namespace QLNet
 
                         break;
                     default:
-                        Utils.QL_FAIL("unknown compounding convention (" + comp + ")");
+                        QLNet.Utils.QL_FAIL("unknown compounding convention (" + comp + ")");
                         break;
                 }
             }
@@ -204,7 +204,7 @@ namespace QLNet
         public static InterestRate impliedRate(double compound, DayCounter resultDC, Compounding comp, Frequency freq, Date d1, Date d2,
             Date refStart = null, Date refEnd = null)
         {
-            Utils.QL_REQUIRE(d2 >= d1, () => "d1 (" + d1 + ") later than d2 (" + d2 + ")");
+            QLNet.Utils.QL_REQUIRE(d2 >= d1, () => "d1 (" + d1 + ") later than d2 (" + d2 + ")");
             var t = resultDC.yearFraction(d1, d2, refStart, refEnd);
             return impliedRate(compound, resultDC, comp, freq, t);
         }
@@ -229,7 +229,7 @@ namespace QLNet
         public InterestRate equivalentRate(DayCounter resultDC, Compounding comp, Frequency freq, Date d1, Date d2,
             Date refStart = null, Date refEnd = null)
         {
-            Utils.QL_REQUIRE(d2 >= d1, () => "d1 (" + d1 + ") later than d2 (" + d2 + ")");
+            QLNet.Utils.QL_REQUIRE(d2 >= d1, () => "d1 (" + d1 + ") later than d2 (" + d2 + ")");
             var t1 = dc_.yearFraction(d1, d2, refStart, refEnd);
             var t2 = resultDC.yearFraction(d1, d2, refStart, refEnd);
             return impliedRate(compoundFactor(t1), resultDC, comp, freq, t2);
@@ -254,7 +254,7 @@ namespace QLNet
                     {
                         case Frequency.NoFrequency:
                         case Frequency.Once:
-                            Utils.QL_FAIL(frequency() + " frequency not allowed for this interest rate");
+                            QLNet.Utils.QL_FAIL(frequency() + " frequency not allowed for this interest rate");
                             break;
                         default:
                             result += frequency() + " compounding";
@@ -270,7 +270,7 @@ namespace QLNet
                     {
                         case Frequency.NoFrequency:
                         case Frequency.Once:
-                            Utils.QL_FAIL(frequency() + " frequency not allowed for this interest rate");
+                            QLNet.Utils.QL_FAIL(frequency() + " frequency not allowed for this interest rate");
                             break;
                         default:
                             result += "simple compounding up to "
@@ -281,7 +281,7 @@ namespace QLNet
 
                     break;
                 default:
-                    Utils.QL_FAIL("unknown compounding convention (" + compounding() + ")");
+                    QLNet.Utils.QL_FAIL("unknown compounding convention (" + compounding() + ")");
                     break;
             }
 

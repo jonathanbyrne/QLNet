@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Cashflows;
-using QLNet.Pricingengines.Bond;
+using QLNet.PricingEngines.Bond;
 using QLNet.Quotes;
 using QLNet.Time;
 
@@ -26,7 +26,7 @@ namespace QLNet.Instruments.Bonds
         {
             frequency_ = schedule.tenor().frequency();
 
-            var isZeroCouponBond = coupons.Count == 1 && Utils.close(coupons[0], 0.0);
+            var isZeroCouponBond = coupons.Count == 1 && Math.Utils.close(coupons[0], 0.0);
 
             if (!isZeroCouponBond)
             {
@@ -54,7 +54,7 @@ namespace QLNet.Instruments.Bonds
             base.setupArguments(args);
             var arguments = args as Arguments;
 
-            Utils.QL_REQUIRE(arguments != null, () => "no arguments given");
+            QLNet.Utils.QL_REQUIRE(arguments != null, () => "no arguments given");
 
             var settlement = arguments.settlementDate;
 

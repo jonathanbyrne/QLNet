@@ -17,7 +17,7 @@
  FOR A PARTICAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Math.RandomNumbers
 {
 
 #if NOPOLY

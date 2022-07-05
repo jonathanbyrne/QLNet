@@ -38,7 +38,7 @@ namespace QLNet.Instruments.Bonds
             public override void validate()
             {
                 base.validate();
-                Utils.QL_REQUIRE(notionalRisk != null, () => "null notionalRisk");
+                QLNet.Utils.QL_REQUIRE(notionalRisk != null, () => "null notionalRisk");
             }
         }
 
@@ -75,7 +75,7 @@ namespace QLNet.Instruments.Bonds
         {
             base.fetchResults(r);
             var results = r as Results;
-            Utils.QL_REQUIRE(results != null, () => "wrong result ExerciseType");
+            QLNet.Utils.QL_REQUIRE(results != null, () => "wrong result ExerciseType");
 
             lossProbability_ = results.lossProbability;
             expectedLoss_ = results.expectedLoss;
@@ -87,7 +87,7 @@ namespace QLNet.Instruments.Bonds
         public override void setupArguments(IPricingEngineArguments args)
         {
             var arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong arguments ExerciseType");
+            QLNet.Utils.QL_REQUIRE(arguments != null, () => "wrong arguments ExerciseType");
 
             base.setupArguments(args);
 

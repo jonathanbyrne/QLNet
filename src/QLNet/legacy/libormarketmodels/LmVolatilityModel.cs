@@ -42,7 +42,7 @@ namespace QLNet.legacy.libormarketmodels
 
         public virtual double integratedVariance(int i, int j, double u, Vector x = null)
         {
-            Utils.QL_FAIL("integratedVariance() method is not supported");
+            QLNet.Utils.QL_FAIL("integratedVariance() method is not supported");
             return 0;
         }
 

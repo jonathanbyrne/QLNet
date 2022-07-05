@@ -20,13 +20,13 @@
 
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 using QLNet.Math.statistics;
 using QLNet.Methods.montecarlo;
 using QLNet.Patterns;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! European option pricing engine using Monte Carlo simulation
     /*! \ingroup vanillaengines
@@ -57,10 +57,10 @@ namespace QLNet.Pricingengines.vanilla
         protected override PathPricer<IPath> pathPricer()
         {
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
             var process = process_ as GeneralizedBlackScholesProcess;
-            Utils.QL_REQUIRE(process != null, () => "Black-Scholes process required");
+            QLNet.Utils.QL_REQUIRE(process != null, () => "Black-Scholes process required");
 
             return new EuropeanPathPricer(payoff.optionType(), payoff.strike(),
                 process.riskFreeRate().link.discount(timeGrid().Last()));
@@ -98,16 +98,16 @@ namespace QLNet.Pricingengines.vanilla
         // conversion to pricing engine
         public IPricingEngine value()
         {
-            Utils.QL_REQUIRE(steps_ != null || stepsPerYear_ != null, () => "number of steps not given");
-            Utils.QL_REQUIRE(steps_ == null || stepsPerYear_ == null, () => "number of steps overspecified");
+            QLNet.Utils.QL_REQUIRE(steps_ != null || stepsPerYear_ != null, () => "number of steps not given");
+            QLNet.Utils.QL_REQUIRE(steps_ == null || stepsPerYear_ == null, () => "number of steps overspecified");
             return new MCEuropeanEngine<RNG, S>(process_, steps_, stepsPerYear_, brownianBridge_, antithetic_,
                 samples_, tolerance_, maxSamples_, seed_);
         }
 
         public MakeMCEuropeanEngine<RNG, S> withAbsoluteTolerance(double tolerance)
         {
-            Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
-            Utils.QL_REQUIRE(FastActivator<RNG>.Create().allowsErrorEstimate != 0, () =>
+            QLNet.Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
+            QLNet.Utils.QL_REQUIRE(FastActivator<RNG>.Create().allowsErrorEstimate != 0, () =>
                 "chosen random generator policy does not allow an error estimate");
             tolerance_ = tolerance;
             return this;
@@ -133,7 +133,7 @@ namespace QLNet.Pricingengines.vanilla
 
         public MakeMCEuropeanEngine<RNG, S> withSamples(int samples)
         {
-            Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
+            QLNet.Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
             samples_ = samples;
             return this;
         }

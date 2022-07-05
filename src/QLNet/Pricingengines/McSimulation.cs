@@ -20,12 +20,12 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 using QLNet.Math.statistics;
 using QLNet.Methods.montecarlo;
 using QLNet.Patterns;
 
-namespace QLNet.Pricingengines
+namespace QLNet.PricingEngines
 {
     //! base class for Monte Carlo engines
     /*! Eventually this class might offer greeks methods.  Deriving a
@@ -52,17 +52,17 @@ namespace QLNet.Pricingengines
         //! basic calculate method provided to inherited pricing engines
         public void calculate(double? requiredTolerance, int? requiredSamples, int? maxSamples)
         {
-            Utils.QL_REQUIRE(requiredTolerance != null ||
-                             requiredSamples != null, () => "neither tolerance nor number of samples set");
+            QLNet.Utils.QL_REQUIRE(requiredTolerance != null ||
+                                   requiredSamples != null, () => "neither tolerance nor number of samples set");
 
             //! Initialize the one-factor Monte Carlo
             if (controlVariate_)
             {
                 var controlVariateValue = this.controlVariateValue();
-                Utils.QL_REQUIRE(controlVariateValue != null, () => "engine does not provide control-variation price");
+                QLNet.Utils.QL_REQUIRE(controlVariateValue != null, () => "engine does not provide control-variation price");
 
                 var controlPP = controlPathPricer();
-                Utils.QL_REQUIRE(controlPP != null, () => "engine does not provide control-variation path pricer");
+                QLNet.Utils.QL_REQUIRE(controlPP != null, () => "engine does not provide control-variation path pricer");
 
                 var controlPG = controlPathGenerator();
 
@@ -112,7 +112,7 @@ namespace QLNet.Pricingengines
             var error = mcModel_.sampleAccumulator().errorEstimate();
             while (maxError(error) > tolerance)
             {
-                Utils.QL_REQUIRE(sampleNumber < maxSamples, () =>
+                QLNet.Utils.QL_REQUIRE(sampleNumber < maxSamples, () =>
                     "max number of samples (" + maxSamples
                                               + ") reached, while error (" + error
                                               + ") is still above tolerance (" + tolerance + ")");
@@ -136,7 +136,7 @@ namespace QLNet.Pricingengines
         {
             var sampleNumber = mcModel_.sampleAccumulator().samples();
 
-            Utils.QL_REQUIRE(samples >= sampleNumber, () =>
+            QLNet.Utils.QL_REQUIRE(samples >= sampleNumber, () =>
                 "number of already simulated samples (" + sampleNumber
                                                         + ") greater than requested samples (" + samples + ")");
 

@@ -24,8 +24,8 @@ namespace QLNet.Termstructures.Volatility
             nu_ = sabrParams[2];
             rho_ = sabrParams[3];
 
-            Utils.QL_REQUIRE(volatilityType == VolatilityType.Normal || forward_ + shift_ > 0.0, () => "at the money forward rate + shift must be: " + forward_ + shift_ + " not allowed");
-            Utils.validateSabrParameters(alpha_, beta_, nu_, rho_);
+            QLNet.Utils.QL_REQUIRE(volatilityType == VolatilityType.Normal || forward_ + shift_ > 0.0, () => "at the money forward rate + shift must be: " + forward_ + shift_ + " not allowed");
+            Termstructures.Volatility.Utils.validateSabrParameters(alpha_, beta_, nu_, rho_);
         }
 
         public SabrSmileSection(Date d, double forward, List<double> sabrParams, DayCounter dc = null, VolatilityType volatilityType = VolatilityType.ShiftedLognormal, double shift = 0.0)
@@ -40,8 +40,8 @@ namespace QLNet.Termstructures.Volatility
             nu_ = sabrParams[2];
             rho_ = sabrParams[3];
 
-            Utils.QL_REQUIRE(volatilityType == VolatilityType.Normal || forward_ + shift_ > 0.0, () => "at the money forward rate +shift must be: " + forward_ + shift_ + " not allowed");
-            Utils.validateSabrParameters(alpha_, beta_, nu_, rho_);
+            QLNet.Utils.QL_REQUIRE(volatilityType == VolatilityType.Normal || forward_ + shift_ > 0.0, () => "at the money forward rate +shift must be: " + forward_ + shift_ + " not allowed");
+            Termstructures.Volatility.Utils.validateSabrParameters(alpha_, beta_, nu_, rho_);
         }
 
         public override double? atmLevel() => forward_;
@@ -55,11 +55,11 @@ namespace QLNet.Termstructures.Volatility
             double vol;
             if (volatilityType_ == VolatilityType.ShiftedLognormal)
             {
-                vol = Utils.shiftedSabrVolatility(strike, forward_, exerciseTime(), alpha_, beta_, nu_, rho_, shift_);
+                vol = Termstructures.Volatility.Utils.shiftedSabrVolatility(strike, forward_, exerciseTime(), alpha_, beta_, nu_, rho_, shift_);
             }
             else
             {
-                vol = Utils.shiftedSabrNormalVolatility(strike, forward_, exerciseTime(), alpha_, beta_, nu_, rho_, shift_);
+                vol = Termstructures.Volatility.Utils.shiftedSabrNormalVolatility(strike, forward_, exerciseTime(), alpha_, beta_, nu_, rho_, shift_);
             }
 
             return vol * vol * exerciseTime();
@@ -70,11 +70,11 @@ namespace QLNet.Termstructures.Volatility
             double vol;
             if (volatilityType_ == VolatilityType.ShiftedLognormal)
             {
-                vol = Utils.shiftedSabrVolatility(strike, forward_, exerciseTime(), alpha_, beta_, nu_, rho_, shift_);
+                vol = Termstructures.Volatility.Utils.shiftedSabrVolatility(strike, forward_, exerciseTime(), alpha_, beta_, nu_, rho_, shift_);
             }
             else
             {
-                vol = Utils.shiftedSabrNormalVolatility(strike, forward_, exerciseTime(), alpha_, beta_, nu_, rho_, shift_);
+                vol = Termstructures.Volatility.Utils.shiftedSabrNormalVolatility(strike, forward_, exerciseTime(), alpha_, beta_, nu_, rho_, shift_);
             }
 
             return vol;

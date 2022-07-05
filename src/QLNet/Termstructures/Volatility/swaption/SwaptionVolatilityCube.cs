@@ -54,24 +54,24 @@ namespace QLNet.Termstructures.Volatility.swaption
             shortSwapIndexBase_ = shortSwapIndexBase;
             vegaWeightedSmileFit_ = vegaWeightedSmileFit;
 
-            Utils.QL_REQUIRE(!atmVol_.empty(), () => "atm vol handle not linked to anything");
+            QLNet.Utils.QL_REQUIRE(!atmVol_.empty(), () => "atm vol handle not linked to anything");
             for (var i = 1; i < nStrikes_; ++i)
             {
-                Utils.QL_REQUIRE(strikeSpreads_[i - 1] < strikeSpreads_[i], () =>
+                QLNet.Utils.QL_REQUIRE(strikeSpreads_[i - 1] < strikeSpreads_[i], () =>
                     "non increasing strike spreads: " + i + " is " + strikeSpreads_[i - 1] + ", " +
                     (i + 1) + " is " + strikeSpreads_[i]);
             }
 
-            Utils.QL_REQUIRE(!volSpreads_.empty(), () => "empty vol spreads matrix");
+            QLNet.Utils.QL_REQUIRE(!volSpreads_.empty(), () => "empty vol spreads matrix");
 
-            Utils.QL_REQUIRE(nOptionTenors_ * nSwapTenors_ == volSpreads_.Count, () =>
+            QLNet.Utils.QL_REQUIRE(nOptionTenors_ * nSwapTenors_ == volSpreads_.Count, () =>
                 "mismatch between number of option tenors * swap tenors (" +
                 nOptionTenors_ * nSwapTenors_ + ") and number of rows (" +
                 volSpreads_.Count + ")");
 
             for (var i = 0; i < volSpreads_.Count; i++)
             {
-                Utils.QL_REQUIRE(nStrikes_ == volSpreads_[i].Count, () =>
+                QLNet.Utils.QL_REQUIRE(nStrikes_ == volSpreads_[i].Count, () =>
                     "mismatch between number of strikes (" + nStrikes_ +
                     ") and number of columns (" + volSpreads_[i].Count +
                     ") in the " + (i + 1) + " row");
@@ -83,7 +83,7 @@ namespace QLNet.Termstructures.Volatility.swaption
             swapIndexBase_.registerWith(update);
             shortSwapIndexBase_.registerWith(update);
 
-            Utils.QL_REQUIRE(shortSwapIndexBase_.tenor() < swapIndexBase_.tenor(), () =>
+            QLNet.Utils.QL_REQUIRE(shortSwapIndexBase_.tenor() < swapIndexBase_.tenor(), () =>
                 "short index tenor (" + shortSwapIndexBase_.tenor() +
                 ") is not less than index tenor (" +
                 swapIndexBase_.tenor() + ")");
@@ -201,7 +201,7 @@ namespace QLNet.Termstructures.Volatility.swaption
         // LazyObject interface
         protected override void performCalculations()
         {
-            Utils.QL_REQUIRE(nStrikes_ >= requiredNumberOfStrikes(), () =>
+            QLNet.Utils.QL_REQUIRE(nStrikes_ >= requiredNumberOfStrikes(), () =>
                 "too few strikes (" + nStrikes_
                                     + ") required are at least "
                                     + requiredNumberOfStrikes());

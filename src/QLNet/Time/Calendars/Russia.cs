@@ -75,7 +75,7 @@ namespace QLNet.Time.Calendars
                 // available from 2012 to present
                 if (y < 2012)
                 {
-                    Utils.QL_FAIL("MOEX calendar for the year " + y + " does not exist.");
+                    QLNet.Utils.QL_FAIL("MOEX calendar for the year " + y + " does not exist.");
                 }
 
                 if (isWorkingWeekend(d, m, y))

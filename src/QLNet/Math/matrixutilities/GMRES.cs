@@ -23,7 +23,7 @@ using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Methods.Finitedifferences.Utilities;
 
-namespace QLNet.Math.matrixutilities
+namespace QLNet.Math.MatrixUtilities
 {
     /*! References:
         Saad, Yousef. 1996, Iterative methods for sparse linear systems,
@@ -55,7 +55,7 @@ namespace QLNet.Math.matrixutilities
         public GMRES(MatrixMult A, int maxIter, double relTol,
             MatrixMult preConditioner = null)
         {
-            Utils.QL_REQUIRE(maxIter_ > 0, () => "maxIter must be greater then zero");
+            QLNet.Utils.QL_REQUIRE(maxIter_ > 0, () => "maxIter must be greater then zero");
 
             A_ = A;
             M_ = preConditioner;
@@ -67,7 +67,7 @@ namespace QLNet.Math.matrixutilities
         {
             var result = solveImpl(b, x0);
 
-            Utils.QL_REQUIRE(result.Errors.Last() < relTol_, () => "could not converge");
+            QLNet.Utils.QL_REQUIRE(result.Errors.Last() < relTol_, () => "could not converge");
 
             return result;
         }
@@ -84,7 +84,7 @@ namespace QLNet.Math.matrixutilities
                 errors.AddRange(result.Errors);
             }
 
-            Utils.QL_REQUIRE(errors.Last() < relTol_, () => "could not converge");
+            QLNet.Utils.QL_REQUIRE(errors.Last() < relTol_, () => "could not converge");
 
             result.Errors = errors;
             return result;

@@ -56,7 +56,7 @@ namespace QLNet.Time
 
         public virtual int dayCount(Date d1, Date d2)
         {
-            Utils.QL_REQUIRE(!empty(), () => "No implementation provided");
+            QLNet.Utils.QL_REQUIRE(!empty(), () => "No implementation provided");
             return dayCounter_.dayCount(d1, d2);
         }
 
@@ -82,7 +82,7 @@ namespace QLNet.Time
 
         public virtual double yearFraction(Date d1, Date d2, Date refPeriodStart, Date refPeriodEnd)
         {
-            Utils.QL_REQUIRE(!empty(), () => "No implementation provided");
+            QLNet.Utils.QL_REQUIRE(!empty(), () => "No implementation provided");
             return dayCounter_.yearFraction(d1, d2, refPeriodStart, refPeriodEnd);
         }
     }

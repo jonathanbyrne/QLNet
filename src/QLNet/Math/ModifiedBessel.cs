@@ -22,7 +22,7 @@ using JetBrains.Annotations;
 using QLNet.Math.Distributions;
 using QLNet.Patterns;
 
-namespace QLNet
+namespace QLNet.Math
 {
     public static partial class Utils
     {
@@ -106,7 +106,7 @@ namespace QLNet
 
         public static double modifiedBesselFunction_i(double nu, double x)
         {
-            QL_REQUIRE(x >= 0.0, () => "negative argument requires complex version of modifiedBesselFunction");
+            QLNet.Utils.QL_REQUIRE(x >= 0.0, () => "negative argument requires complex version of modifiedBesselFunction");
             return modifiedBesselFunction_i_impl<doubleUnweighted, doubleValue>(nu, x);
         }
 
@@ -114,7 +114,7 @@ namespace QLNet
 
         public static double modifiedBesselFunction_i_exponentiallyWeighted(double nu, double x)
         {
-            QL_REQUIRE(x >= 0.0, () => "negative argument requires complex version of modifiedBesselFunction");
+            QLNet.Utils.QL_REQUIRE(x >= 0.0, () => "negative argument requires complex version of modifiedBesselFunction");
             return modifiedBesselFunction_i_impl<doubleExponentiallyWeighted, doubleValue>(nu, x);
         }
 
@@ -134,7 +134,7 @@ namespace QLNet
                 while (System.Math.Abs(B_k *= Y / (k * (k + nu))) > System.Math.Abs(sum) * Const.QL_EPSILON)
                 {
                     sum += B_k;
-                    QL_REQUIRE(++k < 1000, () => "max iterations exceeded");
+                    QLNet.Utils.QL_REQUIRE(++k < 1000, () => "max iterations exceeded");
                 }
 
                 return sum * FastActivator<T>.Create().weightSmallX(x);
@@ -177,7 +177,7 @@ namespace QLNet
                 while (Complex.Abs(B_k *= Y / (k * (k + nu))) > Complex.Abs(sum) * Const.QL_EPSILON)
                 {
                     sum += B_k;
-                    QL_REQUIRE(++k < 1000, () => "max iterations exceeded");
+                    QLNet.Utils.QL_REQUIRE(++k < 1000, () => "max iterations exceeded");
                 }
 
                 return sum * FastActivator<T>.Create().weightSmallX(x);

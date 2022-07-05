@@ -29,7 +29,7 @@ namespace QLNet
 
         public override void reset(int size)
         {
-            Utils.QL_REQUIRE(method() == underlying_.method(),
+            QLNet.Utils.QL_REQUIRE(method() == underlying_.method(),
                 () => "option and underlying were initialized on different methods");
             values_ = new Vector(size, 0.0);
             adjustValues();
@@ -74,7 +74,7 @@ namespace QLNet
 
                     break;
                 default:
-                    Utils.QL_FAIL("invalid exercise ExerciseType");
+                    QLNet.Utils.QL_FAIL("invalid exercise ExerciseType");
                     break;
             }
 

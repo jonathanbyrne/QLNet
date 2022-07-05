@@ -31,8 +31,8 @@ namespace QLNet.Instruments
             {
                 base.validate();
 
-                Utils.QL_REQUIRE(minmax != null, () => "null prior extremum");
-                Utils.QL_REQUIRE(minmax >= 0.0, () => "nonnegative prior extremum required: " + minmax + " not allowed");
+                QLNet.Utils.QL_REQUIRE(minmax != null, () => "null prior extremum");
+                QLNet.Utils.QL_REQUIRE(minmax >= 0.0, () => "nonnegative prior extremum required: " + minmax + " not allowed");
             }
         }
 
@@ -56,7 +56,7 @@ namespace QLNet.Instruments
             base.setupArguments(args);
 
             var moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
+            QLNet.Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
             moreArgs.minmax = minmax_;
         }
     }

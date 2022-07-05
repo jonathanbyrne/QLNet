@@ -10,7 +10,7 @@ namespace QLNet
         public BermudanExercise(List<Date> dates, bool payoffAtExpiry = false)
             : base(Type.Bermudan, payoffAtExpiry)
         {
-            Utils.QL_REQUIRE(!dates.empty(), () => "no exercise date given");
+            QLNet.Utils.QL_REQUIRE(!dates.empty(), () => "no exercise date given");
 
             dates_ = dates;
             dates_.Sort();

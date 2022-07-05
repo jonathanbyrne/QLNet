@@ -1,5 +1,6 @@
 ﻿using JetBrains.Annotations;
 using QLNet.Currencies;
+using QLNet.Termstructures;
 using QLNet.Time;
 
 namespace QLNet.Indexes
@@ -37,8 +38,8 @@ namespace QLNet.Indexes
         {
             if (!needsForecast(aFixingDate))
             {
-                var lim = Utils.inflationPeriod(aFixingDate, frequency_);
-                Utils.QL_REQUIRE(IndexManager.instance().getHistory(name()).ContainsKey(lim.Key), () =>
+                var lim = Termstructures.Utils.inflationPeriod(aFixingDate, frequency_);
+                QLNet.Utils.QL_REQUIRE(IndexManager.instance().getHistory(name()).ContainsKey(lim.Key), () =>
                     "Missing " + name() + " fixing for " + lim.Key);
 
                 var pastFixing = IndexManager.instance().getHistory(name())[lim.Key];
@@ -53,13 +54,13 @@ namespace QLNet.Indexes
                     }
                     else
                     {
-                        Utils.QL_REQUIRE(IndexManager.instance().getHistory(name()).ContainsKey(lim.Value + 1), () =>
+                        QLNet.Utils.QL_REQUIRE(IndexManager.instance().getHistory(name()).ContainsKey(lim.Value + 1), () =>
                             "Missing " + name() + " fixing for " + (lim.Value + 1));
 
                         var pastFixing2 = IndexManager.instance().getHistory(name())[lim.Value + 1];
 
                         // Use lagged period for interpolation
-                        var reference_period_lim = Utils.inflationPeriod(aFixingDate + zeroInflationTermStructure().link.observationLag(), frequency_);
+                        var reference_period_lim = Termstructures.Utils.inflationPeriod(aFixingDate + zeroInflationTermStructure().link.observationLag(), frequency_);
 
                         // now linearly interpolate
                         double daysInPeriod = reference_period_lim.Value + 1 - reference_period_lim.Key;
@@ -80,7 +81,7 @@ namespace QLNet.Indexes
         {
             // the term structure is relative to the fixing value at the base date.
             var baseDate = zeroInflation_.link.baseDate();
-            Utils.QL_REQUIRE(!needsForecast(baseDate), () => name() + " index fixing at base date is not available");
+            QLNet.Utils.QL_REQUIRE(!needsForecast(baseDate), () => name() + " index fixing at base date is not available");
             var baseFixing = fixing(baseDate);
             Date effectiveFixingDate;
             if (interpolated())
@@ -91,7 +92,7 @@ namespace QLNet.Indexes
             {
                 // start of period is the convention
                 // so it's easier to do linear interpolation on fixings
-                effectiveFixingDate = Utils.inflationPeriod(fixingDate, frequency()).Key;
+                effectiveFixingDate = Termstructures.Utils.inflationPeriod(fixingDate, frequency()).Key;
             }
 
             // no observation lag because it is the fixing for the date
@@ -118,13 +119,13 @@ namespace QLNet.Indexes
             var today = Settings.evaluationDate();
             var todayMinusLag = today - availabilityLag_;
 
-            var historicalFixingKnown = Utils.inflationPeriod(todayMinusLag, frequency_).Key - 1;
+            var historicalFixingKnown = Termstructures.Utils.inflationPeriod(todayMinusLag, frequency_).Key - 1;
             var latestNeededDate = fixingDate;
 
             if (interpolated_)
             {
                 // might need the next one too
-                var p = Utils.inflationPeriod(fixingDate, frequency_);
+                var p = Termstructures.Utils.inflationPeriod(fixingDate, frequency_);
                 if (fixingDate > p.Key)
                 {
                     latestNeededDate = latestNeededDate + new Period(frequency_);

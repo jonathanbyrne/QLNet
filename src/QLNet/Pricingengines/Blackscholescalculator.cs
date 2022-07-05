@@ -20,7 +20,7 @@
 using JetBrains.Annotations;
 using QLNet.Instruments;
 
-namespace QLNet.Pricingengines
+namespace QLNet.PricingEngines
 {
     //! Black-Scholes 1973 calculator class
     [PublicAPI]
@@ -35,8 +35,8 @@ namespace QLNet.Pricingengines
             spot_ = spot;
             growth_ = growth;
 
-            Utils.QL_REQUIRE(spot_ >= 0.0, () => "positive spot value required: " + spot_ + " not allowed");
-            Utils.QL_REQUIRE(growth_ >= 0.0, () => "positive growth value required: " + growth_ + " not allowed");
+            QLNet.Utils.QL_REQUIRE(spot_ >= 0.0, () => "positive spot value required: " + spot_ + " not allowed");
+            QLNet.Utils.QL_REQUIRE(growth_ >= 0.0, () => "positive growth value required: " + growth_ + " not allowed");
         }
 
         //! Sensitivity to change in the underlying spot price.

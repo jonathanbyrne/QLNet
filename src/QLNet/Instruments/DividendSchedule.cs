@@ -19,6 +19,7 @@
 
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using QLNet.Cashflows;
 
 namespace QLNet.Instruments
 {

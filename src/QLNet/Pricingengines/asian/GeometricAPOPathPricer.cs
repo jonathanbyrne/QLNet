@@ -3,7 +3,7 @@ using QLNet.Extensions;
 using QLNet.Instruments;
 using QLNet.Methods.montecarlo;
 
-namespace QLNet.Pricingengines.asian
+namespace QLNet.PricingEngines.asian
 {
     [PublicAPI]
     public class GeometricAPOPathPricer : PathPricer<Path>
@@ -23,7 +23,7 @@ namespace QLNet.Pricingengines.asian
             discount_ = discount;
             runningProduct_ = runningProduct;
             pastFixings_ = pastFixings;
-            Utils.QL_REQUIRE(strike >= 0.0, () => "negative strike given");
+            QLNet.Utils.QL_REQUIRE(strike >= 0.0, () => "negative strike given");
         }
 
         public GeometricAPOPathPricer(QLNet.Option.Type type,
@@ -44,7 +44,7 @@ namespace QLNet.Pricingengines.asian
         public double value(Path path)
         {
             var n = path.length() - 1;
-            Utils.QL_REQUIRE(n > 0, () => "the path cannot be empty");
+            QLNet.Utils.QL_REQUIRE(n > 0, () => "the path cannot be empty");
 
             double averagePrice;
             var product = runningProduct_;

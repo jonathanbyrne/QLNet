@@ -25,7 +25,7 @@ using QLNet.Instruments;
 using QLNet.Termstructures.Volatility.Inflation;
 using QLNet.Time;
 
-namespace QLNet.Pricingengines.inflation
+namespace QLNet.PricingEngines.inflation
 {
     //! Base YoY inflation cap/floor engine
     /*! This class doesn't know yet what sort of vol it is.  The

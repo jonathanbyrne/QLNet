@@ -20,10 +20,10 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Math;
-using QLNet.Math.matrixutilities;
+using QLNet.Math.MatrixUtilities;
 using QLNet.Methods.Finitedifferences.Meshers;
 using QLNet.Methods.Finitedifferences.Utilities;
-using QLNet.processes;
+using QLNet.Processes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
 

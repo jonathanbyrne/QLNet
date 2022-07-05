@@ -20,9 +20,9 @@
 using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Models.Shortrate.Twofactorsmodels;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.Swap;
 
-namespace QLNet.Pricingengines.swaption
+namespace QLNet.PricingEngines.swaption
 {
     // Swaption pricing engine for two-factor additive Gaussian Model G2 + +
     //! %Swaption priced by means of the Black formula
@@ -52,7 +52,7 @@ namespace QLNet.Pricingengines.swaption
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.settlementType == Settlement.Type.Physical, () =>
+            QLNet.Utils.QL_REQUIRE(arguments_.settlementType == Settlement.Type.Physical, () =>
                 "cash-settled swaptions not priced with G2 engine");
 
             // adjust the fixed rate of the swap for the spread on the

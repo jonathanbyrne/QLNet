@@ -17,10 +17,10 @@
 using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.Pricingengines.vanilla;
-using QLNet.processes;
+using QLNet.PricingEngines.vanilla;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.barrier
+namespace QLNet.PricingEngines.barrier
 {
     //! Pricing engine for barrier options using analytical formulae
     /*! The formulas are taken from "Barrier Option Pricing",
@@ -50,17 +50,17 @@ namespace QLNet.Pricingengines.barrier
         public override void calculate()
         {
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
-            Utils.QL_REQUIRE(payoff.strike() > 0.0, () => "strike must be positive");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff.strike() > 0.0, () => "strike must be positive");
 
             var K = payoff.strike();
             var S = process_.x0();
-            Utils.QL_REQUIRE(S >= 0.0, () => "negative or null underlying given");
-            Utils.QL_REQUIRE(!triggered(S), () => "barrier touched");
+            QLNet.Utils.QL_REQUIRE(S >= 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(!triggered(S), () => "barrier touched");
 
             var barrierType = arguments_.barrierType;
-            Utils.QL_REQUIRE(barrierType == DoubleBarrier.Type.KnockOut ||
-                             barrierType == DoubleBarrier.Type.KnockIn, () =>
+            QLNet.Utils.QL_REQUIRE(barrierType == DoubleBarrier.Type.KnockOut ||
+                                   barrierType == DoubleBarrier.Type.KnockIn, () =>
                 "only KnockIn and KnockOut options supported");
 
             var L = arguments_.barrier_lo.GetValueOrDefault();
@@ -124,7 +124,7 @@ namespace QLNet.Pricingengines.barrier
                 }
                 else
                 {
-                    Utils.QL_FAIL("option ExerciseType not recognized");
+                    QLNet.Utils.QL_FAIL("option ExerciseType not recognized");
                 }
 
                 var v1 = D(H / S * System.Math.Pow(H / L, 2.0 * n), -mu, vol, T);
@@ -169,7 +169,7 @@ namespace QLNet.Pricingengines.barrier
         private double strike()
         {
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
             return payoff.strike();
         }
 

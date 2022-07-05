@@ -130,7 +130,7 @@ namespace QLNet.Currencies
             }
             else
             {
-                Utils.QL_FAIL("exchange rates not chainable");
+                QLNet.Utils.QL_FAIL("exchange rates not chainable");
             }
 
             return result;
@@ -157,7 +157,7 @@ namespace QLNet.Currencies
                         return new Money(amount.value / rate_.Value, source);
                     }
 
-                    Utils.QL_FAIL("exchange rate not applicable");
+                    QLNet.Utils.QL_FAIL("exchange rate not applicable");
                     return null;
 
                 case Type.Derived:
@@ -171,10 +171,10 @@ namespace QLNet.Currencies
                         return rateChain_.Key.exchange(rateChain_.Value.exchange(amount));
                     }
 
-                    Utils.QL_FAIL("exchange rate not applicable");
+                    QLNet.Utils.QL_FAIL("exchange rate not applicable");
                     return null;
                 default:
-                    Utils.QL_FAIL("unknown exchange-rate ExerciseType");
+                    QLNet.Utils.QL_FAIL("unknown exchange-rate ExerciseType");
                     return null;
             }
         }

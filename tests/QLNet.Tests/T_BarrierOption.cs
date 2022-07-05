@@ -18,19 +18,19 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 using QLNet.Quotes;
-using QLNet.processes;
 using QLNet.Models.Equity;
 using QLNet.Time;
 using QLNet.Termstructures.Volatility.equityfx;
-using QLNet.Math.randomnumbers;
 using QLNet.Math.statistics;
 using QLNet.Instruments;
 using QLNet.Math.Interpolations;
 using QLNet.Termstructures;
 using QLNet.Math;
+using QLNet.Math.RandomNumbers;
 using QLNet.Methods.Finitedifferences.Solvers;
 using QLNet.Methods.lattices;
-using QLNet.Pricingengines.barrier;
+using QLNet.PricingEngines.barrier;
+using QLNet.Processes;
 using QLNet.Termstructures.Yield;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
@@ -997,7 +997,7 @@ namespace QLNet.Tests
                 var barrierOption = new BarrierOption(values[i].barrierType, values[i].barrier, values[i].rebate,
                                                                 payoff, exercise);
 
-                var bsVanillaPrice = Utils.blackFormula(values[i].type, values[i].strike,
+                var bsVanillaPrice = PricingEngines.Utils.blackFormula(values[i].type, values[i].strike,
                                                            spot.value() * qTS.discount(values[i].t) / rTS.discount(values[i].t),
                                                            values[i].v * System.Math.Sqrt(values[i].t), rTS.discount(values[i].t));
                 IPricingEngine vannaVolgaEngine = new VannaVolgaBarrierEngine(volAtmQuote, vol25PutQuote, vol25CallQuote,

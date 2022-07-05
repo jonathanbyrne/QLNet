@@ -20,10 +20,10 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Math;
-using QLNet.Math.matrixutilities;
+using QLNet.Math.MatrixUtilities;
 using QLNet.Time;
 
-namespace QLNet.processes
+namespace QLNet.Processes
 {
     //! %Array of correlated 1-D stochastic processes
     /*! \ingroup processes */
@@ -38,8 +38,8 @@ namespace QLNet.processes
             processes_ = processes;
             sqrtCorrelation_ = MatrixUtilitites.pseudoSqrt(correlation, MatrixUtilitites.SalvagingAlgorithm.Spectral);
 
-            Utils.QL_REQUIRE(processes.Count != 0, () => "no processes given");
-            Utils.QL_REQUIRE(correlation.rows() == processes.Count, () =>
+            QLNet.Utils.QL_REQUIRE(processes.Count != 0, () => "no processes given");
+            QLNet.Utils.QL_REQUIRE(correlation.rows() == processes.Count, () =>
                 "mismatch between number of processes and size of correlation matrix");
             for (var i = 0; i < processes_.Count; i++)
             {

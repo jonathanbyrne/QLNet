@@ -52,7 +52,7 @@ namespace QLNet.Termstructures.Volatility
         protected override double volatilityImpl(double strike)
         {
             var k = System.Math.Log(System.Math.Max(strike, 1E-6) / forward_);
-            var totalVariance = Utils.sviTotalVariance(param_[0], param_[1], param_[2],
+            var totalVariance = Termstructures.Volatility.Utils.sviTotalVariance(param_[0], param_[1], param_[2],
                 param_[3], param_[4], k);
             return System.Math.Sqrt(System.Math.Max(0.0, totalVariance / exerciseTime()));
         }
@@ -64,11 +64,11 @@ namespace QLNet.Termstructures.Volatility
 
         public void init()
         {
-            Utils.QL_REQUIRE(param_.Count == 5,
+            QLNet.Utils.QL_REQUIRE(param_.Count == 5,
                 () => "svi expects 5 parameters (a,b,sigma,rho,s,m) but ("
                       + param_.Count + ") given");
 
-            Utils.checkSviParameters(param_[0], param_[1], param_[2], param_[3], param_[4]);
+            Termstructures.Volatility.Utils.checkSviParameters(param_[0], param_[1], param_[2], param_[3], param_[4]);
         }
 
         #endregion

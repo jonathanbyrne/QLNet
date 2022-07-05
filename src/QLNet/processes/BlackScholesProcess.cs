@@ -26,7 +26,7 @@ using QLNet.Termstructures.Yield;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
 
-namespace QLNet.processes
+namespace QLNet.Processes
 {
     //! Generalized Black-Scholes stochastic process
     /*! This class describes the stochastic process \f$ S \f$ governed by

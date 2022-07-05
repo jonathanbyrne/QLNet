@@ -20,7 +20,7 @@
 
 using JetBrains.Annotations;
 using QLNet.Math.Optimization;
-using QLNet.processes;
+using QLNet.Processes;
 
 namespace QLNet.Models.Shortrate.Onefactormodels
 {
@@ -98,7 +98,7 @@ namespace QLNet.Models.Shortrate.Onefactormodels
             var f = discountBond(0.0, bondMaturity, r0_);
             var k = discountBond(0.0, maturity, r0_) * strike;
 
-            return Utils.blackFormula(type, k, f, v);
+            return PricingEngines.Utils.blackFormula(type, k, f, v);
         }
 
         public override ShortRateDynamics dynamics() => new Dynamics(a(), b(), sigma(), r0_);

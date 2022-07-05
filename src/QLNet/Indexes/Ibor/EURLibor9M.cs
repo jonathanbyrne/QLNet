@@ -2,7 +2,7 @@ using JetBrains.Annotations;
 using QLNet.Termstructures;
 using QLNet.Time;
 
-namespace QLNet
+namespace QLNet.Indexes.Ibor
 {
     [PublicAPI]
     public class EURLibor9M : EURLibor

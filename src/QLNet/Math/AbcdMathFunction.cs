@@ -61,9 +61,9 @@ namespace QLNet.Math
 
         public static void validate(double a, double b, double c, double d)
         {
-            Utils.QL_REQUIRE(c > 0, () => "c (" + c + ") must be positive");
-            Utils.QL_REQUIRE(d >= 0, () => "d (" + d + ") must be non negative");
-            Utils.QL_REQUIRE(a + d >= 0, () => "a+d (" + a + "+" + d + ") must be non negative");
+            QLNet.Utils.QL_REQUIRE(c > 0, () => "c (" + c + ") must be positive");
+            QLNet.Utils.QL_REQUIRE(d >= 0, () => "d (" + d + ") must be non negative");
+            QLNet.Utils.QL_REQUIRE(a + d >= 0, () => "a+d (" + a + "+" + d + ") must be non negative");
 
             if (b >= 0.0)
             {
@@ -76,7 +76,7 @@ namespace QLNet.Math
             {
                 // ... is a minimum
                 // must be abcd(zeroFirstDerivative)>=0
-                Utils.QL_REQUIRE(b >= -(d * c) / System.Math.Exp(c * a / b - 1.0), () =>
+                QLNet.Utils.QL_REQUIRE(b >= -(d * c) / System.Math.Exp(c * a / b - 1.0), () =>
                     "b (" + b + ") less than " +
                     -(d * c) / System.Math.Exp(c * a / b - 1.0) + ": negative function value at stationary point " + zeroFirstDerivative);
             }

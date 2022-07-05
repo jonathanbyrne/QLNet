@@ -1,7 +1,7 @@
 ﻿using JetBrains.Annotations;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     [PublicAPI]
     public class AnalyticDigitalAmericanKOEngine : AnalyticDigitalAmericanEngine

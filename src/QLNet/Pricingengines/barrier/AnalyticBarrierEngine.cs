@@ -20,9 +20,9 @@
 using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.barrier
+namespace QLNet.PricingEngines.barrier
 {
     //! Pricing Engine for barrier options using analytical formulae
     //    ! The formulas are taken from "Option pricing formulas",
@@ -49,14 +49,14 @@ namespace QLNet.Pricingengines.barrier
         {
             var payoff = arguments_.payoff as PlainVanillaPayoff;
 
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
-            Utils.QL_REQUIRE(payoff.strike() > 0.0, () => "strike must be positive");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff.strike() > 0.0, () => "strike must be positive");
 
             var strike = payoff.strike();
             var spot = process_.x0();
 
-            Utils.QL_REQUIRE(spot >= 0.0, () => "negative or null underlying given");
-            Utils.QL_REQUIRE(!triggered(spot), () => "barrier touched");
+            QLNet.Utils.QL_REQUIRE(spot >= 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(!triggered(spot), () => "barrier touched");
 
             var barrierType = arguments_.barrierType;
 
@@ -163,7 +163,7 @@ namespace QLNet.Pricingengines.barrier
 
                     break;
                 default:
-                    Utils.QL_FAIL("unknown ExerciseType");
+                    QLNet.Utils.QL_FAIL("unknown ExerciseType");
                     break;
             }
         }
@@ -270,7 +270,7 @@ namespace QLNet.Pricingengines.barrier
         private double strike()
         {
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
             return payoff.strike();
         }
 

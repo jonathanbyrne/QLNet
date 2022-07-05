@@ -20,8 +20,8 @@
 
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using QLNet.Pricingengines.vanilla;
-using QLNet.processes;
+using QLNet.PricingEngines.vanilla;
+using QLNet.Processes;
 using QLNet.Quotes;
 using QLNet.Time;
 
@@ -45,7 +45,7 @@ namespace QLNet.Instruments
 
                 for (var i = 0; i < cashFlow.Count; i++)
                 {
-                    Utils.QL_REQUIRE(cashFlow[i].date() <= exerciseDate, () =>
+                    QLNet.Utils.QL_REQUIRE(cashFlow[i].date() <= exerciseDate, () =>
                         " dividend date (" + cashFlow[i].date() + ") is later than the exercise date (" + exerciseDate +
                         ")");
                 }
@@ -63,7 +63,7 @@ namespace QLNet.Instruments
             List<Date> dividendDates, List<double> dividends)
             : base(payoff, exercise)
         {
-            cashFlow_ = Utils.DividendVector(dividendDates, dividends);
+            cashFlow_ = Cashflows.Utils.DividendVector(dividendDates, dividends);
         }
 
         /*! \warning see VanillaOption for notes on implied-volatility
@@ -72,7 +72,7 @@ namespace QLNet.Instruments
         public double impliedVolatility(double targetValue, GeneralizedBlackScholesProcess process,
             double accuracy = 1.0e-4, int maxEvaluations = 100, double minVol = 1.0e-7, double maxVol = 4.0)
         {
-            Utils.QL_REQUIRE(!isExpired(), () => "option expired");
+            QLNet.Utils.QL_REQUIRE(!isExpired(), () => "option expired");
 
             var volQuote = new SimpleQuote();
 
@@ -89,10 +89,10 @@ namespace QLNet.Instruments
                     engine = new FDDividendAmericanEngine(newProcess);
                     break;
                 case Exercise.Type.Bermudan:
-                    Utils.QL_FAIL("engine not available for Bermudan option with dividends");
+                    QLNet.Utils.QL_FAIL("engine not available for Bermudan option with dividends");
                     break;
                 default:
-                    Utils.QL_FAIL("unknown exercise ExerciseType");
+                    QLNet.Utils.QL_FAIL("unknown exercise ExerciseType");
                     break;
             }
 
@@ -105,7 +105,7 @@ namespace QLNet.Instruments
             base.setupArguments(args);
 
             var arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong engine ExerciseType");
+            QLNet.Utils.QL_REQUIRE(arguments != null, () => "wrong engine ExerciseType");
 
             arguments.cashFlow = cashFlow_;
         }

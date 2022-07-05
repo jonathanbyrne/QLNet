@@ -20,13 +20,12 @@
 */
 
 using System.Collections.Generic;
-using QLNet.Cashflows;
 using QLNet.Extensions;
 using QLNet.Indexes;
 using QLNet.Patterns;
 using QLNet.Time;
 
-namespace QLNet
+namespace QLNet.Cashflows
 {
     public static class CashFlowVectors
     {
@@ -54,26 +53,26 @@ namespace QLNet
             where DigitalCouponType : DigitalCoupon, new()
         {
             var n = schedule.Count;
-            Utils.QL_REQUIRE(!nominals.empty(), () => "no notional given");
-            Utils.QL_REQUIRE(nominals.Count <= n, () => "too many nominals (" + nominals.Count + "), only " + n + " required");
+            QLNet.Utils.QL_REQUIRE(!nominals.empty(), () => "no notional given");
+            QLNet.Utils.QL_REQUIRE(nominals.Count <= n, () => "too many nominals (" + nominals.Count + "), only " + n + " required");
             if (gearings != null)
             {
-                Utils.QL_REQUIRE(gearings.Count <= n, () => "too many gearings (" + gearings.Count + "), only " + n + " required");
+                QLNet.Utils.QL_REQUIRE(gearings.Count <= n, () => "too many gearings (" + gearings.Count + "), only " + n + " required");
             }
 
             if (spreads != null)
             {
-                Utils.QL_REQUIRE(spreads.Count <= n, () => "too many spreads (" + spreads.Count + "), only " + n + " required");
+                QLNet.Utils.QL_REQUIRE(spreads.Count <= n, () => "too many spreads (" + spreads.Count + "), only " + n + " required");
             }
 
             if (callStrikes != null)
             {
-                Utils.QL_REQUIRE(callStrikes.Count <= n, () => "too many nominals (" + callStrikes.Count + "), only " + n + " required");
+                QLNet.Utils.QL_REQUIRE(callStrikes.Count <= n, () => "too many nominals (" + callStrikes.Count + "), only " + n + " required");
             }
 
             if (putStrikes != null)
             {
-                Utils.QL_REQUIRE(putStrikes.Count <= n, () => "too many nominals (" + putStrikes.Count + "), only " + n + " required");
+                QLNet.Utils.QL_REQUIRE(putStrikes.Count <= n, () => "too many nominals (" + putStrikes.Count + "), only " + n + " required");
             }
 
             var leg = new List<CashFlow>();
@@ -160,29 +159,29 @@ namespace QLNet
         {
             var n = schedule.Count;
 
-            Utils.QL_REQUIRE(!nominals.empty(), () => "no notional given");
-            Utils.QL_REQUIRE(nominals.Count <= n, () => "too many nominals (" + nominals.Count + "), only " + n + " required");
+            QLNet.Utils.QL_REQUIRE(!nominals.empty(), () => "no notional given");
+            QLNet.Utils.QL_REQUIRE(nominals.Count <= n, () => "too many nominals (" + nominals.Count + "), only " + n + " required");
             if (gearings != null)
             {
-                Utils.QL_REQUIRE(gearings.Count <= n, () => "too many gearings (" + gearings.Count + "), only " + n + " required");
+                QLNet.Utils.QL_REQUIRE(gearings.Count <= n, () => "too many gearings (" + gearings.Count + "), only " + n + " required");
             }
 
             if (spreads != null)
             {
-                Utils.QL_REQUIRE(spreads.Count <= n, () => "too many spreads (" + spreads.Count + "), only " + n + " required");
+                QLNet.Utils.QL_REQUIRE(spreads.Count <= n, () => "too many spreads (" + spreads.Count + "), only " + n + " required");
             }
 
             if (caps != null)
             {
-                Utils.QL_REQUIRE(caps.Count <= n, () => "too many caps (" + caps.Count + "), only " + n + " required");
+                QLNet.Utils.QL_REQUIRE(caps.Count <= n, () => "too many caps (" + caps.Count + "), only " + n + " required");
             }
 
             if (floors != null)
             {
-                Utils.QL_REQUIRE(floors.Count <= n, () => "too many floors (" + floors.Count + "), only " + n + " required");
+                QLNet.Utils.QL_REQUIRE(floors.Count <= n, () => "too many floors (" + floors.Count + "), only " + n + " required");
             }
 
-            Utils.QL_REQUIRE(!isZero || !isInArrears, () => "in-arrears and zero features are not compatible");
+            QLNet.Utils.QL_REQUIRE(!isZero || !isInArrears, () => "in-arrears and zero features are not compatible");
 
             var leg = new List<CashFlow>();
 
@@ -211,13 +210,13 @@ namespace QLNet
                 {
                     // fixed coupon
                     leg.Add(new FixedRateCoupon(paymentDate, nominals.Get(i),
-                        Utils.effectiveFixedRate(spreads, caps, floors, i),
+                        QLNet.Utils.effectiveFixedRate(spreads, caps, floors, i),
                         paymentDayCounter,
                         start, end, refStart, refEnd));
                 }
                 else
                 {
-                    if (Utils.noOption(caps, floors, i))
+                    if (QLNet.Utils.noOption(caps, floors, i))
                     {
                         leg.Add(FastActivator<FloatingCouponType>.Create().factory(
                             nominals.Get(i),
@@ -257,7 +256,7 @@ namespace QLNet
             List<double> spreads,
             DayCounter paymentDayCounter)
         {
-            Utils.QL_REQUIRE(!nominals.empty(), () => "no nominal given");
+            QLNet.Utils.QL_REQUIRE(!nominals.empty(), () => "no nominal given");
 
             var leg = new List<CashFlow>();
 
@@ -311,26 +310,26 @@ namespace QLNet
         {
             var n = schedule_.Count - 1;
 
-            Utils.QL_REQUIRE(!notionals_.empty(), () => "no notional given");
-            Utils.QL_REQUIRE(notionals_.Count <= n, () => "too many nominals (" + notionals_.Count + "), only " + n + " required");
+            QLNet.Utils.QL_REQUIRE(!notionals_.empty(), () => "no notional given");
+            QLNet.Utils.QL_REQUIRE(notionals_.Count <= n, () => "too many nominals (" + notionals_.Count + "), only " + n + " required");
             if (gearings_ != null)
             {
-                Utils.QL_REQUIRE(gearings_.Count <= n, () => "too many gearings (" + gearings_.Count + "), only " + n + " required");
+                QLNet.Utils.QL_REQUIRE(gearings_.Count <= n, () => "too many gearings (" + gearings_.Count + "), only " + n + " required");
             }
 
             if (spreads_ != null)
             {
-                Utils.QL_REQUIRE(spreads_.Count <= n, () => "too many spreads (" + spreads_.Count + "), only " + n + " required");
+                QLNet.Utils.QL_REQUIRE(spreads_.Count <= n, () => "too many spreads (" + spreads_.Count + "), only " + n + " required");
             }
 
             if (caps_ != null)
             {
-                Utils.QL_REQUIRE(caps_.Count <= n, () => "too many caps (" + caps_.Count + "), only " + n + " required");
+                QLNet.Utils.QL_REQUIRE(caps_.Count <= n, () => "too many caps (" + caps_.Count + "), only " + n + " required");
             }
 
             if (floors_ != null)
             {
-                Utils.QL_REQUIRE(floors_.Count <= n, () => "too many floors (" + floors_.Count + "), only " + n + " required");
+                QLNet.Utils.QL_REQUIRE(floors_.Count <= n, () => "too many floors (" + floors_.Count + "), only " + n + " required");
             }
 
             var leg = new List<CashFlow>(n);
@@ -360,14 +359,14 @@ namespace QLNet
                 {
                     // fixed coupon
                     leg.Add(new FixedRateCoupon(paymentDate, notionals_.Get(i, 1.0),
-                        Utils.effectiveFixedRate(spreads_, caps_, floors_, i),
+                        QLNet.Utils.effectiveFixedRate(spreads_, caps_, floors_, i),
                         paymentDayCounter_,
                         start, end, refStart, refEnd));
                 }
                 else
                 {
                     // yoy inflation coupon
-                    if (Utils.noOption(caps_, floors_, i))
+                    if (QLNet.Utils.noOption(caps_, floors_, i))
                     {
                         // just swaplet
                         var coup = new YoYInflationCoupon(paymentDate,

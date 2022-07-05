@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
 
-namespace QLNet.Pricingengines.barrier
+namespace QLNet.PricingEngines.barrier
 {
     [PublicAPI]
     public class DiscretizedDermanKaniBarrierOption : DiscretizedAsset

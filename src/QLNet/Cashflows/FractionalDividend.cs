@@ -1,7 +1,7 @@
 ﻿using JetBrains.Annotations;
 using QLNet.Time;
 
-namespace QLNet
+namespace QLNet.Cashflows
 {
     [PublicAPI]
     public class FractionalDividend : Dividend
@@ -26,7 +26,7 @@ namespace QLNet
         // Dividend interface
         public override double amount()
         {
-            Utils.QL_REQUIRE(nominal_ != null, () => "no nominal given");
+            QLNet.Utils.QL_REQUIRE(nominal_ != null, () => "no nominal given");
             return rate_ * nominal_.GetValueOrDefault();
         }
 

@@ -21,7 +21,7 @@ using JetBrains.Annotations;
 using QLNet.Methods.montecarlo;
 using QLNet.Patterns;
 
-namespace QLNet.Math.randomnumbers
+namespace QLNet.Math.RandomNumbers
 {
     //! Inverse cumulative random number generator
     /*! It uses a uniform deviate in (0, 1) as the source of cumulative

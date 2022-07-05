@@ -14,8 +14,8 @@ namespace QLNet.Instruments
             secondStrike_ = secondStrike;
             cashPayoff_ = cashPayoff;
 
-            Utils.QL_REQUIRE(secondStrike > strike, () => "second strike (" + secondStrike +
-                                                          ") must be higher than first strike (" + strike + ")");
+            QLNet.Utils.QL_REQUIRE(secondStrike > strike, () => "second strike (" + secondStrike +
+                                                                         ") must be higher than first strike (" + strike + ")");
         }
 
         public double cashPayoff() => cashPayoff_;

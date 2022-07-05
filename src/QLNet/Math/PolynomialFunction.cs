@@ -31,7 +31,7 @@ namespace QLNet.Math
 
         public PolynomialFunction(List<double> coeff)
         {
-            Utils.QL_REQUIRE(!coeff.empty(), () => "empty coefficient vector");
+            QLNet.Utils.QL_REQUIRE(!coeff.empty(), () => "empty coefficient vector");
             order_ = coeff.Count;
             c_ = coeff;
             derC_ = new InitializedList<double>(order_ - 1);

@@ -18,20 +18,20 @@ namespace QLNet.Instruments
                 base.validate();
 
                 var europeanExercise = exercise as EuropeanExercise;
-                Utils.QL_REQUIRE(lookbackPeriodEnd <= europeanExercise.lastDate(), () =>
+                QLNet.Utils.QL_REQUIRE(lookbackPeriodEnd <= europeanExercise.lastDate(), () =>
                     "lookback start date must be earlier than exercise date");
 
                 var floatingTypePayoff = payoff as FloatingTypePayoff;
 
                 if (floatingTypePayoff.optionType() == Type.Call)
                 {
-                    Utils.QL_REQUIRE(lambda >= 1.0, () =>
+                    QLNet.Utils.QL_REQUIRE(lambda >= 1.0, () =>
                         "lambda should be greater than or equal to 1 for calls");
                 }
 
                 if (floatingTypePayoff.optionType() == Type.Put)
                 {
-                    Utils.QL_REQUIRE(lambda <= 1.0, () =>
+                    QLNet.Utils.QL_REQUIRE(lambda <= 1.0, () =>
                         "lambda should be smaller than or equal to 1 for puts");
                 }
             }
@@ -59,7 +59,7 @@ namespace QLNet.Instruments
             base.setupArguments(args);
 
             var moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
+            QLNet.Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
             moreArgs.lambda = lambda_;
             moreArgs.lookbackPeriodEnd = lookbackPeriodEnd_;
         }

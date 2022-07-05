@@ -1,6 +1,6 @@
 ﻿using QLNet.Time;
 
-namespace QLNet
+namespace QLNet.Indexes
 {
     public partial class Utils
     {

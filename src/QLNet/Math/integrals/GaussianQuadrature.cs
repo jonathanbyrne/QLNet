@@ -19,7 +19,7 @@
 
 using System;
 using JetBrains.Annotations;
-using QLNet.Math.matrixutilities;
+using QLNet.Math.MatrixUtilities;
 
 namespace QLNet.Math.integrals
 {

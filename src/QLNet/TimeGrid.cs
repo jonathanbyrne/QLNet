@@ -45,7 +45,7 @@ namespace QLNet
             // We seem to assume that the grid begins at 0.
             // Let's enforce the assumption for the time being
             // (even though I'm not sure that I agree.)
-            Utils.QL_REQUIRE(end > 0.0, () => "negative times not allowed");
+            QLNet.Utils.QL_REQUIRE(end > 0.0, () => "negative times not allowed");
             var dt = end / steps;
             times_ = new List<double>(steps + 1);
             for (var i = 0; i <= steps; i++)
@@ -69,16 +69,16 @@ namespace QLNet
         /// <param name="times"></param>
         public TimeGrid(List<double> times)
         {
-            Utils.QL_REQUIRE(times.Count > 0, () => "empty time sequence");
+            QLNet.Utils.QL_REQUIRE(times.Count > 0, () => "empty time sequence");
 
             mandatoryTimes_ = new List<double>(times);
             mandatoryTimes_.Sort();
 
-            Utils.QL_REQUIRE(mandatoryTimes_[0] >= 0.0, () => "negative times not allowed");
+            QLNet.Utils.QL_REQUIRE(mandatoryTimes_[0] >= 0.0, () => "negative times not allowed");
 
             for (var i = 0; i < mandatoryTimes_.Count - 1; ++i)
             {
-                if (Utils.close_enough(mandatoryTimes_[i], mandatoryTimes_[i + 1]))
+                if (Math.Utils.close_enough(mandatoryTimes_[i], mandatoryTimes_[i + 1]))
                 {
                     mandatoryTimes_.RemoveAt(i);
                     i--;
@@ -109,17 +109,17 @@ namespace QLNet
         /// <param name="steps"></param>
         public TimeGrid(List<double> times, int steps)
         {
-            Utils.QL_REQUIRE(times.Count > 0, () => "empty time sequence");
+            QLNet.Utils.QL_REQUIRE(times.Count > 0, () => "empty time sequence");
 
             //not really finished bu run well for actals tests
             mandatoryTimes_ = new List<double>(times);
             mandatoryTimes_.Sort();
 
-            Utils.QL_REQUIRE(mandatoryTimes_[0] >= 0.0, () => "negative times not allowed");
+            QLNet.Utils.QL_REQUIRE(mandatoryTimes_[0] >= 0.0, () => "negative times not allowed");
 
             for (var i = 0; i < mandatoryTimes_.Count - 1; ++i)
             {
-                if (Utils.close_enough(mandatoryTimes_[i], mandatoryTimes_[i + 1]))
+                if (Math.Utils.close_enough(mandatoryTimes_[i], mandatoryTimes_[i + 1]))
                 {
                     mandatoryTimes_.RemoveAt(i);
                     i--;
@@ -176,17 +176,17 @@ namespace QLNet
 
         public TimeGrid(List<double> times, int offset, int steps)
         {
-            Utils.QL_REQUIRE(times.Count > 0, () => "empty time sequence");
+            QLNet.Utils.QL_REQUIRE(times.Count > 0, () => "empty time sequence");
 
             //not really finished bu run well for actals tests
             mandatoryTimes_ = times.GetRange(0, offset);
             mandatoryTimes_.Sort();
 
-            Utils.QL_REQUIRE(mandatoryTimes_[0] >= 0.0, () => "negative times not allowed");
+            QLNet.Utils.QL_REQUIRE(mandatoryTimes_[0] >= 0.0, () => "negative times not allowed");
 
             for (var i = 0; i < mandatoryTimes_.Count - 1; ++i)
             {
-                if (Utils.close_enough(mandatoryTimes_[i], mandatoryTimes_[i + 1]))
+                if (Math.Utils.close_enough(mandatoryTimes_[i], mandatoryTimes_[i + 1]))
                 {
                     mandatoryTimes_.RemoveAt(i);
                     i--;
@@ -304,15 +304,15 @@ namespace QLNet
         public int index(double t)
         {
             var i = closestIndex(t);
-            if (Utils.close(t, times_[i]))
+            if (Math.Utils.close(t, times_[i]))
             {
                 return i;
             }
 
-            Utils.QL_REQUIRE(t >= times_.First(), () =>
+            QLNet.Utils.QL_REQUIRE(t >= times_.First(), () =>
                 "using inadequate time grid: all nodes are later than the required time t = "
                 + t + " (earliest node is t1 = " + times_.First() + ")");
-            Utils.QL_REQUIRE(t <= times_.Last(), () =>
+            QLNet.Utils.QL_REQUIRE(t <= times_.Last(), () =>
                 "using inadequate time grid: all nodes are earlier than the required time t = "
                 + t + " (latest node is t1 = " + times_.Last() + ")");
             int j, k;
@@ -327,8 +327,8 @@ namespace QLNet
                 k = i;
             }
 
-            Utils.QL_FAIL("using inadequate time grid: the nodes closest to the required time t = "
-                          + t + " are t1 = " + times_[j] + " and t2 = " + times_[k]);
+            QLNet.Utils.QL_FAIL("using inadequate time grid: the nodes closest to the required time t = "
+                                         + t + " are t1 = " + times_[j] + " and t2 = " + times_[k]);
             return 0;
         }
 

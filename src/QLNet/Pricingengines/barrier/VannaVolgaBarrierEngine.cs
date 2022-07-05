@@ -21,14 +21,14 @@ using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Math.Distributions;
 using QLNet.Math.Interpolations;
-using QLNet.processes;
+using QLNet.Processes;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
 
-namespace QLNet.Pricingengines.barrier
+namespace QLNet.PricingEngines.barrier
 {
     [PublicAPI]
     public class VannaVolgaBarrierEngine : GenericEngine<DividendBarrierOption.Arguments, OneAssetOption.Results>
@@ -62,15 +62,15 @@ namespace QLNet.Pricingengines.barrier
             adaptVanDelta_ = adaptVanDelta;
             bsPriceWithSmile_ = bsPriceWithSmile;
 
-            Utils.QL_REQUIRE(vol25Put_.link.delta().IsEqual(-0.25), () => "25 delta put is required by vanna volga method");
-            Utils.QL_REQUIRE(vol25Call_.link.delta().IsEqual(0.25), () => "25 delta call is required by vanna volga method");
+            QLNet.Utils.QL_REQUIRE(vol25Put_.link.delta().IsEqual(-0.25), () => "25 delta put is required by vanna volga method");
+            QLNet.Utils.QL_REQUIRE(vol25Call_.link.delta().IsEqual(0.25), () => "25 delta call is required by vanna volga method");
 
-            Utils.QL_REQUIRE(vol25Put_.link.maturity().IsEqual(vol25Call_.link.maturity()) &&
-                             vol25Put_.link.maturity().IsEqual(atmVol_.link.maturity()), () =>
+            QLNet.Utils.QL_REQUIRE(vol25Put_.link.maturity().IsEqual(vol25Call_.link.maturity()) &&
+                                   vol25Put_.link.maturity().IsEqual(atmVol_.link.maturity()), () =>
                 "Maturity of 3 vols are not the same");
 
-            Utils.QL_REQUIRE(!domesticTS_.empty(), () => "domestic yield curve is not defined");
-            Utils.QL_REQUIRE(!foreignTS_.empty(), () => "foreign yield curve is not defined");
+            QLNet.Utils.QL_REQUIRE(!domesticTS_.empty(), () => "domestic yield curve is not defined");
+            QLNet.Utils.QL_REQUIRE(!foreignTS_.empty(), () => "foreign yield curve is not defined");
 
             atmVol_.registerWith(update);
             vol25Put_.registerWith(update);
@@ -82,10 +82,10 @@ namespace QLNet.Pricingengines.barrier
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.barrierType == Barrier.Type.UpIn ||
-                             arguments_.barrierType == Barrier.Type.UpOut ||
-                             arguments_.barrierType == Barrier.Type.DownIn ||
-                             arguments_.barrierType == Barrier.Type.DownOut, () =>
+            QLNet.Utils.QL_REQUIRE(arguments_.barrierType == Barrier.Type.UpIn ||
+                                   arguments_.barrierType == Barrier.Type.UpOut ||
+                                   arguments_.barrierType == Barrier.Type.DownIn ||
+                                   arguments_.barrierType == Barrier.Type.DownOut, () =>
                 "Invalid barrier ExerciseType");
 
             var sigmaShift_vega = 0.0001;

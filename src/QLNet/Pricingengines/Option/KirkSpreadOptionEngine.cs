@@ -17,10 +17,10 @@
 using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.processes;
+using QLNet.Processes;
 using QLNet.Quotes;
 
-namespace QLNet.Pricingengines.Option
+namespace QLNet.PricingEngines.Option
 {
     /// <summary>
     ///     Kirk approximation for European spread option on futures
@@ -44,11 +44,11 @@ namespace QLNet.Pricingengines.Option
         public override void calculate()
         {
             // First: tests on types
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () =>
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () =>
                 "not an European Option");
 
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "not a plain-vanilla payoff");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "not a plain-vanilla payoff");
 
             // forward values - futures, so b=0
             var forward1 = process1_.stateVariable().link.value();

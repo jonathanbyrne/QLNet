@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using QLNet.Cashflows;
 using QLNet.Instruments;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     public abstract class FDDividendEngineBase : FDMultiPeriodEngine
     {
@@ -28,7 +29,7 @@ namespace QLNet.Pricingengines.vanilla
         public override void setupArguments(IPricingEngineArguments a)
         {
             var args = a as DividendVanillaOption.Arguments;
-            Utils.QL_REQUIRE(args != null, () => "incorrect argument ExerciseType");
+            QLNet.Utils.QL_REQUIRE(args != null, () => "incorrect argument ExerciseType");
             var events = new List<Event>();
             foreach (Event e in args.cashFlow)
             {

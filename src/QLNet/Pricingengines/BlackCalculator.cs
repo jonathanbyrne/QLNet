@@ -23,7 +23,7 @@ using QLNet.Instruments;
 using QLNet.Math.Distributions;
 using QLNet.Patterns;
 
-namespace QLNet.Pricingengines
+namespace QLNet.PricingEngines
 {
     //! Black 1976 calculator class
     /*! \bug When the variance is null, division by zero occur during
@@ -45,7 +45,7 @@ namespace QLNet.Pricingengines
             public void visit(object o)
             {
                 var types = new[] { o.GetType() };
-                var methodInfo = Utils.GetMethodInfo(this, "visit", types);
+                var methodInfo = QLNet.Utils.GetMethodInfo(this, "visit", types);
                 if (methodInfo != null)
                 {
                     methodInfo.Invoke(this, new[] { o });
@@ -54,7 +54,7 @@ namespace QLNet.Pricingengines
 
             public void visit(Payoff p)
             {
-                Utils.QL_FAIL("unsupported payoff ExerciseType: " + p.name());
+                QLNet.Utils.QL_FAIL("unsupported payoff ExerciseType: " + p.name());
             }
 
             public void visit(PlainVanillaPayoff p)
@@ -78,7 +78,7 @@ namespace QLNet.Pricingengines
                         black_.DbetaDd2_ = -black_.n_d2_;
                         break;
                     default:
-                        Utils.QL_FAIL("invalid option ExerciseType");
+                        QLNet.Utils.QL_FAIL("invalid option ExerciseType");
                         break;
                 }
             }
@@ -97,7 +97,7 @@ namespace QLNet.Pricingengines
                         black_.DalphaDd1_ = -black_.n_d1_;
                         break;
                     default:
-                        Utils.QL_FAIL("invalid option ExerciseType");
+                        QLNet.Utils.QL_FAIL("invalid option ExerciseType");
                         break;
                 }
             }
@@ -122,9 +122,9 @@ namespace QLNet.Pricingengines
             discount_ = discount;
             variance_ = stdDev * stdDev;
 
-            Utils.QL_REQUIRE(forward > 0.0, () => "positive forward value required: " + forward + " not allowed");
-            Utils.QL_REQUIRE(stdDev >= 0.0, () => "non-negative standard deviation required: " + stdDev + " not allowed");
-            Utils.QL_REQUIRE(discount > 0.0, () => "positive discount required: " + discount + " not allowed");
+            QLNet.Utils.QL_REQUIRE(forward > 0.0, () => "positive forward value required: " + forward + " not allowed");
+            QLNet.Utils.QL_REQUIRE(stdDev >= 0.0, () => "non-negative standard deviation required: " + stdDev + " not allowed");
+            QLNet.Utils.QL_REQUIRE(discount > 0.0, () => "positive discount required: " + discount + " not allowed");
 
             if (stdDev_ >= Const.QL_EPSILON)
             {
@@ -188,7 +188,7 @@ namespace QLNet.Pricingengines
                     DbetaDd2_ = -n_d2_; // -n( d2)
                     break;
                 default:
-                    Utils.QL_FAIL("invalid option ExerciseType");
+                    QLNet.Utils.QL_FAIL("invalid option ExerciseType");
                     break;
             }
 
@@ -205,7 +205,7 @@ namespace QLNet.Pricingengines
         /*! Sensitivity to change in the underlying spot price. */
         public virtual double delta(double spot)
         {
-            Utils.QL_REQUIRE(spot > 0.0, () => "positive spot value required: " + spot + " not allowed");
+            QLNet.Utils.QL_REQUIRE(spot > 0.0, () => "positive spot value required: " + spot + " not allowed");
 
             var DforwardDs = forward_ / spot;
 
@@ -233,7 +233,7 @@ namespace QLNet.Pricingengines
         /*! Sensitivity to dividend/growth rate. */
         public double dividendRho(double maturity)
         {
-            Utils.QL_REQUIRE(maturity >= 0.0, () => "negative maturity not allowed");
+            QLNet.Utils.QL_REQUIRE(maturity >= 0.0, () => "negative maturity not allowed");
 
             // actually DalphaDq / T
             var DalphaDq = -DalphaDd1_ / stdDev_;
@@ -296,7 +296,7 @@ namespace QLNet.Pricingengines
             underlying spot price. */
         public virtual double gamma(double spot)
         {
-            Utils.QL_REQUIRE(spot > 0.0, () => "positive spot value required: " + spot + " not allowed");
+            QLNet.Utils.QL_REQUIRE(spot > 0.0, () => "positive spot value required: " + spot + " not allowed");
 
             var DforwardDs = forward_ / spot;
 
@@ -345,7 +345,7 @@ namespace QLNet.Pricingengines
         /*! Sensitivity to discounting rate. */
         public double rho(double maturity)
         {
-            Utils.QL_REQUIRE(maturity >= 0.0, () => "negative maturity not allowed");
+            QLNet.Utils.QL_REQUIRE(maturity >= 0.0, () => "negative maturity not allowed");
 
             // actually DalphaDr / T
             var DalphaDr = DalphaDd1_ / stdDev_;
@@ -375,7 +375,7 @@ namespace QLNet.Pricingengines
                 return 0.0;
             }
 
-            Utils.QL_REQUIRE(maturity > 0.0, () => "non negative maturity required: " + maturity + " not allowed");
+            QLNet.Utils.QL_REQUIRE(maturity > 0.0, () => "non negative maturity required: " + maturity + " not allowed");
 
             return -(System.Math.Log(discount_) * value()
                      + System.Math.Log(forward_ / spot) * spot * delta(spot)
@@ -395,7 +395,7 @@ namespace QLNet.Pricingengines
         /*! Sensitivity to volatility. */
         public double vega(double maturity)
         {
-            Utils.QL_REQUIRE(maturity >= 0.0, () => "negative maturity not allowed");
+            QLNet.Utils.QL_REQUIRE(maturity >= 0.0, () => "negative maturity not allowed");
 
             var temp = System.Math.Log(strike_ / forward_) / variance_;
             // actually DalphaDsigma / SQRT(T)

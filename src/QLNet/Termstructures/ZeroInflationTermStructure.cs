@@ -1,8 +1,7 @@
-using QLNet.Termstructures;
 using QLNet.Termstructures.Inflation;
 using QLNet.Time;
 
-namespace QLNet
+namespace QLNet.Termstructures
 {
     public abstract class ZeroInflationTermStructure : InflationTermStructure
     {

@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using QLNet.Math;
-using QLNet.Math.matrixutilities;
+using QLNet.Math.MatrixUtilities;
 using QLNet.Termstructures.Volatility.Optionlet;
 
 namespace QLNet.legacy.libormarketmodels
@@ -44,14 +44,14 @@ namespace QLNet.legacy.libormarketmodels
             var sqrtCorr = new Matrix(size_ - 1, factors_, 1.0);
             if (correlation.empty())
             {
-                Utils.QL_REQUIRE(factors_ == 1, () => "correlation matrix must be given for multi factor models");
+                QLNet.Utils.QL_REQUIRE(factors_ == 1, () => "correlation matrix must be given for multi factor models");
             }
             else
             {
-                Utils.QL_REQUIRE(correlation.rows() == size_ - 1 &&
-                                 correlation.rows() == correlation.columns(), () => "wrong dimesion of the correlation matrix");
+                QLNet.Utils.QL_REQUIRE(correlation.rows() == size_ - 1 &&
+                                                correlation.rows() == correlation.columns(), () => "wrong dimesion of the correlation matrix");
 
-                Utils.QL_REQUIRE(factors_ <= size_ - 1, () => "too many factors for given LFM process");
+                QLNet.Utils.QL_REQUIRE(factors_ <= size_ - 1, () => "too many factors for given LFM process");
 
                 var tmpSqrtCorr = MatrixUtilitites.pseudoSqrt(correlation,
                     MatrixUtilitites.SalvagingAlgorithm.Spectral);

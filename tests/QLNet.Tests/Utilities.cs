@@ -102,7 +102,7 @@ namespace QLNet.Tests
                 return "Bermudan";
             }
 
-            Utils.QL_FAIL("unknown exercise ExerciseType");
+            QLNet.Utils.QL_FAIL("unknown exercise ExerciseType");
             return string.Empty;
         }
 
@@ -157,7 +157,7 @@ namespace QLNet.Tests
                 return "floating-ExerciseType";
             }
 
-            Utils.QL_FAIL("unknown payoff ExerciseType");
+            QLNet.Utils.QL_FAIL("unknown payoff ExerciseType");
             return string.Empty;
         }
     }

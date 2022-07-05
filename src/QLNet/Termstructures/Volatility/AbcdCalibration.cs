@@ -133,7 +133,7 @@ namespace QLNet.Termstructures.Volatility
 
             AbcdMathFunction.validate(aGuess, bGuess, cGuess, dGuess);
 
-            Utils.QL_REQUIRE(blackVols.Count == t.Count, () =>
+            QLNet.Utils.QL_REQUIRE(blackVols.Count == t.Count, () =>
                 "mismatch between number of times (" + t.Count + ") and blackVols (" + blackVols.Count + ")");
 
             // if no optimization method or endCriteria is provided, we provide one
@@ -274,7 +274,7 @@ namespace QLNet.Termstructures.Volatility
         //! adjustment factors needed to match Black vols
         public List<double> k(List<double> t, List<double> blackVols)
         {
-            Utils.QL_REQUIRE(blackVols.Count == t.Count, () =>
+            QLNet.Utils.QL_REQUIRE(blackVols.Count == t.Count, () =>
                 "mismatch between number of times (" + t.Count + ") and blackVols (" + blackVols.Count + ")");
             List<double> k = new InitializedList<double>(t.Count);
             for (var i = 0; i < t.Count; i++)

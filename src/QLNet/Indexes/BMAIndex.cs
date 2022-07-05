@@ -20,13 +20,12 @@
 
 using JetBrains.Annotations;
 using QLNet.Currencies;
-using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
 
-namespace QLNet
+namespace QLNet.Indexes
 {
     //! Bond Market Association index
     /*! The BMA index is the short-term tax-exempt reference index of
@@ -60,7 +59,7 @@ namespace QLNet
 
         public override double forecastFixing(Date fixingDate)
         {
-            Utils.QL_REQUIRE(!termStructure_.empty(), () => "null term structure set to this instance of " + name());
+            QLNet.Utils.QL_REQUIRE(!termStructure_.empty(), () => "null term structure set to this instance of " + name());
             var start = fixingCalendar().advance(fixingDate, 1, TimeUnit.Days);
             var end = maturityDate(start);
             return termStructure_.link.forwardRate(start, end, dayCounter_, Compounding.Simple).rate();

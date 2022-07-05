@@ -36,7 +36,7 @@ namespace QLNet.legacy.libormarketmodels
             // This method is useful for testing and R&D.
             // Please overload the method within derived classes.
 
-            Utils.QL_REQUIRE(x == null, () => "can not handle given x here");
+            QLNet.Utils.QL_REQUIRE(x == null, () => "can not handle given x here");
 
             var tmp = new Matrix(size_, size_, 0.0);
 

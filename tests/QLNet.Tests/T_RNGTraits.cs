@@ -19,8 +19,8 @@
 using System;
 using System.Collections.Generic;
 using Xunit;
-using QLNet.Math.randomnumbers;
 using QLNet.Math.Distributions;
+using QLNet.Math.RandomNumbers;
 
 namespace QLNet.Tests
 {
@@ -69,7 +69,7 @@ namespace QLNet.Tests
             }
 
             var stored = 108.0;
-            if (!Utils.close(sum, stored))
+            if (!Math.Utils.close(sum, stored))
             {
                 QAssert.Fail("the sum of the samples does not match the stored value\n"
                              + "    calculated: " + sum + "\n"
@@ -94,7 +94,7 @@ namespace QLNet.Tests
             }
 
             var stored = 409.0;
-            if (!Utils.close(sum, stored))
+            if (!Math.Utils.close(sum, stored))
             {
                 QAssert.Fail("the sum of the samples does not match the stored value\n"
                              + "    calculated: " + sum + "\n"

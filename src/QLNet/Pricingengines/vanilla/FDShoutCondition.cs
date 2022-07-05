@@ -1,9 +1,9 @@
 ﻿using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     [PublicAPI]
     public class FDShoutCondition<baseEngine> : FDConditionTemplate<baseEngine>

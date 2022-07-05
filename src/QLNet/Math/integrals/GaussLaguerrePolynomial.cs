@@ -15,7 +15,7 @@ namespace QLNet.Math.integrals
         public GaussLaguerrePolynomial(double s)
         {
             s_ = s;
-            Utils.QL_REQUIRE(s > -1.0, () => "s must be bigger than -1");
+            QLNet.Utils.QL_REQUIRE(s > -1.0, () => "s must be bigger than -1");
         }
 
         public override double alpha(int i) => 2 * i + 1 + s_;

@@ -107,7 +107,7 @@ namespace QLNet.Indexes
 
         public override double fixing(Date fixingDate, bool forecastTodaysFixing = false)
         {
-            Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => "Fixing date " + fixingDate + " is not valid");
+            QLNet.Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => "Fixing date " + fixingDate + " is not valid");
 
             var today = Settings.evaluationDate();
 
@@ -122,7 +122,7 @@ namespace QLNet.Indexes
                 // must have been fixed
                 // do not catch exceptions
                 var result = pastFixing(fixingDate);
-                Utils.QL_REQUIRE(result != null, () => "Missing " + name() + " fixing for " + fixingDate);
+                QLNet.Utils.QL_REQUIRE(result != null, () => "Missing " + name() + " fixing for " + fixingDate);
                 return result.Value;
             }
 
@@ -159,7 +159,7 @@ namespace QLNet.Indexes
 
         public virtual double? pastFixing(Date fixingDate)
         {
-            Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => fixingDate + " is not a valid fixing date");
+            QLNet.Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => fixingDate + " is not a valid fixing date");
             if (timeSeries().ContainsKey(fixingDate))
             {
                 return timeSeries()[fixingDate];
@@ -180,7 +180,7 @@ namespace QLNet.Indexes
         // These methods can be overridden to implement particular conventions (e.g. EurLibor) */
         public virtual Date valueDate(Date fixingDate)
         {
-            Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => fixingDate + " is not a valid fixing date");
+            QLNet.Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => fixingDate + " is not a valid fixing date");
             return fixingCalendar().advance(fixingDate, fixingDays_, TimeUnit.Days);
         }
     }

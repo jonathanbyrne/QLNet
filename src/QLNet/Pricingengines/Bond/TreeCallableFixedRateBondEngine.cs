@@ -24,7 +24,7 @@ using QLNet.Termstructures;
 using QLNet.Time;
 
 // Numerical lattice engines for callable/puttable bonds
-namespace QLNet.Pricingengines.Bond
+namespace QLNet.PricingEngines.Bond
 {
     //! Numerical lattice engine for callable fixed rate bonds
     /*! \ingroup callablebondengines */
@@ -55,7 +55,7 @@ namespace QLNet.Pricingengines.Bond
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(model_ != null, () => "no model specified");
+            QLNet.Utils.QL_REQUIRE(model_ != null, () => "no model specified");
 
             Date referenceDate;
             DayCounter dayCounter;

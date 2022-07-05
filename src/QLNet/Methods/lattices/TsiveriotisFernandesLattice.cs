@@ -34,20 +34,20 @@ namespace QLNet.Methods.lattices
             : base(tree, riskFreeRate, end, steps)
         {
             creditSpread_ = creditSpread;
-            Utils.QL_REQUIRE(pu_ <= 1.0, () => "probability pu higher than one ");
-            Utils.QL_REQUIRE(pu_ >= 0.0, () => " negative pu probability ");
+            QLNet.Utils.QL_REQUIRE(pu_ <= 1.0, () => "probability pu higher than one ");
+            QLNet.Utils.QL_REQUIRE(pu_ >= 0.0, () => " negative pu probability ");
         }
 
         public override void partialRollback(DiscretizedAsset asset, double to)
         {
             var from = asset.time();
 
-            if (Utils.close(from, to))
+            if (Math.Utils.close(from, to))
             {
                 return;
             }
 
-            Utils.QL_REQUIRE(from > to, () => " cannot roll the asset back to tile to it is already at time from ");
+            QLNet.Utils.QL_REQUIRE(from > to, () => " cannot roll the asset back to tile to it is already at time from ");
 
             var convertible = asset as DiscretizedConvertible;
 

@@ -18,7 +18,7 @@ using System;
 using JetBrains.Annotations;
 using QLNet.Math;
 
-namespace QLNet.processes
+namespace QLNet.Processes
 {
     //! forward-measure stochastic process
     /*! stochastic process whose dynamics are expressed in the forward

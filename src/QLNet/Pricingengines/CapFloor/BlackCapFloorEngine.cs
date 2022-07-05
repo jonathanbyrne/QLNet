@@ -27,7 +27,7 @@ using QLNet.Time;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
 
-namespace QLNet.Pricingengines.CapFloor
+namespace QLNet.PricingEngines.CapFloor
 {
     /// <summary>
     ///     Black-formula cap/floor engine

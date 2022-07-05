@@ -22,8 +22,8 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Instruments;
-using QLNet.Pricingengines.Swap;
-using QLNet.Pricingengines.swaption;
+using QLNet.PricingEngines.Swap;
+using QLNet.PricingEngines.swaption;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.Optionlet;
@@ -167,7 +167,7 @@ namespace QLNet.Models.Shortrate.calibrationhelpers
                     break;
 
                 default:
-                    Utils.QL_FAIL("can not construct engine: " + volatilityType_);
+                    QLNet.Utils.QL_FAIL("can not construct engine: " + volatilityType_);
                     break;
             }
 

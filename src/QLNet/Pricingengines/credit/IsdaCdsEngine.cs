@@ -27,7 +27,7 @@ using QLNet.Termstructures.Yield;
 using QLNet.Time;
 using QLNet.Time.DayCounters;
 
-namespace QLNet.Pricingengines.credit
+namespace QLNet.PricingEngines.credit
 {
     [PublicAPI]
     public class IsdaCdsEngine : CreditDefaultSwap.Engine
@@ -96,12 +96,12 @@ namespace QLNet.Pricingengines.credit
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(numericalFix_ == NumericalFix.None || numericalFix_ == NumericalFix.Taylor, () =>
+            QLNet.Utils.QL_REQUIRE(numericalFix_ == NumericalFix.None || numericalFix_ == NumericalFix.Taylor, () =>
                 "numerical fix must be None or Taylor");
-            Utils.QL_REQUIRE(accrualBias_ == AccrualBias.HalfDayBias || accrualBias_ == AccrualBias.NoBias, () =>
+            QLNet.Utils.QL_REQUIRE(accrualBias_ == AccrualBias.HalfDayBias || accrualBias_ == AccrualBias.NoBias, () =>
                 "accrual bias must be HalfDayBias or NoBias");
-            Utils.QL_REQUIRE(forwardsInCouponPeriod_ == ForwardsInCouponPeriod.Flat ||
-                             forwardsInCouponPeriod_ == ForwardsInCouponPeriod.Piecewise, () =>
+            QLNet.Utils.QL_REQUIRE(forwardsInCouponPeriod_ == ForwardsInCouponPeriod.Flat ||
+                                   forwardsInCouponPeriod_ == ForwardsInCouponPeriod.Piecewise, () =>
                 "forwards in coupon period must be Flat or Piecewise");
 
             // it would be possible to handle the cases which are excluded below,
@@ -117,22 +117,22 @@ namespace QLNet.Pricingengines.credit
             // check if given curves are ISDA compatible
             // (the interpolation is checked below)
 
-            Utils.QL_REQUIRE(!discountCurve_.empty(), () => "no discount term structure set");
-            Utils.QL_REQUIRE(!probability_.empty(), () => "no probability term structure set");
-            Utils.QL_REQUIRE(discountCurve_.link.dayCounter() == dc, () =>
+            QLNet.Utils.QL_REQUIRE(!discountCurve_.empty(), () => "no discount term structure set");
+            QLNet.Utils.QL_REQUIRE(!probability_.empty(), () => "no probability term structure set");
+            QLNet.Utils.QL_REQUIRE(discountCurve_.link.dayCounter() == dc, () =>
                 "yield term structure day counter (" + discountCurve_.link.dayCounter() + ") should be Act/365(Fixed)");
-            Utils.QL_REQUIRE(probability_.link.dayCounter() == dc, () =>
+            QLNet.Utils.QL_REQUIRE(probability_.link.dayCounter() == dc, () =>
                 "probability term structure day counter (" + probability_.link.dayCounter() + ") should be "
                 + "Act/365(Fixed)");
-            Utils.QL_REQUIRE(discountCurve_.link.referenceDate() == evalDate, () =>
+            QLNet.Utils.QL_REQUIRE(discountCurve_.link.referenceDate() == evalDate, () =>
                 "yield term structure reference date (" + discountCurve_.link.referenceDate()
                                                         + " should be evaluation date (" + evalDate + ")");
-            Utils.QL_REQUIRE(probability_.link.referenceDate() == evalDate, () =>
+            QLNet.Utils.QL_REQUIRE(probability_.link.referenceDate() == evalDate, () =>
                 "probability term structure reference date (" + probability_.link.referenceDate()
                                                               + " should be evaluation date (" + evalDate + ")");
-            Utils.QL_REQUIRE(arguments_.settlesAccrual, () => "ISDA engine not compatible with non accrual paying CDS");
-            Utils.QL_REQUIRE(arguments_.paysAtDefaultTime, () => "ISDA engine not compatible with end period payment");
-            Utils.QL_REQUIRE(arguments_.claim as FaceValueClaim != null, () =>
+            QLNet.Utils.QL_REQUIRE(arguments_.settlesAccrual, () => "ISDA engine not compatible with non accrual paying CDS");
+            QLNet.Utils.QL_REQUIRE(arguments_.paysAtDefaultTime, () => "ISDA engine not compatible with end period payment");
+            QLNet.Utils.QL_REQUIRE(arguments_.claim as FaceValueClaim != null, () =>
                 "ISDA engine not compatible with non face value claim");
 
             var maturity = arguments_.maturity;
@@ -160,7 +160,7 @@ namespace QLNet.Pricingengines.credit
             }
             else
             {
-                Utils.QL_FAIL("Yield curve must be flat forward interpolated");
+                QLNet.Utils.QL_FAIL("Yield curve must be flat forward interpolated");
             }
 
             if (probability_.link is InterpolatedSurvivalProbabilityCurve<LogLinear> castC1)
@@ -176,7 +176,7 @@ namespace QLNet.Pricingengines.credit
             }
             else
             {
-                Utils.QL_FAIL("Credit curve must be flat forward interpolated");
+                QLNet.Utils.QL_FAIL("Credit curve must be flat forward interpolated");
             }
 
             // Todo check
@@ -246,9 +246,9 @@ namespace QLNet.Pricingengines.credit
             {
                 var coupon = arguments_.leg[i] as FixedRateCoupon;
 
-                Utils.QL_REQUIRE(coupon.dayCounter() == dc ||
-                                 coupon.dayCounter() == dc1 ||
-                                 coupon.dayCounter() == dc2, () =>
+                QLNet.Utils.QL_REQUIRE(coupon.dayCounter() == dc ||
+                                       coupon.dayCounter() == dc1 ||
+                                       coupon.dayCounter() == dc2, () =>
                     "ISDA engine requires a coupon day counter Act/365Fixed "
                     + "or Act/360 (" + coupon.dayCounter() + ")");
 

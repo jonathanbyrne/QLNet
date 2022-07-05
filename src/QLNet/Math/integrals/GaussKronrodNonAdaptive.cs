@@ -32,7 +32,7 @@ namespace QLNet.Math.integrals
             double resasc; // approximation to the integral of abs(f-i/(b-a))
             int k;
 
-            Utils.QL_REQUIRE(a < b, () => "b must be greater than a)");
+            QLNet.Utils.QL_REQUIRE(a < b, () => "b must be greater than a)");
 
             var halfLength = 0.5 * (b - a);
             var center = 0.5 * (b + a);

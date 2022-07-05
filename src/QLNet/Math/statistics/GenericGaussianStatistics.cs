@@ -50,7 +50,7 @@ namespace QLNet.Math.statistics
         */
         public double gaussianExpectedShortfall(double percentile)
         {
-            Utils.QL_REQUIRE(percentile < 1.0 && percentile >= 0.9, () => "percentile (" + percentile + ") out of range [0.9, 1)");
+            QLNet.Utils.QL_REQUIRE(percentile < 1.0 && percentile >= 0.9, () => "percentile (" + percentile + ") out of range [0.9, 1)");
 
             var m = mean();
             var std = standardDeviation();
@@ -69,7 +69,7 @@ namespace QLNet.Math.statistics
         /*! \pre percentile must be in range (0%-100%) extremes excluded */
         public double gaussianPercentile(double percentile)
         {
-            Utils.QL_REQUIRE(percentile > 0.0 && percentile < 1.0, () => "percentile (" + percentile + ") must be in (0.0, 1.0)");
+            QLNet.Utils.QL_REQUIRE(percentile > 0.0 && percentile < 1.0, () => "percentile (" + percentile + ") must be in (0.0, 1.0)");
 
             var gInverse = new InverseCumulativeNormal(mean(), standardDeviation());
             return gInverse.value(percentile);
@@ -78,7 +78,7 @@ namespace QLNet.Math.statistics
         //! gaussian-assumption Potential-Upside at a given percentile
         public double gaussianPotentialUpside(double percentile)
         {
-            Utils.QL_REQUIRE(percentile < 1.0 && percentile >= 0.9, () => "percentile (" + percentile + ") out of range [0.9, 1)");
+            QLNet.Utils.QL_REQUIRE(percentile < 1.0 && percentile >= 0.9, () => "percentile (" + percentile + ") out of range [0.9, 1)");
 
             var result = gaussianPercentile(percentile);
             // potential upside must be a gain, i.e., floored at 0.0
@@ -115,7 +115,7 @@ namespace QLNet.Math.statistics
         //! gaussian-assumption Value-At-Risk at a given percentile
         public double gaussianValueAtRisk(double percentile)
         {
-            Utils.QL_REQUIRE(percentile < 1.0 && percentile >= 0.9, () => "percentile (" + percentile + ") out of range [0.9, 1)");
+            QLNet.Utils.QL_REQUIRE(percentile < 1.0 && percentile >= 0.9, () => "percentile (" + percentile + ") out of range [0.9, 1)");
 
             var result = gaussianPercentile(1.0 - percentile);
             // VAR must be a loss

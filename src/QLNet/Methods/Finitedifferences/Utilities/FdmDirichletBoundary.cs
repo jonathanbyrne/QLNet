@@ -54,7 +54,7 @@ namespace QLNet.Methods.Finitedifferences.Utilities
             }
             else
             {
-                Utils.QL_FAIL("internal error");
+                QLNet.Utils.QL_FAIL("internal error");
             }
         }
 

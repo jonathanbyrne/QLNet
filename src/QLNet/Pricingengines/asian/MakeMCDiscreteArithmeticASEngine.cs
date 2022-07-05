@@ -1,10 +1,10 @@
 ﻿using JetBrains.Annotations;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 using QLNet.Math.statistics;
 using QLNet.Patterns;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.asian
+namespace QLNet.PricingEngines.asian
 {
     [PublicAPI]
     public class MakeMCDiscreteArithmeticASEngine<RNG, S>
@@ -63,7 +63,7 @@ namespace QLNet.Pricingengines.asian
 
         public MakeMCDiscreteArithmeticASEngine<RNG, S> withSamples(int samples)
         {
-            Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
+            QLNet.Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
             samples_ = samples;
             return this;
         }
@@ -76,8 +76,8 @@ namespace QLNet.Pricingengines.asian
 
         public MakeMCDiscreteArithmeticASEngine<RNG, S> withTolerance(double tolerance)
         {
-            Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
-            Utils.QL_REQUIRE(FastActivator<RNG>.Create().allowsErrorEstimate != 0, () =>
+            QLNet.Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
+            QLNet.Utils.QL_REQUIRE(FastActivator<RNG>.Create().allowsErrorEstimate != 0, () =>
                 "chosen random generator policy " + "does not allow an error estimate");
             tolerance_ = tolerance;
             return this;

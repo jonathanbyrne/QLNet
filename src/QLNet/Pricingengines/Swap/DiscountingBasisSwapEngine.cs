@@ -23,7 +23,7 @@ using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Termstructures;
 
-namespace QLNet.Pricingengines.Swap
+namespace QLNet.PricingEngines.Swap
 {
     [PublicAPI]
     public class DiscountingBasisSwapEngine : Instruments.Swap.SwapEngine

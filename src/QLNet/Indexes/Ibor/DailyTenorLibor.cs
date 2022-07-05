@@ -1,11 +1,10 @@
 using JetBrains.Annotations;
 using QLNet.Currencies;
-using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time;
 using QLNet.Time.Calendars;
 
-namespace QLNet
+namespace QLNet.Indexes.Ibor
 {
     [PublicAPI]
     public class DailyTenorLibor : IborIndex
@@ -26,7 +25,7 @@ namespace QLNet
                 new JointCalendar(new UnitedKingdom(UnitedKingdom.Market.Exchange), financialCenterCalendar, JointCalendar.JointCalendarRule.JoinHolidays),
                 Utils.liborConvention(new Period(1, TimeUnit.Days)), Utils.liborEOM(new Period(1, TimeUnit.Days)), dayCounter, h)
         {
-            Utils.QL_REQUIRE(currency != new EURCurrency(), () =>
+            QLNet.Utils.QL_REQUIRE(currency != new EURCurrency(), () =>
                 "for EUR Libor dedicated EurLibor constructor must be used");
         }
     }

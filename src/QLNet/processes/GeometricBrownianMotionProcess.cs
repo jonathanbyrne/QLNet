@@ -19,7 +19,7 @@
 
 using JetBrains.Annotations;
 
-namespace QLNet.processes
+namespace QLNet.Processes
 {
     //! Geometric brownian-motion process
     /*! This class describes the stochastic process governed by

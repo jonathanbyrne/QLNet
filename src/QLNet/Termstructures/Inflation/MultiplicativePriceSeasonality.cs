@@ -66,7 +66,7 @@ namespace QLNet.Termstructures.Inflation
             for (var i = 1; i < nTest; i++)
             {
                 var factorAt = seasonalityFactor(curveBaseDate + new Period(i, TimeUnit.Years));
-                Utils.QL_REQUIRE(System.Math.Abs(factorAt - factorBase) < eps, () =>
+                QLNet.Utils.QL_REQUIRE(System.Math.Abs(factorAt - factorBase) < eps, () =>
                     "seasonality is inconsistent with inflation " +
                     "term structure, factors " + factorBase + " and later factor "
                     + factorAt + ", " + i + " years later from inflation curve "
@@ -125,11 +125,11 @@ namespace QLNet.Termstructures.Inflation
                 }
                 else if (factorPeriod.units() == TimeUnit.Years)
                 {
-                    Utils.QL_FAIL("seasonality period time unit is not allowed to be : " + factorPeriod.units());
+                    QLNet.Utils.QL_FAIL("seasonality period time unit is not allowed to be : " + factorPeriod.units());
                 }
                 else
                 {
-                    Utils.QL_FAIL("Unknown time unit: " + factorPeriod.units());
+                    QLNet.Utils.QL_FAIL("Unknown time unit: " + factorPeriod.units());
                 }
                 // now adjust to the available number of factors, direction dependent
 
@@ -202,13 +202,13 @@ namespace QLNet.Termstructures.Inflation
                 case Frequency.Biweekly: // etc.
                 case Frequency.Weekly:
                 case Frequency.Daily:
-                    Utils.QL_REQUIRE(seasonalityFactors().Count % (int)frequency() == 0, () =>
+                    QLNet.Utils.QL_REQUIRE(seasonalityFactors().Count % (int)frequency() == 0, () =>
                         "For frequency " + frequency()
                                          + " require multiple of " + (int)frequency() + " factors "
                                          + seasonalityFactors().Count + " were given.");
                     break;
                 default:
-                    Utils.QL_FAIL("bad frequency specified: " + frequency() + ", only semi-annual through daily permitted.");
+                    QLNet.Utils.QL_FAIL("bad frequency specified: " + frequency() + ", only semi-annual through daily permitted.");
                     break;
             }
         }

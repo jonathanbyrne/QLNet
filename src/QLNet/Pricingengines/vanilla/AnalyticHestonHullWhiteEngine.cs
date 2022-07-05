@@ -19,7 +19,7 @@ using JetBrains.Annotations;
 using QLNet.Models.Equity;
 using QLNet.Models.Shortrate.Onefactormodels;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Analytic Heston engine incl. stochastic interest rates
     /*!

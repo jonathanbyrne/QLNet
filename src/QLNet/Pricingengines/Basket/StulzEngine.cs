@@ -21,11 +21,11 @@ using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.processes;
+using QLNet.Processes;
 //! default bivariate implementation
 using BivariateCumulativeNormalDistribution = QLNet.Math.Distributions.BivariateCumulativeNormalDistributionWe04DP;
 
-namespace QLNet.Pricingengines.Basket
+namespace QLNet.PricingEngines.Basket
 {
     //! Pricing engine for 2D European Baskets
     /*! This class implements formulae from
@@ -56,10 +56,10 @@ namespace QLNet.Pricingengines.Basket
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European Option");
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European Option");
 
             var exercise = arguments_.exercise as EuropeanExercise;
-            Utils.QL_REQUIRE(exercise != null, () => "not an European Option");
+            QLNet.Utils.QL_REQUIRE(exercise != null, () => "not an European Option");
 
             var basket_payoff = arguments_.payoff as BasketPayoff;
 
@@ -67,11 +67,11 @@ namespace QLNet.Pricingengines.Basket
 
             var max_basket = arguments_.payoff as MaxBasketPayoff;
 
-            Utils.QL_REQUIRE(min_basket != null || max_basket != null, () => "unknown basket ExerciseType");
+            QLNet.Utils.QL_REQUIRE(min_basket != null || max_basket != null, () => "unknown basket ExerciseType");
 
             var payoff = basket_payoff.basePayoff() as PlainVanillaPayoff;
 
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
             var strike = payoff.strike();
 
@@ -110,7 +110,7 @@ namespace QLNet.Pricingengines.Basket
                                              variance1, variance2, rho_);
                         break;
                     default:
-                        Utils.QL_FAIL("unknown option ExerciseType");
+                        QLNet.Utils.QL_FAIL("unknown option ExerciseType");
                         break;
                 }
             }
@@ -136,13 +136,13 @@ namespace QLNet.Pricingengines.Basket
                                              variance1, variance2, rho_);
                         break;
                     default:
-                        Utils.QL_FAIL("unknown option ExerciseType");
+                        QLNet.Utils.QL_FAIL("unknown option ExerciseType");
                         break;
                 }
             }
             else
             {
-                Utils.QL_FAIL("unknown ExerciseType");
+                QLNet.Utils.QL_FAIL("unknown ExerciseType");
             }
         }
 

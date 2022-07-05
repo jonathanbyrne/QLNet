@@ -18,7 +18,7 @@ using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Models.Equity;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Heston-model engine for European options based on analytic expansions
     /*! References:
@@ -55,11 +55,11 @@ namespace QLNet.Pricingengines.vanilla
         public override void calculate()
         {
             // this is a european option pricer
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
 
             // plain vanilla
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non plain vanilla payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non plain vanilla payoff given");
 
             var process = model_.link.process();
 
@@ -67,7 +67,7 @@ namespace QLNet.Pricingengines.vanilla
             var dividendDiscount = process.dividendYield().link.discount(arguments_.exercise.lastDate());
 
             var spotPrice = process.s0().link.value();
-            Utils.QL_REQUIRE(spotPrice > 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(spotPrice > 0.0, () => "negative or null underlying given");
 
             var strikePrice = payoff.strike();
             var term = process.time(arguments_.exercise.lastDate());
@@ -100,7 +100,7 @@ namespace QLNet.Pricingengines.vanilla
                     break;
                 }
                 default:
-                    Utils.QL_FAIL("unknown expansion formula");
+                    QLNet.Utils.QL_FAIL("unknown expansion formula");
                     break;
             }
 

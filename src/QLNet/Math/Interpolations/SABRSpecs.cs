@@ -123,10 +123,10 @@ namespace QLNet.Math.Interpolations
         {
             if (Convert.ToDouble(addParams[1]) == 0.0)
             {
-                return Utils.blackFormulaStdDevDerivative(strike, forward, stdDev, 1.0, addParams[0].Value);
+                return PricingEngines.Utils.blackFormulaStdDevDerivative(strike, forward, stdDev, 1.0, addParams[0].Value);
             }
 
-            return Utils.bachelierBlackFormulaStdDevDerivative(strike, forward, stdDev);
+            return PricingEngines.Utils.bachelierBlackFormulaStdDevDerivative(strike, forward, stdDev);
         }
     }
 }

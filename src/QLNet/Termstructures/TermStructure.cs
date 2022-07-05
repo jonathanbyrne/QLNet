@@ -55,10 +55,10 @@ namespace QLNet.Termstructures
         //! date-range check
         protected virtual void checkRange(Date d, bool extrapolate)
         {
-            Utils.QL_REQUIRE(d >= referenceDate(), () =>
+            QLNet.Utils.QL_REQUIRE(d >= referenceDate(), () =>
                 "date (" + d + ") before reference date (" +
                 referenceDate() + ")");
-            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || d <= maxDate(), () =>
+            QLNet.Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || d <= maxDate(), () =>
                 "date (" + d + ") is past max curve date ("
                 + maxDate() + ")");
         }
@@ -66,10 +66,10 @@ namespace QLNet.Termstructures
         //! time-range check
         protected void checkRange(double t, bool extrapolate)
         {
-            Utils.QL_REQUIRE(t >= 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(t >= 0.0, () =>
                 "negative time (" + t + ") given");
-            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation()
-                                         || t <= maxTime() || Utils.close_enough(t, maxTime()), () =>
+            QLNet.Utils.QL_REQUIRE(extrapolate || allowsExtrapolation()
+                                         || t <= maxTime() || Math.Utils.close_enough(t, maxTime()), () =>
                 "time (" + t + ") is past max curve time ("
                 + maxTime() + ")");
         }
@@ -166,7 +166,7 @@ namespace QLNet.Termstructures
         //! the settlementDays used for reference date calculation
         public virtual int settlementDays()
         {
-            Utils.QL_REQUIRE(settlementDays_ != null, () => "settlement days not provided for this instance");
+            QLNet.Utils.QL_REQUIRE(settlementDays_ != null, () => "settlement days not provided for this instance");
             return settlementDays_.Value;
         }
 

@@ -24,7 +24,7 @@ using QLNet.Instruments;
 using QLNet.Termstructures;
 using QLNet.Time;
 
-namespace QLNet.Pricingengines.credit
+namespace QLNet.PricingEngines.credit
 {
     [PublicAPI]
     public class MidPointCdsEngine : CreditDefaultSwap.Engine
@@ -50,8 +50,8 @@ namespace QLNet.Pricingengines.credit
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(!discountCurve_.empty(), () => "no discount term structure set");
-            Utils.QL_REQUIRE(!probability_.empty(), () => "no probability term structure set");
+            QLNet.Utils.QL_REQUIRE(!discountCurve_.empty(), () => "no discount term structure set");
+            QLNet.Utils.QL_REQUIRE(!probability_.empty(), () => "no probability term structure set");
 
             var today = Settings.evaluationDate();
             var settlementDate = discountCurve_.link.referenceDate();
@@ -153,7 +153,7 @@ namespace QLNet.Pricingengines.credit
                     upfrontSign = -1.0;
                     break;
                 default:
-                    Utils.QL_FAIL("unknown protection side");
+                    QLNet.Utils.QL_FAIL("unknown protection side");
                     break;
             }
 

@@ -65,7 +65,7 @@ namespace QLNet.Math
             public bool isInRange(double x)
             {
                 double x1 = xMin(), x2 = xMax();
-                return x >= x1 && x <= x2 || Utils.close(x, x1) || Utils.close(x, x2);
+                return x >= x1 && x <= x2 || Math.Utils.close(x, x1) || Math.Utils.close(x, x2);
             }
 
             public double xMax() => xBegin_[size_ - 1];

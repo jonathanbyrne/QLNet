@@ -20,7 +20,7 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Math;
-using QLNet.Math.matrixutilities;
+using QLNet.Math.MatrixUtilities;
 using QLNet.Methods.Finitedifferences.Operators;
 
 namespace QLNet.Methods.Finitedifferences.Schemes
@@ -95,7 +95,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
 
         public void step(ref object a, double t, double theta = 1.0)
         {
-            Utils.QL_REQUIRE(t - dt_ > -1e-8, () => "a step towards negative time given");
+            QLNet.Utils.QL_REQUIRE(t - dt_ > -1e-8, () => "a step towards negative time given");
             var intermediateTimeStep = dt_.Value * alpha_;
 
             var fStar = a;
@@ -138,7 +138,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
                 }
                 else
                 {
-                    Utils.QL_FAIL("unknown/illegal solver ExerciseType");
+                    QLNet.Utils.QL_FAIL("unknown/illegal solver ExerciseType");
                 }
             }
 

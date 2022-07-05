@@ -20,7 +20,7 @@
 
 using JetBrains.Annotations;
 using QLNet.Math;
-using QLNet.Math.matrixutilities;
+using QLNet.Math.MatrixUtilities;
 using QLNet.Math.Optimization;
 using QLNet.Models;
 

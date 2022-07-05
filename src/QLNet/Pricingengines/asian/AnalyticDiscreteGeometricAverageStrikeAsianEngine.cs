@@ -18,9 +18,9 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.asian
+namespace QLNet.PricingEngines.asian
 {
     //! Pricing engine for European discrete geometric average-strike Asian option
     /*! This class implements a discrete geometric average-strike Asian
@@ -47,21 +47,21 @@ namespace QLNet.Pricingengines.asian
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.averageType == Average.Type.Geometric, () =>
+            QLNet.Utils.QL_REQUIRE(arguments_.averageType == Average.Type.Geometric, () =>
                 "not a geometric average option");
 
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () =>
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () =>
                 "not an European option");
 
-            Utils.QL_REQUIRE(arguments_.runningAccumulator > 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(arguments_.runningAccumulator > 0.0, () =>
                 "positive running product required: " + arguments_.runningAccumulator + "not allowed");
 
             var runningLog = System.Math.Log(arguments_.runningAccumulator.GetValueOrDefault());
             var pastFixings = arguments_.pastFixings;
-            Utils.QL_REQUIRE(pastFixings == 0, () => "past fixings currently not managed");
+            QLNet.Utils.QL_REQUIRE(pastFixings == 0, () => "past fixings currently not managed");
 
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
             var rfdc = process_.riskFreeRate().link.dayCounter();
             var divdc = process_.dividendYield().link.dayCounter();
@@ -91,7 +91,7 @@ namespace QLNet.Pricingengines.asian
                 arguments_.exercise.lastDate());
 
             var underlying = process_.stateVariable().link.value();
-            Utils.QL_REQUIRE(underlying > 0.0, () => "positive underlying value required");
+            QLNet.Utils.QL_REQUIRE(underlying > 0.0, () => "positive underlying value required");
 
             var volatility = process_.blackVolatility().link.blackVol(arguments_.exercise.lastDate(), underlying);
 
@@ -140,7 +140,7 @@ namespace QLNet.Pricingengines.asian
                                                  * f.value(-y1) + System.Math.Exp(muG + variance / 2.0 - riskFreeRate * residualTime) * f.value(-y2);
                     break;
                 default:
-                    Utils.QL_FAIL("invalid option ExerciseType");
+                    QLNet.Utils.QL_FAIL("invalid option ExerciseType");
                     break;
             }
         }

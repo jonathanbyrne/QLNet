@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Extensions;
 using QLNet.Instruments;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.Swap;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.swaption;
@@ -12,7 +12,7 @@ using QLNet.Time;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
 
-namespace QLNet.Pricingengines.swaption
+namespace QLNet.PricingEngines.swaption
 {
     [PublicAPI]
     public class BlackStyleSwaptionEngine<Spec> : SwaptionEngine
@@ -86,9 +86,9 @@ namespace QLNet.Pricingengines.swaption
             var fixedLeg = swap.fixedLeg();
             var firstCoupon = fixedLeg[0] as FixedRateCoupon;
 
-            Utils.QL_REQUIRE(firstCoupon != null, () => "wrong coupon ExerciseType");
+            QLNet.Utils.QL_REQUIRE(firstCoupon != null, () => "wrong coupon ExerciseType");
 
-            Utils.QL_REQUIRE(firstCoupon.accrualStartDate() >= exerciseDate,
+            QLNet.Utils.QL_REQUIRE(firstCoupon.accrualStartDate() >= exerciseDate,
                 () => "swap start (" + firstCoupon.accrualStartDate() + ") before exercise date ("
                       + exerciseDate + ") not supported in Black swaption engine");
 
@@ -143,7 +143,7 @@ namespace QLNet.Pricingengines.swaption
             }
             else
             {
-                Utils.QL_FAIL("unknown settlement ExerciseType");
+                QLNet.Utils.QL_FAIL("unknown settlement ExerciseType");
             }
 
             results_.additionalResults["annuity"] = annuity;

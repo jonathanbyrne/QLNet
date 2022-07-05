@@ -22,7 +22,7 @@ using Xunit;
 using QLNet;
 using QLNet.Math.Distributions;
 using QLNet.Math;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 
 namespace QLNet.Tests
 {

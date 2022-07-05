@@ -41,8 +41,8 @@ namespace QLNet.Tests
             for (var i = 0; i < d.Length; ++i)
             {
                 var strike = forward - d[i] * bpvol * System.Math.Sqrt(tte);
-                var callPrem = Utils.bachelierBlackFormula(optionType, strike, forward, stdDev, discount);
-                var impliedBpVol = Utils.bachelierBlackFormulaImpliedVol(optionType, strike, forward, tte, callPrem, discount);
+                var callPrem = PricingEngines.Utils.bachelierBlackFormula(optionType, strike, forward, stdDev, discount);
+                var impliedBpVol = PricingEngines.Utils.bachelierBlackFormulaImpliedVol(optionType, strike, forward, tte, callPrem, discount);
 
                 if (System.Math.Abs(bpvol - impliedBpVol) > 1.0e-12)
                 {
@@ -81,15 +81,15 @@ namespace QLNet.Tests
                                     if (forwards[i3] + displacements[i2] > 0.0 &&
                                         strikes[i4] + displacements[i2] > 0.0)
                                     {
-                                        var premium = Utils.blackFormula(
+                                        var premium = PricingEngines.Utils.blackFormula(
                                                             types[i1], strikes[i4], forwards[i3],
                                                             stdDevs[i5], discounts[i6],
                                                             displacements[i2]);
-                                        var atmPremium = Utils.blackFormula(
+                                        var atmPremium = PricingEngines.Utils.blackFormula(
                                                                types[i1], forwards[i3], forwards[i3],
                                                                stdDevs[i5], discounts[i6],
                                                                displacements[i2]);
-                                        var iStdDev = Utils.blackFormulaImpliedStdDevChambers(
+                                        var iStdDev = PricingEngines.Utils.blackFormulaImpliedStdDevChambers(
                                                             types[i1], strikes[i4], forwards[i3],
                                                             premium, atmPremium, discounts[i6],
                                                             displacements[i2]);

@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
 
-namespace QLNet.Pricingengines.barrier
+namespace QLNet.PricingEngines.barrier
 {
     [PublicAPI]
     public class DiscretizedDermanKaniDoubleBarrierOption : DiscretizedAsset
@@ -94,7 +94,7 @@ namespace QLNet.Pricingengines.barrier
 
                     break;
                 default:
-                    Utils.QL_FAIL("unsupported barrier ExerciseType");
+                    QLNet.Utils.QL_FAIL("unsupported barrier ExerciseType");
                     break;
             }
         }

@@ -9,7 +9,7 @@ namespace QLNet
         public AmericanExercise(Date earliestDate, Date latestDate, bool payoffAtExpiry = false)
             : base(Type.American, payoffAtExpiry)
         {
-            Utils.QL_REQUIRE(earliestDate <= latestDate, () => "earliest > latest exercise date");
+            QLNet.Utils.QL_REQUIRE(earliestDate <= latestDate, () => "earliest > latest exercise date");
             dates_ = new InitializedList<Date>(2);
             dates_[0] = earliestDate;
             dates_[1] = latestDate;

@@ -80,7 +80,7 @@ namespace QLNet.Math.Optimization
                 ++loopNumber;
 
                 // calculate the new step
-                if (Utils.close_enough(tr, 0.0))
+                if (Math.Utils.close_enough(tr, 0.0))
                 {
                     t *= extrapolation_;
                 }

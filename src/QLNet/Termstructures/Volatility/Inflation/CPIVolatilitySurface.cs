@@ -63,14 +63,14 @@ namespace QLNet.Termstructures.Volatility.Inflation
                 return referenceDate() - observationLag();
             }
 
-            return Utils.inflationPeriod(referenceDate() - observationLag(),
+            return Termstructures.Utils.inflationPeriod(referenceDate() - observationLag(),
                 frequency()).Key;
         }
 
         // acts as zero time value for boostrapping
         public virtual double? baseLevel()
         {
-            Utils.QL_REQUIRE(baseLevel_ != null, () => "Base volatility, for baseDate(), not set.");
+            QLNet.Utils.QL_REQUIRE(baseLevel_ != null, () => "Base volatility, for baseDate(), not set.");
             return baseLevel_;
         }
 
@@ -108,7 +108,7 @@ namespace QLNet.Termstructures.Volatility.Inflation
             }
             else
             {
-                useDate = Utils.inflationPeriod(maturityDate - useLag, frequency()).Key;
+                useDate = Termstructures.Utils.inflationPeriod(maturityDate - useLag, frequency()).Key;
             }
 
             // This assumes that the inflation term structure starts
@@ -178,26 +178,26 @@ namespace QLNet.Termstructures.Volatility.Inflation
 
         protected virtual void checkRange(Date d, double strike, bool extrapolate)
         {
-            Utils.QL_REQUIRE(d >= baseDate(), () =>
+            QLNet.Utils.QL_REQUIRE(d >= baseDate(), () =>
                 "date (" + d + ") is before base date");
-            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || d <= maxDate(), () =>
+            QLNet.Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || d <= maxDate(), () =>
                 "date (" + d + ") is past max curve date ("
                 + maxDate() + ")");
-            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() ||
-                             strike >= minStrike() && strike <= maxStrike(), () =>
+            QLNet.Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() ||
+                                            strike >= minStrike() && strike <= maxStrike(), () =>
                 "strike (" + strike + ") is outside the curve domain ["
                 + minStrike() + "," + maxStrike() + "]] at date = " + d);
         }
 
         protected virtual void checkRange(double t, double strike, bool extrapolate)
         {
-            Utils.QL_REQUIRE(t >= timeFromReference(baseDate()), () =>
+            QLNet.Utils.QL_REQUIRE(t >= timeFromReference(baseDate()), () =>
                 "time (" + t + ") is before base date");
-            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || t <= maxTime(), () =>
+            QLNet.Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() || t <= maxTime(), () =>
                 "time (" + t + ") is past max curve time ("
                 + maxTime() + ")");
-            Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() ||
-                             strike >= minStrike() && strike <= maxStrike(), () =>
+            QLNet.Utils.QL_REQUIRE(extrapolate || allowsExtrapolation() ||
+                                            strike >= minStrike() && strike <= maxStrike(), () =>
                 "strike (" + strike + ") is outside the curve domain ["
                 + minStrike() + "," + maxStrike() + "] at time = " + t);
         }
@@ -235,7 +235,7 @@ namespace QLNet.Termstructures.Volatility.Inflation
             }
             else
             {
-                var dd = Utils.inflationPeriod(maturityDate - useLag, frequency());
+                var dd = Termstructures.Utils.inflationPeriod(maturityDate - useLag, frequency());
                 checkRange(dd.Key, strike, extrapolate);
                 var t = timeFromReference(dd.Key);
                 return volatilityImpl(t, strike);

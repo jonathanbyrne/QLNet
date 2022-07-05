@@ -24,9 +24,9 @@ using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     [PublicAPI]
     public class FDMultiPeriodEngine : FDConditionEngineTemplate
@@ -52,7 +52,7 @@ namespace QLNet.Pricingengines.vanilla
         public override void calculate(IPricingEngineResults r)
         {
             var results = r as OneAssetOption.Results;
-            Utils.QL_REQUIRE(results != null, () => "incorrect results ExerciseType");
+            QLNet.Utils.QL_REQUIRE(results != null, () => "incorrect results ExerciseType");
 
             double beginDate, endDate;
             var dateNumber = stoppingTimes_.Count;
@@ -67,7 +67,7 @@ namespace QLNet.Pricingengines.vanilla
 
             if (dateNumber > 0)
             {
-                Utils.QL_REQUIRE(getDividendTime(0) >= 0, () => "first date (" + getDividendTime(0) + ") cannot be negative");
+                QLNet.Utils.QL_REQUIRE(getDividendTime(0) >= 0, () => "first date (" + getDividendTime(0) + ") cannot be negative");
                 if (getDividendTime(0) < getResidualTime() * dateTolerance)
                 {
                     firstDateIsZero = true;
@@ -93,7 +93,7 @@ namespace QLNet.Pricingengines.vanilla
                 {
                     for (j = 1; j < dateNumber; j++)
                     {
-                        Utils.QL_REQUIRE(getDividendTime(j - 1) < getDividendTime(j), () =>
+                        QLNet.Utils.QL_REQUIRE(getDividendTime(j - 1) < getDividendTime(j), () =>
                             "dates must be in increasing order: " + getDividendTime(j - 1) +
                             " is not strictly smaller than " + getDividendTime(j));
                     }
@@ -172,7 +172,7 @@ namespace QLNet.Pricingengines.vanilla
         {
             base.setupArguments(a);
             var args = a as QLNet.Option.Arguments;
-            Utils.QL_REQUIRE(args != null, () => "incorrect argument ExerciseType");
+            QLNet.Utils.QL_REQUIRE(args != null, () => "incorrect argument ExerciseType");
             events_.Clear();
 
             var n = args.exercise.dates().Count;

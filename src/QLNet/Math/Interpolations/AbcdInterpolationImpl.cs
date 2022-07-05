@@ -35,7 +35,7 @@ namespace QLNet.Math.Interpolations
 
         public override double derivative(double x)
         {
-            Utils.QL_FAIL("Abcd derivative not implemented");
+            QLNet.Utils.QL_FAIL("Abcd derivative not implemented");
             return 0;
         }
 
@@ -47,13 +47,13 @@ namespace QLNet.Math.Interpolations
 
         public override double primitive(double x)
         {
-            Utils.QL_FAIL("Abcd primitive not implemented");
+            QLNet.Utils.QL_FAIL("Abcd primitive not implemented");
             return 0;
         }
 
         public override double secondDerivative(double x)
         {
-            Utils.QL_FAIL("Abcd secondDerivative not implemented");
+            QLNet.Utils.QL_FAIL("Abcd secondDerivative not implemented");
             return 0;
         }
 
@@ -92,7 +92,7 @@ namespace QLNet.Math.Interpolations
 
         public override double value(double x)
         {
-            Utils.QL_REQUIRE(x >= 0.0, () => "time must be non negative: " + x + " not allowed");
+            QLNet.Utils.QL_REQUIRE(x >= 0.0, () => "time must be non negative: " + x + " not allowed");
             return abcdCalibrator_.value(x);
         }
     }

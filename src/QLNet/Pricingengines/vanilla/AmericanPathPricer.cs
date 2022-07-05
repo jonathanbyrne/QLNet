@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Methods.montecarlo;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     [PublicAPI]
     public class AmericanPathPricer : IEarlyExercisePathPricer<IPath, double>
@@ -19,11 +19,11 @@ namespace QLNet.Pricingengines.vanilla
             payoff_ = payoff;
             v_ = LsmBasisSystem.pathBasisSystem(polynomOrder, polynomType);
 
-            Utils.QL_REQUIRE(polynomType == LsmBasisSystem.PolynomType.Monomial
-                             || polynomType == LsmBasisSystem.PolynomType.Laguerre
-                             || polynomType == LsmBasisSystem.PolynomType.Hermite
-                             || polynomType == LsmBasisSystem.PolynomType.Hyperbolic
-                             || polynomType == LsmBasisSystem.PolynomType.Chebyshev2th, () => "insufficient polynom ExerciseType");
+            QLNet.Utils.QL_REQUIRE(polynomType == LsmBasisSystem.PolynomType.Monomial
+                                   || polynomType == LsmBasisSystem.PolynomType.Laguerre
+                                   || polynomType == LsmBasisSystem.PolynomType.Hermite
+                                   || polynomType == LsmBasisSystem.PolynomType.Hyperbolic
+                                   || polynomType == LsmBasisSystem.PolynomType.Chebyshev2th, () => "insufficient polynom ExerciseType");
 
             // the payoff gives an additional value
             v_.Add(this.payoff);

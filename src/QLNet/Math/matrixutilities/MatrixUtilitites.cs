@@ -20,7 +20,7 @@
 using QLNet.Extensions;
 using QLNet.Math.Optimization;
 
-namespace QLNet.Math.matrixutilities
+namespace QLNet.Math.MatrixUtilities
 {
     public static class MatrixUtilitites
     {
@@ -124,7 +124,7 @@ namespace QLNet.Math.matrixutilities
 
             public override Vector values(Vector a)
             {
-                Utils.QL_FAIL("values method not implemented");
+                QLNet.Utils.QL_FAIL("values method not implemented");
                 return null;
             }
         }
@@ -132,7 +132,7 @@ namespace QLNet.Math.matrixutilities
         public static void normalizePseudoRoot(Matrix matrix, Matrix pseudo)
         {
             var size = matrix.rows();
-            Utils.QL_REQUIRE(size == pseudo.rows(), () =>
+            QLNet.Utils.QL_REQUIRE(size == pseudo.rows(), () =>
                 "matrix/pseudo mismatch: matrix rows are " + size + " while pseudo rows are " + pseudo.columns());
             var pseudoCols = pseudo.columns();
 
@@ -191,7 +191,7 @@ namespace QLNet.Math.matrixutilities
 #if QL_EXTRA_SAFETY_CHECKS
          checkSymmetry(matrix);
 #else
-            Utils.QL_REQUIRE(size == matrix.columns(), () =>
+            QLNet.Utils.QL_REQUIRE(size == matrix.columns(), () =>
                 "non square matrix: " + size + " rows, " + matrix.columns() + " columns");
 #endif
 
@@ -206,7 +206,7 @@ namespace QLNet.Math.matrixutilities
             {
                 case SalvagingAlgorithm.None:
                     // eigenvalues are sorted in decreasing order
-                    Utils.QL_REQUIRE(jd.eigenvalues()[size - 1] >= -1e-16, () =>
+                    QLNet.Utils.QL_REQUIRE(jd.eigenvalues()[size - 1] >= -1e-16, () =>
                         "negative eigenvalue(s) (" + jd.eigenvalues()[size - 1] + ")");
                     result = MatrixUtilities.CholeskyDecomposition(matrix, true);
                     break;
@@ -275,7 +275,7 @@ namespace QLNet.Math.matrixutilities
                     break;
 
                 default:
-                    Utils.QL_FAIL("unknown salvaging algorithm");
+                    QLNet.Utils.QL_FAIL("unknown salvaging algorithm");
                     break;
             }
 
@@ -292,13 +292,13 @@ namespace QLNet.Math.matrixutilities
 #if QL_EXTRA_SAFETY_CHECKS
          checkSymmetry(matrix);
 #else
-            Utils.QL_REQUIRE(size == matrix.columns(), () =>
+            QLNet.Utils.QL_REQUIRE(size == matrix.columns(), () =>
                 "non square matrix: " + size + " rows, " + matrix.columns() + " columns");
 #endif
 
-            Utils.QL_REQUIRE(componentRetainedPercentage > 0.0, () => "no eigenvalues retained");
-            Utils.QL_REQUIRE(componentRetainedPercentage <= 1.0, () => "percentage to be retained > 100%");
-            Utils.QL_REQUIRE(maxRank >= 1, () => "max rank required < 1");
+            QLNet.Utils.QL_REQUIRE(componentRetainedPercentage > 0.0, () => "no eigenvalues retained");
+            QLNet.Utils.QL_REQUIRE(componentRetainedPercentage <= 1.0, () => "percentage to be retained > 100%");
+            QLNet.Utils.QL_REQUIRE(maxRank >= 1, () => "max rank required < 1");
 
             // spectral (a.k.a Principal Component) analysis
             var jd = new SymmetricSchurDecomposition(matrix);
@@ -309,7 +309,7 @@ namespace QLNet.Math.matrixutilities
             {
                 case SalvagingAlgorithm.None:
                     // eigenvalues are sorted in decreasing order
-                    Utils.QL_REQUIRE(eigenValues[size - 1] >= -1e-16, () =>
+                    QLNet.Utils.QL_REQUIRE(eigenValues[size - 1] >= -1e-16, () =>
                         "negative eigenvalue(s) (" + eigenValues[size - 1] + ")");
                     break;
                 case SalvagingAlgorithm.Spectral:
@@ -330,7 +330,7 @@ namespace QLNet.Math.matrixutilities
                 }
                     break;
                 default:
-                    Utils.QL_FAIL("unknown or invalid salvaging algorithm");
+                    QLNet.Utils.QL_FAIL("unknown or invalid salvaging algorithm");
                     break;
             }
 
@@ -625,7 +625,7 @@ namespace QLNet.Math.matrixutilities
         private static Matrix projectToPositiveSemidefiniteMatrix(Matrix M)
         {
             var size = M.rows();
-            Utils.QL_REQUIRE(size == M.columns(), () => "matrix not square");
+            QLNet.Utils.QL_REQUIRE(size == M.columns(), () => "matrix not square");
 
             var diagonal = new Matrix(size, size);
             var jd = new SymmetricSchurDecomposition(M);
@@ -642,7 +642,7 @@ namespace QLNet.Math.matrixutilities
         private static Matrix projectToUnitDiagonalMatrix(Matrix M)
         {
             var size = M.rows();
-            Utils.QL_REQUIRE(size == M.columns(), () => "matrix not square");
+            QLNet.Utils.QL_REQUIRE(size == M.columns(), () => "matrix not square");
 
             var result = new Matrix(M);
             for (var i = 0; i < size; ++i)

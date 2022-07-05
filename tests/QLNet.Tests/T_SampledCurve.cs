@@ -36,7 +36,7 @@ namespace QLNet.Tests
         {
             //("Testing sampled curve construction...");
 
-            var curve = new SampledCurve(Utils.BoundedGrid(-10.0, 10.0, 100));
+            var curve = new SampledCurve(QLNet.Utils.BoundedGrid(-10.0, 10.0, 100));
             var f2 = new FSquared();
             curve.sample(f2.value);
             var expected = 100.0;
@@ -69,7 +69,7 @@ namespace QLNet.Tests
             }
 
             curve.sample(f2.value);
-            curve.regrid(Utils.BoundedGrid(0.0, 20.0, 200));
+            curve.regrid(QLNet.Utils.BoundedGrid(0.0, 20.0, 200));
             var tolerance = 1.0e-2;
             for (var i = 0; i < curve.size(); i++)
             {

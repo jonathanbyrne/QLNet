@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace QLNet.Math.matrixutilities
+namespace QLNet.Math.MatrixUtilities
 {
     public struct GMRESResult
     {

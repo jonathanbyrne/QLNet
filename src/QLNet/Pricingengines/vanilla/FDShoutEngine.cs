@@ -20,9 +20,9 @@
 
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Finite-differences pricing engine for shout vanilla options
     /*! \ingroup vanillaengines

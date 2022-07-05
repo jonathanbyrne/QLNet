@@ -25,10 +25,10 @@ using QLNet.Methods.Finitedifferences.Solvers;
 using QLNet.Methods.Finitedifferences.StepConditions;
 using QLNet.Methods.Finitedifferences.Utilities;
 using QLNet.Models.Shortrate.Onefactormodels;
-using QLNet.processes;
+using QLNet.Processes;
 using QLNet.Time;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     [PublicAPI]
     public class FdHullWhiteSwaptionEngine : GenericModelEngine<HullWhite, Swaption.Arguments, Instrument.Results>
@@ -76,7 +76,7 @@ namespace QLNet.Pricingengines.vanilla
             for (var i = 0; i < exerciseDates.Count; ++i)
             {
                 var t = dc.yearFraction(referenceDate, exerciseDates[i]);
-                Utils.QL_REQUIRE(t >= 0, () => "exercise dates must not contain past date");
+                QLNet.Utils.QL_REQUIRE(t >= 0, () => "exercise dates must not contain past date");
 
                 t2d.Add(t, exerciseDates[i]);
             }
@@ -85,9 +85,9 @@ namespace QLNet.Pricingengines.vanilla
             var fwdTs
                 = arguments_.swap.iborIndex().forwardingTermStructure();
 
-            Utils.QL_REQUIRE(fwdTs.currentLink().dayCounter() == disTs.currentLink().dayCounter(),
+            QLNet.Utils.QL_REQUIRE(fwdTs.currentLink().dayCounter() == disTs.currentLink().dayCounter(),
                 () => "day counter of forward and discount curve must match");
-            Utils.QL_REQUIRE(fwdTs.currentLink().referenceDate() == disTs.currentLink().referenceDate(),
+            QLNet.Utils.QL_REQUIRE(fwdTs.currentLink().referenceDate() == disTs.currentLink().referenceDate(),
                 () => "reference date of forward and discount curve must match");
 
             var fwdModel =

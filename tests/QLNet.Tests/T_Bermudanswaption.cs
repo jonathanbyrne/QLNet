@@ -27,10 +27,11 @@ using QLNet.Instruments;
 using QLNet.Termstructures;
 using QLNet.Models;
 using QLNet.Cashflows;
+using QLNet.Indexes.Ibor;
 using QLNet.Models.Shortrate.Onefactormodels;
-using QLNet.Pricingengines.Swap;
-using QLNet.Pricingengines.swaption;
-using QLNet.Pricingengines.vanilla;
+using QLNet.PricingEngines.Swap;
+using QLNet.PricingEngines.swaption;
+using QLNet.PricingEngines.vanilla;
 using QLNet.Time.DayCounters;
 
 namespace QLNet.Tests

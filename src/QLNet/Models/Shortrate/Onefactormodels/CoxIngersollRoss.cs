@@ -98,7 +98,7 @@ namespace QLNet.Models.Shortrate.Onefactormodels
             double maturity,
             double bondMaturity)
         {
-            Utils.QL_REQUIRE(strike > 0.0, () => "strike must be positive");
+            QLNet.Utils.QL_REQUIRE(strike > 0.0, () => "strike must be positive");
             var discountT = discountBond(0.0, maturity, x0());
             var discountS = discountBond(0.0, bondMaturity, x0());
 
@@ -111,7 +111,7 @@ namespace QLNet.Models.Shortrate.Onefactormodels
                     case Option.Type.Put:
                         return System.Math.Max(strike - discountS, 0.0);
                     default:
-                        Utils.QL_FAIL("unsupported option ExerciseType");
+                        QLNet.Utils.QL_FAIL("unsupported option ExerciseType");
                         break;
                 }
             }

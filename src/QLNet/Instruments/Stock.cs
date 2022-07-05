@@ -38,7 +38,7 @@ namespace QLNet.Instruments
 
         protected override void performCalculations()
         {
-            Utils.QL_REQUIRE(!quote_.empty(), () => "null quote set");
+            QLNet.Utils.QL_REQUIRE(!quote_.empty(), () => "null quote set");
             NPV_ = quote_.link.value();
         }
     }

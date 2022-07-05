@@ -113,7 +113,7 @@ namespace QLNet
 
         public static void convertToBase(ref Money m)
         {
-            Utils.QL_REQUIRE(!baseCurrency.empty(), () => "no base currency set");
+            QLNet.Utils.QL_REQUIRE(!baseCurrency.empty(), () => "no base currency set");
             convertTo(ref m, baseCurrency);
         }
 
@@ -154,7 +154,7 @@ namespace QLNet
             }
             else
             {
-                Utils.QL_FAIL("currency mismatch and no conversion specified");
+                QLNet.Utils.QL_FAIL("currency mismatch and no conversion specified");
             }
 
             return m;
@@ -183,7 +183,7 @@ namespace QLNet
             }
             else
             {
-                Utils.QL_FAIL("currency mismatch and no conversion specified");
+                QLNet.Utils.QL_FAIL("currency mismatch and no conversion specified");
             }
 
             return m;
@@ -222,7 +222,7 @@ namespace QLNet
                 return m1 == tmp;
             }
 
-            Utils.QL_FAIL("currency mismatch and no conversion specified");
+            QLNet.Utils.QL_FAIL("currency mismatch and no conversion specified");
             return false;
         }
 

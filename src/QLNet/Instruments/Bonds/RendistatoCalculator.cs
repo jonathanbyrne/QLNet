@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using JetBrains.Annotations;
+using QLNet.Indexes.Ibor;
 using QLNet.Patterns;
-using QLNet.Pricingengines.Bond;
+using QLNet.PricingEngines.Bond;
 using QLNet.Termstructures;
 using QLNet.Time;
 using QLNet.Time.DayCounters;

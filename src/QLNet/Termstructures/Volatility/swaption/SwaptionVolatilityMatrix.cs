@@ -415,10 +415,10 @@ namespace QLNet.Termstructures.Volatility.swaption
             int shiftRows,
             int shiftsColumns)
         {
-            Utils.QL_REQUIRE(nOptionTenors_ == volRows, () =>
+            QLNet.Utils.QL_REQUIRE(nOptionTenors_ == volRows, () =>
                 "mismatch between number of option dates (" + nOptionTenors_ + ") and number of rows (" +
                 volRows + ") in the vol matrix");
-            Utils.QL_REQUIRE(nSwapTenors_ == volsColumns, () =>
+            QLNet.Utils.QL_REQUIRE(nSwapTenors_ == volsColumns, () =>
                 "mismatch between number of swap tenors (" + nSwapTenors_ + ") and number of rows (" +
                 volsColumns + ") in the vol matrix");
 
@@ -429,10 +429,10 @@ namespace QLNet.Termstructures.Volatility.swaption
                 shiftsColumns = volsColumns;
             }
 
-            Utils.QL_REQUIRE(nOptionTenors_ == shiftRows, () =>
+            QLNet.Utils.QL_REQUIRE(nOptionTenors_ == shiftRows, () =>
                 "mismatch between number of option dates (" + nOptionTenors_ + ") and number of rows (" +
                 shiftRows + ") in the shift matrix");
-            Utils.QL_REQUIRE(nSwapTenors_ == shiftsColumns, () =>
+            QLNet.Utils.QL_REQUIRE(nSwapTenors_ == shiftsColumns, () =>
                 "mismatch between number of swap tenors (" + nSwapTenors_ + ") and number of rows (" +
                 shiftsColumns + ") in the shift matrix");
         }

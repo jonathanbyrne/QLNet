@@ -61,7 +61,7 @@ namespace QLNet.Termstructures.Volatility.Optionlet
 
             if (volatilityType_ == VolatilityType.Normal)
             {
-                Utils.QL_REQUIRE(displacement_.IsEqual(0.0), () =>
+                QLNet.Utils.QL_REQUIRE(displacement_.IsEqual(0.0), () =>
                     "non-null displacement is not allowed with Normal model");
             }
 
@@ -76,7 +76,7 @@ namespace QLNet.Termstructures.Volatility.Optionlet
             // optionlet tenors and capFloor lengths
             optionletTenors_.Add(indexTenor);
             capFloorLengths_.Add(optionletTenors_.Last() + indexTenor);
-            Utils.QL_REQUIRE(maxCapFloorTenor >= capFloorLengths_.Last(), () =>
+            QLNet.Utils.QL_REQUIRE(maxCapFloorTenor >= capFloorLengths_.Last(), () =>
                 "too short (" + maxCapFloorTenor + ") capfloor term vol termVolSurface");
             var nextCapFloorLength = capFloorLengths_.Last() + indexTenor;
             while (nextCapFloorLength <= maxCapFloorTenor)
@@ -155,7 +155,7 @@ namespace QLNet.Termstructures.Volatility.Optionlet
         public override List<double> optionletStrikes(int i)
         {
             calculate();
-            Utils.QL_REQUIRE(i < optionletStrikes_.Count, () =>
+            QLNet.Utils.QL_REQUIRE(i < optionletStrikes_.Count, () =>
                 "index (" + i + ") must be less than optionletStrikes size (" + optionletStrikes_.Count + ")");
             return optionletStrikes_[i];
         }
@@ -163,7 +163,7 @@ namespace QLNet.Termstructures.Volatility.Optionlet
         public override List<double> optionletVolatilities(int i)
         {
             calculate();
-            Utils.QL_REQUIRE(i < optionletVolatilities_.Count, () =>
+            QLNet.Utils.QL_REQUIRE(i < optionletVolatilities_.Count, () =>
                 "index (" + i + ") must be less than optionletVolatilities size (" +
                 optionletVolatilities_.Count + ")");
             return optionletVolatilities_[i];

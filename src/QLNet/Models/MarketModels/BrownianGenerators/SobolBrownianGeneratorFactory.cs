@@ -1,4 +1,5 @@
 ﻿using JetBrains.Annotations;
+using QLNet.Math.RandomNumbers;
 
 namespace QLNet.Models.MarketModels.BrownianGenerators
 {

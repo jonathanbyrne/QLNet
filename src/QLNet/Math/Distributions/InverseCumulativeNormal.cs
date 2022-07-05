@@ -42,7 +42,7 @@ namespace QLNet.Math.Distributions
             average_ = average;
             sigma_ = sigma;
 
-            Utils.QL_REQUIRE(sigma_ > 0.0, () => "sigma must be greater than 0.0 (" + sigma_ + " not allowed)");
+            QLNet.Utils.QL_REQUIRE(sigma_ > 0.0, () => "sigma must be greater than 0.0 (" + sigma_ + " not allowed)");
         }
 
         // function
@@ -51,7 +51,7 @@ namespace QLNet.Math.Distributions
             if (x < 0.0 || x > 1.0)
             {
                 // try to recover if due to numerical error
-                if (Utils.close_enough(x, 1.0))
+                if (Math.Utils.close_enough(x, 1.0))
                 {
                     x = 1.0;
                 }
@@ -61,7 +61,7 @@ namespace QLNet.Math.Distributions
                 }
                 else
                 {
-                    Utils.QL_FAIL("InverseCumulativeNormal(" + x + ") undefined: must be 0 < x < 1");
+                    QLNet.Utils.QL_FAIL("InverseCumulativeNormal(" + x + ") undefined: must be 0 < x < 1");
                 }
             }
 

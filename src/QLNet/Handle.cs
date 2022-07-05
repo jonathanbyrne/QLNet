@@ -114,7 +114,7 @@ namespace QLNet
         {
             get
             {
-                Utils.QL_REQUIRE(!empty(), () => "empty Handle cannot be dereferenced");
+                QLNet.Utils.QL_REQUIRE(!empty(), () => "empty Handle cannot be dereferenced");
                 return link_.currentLink();
             }
         }

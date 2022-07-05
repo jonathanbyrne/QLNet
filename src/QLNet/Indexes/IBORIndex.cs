@@ -77,7 +77,7 @@ namespace QLNet.Indexes
             var d1 = valueDate(fixingDate);
             var d2 = maturityDate(d1);
             var t = dayCounter_.yearFraction(d1, d2);
-            Utils.QL_REQUIRE(t > 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(t > 0.0, () =>
                 "\n cannot calculate forward rate between " +
                 d1 + " and " + d2 +
                 ":\n non positive time (" + t +
@@ -87,7 +87,7 @@ namespace QLNet.Indexes
 
         public double forecastFixing(Date d1, Date d2, double t)
         {
-            Utils.QL_REQUIRE(!termStructure_.empty(), () => "null term structure set to this instance of " + name());
+            QLNet.Utils.QL_REQUIRE(!termStructure_.empty(), () => "null term structure set to this instance of " + name());
             var disc1 = termStructure_.link.discount(d1);
             var disc2 = termStructure_.link.discount(d2);
             return (disc1 / disc2 - 1.0) / t;

@@ -19,7 +19,7 @@ using QLNet.Math;
 using QLNet.Models.Shortrate.Onefactormodels;
 using QLNet.Time;
 
-namespace QLNet.processes
+namespace QLNet.Processes
 {
     //! Hybrid Heston Hull-White stochastic process
     /*! This class implements a three factor Heston Hull-White model
@@ -67,11 +67,11 @@ namespace QLNet.processes
             T_ = hullWhiteProcess.getForwardMeasureTime();
             endDiscount_ = hestonProcess.riskFreeRate().link.discount(T_);
 
-            Utils.QL_REQUIRE(corrEquityShortRate * corrEquityShortRate
+            QLNet.Utils.QL_REQUIRE(corrEquityShortRate * corrEquityShortRate
                 + hestonProcess.rho() * hestonProcess.rho() <= 1.0, () =>
                     "correlation matrix is not positive definite");
 
-            Utils.QL_REQUIRE(hullWhiteProcess.sigma() > 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(hullWhiteProcess.sigma() > 0.0, () =>
                 "positive vol of Hull White process is required");
         }
 
@@ -188,11 +188,11 @@ namespace QLNet.processes
                 var v12 = (1 - eat * ias) * (sigma * eta / a * rho + sigma * sigma / (a * a))
                           - sigma * sigma / (2 * a * a) * (1 - eat * eat * ias * ias);
 
-                Utils.QL_REQUIRE(v1 > 0.0 && v2 > 0.0, () => "zero or negative variance given");
+                QLNet.Utils.QL_REQUIRE(v1 > 0.0 && v2 > 0.0, () => "zero or negative variance given");
 
                 // terminal rho must be between -maxRho and +maxRho
                 var rhoT = System.Math.Min(maxRho_, System.Math.Max(-maxRho_, v12 / System.Math.Sqrt(v1 * v2)));
-                Utils.QL_REQUIRE(rhoT <= 1.0 && rhoT >= -1.0
+                QLNet.Utils.QL_REQUIRE(rhoT <= 1.0 && rhoT >= -1.0
                                              && 1 - rhoT * rhoT / (1 - xi * xi) >= 0.0, () => "invalid terminal correlation");
 
                 var dw_0 = dw[0];
@@ -216,7 +216,7 @@ namespace QLNet.processes
             }
             else
             {
-                Utils.QL_FAIL("unknown discretization scheme");
+                QLNet.Utils.QL_FAIL("unknown discretization scheme");
             }
 
             return retVal;

@@ -23,10 +23,9 @@ using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.Interpolations;
 using QLNet.Patterns;
-using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Time;
 
-namespace QLNet
+namespace QLNet.Termstructures.Volatility.equityfx
 {
     [PublicAPI]
     public class FixedLocalVolSurface : LocalVolTermStructure
@@ -62,7 +61,7 @@ namespace QLNet
             lowerExtrapolation_ = lowerExtrapolation;
             upperExtrapolation_ = upperExtrapolation;
 
-            Utils.QL_REQUIRE(dates[0] >= referenceDate,
+            QLNet.Utils.QL_REQUIRE(dates[0] >= referenceDate,
                 () => "cannot have dates[0] < referenceDate");
 
             times_ = new InitializedList<double>(dates.Count);
@@ -94,7 +93,7 @@ namespace QLNet
             lowerExtrapolation_ = lowerExtrapolation;
             upperExtrapolation_ = upperExtrapolation;
 
-            Utils.QL_REQUIRE(times[0] >= 0.0,
+            QLNet.Utils.QL_REQUIRE(times[0] >= 0.0,
                 () => "cannot have times[0] < 0");
 
             checkSurface();
@@ -120,10 +119,10 @@ namespace QLNet
             lowerExtrapolation_ = lowerExtrapolation;
             upperExtrapolation_ = upperExtrapolation;
 
-            Utils.QL_REQUIRE(times[0] >= 0.0,
+            QLNet.Utils.QL_REQUIRE(times[0] >= 0.0,
                 () => "cannot have times[0] < 0");
 
-            Utils.QL_REQUIRE(times.Count == strikes.Count,
+            QLNet.Utils.QL_REQUIRE(times.Count == strikes.Count,
                 () => "need strikes for every time step");
 
             checkSurface();
@@ -168,7 +167,7 @@ namespace QLNet
                 idx--;
             }
 
-            if (Utils.close_enough(t, times_[idx]))
+            if (Math.Utils.close_enough(t, times_[idx]))
             {
                 if (strikes_[idx].First() < strikes_[idx].Last())
                 {
@@ -218,25 +217,25 @@ namespace QLNet
 
         private void checkSurface()
         {
-            Utils.QL_REQUIRE(times_.Count == localVolMatrix_.columns(),
+            QLNet.Utils.QL_REQUIRE(times_.Count == localVolMatrix_.columns(),
                 () => "mismatch between date vector and vol matrix colums");
             for (var i = 0; i < strikes_.Count; ++i)
             {
-                Utils.QL_REQUIRE(strikes_[i].Count == localVolMatrix_.rows(),
+                QLNet.Utils.QL_REQUIRE(strikes_[i].Count == localVolMatrix_.rows(),
                     () => "mismatch between money-strike vector and "
                           + "vol matrix rows");
             }
 
             for (var j = 1; j < times_.Count; j++)
             {
-                Utils.QL_REQUIRE(times_[j] > times_[j - 1],
+                QLNet.Utils.QL_REQUIRE(times_[j] > times_[j - 1],
                     () => "dates must be sorted unique!");
             }
 
             for (var i = 0; i < strikes_.Count; ++i)
             for (var j = 1; j < strikes_[i].Count; j++)
             {
-                Utils.QL_REQUIRE(strikes_[i][j] >= strikes_[i][j - 1],
+                QLNet.Utils.QL_REQUIRE(strikes_[i][j] >= strikes_[i][j - 1],
                     () => "strikes must be sorted");
             }
         }

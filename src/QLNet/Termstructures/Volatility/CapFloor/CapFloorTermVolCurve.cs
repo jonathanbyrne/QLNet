@@ -208,16 +208,16 @@ namespace QLNet.Termstructures.Volatility.CapFloor
 
         private void checkInputs()
         {
-            Utils.QL_REQUIRE(!optionTenors_.empty(), () => "empty option tenor vector");
-            Utils.QL_REQUIRE(nOptionTenors_ == vols_.Count, () =>
+            QLNet.Utils.QL_REQUIRE(!optionTenors_.empty(), () => "empty option tenor vector");
+            QLNet.Utils.QL_REQUIRE(nOptionTenors_ == vols_.Count, () =>
                 "mismatch between number of option tenors (" +
                 nOptionTenors_ + ") and number of volatilities (" +
                 vols_.Count + ")");
-            Utils.QL_REQUIRE(optionTenors_[0] > new Period(0, TimeUnit.Days), () =>
+            QLNet.Utils.QL_REQUIRE(optionTenors_[0] > new Period(0, TimeUnit.Days), () =>
                 "negative first option tenor: " + optionTenors_[0]);
             for (var i = 1; i < nOptionTenors_; ++i)
             {
-                Utils.QL_REQUIRE(optionTenors_[i] > optionTenors_[i - 1], () =>
+                QLNet.Utils.QL_REQUIRE(optionTenors_[i] > optionTenors_[i - 1], () =>
                     "non increasing option tenor: " + i +
                     " is " + optionTenors_[i - 1] + ", " +
                     (i + 1) + " is " + optionTenors_[i]);

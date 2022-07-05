@@ -90,9 +90,9 @@ namespace QLNet.Methods.Finitedifferences.StepConditions
                 stoppingTimes.Add(dividendCondition.dividendTimes());
             }
 
-            Utils.QL_REQUIRE(exercise.ExerciseType() == Exercise.Type.American
-                             || exercise.ExerciseType() == Exercise.Type.European
-                             || exercise.ExerciseType() == Exercise.Type.Bermudan,
+            QLNet.Utils.QL_REQUIRE(exercise.ExerciseType() == Exercise.Type.American
+                                            || exercise.ExerciseType() == Exercise.Type.European
+                                            || exercise.ExerciseType() == Exercise.Type.Bermudan,
                 () => "exercise ExerciseType is not supported");
             if (exercise.ExerciseType() == Exercise.Type.American)
             {

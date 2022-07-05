@@ -119,7 +119,7 @@ namespace QLNet.Indexes.Ibor
                 BiborConvention(tenor), BiborEOM(tenor),
                 new Actual365Fixed(), h ?? new Handle<YieldTermStructure>())
         {
-            Utils.QL_REQUIRE(this.tenor().units() != TimeUnit.Days, () =>
+            QLNet.Utils.QL_REQUIRE(this.tenor().units() != TimeUnit.Days, () =>
                 "for daily tenors (" + this.tenor() + ") dedicated DailyTenor constructor must be used");
         }
 
@@ -134,7 +134,7 @@ namespace QLNet.Indexes.Ibor
                 case TimeUnit.Years:
                     return BusinessDayConvention.ModifiedFollowing;
                 default:
-                    Utils.QL_FAIL("invalid time units");
+                    QLNet.Utils.QL_FAIL("invalid time units");
                     return BusinessDayConvention.Unadjusted;
             }
         }
@@ -150,7 +150,7 @@ namespace QLNet.Indexes.Ibor
                 case TimeUnit.Years:
                     return true;
                 default:
-                    Utils.QL_FAIL("invalid time units");
+                    QLNet.Utils.QL_FAIL("invalid time units");
                     return false;
             }
         }

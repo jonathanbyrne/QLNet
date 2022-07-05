@@ -1,8 +1,8 @@
 ﻿using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.barrier
+namespace QLNet.PricingEngines.barrier
 {
     [PublicAPI]
     public class AnalyticDoubleBarrierBinaryEngineHelper
@@ -27,14 +27,14 @@ namespace QLNet.Pricingengines.barrier
             int maxIteration = 100,
             double requiredConvergence = 1e-8)
         {
-            Utils.QL_REQUIRE(spot > 0.0,
+            QLNet.Utils.QL_REQUIRE(spot > 0.0,
                 () => "positive spot value required");
 
-            Utils.QL_REQUIRE(variance >= 0.0,
+            QLNet.Utils.QL_REQUIRE(variance >= 0.0,
                 () => "negative variance not allowed");
 
             var residualTime = process_.time(arguments_.exercise.lastDate());
-            Utils.QL_REQUIRE(residualTime > 0.0,
+            QLNet.Utils.QL_REQUIRE(residualTime > 0.0,
                 () => "expiration time must be > 0");
 
             // Option::Type ExerciseType   = payoff_->optionType(); // this is not used ?
@@ -69,7 +69,7 @@ namespace QLNet.Pricingengines.barrier
 
             // Check if convergence is sufficiently fast (for extreme parameters with big alpha the convergence can be very
             // poor, see for example Hui "One-touch double barrier binary option value")
-            Utils.QL_REQUIRE(System.Math.Abs(term) < requiredConvergence, () => "serie did not converge sufficiently fast");
+            QLNet.Utils.QL_REQUIRE(System.Math.Abs(term) < requiredConvergence, () => "serie did not converge sufficiently fast");
 
             if (barrierType == DoubleBarrier.Type.KnockOut)
             {
@@ -78,7 +78,7 @@ namespace QLNet.Pricingengines.barrier
 
             var discount = process_.riskFreeRate().currentLink().discount(
                 arguments_.exercise.lastDate());
-            Utils.QL_REQUIRE(discount > 0.0,
+            QLNet.Utils.QL_REQUIRE(discount > 0.0,
                 () => "positive discount required");
             return System.Math.Max(cash * discount - tot, 0.0); // KI
         }
@@ -89,14 +89,14 @@ namespace QLNet.Pricingengines.barrier
             int maxIteration = 1000,
             double requiredConvergence = 1e-8)
         {
-            Utils.QL_REQUIRE(spot > 0.0,
+            QLNet.Utils.QL_REQUIRE(spot > 0.0,
                 () => "positive spot value required");
 
-            Utils.QL_REQUIRE(variance >= 0.0,
+            QLNet.Utils.QL_REQUIRE(variance >= 0.0,
                 () => "negative variance not allowed");
 
             var residualTime = process_.time(arguments_.exercise.lastDate());
-            Utils.QL_REQUIRE(residualTime > 0.0,
+            QLNet.Utils.QL_REQUIRE(residualTime > 0.0,
                 () => "expiration time must be > 0");
 
             var cash = payoff_.cashPayoff();
@@ -104,7 +104,7 @@ namespace QLNet.Pricingengines.barrier
             var barrier_hi = arguments_.barrier_hi.Value;
             if (barrierType == DoubleBarrier.Type.KOKI)
             {
-                Utils.swap(ref barrier_lo, ref barrier_hi);
+                QLNet.Utils.swap(ref barrier_lo, ref barrier_hi);
             }
 
             var sigmaq = variance / residualTime;
@@ -133,7 +133,7 @@ namespace QLNet.Pricingengines.barrier
             tot *= cash * System.Math.Pow(spot / barrier_lo, alpha);
 
             // Check if convergence is sufficiently fast
-            Utils.QL_REQUIRE(System.Math.Abs(term) < requiredConvergence, () => "serie did not converge sufficiently fast");
+            QLNet.Utils.QL_REQUIRE(System.Math.Abs(term) < requiredConvergence, () => "serie did not converge sufficiently fast");
 
             return System.Math.Max(tot, 0.0);
         }

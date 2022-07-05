@@ -21,9 +21,9 @@
 using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.integrals;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Pricing engine for European vanilla options using integral approach
     //    ! \todo define tolerance for calculate()
@@ -44,11 +44,11 @@ namespace QLNet.Pricingengines.vanilla
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European Option");
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European Option");
 
             var payoff = arguments_.payoff as StrikedTypePayoff;
 
-            Utils.QL_REQUIRE(payoff != null, () => "not an European Option");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "not an European Option");
 
             var variance = process_.blackVolatility().link.blackVariance(arguments_.exercise.lastDate(), payoff.strike());
 

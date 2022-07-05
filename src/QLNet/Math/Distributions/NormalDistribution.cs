@@ -45,7 +45,7 @@ namespace QLNet.Math.Distributions
             average_ = average;
             sigma_ = sigma;
 
-            Utils.QL_REQUIRE(sigma_ > 0.0, () => "sigma must be greater than 0.0 (" + sigma_ + " not allowed)");
+            QLNet.Utils.QL_REQUIRE(sigma_ > 0.0, () => "sigma must be greater than 0.0 (" + sigma_ + " not allowed)");
 
             normalizationFactor_ = Const.M_SQRT_2 * Const.M_1_SQRTPI / sigma_;
             derNormalizationFactor_ = sigma_ * sigma_;

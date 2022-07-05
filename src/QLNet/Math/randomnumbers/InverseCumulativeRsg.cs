@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Methods.montecarlo;
 
-namespace QLNet.Math.randomnumbers
+namespace QLNet.Math.RandomNumbers
 {
     //! Inverse cumulative random sequence generator
     /*! It uses a sequence of uniform deviate in (0, 1) as the

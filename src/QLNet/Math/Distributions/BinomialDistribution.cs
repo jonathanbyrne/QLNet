@@ -20,7 +20,7 @@
 using JetBrains.Annotations;
 using QLNet.Extensions;
 
-namespace QLNet
+namespace QLNet.Math.Distributions
 {
     //! Binomial probability distribution function
     /*! formula here ...
@@ -48,8 +48,8 @@ namespace QLNet
             }
             else
             {
-                Utils.QL_REQUIRE(p > 0, () => "negative p not allowed");
-                Utils.QL_REQUIRE(p < 1.0, () => "p>1.0 not allowed");
+                QLNet.Utils.QL_REQUIRE(p > 0, () => "negative p not allowed");
+                QLNet.Utils.QL_REQUIRE(p < 1.0, () => "p>1.0 not allowed");
 
                 logP_ = System.Math.Log(p);
                 logOneMinusP_ = System.Math.Log(1.0 - p);

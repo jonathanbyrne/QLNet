@@ -21,13 +21,12 @@
 using System;
 using JetBrains.Annotations;
 using QLNet.Currencies;
-using QLNet.Indexes;
 using QLNet.Termstructures;
 using QLNet.Time;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
 
-namespace QLNet
+namespace QLNet.Indexes.Ibor
 {
     public static partial class Utils
     {
@@ -86,7 +85,7 @@ namespace QLNet
                 new Handle<YieldTermStructure>())
         {
             target_ = new TARGET();
-            Utils.QL_REQUIRE(this.tenor().units() != TimeUnit.Days, () =>
+            QLNet.Utils.QL_REQUIRE(this.tenor().units() != TimeUnit.Days, () =>
                 "for daily tenors (" + this.tenor() + ") dedicated DailyTenor constructor must be used");
         }
 
@@ -96,7 +95,7 @@ namespace QLNet
                 Utils.eurliborConvention(tenor), Utils.eurliborEOM(tenor), new Actual360(), h)
         {
             target_ = new TARGET();
-            Utils.QL_REQUIRE(this.tenor().units() != TimeUnit.Days, () =>
+            QLNet.Utils.QL_REQUIRE(this.tenor().units() != TimeUnit.Days, () =>
                 "for daily tenors (" + this.tenor() + ") dedicated DailyTenor constructor must be used");
         }
 
@@ -112,7 +111,7 @@ namespace QLNet
         */
         public override Date valueDate(Date fixingDate)
         {
-            Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => "Fixing date " + fixingDate + " is not valid");
+            QLNet.Utils.QL_REQUIRE(isValidFixingDate(fixingDate), () => "Fixing date " + fixingDate + " is not valid");
 
             // http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1412 :
             // In the case of EUR the Value Date shall be two TARGET

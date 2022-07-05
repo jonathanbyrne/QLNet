@@ -51,7 +51,7 @@ namespace QLNet.Time
                         hi = 366 * p.length();
                         break;
                     default:
-                        Utils.QL_FAIL("Unknown TimeUnit: " + p.units());
+                        QLNet.Utils.QL_FAIL("Unknown TimeUnit: " + p.units());
                         lo = hi = 0;
                         break;
                 }
@@ -108,10 +108,10 @@ namespace QLNet.Time
                     length_ = 1;
                     break;
                 case Frequency.OtherFrequency:
-                    Utils.QL_FAIL("unknown frequency");
+                    QLNet.Utils.QL_FAIL("unknown frequency");
                     break;
                 default:
-                    Utils.QL_FAIL("unknown frequency (" + f + ")");
+                    QLNet.Utils.QL_FAIL("unknown frequency (" + f + ")");
                     break;
             }
         }
@@ -169,10 +169,10 @@ namespace QLNet.Time
                                 break;
                             case TimeUnit.Weeks:
                             case TimeUnit.Days:
-                                Utils.QL_REQUIRE(p1.length() == 0, () => "impossible addition between " + p1 + " and " + p2);
+                                QLNet.Utils.QL_REQUIRE(p1.length() == 0, () => "impossible addition between " + p1 + " and " + p2);
                                 break;
                             default:
-                                Utils.QL_FAIL("unknown time unit (" + p2.units() + ")");
+                                QLNet.Utils.QL_FAIL("unknown time unit (" + p2.units() + ")");
                                 break;
                         }
 
@@ -186,10 +186,10 @@ namespace QLNet.Time
                                 break;
                             case TimeUnit.Weeks:
                             case TimeUnit.Days:
-                                Utils.QL_REQUIRE(p1.length() == 0, () => "impossible addition between " + p1 + " and " + p2);
+                                QLNet.Utils.QL_REQUIRE(p1.length() == 0, () => "impossible addition between " + p1 + " and " + p2);
                                 break;
                             default:
-                                Utils.QL_FAIL("unknown time unit (" + p2.units() + ")");
+                                QLNet.Utils.QL_FAIL("unknown time unit (" + p2.units() + ")");
                                 break;
                         }
 
@@ -204,10 +204,10 @@ namespace QLNet.Time
                                 break;
                             case TimeUnit.Years:
                             case TimeUnit.Months:
-                                Utils.QL_REQUIRE(p1.length() == 0, () => "impossible addition between " + p1 + " and " + p2);
+                                QLNet.Utils.QL_REQUIRE(p1.length() == 0, () => "impossible addition between " + p1 + " and " + p2);
                                 break;
                             default:
-                                Utils.QL_FAIL("unknown time unit (" + p2.units() + ")");
+                                QLNet.Utils.QL_FAIL("unknown time unit (" + p2.units() + ")");
                                 break;
                         }
 
@@ -221,17 +221,17 @@ namespace QLNet.Time
                                 break;
                             case TimeUnit.Years:
                             case TimeUnit.Months:
-                                Utils.QL_REQUIRE(p1.length() == 0, () => "impossible addition between " + p1 + " and " + p2);
+                                QLNet.Utils.QL_REQUIRE(p1.length() == 0, () => "impossible addition between " + p1 + " and " + p2);
                                 break;
                             default:
-                                Utils.QL_FAIL("unknown time unit (" + p2.units() + ")");
+                                QLNet.Utils.QL_FAIL("unknown time unit (" + p2.units() + ")");
                                 break;
                         }
 
                         break;
 
                     default:
-                        Utils.QL_FAIL("unknown time unit (" + units_ + ")");
+                        QLNet.Utils.QL_FAIL("unknown time unit (" + units_ + ")");
                         break;
                 }
             }
@@ -306,7 +306,7 @@ namespace QLNet.Time
                 return p1lim.hi < p2lim.lo;
             }
 
-            Utils.QL_FAIL("Undecidable comparison between " + p1 + " and " + p2);
+            QLNet.Utils.QL_FAIL("Undecidable comparison between " + p1 + " and " + p2);
             return false;
         }
 
@@ -462,7 +462,7 @@ namespace QLNet.Time
                 case TimeUnit.Years:
                     return result + n + "Y";
                 default:
-                    Utils.QL_FAIL("unknown time unit (" + units() + ")");
+                    QLNet.Utils.QL_FAIL("unknown time unit (" + units() + ")");
                     return result;
             }
         }

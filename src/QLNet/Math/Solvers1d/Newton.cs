@@ -71,7 +71,7 @@ namespace QLNet.Math.Solvers1d
                 evaluationNumber_++;
             }
 
-            Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
+            QLNet.Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
                 QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
             return 0;
         }

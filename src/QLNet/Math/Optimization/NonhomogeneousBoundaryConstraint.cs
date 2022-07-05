@@ -14,14 +14,14 @@ namespace QLNet.Math.Optimization
             {
                 low_ = low;
                 high_ = high;
-                Utils.QL_REQUIRE(low_.Count == high_.Count, () => "Upper and lower boundaries sizes are inconsistent.");
+                QLNet.Utils.QL_REQUIRE(low_.Count == high_.Count, () => "Upper and lower boundaries sizes are inconsistent.");
             }
 
             public Vector lowerBound(Vector v) => low_;
 
             public bool test(Vector parameters)
             {
-                Utils.QL_REQUIRE(parameters.size() == low_.Count, () =>
+                QLNet.Utils.QL_REQUIRE(parameters.size() == low_.Count, () =>
                     "Number of parameters and boundaries sizes are inconsistent.");
 
                 for (var i = 0; i < parameters.size(); i++)

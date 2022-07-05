@@ -29,13 +29,13 @@ namespace QLNet.Math.Distributions
             average_ = average;
             sigma_ = sigma;
 
-            Utils.QL_REQUIRE(sigma_ > 0.0, () => "sigma must be greater than 0.0 (" + sigma_ + " not allowed)");
+            QLNet.Utils.QL_REQUIRE(sigma_ > 0.0, () => "sigma must be greater than 0.0 (" + sigma_ + " not allowed)");
         }
 
         // function
         public double value(double x)
         {
-            Utils.QL_REQUIRE(x > 0.0 && x < 1.0, () => "MoroInverseCumulativeNormal(" + x + ") undefined: must be 0<x<1");
+            QLNet.Utils.QL_REQUIRE(x > 0.0 && x < 1.0, () => "MoroInverseCumulativeNormal(" + x + ") undefined: must be 0<x<1");
 
             double result;
             var temp = x - 0.5;

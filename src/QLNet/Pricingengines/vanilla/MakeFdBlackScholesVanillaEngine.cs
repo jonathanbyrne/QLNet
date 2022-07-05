@@ -1,9 +1,9 @@
 ﻿using JetBrains.Annotations;
 using QLNet.Methods.Finitedifferences.Solvers;
 using QLNet.Methods.Finitedifferences.Utilities;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     [PublicAPI]
     public class MakeFdBlackScholesVanillaEngine

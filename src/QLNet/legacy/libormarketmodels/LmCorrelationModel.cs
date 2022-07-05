@@ -20,7 +20,7 @@
 
 using System.Collections.Generic;
 using QLNet.Math;
-using QLNet.Math.matrixutilities;
+using QLNet.Math.MatrixUtilities;
 using QLNet.Models;
 
 namespace QLNet.legacy.libormarketmodels

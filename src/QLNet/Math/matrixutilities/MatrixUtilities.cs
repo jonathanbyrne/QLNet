@@ -18,9 +18,8 @@
 */
 
 using QLNet.Extensions;
-using QLNet.Math;
 
-namespace QLNet
+namespace QLNet.Math.MatrixUtilities
 {
     public static partial class MatrixUtilities
     {
@@ -28,7 +27,7 @@ namespace QLNet
         {
             int i, j, size = S.rows();
 
-            Utils.QL_REQUIRE(size == S.columns(), () => "input matrix is not a square matrix");
+            QLNet.Utils.QL_REQUIRE(size == S.columns(), () => "input matrix is not a square matrix");
 #if QL_EXTRA_SAFETY_CHECKS
          for (i = 0; i < S.rows(); i++)
             for (j = 0; j < i; j++)
@@ -50,7 +49,7 @@ namespace QLNet
 
                     if (i == j)
                     {
-                        Utils.QL_REQUIRE(flexible || sum > 0.0, () => "input matrix is not positive definite");
+                        QLNet.Utils.QL_REQUIRE(flexible || sum > 0.0, () => "input matrix is not positive definite");
                         // To handle positive semi-definite matrices take the
                         // square root of sum if positive, else zero.
                         result[i, i] = System.Math.Sqrt(System.Math.Max(sum, 0.0));

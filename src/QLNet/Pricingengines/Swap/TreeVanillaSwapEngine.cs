@@ -25,7 +25,7 @@ using QLNet.Models;
 using QLNet.Termstructures;
 using QLNet.Time;
 
-namespace QLNet.Pricingengines.Swap
+namespace QLNet.PricingEngines.Swap
 {
     /// <summary>
     ///     Numerical lattice engine for swaps

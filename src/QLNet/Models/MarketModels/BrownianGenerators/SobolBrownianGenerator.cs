@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using QLNet.Math.Distributions;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 using QLNet.Methods.montecarlo;
 
 namespace QLNet.Models.MarketModels.BrownianGenerators
@@ -81,7 +81,7 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
                     fillByDiagonal(orderedIndices_, factors_, steps_);
                     break;
                 default:
-                    Utils.QL_FAIL("unknown ordering");
+                    QLNet.Utils.QL_FAIL("unknown ordering");
                     break;
             }
         }
@@ -108,8 +108,8 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
         public double nextStep(List<double> output)
         {
 #if QL_EXTRA_SAFETY_CHECKS
-         Utils.QL_REQUIRE(output.Count == factors_, () => "size mismatch");
-         Utils.QL_REQUIRE(lastStep_<steps_, () => "sequence exhausted");
+         QLNet.Utils.QL_REQUIRE(output.Count == factors_, () => "size mismatch");
+         QLNet.Utils.QL_REQUIRE(lastStep_<steps_, () => "sequence exhausted");
 #endif
             for (var i = 0; i < factors_; ++i)
             {
@@ -129,7 +129,7 @@ namespace QLNet.Models.MarketModels.BrownianGenerators
 
         public List<List<double>> transform(List<List<double>> variates)
         {
-            Utils.QL_REQUIRE(variates.Count == factors_ * steps_, () => "inconsistent variate vector");
+            QLNet.Utils.QL_REQUIRE(variates.Count == factors_ * steps_, () => "inconsistent variate vector");
 
             var dim = factors_ * steps_;
             var nPaths = variates.First().Count;

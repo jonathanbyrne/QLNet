@@ -35,7 +35,7 @@ namespace QLNet.Indexes
         */
         public new OvernightIndexedSwap underlyingSwap(Date fixingDate)
         {
-            Utils.QL_REQUIRE(fixingDate != null, () => "null fixing date");
+            QLNet.Utils.QL_REQUIRE(fixingDate != null, () => "null fixing date");
             if (lastFixingDate_ != fixingDate)
             {
                 var fixedRate = 0.0;

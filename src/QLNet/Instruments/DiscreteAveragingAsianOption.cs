@@ -28,22 +28,22 @@ namespace QLNet.Instruments
             {
                 base.validate();
 
-                Utils.QL_REQUIRE(averageType != Average.Type.NULL, () => "unspecified average ExerciseType");
-                Utils.QL_REQUIRE(pastFixings != null, () => "null past-fixing number");
-                Utils.QL_REQUIRE(runningAccumulator != null, () => "null running product");
+                QLNet.Utils.QL_REQUIRE(averageType != Average.Type.NULL, () => "unspecified average ExerciseType");
+                QLNet.Utils.QL_REQUIRE(pastFixings != null, () => "null past-fixing number");
+                QLNet.Utils.QL_REQUIRE(runningAccumulator != null, () => "null running product");
 
                 switch (averageType)
                 {
                     case Average.Type.Arithmetic:
-                        Utils.QL_REQUIRE(runningAccumulator >= 0.0, () =>
+                        QLNet.Utils.QL_REQUIRE(runningAccumulator >= 0.0, () =>
                             "non negative running sum required: " + runningAccumulator + " not allowed");
                         break;
                     case Average.Type.Geometric:
-                        Utils.QL_REQUIRE(runningAccumulator > 0.0, () =>
+                        QLNet.Utils.QL_REQUIRE(runningAccumulator > 0.0, () =>
                             "positive running product required: " + runningAccumulator + " not allowed");
                         break;
                     default:
-                        Utils.QL_FAIL("invalid average ExerciseType");
+                        QLNet.Utils.QL_FAIL("invalid average ExerciseType");
                         break;
                 }
 
@@ -76,7 +76,7 @@ namespace QLNet.Instruments
             base.setupArguments(args);
 
             var moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
+            QLNet.Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
 
             moreArgs.averageType = averageType_;
             moreArgs.runningAccumulator = runningAccumulator_;

@@ -23,8 +23,8 @@ using System.Linq;
 using Xunit;
 using QLNet.Methods.montecarlo;
 using QLNet.Indexes;
+using QLNet.Indexes.Ibor;
 using QLNet.Time;
-using QLNet.Math.randomnumbers;
 using QLNet.Math.statistics;
 using QLNet.Termstructures.Volatility.Optionlet;
 using QLNet.Math.Interpolations;
@@ -32,6 +32,7 @@ using QLNet.legacy.libormarketmodels;
 using QLNet.Termstructures;
 using QLNet.Math;
 using QLNet.Math.Distributions;
+using QLNet.Math.RandomNumbers;
 using QLNet.Termstructures.Yield;
 using QLNet.Time.DayCounters;
 
@@ -290,9 +291,9 @@ namespace QLNet.Tests
                 var path1 = generator1.next();
                 var path2 = generator2.next();
                 var value1 = path1.value as MultiPath;
-                Utils.QL_REQUIRE(value1 != null, () => "Invalid Path");
+                QLNet.Utils.QL_REQUIRE(value1 != null, () => "Invalid Path");
                 var value2 = path2.value as MultiPath;
-                Utils.QL_REQUIRE(value2 != null, () => "Invalid Path");
+                QLNet.Utils.QL_REQUIRE(value2 != null, () => "Invalid Path");
 
                 List<double> rates1 = new InitializedList<double>(len);
                 List<double> rates2 = new InitializedList<double>(len);

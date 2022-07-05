@@ -17,7 +17,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Math.RandomNumbers
 {
     /* this file is a slightly edited version of
      * PrimitivePolynomialsModuloTwoUpToDegree27.h

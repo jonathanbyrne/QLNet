@@ -2,7 +2,7 @@
 using QLNet.Instruments;
 using QLNet.Methods.montecarlo;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     [PublicAPI]
     public class EuropeanPathPricer : PathPricer<IPath>
@@ -14,12 +14,12 @@ namespace QLNet.Pricingengines.vanilla
         {
             payoff_ = new PlainVanillaPayoff(type, strike);
             discount_ = discount;
-            Utils.QL_REQUIRE(strike >= 0.0, () => "strike less than zero not allowed");
+            QLNet.Utils.QL_REQUIRE(strike >= 0.0, () => "strike less than zero not allowed");
         }
 
         public double value(IPath path)
         {
-            Utils.QL_REQUIRE(path.length() > 0, () => "the path cannot be empty");
+            QLNet.Utils.QL_REQUIRE(path.length() > 0, () => "the path cannot be empty");
             return payoff_.value((path as Path).back()) * discount_;
         }
     }

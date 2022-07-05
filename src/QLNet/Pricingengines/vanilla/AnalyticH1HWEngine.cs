@@ -20,7 +20,7 @@ using QLNet.Math.Distributions;
 using QLNet.Models.Equity;
 using QLNet.Models.Shortrate.Onefactormodels;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Analytic Heston-Hull-White engine based on the H1-HW approximation
     /*! References:
@@ -131,7 +131,7 @@ namespace QLNet.Pricingengines.vanilla
                     retVal += s;
                 } while (s > double.Epsilon && ++i < maxIter);
 
-                Utils.QL_REQUIRE(i < maxIter, () => "can not calculate Lambda");
+                QLNet.Utils.QL_REQUIRE(i < maxIter, () => "can not calculate Lambda");
 
                 retVal *= System.Math.Sqrt(2 * c(t)) * System.Math.Exp(-0.5 * lambdaT);
                 return retVal;
@@ -146,8 +146,8 @@ namespace QLNet.Pricingengines.vanilla
             : base(model, hullWhiteModel, integrationOrder)
         {
             rhoSr_ = rhoSr;
-            Utils.QL_REQUIRE(rhoSr_ >= 0.0, () => "Fourier integration is not stable if " +
-                                                  "the equity interest rate correlation is negative");
+            QLNet.Utils.QL_REQUIRE(rhoSr_ >= 0.0, () => "Fourier integration is not stable if " +
+                                                        "the equity interest rate correlation is negative");
         }
 
         public AnalyticH1HWEngine(HestonModel model, HullWhite hullWhiteModel, double rhoSr, double relTolerance,

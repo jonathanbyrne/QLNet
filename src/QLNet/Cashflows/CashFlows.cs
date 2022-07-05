@@ -60,9 +60,9 @@ namespace QLNet.Cashflows
                 {
                     if (firstCouponFound)
                     {
-                        Utils.QL_REQUIRE(nominal.IsEqual(cp.nominal()) &&
-                                         accrualPeriod.IsEqual(cp.accrualPeriod()) &&
-                                         dc == cp.dayCounter(), () =>
+                        QLNet.Utils.QL_REQUIRE(nominal.IsEqual(cp.nominal()) &&
+                                                        accrualPeriod.IsEqual(cp.accrualPeriod()) &&
+                                                        dc == cp.dayCounter(), () =>
                             "cannot aggregate two different coupons on "
                             + paymentDate);
                     }
@@ -78,7 +78,7 @@ namespace QLNet.Cashflows
                 }
             }
 
-            Utils.QL_REQUIRE(firstCouponFound, () => "no coupon paid at cashflow date " + paymentDate);
+            QLNet.Utils.QL_REQUIRE(firstCouponFound, () => "no coupon paid at cashflow date " + paymentDate);
             return result;
         }
 
@@ -201,7 +201,7 @@ namespace QLNet.Cashflows
 
                         break;
                     default:
-                        Utils.QL_FAIL("unknown compounding convention (" + y.compounding() + ")");
+                        QLNet.Utils.QL_FAIL("unknown compounding convention (" + y.compounding() + ")");
                         break;
                 }
 
@@ -219,7 +219,7 @@ namespace QLNet.Cashflows
         public static double macaulayDuration(Leg leg, InterestRate y, bool includeSettlementDateFlows,
             Date settlementDate, Date npvDate)
         {
-            Utils.QL_REQUIRE(y.compounding() == Compounding.Compounded, () => "compounded rate required");
+            QLNet.Utils.QL_REQUIRE(y.compounding() == Compounding.Compounded, () => "compounded rate required");
 
             return (1.0 + y.rate() / (int)y.frequency()) *
                    modifiedDuration(leg, y, includeSettlementDateFlows, settlementDate, npvDate);
@@ -340,7 +340,7 @@ namespace QLNet.Cashflows
                     }
                 }
 
-                Utils.QL_REQUIRE(signChanges > 0, () =>
+                QLNet.Utils.QL_REQUIRE(signChanges > 0, () =>
                     "the given cash flows cannot result in the given market " +
                     "price due to their sign", QLNetExceptionEnum.InvalidPriceSignException);
             }
@@ -413,7 +413,7 @@ namespace QLNet.Cashflows
             public void visit(object o)
             {
                 var types = new[] { o.GetType() };
-                var methodInfo = Utils.GetMethodInfo(this, "visit", types);
+                var methodInfo = QLNet.Utils.GetMethodInfo(this, "visit", types);
 
                 if (methodInfo != null)
                 {
@@ -443,7 +443,7 @@ namespace QLNet.Cashflows
 
         public static Date startDate(Leg leg)
         {
-            Utils.QL_REQUIRE(!leg.empty(), () => "empty leg");
+            QLNet.Utils.QL_REQUIRE(!leg.empty(), () => "empty leg");
             var d = Date.maxDate();
             for (var i = 0; i < leg.Count; ++i)
             {
@@ -463,7 +463,7 @@ namespace QLNet.Cashflows
 
         public static Date maturityDate(Leg leg)
         {
-            Utils.QL_REQUIRE(!leg.empty(), () => "empty leg");
+            QLNet.Utils.QL_REQUIRE(!leg.empty(), () => "empty leg");
             var d = Date.minDate();
             for (var i = 0; i < leg.Count; ++i)
             {
@@ -1011,7 +1011,7 @@ namespace QLNet.Cashflows
             }
 
             var bps = calc.bps();
-            Utils.QL_REQUIRE(bps.IsNotEqual(0.0), () => "null bps: impossible atm rate");
+            QLNet.Utils.QL_REQUIRE(bps.IsNotEqual(0.0), () => "null bps: impossible atm rate");
 
             return targetNpv.Value / bps;
         }
@@ -1200,7 +1200,7 @@ namespace QLNet.Cashflows
                 case Duration.Type.Macaulay:
                     return macaulayDuration(leg, rate, includeSettlementDateFlows, settlementDate, npvDate);
                 default:
-                    Utils.QL_FAIL("unknown duration ExerciseType");
+                    QLNet.Utils.QL_FAIL("unknown duration ExerciseType");
                     break;
             }
 
@@ -1281,7 +1281,7 @@ namespace QLNet.Cashflows
 
                         break;
                     default:
-                        Utils.QL_FAIL("unknown compounding convention (" + yield.compounding() + ")");
+                        QLNet.Utils.QL_FAIL("unknown compounding convention (" + yield.compounding() + ")");
                         break;
                 }
 

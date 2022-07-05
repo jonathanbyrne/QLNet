@@ -1051,7 +1051,7 @@ namespace QLNet.Tests
             // calculate SABR vols and compare with input vols
             for (var i = 0; i < strikes.Count; i++)
             {
-                var calculatedVol = Utils.sabrVolatility(strikes[i], forward, expiry,
+                var calculatedVol = Termstructures.Volatility.Utils.sabrVolatility(strikes[i], forward, expiry,
                                                             initialAlpha, initialBeta,
                                                             initialNu, initialRho);
                 if (System.Math.Abs(volatilities[i] - calculatedVol) > tolerance)
@@ -1227,7 +1227,7 @@ namespace QLNet.Tests
             // calculate SABR vols and compare with input vols
             for (var i = 0; i < strikes.Count; i++)
             {
-                var calculatedVol = Utils.shiftedSabrNormalVolatility(strikes[i], forward, expiry,
+                var calculatedVol = Termstructures.Volatility.Utils.shiftedSabrNormalVolatility(strikes[i], forward, expiry,
                                                                          initialAlpha, initialBeta,
                                                                          initialNu, initialRho);
                 if (System.Math.Abs(volatilities[i] - calculatedVol) > tolerance)

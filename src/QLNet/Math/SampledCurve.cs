@@ -53,7 +53,7 @@ namespace QLNet.Math
 
         public double firstDerivativeAtCenter()
         {
-            Utils.QL_REQUIRE(size() >= 3, () => "the size of the curve must be at least 3");
+            QLNet.Utils.QL_REQUIRE(size() >= 3, () => "the size of the curve must be at least 3");
 
             var jmid = size() / 2;
             if (size() % 2 == 1)
@@ -119,7 +119,7 @@ namespace QLNet.Math
 
         public void regridLogGrid(double min, double max)
         {
-            regrid(Utils.BoundedLogGrid(min, max, size() - 1), System.Math.Log);
+            regrid(QLNet.Utils.BoundedLogGrid(min, max, size() - 1), System.Math.Log);
         }
 
         public void sample(Func<double, double> f)
@@ -139,7 +139,7 @@ namespace QLNet.Math
 
         public double secondDerivativeAtCenter()
         {
-            Utils.QL_REQUIRE(size() >= 4, () => "the size of the curve must be at least 4");
+            QLNet.Utils.QL_REQUIRE(size() >= 4, () => "the size of the curve must be at least 4");
             var jmid = size() / 2;
             if (size() % 2 == 1)
             {
@@ -165,7 +165,7 @@ namespace QLNet.Math
         // utilities
         public void setLogGrid(double min, double max)
         {
-            setGrid(Utils.BoundedLogGrid(min, max, size() - 1));
+            setGrid(QLNet.Utils.BoundedLogGrid(min, max, size() - 1));
         }
 
         public void setValue(int i, double v)
@@ -212,7 +212,7 @@ namespace QLNet.Math
 
         public double valueAtCenter()
         {
-            Utils.QL_REQUIRE(!empty(), () => "empty sampled curve");
+            QLNet.Utils.QL_REQUIRE(!empty(), () => "empty sampled curve");
 
             var jmid = size() / 2;
             if (size() % 2 == 1)

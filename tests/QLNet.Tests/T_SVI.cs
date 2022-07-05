@@ -104,31 +104,31 @@ namespace QLNet.Tests
             svi2.update();
 
             testOutputHelper.WriteLine("a=" + svi2.a());
-            if (!Utils.close_enough(a, svi2.a(), 100))
+            if (!Math.Utils.close_enough(a, svi2.a(), 100))
             {
                 QAssert.Fail("error in a coefficient estimation");
             }
 
             testOutputHelper.WriteLine("b=" + svi2.b());
-            if (!Utils.close_enough(b, svi2.b(), 100))
+            if (!Math.Utils.close_enough(b, svi2.b(), 100))
             {
                 QAssert.Fail("error in b coefficient estimation");
             }
 
             testOutputHelper.WriteLine("sigma=" + svi2.sigma());
-            if (!Utils.close_enough(sigma, svi2.sigma(), 100))
+            if (!Math.Utils.close_enough(sigma, svi2.sigma(), 100))
             {
                 QAssert.Fail("error in sigma coefficient estimation");
             }
 
             testOutputHelper.WriteLine("rho=" + svi2.rho());
-            if (!Utils.close_enough(rho, svi2.rho(), 100))
+            if (!Math.Utils.close_enough(rho, svi2.rho(), 100))
             {
                 QAssert.Fail("error in rho coefficient estimation");
             }
 
             testOutputHelper.WriteLine("m=" + svi2.m());
-            if (!Utils.close_enough(m, svi2.m(), 100))
+            if (!Math.Utils.close_enough(m, svi2.m(), 100))
             {
                 QAssert.Fail("error in m coefficient estimation");
             }

@@ -1,7 +1,7 @@
 ﻿using JetBrains.Annotations;
 using QLNet.Patterns;
 
-namespace QLNet.Math.randomnumbers
+namespace QLNet.Math.RandomNumbers
 {
     [PublicAPI]
     public class GenericLowDiscrepancy<URSG, IC> : IRSG where URSG : IRNG, new() where IC : IValue, new()

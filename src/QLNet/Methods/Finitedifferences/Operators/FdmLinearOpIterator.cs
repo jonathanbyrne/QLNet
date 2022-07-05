@@ -100,9 +100,9 @@ namespace QLNet.Methods.Finitedifferences.Operators
 
         public void swap(FdmLinearOpIterator iter)
         {
-            Utils.swap(ref iter.index_, ref index_);
-            Utils.swap(ref iter.dim_, ref dim_);
-            Utils.swap(ref iter.coordinates_, ref coordinates_);
+            QLNet.Utils.swap(ref iter.index_, ref index_);
+            QLNet.Utils.swap(ref iter.dim_, ref dim_);
+            QLNet.Utils.swap(ref iter.coordinates_, ref coordinates_);
         }
     }
 }

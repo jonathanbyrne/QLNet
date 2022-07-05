@@ -11,37 +11,37 @@ namespace QLNet.Cashflows
 
         public override double capletPrice(double d)
         {
-            Utils.QL_FAIL("capletPrice not available");
+            QLNet.Utils.QL_FAIL("capletPrice not available");
             return 0;
         }
 
         public override double capletRate(double d)
         {
-            Utils.QL_FAIL("capletRate not available");
+            QLNet.Utils.QL_FAIL("capletRate not available");
             return 0;
         }
 
         public override double floorletPrice(double d)
         {
-            Utils.QL_FAIL("floorletPrice not available");
+            QLNet.Utils.QL_FAIL("floorletPrice not available");
             return 0;
         }
 
         public override double floorletRate(double d)
         {
-            Utils.QL_FAIL("floorletRate not available");
+            QLNet.Utils.QL_FAIL("floorletRate not available");
             return 0;
         }
 
         public override void initialize(FloatingRateCoupon coupon)
         {
             coupon_ = coupon as OvernightIndexedCoupon;
-            Utils.QL_REQUIRE(coupon_ != null, () => "wrong coupon ExerciseType");
+            QLNet.Utils.QL_REQUIRE(coupon_ != null, () => "wrong coupon ExerciseType");
         }
 
         public override double swapletPrice()
         {
-            Utils.QL_FAIL("swapletPrice not available");
+            QLNet.Utils.QL_FAIL("swapletPrice not available");
             return 0;
         }
 
@@ -64,7 +64,7 @@ namespace QLNet.Cashflows
                 // rate must have been fixed
                 var pastFixing = IndexManager.instance().getHistory(index.name())[fixingDates[i]];
 
-                Utils.QL_REQUIRE(pastFixing != null, () => "Missing " + index.name() + " fixing for " + fixingDates[i]);
+                QLNet.Utils.QL_REQUIRE(pastFixing != null, () => "Missing " + index.name() + " fixing for " + fixingDates[i]);
 
                 compoundFactor *= 1.0 + pastFixing.GetValueOrDefault() * dt[i];
                 ++i;
@@ -95,7 +95,7 @@ namespace QLNet.Cashflows
             if (i < n)
             {
                 var curve = index.forwardingTermStructure();
-                Utils.QL_REQUIRE(!curve.empty(), () => "null term structure set to this instance of" + index.name());
+                QLNet.Utils.QL_REQUIRE(!curve.empty(), () => "null term structure set to this instance of" + index.name());
 
                 var dates = coupon_.valueDates();
                 var startDiscount = curve.link.discount(dates[i]);

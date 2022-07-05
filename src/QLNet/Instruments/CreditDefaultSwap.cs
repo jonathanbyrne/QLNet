@@ -24,7 +24,7 @@ using QLNet.Cashflows;
 using QLNet.Extensions;
 using QLNet.Math;
 using QLNet.Math.Solvers1d;
-using QLNet.Pricingengines.credit;
+using QLNet.PricingEngines.credit;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Credit;
@@ -88,15 +88,15 @@ namespace QLNet.Instruments
 
             public void validate()
             {
-                Utils.QL_REQUIRE(side != (Protection.Side)(-1), () => "side not set");
-                Utils.QL_REQUIRE(notional != null, () => "notional not set");
-                Utils.QL_REQUIRE(notional.IsNotEqual(0.0), () => "null notional set");
-                Utils.QL_REQUIRE(spread != null, () => "spread not set");
-                Utils.QL_REQUIRE(!leg.empty(), () => "coupons not set");
-                Utils.QL_REQUIRE(upfrontPayment != null, () => "upfront payment not set");
-                Utils.QL_REQUIRE(claim != null, () => "claim not set");
-                Utils.QL_REQUIRE(protectionStart != null, () => "protection start date not set");
-                Utils.QL_REQUIRE(maturity != null, () => "maturity date not set");
+                QLNet.Utils.QL_REQUIRE(side != (Protection.Side)(-1), () => "side not set");
+                QLNet.Utils.QL_REQUIRE(notional != null, () => "notional not set");
+                QLNet.Utils.QL_REQUIRE(notional.IsNotEqual(0.0), () => "null notional set");
+                QLNet.Utils.QL_REQUIRE(spread != null, () => "spread not set");
+                QLNet.Utils.QL_REQUIRE(!leg.empty(), () => "coupons not set");
+                QLNet.Utils.QL_REQUIRE(upfrontPayment != null, () => "upfront payment not set");
+                QLNet.Utils.QL_REQUIRE(claim != null, () => "claim not set");
+                QLNet.Utils.QL_REQUIRE(protectionStart != null, () => "protection start date not set");
+                QLNet.Utils.QL_REQUIRE(maturity != null, () => "maturity date not set");
             }
         }
 
@@ -222,9 +222,9 @@ namespace QLNet.Instruments
             claim_ = claim;
             protectionStart_ = protectionStart ?? schedule[0];
 
-            Utils.QL_REQUIRE(protectionStart_ <= schedule[0] ||
-                             schedule.rule() == DateGeneration.Rule.CDS ||
-                             schedule.rule() == DateGeneration.Rule.CDS2015
+            QLNet.Utils.QL_REQUIRE(protectionStart_ <= schedule[0] ||
+                                            schedule.rule() == DateGeneration.Rule.CDS ||
+                                            schedule.rule() == DateGeneration.Rule.CDS2015
                 , () => "protection can not start after accrual");
 
             leg_ = new FixedRateLeg(schedule)
@@ -301,8 +301,8 @@ namespace QLNet.Instruments
             claim_ = claim;
             protectionStart_ = protectionStart ?? schedule[0];
 
-            Utils.QL_REQUIRE(protectionStart_ <= schedule[0] ||
-                             schedule.rule() == DateGeneration.Rule.CDS
+            QLNet.Utils.QL_REQUIRE(protectionStart_ <= schedule[0] ||
+                                            schedule.rule() == DateGeneration.Rule.CDS
                 , () => "protection can not start after accrual");
             leg_ = new FixedRateLeg(schedule)
                 .withLastPeriodDayCounter(lastPeriodDayCounter)
@@ -316,7 +316,7 @@ namespace QLNet.Instruments
             // '2' is used above since the protection start is assumed to be
             //   on trade_date + 1
             upfrontPayment_ = new SimpleCashFlow(notional * upfront, effectiveUpfrontDate);
-            Utils.QL_REQUIRE(effectiveUpfrontDate >= protectionStart_, () => "upfront can not be due before contract start");
+            QLNet.Utils.QL_REQUIRE(effectiveUpfrontDate >= protectionStart_, () => "upfront can not be due before contract start");
 
             if (rebatesAccrual)
             {
@@ -342,7 +342,7 @@ namespace QLNet.Instruments
         public double accrualRebateNPV()
         {
             calculate();
-            Utils.QL_REQUIRE(accrualRebateNPV_ != null, () => "accrual Rebate NPV not available");
+            QLNet.Utils.QL_REQUIRE(accrualRebateNPV_ != null, () => "accrual Rebate NPV not available");
             return accrualRebateNPV_.Value;
         }
 
@@ -402,7 +402,7 @@ namespace QLNet.Instruments
                     engine = new IsdaCdsEngine(probability, conventionalRecovery, discountCurve);
                     break;
                 default:
-                    Utils.QL_FAIL("unknown CDS pricing model: " + model);
+                    QLNet.Utils.QL_FAIL("unknown CDS pricing model: " + model);
                     break;
             }
 
@@ -424,14 +424,14 @@ namespace QLNet.Instruments
         public double couponLegBPS()
         {
             calculate();
-            Utils.QL_REQUIRE(couponLegBPS_ != null, () => "coupon-leg BPS not available");
+            QLNet.Utils.QL_REQUIRE(couponLegBPS_ != null, () => "coupon-leg BPS not available");
             return couponLegBPS_.Value;
         }
 
         public double couponLegNPV()
         {
             calculate();
-            Utils.QL_REQUIRE(couponLegNPV_ != null, () => "coupon-leg NPV not available");
+            QLNet.Utils.QL_REQUIRE(couponLegNPV_ != null, () => "coupon-leg NPV not available");
             return couponLegNPV_.Value;
         }
 
@@ -440,7 +440,7 @@ namespace QLNet.Instruments
         public double defaultLegNPV()
         {
             calculate();
-            Utils.QL_REQUIRE(defaultLegNPV_ != null, () => "default-leg NPV not available");
+            QLNet.Utils.QL_REQUIRE(defaultLegNPV_ != null, () => "default-leg NPV not available");
             return defaultLegNPV_.Value;
         }
 
@@ -456,7 +456,7 @@ namespace QLNet.Instruments
         public double fairSpread()
         {
             calculate();
-            Utils.QL_REQUIRE(fairSpread_ != null, () => "fair spread not available");
+            QLNet.Utils.QL_REQUIRE(fairSpread_ != null, () => "fair spread not available");
             return fairSpread_.Value;
         }
 
@@ -470,7 +470,7 @@ namespace QLNet.Instruments
         public double fairUpfront()
         {
             calculate();
-            Utils.QL_REQUIRE(fairUpfront_ != null, () => "fair upfront not available");
+            QLNet.Utils.QL_REQUIRE(fairUpfront_ != null, () => "fair upfront not available");
             return fairUpfront_.Value;
         }
 
@@ -478,7 +478,7 @@ namespace QLNet.Instruments
         {
             base.fetchResults(r);
             var results = r as Results;
-            Utils.QL_REQUIRE(results != null, () => "wrong result ExerciseType");
+            QLNet.Utils.QL_REQUIRE(results != null, () => "wrong result ExerciseType");
 
             fairSpread_ = results.fairSpread;
             fairUpfront_ = results.fairUpfront;
@@ -538,7 +538,7 @@ namespace QLNet.Instruments
                     engine = new IsdaCdsEngine(probability, recoveryRate, discountCurve);
                     break;
                 default:
-                    Utils.QL_FAIL("unknown CDS pricing model: " + model);
+                    QLNet.Utils.QL_FAIL("unknown CDS pricing model: " + model);
                     break;
             }
 
@@ -593,7 +593,7 @@ namespace QLNet.Instruments
         public override void setupArguments(IPricingEngineArguments args)
         {
             var arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
+            QLNet.Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
 
             arguments.side = side_;
             arguments.notional = notional_;
@@ -617,14 +617,14 @@ namespace QLNet.Instruments
         public double upfrontBPS()
         {
             calculate();
-            Utils.QL_REQUIRE(upfrontBPS_ != null, () => "upfront BPS not available");
+            QLNet.Utils.QL_REQUIRE(upfrontBPS_ != null, () => "upfront BPS not available");
             return upfrontBPS_.Value;
         }
 
         public double upfrontNPV()
         {
             calculate();
-            Utils.QL_REQUIRE(upfrontNPV_ != null, () => "upfront NPV not available");
+            QLNet.Utils.QL_REQUIRE(upfrontNPV_ != null, () => "upfront NPV not available");
             return upfrontNPV_.Value;
         }
 

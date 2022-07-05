@@ -18,14 +18,14 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet
+namespace QLNet.Termstructures.Volatility
 {
     public partial class Utils
     {
         public static double sabrNormalVolatility(double strike, double forward, double expiryTime, double alpha, double beta,
             double nu, double rho)
         {
-            QL_REQUIRE(expiryTime >= 0.0, () => "expiry time must be non-negative: " + expiryTime + " not allowed");
+            QLNet.Utils.QL_REQUIRE(expiryTime >= 0.0, () => "expiry time must be non-negative: " + expiryTime + " not allowed");
             validateSabrParameters(alpha, beta, nu, rho);
             return unsafeSabrNormalVolatility(strike, forward, expiryTime, alpha, beta, nu, rho);
         }
@@ -33,9 +33,9 @@ namespace QLNet
         public static double sabrVolatility(double strike, double forward, double expiryTime, double alpha, double beta,
             double nu, double rho, SabrApproximationModel approximationModel = SabrApproximationModel.Hagan2002)
         {
-            QL_REQUIRE(strike > 0.0, () => "strike must be positive: " + strike + " not allowed");
-            QL_REQUIRE(forward > 0.0, () => "at the money forward rate must be: " + forward + " not allowed");
-            QL_REQUIRE(expiryTime >= 0.0, () => "expiry time must be non-negative: " + expiryTime + " not allowed");
+            QLNet.Utils.QL_REQUIRE(strike > 0.0, () => "strike must be positive: " + strike + " not allowed");
+            QLNet.Utils.QL_REQUIRE(forward > 0.0, () => "at the money forward rate must be: " + forward + " not allowed");
+            QLNet.Utils.QL_REQUIRE(expiryTime >= 0.0, () => "expiry time must be non-negative: " + expiryTime + " not allowed");
             validateSabrParameters(alpha, beta, nu, rho);
             return unsafeSabrVolatility(strike, forward, expiryTime, alpha, beta, nu, rho, approximationModel);
         }
@@ -43,11 +43,11 @@ namespace QLNet
         public static double shiftedSabrNormalVolatility(double strike, double forward, double expiryTime, double alpha, double beta,
             double nu, double rho, double shift = 0.0)
         {
-            QL_REQUIRE(strike + shift > 0.0, () => "strike+shift must be positive: "
-                                                   + strike + "+" + shift + " not allowed");
-            QL_REQUIRE(forward + shift > 0.0, () => "at the money forward rate + shift must be "
-                                                    + "positive: " + forward + " " + shift + " not allowed");
-            QL_REQUIRE(expiryTime >= 0.0, () => "expiry time must be non-negative: " + expiryTime + " not allowed");
+            QLNet.Utils.QL_REQUIRE(strike + shift > 0.0, () => "strike+shift must be positive: "
+                                                               + strike + "+" + shift + " not allowed");
+            QLNet.Utils.QL_REQUIRE(forward + shift > 0.0, () => "at the money forward rate + shift must be "
+                                                                + "positive: " + forward + " " + shift + " not allowed");
+            QLNet.Utils.QL_REQUIRE(expiryTime >= 0.0, () => "expiry time must be non-negative: " + expiryTime + " not allowed");
             validateSabrParameters(alpha, beta, nu, rho);
             return unsafeSabrNormalVolatility(strike + shift, forward + shift, expiryTime, alpha, beta, nu, rho);
         }
@@ -62,12 +62,12 @@ namespace QLNet
             double shift,
             SabrApproximationModel approximationModel = SabrApproximationModel.Hagan2002)
         {
-            QL_REQUIRE(strike + shift > 0.0, () => "strike+shift must be positive: "
-                                                   + strike + "+" + shift + " not allowed");
-            QL_REQUIRE(forward + shift > 0.0, () => "at the money forward rate + shift must be "
-                                                    + "positive: " + forward + " " + shift + " not allowed");
-            QL_REQUIRE(expiryTime >= 0.0, () => "expiry time must be non-negative: "
-                                                + expiryTime + " not allowed");
+            QLNet.Utils.QL_REQUIRE(strike + shift > 0.0, () => "strike+shift must be positive: "
+                                                               + strike + "+" + shift + " not allowed");
+            QLNet.Utils.QL_REQUIRE(forward + shift > 0.0, () => "at the money forward rate + shift must be "
+                                                                + "positive: " + forward + " " + shift + " not allowed");
+            QLNet.Utils.QL_REQUIRE(expiryTime >= 0.0, () => "expiry time must be non-negative: "
+                                                            + expiryTime + " not allowed");
             validateSabrParameters(alpha, beta, nu, rho);
             return unsafeShiftedSabrVolatility(strike, forward, expiryTime,
                 alpha, beta, nu, rho, shift, approximationModel);
@@ -103,7 +103,7 @@ namespace QLNet
                 var sqrtA = System.Math.Sqrt(A);
                 double logM;
 
-                if (!close(forward, strike))
+                if (!Math.Utils.close(forward, strike))
                 {
                     logM = System.Math.Log(forward / strike);
                 }
@@ -152,7 +152,7 @@ namespace QLNet
 
                 double logM;
 
-                if (!close(forward, strike))
+                if (!Math.Utils.close(forward, strike))
                 {
                     logM = System.Math.Log(forward / strike);
                 }
@@ -171,7 +171,7 @@ namespace QLNet
                 return alpha * logM / D * d;
             }
 
-            QL_FAIL("Unknown approximation model.");
+            QLNet.Utils.QL_FAIL("Unknown approximation model.");
             return 0.0;
         }
 
@@ -189,10 +189,10 @@ namespace QLNet
 
         public static void validateSabrParameters(double alpha, double beta, double nu, double rho)
         {
-            QL_REQUIRE(alpha > 0.0, () => "alpha must be positive: " + alpha + " not allowed");
-            QL_REQUIRE(beta >= 0.0 && beta <= 1.0, () => "beta must be in (0.0, 1.0): " + beta + " not allowed");
-            QL_REQUIRE(nu >= 0.0, () => "nu must be non negative: " + nu + " not allowed");
-            QL_REQUIRE(rho * rho < 1.0, () => "rho square must be less than one: " + rho + " not allowed");
+            QLNet.Utils.QL_REQUIRE(alpha > 0.0, () => "alpha must be positive: " + alpha + " not allowed");
+            QLNet.Utils.QL_REQUIRE(beta >= 0.0 && beta <= 1.0, () => "beta must be in (0.0, 1.0): " + beta + " not allowed");
+            QLNet.Utils.QL_REQUIRE(nu >= 0.0, () => "nu must be non negative: " + nu + " not allowed");
+            QLNet.Utils.QL_REQUIRE(rho * rho < 1.0, () => "rho square must be less than one: " + rho + " not allowed");
         }
     }
 }

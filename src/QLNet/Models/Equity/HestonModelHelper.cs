@@ -84,7 +84,7 @@ namespace QLNet.Models.Equity
         {
             calculate();
             var stdDev = volatility * System.Math.Sqrt(maturity());
-            return Utils.blackFormula(type_, strikePrice_ * termStructure_.link.discount(tau_),
+            return PricingEngines.Utils.blackFormula(type_, strikePrice_ * termStructure_.link.discount(tau_),
                 s0_.link.value() * dividendYield_.link.discount(tau_), stdDev);
         }
 

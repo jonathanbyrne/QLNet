@@ -144,12 +144,12 @@ namespace QLNet.Math.Optimization
             }
 
             // requirements; check here to get more detailed error messages.
-            Utils.QL_REQUIRE(n > 0, () => "no variables given");
-            Utils.QL_REQUIRE(m >= n, () => $"less functions ({m}) than available variables ({n})");
-            Utils.QL_REQUIRE(endCriteria.functionEpsilon() >= 0.0, () => "negative f tolerance");
-            Utils.QL_REQUIRE(xtol_ >= 0.0, () => "negative x tolerance");
-            Utils.QL_REQUIRE(gtol_ >= 0.0, () => "negative g tolerance");
-            Utils.QL_REQUIRE(endCriteria.maxIterations() > 0, () => "null number of evaluations");
+            QLNet.Utils.QL_REQUIRE(n > 0, () => "no variables given");
+            QLNet.Utils.QL_REQUIRE(m >= n, () => $"less functions ({m}) than available variables ({n})");
+            QLNet.Utils.QL_REQUIRE(endCriteria.functionEpsilon() >= 0.0, () => "negative f tolerance");
+            QLNet.Utils.QL_REQUIRE(xtol_ >= 0.0, () => "negative x tolerance");
+            QLNet.Utils.QL_REQUIRE(gtol_ >= 0.0, () => "negative g tolerance");
+            QLNet.Utils.QL_REQUIRE(endCriteria.maxIterations() > 0, () => "null number of evaluations");
 
             MINPACK.lmdif(m, n, xx, ref fvec,
                 endCriteria.functionEpsilon(),
@@ -164,19 +164,19 @@ namespace QLNet.Math.Optimization
                 fcn, j);
             info_ = info;
             // check requirements & endCriteria evaluation
-            Utils.QL_REQUIRE(info != 0, () => "MINPACK: improper input parameters");
+            QLNet.Utils.QL_REQUIRE(info != 0, () => "MINPACK: improper input parameters");
             if (info != 6)
             {
                 ecType = EndCriteria.Type.StationaryFunctionValue;
             }
 
             endCriteria.checkMaxIterations(nfev, ref ecType);
-            Utils.QL_REQUIRE(info != 7, () => "MINPACK: xtol is too small. no further " +
-                                              "improvement in the approximate " +
-                                              "solution x is possible.");
-            Utils.QL_REQUIRE(info != 8, () => "MINPACK: gtol is too small. fvec is " +
-                                              "orthogonal to the columns of the " +
-                                              "jacobian to machine precision.");
+            QLNet.Utils.QL_REQUIRE(info != 7, () => "MINPACK: xtol is too small. no further " +
+                                                             "improvement in the approximate " +
+                                                             "solution x is possible.");
+            QLNet.Utils.QL_REQUIRE(info != 8, () => "MINPACK: gtol is too small. fvec is " +
+                                                             "orthogonal to the columns of the " +
+                                                             "jacobian to machine precision.");
             // set problem
             x_ = new Vector(xx.GetRange(0, n));
             P.setCurrentValue(x_);

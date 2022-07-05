@@ -147,8 +147,8 @@ namespace QLNet.Time
         //! n-th given weekday in the given month and year, e.g., the 4th Thursday of March, 1998 was March 26th, 1998.
         public static Date nthWeekday(int nth, DayOfWeek dayOfWeek, int m, int y)
         {
-            Utils.QL_REQUIRE(nth > 0, () => "zeroth day of week in a given (month, year) is undefined");
-            Utils.QL_REQUIRE(nth < 6, () => "no more than 5 weekday in a given (month, year)");
+            QLNet.Utils.QL_REQUIRE(nth > 0, () => "zeroth day of week in a given (month, year) is undefined");
+            QLNet.Utils.QL_REQUIRE(nth < 6, () => "no more than 5 weekday in a given (month, year)");
             var first = new DateTime(y, m, 1).DayOfWeek;
             var skip = nth - (dayOfWeek >= first ? 1 : 0);
             return new Date(1, m, y) + (dayOfWeek - first + skip * 7);

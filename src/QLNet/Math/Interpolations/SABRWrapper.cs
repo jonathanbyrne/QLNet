@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using JetBrains.Annotations;
+using QLNet.Termstructures.Volatility;
 using QLNet.Termstructures.Volatility.Optionlet;
 
 namespace QLNet.Math.Interpolations
@@ -24,12 +25,12 @@ namespace QLNet.Math.Interpolations
 
             if (volatilityType_ == VolatilityType.ShiftedLognormal)
             {
-                Utils.QL_REQUIRE(forward_ + shift_ > 0.0, () => "forward+shift must be positive: "
-                                                                + forward_ + " with shift "
-                                                                + shift_.Value + " not allowed");
+                QLNet.Utils.QL_REQUIRE(forward_ + shift_ > 0.0, () => "forward+shift must be positive: "
+                                                                               + forward_ + " with shift "
+                                                                               + shift_.Value + " not allowed");
             }
 
-            Utils.validateSabrParameters(param[0].Value, param[1].Value, param[2].Value, param[3].Value);
+            Termstructures.Volatility.Utils.validateSabrParameters(param[0].Value, param[1].Value, param[2].Value, param[3].Value);
         }
 
         public double volatility(double x)
@@ -37,11 +38,11 @@ namespace QLNet.Math.Interpolations
             switch (volatilityType_)
             {
                 case VolatilityType.ShiftedLognormal:
-                    return Utils.shiftedSabrVolatility(x, forward_, t_, params_[0].Value, params_[1].Value, params_[2].Value, params_[3].Value, shift_.Value, approximationModel_);
+                    return Termstructures.Volatility.Utils.shiftedSabrVolatility(x, forward_, t_, params_[0].Value, params_[1].Value, params_[2].Value, params_[3].Value, shift_.Value, approximationModel_);
                 case VolatilityType.Normal:
-                    return Utils.shiftedSabrNormalVolatility(x, forward_, t_, params_[0].Value, params_[1].Value, params_[2].Value, params_[3].Value, shift_.Value);
+                    return Termstructures.Volatility.Utils.shiftedSabrNormalVolatility(x, forward_, t_, params_[0].Value, params_[1].Value, params_[2].Value, params_[3].Value, shift_.Value);
                 default:
-                    return Utils.sabrVolatility(x, forward_, t_, params_[0].Value, params_[1].Value, params_[2].Value, params_[3].Value);
+                    return Termstructures.Volatility.Utils.sabrVolatility(x, forward_, t_, params_[0].Value, params_[1].Value, params_[2].Value, params_[3].Value);
             }
         }
     }

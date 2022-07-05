@@ -93,7 +93,7 @@ namespace QLNet.Cashflows
         public override void initialize(FloatingRateCoupon coupon)
         {
             coupon_ = coupon as CmsCoupon;
-            Utils.QL_REQUIRE(coupon_ != null, () => "CMS coupon needed");
+            QLNet.Utils.QL_REQUIRE(coupon_ != null, () => "CMS coupon needed");
             gearing_ = coupon_.gearing();
             spread_ = coupon_.spread();
 
@@ -150,7 +150,7 @@ namespace QLNet.Cashflows
                         gFunction_ = GFunctionFactory.newGFunctionWithShifts(coupon_, meanReversion_);
                         break;
                     default:
-                        Utils.QL_FAIL("unknown/illegal gFunction ExerciseType");
+                        QLNet.Utils.QL_FAIL("unknown/illegal gFunction ExerciseType");
                         break;
                 }
 

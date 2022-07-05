@@ -212,7 +212,7 @@ namespace QLNet.Instruments
                     payer_[1] = -1.0;
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown vanilla-swap ExerciseType");
+                    QLNet.Utils.QL_FAIL("Unknown vanilla-swap ExerciseType");
                     break;
             }
         }

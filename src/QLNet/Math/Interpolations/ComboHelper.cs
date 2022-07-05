@@ -14,7 +14,7 @@ namespace QLNet.Math.Interpolations
             quadraticity_ = quadraticity;
             quadraticHelper_ = quadraticHelper;
             convMonoHelper_ = convMonoHelper;
-            Utils.QL_REQUIRE(quadraticity < 1.0 && quadraticity > 0.0, () => "Quadratic value must lie between 0 and 1");
+            QLNet.Utils.QL_REQUIRE(quadraticity < 1.0 && quadraticity > 0.0, () => "Quadratic value must lie between 0 and 1");
         }
 
         public double fNext() => quadraticity_ * quadraticHelper_.fNext() + (1.0 - quadraticity_) * convMonoHelper_.fNext();

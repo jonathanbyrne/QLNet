@@ -176,15 +176,15 @@ namespace QLNet.Math.ODE
 
                 if (System.Math.Abs(hnext) <= hmin_)
                 {
-                    Utils.QL_FAIL("Step size (" + hnext + ") too small ("
-                                  + hmin_ + " min) in AdaptiveRungeKutta");
+                    QLNet.Utils.QL_FAIL("Step size (" + hnext + ") too small ("
+                                                 + hmin_ + " min) in AdaptiveRungeKutta");
                 }
 
                 h = hnext;
             }
 
-            Utils.QL_FAIL("Too many steps (" + ADAPTIVERK_MAXSTP
-                                             + ") in AdaptiveRungeKutta");
+            QLNet.Utils.QL_FAIL("Too many steps (" + ADAPTIVERK_MAXSTP
+                                                            + ") in AdaptiveRungeKutta");
             return null;
         }
 
@@ -295,8 +295,8 @@ namespace QLNet.Math.ODE
                     xnew = x + h;
                     if (xnew.IsEqual(x))
                     {
-                        Utils.QL_FAIL("Stepsize underflow (" + h + " at x = " + x
-                                      + ") in AdaptiveRungeKutta::rkqs");
+                        QLNet.Utils.QL_FAIL("Stepsize underflow (" + h + " at x = " + x
+                                                     + ") in AdaptiveRungeKutta::rkqs");
                     }
 
                     continue;

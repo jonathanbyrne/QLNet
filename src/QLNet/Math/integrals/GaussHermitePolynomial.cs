@@ -15,7 +15,7 @@ namespace QLNet.Math.integrals
         public GaussHermitePolynomial(double mu)
         {
             mu_ = mu;
-            Utils.QL_REQUIRE(mu > -0.5, () => "mu must be bigger than -0.5");
+            QLNet.Utils.QL_REQUIRE(mu > -0.5, () => "mu must be bigger than -0.5");
         }
 
         public override double alpha(int i) => 0.0;

@@ -21,9 +21,9 @@ using System;
 using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     // this is template version to serve as base for FDStepConditionEngine and FDMultiPeriodEngine
     [PublicAPI]

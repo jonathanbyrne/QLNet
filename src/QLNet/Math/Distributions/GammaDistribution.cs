@@ -29,7 +29,7 @@ namespace QLNet.Math.Distributions
         public GammaDistribution(double a)
         {
             a_ = a;
-            Utils.QL_REQUIRE(a > 0.0, () => "invalid parameter for gamma distribution");
+            QLNet.Utils.QL_REQUIRE(a > 0.0, () => "invalid parameter for gamma distribution");
         }
 
         public double value(double x)
@@ -89,7 +89,7 @@ namespace QLNet.Math.Distributions
                 }
             }
 
-            Utils.QL_FAIL("too few iterations");
+            QLNet.Utils.QL_FAIL("too few iterations");
             return 0;
         }
     }

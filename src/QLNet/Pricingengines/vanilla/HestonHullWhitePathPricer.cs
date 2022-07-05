@@ -1,9 +1,9 @@
 ﻿using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Methods.montecarlo;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     [PublicAPI]
     public class HestonHullWhitePathPricer : PathPricer<IPath>
@@ -22,9 +22,9 @@ namespace QLNet.Pricingengines.vanilla
         public double value(IPath path)
         {
             var p = path as MultiPath;
-            Utils.QL_REQUIRE(p != null, () => "invalid path");
+            QLNet.Utils.QL_REQUIRE(p != null, () => "invalid path");
 
-            Utils.QL_REQUIRE(p.pathSize() > 0, () => "the path cannot be empty");
+            QLNet.Utils.QL_REQUIRE(p.pathSize() > 0, () => "the path cannot be empty");
 
             var states = new Vector(p.assetNumber());
             for (var j = 0; j < states.size(); ++j)

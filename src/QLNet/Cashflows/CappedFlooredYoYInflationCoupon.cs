@@ -168,11 +168,11 @@ namespace QLNet.Cashflows
             {
                 if (underlying_ != null)
                 {
-                    Utils.QL_REQUIRE(underlying_.pricer() != null, () => "pricer not set");
+                    QLNet.Utils.QL_REQUIRE(underlying_.pricer() != null, () => "pricer not set");
                 }
                 else
                 {
-                    Utils.QL_REQUIRE(pricer_ != null, () => "pricer not set");
+                    QLNet.Utils.QL_REQUIRE(pricer_ != null, () => "pricer not set");
                 }
             }
 
@@ -240,7 +240,7 @@ namespace QLNet.Cashflows
 
             if (isCapped_ && isFloored_)
             {
-                Utils.QL_REQUIRE(cap >= floor, () => "cap level (" + cap + ") less than floor level (" + floor + ")");
+                QLNet.Utils.QL_REQUIRE(cap >= floor, () => "cap level (" + cap + ") less than floor level (" + floor + ")");
             }
         }
     }

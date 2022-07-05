@@ -1,7 +1,6 @@
 using System.Collections.Generic;
-using QLNet.Math;
 
-namespace QLNet
+namespace QLNet.Math.Optimization
 {
     public static partial class Utils
     {

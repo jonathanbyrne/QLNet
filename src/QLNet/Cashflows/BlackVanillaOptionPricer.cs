@@ -23,15 +23,15 @@ namespace QLNet.Cashflows
             volatilityStructure_ = volatilityStructure;
             smile_ = volatilityStructure_.smileSection(expiryDate_, swapTenor_);
 
-            Utils.QL_REQUIRE(volatilityStructure.volatilityType() == VolatilityType.ShiftedLognormal &&
-                             Utils.close_enough(volatilityStructure.shift(expiryDate, swapTenor), 0.0), () =>
+            QLNet.Utils.QL_REQUIRE(volatilityStructure.volatilityType() == VolatilityType.ShiftedLognormal &&
+                                            Math.Utils.close_enough(volatilityStructure.shift(expiryDate, swapTenor), 0.0), () =>
                 "BlackVanillaOptionPricer: zero-shift lognormal volatility required");
         }
 
         public override double value(double strike, Option.Type optionType, double deflator)
         {
             var variance = smile_.variance(strike);
-            return deflator * Utils.blackFormula(optionType, strike, forwardValue_, System.Math.Sqrt(variance));
+            return deflator * PricingEngines.Utils.blackFormula(optionType, strike, forwardValue_, System.Math.Sqrt(variance));
         }
     }
 }

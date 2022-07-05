@@ -33,8 +33,8 @@ namespace QLNet.Cashflows
             timingAdjustment_ = timingAdjustment;
             correlation_ = correlation ?? new Handle<Quote>(new SimpleQuote(1.0));
 
-            Utils.QL_REQUIRE(timingAdjustment_ == TimingAdjustment.Black76 ||
-                             timingAdjustment_ == TimingAdjustment.BivariateLognormal, () =>
+            QLNet.Utils.QL_REQUIRE(timingAdjustment_ == TimingAdjustment.Black76 ||
+                                            timingAdjustment_ == TimingAdjustment.BivariateLognormal, () =>
                 "unknown timing adjustment (code " + timingAdjustment_ + ")");
             correlation_.registerWith(update);
         }
@@ -60,16 +60,16 @@ namespace QLNet.Cashflows
             gearing_ = coupon.gearing();
             spread_ = coupon.spread();
             accrualPeriod_ = coupon.accrualPeriod();
-            Utils.QL_REQUIRE(accrualPeriod_.IsNotEqual(0.0), () => "null accrual period");
+            QLNet.Utils.QL_REQUIRE(accrualPeriod_.IsNotEqual(0.0), () => "null accrual period");
 
             index_ = coupon.index() as IborIndex;
             if (index_ == null)
             {
                 // check if the coupon was right
                 var c = coupon as IborCoupon;
-                Utils.QL_REQUIRE(c != null, () => "IborCoupon required");
+                QLNet.Utils.QL_REQUIRE(c != null, () => "IborCoupon required");
                 // coupon was right, index is not
-                Utils.QL_FAIL("IborIndex required");
+                QLNet.Utils.QL_FAIL("IborIndex required");
             }
 
             var rateCurve = index_.forwardingTermStructure();
@@ -110,7 +110,7 @@ namespace QLNet.Cashflows
                 return fixing.Value;
             }
 
-            Utils.QL_REQUIRE(!capletVolatility().empty(), () => "missing optionlet volatility");
+            QLNet.Utils.QL_REQUIRE(!capletVolatility().empty(), () => "missing optionlet volatility");
             var d1 = coupon_.fixingDate();
             var referenceDate = capletVolatility().link.referenceDate();
             if (d1 <= referenceDate)
@@ -132,7 +132,7 @@ namespace QLNet.Cashflows
 
             if (timingAdjustment_ == TimingAdjustment.BivariateLognormal)
             {
-                Utils.QL_REQUIRE(!correlation_.empty(), () => "no correlation given");
+                QLNet.Utils.QL_REQUIRE(!correlation_.empty(), () => "no correlation given");
                 var d4 = coupon_.date();
                 var d5 = d4 >= d3 ? d3 : d2;
                 var tau2 = index_.dayCounter().yearFraction(d5, d4);
@@ -180,15 +180,15 @@ namespace QLNet.Cashflows
             }
 
             // not yet determined, use Black model
-            Utils.QL_REQUIRE(!capletVolatility().empty(), () => "missing optionlet volatility");
+            QLNet.Utils.QL_REQUIRE(!capletVolatility().empty(), () => "missing optionlet volatility");
 
             var stdDev = System.Math.Sqrt(capletVolatility().link.blackVariance(fixingDate, effStrike));
             var shift = capletVolatility().link.displacement();
             var shiftedLn = capletVolatility().link.volatilityType() == VolatilityType.ShiftedLognormal;
             var fixing =
                 shiftedLn
-                    ? Utils.blackFormula(optionType, effStrike, adjustedFixing(), stdDev, 1.0, shift)
-                    : Utils.bachelierBlackFormula(optionType, effStrike, adjustedFixing(), stdDev);
+                    ? PricingEngines.Utils.blackFormula(optionType, effStrike, adjustedFixing(), stdDev, 1.0, shift)
+                    : PricingEngines.Utils.bachelierBlackFormula(optionType, effStrike, adjustedFixing(), stdDev);
             return fixing * accrualPeriod_ * discount_;
         }
     }

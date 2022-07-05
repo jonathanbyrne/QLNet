@@ -9,7 +9,7 @@ namespace QLNet.Math.integrals
     {
         public GaussKronrodAdaptive(double absoluteAccuracy, int maxEvaluations) : base(absoluteAccuracy, maxEvaluations)
         {
-            Utils.QL_REQUIRE(maxEvaluations >= 15, () =>
+            QLNet.Utils.QL_REQUIRE(maxEvaluations >= 15, () =>
                 "required maxEvaluations (" + maxEvaluations + ") not allowed. It must be >= 15");
         }
 
@@ -63,7 +63,7 @@ namespace QLNet.Math.integrals
                 return k15;
             }
 
-            Utils.QL_REQUIRE(numberOfEvaluations() + 30 <= maxEvaluations(), () =>
+            QLNet.Utils.QL_REQUIRE(numberOfEvaluations() + 30 <= maxEvaluations(), () =>
                 "maximum number of function evaluations " + "exceeded", QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
             return integrateRecursively(f, a, center, tolerance / 2) + integrateRecursively(f, center, b, tolerance / 2);
         }

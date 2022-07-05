@@ -20,11 +20,10 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Cashflows;
-using QLNet.Instruments.Bonds;
 using QLNet.Math.Solvers1d;
 using QLNet.Time;
 
-namespace QLNet
+namespace QLNet.Instruments.Bonds
 {
     [PublicAPI]
     public class MBSFixedRateBond : AmortizingFixedRateBond

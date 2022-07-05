@@ -14,7 +14,7 @@ namespace QLNet.Math.statistics
             var result = expectationValue(z => target - z.Key, z => z.Key < target);
             var x = result.Key;
             var N = result.Value;
-            Utils.QL_REQUIRE(N != 0, () => "no data below the target");
+            QLNet.Utils.QL_REQUIRE(N != 0, () => "no data below the target");
             return x;
         }
 
@@ -37,15 +37,15 @@ namespace QLNet.Math.statistics
         */
         public double expectedShortfall(double centile)
         {
-            Utils.QL_REQUIRE(centile < 1.0 && centile >= 0.9, () => "percentile (" + centile + ") out of range [0.9, 1)");
+            QLNet.Utils.QL_REQUIRE(centile < 1.0 && centile >= 0.9, () => "percentile (" + centile + ") out of range [0.9, 1)");
 
-            Utils.QL_REQUIRE(samples() != 0, () => "empty sample set");
+            QLNet.Utils.QL_REQUIRE(samples() != 0, () => "empty sample set");
 
             var target = -valueAtRisk(centile);
             var result = expectationValue(z => z.Key, z => z.Key < target);
             var x = result.Key;
             var N = result.Value;
-            Utils.QL_REQUIRE(N != 0, () => "no data below the target");
+            QLNet.Utils.QL_REQUIRE(N != 0, () => "no data below the target");
             // must be a loss, i.e., capped at 0.0 and negated
             return -System.Math.Min(x, 0.0);
         }
@@ -53,7 +53,7 @@ namespace QLNet.Math.statistics
         //! potential upside (the reciprocal of VAR) at a given percentile
         public double potentialUpside(double centile)
         {
-            Utils.QL_REQUIRE(centile < 1.0 && centile >= 0.9, () => "percentile (" + centile + ") out of range [0.9, 1)");
+            QLNet.Utils.QL_REQUIRE(centile < 1.0 && centile >= 0.9, () => "percentile (" + centile + ") out of range [0.9, 1)");
 
             // potential upside must be a gain, i.e., floored at 0.0
             return System.Math.Max(percentile(centile), 0.0);
@@ -69,7 +69,7 @@ namespace QLNet.Math.statistics
                 z => z.Key < target);
             var x = result.Key;
             var N = result.Value;
-            Utils.QL_REQUIRE(N > 1, () => "samples under target <= 1, unsufficient");
+            QLNet.Utils.QL_REQUIRE(N > 1, () => "samples under target <= 1, unsufficient");
             return N / (N - 1.0) * x;
         }
 
@@ -84,14 +84,14 @@ namespace QLNet.Math.statistics
         // probability of missing the given target
         public double shortfall(double target)
         {
-            Utils.QL_REQUIRE(samples() != 0, () => "empty sample set");
+            QLNet.Utils.QL_REQUIRE(samples() != 0, () => "empty sample set");
             return expectationValue(x => x.Key < target ? 1 : 0, x => true).Key;
         }
 
         //! value-at-risk at a given percentile
         public double valueAtRisk(double centile)
         {
-            Utils.QL_REQUIRE(centile < 1.0 && centile >= 0.9, () => "percentile (" + centile + ") out of range [0.9, 1)");
+            QLNet.Utils.QL_REQUIRE(centile < 1.0 && centile >= 0.9, () => "percentile (" + centile + ") out of range [0.9, 1)");
 
             // must be a loss, i.e., capped at 0.0 and negated
             return -System.Math.Min(percentile(1.0 - centile), 0.0);

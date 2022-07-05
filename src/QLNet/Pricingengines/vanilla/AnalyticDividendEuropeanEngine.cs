@@ -20,9 +20,9 @@
 using System;
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Analytic pricing engine for European options with discrete dividends
     /*! \ingroup vanillaengines
@@ -43,10 +43,10 @@ namespace QLNet.Pricingengines.vanilla
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European option");
 
             var payoff = arguments_.payoff as StrikedTypePayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
             var settlementDate = process_.riskFreeRate().link.referenceDate();
             var riskless = 0.0;
@@ -61,7 +61,7 @@ namespace QLNet.Pricingengines.vanilla
             }
 
             var spot = process_.stateVariable().link.value() - riskless;
-            Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying after subtracting dividends");
+            QLNet.Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying after subtracting dividends");
 
             var dividendDiscount = process_.dividendYield().link.discount(arguments_.exercise.lastDate());
             var riskFreeDiscount = process_.riskFreeRate().link.discount(arguments_.exercise.lastDate());

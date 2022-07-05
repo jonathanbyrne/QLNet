@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using QLNet.Termstructures;
 
-namespace QLNet
+namespace QLNet.Indexes.Ibor
 {
     [PublicAPI]
     public class EURLiborON : DailyTenorEURLibor

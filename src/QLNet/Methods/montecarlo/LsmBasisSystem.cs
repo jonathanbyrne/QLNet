@@ -23,7 +23,7 @@ using System.Linq;
 using QLNet.Extensions;
 using QLNet.Math;
 using QLNet.Math.integrals;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 
 namespace QLNet.Methods.montecarlo
 {
@@ -137,7 +137,7 @@ namespace QLNet.Methods.montecarlo
                         ret.Add(x => new GaussChebyshev2ndPolynomial().weightedValue(i, x));
                         break;
                     default:
-                        Utils.QL_FAIL("unknown regression ExerciseType");
+                        QLNet.Utils.QL_FAIL("unknown regression ExerciseType");
                         break;
                 }
             }

@@ -30,7 +30,7 @@ namespace QLNet.Methods.Finitedifferences.Meshers
         public Uniform1dMesher(double start, double end, int size)
             : base(size)
         {
-            Utils.QL_REQUIRE(end > start, () => "end must be large than start");
+            QLNet.Utils.QL_REQUIRE(end > start, () => "end must be large than start");
 
             var dx = (end - start) / (size - 1);
 

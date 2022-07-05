@@ -30,14 +30,14 @@ namespace QLNet.Cashflows
 
         public override List<CashFlow> value()
         {
-            Utils.QL_REQUIRE(!notionals_.empty(), () => "no notional given");
+            QLNet.Utils.QL_REQUIRE(!notionals_.empty(), () => "no notional given");
 
             var n = schedule_.Count - 1;
             var leg = new List<CashFlow>(n + 1);
 
             if (n > 0)
             {
-                Utils.QL_REQUIRE(!fixedRates_.empty() || !spreads_.empty(), () => "no fixedRates or spreads given");
+                QLNet.Utils.QL_REQUIRE(!fixedRates_.empty() || !spreads_.empty(), () => "no fixedRates or spreads given");
 
                 Date refStart, start, refEnd, end;
 
@@ -72,13 +72,13 @@ namespace QLNet.Cashflows
                     {
                         // fixed coupon
                         leg.Add(new FixedRateCoupon(paymentDate, notionals_.Get(i, 0.0),
-                            Utils.effectiveFixedRate(spreads_, caps_, floors_, i),
+                            QLNet.Utils.effectiveFixedRate(spreads_, caps_, floors_, i),
                             paymentDayCounter_, start, end, refStart, refEnd, exCouponDate));
                     }
                     else
                     {
                         // zero inflation coupon
-                        if (Utils.noOption(caps_, floors_, i))
+                        if (QLNet.Utils.noOption(caps_, floors_, i))
                         {
                             // just swaplet
                             CPICoupon coup;
@@ -104,7 +104,7 @@ namespace QLNet.Cashflows
                         else
                         {
                             // cap/floorlet
-                            Utils.QL_FAIL("caps/floors on CPI coupons not implemented.");
+                            QLNet.Utils.QL_FAIL("caps/floors on CPI coupons not implemented.");
                         }
                     }
                 }

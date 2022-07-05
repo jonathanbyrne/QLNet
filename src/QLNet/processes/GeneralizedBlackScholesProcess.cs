@@ -4,7 +4,7 @@ using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Time;
 
-namespace QLNet.processes
+namespace QLNet.Processes
 {
     [PublicAPI]
     public class GeneralizedBlackScholesProcess : StochasticProcess1D
@@ -107,7 +107,7 @@ namespace QLNet.processes
                                                  t0, t0 + dt, Compounding.Continuous, Frequency.NoFrequency, true).value()));
             }
 
-            Utils.QL_FAIL("not implemented");
+            QLNet.Utils.QL_FAIL("not implemented");
             return 0;
         }
 

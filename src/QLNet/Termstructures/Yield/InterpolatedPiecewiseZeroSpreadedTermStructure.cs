@@ -60,8 +60,8 @@ namespace QLNet.Termstructures.Yield
             dc_ = dc ?? new DayCounter();
             factory_ = factory ?? FastActivator<Interpolator>.Create();
 
-            Utils.QL_REQUIRE(!spreads_.empty(), () => "no spreads given");
-            Utils.QL_REQUIRE(spreads_.Count == dates_.Count, () => "spread and date vector have different sizes");
+            QLNet.Utils.QL_REQUIRE(!spreads_.empty(), () => "no spreads given");
+            QLNet.Utils.QL_REQUIRE(spreads_.Count == dates_.Count, () => "spread and date vector have different sizes");
 
             originalCurve_.registerWith(update);
 

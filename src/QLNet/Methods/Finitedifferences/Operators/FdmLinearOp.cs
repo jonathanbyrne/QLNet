@@ -18,7 +18,7 @@
 */
 
 using QLNet.Math;
-using QLNet.Math.matrixutilities;
+using QLNet.Math.MatrixUtilities;
 
 namespace QLNet.Methods.Finitedifferences.Operators
 {

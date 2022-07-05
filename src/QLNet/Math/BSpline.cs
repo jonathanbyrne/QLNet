@@ -50,21 +50,21 @@ namespace QLNet.Math
             n_ = n;
             knots_ = knots;
 
-            Utils.QL_REQUIRE(p >= 1, () => "lowest degree B-spline has p = 1");
-            Utils.QL_REQUIRE(n >= 1, () => "number of control points n+1 >= 2");
-            Utils.QL_REQUIRE(p <= n, () => "must have p <= n");
+            QLNet.Utils.QL_REQUIRE(p >= 1, () => "lowest degree B-spline has p = 1");
+            QLNet.Utils.QL_REQUIRE(n >= 1, () => "number of control points n+1 >= 2");
+            QLNet.Utils.QL_REQUIRE(p <= n, () => "must have p <= n");
 
-            Utils.QL_REQUIRE(knots.Count == p + n + 2, () => "number of knots must equal p+n+2");
+            QLNet.Utils.QL_REQUIRE(knots.Count == p + n + 2, () => "number of knots must equal p+n+2");
 
             for (var i = 0; i < knots.Count - 1; ++i)
             {
-                Utils.QL_REQUIRE(knots[i] <= knots[i + 1], () => "knots points must be nondecreasing");
+                QLNet.Utils.QL_REQUIRE(knots[i] <= knots[i + 1], () => "knots points must be nondecreasing");
             }
         }
 
         public double value(int i, double x)
         {
-            Utils.QL_REQUIRE(i <= n_, () => "i must not be greater than n");
+            QLNet.Utils.QL_REQUIRE(i <= n_, () => "i must not be greater than n");
             return N(i, p_, x);
         }
 

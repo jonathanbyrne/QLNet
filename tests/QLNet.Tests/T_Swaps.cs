@@ -28,7 +28,7 @@ using QLNet.Time;
 using QLNet.Termstructures.Volatility.Optionlet;
 using QLNet.Math.Interpolations;
 using QLNet.Indexes.Ibor;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.Swap;
 using QLNet.Termstructures.Yield;
 using QLNet.Termstructures;
 using QLNet.Time.Calendars;
@@ -283,7 +283,7 @@ namespace QLNet.Tests
             .withSpreads(spreads)
             .inArrears()
             .withNotionals(nominals);
-            Utils.setCouponPricer(floatingLeg, pricer);
+            Cashflows.Utils.setCouponPricer(floatingLeg, pricer);
 
             var swap = new Swap(floatingLeg, fixedLeg);
             swap.setPricingEngine(new DiscountingSwapEngine(vars.termStructure));

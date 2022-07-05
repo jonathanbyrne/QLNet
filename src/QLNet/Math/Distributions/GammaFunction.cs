@@ -11,7 +11,7 @@
 
         public static double logValue(double x)
         {
-            Utils.QL_REQUIRE(x > 0.0, () => "positive argument required");
+            QLNet.Utils.QL_REQUIRE(x > 0.0, () => "positive argument required");
 
             var temp = x + 5.5;
             temp -= (x + 0.5) * System.Math.Log(temp);

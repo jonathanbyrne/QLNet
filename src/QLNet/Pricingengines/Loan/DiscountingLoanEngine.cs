@@ -22,7 +22,7 @@ using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Termstructures;
 
-namespace QLNet.Pricingengines.Loan
+namespace QLNet.PricingEngines.Loan
 {
     [PublicAPI]
     public class DiscountingLoanEngine : Instruments.Loan.Engine
@@ -39,7 +39,7 @@ namespace QLNet.Pricingengines.Loan
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(!discountCurve_.empty(), () => "discounting term structure handle is empty");
+            QLNet.Utils.QL_REQUIRE(!discountCurve_.empty(), () => "discounting term structure handle is empty");
 
             results_.valuationDate = discountCurve_.link.referenceDate();
             var includeRefDateFlows =

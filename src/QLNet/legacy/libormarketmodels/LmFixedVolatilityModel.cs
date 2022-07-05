@@ -37,14 +37,14 @@ namespace QLNet.legacy.libormarketmodels
             volatilities_ = volatilities;
             startTimes_ = startTimes;
 
-            Utils.QL_REQUIRE(startTimes_.Count > 1, () => "too few dates");
+            QLNet.Utils.QL_REQUIRE(startTimes_.Count > 1, () => "too few dates");
 
-            Utils.QL_REQUIRE(volatilities_.size() == startTimes_.Count, () =>
+            QLNet.Utils.QL_REQUIRE(volatilities_.size() == startTimes_.Count, () =>
                 "volatility array and fixing time array have to have the same size");
 
             for (var i = 1; i < startTimes_.Count; i++)
             {
-                Utils.QL_REQUIRE(startTimes_[i] > startTimes_[i - 1], () =>
+                QLNet.Utils.QL_REQUIRE(startTimes_[i] > startTimes_[i - 1], () =>
                     "invalid time (" + startTimes_[i] + ", vs " + startTimes_[i - 1] + ")");
             }
         }
@@ -55,7 +55,7 @@ namespace QLNet.legacy.libormarketmodels
 
         public override Vector volatility(double t, Vector x = null)
         {
-            Utils.QL_REQUIRE(t >= startTimes_.First() && t <= startTimes_.Last(), () =>
+            QLNet.Utils.QL_REQUIRE(t >= startTimes_.First() && t <= startTimes_.Last(), () =>
                 "invalid time given for volatility model");
 
             var ti = startTimes_.GetRange(0, startTimes_.Count - 1).BinarySearch(t);
@@ -82,7 +82,7 @@ namespace QLNet.legacy.libormarketmodels
 
         public override double volatility(int i, double t, Vector x = null)
         {
-            Utils.QL_REQUIRE(t >= startTimes_.First() && t <= startTimes_.Last(), () =>
+            QLNet.Utils.QL_REQUIRE(t >= startTimes_.First() && t <= startTimes_.Last(), () =>
                 "invalid time given for volatility model");
 
             var ti = startTimes_.GetRange(0, startTimes_.Count - 1).BinarySearch(t);

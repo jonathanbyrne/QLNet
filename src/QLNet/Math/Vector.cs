@@ -223,7 +223,7 @@ namespace QLNet.Math
 
         internal static Vector operVector(Vector v1, Vector v2, Func<double, double, double> func)
         {
-            Utils.QL_REQUIRE(v1.Count == v2.Count, () =>
+            QLNet.Utils.QL_REQUIRE(v1.Count == v2.Count, () =>
                 "operation on vectors with different sizes (" + v1.Count + ", " + v2.Count);
 
             var temp = new Vector(v1.Count);
@@ -248,7 +248,7 @@ namespace QLNet.Math
 
         public static double operator *(Vector v1, Vector v2)
         {
-            Utils.QL_REQUIRE(v1.Count == v2.Count, () =>
+            QLNet.Utils.QL_REQUIRE(v1.Count == v2.Count, () =>
                 "operation on vectors with different sizes (" + v1.Count + ", " + v2.Count);
 
             double result = 0;

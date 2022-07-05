@@ -18,7 +18,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-namespace QLNet.processes
+namespace QLNet.Processes
 {
     public abstract class Defaultable
     {

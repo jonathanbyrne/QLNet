@@ -75,25 +75,25 @@ namespace QLNet.Instruments.Bonds
                 {
                     base.validate();
 
-                    Utils.QL_REQUIRE(conversionRatio != null, () => "null conversion ratio");
-                    Utils.QL_REQUIRE(conversionRatio > 0.0,
+                    QLNet.Utils.QL_REQUIRE(conversionRatio != null, () => "null conversion ratio");
+                    QLNet.Utils.QL_REQUIRE(conversionRatio > 0.0,
                         () => "positive conversion ratio required: " + conversionRatio + " not allowed");
 
-                    Utils.QL_REQUIRE(redemption != null, () => "null redemption");
-                    Utils.QL_REQUIRE(redemption >= 0.0, () => "positive redemption required: " + redemption + " not allowed");
+                    QLNet.Utils.QL_REQUIRE(redemption != null, () => "null redemption");
+                    QLNet.Utils.QL_REQUIRE(redemption >= 0.0, () => "positive redemption required: " + redemption + " not allowed");
 
-                    Utils.QL_REQUIRE(settlementDate != null, () => "null settlement date");
+                    QLNet.Utils.QL_REQUIRE(settlementDate != null, () => "null settlement date");
 
-                    Utils.QL_REQUIRE(settlementDays != null, () => "null settlement days");
+                    QLNet.Utils.QL_REQUIRE(settlementDays != null, () => "null settlement days");
 
-                    Utils.QL_REQUIRE(callabilityDates.Count == callabilityTypes.Count,
+                    QLNet.Utils.QL_REQUIRE(callabilityDates.Count == callabilityTypes.Count,
                         () => "different number of callability dates and types");
-                    Utils.QL_REQUIRE(callabilityDates.Count == callabilityPrices.Count,
+                    QLNet.Utils.QL_REQUIRE(callabilityDates.Count == callabilityPrices.Count,
                         () => "different number of callability dates and prices");
-                    Utils.QL_REQUIRE(callabilityDates.Count == callabilityTriggers.Count,
+                    QLNet.Utils.QL_REQUIRE(callabilityDates.Count == callabilityTriggers.Count,
                         () => "different number of callability dates and triggers");
 
-                    Utils.QL_REQUIRE(couponDates.Count == couponAmounts.Count,
+                    QLNet.Utils.QL_REQUIRE(couponDates.Count == couponAmounts.Count,
                         () => "different number of coupon dates and amounts");
                 }
             }
@@ -148,7 +148,7 @@ namespace QLNet.Instruments.Bonds
                 base.setupArguments(args);
 
                 var moreArgs = args as Arguments;
-                Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
+                QLNet.Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
 
                 moreArgs.conversionRatio = conversionRatio_;
 
@@ -309,7 +309,7 @@ namespace QLNet.Instruments.Bonds
 
             if (!callability.empty())
             {
-                Utils.QL_REQUIRE(callability.Last().date() <= maturityDate_, () =>
+                QLNet.Utils.QL_REQUIRE(callability.Last().date() <= maturityDate_, () =>
                     "last callability date ("
                     + callability.Last().date()
                     + ") later than maturity ("

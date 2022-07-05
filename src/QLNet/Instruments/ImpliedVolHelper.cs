@@ -2,7 +2,7 @@
 using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Math;
-using QLNet.Pricingengines.CapFloor;
+using QLNet.PricingEngines.CapFloor;
 using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.Optionlet;
@@ -42,7 +42,7 @@ namespace QLNet.Instruments
                     break;
 
                 default:
-                    Utils.QL_FAIL("unknown VolatilityType (" + type + ")");
+                    QLNet.Utils.QL_FAIL("unknown VolatilityType (" + type + ")");
                     break;
             }
 
@@ -58,7 +58,7 @@ namespace QLNet.Instruments
                 engine_.calculate();
             }
 
-            Utils.QL_REQUIRE(results_.additionalResults.Keys.Contains("vega"), () => "vega not provided");
+            QLNet.Utils.QL_REQUIRE(results_.additionalResults.Keys.Contains("vega"), () => "vega not provided");
             return (double)results_.additionalResults["vega"];
         }
 

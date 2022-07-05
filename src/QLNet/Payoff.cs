@@ -35,7 +35,7 @@ namespace QLNet
             }
             else
             {
-                Utils.QL_FAIL("not an event visitor");
+                QLNet.Utils.QL_FAIL("not an event visitor");
             }
         }
 

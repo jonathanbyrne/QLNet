@@ -1,7 +1,7 @@
 ﻿using JetBrains.Annotations;
 using QLNet.Termstructures.Volatility.Optionlet;
 
-namespace QLNet.Pricingengines.swaption
+namespace QLNet.PricingEngines.swaption
 {
     [PublicAPI]
     public interface ISwaptionEngineSpec

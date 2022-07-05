@@ -19,7 +19,7 @@
 using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Instruments;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.Swap;
 using QLNet.Quotes;
 using QLNet.Time;
 
@@ -77,7 +77,7 @@ namespace QLNet.Termstructures.Yield
             var shortIndexHasCurve = !shortIndex_.forwardingTermStructure().empty();
             var longIndexHasCurve = !longIndex_.forwardingTermStructure().empty();
 
-            Utils.QL_REQUIRE(!(shortIndexHasCurve && longIndexHasCurve), () => "Have all curves, nothing to solve for.");
+            QLNet.Utils.QL_REQUIRE(!(shortIndexHasCurve && longIndexHasCurve), () => "Have all curves, nothing to solve for.");
 
             /* Link the curve being bootstrapped to the index if the index has
             no projection curve */
@@ -93,7 +93,7 @@ namespace QLNet.Termstructures.Yield
             }
             else
             {
-                Utils.QL_FAIL("Need one leg of the basis swap to have its forward curve.");
+                QLNet.Utils.QL_FAIL("Need one leg of the basis swap to have its forward curve.");
             }
 
             shortIndex_.registerWith(update);
@@ -108,7 +108,7 @@ namespace QLNet.Termstructures.Yield
 
         public override double impliedQuote()
         {
-            Utils.QL_REQUIRE(termStructure_ != null, () => "Term structure needs to be set");
+            QLNet.Utils.QL_REQUIRE(termStructure_ != null, () => "Term structure needs to be set");
             swap_.recalculate();
             return spreadOnShort_ ? swap_.fairShortSpread() : swap_.fairLongSpread();
         }

@@ -1339,7 +1339,7 @@
 //            smilesOnPayment.Add(new InterpolatedSmileSection<Linear>(endDate,
 //                                                                     strikes, stdDevsOnPayment, dummyAtmLevel, rangeCouponDayCount, new Linear()));
 
-//            Utils.QL_REQUIRE(smilesOnExpiry.Count == smilesOnPayment.Count, () =>
+//            QLNet.Utils.QL_REQUIRE(smilesOnExpiry.Count == smilesOnPayment.Count, () =>
 //                             "smilesOnExpiry.size()!=smilesOnPayment.size()");
 //         }
 

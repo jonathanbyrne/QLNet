@@ -42,10 +42,10 @@ namespace QLNet.Math.Interpolations
             XABREndCriteria_ = EndCriteria.Type.None;
             model_ = FastActivator<Model>.Create();
 
-            Utils.QL_REQUIRE(t > 0.0, () => "expiry time must be positive: " + t + " not allowed");
-            Utils.QL_REQUIRE(_params.Count == model_.dimension(), () =>
+            QLNet.Utils.QL_REQUIRE(t > 0.0, () => "expiry time must be positive: " + t + " not allowed");
+            QLNet.Utils.QL_REQUIRE(_params.Count == model_.dimension(), () =>
                 "wrong number of parameters (" + _params.Count + "), should be " + model_.dimension());
-            Utils.QL_REQUIRE(paramIsFixed.Count == model_.dimension(), () =>
+            QLNet.Utils.QL_REQUIRE(paramIsFixed.Count == model_.dimension(), () =>
                 "wrong number of fixed parameters flags (" + paramIsFixed.Count + "), should be " +
                 model_.dimension());
 

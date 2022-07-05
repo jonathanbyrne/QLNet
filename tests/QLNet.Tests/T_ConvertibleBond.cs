@@ -19,6 +19,7 @@ using QLNet.Cashflows;
 using Xunit;
 using QLNet.Instruments.Bonds;
 using QLNet.Indexes;
+using QLNet.Indexes.Ibor;
 using QLNet.Instruments;
 using QLNet.Time;
 using QLNet.Methods.lattices;
@@ -26,9 +27,9 @@ using QLNet.Time.DayCounters;
 using QLNet.Termstructures.Volatility.Optionlet;
 using QLNet.Termstructures;
 using QLNet.Math.Interpolations;
-using QLNet.Pricingengines.Bond;
-using QLNet.Pricingengines.vanilla;
-using QLNet.processes;
+using QLNet.PricingEngines.Bond;
+using QLNet.PricingEngines.vanilla;
+using QLNet.Processes;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Quotes;
 using QLNet.Termstructures.Yield;
@@ -260,7 +261,7 @@ namespace QLNet.Tests
                                                              vars.redemption, vars.issueDate);
 
             floating.setPricingEngine(bondEngine);
-            Utils.setCouponPricer(floating.cashflows(), pricer);
+            Cashflows.Utils.setCouponPricer(floating.cashflows(), pricer);
 
             tolerance = 2.0e-2 * (vars.faceAmount / 100.0);
 

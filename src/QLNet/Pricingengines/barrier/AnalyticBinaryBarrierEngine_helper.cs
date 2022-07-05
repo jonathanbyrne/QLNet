@@ -1,9 +1,9 @@
 ﻿using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.barrier
+namespace QLNet.PricingEngines.barrier
 {
     [PublicAPI]
     public class AnalyticBinaryBarrierEngine_helper
@@ -29,15 +29,15 @@ namespace QLNet.Pricingengines.barrier
         {
             var dividendDiscount = process_.dividendYield().link.discount(exercise_.lastDate());
 
-            Utils.QL_REQUIRE(spot > 0.0, () => "positive spot value required");
-            Utils.QL_REQUIRE(discount > 0.0, () => "positive discount required");
-            Utils.QL_REQUIRE(dividendDiscount > 0.0, () => "positive dividend discount required");
-            Utils.QL_REQUIRE(variance >= 0.0, () => "negative variance not allowed");
+            QLNet.Utils.QL_REQUIRE(spot > 0.0, () => "positive spot value required");
+            QLNet.Utils.QL_REQUIRE(discount > 0.0, () => "positive discount required");
+            QLNet.Utils.QL_REQUIRE(dividendDiscount > 0.0, () => "positive dividend discount required");
+            QLNet.Utils.QL_REQUIRE(variance >= 0.0, () => "negative variance not allowed");
 
             var type = payoff_.optionType();
             var strike = payoff_.strike();
             var barrier = arguments_.barrier;
-            Utils.QL_REQUIRE(barrier > 0.0, () => "positive barrier value required");
+            QLNet.Utils.QL_REQUIRE(barrier > 0.0, () => "positive barrier value required");
             var barrierType = arguments_.barrierType;
 
             var stdDev = System.Math.Sqrt(variance);
@@ -257,7 +257,7 @@ namespace QLNet.Pricingengines.barrier
 
                     break;
                 default:
-                    Utils.QL_FAIL("invalid barrier ExerciseType");
+                    QLNet.Utils.QL_FAIL("invalid barrier ExerciseType");
                     break;
             }
 

@@ -16,7 +16,7 @@ namespace QLNet.Instruments
                 base.validate();
 
                 var europeanExercise = exercise as EuropeanExercise;
-                Utils.QL_REQUIRE(lookbackPeriodStart <= europeanExercise.lastDate(), () =>
+                QLNet.Utils.QL_REQUIRE(lookbackPeriodStart <= europeanExercise.lastDate(), () =>
                     "lookback start date must be earlier than exercise date");
             }
         }
@@ -40,7 +40,7 @@ namespace QLNet.Instruments
             base.setupArguments(args);
 
             var moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
+            QLNet.Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
             moreArgs.lookbackPeriodStart = lookbackPeriodStart_;
         }
     }

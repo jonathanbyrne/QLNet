@@ -75,7 +75,7 @@ namespace QLNet.Math
 
         public double solve(ISolver1d f, double accuracy, double guess, double step)
         {
-            Utils.QL_REQUIRE(accuracy > 0.0, () => "accuracy (" + accuracy + ") must be positive");
+            QLNet.Utils.QL_REQUIRE(accuracy > 0.0, () => "accuracy (" + accuracy + ") must be positive");
 
             // check whether we really want to use epsilon
             accuracy = System.Math.Max(accuracy, Const.QL_EPSILON);
@@ -87,7 +87,7 @@ namespace QLNet.Math
             fxMax_ = f.value(root_);
 
             // monotonically crescent bias, as in optionValue(volatility)
-            if (Utils.close(fxMax_, 0.0))
+            if (Math.Utils.close(fxMax_, 0.0))
             {
                 return root_;
             }
@@ -111,12 +111,12 @@ namespace QLNet.Math
             {
                 if (fxMin_ * fxMax_ <= 0.0)
                 {
-                    if (Utils.close(fxMin_, 0.0))
+                    if (Math.Utils.close(fxMin_, 0.0))
                     {
                         return xMin_;
                     }
 
-                    if (Utils.close(fxMax_, 0.0))
+                    if (Math.Utils.close(fxMax_, 0.0))
                     {
                         return xMax_;
                     }
@@ -152,10 +152,10 @@ namespace QLNet.Math
                 evaluationNumber_++;
             }
 
-            Utils.QL_FAIL("unable to bracket root in " + maxEvaluations_
-                                                       + " function evaluations (last bracket attempt: " + "f[" + xMin_ + "," + xMax_ +
-                                                       "] "
-                                                       + "-> [" + fxMin_ + "," + fxMax_ + "])",
+            QLNet.Utils.QL_FAIL("unable to bracket root in " + maxEvaluations_
+                                                                      + " function evaluations (last bracket attempt: " + "f[" + xMin_ + "," + xMax_ +
+                                                                      "] "
+                                                                      + "-> [" + fxMin_ + "," + fxMax_ + "])",
                 QLNetExceptionEnum.RootNotBracketException);
             return 0;
         }
@@ -171,7 +171,7 @@ namespace QLNet.Math
 
         public double solve(ISolver1d f, double accuracy, double guess, double xMin, double xMax)
         {
-            Utils.QL_REQUIRE(accuracy > 0.0, () => "accuracy (" + accuracy + ") must be positive");
+            QLNet.Utils.QL_REQUIRE(accuracy > 0.0, () => "accuracy (" + accuracy + ") must be positive");
 
             // check whether we really want to use epsilon
             accuracy = System.Math.Max(accuracy, Const.QL_EPSILON);
@@ -179,30 +179,30 @@ namespace QLNet.Math
             xMin_ = xMin;
             xMax_ = xMax;
 
-            Utils.QL_REQUIRE(xMin_ < xMax_, () => "invalid range: xMin_ (" + xMin_ + ") >= xMax_ (" + xMax_ + ")");
-            Utils.QL_REQUIRE(!lowerBoundEnforced_ || xMin_ >= lowerBound_, () =>
+            QLNet.Utils.QL_REQUIRE(xMin_ < xMax_, () => "invalid range: xMin_ (" + xMin_ + ") >= xMax_ (" + xMax_ + ")");
+            QLNet.Utils.QL_REQUIRE(!lowerBoundEnforced_ || xMin_ >= lowerBound_, () =>
                 "xMin_ (" + xMin_ + ") < enforced low bound (" + lowerBound_ + ")");
-            Utils.QL_REQUIRE(!upperBoundEnforced_ || xMax_ <= upperBound_, () =>
+            QLNet.Utils.QL_REQUIRE(!upperBoundEnforced_ || xMax_ <= upperBound_, () =>
                 "xMax_ (" + xMax_ + ") > enforced hi bound (" + upperBound_ + ")");
 
             fxMin_ = f.value(xMin_);
-            if (Utils.close(fxMin_, 0.0))
+            if (Math.Utils.close(fxMin_, 0.0))
             {
                 return xMin_;
             }
 
             fxMax_ = f.value(xMax_);
-            if (Utils.close(fxMax_, 0.0))
+            if (Math.Utils.close(fxMax_, 0.0))
             {
                 return xMax_;
             }
 
             evaluationNumber_ = 2;
 
-            Utils.QL_REQUIRE(fxMin_ * fxMax_ < 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(fxMin_ * fxMax_ < 0.0, () =>
                 "root not bracketed: f[" + xMin_ + "," + xMax_ + "] -> [" + fxMin_ + "," + fxMax_ + "]");
-            Utils.QL_REQUIRE(guess > xMin_, () => "guess (" + guess + ") < xMin_ (" + xMin_ + ")");
-            Utils.QL_REQUIRE(guess < xMax_, () => "guess (" + guess + ") > xMax_ (" + xMax_ + ")");
+            QLNet.Utils.QL_REQUIRE(guess > xMin_, () => "guess (" + guess + ") < xMin_ (" + xMin_ + ")");
+            QLNet.Utils.QL_REQUIRE(guess < xMax_, () => "guess (" + guess + ") > xMax_ (" + xMax_ + ")");
 
             root_ = guess;
 

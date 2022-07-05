@@ -55,9 +55,9 @@ namespace QLNet.Cashflows
             lowerTrigger_ = lowerTrigger;
             upperTrigger_ = upperTrigger;
 
-            Utils.QL_REQUIRE(lowerTrigger_ < upperTrigger, () => "lowerTrigger_>=upperTrigger");
-            Utils.QL_REQUIRE(observationsSchedule_.startDate() == startDate, () => "incompatible start date");
-            Utils.QL_REQUIRE(observationsSchedule_.endDate() == endDate, () => "incompatible end date");
+            QLNet.Utils.QL_REQUIRE(lowerTrigger_ < upperTrigger, () => "lowerTrigger_>=upperTrigger");
+            QLNet.Utils.QL_REQUIRE(observationsSchedule_.startDate() == startDate, () => "incompatible start date");
+            QLNet.Utils.QL_REQUIRE(observationsSchedule_.endDate() == endDate, () => "incompatible end date");
 
             observationDates_ = new List<Date>(observationsSchedule_.dates());
             observationDates_.RemoveAt(observationDates_.Count - 1); //remove end date

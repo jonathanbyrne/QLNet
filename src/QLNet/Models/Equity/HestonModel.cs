@@ -17,7 +17,7 @@
 using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Math.Optimization;
-using QLNet.processes;
+using QLNet.Processes;
 
 namespace QLNet.Models.Equity
 {

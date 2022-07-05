@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Cashflows;
 using QLNet.Indexes;
-using QLNet.Pricingengines.CapFloor;
+using QLNet.PricingEngines.CapFloor;
 using QLNet.Time;
 
 namespace QLNet.Instruments
@@ -77,7 +77,7 @@ namespace QLNet.Instruments
                 // temporary patch...
                 // should be fixed for every CapFloor::Engine
                 var temp = engine_ as BlackCapFloorEngine;
-                Utils.QL_REQUIRE(temp != null, () => "cannot calculate ATM without a BlackCapFloorEngine");
+                QLNet.Utils.QL_REQUIRE(temp != null, () => "cannot calculate ATM without a BlackCapFloorEngine");
                 var discountCurve = temp.termStructure();
                 strikeVector = new InitializedList<double>(1, CashFlows.atmRate(leg, discountCurve, false, discountCurve.link.referenceDate()));
             }

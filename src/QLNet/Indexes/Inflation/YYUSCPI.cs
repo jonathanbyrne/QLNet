@@ -1,5 +1,6 @@
 ﻿using JetBrains.Annotations;
 using QLNet.Currencies;
+using QLNet.Termstructures;
 using QLNet.Time;
 
 namespace QLNet.Indexes.Inflation

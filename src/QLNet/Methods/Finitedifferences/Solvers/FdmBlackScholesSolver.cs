@@ -21,7 +21,7 @@ using JetBrains.Annotations;
 using QLNet.Methods.Finitedifferences.Operators;
 using QLNet.Methods.Finitedifferences.Utilities;
 using QLNet.Patterns;
-using QLNet.processes;
+using QLNet.Processes;
 
 namespace QLNet.Methods.Finitedifferences.Solvers
 {

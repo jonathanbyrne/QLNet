@@ -58,12 +58,12 @@ namespace QLNet.Termstructures.Volatility.equityfx
             dayCounter_ = dayCounter;
             maxDate_ = dates.Last();
 
-            Utils.QL_REQUIRE(dates.Count == blackVolCurve.Count, () => "mismatch between date vector and black vol vector");
+            QLNet.Utils.QL_REQUIRE(dates.Count == blackVolCurve.Count, () => "mismatch between date vector and black vol vector");
 
             // cannot have dates[0]==referenceDate, since the
             // value of the vol at dates[0] would be lost
             // (variance at referenceDate must be zero)
-            Utils.QL_REQUIRE(dates[0] > referenceDate, () => "cannot have dates[0] <= referenceDate");
+            QLNet.Utils.QL_REQUIRE(dates[0] > referenceDate, () => "cannot have dates[0] <= referenceDate");
 
             variances_ = new InitializedList<double>(dates.Count + 1);
             times_ = new InitializedList<double>(dates.Count + 1);
@@ -73,9 +73,9 @@ namespace QLNet.Termstructures.Volatility.equityfx
             {
                 times_[j] = timeFromReference(dates[j - 1]);
 
-                Utils.QL_REQUIRE(times_[j] > times_[j - 1], () => "dates must be sorted unique!");
+                QLNet.Utils.QL_REQUIRE(times_[j] > times_[j - 1], () => "dates must be sorted unique!");
                 variances_[j] = times_[j] * blackVolCurve[j - 1] * blackVolCurve[j - 1];
-                Utils.QL_REQUIRE(variances_[j] >= variances_[j - 1] || !forceMonotoneVariance, () => "variance must be non-decreasing");
+                QLNet.Utils.QL_REQUIRE(variances_[j] >= variances_[j - 1] || !forceMonotoneVariance, () => "variance must be non-decreasing");
             }
 
             // default: linear interpolation

@@ -1,10 +1,10 @@
 ﻿using JetBrains.Annotations;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 using QLNet.Math.statistics;
 using QLNet.Patterns;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     [PublicAPI]
     public class MakeMCHestonHullWhiteEngine<RNG, S>
@@ -33,8 +33,8 @@ namespace QLNet.Pricingengines.vanilla
         // conversion to pricing engine
         public IPricingEngine getAsPricingEngine()
         {
-            Utils.QL_REQUIRE(steps_ != null || stepsPerYear_ != null, () => "number of steps not given");
-            Utils.QL_REQUIRE(steps_ == null || stepsPerYear_ == null, () => "number of steps overspecified");
+            QLNet.Utils.QL_REQUIRE(steps_ != null || stepsPerYear_ != null, () => "number of steps not given");
+            QLNet.Utils.QL_REQUIRE(steps_ == null || stepsPerYear_ == null, () => "number of steps overspecified");
             return new MCHestonHullWhiteEngine<RNG, S>(process_,
                 steps_,
                 stepsPerYear_,
@@ -48,8 +48,8 @@ namespace QLNet.Pricingengines.vanilla
 
         public MakeMCHestonHullWhiteEngine<RNG, S> withAbsoluteTolerance(double tolerance)
         {
-            Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
-            Utils.QL_REQUIRE(FastActivator<RNG>.Create().allowsErrorEstimate != 0, () =>
+            QLNet.Utils.QL_REQUIRE(samples_ == null, () => "number of samples already set");
+            QLNet.Utils.QL_REQUIRE(FastActivator<RNG>.Create().allowsErrorEstimate != 0, () =>
                 "chosen random generator policy does not allow an error estimate");
             tolerance_ = tolerance;
             return this;
@@ -75,7 +75,7 @@ namespace QLNet.Pricingengines.vanilla
 
         public MakeMCHestonHullWhiteEngine<RNG, S> withSamples(int samples)
         {
-            Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
+            QLNet.Utils.QL_REQUIRE(tolerance_ == null, () => "tolerance already set");
             samples_ = samples;
             return this;
         }

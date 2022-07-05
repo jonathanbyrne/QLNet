@@ -19,7 +19,7 @@ namespace QLNet.Termstructures.Yield
         {
             splines_ = new BSpline(3, knots.Count - 5, knots);
 
-            Utils.QL_REQUIRE(knots.Count >= 8, () => "At least 8 knots are required");
+            QLNet.Utils.QL_REQUIRE(knots.Count >= 8, () => "At least 8 knots are required");
             var basisFunctions = knots.Count - 4;
 
             if (constrainAtZero)
@@ -30,7 +30,7 @@ namespace QLNet.Termstructures.Yield
                 // lead to an ill conditioned problem
                 N_ = 1;
 
-                Utils.QL_REQUIRE(System.Math.Abs(splines_.value(N_, 0.0)) > Const.QL_EPSILON, () =>
+                QLNet.Utils.QL_REQUIRE(System.Math.Abs(splines_.value(N_, 0.0)) > Const.QL_EPSILON, () =>
                     "N_th cubic B-spline must be nonzero at t=0");
             }
             else

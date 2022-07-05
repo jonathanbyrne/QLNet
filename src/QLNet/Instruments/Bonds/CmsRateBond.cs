@@ -79,8 +79,8 @@ namespace QLNet.Instruments.Bonds
 
             addRedemptionsToCashflows(new List<double> { redemption });
 
-            Utils.QL_REQUIRE(cashflows().Count != 0, () => "bond with no cashflows!");
-            Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
+            QLNet.Utils.QL_REQUIRE(cashflows().Count != 0, () => "bond with no cashflows!");
+            QLNet.Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
             index.registerWith(update);
         }
     }

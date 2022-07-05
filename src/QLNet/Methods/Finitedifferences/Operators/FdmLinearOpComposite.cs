@@ -20,7 +20,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using QLNet.Math;
-using QLNet.Math.matrixutilities;
+using QLNet.Math.MatrixUtilities;
 using QLNet.Methods.Finitedifferences.Utilities;
 
 namespace QLNet.Methods.Finitedifferences.Operators

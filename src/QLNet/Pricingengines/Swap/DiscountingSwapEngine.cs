@@ -24,7 +24,7 @@ using QLNet.Cashflows;
 using QLNet.Termstructures;
 using QLNet.Time;
 
-namespace QLNet.Pricingengines.Swap
+namespace QLNet.PricingEngines.Swap
 {
     [PublicAPI]
     public class DiscountingSwapEngine : Instruments.Swap.SwapEngine
@@ -46,7 +46,7 @@ namespace QLNet.Pricingengines.Swap
         // Instrument interface
         public override void calculate()
         {
-            Utils.QL_REQUIRE(!discountCurve_.empty(), () => "discounting term structure handle is empty");
+            QLNet.Utils.QL_REQUIRE(!discountCurve_.empty(), () => "discounting term structure handle is empty");
 
             results_.value = results_.cash = 0;
             results_.errorEstimate = null;
@@ -60,7 +60,7 @@ namespace QLNet.Pricingengines.Swap
             }
             else
             {
-                Utils.QL_REQUIRE(settlementDate >= refDate, () =>
+                QLNet.Utils.QL_REQUIRE(settlementDate >= refDate, () =>
                     "settlement date (" + settlementDate + ") before " +
                     "discount curve reference date (" + refDate + ")");
             }
@@ -72,7 +72,7 @@ namespace QLNet.Pricingengines.Swap
             }
             else
             {
-                Utils.QL_REQUIRE(npvDate_ >= refDate, () =>
+                QLNet.Utils.QL_REQUIRE(npvDate_ >= refDate, () =>
                     "npv date (" + npvDate_ + ") before " +
                     "discount curve reference date (" + refDate + ")");
             }
@@ -135,7 +135,7 @@ namespace QLNet.Pricingengines.Swap
                 }
                 catch (Exception e)
                 {
-                    Utils.QL_FAIL(i + 1 + " leg: " + e.Message);
+                    QLNet.Utils.QL_FAIL(i + 1 + " leg: " + e.Message);
                 }
 
                 results_.value += results_.legNPV[i];

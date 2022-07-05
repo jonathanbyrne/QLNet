@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Time;
 
-namespace QLNet
+namespace QLNet.Instruments.Bonds
 {
     [PublicAPI]
     public class MonthlyYieldFinder : ISolver1d

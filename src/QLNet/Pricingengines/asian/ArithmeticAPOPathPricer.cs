@@ -3,7 +3,7 @@ using QLNet.Extensions;
 using QLNet.Instruments;
 using QLNet.Methods.montecarlo;
 
-namespace QLNet.Pricingengines.asian
+namespace QLNet.PricingEngines.asian
 {
     [PublicAPI]
     public class ArithmeticAPOPathPricer : PathPricer<IPath>
@@ -23,7 +23,7 @@ namespace QLNet.Pricingengines.asian
             discount_ = discount;
             runningSum_ = runningSum;
             pastFixings_ = pastFixings;
-            Utils.QL_REQUIRE(strike >= 0.0, () => "strike less than zero not allowed");
+            QLNet.Utils.QL_REQUIRE(strike >= 0.0, () => "strike less than zero not allowed");
         }
 
         public ArithmeticAPOPathPricer(QLNet.Option.Type type,
@@ -44,7 +44,7 @@ namespace QLNet.Pricingengines.asian
         public double value(Path path)
         {
             var n = path.length();
-            Utils.QL_REQUIRE(n > 1, () => "the path cannot be empty");
+            QLNet.Utils.QL_REQUIRE(n > 1, () => "the path cannot be empty");
 
             var sum = runningSum_;
             int fixings;

@@ -31,7 +31,7 @@ namespace QLNet.Math.integrals
         public double value(Vector x, Vector f)
         {
             var n = f.size();
-            Utils.QL_REQUIRE(n == x.size(), () => "inconsistent size");
+            QLNet.Utils.QL_REQUIRE(n == x.size(), () => "inconsistent size");
 
             double acc = 0;
 

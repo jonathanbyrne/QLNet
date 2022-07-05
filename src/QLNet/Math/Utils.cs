@@ -20,7 +20,7 @@
 using QLNet.Extensions;
 using QLNet.Math.Distributions;
 
-namespace QLNet
+namespace QLNet.Math
 {
     public partial class Utils
     {
@@ -83,7 +83,7 @@ namespace QLNet
                 }
             }
 
-            QL_FAIL("a or b too big, or maxIteration too small in betacf");
+            QLNet.Utils.QL_FAIL("a or b too big, or maxIteration too small in betacf");
             return 0;
         }
 
@@ -102,8 +102,8 @@ namespace QLNet
 
         public static double incompleteBetaFunction(double a, double b, double x, double accuracy, int maxIteration)
         {
-            QL_REQUIRE(a > 0.0, () => "a must be greater than zero");
-            QL_REQUIRE(b > 0.0, () => "b must be greater than zero");
+            QLNet.Utils.QL_REQUIRE(a > 0.0, () => "a must be greater than zero");
+            QLNet.Utils.QL_REQUIRE(b > 0.0, () => "b must be greater than zero");
 
             if (x.IsEqual(0.0))
             {
@@ -115,7 +115,7 @@ namespace QLNet
                 return 1.0;
             }
 
-            QL_REQUIRE(x > 0.0 && x < 1.0, () => "x must be in [0,1]");
+            QLNet.Utils.QL_REQUIRE(x > 0.0 && x < 1.0, () => "x must be in [0,1]");
 
             var result = System.Math.Exp(GammaFunction.logValue(a + b) -
                                          GammaFunction.logValue(a) - GammaFunction.logValue(b) +

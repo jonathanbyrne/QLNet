@@ -19,7 +19,7 @@
 */
 
 using JetBrains.Annotations;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 using QLNet.Math.statistics;
 
 namespace QLNet.Methods.montecarlo

@@ -22,7 +22,7 @@ using QLNet.Instruments.Bonds;
 using QLNet.Termstructures;
 using QLNet.Time;
 
-namespace QLNet.Pricingengines.Bond
+namespace QLNet.PricingEngines.Bond
 {
     /// <summary>
     ///     Monte Carlo pricing engine for cat bonds
@@ -45,7 +45,7 @@ namespace QLNet.Pricingengines.Bond
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(!discountCurve_.empty(), () =>
+            QLNet.Utils.QL_REQUIRE(!discountCurve_.empty(), () =>
                 "discounting term structure handle is empty");
 
             results_.valuationDate = discountCurve_.link.referenceDate();

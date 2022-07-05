@@ -113,8 +113,8 @@ namespace QLNet.Methods.montecarlo
         // Brownian-bridge constructor
         public void transform(List<double> begin, List<double> output)
         {
-            Utils.QL_REQUIRE(begin.Count != 0, () => "invalid sequence");
-            Utils.QL_REQUIRE(begin.Count == size_, () => "incompatible sequence size");
+            QLNet.Utils.QL_REQUIRE(begin.Count != 0, () => "invalid sequence");
+            QLNet.Utils.QL_REQUIRE(begin.Count == size_, () => "incompatible sequence size");
             // We use output to store the path...
             output[size_ - 1] = stdDev_[0] * begin[0];
             for (var i = 1; i < size_; ++i)

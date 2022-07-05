@@ -71,7 +71,7 @@ namespace QLNet.Methods.Finitedifferences
 
         private void rollbackImpl(ref object o, double from, double to, int steps, IStepCondition<Vector> condition)
         {
-            Utils.QL_REQUIRE(from >= to, () => "trying to roll back from " + from + " to " + to);
+            QLNet.Utils.QL_REQUIRE(from >= to, () => "trying to roll back from " + from + " to " + to);
 
             double dt = (from - to) / steps, t = from;
             evolver_.setStep(dt);

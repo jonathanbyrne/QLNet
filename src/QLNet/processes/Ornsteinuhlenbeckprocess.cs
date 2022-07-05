@@ -19,7 +19,7 @@
 
 using JetBrains.Annotations;
 
-namespace QLNet.processes
+namespace QLNet.Processes
 {
     //! Ornstein-Uhlenbeck process class
     /*! This class describes the Ornstein-Uhlenbeck process governed by
@@ -43,9 +43,9 @@ namespace QLNet.processes
             speed_ = speed;
             level_ = level;
             volatility_ = vol;
-            Utils.QL_REQUIRE(speed_ >= 0.0, () => "negative speed given");
+            QLNet.Utils.QL_REQUIRE(speed_ >= 0.0, () => "negative speed given");
 
-            Utils.QL_REQUIRE(volatility_ >= 0.0, () => "negative volatility given");
+            QLNet.Utils.QL_REQUIRE(volatility_ >= 0.0, () => "negative volatility given");
         }
 
         public override double diffusion(double UnnamedParameter1, double UnnamedParameter2) => volatility_;

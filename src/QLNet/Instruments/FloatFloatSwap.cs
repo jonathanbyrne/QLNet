@@ -95,50 +95,50 @@ namespace QLNet.Instruments
             {
                 base.validate();
 
-                Utils.QL_REQUIRE(nominal1.Count == leg1ResetDates.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal1.Count == leg1ResetDates.Count, () =>
                     "nominal1 size is different from resetDates1 size");
-                Utils.QL_REQUIRE(nominal1.Count == leg1FixingDates.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal1.Count == leg1FixingDates.Count, () =>
                     "nominal1 size is different from fixingDates1 size");
-                Utils.QL_REQUIRE(nominal1.Count == leg1PayDates.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal1.Count == leg1PayDates.Count, () =>
                     "nominal1 size is different from payDates1 size");
-                Utils.QL_REQUIRE(nominal1.Count == leg1Spreads.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal1.Count == leg1Spreads.Count, () =>
                     "nominal1 size is different from spreads1 size");
-                Utils.QL_REQUIRE(nominal1.Count == leg1Gearings.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal1.Count == leg1Gearings.Count, () =>
                     "nominal1 size is different from gearings1 size");
-                Utils.QL_REQUIRE(nominal1.Count == leg1CappedRates.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal1.Count == leg1CappedRates.Count, () =>
                     "nominal1 size is different from cappedRates1 size");
-                Utils.QL_REQUIRE(nominal1.Count == leg1FlooredRates.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal1.Count == leg1FlooredRates.Count, () =>
                     "nominal1 size is different from flooredRates1 size");
-                Utils.QL_REQUIRE(nominal1.Count == leg1Coupons.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal1.Count == leg1Coupons.Count, () =>
                     "nominal1 size is different from coupons1 size");
-                Utils.QL_REQUIRE(nominal1.Count == leg1AccrualTimes.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal1.Count == leg1AccrualTimes.Count, () =>
                     "nominal1 size is different from accrualTimes1 size");
-                Utils.QL_REQUIRE(nominal1.Count == leg1IsRedemptionFlow.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal1.Count == leg1IsRedemptionFlow.Count, () =>
                     "nominal1 size is different from redemption1 size");
 
-                Utils.QL_REQUIRE(nominal2.Count == leg2ResetDates.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal2.Count == leg2ResetDates.Count, () =>
                     "nominal2 size is different from resetDates2 size");
-                Utils.QL_REQUIRE(nominal2.Count == leg2FixingDates.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal2.Count == leg2FixingDates.Count, () =>
                     "nominal2 size is different from fixingDates2 size");
-                Utils.QL_REQUIRE(nominal2.Count == leg2PayDates.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal2.Count == leg2PayDates.Count, () =>
                     "nominal2 size is different from payDates2 size");
-                Utils.QL_REQUIRE(nominal2.Count == leg2Spreads.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal2.Count == leg2Spreads.Count, () =>
                     "nominal2 size is different from spreads2 size");
-                Utils.QL_REQUIRE(nominal2.Count == leg2Gearings.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal2.Count == leg2Gearings.Count, () =>
                     "nominal2 size is different from gearings2 size");
-                Utils.QL_REQUIRE(nominal2.Count == leg2CappedRates.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal2.Count == leg2CappedRates.Count, () =>
                     "nominal2 size is different from cappedRates2 size");
-                Utils.QL_REQUIRE(nominal2.Count == leg2FlooredRates.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal2.Count == leg2FlooredRates.Count, () =>
                     "nominal2 size is different from flooredRates2 size");
-                Utils.QL_REQUIRE(nominal2.Count == leg2Coupons.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal2.Count == leg2Coupons.Count, () =>
                     "nominal2 size is different from coupons2 size");
-                Utils.QL_REQUIRE(nominal2.Count == leg2AccrualTimes.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal2.Count == leg2AccrualTimes.Count, () =>
                     "nominal2 size is different from accrualTimes2 size");
-                Utils.QL_REQUIRE(nominal2.Count == leg2IsRedemptionFlow.Count, () =>
+                QLNet.Utils.QL_REQUIRE(nominal2.Count == leg2IsRedemptionFlow.Count, () =>
                     "nominal2 size is different from redemption2 size");
 
-                Utils.QL_REQUIRE(index1 != null, () => "index1 is null");
-                Utils.QL_REQUIRE(index2 != null, () => "index2 is null");
+                QLNet.Utils.QL_REQUIRE(index1 != null, () => "index1 is null");
+                QLNet.Utils.QL_REQUIRE(index2 != null, () => "index2 is null");
             }
         }
 
@@ -303,7 +303,7 @@ namespace QLNet.Instruments
 
             var arguments = args as Arguments;
 
-            Utils.QL_REQUIRE(arguments != null, () => "argument ExerciseType does not match");
+            QLNet.Utils.QL_REQUIRE(arguments != null, () => "argument ExerciseType does not match");
 
             arguments.type = type_;
             arguments.nominal1 = nominal1_;
@@ -366,7 +366,7 @@ namespace QLNet.Instruments
                 {
                     var cashflow = leg1Coupons[i];
                     var j = arguments.leg1PayDates.FindIndex(x => x == cashflow.date());
-                    Utils.QL_REQUIRE(j != -1, () =>
+                    QLNet.Utils.QL_REQUIRE(j != -1, () =>
                         "nominal redemption on " + cashflow.date() + "has no corresponding coupon");
                     var jIdx = j; // Size jIdx = j - arguments->leg1PayDates.begin();
                     arguments.leg1IsRedemptionFlow[i] = true;
@@ -411,7 +411,7 @@ namespace QLNet.Instruments
                 {
                     var cashflow = leg2Coupons[i];
                     var j = arguments.leg2PayDates.FindIndex(x => x == cashflow.date());
-                    Utils.QL_REQUIRE(j != -1, () =>
+                    QLNet.Utils.QL_REQUIRE(j != -1, () =>
                         "nominal redemption on " + cashflow.date() + "has no corresponding coupon");
                     var jIdx = j; // j - arguments->leg2PayDates.begin();
                     arguments.leg2IsRedemptionFlow[i] = true;
@@ -436,28 +436,28 @@ namespace QLNet.Instruments
 
         private void init(BusinessDayConvention? paymentConvention1, BusinessDayConvention? paymentConvention2)
         {
-            Utils.QL_REQUIRE(nominal1_.Count == schedule1_.Count - 1, () =>
+            QLNet.Utils.QL_REQUIRE(nominal1_.Count == schedule1_.Count - 1, () =>
                 "nominal1 size (" + nominal1_.Count +
                 ") does not match schedule1 size (" + schedule1_.size() + ")");
-            Utils.QL_REQUIRE(nominal2_.Count == schedule2_.Count - 1, () =>
+            QLNet.Utils.QL_REQUIRE(nominal2_.Count == schedule2_.Count - 1, () =>
                 "nominal2 size (" + nominal2_.Count + ") does not match schedule2 size ("
                 + nominal2_.Count + ")");
-            Utils.QL_REQUIRE(gearing1_.Count == 0 || gearing1_.Count == nominal1_.Count, () =>
+            QLNet.Utils.QL_REQUIRE(gearing1_.Count == 0 || gearing1_.Count == nominal1_.Count, () =>
                 "nominal1 size (" + nominal1_.Count + ") does not match gearing1 size ("
                 + gearing1_.Count + ")");
-            Utils.QL_REQUIRE(gearing2_.Count == 0 || gearing2_.Count == nominal2_.Count, () =>
+            QLNet.Utils.QL_REQUIRE(gearing2_.Count == 0 || gearing2_.Count == nominal2_.Count, () =>
                 "nominal2 size (" + nominal2_.Count + ") does not match gearing2 size ("
                 + gearing2_.Count + ")");
-            Utils.QL_REQUIRE(cappedRate1_.Count == 0 || cappedRate1_.Count == nominal1_.Count, () =>
+            QLNet.Utils.QL_REQUIRE(cappedRate1_.Count == 0 || cappedRate1_.Count == nominal1_.Count, () =>
                 "nominal1 size (" + nominal1_.Count + ") does not match cappedRate1 size ("
                 + cappedRate1_.Count + ")");
-            Utils.QL_REQUIRE(cappedRate2_.Count == 0 || cappedRate2_.Count == nominal2_.Count, () =>
+            QLNet.Utils.QL_REQUIRE(cappedRate2_.Count == 0 || cappedRate2_.Count == nominal2_.Count, () =>
                 "nominal2 size (" + nominal2_.Count + ") does not match cappedRate2 size ("
                 + cappedRate2_.Count + ")");
-            Utils.QL_REQUIRE(flooredRate1_.Count == 0 || flooredRate1_.Count == nominal1_.Count, () =>
+            QLNet.Utils.QL_REQUIRE(flooredRate1_.Count == 0 || flooredRate1_.Count == nominal1_.Count, () =>
                 "nominal1 size (" + nominal1_.Count + ") does not match flooredRate1 size ("
                 + flooredRate1_.Count + ")");
-            Utils.QL_REQUIRE(flooredRate2_.Count == 0 || flooredRate2_.Count == nominal2_.Count, () =>
+            QLNet.Utils.QL_REQUIRE(flooredRate2_.Count == 0 || flooredRate2_.Count == nominal2_.Count, () =>
                 "nominal2 size (" + nominal2_.Count + ") does not match flooredRate2 size ("
                 + flooredRate2_.Count + ")");
 
@@ -524,13 +524,13 @@ namespace QLNet.Instruments
             {
                 if (isNull)
                 {
-                    Utils.QL_REQUIRE(cappedRate1_[i] == null, () =>
+                    QLNet.Utils.QL_REQUIRE(cappedRate1_[i] == null, () =>
                         "cappedRate1 must be null for all or none entry (" + (i + 1)
                                                                            + "th is " + cappedRate1_[i] + ")");
                 }
                 else
                 {
-                    Utils.QL_REQUIRE(cappedRate1_[i] != null, () =>
+                    QLNet.Utils.QL_REQUIRE(cappedRate1_[i] != null, () =>
                         "cappedRate 1 must be null for all or none entry ("
                         + "1st is " + cappedRate1_[0] + ")");
                 }
@@ -541,13 +541,13 @@ namespace QLNet.Instruments
             {
                 if (isNull)
                 {
-                    Utils.QL_REQUIRE(cappedRate2_[i] == null, () =>
+                    QLNet.Utils.QL_REQUIRE(cappedRate2_[i] == null, () =>
                         "cappedRate2 must be null for all or none entry ("
                         + (i + 1) + "th is " + cappedRate2_[i] + ")");
                 }
                 else
                 {
-                    Utils.QL_REQUIRE(cappedRate2_[i] != null, () =>
+                    QLNet.Utils.QL_REQUIRE(cappedRate2_[i] != null, () =>
                         "cappedRate2 must be null for all or none entry ("
                         + "1st is " + cappedRate2_[0] + ")");
                 }
@@ -558,14 +558,14 @@ namespace QLNet.Instruments
             {
                 if (isNull)
                 {
-                    Utils.QL_REQUIRE(flooredRate1_[i] == null, () =>
+                    QLNet.Utils.QL_REQUIRE(flooredRate1_[i] == null, () =>
                         "flooredRate1 must be null for all or none entry ("
                         + (i + 1) + "th is " + flooredRate1_[i]
                         + ")");
                 }
                 else
                 {
-                    Utils.QL_REQUIRE(flooredRate1_[i] != null, () =>
+                    QLNet.Utils.QL_REQUIRE(flooredRate1_[i] != null, () =>
                         "flooredRate 1 must be null for all or none entry ("
                         + "1st is " + flooredRate1_[0] + ")");
                 }
@@ -576,14 +576,14 @@ namespace QLNet.Instruments
             {
                 if (isNull)
                 {
-                    Utils.QL_REQUIRE(flooredRate2_[i] == null, () =>
+                    QLNet.Utils.QL_REQUIRE(flooredRate2_[i] == null, () =>
                         "flooredRate2 must be null for all or none entry ("
                         + (i + 1) + "th is " + flooredRate2_[i]
                         + ")");
                 }
                 else
                 {
-                    Utils.QL_REQUIRE(flooredRate2_[i] != null, () =>
+                    QLNet.Utils.QL_REQUIRE(flooredRate2_[i] != null, () =>
                         "flooredRate2 must be null for all or none entry ("
                         + "1st is " + flooredRate2_[0] + ")");
                 }
@@ -594,7 +594,7 @@ namespace QLNet.Instruments
             // use a dirty trick and enforce the gearing to be non zero.
             for (var i = 0; i < gearing1_.Count; i++)
             {
-                if (Utils.close(gearing1_[i], 0.0))
+                if (Math.Utils.close(gearing1_[i], 0.0))
                 {
                     gearing1_[i] = Const.QL_EPSILON;
                 }
@@ -602,7 +602,7 @@ namespace QLNet.Instruments
 
             for (var i = 0; i < gearing2_.Count; i++)
             {
-                if (Utils.close(gearing2_[i], 0.0))
+                if (Math.Utils.close(gearing2_[i], 0.0))
                 {
                     gearing2_[i] = Const.QL_EPSILON;
                 }
@@ -615,9 +615,9 @@ namespace QLNet.Instruments
             var cmsspread1 = index1_ as SwapSpreadIndex;
             var cmsspread2 = index2_ as SwapSpreadIndex;
 
-            Utils.QL_REQUIRE(ibor1 != null || cms1 != null || cmsspread1 != null, () =>
+            QLNet.Utils.QL_REQUIRE(ibor1 != null || cms1 != null || cmsspread1 != null, () =>
                 "index1 must be ibor or cms or cms spread");
-            Utils.QL_REQUIRE(ibor2 != null || cms2 != null || cmsspread2 != null, () =>
+            QLNet.Utils.QL_REQUIRE(ibor2 != null || cms2 != null || cmsspread2 != null, () =>
                 "index2 must be ibor or cms");
 
             if (ibor1 != null)
@@ -756,7 +756,7 @@ namespace QLNet.Instruments
                 for (var i = 0; i < legs_[0].Count - 1; i++)
                 {
                     var cap = nominal1_[i] - nominal1_[i + 1];
-                    if (!Utils.close(cap, 0.0))
+                    if (!Math.Utils.close(cap, 0.0))
                     {
                         legs_[0].Insert(i + 1, new Redemption(cap, legs_[0][i].date()));
                         nominal1_.Insert(i + 1, nominal1_[i]);
@@ -767,7 +767,7 @@ namespace QLNet.Instruments
                 for (var i = 0; i < legs_[1].Count - 1; i++)
                 {
                     var cap = nominal2_[i] - nominal2_[i + 1];
-                    if (!Utils.close(cap, 0.0))
+                    if (!Math.Utils.close(cap, 0.0))
                     {
                         legs_[1].Insert(i + 1, new Redemption(cap, legs_[1][i].date()));
                         nominal2_.Insert(i + 1, nominal2_[i]);
@@ -805,7 +805,7 @@ namespace QLNet.Instruments
                     payer_[1] = -1.0;
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown float float - swap ExerciseType");
+                    QLNet.Utils.QL_FAIL("Unknown float float - swap ExerciseType");
                     break;
             }
         }

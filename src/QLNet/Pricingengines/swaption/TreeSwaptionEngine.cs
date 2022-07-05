@@ -26,7 +26,7 @@ using QLNet.Models;
 using QLNet.Termstructures;
 using QLNet.Time;
 
-namespace QLNet.Pricingengines.swaption
+namespace QLNet.PricingEngines.swaption
 {
     //! Numerical lattice engine for swaptions
     /*! \ingroup swaptionengines
@@ -83,10 +83,10 @@ namespace QLNet.Pricingengines.swaption
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.settlementMethod != Settlement.Method.ParYieldCurve, () =>
+            QLNet.Utils.QL_REQUIRE(arguments_.settlementMethod != Settlement.Method.ParYieldCurve, () =>
                 "cash-settled (ParYieldCurve) swaptions not priced with tree engine");
 
-            Utils.QL_REQUIRE(model_ != null, () => "no model specified");
+            QLNet.Utils.QL_REQUIRE(model_ != null, () => "no model specified");
 
             Date referenceDate;
             DayCounter dayCounter;

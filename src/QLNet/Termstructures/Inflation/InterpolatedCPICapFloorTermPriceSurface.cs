@@ -79,8 +79,8 @@ namespace QLNet.Termstructures.Inflation
                 fP = new Matrix(nK, nMat);
             var zts = zii_.link.zeroInflationTermStructure();
             var yts = nominalTermStructure();
-            Utils.QL_REQUIRE(!zts.empty(), () => "Zts is empty!!!");
-            Utils.QL_REQUIRE(!yts.empty(), () => "Yts is empty!!!");
+            QLNet.Utils.QL_REQUIRE(!zts.empty(), () => "Zts is empty!!!");
+            QLNet.Utils.QL_REQUIRE(!yts.empty(), () => "Yts is empty!!!");
 
             for (var i = 0; i < nfK; i++)
             {

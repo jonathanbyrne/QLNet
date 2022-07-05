@@ -16,13 +16,13 @@
 
 using System;
 using Xunit;
-using QLNet.Pricingengines;
+using QLNet.PricingEngines;
 using QLNet.Instruments;
-using QLNet.Pricingengines.vanilla;
+using QLNet.PricingEngines.vanilla;
+using QLNet.Processes;
 using QLNet.Quotes;
 using QLNet.Time;
 using QLNet.Termstructures;
-using QLNet.processes;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Termstructures.Yield;
 using QLNet.Time.Calendars;

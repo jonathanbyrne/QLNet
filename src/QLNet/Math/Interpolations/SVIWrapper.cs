@@ -14,9 +14,9 @@ namespace QLNet.Math.Interpolations
             t_ = t;
             forward_ = forward;
             params_ = param;
-            Utils.checkSviParameters(param[0].Value, param[1].Value, param[2].Value, param[3].Value, param[4].Value);
+            Termstructures.Volatility.Utils.checkSviParameters(param[0].Value, param[1].Value, param[2].Value, param[3].Value, param[4].Value);
         }
 
-        public double volatility(double x) => Utils.sviVolatility(x, forward_, t_, params_);
+        public double volatility(double x) => Termstructures.Volatility.Utils.sviVolatility(x, forward_, t_, params_);
     }
 }

@@ -21,7 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
-using QLNet.Math.matrixutilities;
+using QLNet.Math.MatrixUtilities;
 
 namespace QLNet.Math
 {
@@ -54,8 +54,8 @@ namespace QLNet.Math
             residuals_ = new Vector(x.Count, 0);
             standardErrors_ = new Vector(v.Count, 0);
 
-            Utils.QL_REQUIRE(x.Count == y.Count, () => "sample set need to be of the same size");
-            Utils.QL_REQUIRE(x.Count >= v.Count, () => "sample set is too small");
+            QLNet.Utils.QL_REQUIRE(x.Count == y.Count, () => "sample set need to be of the same size");
+            QLNet.Utils.QL_REQUIRE(x.Count >= v.Count, () => "sample set is too small");
 
             int i;
             var n = x.Count;

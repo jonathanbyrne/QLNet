@@ -42,8 +42,8 @@ namespace QLNet
 
             public virtual void validate()
             {
-                Utils.QL_REQUIRE(payoff != null, () => "no payoff given");
-                Utils.QL_REQUIRE(exercise != null, () => "no exercise given");
+                QLNet.Utils.QL_REQUIRE(payoff != null, () => "no payoff given");
+                QLNet.Utils.QL_REQUIRE(exercise != null, () => "no exercise given");
             }
         }
 
@@ -66,7 +66,7 @@ namespace QLNet
         {
             var arguments = args as Arguments;
 
-            Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
+            QLNet.Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
 
             arguments.payoff = payoff_;
             arguments.exercise = exercise_;

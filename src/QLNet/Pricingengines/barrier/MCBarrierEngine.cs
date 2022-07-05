@@ -20,13 +20,13 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 using QLNet.Math.statistics;
 using QLNet.Methods.montecarlo;
 using QLNet.Patterns;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.barrier
+namespace QLNet.PricingEngines.barrier
 {
     //! Pricing engine for barrier options using Monte Carlo simulation
     /*! Uses the Brownian-bridge correction for the barrier found in
@@ -84,17 +84,17 @@ namespace QLNet.Pricingengines.barrier
             brownianBridge_ = brownianBridge;
             seed_ = seed;
 
-            Utils.QL_REQUIRE(timeSteps != null || timeStepsPerYear != null, () => "no time steps provided");
-            Utils.QL_REQUIRE(timeSteps == null || timeStepsPerYear == null, () => "both time steps and time steps per year were provided");
+            QLNet.Utils.QL_REQUIRE(timeSteps != null || timeStepsPerYear != null, () => "no time steps provided");
+            QLNet.Utils.QL_REQUIRE(timeSteps == null || timeStepsPerYear == null, () => "both time steps and time steps per year were provided");
 
             if (timeSteps != null)
             {
-                Utils.QL_REQUIRE(timeSteps > 0, () => "timeSteps must be positive, " + timeSteps + " not allowed");
+                QLNet.Utils.QL_REQUIRE(timeSteps > 0, () => "timeSteps must be positive, " + timeSteps + " not allowed");
             }
 
             if (timeStepsPerYear != null)
             {
-                Utils.QL_REQUIRE(timeStepsPerYear > 0, () => "timeStepsPerYear must be positive, " + timeStepsPerYear + " not allowed");
+                QLNet.Utils.QL_REQUIRE(timeStepsPerYear > 0, () => "timeStepsPerYear must be positive, " + timeStepsPerYear + " not allowed");
             }
 
             process_.registerWith(update);
@@ -103,8 +103,8 @@ namespace QLNet.Pricingengines.barrier
         public void calculate()
         {
             var spot = process_.x0();
-            Utils.QL_REQUIRE(spot >= 0.0, () => "negative or null underlying given");
-            Utils.QL_REQUIRE(!triggered(spot), () => "barrier touched");
+            QLNet.Utils.QL_REQUIRE(spot >= 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(!triggered(spot), () => "barrier touched");
             calculate(requiredTolerance_,
                 requiredSamples_,
                 maxSamples_);
@@ -126,7 +126,7 @@ namespace QLNet.Pricingengines.barrier
         protected override PathPricer<IPath> pathPricer()
         {
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
             var grid = timeGrid();
             List<double> discounts = new InitializedList<double>(grid.size());
@@ -171,7 +171,7 @@ namespace QLNet.Pricingengines.barrier
                 return new TimeGrid(residualTime, System.Math.Max(steps, 1));
             }
 
-            Utils.QL_FAIL("time steps not specified");
+            QLNet.Utils.QL_FAIL("time steps not specified");
             return null;
         }
 
@@ -186,7 +186,7 @@ namespace QLNet.Pricingengines.barrier
                 case Barrier.Type.UpOut:
                     return underlying > arguments_.barrier;
                 default:
-                    Utils.QL_FAIL("unknown ExerciseType");
+                    QLNet.Utils.QL_FAIL("unknown ExerciseType");
                     return false;
             }
         }

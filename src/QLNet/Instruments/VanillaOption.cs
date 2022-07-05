@@ -20,8 +20,8 @@
 
 using System;
 using JetBrains.Annotations;
-using QLNet.Pricingengines.vanilla;
-using QLNet.processes;
+using QLNet.PricingEngines.vanilla;
+using QLNet.Processes;
 using QLNet.Quotes;
 
 namespace QLNet.Instruments
@@ -60,7 +60,7 @@ namespace QLNet.Instruments
             double minVol = 1.0e-7,
             double maxVol = 4.0)
         {
-            Utils.QL_REQUIRE(!isExpired(), () => "option expired");
+            QLNet.Utils.QL_REQUIRE(!isExpired(), () => "option expired");
 
             var volQuote = new SimpleQuote();
 

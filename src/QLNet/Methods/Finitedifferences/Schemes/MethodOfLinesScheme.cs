@@ -72,7 +72,7 @@ namespace QLNet.Methods.Finitedifferences.Schemes
 
         public void step(ref object a, double t, double theta = 1.0)
         {
-            Utils.QL_REQUIRE(t - dt_ > -1e-8, () => "a step towards negative time given");
+            QLNet.Utils.QL_REQUIRE(t - dt_ > -1e-8, () => "a step towards negative time given");
             var v = new AdaptiveRungeKutta(eps_, relInitStepSize_ * dt_.Value).value(apply, a as Vector, t, System.Math.Max(0.0, t - dt_.Value));
             var y = new Vector(v);
             bcSet_.applyAfterSolving(y);

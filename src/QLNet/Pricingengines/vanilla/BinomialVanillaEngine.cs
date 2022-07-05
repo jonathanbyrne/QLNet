@@ -22,12 +22,12 @@ using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Methods.lattices;
 using QLNet.Patterns;
-using QLNet.processes;
+using QLNet.Processes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Termstructures.Yield;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Pricing engine for vanilla options using binomial trees
     /*! \ingroup vanillaengines
@@ -52,7 +52,7 @@ namespace QLNet.Pricingengines.vanilla
             process_ = process;
             timeSteps_ = timeSteps;
 
-            Utils.QL_REQUIRE(timeSteps > 0, () => "timeSteps must be positive, " + timeSteps + " not allowed");
+            QLNet.Utils.QL_REQUIRE(timeSteps > 0, () => "timeSteps must be positive, " + timeSteps + " not allowed");
 
             process_.registerWith(update);
         }
@@ -65,7 +65,7 @@ namespace QLNet.Pricingengines.vanilla
             var volcal = process_.blackVolatility().link.calendar();
 
             var s0 = process_.stateVariable().link.value();
-            Utils.QL_REQUIRE(s0 > 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(s0 > 0.0, () => "negative or null underlying given");
             var v = process_.blackVolatility().link.blackVol(arguments_.exercise.lastDate(), s0);
             var maturityDate = arguments_.exercise.lastDate();
             var r = process_.riskFreeRate().link.zeroRate(maturityDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).rate();
@@ -78,7 +78,7 @@ namespace QLNet.Pricingengines.vanilla
             var flatVol = new Handle<BlackVolTermStructure>(new BlackConstantVol(referenceDate, volcal, v, voldc));
 
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
             var maturity = rfdc.yearFraction(referenceDate, maturityDate);
 
@@ -102,7 +102,7 @@ namespace QLNet.Pricingengines.vanilla
             // option values (p2) at this point
             option.rollback(grid[2]);
             var va2 = new Vector(option.values());
-            Utils.QL_REQUIRE(va2.size() == 3, () => "Expect 3 nodes in grid at second step");
+            QLNet.Utils.QL_REQUIRE(va2.size() == 3, () => "Expect 3 nodes in grid at second step");
             var p2h = va2[2]; // high-price
             var s2 = lattice.underlying(2, 2); // high price
 
@@ -110,7 +110,7 @@ namespace QLNet.Pricingengines.vanilla
             // this point
             option.rollback(grid[1]);
             var va = new Vector(option.values());
-            Utils.QL_REQUIRE(va.size() == 2, () => "Expect 2 nodes in grid at first step");
+            QLNet.Utils.QL_REQUIRE(va.size() == 2, () => "Expect 2 nodes in grid at first step");
             var p1 = va[1];
 
             // Finally, rollback to t=0

@@ -24,7 +24,7 @@ using QLNet.Time;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
 
-namespace QLNet.Pricingengines.CapFloor
+namespace QLNet.PricingEngines.CapFloor
 {
     [PublicAPI]
     public class BachelierCapFloorEngine : CapFloorEngine

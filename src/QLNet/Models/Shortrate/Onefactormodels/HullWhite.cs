@@ -20,7 +20,7 @@
 using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Methods.lattices;
-using QLNet.processes;
+using QLNet.Processes;
 using QLNet.Termstructures;
 
 namespace QLNet.Models.Shortrate.Onefactormodels
@@ -134,11 +134,11 @@ namespace QLNet.Models.Shortrate.Onefactormodels
             double sigma,
             double a)
         {
-            Utils.QL_REQUIRE(futuresPrice >= 0.0, () => "negative futures price (" + futuresPrice + ") not allowed");
-            Utils.QL_REQUIRE(t >= 0.0, () => "negative t (" + t + ") not allowed");
-            Utils.QL_REQUIRE(T >= t, () => "T (" + T + ") must not be less than t (" + t + ")");
-            Utils.QL_REQUIRE(sigma >= 0.0, () => "negative sigma (" + sigma + ") not allowed");
-            Utils.QL_REQUIRE(a >= 0.0, () => "negative a (" + a + ") not allowed");
+            QLNet.Utils.QL_REQUIRE(futuresPrice >= 0.0, () => "negative futures price (" + futuresPrice + ") not allowed");
+            QLNet.Utils.QL_REQUIRE(t >= 0.0, () => "negative t (" + t + ") not allowed");
+            QLNet.Utils.QL_REQUIRE(T >= t, () => "T (" + T + ") must not be less than t (" + t + ")");
+            QLNet.Utils.QL_REQUIRE(sigma >= 0.0, () => "negative sigma (" + sigma + ") not allowed");
+            QLNet.Utils.QL_REQUIRE(a >= 0.0, () => "negative a (" + a + ") not allowed");
 
             var deltaT = T - t;
             var tempDeltaT = (1.0 - System.Math.Exp(-a * deltaT)) / a;
@@ -180,7 +180,7 @@ namespace QLNet.Models.Shortrate.Onefactormodels
             var f = termStructure().link.discount(bondMaturity);
             var k = termStructure().link.discount(maturity) * strike;
 
-            return Utils.blackFormula(type, k, f, v);
+            return PricingEngines.Utils.blackFormula(type, k, f, v);
         }
 
         public override ShortRateDynamics dynamics() => new Dynamics(phi_, a(), sigma());

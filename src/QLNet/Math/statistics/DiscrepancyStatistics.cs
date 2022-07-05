@@ -121,7 +121,7 @@ namespace QLNet.Math.statistics
                 dimension = dimension_; // keep the current one
             }
 
-            Utils.QL_REQUIRE(dimension != 1, () => "dimension==1 not allowed");
+            QLNet.Utils.QL_REQUIRE(dimension != 1, () => "dimension==1 not allowed");
 
             base.reset(dimension);
 

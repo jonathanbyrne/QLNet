@@ -114,7 +114,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
 
                 wpt = blackTS_.link.blackVariance(t + dt, strikept, true);
 
-                Utils.QL_REQUIRE(wpt >= w, () =>
+                QLNet.Utils.QL_REQUIRE(wpt >= w, () =>
                     "decreasing variance at strike " + strike + " between time " + t + " and time " + (t + dt));
                 dwdt = (wpt - w) / dt;
             }
@@ -131,9 +131,9 @@ namespace QLNet.Termstructures.Volatility.equityfx
 
                 wpt = blackTS_.link.blackVariance(t + dt, strikept, true);
                 wmt = blackTS_.link.blackVariance(t - dt, strikemt, true);
-                Utils.QL_REQUIRE(wpt >= w, () =>
+                QLNet.Utils.QL_REQUIRE(wpt >= w, () =>
                     "decreasing variance at strike " + strike + " between time " + t + " and time " + (t + dt));
-                Utils.QL_REQUIRE(w >= wmt, () =>
+                QLNet.Utils.QL_REQUIRE(w >= wmt, () =>
                     "decreasing variance at strike " + strike + " between time " + (t - dt) + " and time " + t);
                 dwdt = (wpt - wmt) / (2.0 * dt);
             }
@@ -148,7 +148,7 @@ namespace QLNet.Termstructures.Volatility.equityfx
             var den3 = 0.5 * d2wdy2;
             var den = den1 + den2 + den3;
             var result = dwdt / den;
-            Utils.QL_REQUIRE(result >= 0.0, () =>
+            QLNet.Utils.QL_REQUIRE(result >= 0.0, () =>
                 "negative local vol^2 at strike " + strike + " and time " + t + "; the black vol surface is not smooth enough");
             return System.Math.Sqrt(result);
         }

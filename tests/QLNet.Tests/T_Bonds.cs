@@ -30,7 +30,8 @@ using QLNet.Indexes;
 using QLNet.Time.Calendars;
 using QLNet.Cashflows;
 using QLNet.Indexes.Ibor;
-using QLNet.Pricingengines.Bond;
+using QLNet.Instruments;
+using QLNet.PricingEngines.Bond;
 using QLNet.Time.DayCounters;
 using QLNet.Termstructures.Volatility.Optionlet;
 using QLNet.Termstructures;
@@ -634,7 +635,7 @@ namespace QLNet.Tests
             IPricingEngine bondEngine = new DiscountingBondEngine(riskFreeRate);
             bond1.setPricingEngine(bondEngine);
 
-            Utils.setCouponPricer(bond1.cashflows(), pricer);
+            Cashflows.Utils.setCouponPricer(bond1.cashflows(), pricer);
 
 #if QL_USE_INDEXED_COUPON
          double cachedPrice1 = 99.874645;
@@ -664,7 +665,7 @@ namespace QLNet.Tests
             IPricingEngine bondEngine2 = new DiscountingBondEngine(discountCurve);
             bond2.setPricingEngine(bondEngine2);
 
-            Utils.setCouponPricer(bond2.cashflows(), pricer);
+            Cashflows.Utils.setCouponPricer(bond2.cashflows(), pricer);
 
 #if QL_USE_INDEXED_COUPON
          double cachedPrice2 = 97.955904;
@@ -698,7 +699,7 @@ namespace QLNet.Tests
 
             bond3.setPricingEngine(bondEngine2);
 
-            Utils.setCouponPricer(bond3.cashflows(), pricer);
+            Cashflows.Utils.setCouponPricer(bond3.cashflows(), pricer);
 
 #if QL_USE_INDEXED_COUPON
          double cachedPrice3 = 98.495458;
@@ -1865,7 +1866,7 @@ namespace QLNet.Tests
             new CouponConversion(new Date(01, 08, 2032), 0.0475)
          };
 
-            var coupons = Utils.CreateCouponSchedule(schedule, steppedList);
+            var coupons = Instruments.Utils.CreateCouponSchedule(schedule, steppedList);
 
             //FixedRateBond bond = new FixedRateBond(settlementDays, 100.0, schedule,
             //                                       coupons, dc, BusinessDayConvention.Unadjusted,
@@ -1948,7 +1949,7 @@ namespace QLNet.Tests
             new CouponConversion(new Date(01, 08, 2026), 0.0603)
          };
 
-            coupons = Utils.CreateCouponSchedule(schedule, steppedList);
+            coupons = Instruments.Utils.CreateCouponSchedule(schedule, steppedList);
 
             var bond2 = new CallableFixedRateBond(settlementDays, 1000.0, schedule, coupons,
                                                                     dc, BusinessDayConvention.Unadjusted);

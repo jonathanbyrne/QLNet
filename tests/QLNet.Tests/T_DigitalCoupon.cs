@@ -20,11 +20,12 @@ using QLNet.Math.Distributions;
 using QLNet.Indexes;
 using QLNet.Instruments;
 using QLNet.Cashflows;
-using QLNet.Pricingengines.vanilla;
+using QLNet.Indexes.Ibor;
+using QLNet.PricingEngines.vanilla;
+using QLNet.Processes;
 using QLNet.Time;
 using QLNet.Termstructures.Volatility.Optionlet;
 using QLNet.Termstructures;
-using QLNet.processes;
 using QLNet.Termstructures.Volatility.equityfx;
 using QLNet.Quotes;
 using QLNet.Time.DayCounters;
@@ -530,7 +531,7 @@ namespace QLNet.Tests
                         var accrualPeriod = underlying.accrualPeriod();
                         var discount = vars.termStructure.link.discount(endDate);
                         var stdDev = System.Math.Sqrt(vol.link.blackVariance(exerciseDate, effStrike));
-                        var ITM = Utils.blackFormulaCashItmProbability(QLNet.Option.Type.Call, effStrike, effFwd, stdDev);
+                        var ITM = PricingEngines.Utils.blackFormulaCashItmProbability(QLNet.Option.Type.Call, effStrike, effFwd, stdDev);
                         var nd2Price = ITM * vars.nominal * accrualPeriod * discount * cashRate;
                         var optionPrice = digitalCappedCoupon.callOptionRate() *
                                           vars.nominal * accrualPeriod * discount;
@@ -584,7 +585,7 @@ namespace QLNet.Tests
 
 
                         // Check digital option price vs N(d2) price
-                        ITM = Utils.blackFormulaCashItmProbability(QLNet.Option.Type.Put, effStrike, effFwd, stdDev);
+                        ITM = PricingEngines.Utils.blackFormulaCashItmProbability(QLNet.Option.Type.Put, effStrike, effFwd, stdDev);
                         nd2Price = ITM * vars.nominal * accrualPeriod * discount * cashRate;
                         optionPrice = digitalFlooredCoupon.putOptionRate() *
                                       vars.nominal * accrualPeriod * discount;

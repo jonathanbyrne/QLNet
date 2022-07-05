@@ -90,7 +90,7 @@ namespace QLNet.Instruments
             notionalAmount_ = notionalAmount;
             index_ = index;
 
-            Utils.QL_REQUIRE(notionalAmount > 0.0, () => "notional Amount must be positive");
+            QLNet.Utils.QL_REQUIRE(notionalAmount > 0.0, () => "notional Amount must be positive");
 
             // do I adjust this ?
             var fixingDate = calendar_.advance(valueDate_, -settlementDays_, TimeUnit.Days);

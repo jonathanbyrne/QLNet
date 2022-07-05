@@ -1,7 +1,6 @@
-using QLNet.Cashflows;
 using QLNet.Patterns;
 
-namespace QLNet
+namespace QLNet.Cashflows
 {
     public abstract class FloatingRateCouponPricer : IObservable, IObserver
     {

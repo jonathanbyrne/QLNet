@@ -21,7 +21,7 @@ using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 
-namespace QLNet.Math.randomnumbers
+namespace QLNet.Math.RandomNumbers
 {
     //! Random seed generator
     /*! Random number generator used for automatic generation of initialization seeds. */

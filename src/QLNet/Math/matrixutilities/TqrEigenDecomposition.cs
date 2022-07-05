@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Extensions;
 
-namespace QLNet.Math.matrixutilities
+namespace QLNet.Math.MatrixUtilities
 {
     //! tridiag. QR eigen decomposition with explicite shift aka Wilkinson
     /*! References:
@@ -69,7 +69,7 @@ namespace QLNet.Math.matrixutilities
 
             var n = diag.size();
 
-            Utils.QL_REQUIRE(n == sub.size() + 1, () => "Wrong dimensions");
+            QLNet.Utils.QL_REQUIRE(n == sub.size() + 1, () => "Wrong dimensions");
 
             var e = new Vector(n, 0.0);
             int i;

@@ -23,7 +23,7 @@ using QLNet.Math;
 using QLNet.Math.Interpolations;
 using QLNet.Math.Optimization;
 using QLNet.Patterns;
-using QLNet.processes;
+using QLNet.Processes;
 using QLNet.Quotes;
 using QLNet.Time;
 
@@ -75,11 +75,11 @@ namespace QLNet.Termstructures.Volatility.swaption
                 interpolators_ = new List<Interpolation2D>();
                 transposedPoints_ = new List<Matrix>();
 
-                Utils.QL_REQUIRE(optionTimes.Count > 1, () => "Cube::Cube(...): optionTimes.size()<2");
-                Utils.QL_REQUIRE(swapLengths.Count > 1, () => "Cube::Cube(...): swapLengths.size()<2");
+                QLNet.Utils.QL_REQUIRE(optionTimes.Count > 1, () => "Cube::Cube(...): optionTimes.size()<2");
+                QLNet.Utils.QL_REQUIRE(swapLengths.Count > 1, () => "Cube::Cube(...): swapLengths.size()<2");
 
-                Utils.QL_REQUIRE(optionTimes.Count == optionDates.Count, () => "Cube::Cube(...): optionTimes/optionDates mismatch");
-                Utils.QL_REQUIRE(swapTenors.Count == swapLengths.Count, () => "Cube::Cube(...): swapTenors/swapLengths mismatch");
+                QLNet.Utils.QL_REQUIRE(optionTimes.Count == optionDates.Count, () => "Cube::Cube(...): optionTimes/optionDates mismatch");
+                QLNet.Utils.QL_REQUIRE(swapTenors.Count == swapLengths.Count, () => "Cube::Cube(...): swapTenors/swapLengths mismatch");
 
                 List<Matrix> points = new InitializedList<Matrix>(nLayers_);
                 for (var i = 0; i < nLayers; i++)
@@ -202,8 +202,8 @@ namespace QLNet.Termstructures.Volatility.swaption
 
             public void expandLayers(int i, bool expandOptionTimes, int j, bool expandSwapLengths)
             {
-                Utils.QL_REQUIRE(i <= optionTimes_.Count, () => "Cube::expandLayers: incompatible size 1");
-                Utils.QL_REQUIRE(j <= swapLengths_.Count, () => "Cube::expandLayers: incompatible size 2");
+                QLNet.Utils.QL_REQUIRE(i <= optionTimes_.Count, () => "Cube::expandLayers: incompatible size 1");
+                QLNet.Utils.QL_REQUIRE(j <= swapLengths_.Count, () => "Cube::expandLayers: incompatible size 2");
 
                 if (expandOptionTimes)
                 {
@@ -259,18 +259,18 @@ namespace QLNet.Termstructures.Volatility.swaption
 
             public void setElement(int IndexOfLayer, int IndexOfRow, int IndexOfColumn, double x)
             {
-                Utils.QL_REQUIRE(IndexOfLayer < nLayers_, () => "Cube::setElement: incompatible IndexOfLayer ");
-                Utils.QL_REQUIRE(IndexOfRow < optionTimes_.Count, () => "Cube::setElement: incompatible IndexOfRow");
-                Utils.QL_REQUIRE(IndexOfColumn < swapLengths_.Count, () => "Cube::setElement: incompatible IndexOfColumn");
+                QLNet.Utils.QL_REQUIRE(IndexOfLayer < nLayers_, () => "Cube::setElement: incompatible IndexOfLayer ");
+                QLNet.Utils.QL_REQUIRE(IndexOfRow < optionTimes_.Count, () => "Cube::setElement: incompatible IndexOfRow");
+                QLNet.Utils.QL_REQUIRE(IndexOfColumn < swapLengths_.Count, () => "Cube::setElement: incompatible IndexOfColumn");
                 var p = points_[IndexOfLayer];
                 p[IndexOfRow, IndexOfColumn] = x;
             }
 
             public void setLayer(int i, Matrix x)
             {
-                Utils.QL_REQUIRE(i < nLayers_, () => "Cube::setLayer: incompatible number of layer ");
-                Utils.QL_REQUIRE(x.rows() == optionTimes_.Count, () => "Cube::setLayer: incompatible size 1");
-                Utils.QL_REQUIRE(x.columns() == swapLengths_.Count, () => "Cube::setLayer: incompatible size 2");
+                QLNet.Utils.QL_REQUIRE(i < nLayers_, () => "Cube::setLayer: incompatible number of layer ");
+                QLNet.Utils.QL_REQUIRE(x.rows() == optionTimes_.Count, () => "Cube::setLayer: incompatible size 1");
+                QLNet.Utils.QL_REQUIRE(x.columns() == swapLengths_.Count, () => "Cube::setLayer: incompatible size 2");
 
                 points_[i] = x;
             }
@@ -307,9 +307,9 @@ namespace QLNet.Termstructures.Volatility.swaption
 
             public void setPoints(List<Matrix> x)
             {
-                Utils.QL_REQUIRE(x.Count == nLayers_, () => "Cube::setPoints: incompatible number of layers ");
-                Utils.QL_REQUIRE(x[0].rows() == optionTimes_.Count, () => "Cube::setPoints: incompatible size 1");
-                Utils.QL_REQUIRE(x[0].columns() == swapLengths_.Count, () => "Cube::setPoints: incompatible size 2");
+                QLNet.Utils.QL_REQUIRE(x.Count == nLayers_, () => "Cube::setPoints: incompatible number of layers ");
+                QLNet.Utils.QL_REQUIRE(x[0].rows() == optionTimes_.Count, () => "Cube::setPoints: incompatible size 1");
+                QLNet.Utils.QL_REQUIRE(x[0].columns() == swapLengths_.Count, () => "Cube::setPoints: incompatible size 2");
 
                 points_ = x;
             }
@@ -475,13 +475,13 @@ namespace QLNet.Termstructures.Volatility.swaption
 
         public void recalibration(List<double> beta, Period swapTenor)
         {
-            Utils.QL_REQUIRE(beta.Count == nOptionTenors_, () =>
+            QLNet.Utils.QL_REQUIRE(beta.Count == nOptionTenors_, () =>
                 "beta size (" + beta.Count + ") must be equal to number of option tenors (" + nOptionTenors_ + ")");
 
             var swapTenors = marketVolCube_.swapTenors();
             var k = swapTenors.IndexOf(swapTenors.First(x => x == swapTenor));
 
-            Utils.QL_REQUIRE(k != swapTenors.Count, () => "swap tenor (" + swapTenor + ") not found");
+            QLNet.Utils.QL_REQUIRE(k != swapTenors.Count, () => "swap tenor (" + swapTenor + ") not found");
 
             for (var i = 0; i < nOptionTenors_; ++i)
             {
@@ -503,7 +503,7 @@ namespace QLNet.Termstructures.Volatility.swaption
 
         public void recalibration(List<Period> swapLengths, List<double> beta, Period swapTenor)
         {
-            Utils.QL_REQUIRE(beta.Count == swapLengths.Count, () =>
+            QLNet.Utils.QL_REQUIRE(beta.Count == swapLengths.Count, () =>
                 "beta size (" + beta.Count + ") must be equal to number of swap lenghts ("
                 + swapLengths.Count + ")");
 
@@ -545,7 +545,7 @@ namespace QLNet.Termstructures.Volatility.swaption
 
             var k = swapTenors.IndexOf(swapTenors.First(x => x == swapTenor));
 
-            Utils.QL_REQUIRE(k != swapTenors.Count, () => "swap tenor not found");
+            QLNet.Utils.QL_REQUIRE(k != swapTenors.Count, () => "swap tenor not found");
 
             List<double> calibrationResult = new InitializedList<double>(8, 0.0);
             var tmpMarketVolCube = marketVolCube.points();
@@ -601,7 +601,7 @@ namespace QLNet.Termstructures.Volatility.swaption
                 calibrationResult[6] = sabrInterpolation.maxError();
                 calibrationResult[7] = (double)sabrInterpolation.endCriteria();
 
-                Utils.QL_REQUIRE(calibrationResult[7].IsNotEqual((double)EndCriteria.Type.MaxIterations), () =>
+                QLNet.Utils.QL_REQUIRE(calibrationResult[7].IsNotEqual((double)EndCriteria.Type.MaxIterations), () =>
                     "section calibration failed: " +
                     "option tenor " + optionDates[j] +
                     ", swap tenor " + swapTenors[k] +
@@ -615,7 +615,7 @@ namespace QLNet.Termstructures.Volatility.swaption
                     ", error " + calibrationResult[5]
                 );
 
-                Utils.QL_REQUIRE(useMaxError_ ? calibrationResult[6] > 0 : calibrationResult[5] < maxErrorTolerance_, () =>
+                QLNet.Utils.QL_REQUIRE(useMaxError_ ? calibrationResult[6] > 0 : calibrationResult[5] < maxErrorTolerance_, () =>
                     "section calibration failed: " +
                     "option tenor " + optionDates[j] +
                     ", swap tenor " + swapTenors[k] +
@@ -861,7 +861,7 @@ namespace QLNet.Termstructures.Volatility.swaption
                     maxErrors[j, k] = maxError;
                     endCriteria[j, k] = (double)sabrInterpolation.endCriteria();
 
-                    Utils.QL_REQUIRE(endCriteria[j, k].IsNotEqual((double)EndCriteria.Type.MaxIterations), () =>
+                    QLNet.Utils.QL_REQUIRE(endCriteria[j, k].IsNotEqual((double)EndCriteria.Type.MaxIterations), () =>
                         "global swaptions calibration failed: " +
                         "MaxIterations reached: " + "\n" +
                         "option maturity = " + optionDates[j] + ", \n" +
@@ -874,7 +874,7 @@ namespace QLNet.Termstructures.Volatility.swaption
                         "   rho = " + rhos[j, k] + "\n"
                     );
 
-                    Utils.QL_REQUIRE(useMaxError_ ? maxError > 0 : rmsError < maxErrorTolerance_, () =>
+                    QLNet.Utils.QL_REQUIRE(useMaxError_ ? maxError > 0 : rmsError < maxErrorTolerance_, () =>
                         "global swaptions calibration failed: " +
                         "option tenor " + optionDates[j] +
                         ", swap tenor " + swapTenors[k] +
@@ -971,9 +971,9 @@ namespace QLNet.Termstructures.Volatility.swaption
             var smilesOnPreviousExpiry = new List<SmileSection>();
             var smilesOnNextExpiry = new List<SmileSection>();
 
-            Utils.QL_REQUIRE(optionTimesPreviousIndex + 1 < sparseSmiles_.Count, () =>
+            QLNet.Utils.QL_REQUIRE(optionTimesPreviousIndex + 1 < sparseSmiles_.Count, () =>
                 "optionTimesPreviousIndex+1 >= sparseSmiles_.size()");
-            Utils.QL_REQUIRE(swapLengthsPreviousIndex + 1 < sparseSmiles_[0].Count, () =>
+            QLNet.Utils.QL_REQUIRE(swapLengthsPreviousIndex + 1 < sparseSmiles_[0].Count, () =>
                 "swapLengthsPreviousIndex+1 >= sparseSmiles_[0].size()");
             smilesOnPreviousExpiry.Add(sparseSmiles_[optionTimesPreviousIndex][swapLengthsPreviousIndex]);
             smilesOnPreviousExpiry.Add(sparseSmiles_[optionTimesPreviousIndex][swapLengthsPreviousIndex + 1]);

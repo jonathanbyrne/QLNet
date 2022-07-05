@@ -152,7 +152,7 @@ namespace QLNet.Tests
 
             for (var i = 0; i < days.Length; i++)
             {
-                if (!Utils.close(expected[i], calculated[i]))
+                if (!Math.Utils.close(expected[i], calculated[i]))
                 {
                     QAssert.Fail("\n  Discount at " + days[i] + " days:\n"
                                  + "    before date change: " + expected[i] + "\n"

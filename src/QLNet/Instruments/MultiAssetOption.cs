@@ -67,14 +67,14 @@ namespace QLNet.Instruments
         public double delta()
         {
             calculate();
-            Utils.QL_REQUIRE(delta_ != null, () => "delta not provided");
+            QLNet.Utils.QL_REQUIRE(delta_ != null, () => "delta not provided");
             return delta_.GetValueOrDefault();
         }
 
         public double dividendRho()
         {
             calculate();
-            Utils.QL_REQUIRE(dividendRho_ != null, () => "dividend rho not provided");
+            QLNet.Utils.QL_REQUIRE(dividendRho_ != null, () => "dividend rho not provided");
             return dividendRho_.GetValueOrDefault();
         }
 
@@ -83,7 +83,7 @@ namespace QLNet.Instruments
             base.fetchResults(r);
 
             var results = r as Results;
-            Utils.QL_REQUIRE(results != null, () => "no greeks returned from pricing engine");
+            QLNet.Utils.QL_REQUIRE(results != null, () => "no greeks returned from pricing engine");
 
             delta_ = results.delta;
             gamma_ = results.gamma;
@@ -96,7 +96,7 @@ namespace QLNet.Instruments
         public double gamma()
         {
             calculate();
-            Utils.QL_REQUIRE(gamma_ != null, () => "gamma not provided");
+            QLNet.Utils.QL_REQUIRE(gamma_ != null, () => "gamma not provided");
             return gamma_.GetValueOrDefault();
         }
 
@@ -106,14 +106,14 @@ namespace QLNet.Instruments
         public double rho()
         {
             calculate();
-            Utils.QL_REQUIRE(rho_ != null, () => "rho not provided");
+            QLNet.Utils.QL_REQUIRE(rho_ != null, () => "rho not provided");
             return rho_.GetValueOrDefault();
         }
 
         public override void setupArguments(IPricingEngineArguments args)
         {
             var arguments = args as Arguments;
-            Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
+            QLNet.Utils.QL_REQUIRE(arguments != null, () => "wrong argument ExerciseType");
 
             arguments.payoff = payoff_;
             arguments.exercise = exercise_;
@@ -122,14 +122,14 @@ namespace QLNet.Instruments
         public double theta()
         {
             calculate();
-            Utils.QL_REQUIRE(theta_ != null, () => "theta not provided");
+            QLNet.Utils.QL_REQUIRE(theta_ != null, () => "theta not provided");
             return theta_.GetValueOrDefault();
         }
 
         public double vega()
         {
             calculate();
-            Utils.QL_REQUIRE(vega_ != null, () => "vega not provided");
+            QLNet.Utils.QL_REQUIRE(vega_ != null, () => "vega not provided");
             return vega_.GetValueOrDefault();
         }
 

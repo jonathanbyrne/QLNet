@@ -12,7 +12,7 @@ namespace QLNet.Instruments
         {
             type_ = type;
             strike_ = strike;
-            Utils.QL_REQUIRE(strike >= 0.0, () => "negative strike given");
+            QLNet.Utils.QL_REQUIRE(strike >= 0.0, () => "negative strike given");
         }
 
         public override string description()
@@ -37,7 +37,7 @@ namespace QLNet.Instruments
                 case Position.Type.Short:
                     return strike_ - price;
                 default:
-                    Utils.QL_FAIL("unknown/illegal position ExerciseType");
+                    QLNet.Utils.QL_FAIL("unknown/illegal position ExerciseType");
                     return 0;
             }
         }

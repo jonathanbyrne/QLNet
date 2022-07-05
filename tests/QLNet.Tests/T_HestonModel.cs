@@ -20,13 +20,13 @@ using QLNet.Models;
 using QLNet.Time;
 using QLNet.Models.Equity;
 using QLNet.Math.Optimization;
-using QLNet.processes;
 using QLNet.Instruments;
-using QLNet.Pricingengines.vanilla;
-using QLNet.Math.randomnumbers;
+using QLNet.PricingEngines.vanilla;
 using QLNet.Math.Interpolations;
+using QLNet.Math.RandomNumbers;
 using QLNet.Termstructures;
 using QLNet.Math.statistics;
+using QLNet.Processes;
 using QLNet.Quotes;
 using QLNet.Termstructures.Yield;
 using QLNet.Time.Calendars;
@@ -312,7 +312,7 @@ namespace QLNet.Tests
 
         //double yearFraction = dayCounter.yearFraction(settlementDate, exerciseDate);
         //double forwardPrice = 32*System.Math.Exp((0.1 - 0.04)*yearFraction);
-        //double expected = Utils.blackFormula(payoff.optionType(), payoff.strike(),
+        //double expected = QLNet.Utils.blackFormula(payoff.optionType(), payoff.strike(),
         //   forwardPrice, System.Math.Sqrt(0.05*yearFraction))*
         //                System.Math.Exp(-0.1*yearFraction);
         //double error = System.Math.Abs(calculated - expected);

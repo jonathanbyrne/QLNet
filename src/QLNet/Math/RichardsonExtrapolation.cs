@@ -60,8 +60,8 @@ namespace QLNet.Math
         */
         public double value(double t = 2.0)
         {
-            Utils.QL_REQUIRE(t > 1, () => "scaling factor must be greater than 1");
-            Utils.QL_REQUIRE(n_ != null, () => "order of convergence must be known");
+            QLNet.Utils.QL_REQUIRE(t > 1, () => "scaling factor must be greater than 1");
+            QLNet.Utils.QL_REQUIRE(n_ != null, () => "order of convergence must be known");
 
             var tk = System.Math.Pow(t, n_.Value);
 
@@ -74,8 +74,8 @@ namespace QLNet.Math
         */
         public double value(double t, double s)
         {
-            Utils.QL_REQUIRE(t > 1 && s > 1, () => "scaling factors must be greater than 1");
-            Utils.QL_REQUIRE(t > s, () => "t must be greater than s");
+            QLNet.Utils.QL_REQUIRE(t > 1 && s > 1, () => "scaling factors must be greater than 1");
+            QLNet.Utils.QL_REQUIRE(t > s, () => "t must be greater than s");
 
             var ft = f_(delta_h_ / t);
             var fs = f_(delta_h_ / s);

@@ -2,7 +2,7 @@
 using QLNet.Math;
 using QLNet.Quotes;
 
-namespace QLNet.Pricingengines
+namespace QLNet.PricingEngines
 {
     [PublicAPI]
     public class BlackDeltaPremiumAdjustedMaxStrikeClass : ISolver1d

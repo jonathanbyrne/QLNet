@@ -18,9 +18,9 @@ using JetBrains.Annotations;
 using QLNet.Extensions;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.Lookback
+namespace QLNet.PricingEngines.Lookback
 {
     //! Pricing engine for European continuous partial-time floating-strike lookback option
     /*! Formula from "Option Pricing Formulas, Second Edition",
@@ -42,9 +42,9 @@ namespace QLNet.Pricingengines.Lookback
         public override void calculate()
         {
             var payoff = arguments_.payoff as FloatingTypePayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "Non-floating payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "Non-floating payoff given");
 
-            Utils.QL_REQUIRE(process_.x0() > 0.0, () => "negative or null underlying");
+            QLNet.Utils.QL_REQUIRE(process_.x0() > 0.0, () => "negative or null underlying");
 
             switch (payoff.optionType())
             {
@@ -55,7 +55,7 @@ namespace QLNet.Pricingengines.Lookback
                     results_.value = A(-1);
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown ExerciseType");
+                    QLNet.Utils.QL_FAIL("Unknown ExerciseType");
                     break;
             }
         }

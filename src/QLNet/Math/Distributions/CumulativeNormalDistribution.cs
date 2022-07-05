@@ -17,7 +17,7 @@ namespace QLNet.Math.Distributions
             average_ = average;
             sigma_ = sigma;
 
-            Utils.QL_REQUIRE(sigma_ > 0.0, () => "sigma must be greater than 0.0 (" + sigma_ + " not allowed)");
+            QLNet.Utils.QL_REQUIRE(sigma_ > 0.0, () => "sigma must be greater than 0.0 (" + sigma_ + " not allowed)");
         }
 
         public double derivative(double x)

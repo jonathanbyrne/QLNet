@@ -19,12 +19,12 @@
 */
 
 using QLNet.Instruments;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 using QLNet.Math.statistics;
 using QLNet.Methods.montecarlo;
 using QLNet.Patterns;
 
-namespace QLNet.Pricingengines
+namespace QLNet.PricingEngines
 {
     //! Longstaff-Schwarz Monte Carlo engine for early exercise options
     /*! References:
@@ -100,13 +100,13 @@ namespace QLNet.Pricingengines
             seed_ = seed;
             nCalibrationSamples_ = nCalibrationSamples ?? 2048;
 
-            Utils.QL_REQUIRE(timeSteps != null ||
-                             timeStepsPerYear != null, () => "no time steps provided");
-            Utils.QL_REQUIRE(timeSteps == null ||
-                             timeStepsPerYear == null, () => "both time steps and time steps per year were provided");
-            Utils.QL_REQUIRE(timeSteps != 0, () =>
+            QLNet.Utils.QL_REQUIRE(timeSteps != null ||
+                                   timeStepsPerYear != null, () => "no time steps provided");
+            QLNet.Utils.QL_REQUIRE(timeSteps == null ||
+                                   timeStepsPerYear == null, () => "both time steps and time steps per year were provided");
+            QLNet.Utils.QL_REQUIRE(timeSteps != 0, () =>
                 "timeSteps must be positive, " + timeSteps + " not allowed");
-            Utils.QL_REQUIRE(timeStepsPerYear != 0, () =>
+            QLNet.Utils.QL_REQUIRE(timeStepsPerYear != 0, () =>
                 "timeStepsPerYear must be positive, " + timeStepsPerYear + " not allowed");
 
             process_.registerWith(update);
@@ -145,7 +145,7 @@ namespace QLNet.Pricingengines
 
         protected override PathPricer<IPath> pathPricer()
         {
-            Utils.QL_REQUIRE(pathPricer_ != null, () => "path pricer unknown");
+            QLNet.Utils.QL_REQUIRE(pathPricer_ != null, () => "path pricer unknown");
             return pathPricer_;
         }
 
@@ -164,7 +164,7 @@ namespace QLNet.Pricingengines
                 return new TimeGrid(t, System.Math.Max(steps, 1));
             }
 
-            Utils.QL_FAIL("time steps not specified");
+            QLNet.Utils.QL_FAIL("time steps not specified");
             return null;
         }
 

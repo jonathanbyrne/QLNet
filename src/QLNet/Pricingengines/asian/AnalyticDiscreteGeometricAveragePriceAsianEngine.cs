@@ -22,9 +22,9 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.asian
+namespace QLNet.PricingEngines.asian
 {
     //! Pricing engine for European discrete geometric average price Asian
     /*! This class implements a discrete geometric average price Asian
@@ -59,13 +59,13 @@ namespace QLNet.Pricingengines.asian
                since it can be used as control variate for the Arithmetic version
                QL_REQUIRE(arguments_.averageType == Average::Geometric,"not a geometric average option")
             */
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European Option");
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () => "not an European Option");
 
             double runningLog;
             int pastFixings;
             if (arguments_.averageType == Average.Type.Geometric)
             {
-                Utils.QL_REQUIRE(arguments_.runningAccumulator > 0.0, () =>
+                QLNet.Utils.QL_REQUIRE(arguments_.runningAccumulator > 0.0, () =>
                     "positive running product required: " + arguments_.runningAccumulator + " not allowed");
 
                 runningLog = System.Math.Log(arguments_.runningAccumulator.GetValueOrDefault());
@@ -79,7 +79,7 @@ namespace QLNet.Pricingengines.asian
             }
 
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
             var referenceDate = process_.riskFreeRate().link.referenceDate();
             var rfdc = process_.riskFreeRate().link.dayCounter();
@@ -124,7 +124,7 @@ namespace QLNet.Pricingengines.asian
             var nu = riskFreeRate - dividendRate - 0.5 * vola * vola;
 
             var s = process_.stateVariable().link.value();
-            Utils.QL_REQUIRE(s > 0.0, () => "positive underlying value required");
+            QLNet.Utils.QL_REQUIRE(s > 0.0, () => "positive underlying value required");
 
             var M = pastFixings == 0 ? 1 : pastFixings;
             var muG = pastWeight * runningLog / M + futureWeight * System.Math.Log(s) + nu * timeSum / N;

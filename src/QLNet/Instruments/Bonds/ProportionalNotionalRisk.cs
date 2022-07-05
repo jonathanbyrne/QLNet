@@ -16,7 +16,7 @@ namespace QLNet.Instruments.Bonds
             attachement_ = attachement;
             exhaustion_ = exhaustion;
 
-            Utils.QL_REQUIRE(attachement < exhaustion, () => "exhaustion level needs to be greater than attachement");
+            QLNet.Utils.QL_REQUIRE(attachement < exhaustion, () => "exhaustion level needs to be greater than attachement");
         }
 
         public override void updatePath(List<KeyValuePair<Date, double>> events, NotionalPath path)

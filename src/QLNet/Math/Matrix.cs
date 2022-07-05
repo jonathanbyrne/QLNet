@@ -138,7 +138,7 @@ namespace QLNet.Math
 
         public static Matrix inverse(Matrix m)
         {
-            Utils.QL_REQUIRE(m.rows() == m.columns(), () => "matrix is not square");
+            QLNet.Utils.QL_REQUIRE(m.rows() == m.columns(), () => "matrix is not square");
             var n = m.rows();
             var result = new Matrix(n, n);
             for (var i = 0; i < n; ++i)
@@ -179,10 +179,10 @@ namespace QLNet.Math
         public static Matrix outerProduct(List<double> v1begin, List<double> v2begin)
         {
             var size1 = v1begin.Count;
-            Utils.QL_REQUIRE(size1 > 0, () => "null first vector");
+            QLNet.Utils.QL_REQUIRE(size1 > 0, () => "null first vector");
 
             var size2 = v2begin.Count;
-            Utils.QL_REQUIRE(size2 > 0, () => "null second vector");
+            QLNet.Utils.QL_REQUIRE(size2 > 0, () => "null second vector");
 
             var result = new Matrix(size1, size2);
 
@@ -387,7 +387,7 @@ namespace QLNet.Math
 
         private static Matrix operMatrix(ref Matrix m1, ref Matrix m2, Func<double, double, double> func)
         {
-            Utils.QL_REQUIRE(m1.rows_ == m2.rows_ && m1.columns_ == m2.columns_, () =>
+            QLNet.Utils.QL_REQUIRE(m1.rows_ == m2.rows_ && m1.columns_ == m2.columns_, () =>
                 "operation on matrices with different sizes");
 
             var result = new Matrix(m1.rows_, m1.columns_);
@@ -414,9 +414,9 @@ namespace QLNet.Math
 
         public static Vector operator *(Vector v, Matrix m)
         {
-            Utils.QL_REQUIRE(v.Count == m.rows(), () => "vectors and matrices with different sizes ("
-                                                        + v.Count + ", " + m.rows() + "x" + m.columns() +
-                                                        ") cannot be multiplied");
+            QLNet.Utils.QL_REQUIRE(v.Count == m.rows(), () => "vectors and matrices with different sizes ("
+                                                                       + v.Count + ", " + m.rows() + "x" + m.columns() +
+                                                                       ") cannot be multiplied");
             var result = new Vector(m.columns());
             for (var i = 0; i < result.Count; i++)
             {
@@ -429,9 +429,9 @@ namespace QLNet.Math
         /*! \relates Matrix */
         public static Vector operator *(Matrix m, Vector v)
         {
-            Utils.QL_REQUIRE(v.Count == m.columns(), () => "vectors and matrices with different sizes ("
-                                                           + v.Count + ", " + m.rows() + "x" + m.columns() +
-                                                           ") cannot be multiplied");
+            QLNet.Utils.QL_REQUIRE(v.Count == m.columns(), () => "vectors and matrices with different sizes ("
+                                                                          + v.Count + ", " + m.rows() + "x" + m.columns() +
+                                                                          ") cannot be multiplied");
             var result = new Vector(m.rows());
             for (var i = 0; i < result.Count; i++)
             {
@@ -444,9 +444,9 @@ namespace QLNet.Math
         /*! \relates Matrix */
         public static Matrix operator *(Matrix m1, Matrix m2)
         {
-            Utils.QL_REQUIRE(m1.columns() == m2.rows(), () => "matrices with different sizes (" +
-                                                              m1.rows() + "x" + m1.columns() + ", " +
-                                                              m2.rows() + "x" + m2.columns() + ") cannot be multiplied");
+            QLNet.Utils.QL_REQUIRE(m1.columns() == m2.rows(), () => "matrices with different sizes (" +
+                                                                             m1.rows() + "x" + m1.columns() + ", " +
+                                                                             m2.rows() + "x" + m2.columns() + ") cannot be multiplied");
             var result = new Matrix(m1.rows(), m2.columns());
             for (var i = 0; i < result.rows(); i++)
             for (var j = 0; j < result.columns(); j++)

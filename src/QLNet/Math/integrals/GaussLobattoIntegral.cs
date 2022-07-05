@@ -59,7 +59,7 @@ namespace QLNet.Math.integrals
 
         protected double adaptivGaussLobattoStep(Func<double, double> f, double a, double b, double fa, double fb, double acc)
         {
-            Utils.QL_REQUIRE(numberOfEvaluations() < maxEvaluations(), () => "max number of iterations reached");
+            QLNet.Utils.QL_REQUIRE(numberOfEvaluations() < maxEvaluations(), () => "max number of iterations reached");
 
             var h = (b - a) / 2;
             var m = (a + b) / 2;
@@ -84,7 +84,7 @@ namespace QLNet.Math.integrals
             var dist = acc + (integral1 - integral2);
             if (dist.IsEqual(acc) || mll <= a || b <= mrr)
             {
-                Utils.QL_REQUIRE(m > a && b > m, () => "Interval contains no more machine number");
+                QLNet.Utils.QL_REQUIRE(m > a && b > m, () => "Interval contains no more machine number");
                 return integral1;
             }
 
@@ -129,7 +129,7 @@ namespace QLNet.Math.integrals
             if (acc.IsEqual(0.0) && (f1.IsNotEqual(0.0) || f2.IsNotEqual(0.0) || f3.IsNotEqual(0.0)
                                      || f4.IsNotEqual(0.0) || f5.IsNotEqual(0.0) || f6.IsNotEqual(0.0)))
             {
-                Utils.QL_FAIL("can not calculate absolute accuracy from relative accuracy");
+                QLNet.Utils.QL_FAIL("can not calculate absolute accuracy from relative accuracy");
             }
 
             var r = 1.0;

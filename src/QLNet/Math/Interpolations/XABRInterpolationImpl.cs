@@ -2,7 +2,7 @@
 using System.Linq;
 using JetBrains.Annotations;
 using QLNet.Math.Optimization;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 
 namespace QLNet.Math.Interpolations
 {
@@ -78,7 +78,7 @@ namespace QLNet.Math.Interpolations
 
         public override double derivative(double d)
         {
-            Utils.QL_FAIL("XABR derivative not implemented");
+            QLNet.Utils.QL_FAIL("XABR derivative not implemented");
             return 0;
         }
 
@@ -130,13 +130,13 @@ namespace QLNet.Math.Interpolations
 
         public override double primitive(double d)
         {
-            Utils.QL_FAIL("XABR primitive not implemented");
+            QLNet.Utils.QL_FAIL("XABR primitive not implemented");
             return 0;
         }
 
         public override double secondDerivative(double d)
         {
-            Utils.QL_FAIL("XABR secondDerivative not implemented");
+            QLNet.Utils.QL_FAIL("XABR secondDerivative not implemented");
             return 0;
         }
 

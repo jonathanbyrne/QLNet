@@ -1,4 +1,4 @@
-﻿using QLNet.Math.randomnumbers;
+﻿using QLNet.Math.RandomNumbers;
 
 namespace QLNet.Tests;
 

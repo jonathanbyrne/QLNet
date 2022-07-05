@@ -17,9 +17,9 @@
 using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.barrier
+namespace QLNet.PricingEngines.barrier
 {
     //! Pricing engine for double barrier european options using analytical formulae
     /*! The formulas are taken from "The complete guide to option pricing formulas 2nd Ed",
@@ -53,18 +53,18 @@ namespace QLNet.Pricingengines.barrier
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () =>
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European, () =>
                 "this engine handles only european options");
 
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
             var strike = payoff.strike();
-            Utils.QL_REQUIRE(strike > 0.0, () => "strike must be positive");
+            QLNet.Utils.QL_REQUIRE(strike > 0.0, () => "strike must be positive");
 
             var spot = underlying();
-            Utils.QL_REQUIRE(spot >= 0.0, () => "negative or null underlying given");
-            Utils.QL_REQUIRE(!triggered(spot), () => "barrier(s) already touched");
+            QLNet.Utils.QL_REQUIRE(spot >= 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(!triggered(spot), () => "barrier(s) already touched");
 
             var barrierType = arguments_.barrierType;
 
@@ -94,10 +94,10 @@ namespace QLNet.Pricingengines.barrier
                                 break;
                             case DoubleBarrier.Type.KIKO:
                             case DoubleBarrier.Type.KOKI:
-                                Utils.QL_FAIL("unsupported double-barrier ExerciseType: " + barrierType);
+                                QLNet.Utils.QL_FAIL("unsupported double-barrier ExerciseType: " + barrierType);
                                 break;
                             default:
-                                Utils.QL_FAIL("unknown double-barrier ExerciseType: " + barrierType);
+                                QLNet.Utils.QL_FAIL("unknown double-barrier ExerciseType: " + barrierType);
                                 break;
                         }
 
@@ -113,16 +113,16 @@ namespace QLNet.Pricingengines.barrier
                                 break;
                             case DoubleBarrier.Type.KIKO:
                             case DoubleBarrier.Type.KOKI:
-                                Utils.QL_FAIL("unsupported double-barrier ExerciseType: " + barrierType);
+                                QLNet.Utils.QL_FAIL("unsupported double-barrier ExerciseType: " + barrierType);
                                 break;
                             default:
-                                Utils.QL_FAIL("unknown double-barrier ExerciseType: " + barrierType);
+                                QLNet.Utils.QL_FAIL("unknown double-barrier ExerciseType: " + barrierType);
                                 break;
                         }
 
                         break;
                     default:
-                        Utils.QL_FAIL("unknown ExerciseType");
+                        QLNet.Utils.QL_FAIL("unknown ExerciseType");
                         break;
                 }
             }
@@ -228,7 +228,7 @@ namespace QLNet.Pricingengines.barrier
         private double strike()
         {
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
             return payoff.strike();
         }
 

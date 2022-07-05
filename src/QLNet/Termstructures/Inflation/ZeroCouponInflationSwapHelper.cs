@@ -20,7 +20,7 @@
 using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Instruments;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.Swap;
 using QLNet.Quotes;
 using QLNet.Time;
 
@@ -80,7 +80,7 @@ namespace QLNet.Termstructures.Inflation
             if (zii_.interpolated())
             {
                 var pShift = new Period(zii_.frequency());
-                Utils.QL_REQUIRE(swapObsLag_ - pShift > zii_.availabilityLag(), () =>
+                QLNet.Utils.QL_REQUIRE(swapObsLag_ - pShift > zii_.availabilityLag(), () =>
                     "inconsistency between swap observation of index "
                     + swapObsLag_ +
                     " index availability " + zii_.availabilityLag() +

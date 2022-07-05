@@ -27,7 +27,7 @@ using QLNet.Termstructures.Volatility.Bond;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
 
-namespace QLNet.Pricingengines.Bond
+namespace QLNet.PricingEngines.Bond
 {
     //! Black-formula callable fixed rate bond engine
     /*! Callable fixed rate bond Black engine. The embedded (European)
@@ -71,11 +71,11 @@ namespace QLNet.Pricingengines.Bond
         public override void calculate()
         {
             // validate args for Black engine
-            Utils.QL_REQUIRE(arguments_.putCallSchedule.Count == 1, () => "Must have exactly one call/put date to use Black Engine");
+            QLNet.Utils.QL_REQUIRE(arguments_.putCallSchedule.Count == 1, () => "Must have exactly one call/put date to use Black Engine");
 
             var settle = arguments_.settlementDate;
             var exerciseDate = arguments_.callabilityDates[0];
-            Utils.QL_REQUIRE(exerciseDate >= settle, () => "must have exercise Date >= settlement Date");
+            QLNet.Utils.QL_REQUIRE(exerciseDate >= settle, () => "must have exercise Date >= settlement Date");
 
             var fixedLeg = arguments_.cashflows;
 

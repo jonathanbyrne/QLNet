@@ -24,7 +24,7 @@ using QLNet.Currencies;
 using QLNet.Termstructures.Yield;
 using QLNet.Indexes;
 using QLNet.Time;
-using QLNet.Pricingengines.credit;
+using QLNet.PricingEngines.credit;
 using QLNet.Instruments;
 using QLNet.Math.Interpolations;
 using QLNet.Termstructures;

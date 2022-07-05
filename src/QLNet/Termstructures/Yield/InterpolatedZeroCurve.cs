@@ -114,8 +114,8 @@ namespace QLNet.Termstructures.Yield
 
         protected void initialize(Compounding compounding, Frequency frequency, Date refDate = null)
         {
-            Utils.QL_REQUIRE(dates_.Count >= interpolator_.requiredPoints, () => "not enough input dates given");
-            Utils.QL_REQUIRE(data_.Count == dates_.Count, () => "dates/yields count mismatch");
+            QLNet.Utils.QL_REQUIRE(dates_.Count >= interpolator_.requiredPoints, () => "not enough input dates given");
+            QLNet.Utils.QL_REQUIRE(data_.Count == dates_.Count, () => "dates/yields count mismatch");
 
             times_ = new List<double>(dates_.Count);
             var offset = 0.0;
@@ -135,16 +135,16 @@ namespace QLNet.Termstructures.Yield
                 var r = new InterestRate(data_[0], dayCounter(), compounding, frequency);
                 data_[0] = r.equivalentRate(Compounding.Continuous, Frequency.NoFrequency, dt).value();
 #if !QL_NEGATIVE_RATES
-            Utils.QL_REQUIRE(data_[0] > 0.0, () => "non-positive yield");
+            QLNet.Utils.QL_REQUIRE(data_[0] > 0.0, () => "non-positive yield");
 #endif
             }
 
             for (var i = 1; i < dates_.Count; i++)
             {
-                Utils.QL_REQUIRE(dates_[i] > dates_[i - 1], () => "invalid date (" + dates_[i] + ", vs " + dates_[i - 1] + ")");
+                QLNet.Utils.QL_REQUIRE(dates_[i] > dates_[i - 1], () => "invalid date (" + dates_[i] + ", vs " + dates_[i - 1] + ")");
                 times_.Add(dayCounter().yearFraction(refDate ?? dates_[0], dates_[i]));
 
-                Utils.QL_REQUIRE(!Utils.close(times_[i], times_[i - 1]), () =>
+                QLNet.Utils.QL_REQUIRE(!Math.Utils.close(times_[i], times_[i - 1]), () =>
                     "two dates correspond to the same time " +
                     "under this curve's day count convention");
 
@@ -156,10 +156,10 @@ namespace QLNet.Termstructures.Yield
                 }
 
 #if !QL_NEGATIVE_RATES
-            Utils.QL_REQUIRE(data_[i] > 0.0, () => "non-positive yield");
+            QLNet.Utils.QL_REQUIRE(data_[i] > 0.0, () => "non-positive yield");
             // positive yields are not enough to ensure non-negative fwd rates
             // so here's a stronger requirement
-            Utils.QL_REQUIRE(data_[i] * times_[i] - data_[i - 1] * times_[i - 1] >= 0.0,
+            QLNet.Utils.QL_REQUIRE(data_[i] * times_[i] - data_[i - 1] * times_[i - 1] >= 0.0,
                              () => "negative forward rate implied by the zero yield " + data_[i] + " at " + dates_[i] +
                              " (t=" + times_[i] + ") after the zero yield " +
                              data_[i - 1] + " at " + dates_[i - 1] +

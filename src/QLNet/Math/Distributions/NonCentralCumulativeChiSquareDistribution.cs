@@ -89,7 +89,7 @@ namespace QLNet.Math.Distributions
             L_End:
             if (bound > errmax)
             {
-                Utils.QL_FAIL("didn't converge");
+                QLNet.Utils.QL_FAIL("didn't converge");
             }
 
             return ans;

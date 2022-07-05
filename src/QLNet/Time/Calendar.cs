@@ -199,7 +199,7 @@ namespace QLNet.Time
         /// </summary>
         public static List<Date> holidayList(Calendar calendar, Date from, Date to, bool includeWeekEnds = false)
         {
-            Utils.QL_REQUIRE(to > from, () => "'from' date (" + from + ") must be earlier than 'to' date (" + to + ")");
+            QLNet.Utils.QL_REQUIRE(to > from, () => "'from' date (" + from + ") must be earlier than 'to' date (" + to + ")");
             var result = new List<Date>();
 
             for (var d = from; d <= to; ++d)
@@ -321,7 +321,7 @@ namespace QLNet.Time
             }
             else
             {
-                Utils.QL_FAIL("unknown business-day convention");
+                QLNet.Utils.QL_FAIL("unknown business-day convention");
             }
 
             return d1;

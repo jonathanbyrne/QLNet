@@ -99,7 +99,7 @@ namespace QLNet.Math
                 output[bit_reverse(i, order)] = new Complex(input[i].Real, input[i].Imaginary);
             }
 
-            Utils.QL_REQUIRE(i <= N, () => "FFT order is too small");
+            QLNet.Utils.QL_REQUIRE(i <= N, () => "FFT order is too small");
             for (var s = 1; s <= order; ++s)
             {
                 var m = 1 << s;

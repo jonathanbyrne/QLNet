@@ -20,7 +20,7 @@
 using JetBrains.Annotations;
 using QLNet.Patterns;
 
-namespace QLNet.Math.randomnumbers
+namespace QLNet.Math.RandomNumbers
 {
     // random number traits
     [PublicAPI]

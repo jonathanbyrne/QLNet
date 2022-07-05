@@ -3,7 +3,7 @@ using QLNet.Quotes;
 using QLNet.Termstructures;
 using QLNet.Termstructures.Volatility.Bond;
 
-namespace QLNet.Pricingengines.Bond
+namespace QLNet.PricingEngines.Bond
 {
     [PublicAPI]
     public class BlackCallableZeroCouponBondEngine : BlackCallableFixedRateBondEngine

@@ -91,7 +91,7 @@ namespace QLNet.Cashflows
 
             if (_isCapped && _isFloored)
             {
-                Utils.QL_REQUIRE(cap >= floor, () =>
+                QLNet.Utils.QL_REQUIRE(cap >= floor, () =>
                     "cap level (" + cap + ") less than floor level (" + floor + ")");
             }
 
@@ -148,7 +148,7 @@ namespace QLNet.Cashflows
         // Coupon interface
         public override double rate()
         {
-            Utils.QL_REQUIRE(_underlying.pricer() != null, () => "pricer not set");
+            QLNet.Utils.QL_REQUIRE(_underlying.pricer() != null, () => "pricer not set");
 
             var swapletRate = _underlying.rate();
             var floorletRate = 0.0;

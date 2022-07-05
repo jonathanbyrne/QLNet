@@ -75,13 +75,13 @@ namespace QLNet.Math.Solvers1d
 
                 dx = xh - xl;
                 // Convergence criterion
-                if (System.Math.Abs(del) < xAccuracy || Utils.close(froot, 0.0))
+                if (System.Math.Abs(del) < xAccuracy || Math.Utils.close(froot, 0.0))
                 {
                     return root_;
                 }
             }
 
-            Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
+            QLNet.Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
                 QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
             return 0;
         }

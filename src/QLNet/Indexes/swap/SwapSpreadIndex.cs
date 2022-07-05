@@ -47,36 +47,36 @@ namespace QLNet.Indexes.swap
             name_ = swapIndex1_.name() + "(" + gearing1 + ") + "
                     + swapIndex2_.name() + "(" + gearing1 + ")";
 
-            Utils.QL_REQUIRE(swapIndex1_.fixingDays() == swapIndex2_.fixingDays(), () =>
+            QLNet.Utils.QL_REQUIRE(swapIndex1_.fixingDays() == swapIndex2_.fixingDays(), () =>
                 "index1 fixing days ("
                 + swapIndex1_.fixingDays() + ")"
                 + "must be equal to index2 fixing days ("
                 + swapIndex2_.fixingDays() + ")");
 
-            Utils.QL_REQUIRE(swapIndex1_.fixingCalendar() == swapIndex2_.fixingCalendar(), () =>
+            QLNet.Utils.QL_REQUIRE(swapIndex1_.fixingCalendar() == swapIndex2_.fixingCalendar(), () =>
                 "index1 fixingCalendar ("
                 + swapIndex1_.fixingCalendar() + ")"
                 + "must be equal to index2 fixingCalendar ("
                 + swapIndex2_.fixingCalendar() + ")");
 
-            Utils.QL_REQUIRE(swapIndex1_.currency() == swapIndex2_.currency(), () =>
+            QLNet.Utils.QL_REQUIRE(swapIndex1_.currency() == swapIndex2_.currency(), () =>
                 "index1 currency (" + swapIndex1_.currency() + ")"
                 + "must be equal to index2 currency ("
                 + swapIndex2_.currency() + ")");
 
-            Utils.QL_REQUIRE(swapIndex1_.dayCounter() == swapIndex2_.dayCounter(), () =>
+            QLNet.Utils.QL_REQUIRE(swapIndex1_.dayCounter() == swapIndex2_.dayCounter(), () =>
                 "index1 dayCounter ("
                 + swapIndex1_.dayCounter() + ")"
                 + "must be equal to index2 dayCounter ("
                 + swapIndex2_.dayCounter() + ")");
 
-            Utils.QL_REQUIRE(swapIndex1_.fixedLegTenor() == swapIndex2_.fixedLegTenor(), () =>
+            QLNet.Utils.QL_REQUIRE(swapIndex1_.fixedLegTenor() == swapIndex2_.fixedLegTenor(), () =>
                 "index1 fixedLegTenor ("
                 + swapIndex1_.fixedLegTenor() + ")"
                 + "must be equal to index2 fixedLegTenor ("
                 + swapIndex2_.fixedLegTenor());
 
-            Utils.QL_REQUIRE(swapIndex1_.fixedLegConvention() == swapIndex2_.fixedLegConvention(), () =>
+            QLNet.Utils.QL_REQUIRE(swapIndex1_.fixedLegConvention() == swapIndex2_.fixedLegConvention(), () =>
                 "index1 fixedLegConvention ("
                 + swapIndex1_.fixedLegConvention() + ")"
                 + "must be equal to index2 fixedLegConvention ("
@@ -101,7 +101,7 @@ namespace QLNet.Indexes.swap
         // InterestRateIndex interface
         public override Date maturityDate(Date valueDate)
         {
-            Utils.QL_FAIL("SwapSpreadIndex does not provide a single maturity date");
+            QLNet.Utils.QL_FAIL("SwapSpreadIndex does not provide a single maturity date");
             return null;
         }
 

@@ -24,10 +24,10 @@ using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Methods.Finitedifferences;
-using QLNet.processes;
+using QLNet.Processes;
 using QLNet.Time;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Finite-differences pricing engine for BSM one asset options
     /*! The name is a misnomer as this is a base class for any finite difference scheme.  Its main job is to handle grid layout.
@@ -109,7 +109,7 @@ namespace QLNet.Pricingengines.vanilla
         public virtual void setupArguments(IPricingEngineArguments a)
         {
             var args = a as QLNet.Option.Arguments;
-            Utils.QL_REQUIRE(args != null, () => "incorrect argument ExerciseType");
+            QLNet.Utils.QL_REQUIRE(args != null, () => "incorrect argument ExerciseType");
 
             exerciseDate_ = args.exercise.lastDate();
             payoff_ = args.payoff;
@@ -143,8 +143,8 @@ namespace QLNet.Pricingengines.vanilla
 
         protected void setGridLimits(double center, double t)
         {
-            Utils.QL_REQUIRE(center > 0.0, () => "negative or null underlying given");
-            Utils.QL_REQUIRE(t > 0.0, () => "negative or zero residual time");
+            QLNet.Utils.QL_REQUIRE(center > 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(t > 0.0, () => "negative or zero residual time");
             center_ = center;
             var newGridPoints = safeGridPoints(gridPoints_, t);
             if (newGridPoints > intrinsicValues_.size())

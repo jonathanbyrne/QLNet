@@ -18,8 +18,8 @@
 */
 
 using JetBrains.Annotations;
-using QLNet.Pricingengines.barrier;
-using QLNet.processes;
+using QLNet.PricingEngines.barrier;
+using QLNet.Processes;
 using QLNet.Quotes;
 
 namespace QLNet.Instruments
@@ -59,12 +59,12 @@ namespace QLNet.Instruments
                     case Barrier.Type.UpOut:
                         break;
                     default:
-                        Utils.QL_FAIL("unknown ExerciseType");
+                        QLNet.Utils.QL_FAIL("unknown ExerciseType");
                         break;
                 }
 
-                Utils.QL_REQUIRE(barrier != null, () => "no barrier given");
-                Utils.QL_REQUIRE(rebate != null, () => "no rebate given");
+                QLNet.Utils.QL_REQUIRE(barrier != null, () => "no barrier given");
+                QLNet.Utils.QL_REQUIRE(rebate != null, () => "no rebate given");
             }
         }
 
@@ -81,7 +81,7 @@ namespace QLNet.Instruments
                     case Barrier.Type.UpOut:
                         return underlying > arguments_.barrier;
                     default:
-                        Utils.QL_FAIL("unknown ExerciseType");
+                        QLNet.Utils.QL_FAIL("unknown ExerciseType");
                         return false;
                 }
             }
@@ -106,7 +106,7 @@ namespace QLNet.Instruments
         public double impliedVolatility(double targetValue, GeneralizedBlackScholesProcess process, double accuracy = 1.0e-4,
             int maxEvaluations = 100, double minVol = 1.0e-7, double maxVol = 4.0)
         {
-            Utils.QL_REQUIRE(!isExpired(), () => "option expired");
+            QLNet.Utils.QL_REQUIRE(!isExpired(), () => "option expired");
 
             var volQuote = new SimpleQuote();
 
@@ -121,10 +121,10 @@ namespace QLNet.Instruments
                     break;
                 case Exercise.Type.American:
                 case Exercise.Type.Bermudan:
-                    Utils.QL_FAIL("Engine not available for non-European barrier option");
+                    QLNet.Utils.QL_FAIL("Engine not available for non-European barrier option");
                     break;
                 default:
-                    Utils.QL_FAIL("unknown exercise ExerciseType");
+                    QLNet.Utils.QL_FAIL("unknown exercise ExerciseType");
                     break;
             }
 
@@ -136,7 +136,7 @@ namespace QLNet.Instruments
             base.setupArguments(args);
 
             var moreArgs = args as Arguments;
-            Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
+            QLNet.Utils.QL_REQUIRE(moreArgs != null, () => "wrong argument ExerciseType");
 
             moreArgs.barrierType = barrierType_;
             moreArgs.barrier = barrier_;

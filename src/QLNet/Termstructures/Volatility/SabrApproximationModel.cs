@@ -1,4 +1,4 @@
-namespace QLNet
+namespace QLNet.Termstructures.Volatility
 {
     public enum SabrApproximationModel
     {

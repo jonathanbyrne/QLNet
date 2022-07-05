@@ -69,7 +69,7 @@ namespace QLNet.Termstructures.Volatility
             volatilityType_ = type;
             shift_ = shift;
 
-            Utils.QL_REQUIRE(exerciseTime_ >= 0.0, () => "expiry time must be positive: " + exerciseTime_ + " not allowed");
+            QLNet.Utils.QL_REQUIRE(exerciseTime_ >= 0.0, () => "expiry time must be positive: " + exerciseTime_ + " not allowed");
         }
 
         protected SmileSection()
@@ -110,21 +110,21 @@ namespace QLNet.Termstructures.Volatility
         public virtual double optionPrice(double strike, Option.Type type = Option.Type.Call, double discount = 1.0)
         {
             var atm = atmLevel();
-            Utils.QL_REQUIRE(atm != null, () => "smile section must provide atm level to compute option price");
+            QLNet.Utils.QL_REQUIRE(atm != null, () => "smile section must provide atm level to compute option price");
             // if lognormal or shifted lognormal,
             // for strike at -shift, return option price even if outside
             // minstrike, maxstrike interval
             if (volatilityType() == VolatilityType.ShiftedLognormal)
             {
-                return Utils.blackFormula(type, strike, atm.Value, System.Math.Abs(strike + shift()) < Const.QL_EPSILON ? 0.2 : System.Math.Sqrt(variance(strike)), discount, shift());
+                return PricingEngines.Utils.blackFormula(type, strike, atm.Value, System.Math.Abs(strike + shift()) < Const.QL_EPSILON ? 0.2 : System.Math.Sqrt(variance(strike)), discount, shift());
             }
 
-            return Utils.bachelierBlackFormula(type, strike, atm.Value, System.Math.Sqrt(variance(strike)), discount);
+            return PricingEngines.Utils.bachelierBlackFormula(type, strike, atm.Value, System.Math.Sqrt(variance(strike)), discount);
         }
 
         public virtual Date referenceDate()
         {
-            Utils.QL_REQUIRE(referenceDate_ != null, () => "referenceDate not available for this instance");
+            QLNet.Utils.QL_REQUIRE(referenceDate_ != null, () => "referenceDate not available for this instance");
             return referenceDate_;
         }
 
@@ -144,16 +144,16 @@ namespace QLNet.Termstructures.Volatility
         public virtual double vega(double strike, double discount = 1.0)
         {
             var atm = atmLevel();
-            Utils.QL_REQUIRE(atm != null, () =>
+            QLNet.Utils.QL_REQUIRE(atm != null, () =>
                 "smile section must provide atm level to compute option vega");
             if (volatilityType() == VolatilityType.ShiftedLognormal)
             {
-                return Utils.blackFormulaVolDerivative(strike, atmLevel().Value,
+                return PricingEngines.Utils.blackFormulaVolDerivative(strike, atmLevel().Value,
                     System.Math.Sqrt(variance(strike)),
                     exerciseTime(), discount, shift()) * 0.01;
             }
 
-            Utils.QL_FAIL("vega for normal smilesection not yet implemented");
+            QLNet.Utils.QL_FAIL("vega for normal smilesection not yet implemented");
 
             return 0;
         }
@@ -162,13 +162,13 @@ namespace QLNet.Termstructures.Volatility
 
         public double volatility(double strike, VolatilityType volatilityType, double shift = 0.0)
         {
-            if (volatilityType == volatilityType_ && Utils.close(shift, this.shift()))
+            if (volatilityType == volatilityType_ && Math.Utils.close(shift, this.shift()))
             {
                 return volatility(strike);
             }
 
             var atm = atmLevel();
-            Utils.QL_REQUIRE(atm != null, () => "smile section must provide atm level to compute converted volatilties");
+            QLNet.Utils.QL_REQUIRE(atm != null, () => "smile section must provide atm level to compute converted volatilties");
             var type = strike >= atm ? Option.Type.Call : Option.Type.Put;
             var premium = optionPrice(strike, type);
             var premiumAtm = optionPrice(atm.Value, type);
@@ -176,17 +176,17 @@ namespace QLNet.Termstructures.Volatility
             {
                 try
                 {
-                    return Utils.blackFormulaImpliedStdDev(type, strike, atm.Value, premium, 1.0, shift) /
+                    return PricingEngines.Utils.blackFormulaImpliedStdDev(type, strike, atm.Value, premium, 1.0, shift) /
                            System.Math.Sqrt(exerciseTime());
                 }
                 catch (Exception)
                 {
-                    return Utils.blackFormulaImpliedStdDevChambers(type, strike, atm.Value, premium, premiumAtm, 1.0, shift) /
+                    return PricingEngines.Utils.blackFormulaImpliedStdDevChambers(type, strike, atm.Value, premium, premiumAtm, 1.0, shift) /
                            System.Math.Sqrt(exerciseTime());
                 }
             }
 
-            return Utils.bachelierBlackFormulaImpliedVol(type, strike, atm.Value, exerciseTime(), premium);
+            return PricingEngines.Utils.bachelierBlackFormulaImpliedVol(type, strike, atm.Value, exerciseTime(), premium);
         }
 
         public virtual VolatilityType volatilityType() => volatilityType_;
@@ -195,7 +195,7 @@ namespace QLNet.Termstructures.Volatility
 
         protected virtual void initializeExerciseTime()
         {
-            Utils.QL_REQUIRE(exerciseDate_ >= referenceDate_, () =>
+            QLNet.Utils.QL_REQUIRE(exerciseDate_ >= referenceDate_, () =>
                 "expiry date (" + exerciseDate_ +
                 ") must be greater than reference date (" +
                 referenceDate_ + ")");

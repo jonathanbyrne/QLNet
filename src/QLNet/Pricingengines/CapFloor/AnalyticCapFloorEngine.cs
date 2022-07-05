@@ -24,7 +24,7 @@ using QLNet.Models;
 using QLNet.Termstructures;
 using QLNet.Time;
 
-namespace QLNet.Pricingengines.CapFloor
+namespace QLNet.PricingEngines.CapFloor
 {
     [PublicAPI]
     public class AnalyticCapFloorEngine : GenericModelEngine<IAffineModel,

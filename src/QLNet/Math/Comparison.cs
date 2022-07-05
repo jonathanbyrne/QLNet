@@ -20,7 +20,7 @@
 
 using QLNet.Extensions;
 
-namespace QLNet
+namespace QLNet.Math
 {
     public static partial class Utils
     {
@@ -70,7 +70,7 @@ namespace QLNet
                 return close(m1, tmp, n);
             }
 
-            QL_FAIL("currency mismatch and no conversion specified");
+            QLNet.Utils.QL_FAIL("currency mismatch and no conversion specified");
             return false;
         }
 

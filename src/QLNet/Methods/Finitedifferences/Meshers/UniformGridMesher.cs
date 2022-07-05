@@ -39,7 +39,7 @@ namespace QLNet.Methods.Finitedifferences.Meshers
             dx_ = new Vector(layout.dim().Count);
             locations_ = new InitializedList<List<double>>(layout.dim().Count);
 
-            Utils.QL_REQUIRE(boundaries.Count == layout.dim().Count,
+            QLNet.Utils.QL_REQUIRE(boundaries.Count == layout.dim().Count,
                 () => "inconsistent boundaries given");
 
             for (var i = 0; i < layout.dim().Count; ++i)

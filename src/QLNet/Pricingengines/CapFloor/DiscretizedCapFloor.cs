@@ -22,7 +22,7 @@ using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Time;
 
-namespace QLNet.Pricingengines.CapFloor
+namespace QLNet.PricingEngines.CapFloor
 {
     [PublicAPI]
     public class DiscretizedCapFloor : DiscretizedAsset

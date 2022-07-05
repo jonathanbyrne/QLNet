@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Methods.montecarlo;
 
-namespace QLNet.Math.randomnumbers
+namespace QLNet.Math.RandomNumbers
 {
     //! Uniform random number generator
     /*! Mersenne Twister random number generator of period 2**19937-1

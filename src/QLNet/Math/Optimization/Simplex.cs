@@ -20,10 +20,8 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Extensions;
-using QLNet.Math;
-using QLNet.Math.Optimization;
 
-namespace QLNet
+namespace QLNet.Math.Optimization
 {
     //! Multi-dimensional simplex class
     [PublicAPI]
@@ -177,7 +175,7 @@ namespace QLNet
                 }
             } while (end == false);
 
-            Utils.QL_FAIL("optimization failed: unexpected behaviour");
+            QLNet.Utils.QL_FAIL("optimization failed: unexpected behaviour");
             return 0;
         }
 

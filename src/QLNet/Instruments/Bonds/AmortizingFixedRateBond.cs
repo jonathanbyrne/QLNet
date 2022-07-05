@@ -55,7 +55,7 @@ namespace QLNet.Instruments.Bonds
 
             addRedemptionsToCashflows();
 
-            Utils.QL_REQUIRE(!cashflows().empty(), () => "bond with no cashflows!");
+            QLNet.Utils.QL_REQUIRE(!cashflows().empty(), () => "bond with no cashflows!");
         }
 
         public AmortizingFixedRateBond(
@@ -81,7 +81,7 @@ namespace QLNet.Instruments.Bonds
 
             addRedemptionsToCashflows();
 
-            Utils.QL_REQUIRE(!cashflows().empty(), () => "bond with no cashflows!");
+            QLNet.Utils.QL_REQUIRE(!cashflows().empty(), () => "bond with no cashflows!");
         }
 
         public AmortizingFixedRateBond(
@@ -100,7 +100,7 @@ namespace QLNet.Instruments.Bonds
             frequency_ = sinkingFrequency;
             dayCounter_ = accrualDayCounter;
 
-            Utils.QL_REQUIRE(bondTenor.length() > 0, () =>
+            QLNet.Utils.QL_REQUIRE(bondTenor.length() > 0, () =>
                 "bond tenor must be positive. "
                 + bondTenor + " is not allowed.");
 
@@ -160,7 +160,7 @@ namespace QLNet.Instruments.Bonds
         {
             var freqPeriod = new Period(sinkingFrequency);
             var nPeriods = 0;
-            Utils.QL_REQUIRE(isSubPeriod(freqPeriod, maturityTenor, out nPeriods), () =>
+            QLNet.Utils.QL_REQUIRE(isSubPeriod(freqPeriod, maturityTenor, out nPeriods), () =>
                 "Bond frequency is incompatible with the maturity tenor");
 
             List<double> notionals = new InitializedList<double>(nPeriods + 1);
@@ -216,7 +216,7 @@ namespace QLNet.Instruments.Bonds
                 case TimeUnit.Years:
                     return new KeyValuePair<int, int>(365 * p.length(), 366 * p.length());
                 default:
-                    Utils.QL_FAIL("unknown time unit (" + p.units() + ")");
+                    QLNet.Utils.QL_FAIL("unknown time unit (" + p.units() + ")");
                     return new KeyValuePair<int, int>();
             }
         }

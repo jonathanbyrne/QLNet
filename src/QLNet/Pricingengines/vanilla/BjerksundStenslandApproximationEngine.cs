@@ -20,9 +20,9 @@
 using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Bjerksund and Stensland pricing engine for American options (1993)
     /*! \ingroup vanillaengines
@@ -46,30 +46,30 @@ namespace QLNet.Pricingengines.vanilla
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.American, () => "not an American Option");
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.American, () => "not an American Option");
 
             var ex = arguments_.exercise as AmericanExercise;
-            Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
+            QLNet.Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
 
-            Utils.QL_REQUIRE(!ex.payoffAtExpiry(), () => "payoff at expiry not handled");
+            QLNet.Utils.QL_REQUIRE(!ex.payoffAtExpiry(), () => "payoff at expiry not handled");
 
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-plain payoff given");
 
             var variance = process_.blackVolatility().link.blackVariance(ex.lastDate(), payoff.strike());
             var dividendDiscount = process_.dividendYield().link.discount(ex.lastDate());
             var riskFreeDiscount = process_.riskFreeRate().link.discount(ex.lastDate());
 
             var spot = process_.stateVariable().link.value();
-            Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
 
             var strike = payoff.strike();
 
             if (payoff.optionType() == QLNet.Option.Type.Put)
             {
                 // use put-call simmetry
-                Utils.swap<double>(ref spot, ref strike);
-                Utils.swap<double>(ref riskFreeDiscount, ref dividendDiscount);
+                QLNet.Utils.swap<double>(ref spot, ref strike);
+                QLNet.Utils.swap<double>(ref riskFreeDiscount, ref dividendDiscount);
                 payoff = new PlainVanillaPayoff(QLNet.Option.Type.Call, strike);
             }
 
@@ -121,7 +121,7 @@ namespace QLNet.Pricingengines.vanilla
 
             // investigate what happen to I for dD->0.0
             var I = B0 + (BInfinity - B0) * (1 - System.Math.Exp(ht));
-            Utils.QL_REQUIRE(I >= X, () => "Bjerksund-Stensland approximation not applicable to this set of parameters");
+            QLNet.Utils.QL_REQUIRE(I >= X, () => "Bjerksund-Stensland approximation not applicable to this set of parameters");
             if (S >= I)
             {
                 return S - X;

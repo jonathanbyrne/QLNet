@@ -16,10 +16,10 @@
 
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.Pricingengines.vanilla;
-using QLNet.processes;
+using QLNet.PricingEngines.vanilla;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.barrier
+namespace QLNet.PricingEngines.barrier
 {
     //! Analytic pricing engine for American binary barriers options
     /*! The formulas are taken from "The complete guide to option pricing formulas 2nd Ed",
@@ -49,20 +49,20 @@ namespace QLNet.Pricingengines.barrier
         public override void calculate()
         {
             var ex = arguments_.exercise as AmericanExercise;
-            Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
-            Utils.QL_REQUIRE(ex.payoffAtExpiry(), () => "payoff must be at expiry");
-            Utils.QL_REQUIRE(ex.dates()[0] <= process_.blackVolatility().link.referenceDate(), () =>
+            QLNet.Utils.QL_REQUIRE(ex != null, () => "non-American exercise given");
+            QLNet.Utils.QL_REQUIRE(ex.payoffAtExpiry(), () => "payoff must be at expiry");
+            QLNet.Utils.QL_REQUIRE(ex.dates()[0] <= process_.blackVolatility().link.referenceDate(), () =>
                 "American option with window exercise not handled yet");
 
             var payoff = arguments_.payoff as StrikedTypePayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
             var spot = process_.stateVariable().link.value();
-            Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(spot > 0.0, () => "negative or null underlying given");
 
             var variance = process_.blackVolatility().link.blackVariance(ex.lastDate(), payoff.strike());
             var barrier = arguments_.barrier;
-            Utils.QL_REQUIRE(barrier > 0.0, () => "positive barrier value required");
+            QLNet.Utils.QL_REQUIRE(barrier > 0.0, () => "positive barrier value required");
             var barrierType = arguments_.barrierType;
 
             // KO degenerate cases

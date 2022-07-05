@@ -21,6 +21,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using QLNet.Indexes;
 using QLNet.Time;
 
 namespace QLNet.Cashflows
@@ -69,7 +70,7 @@ namespace QLNet.Cashflows
         /// </summary>
         public override double convexityAdjustment()
         {
-            Utils.QL_FAIL("not defined for average-BMA coupon");
+            QLNet.Utils.QL_FAIL("not defined for average-BMA coupon");
             return 0;
         }
 
@@ -81,7 +82,7 @@ namespace QLNet.Cashflows
         /// </remarks>
         public override Date fixingDate()
         {
-            Utils.QL_FAIL("no single fixing date for average-BMA coupon");
+            QLNet.Utils.QL_FAIL("no single fixing date for average-BMA coupon");
             return null;
         }
 
@@ -96,7 +97,7 @@ namespace QLNet.Cashflows
         /// </summary>
         public override double indexFixing()
         {
-            Utils.QL_FAIL("no single fixing for average-BMA coupon");
+            QLNet.Utils.QL_FAIL("no single fixing for average-BMA coupon");
             return 0;
         }
 

@@ -13,7 +13,7 @@ namespace QLNet.Instruments
 
         public override double accumulate(Vector a)
         {
-            Utils.QL_REQUIRE(a.size() == 2, () => "payoff is only defined for two underlyings");
+            QLNet.Utils.QL_REQUIRE(a.size() == 2, () => "payoff is only defined for two underlyings");
             return a[0] - a[1];
         }
     }

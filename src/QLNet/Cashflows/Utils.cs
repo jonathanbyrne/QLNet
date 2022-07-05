@@ -1,6 +1,6 @@
 using QLNet.Extensions;
 
-namespace QLNet
+namespace QLNet.Cashflows
 {
     public static partial class Utils
     {

@@ -17,10 +17,10 @@
 using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Models.Shortrate.Onefactormodels;
-using QLNet.processes;
+using QLNet.Processes;
 using QLNet.Termstructures.Volatility.equityfx;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! analytic european option pricer including stochastic interest rates
     /*! References:
@@ -52,10 +52,10 @@ namespace QLNet.Pricingengines.vanilla
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(process_.x0() > 0.0, () => "negative or null underlying given");
+            QLNet.Utils.QL_REQUIRE(process_.x0() > 0.0, () => "negative or null underlying given");
 
             var payoff = arguments_.payoff as StrikedTypePayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "non-striked payoff given");
 
             var exercise = arguments_.exercise;
 

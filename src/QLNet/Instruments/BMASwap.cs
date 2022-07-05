@@ -87,7 +87,7 @@ namespace QLNet.Instruments
                     payer_[1] = +1.0;
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown BMA-swap ExerciseType");
+                    QLNet.Utils.QL_FAIL("Unknown BMA-swap ExerciseType");
                     break;
             }
         }
@@ -97,14 +97,14 @@ namespace QLNet.Instruments
         public double bmaLegBPS()
         {
             calculate();
-            Utils.QL_REQUIRE(legBPS_[1] != null, () => "result not available");
+            QLNet.Utils.QL_REQUIRE(legBPS_[1] != null, () => "result not available");
             return legBPS_[1].GetValueOrDefault();
         }
 
         public double bmaLegNPV()
         {
             calculate();
-            Utils.QL_REQUIRE(legNPV_[1] != null, () => "result not available");
+            QLNet.Utils.QL_REQUIRE(legNPV_[1] != null, () => "result not available");
             return legNPV_[1].GetValueOrDefault();
         }
 
@@ -114,7 +114,7 @@ namespace QLNet.Instruments
         {
             var spreadNPV = liborSpread_ / Const.BASIS_POINT * liborLegBPS();
             var pureLiborNPV = liborLegNPV() - spreadNPV;
-            Utils.QL_REQUIRE(pureLiborNPV.IsNotEqual(0.0), () => "result not available (null libor NPV)");
+            QLNet.Utils.QL_REQUIRE(pureLiborNPV.IsNotEqual(0.0), () => "result not available (null libor NPV)");
             return -liborFraction_ * (bmaLegNPV() + spreadNPV) / pureLiborNPV;
         }
 
@@ -127,14 +127,14 @@ namespace QLNet.Instruments
         public double liborLegBPS()
         {
             calculate();
-            Utils.QL_REQUIRE(legBPS_[0] != null, () => "result not available");
+            QLNet.Utils.QL_REQUIRE(legBPS_[0] != null, () => "result not available");
             return legBPS_[0].GetValueOrDefault();
         }
 
         public double liborLegNPV()
         {
             calculate();
-            Utils.QL_REQUIRE(legNPV_[0] != null, () => "result not available");
+            QLNet.Utils.QL_REQUIRE(legNPV_[0] != null, () => "result not available");
             return legNPV_[0].GetValueOrDefault();
         }
 

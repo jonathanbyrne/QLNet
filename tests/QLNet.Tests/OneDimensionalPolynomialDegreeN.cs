@@ -25,7 +25,7 @@ class OneDimensionalPolynomialDegreeN : CostFunction
         double y = 0;
         for (var i = 0; i <= polynomialDegree_; ++i)
         {
-            y += coefficients_[i] * Utils.Pow(x[0], i);
+            y += coefficients_[i] * QLNet.Utils.Pow(x[0], i);
         }
 
         return y;

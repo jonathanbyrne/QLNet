@@ -46,7 +46,7 @@ namespace QLNet.Models
             public override double value(Vector UnnamedParameter1, double t)
             {
                 var nIndex = times_.FindIndex(val => val.IsEqual(t));
-                Utils.QL_REQUIRE(nIndex != -1, () => "fitting parameter not set!");
+                QLNet.Utils.QL_REQUIRE(nIndex != -1, () => "fitting parameter not set!");
 
                 return values_[nIndex];
             }

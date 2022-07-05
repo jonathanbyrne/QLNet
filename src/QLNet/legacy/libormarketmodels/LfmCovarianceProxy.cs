@@ -34,7 +34,7 @@ namespace QLNet.legacy.libormarketmodels
             volaModel_ = volaModel;
             corrModel_ = corrModel;
 
-            Utils.QL_REQUIRE(volaModel_.size() == corrModel_.size(), () =>
+            QLNet.Utils.QL_REQUIRE(volaModel_.size() == corrModel_.size(), () =>
                 "different size for the volatility (" + volaModel_.size() + ") and correlation (" + corrModel_.size() + ") models");
         }
 
@@ -106,7 +106,7 @@ namespace QLNet.legacy.libormarketmodels
 
             try
             {
-                Utils.QL_REQUIRE(x.empty(), () => "can not handle given x here");
+                QLNet.Utils.QL_REQUIRE(x.empty(), () => "can not handle given x here");
             }
             catch //OK x empty
             {

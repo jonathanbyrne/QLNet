@@ -47,7 +47,7 @@ namespace QLNet.Math.Optimization
             costFunction_ = costFunction;
             constraint_ = constraint;
             currentValue_ = initialValue.Clone();
-            Utils.QL_REQUIRE(!constraint.empty(), () => "empty constraint given");
+            QLNet.Utils.QL_REQUIRE(!constraint.empty(), () => "empty constraint given");
         }
 
         public Constraint constraint() => constraint_;

@@ -17,9 +17,9 @@
 using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math.Distributions;
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet.Pricingengines.Lookback
+namespace QLNet.PricingEngines.Lookback
 {
     //! Pricing engine for European continuous fixed-strike lookback
     /*! Formula from "Option Pricing Formulas",
@@ -40,16 +40,16 @@ namespace QLNet.Pricingengines.Lookback
         public override void calculate()
         {
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "Non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "Non-plain payoff given");
 
-            Utils.QL_REQUIRE(process_.x0() > 0.0, () => "negative or null underlying");
+            QLNet.Utils.QL_REQUIRE(process_.x0() > 0.0, () => "negative or null underlying");
 
             var strike = payoff.strike();
 
             switch (payoff.optionType())
             {
                 case QLNet.Option.Type.Call:
-                    Utils.QL_REQUIRE(payoff.strike() >= 0.0, () => "Strike must be positive or null");
+                    QLNet.Utils.QL_REQUIRE(payoff.strike() >= 0.0, () => "Strike must be positive or null");
                     if (strike <= minmax())
                     {
                         results_.value = A(1) + C(1);
@@ -61,7 +61,7 @@ namespace QLNet.Pricingengines.Lookback
 
                     break;
                 case QLNet.Option.Type.Put:
-                    Utils.QL_REQUIRE(payoff.strike() > 0.0, () => "Strike must be positive");
+                    QLNet.Utils.QL_REQUIRE(payoff.strike() > 0.0, () => "Strike must be positive");
                     if (strike >= minmax())
                     {
                         results_.value = A(-1) + C(-1);
@@ -73,7 +73,7 @@ namespace QLNet.Pricingengines.Lookback
 
                     break;
                 default:
-                    Utils.QL_FAIL("Unknown ExerciseType");
+                    QLNet.Utils.QL_FAIL("Unknown ExerciseType");
                     break;
             }
         }
@@ -135,7 +135,7 @@ namespace QLNet.Pricingengines.Lookback
         private double strike()
         {
             var payoff = arguments_.payoff as PlainVanillaPayoff;
-            Utils.QL_REQUIRE(payoff != null, () => "Non-plain payoff given");
+            QLNet.Utils.QL_REQUIRE(payoff != null, () => "Non-plain payoff given");
             return payoff.strike();
         }
 

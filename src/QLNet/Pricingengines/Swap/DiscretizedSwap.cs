@@ -23,7 +23,7 @@ using QLNet.Instruments;
 using QLNet.Math;
 using QLNet.Time;
 
-namespace QLNet.Pricingengines.Swap
+namespace QLNet.PricingEngines.Swap
 {
     [PublicAPI]
     public class DiscretizedSwap : DiscretizedAsset

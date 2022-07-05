@@ -18,7 +18,7 @@
 */
 
 using QLNet.Math.Solvers1d;
-using QLNet.processes;
+using QLNet.Processes;
 using QLNet.Quotes;
 using QLNet.Termstructures.Volatility.equityfx;
 

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using QLNet.Time;
 
-namespace QLNet
+namespace QLNet.Instruments
 {
     public static partial class Utils
     {

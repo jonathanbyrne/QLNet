@@ -19,7 +19,7 @@ namespace QLNet.Cashflows
         /// </summary>
         public override double capletPrice(double d)
         {
-            Utils.QL_FAIL("not available");
+            QLNet.Utils.QL_FAIL("not available");
             return 0;
         }
 
@@ -28,7 +28,7 @@ namespace QLNet.Cashflows
         /// </summary>
         public override double capletRate(double d)
         {
-            Utils.QL_FAIL("not available");
+            QLNet.Utils.QL_FAIL("not available");
             return 0;
         }
 
@@ -37,7 +37,7 @@ namespace QLNet.Cashflows
         /// </summary>
         public override double floorletPrice(double d)
         {
-            Utils.QL_FAIL("not available");
+            QLNet.Utils.QL_FAIL("not available");
             return 0;
         }
 
@@ -46,14 +46,14 @@ namespace QLNet.Cashflows
         /// </summary>
         public override double floorletRate(double d)
         {
-            Utils.QL_FAIL("not available");
+            QLNet.Utils.QL_FAIL("not available");
             return 0;
         }
 
         public override void initialize(FloatingRateCoupon coupon)
         {
             coupon_ = coupon as AverageBmaCoupon;
-            Utils.QL_REQUIRE(coupon_ != null, () => "wrong coupon ExerciseType");
+            QLNet.Utils.QL_REQUIRE(coupon_ != null, () => "wrong coupon ExerciseType");
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace QLNet.Cashflows
         /// </summary>
         public override double swapletPrice()
         {
-            Utils.QL_FAIL("not available");
+            QLNet.Utils.QL_FAIL("not available");
             return 0;
         }
 
@@ -75,9 +75,9 @@ namespace QLNet.Cashflows
                 endDate = coupon_.accrualEndDate() - cutoffDays,
                 d1 = startDate;
 
-            Utils.QL_REQUIRE(fixingDates.Count > 0, () => "fixing date list empty");
-            Utils.QL_REQUIRE(index.valueDate(fixingDates.First()) <= startDate, () => "first fixing date valid after period start");
-            Utils.QL_REQUIRE(index.valueDate(fixingDates.Last()) >= endDate, () => "last fixing date valid before period end");
+            QLNet.Utils.QL_REQUIRE(fixingDates.Count > 0, () => "fixing date list empty");
+            QLNet.Utils.QL_REQUIRE(index.valueDate(fixingDates.First()) <= startDate, () => "first fixing date valid after period start");
+            QLNet.Utils.QL_REQUIRE(index.valueDate(fixingDates.Last()) >= endDate, () => "last fixing date valid before period end");
 
             var avgBma = 0.0;
             var days = 0;
@@ -106,7 +106,7 @@ namespace QLNet.Cashflows
 
             avgBma /= endDate - startDate;
 
-            Utils.QL_REQUIRE(days == endDate - startDate, () =>
+            QLNet.Utils.QL_REQUIRE(days == endDate - startDate, () =>
                 "averaging days " + days + " differ from " + "interest days " + (endDate - startDate));
 
             return coupon_.gearing() * avgBma + coupon_.spread();

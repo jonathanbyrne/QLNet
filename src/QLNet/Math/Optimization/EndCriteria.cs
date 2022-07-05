@@ -66,10 +66,10 @@ namespace QLNet.Math.Optimization
                 maxStationaryStateIterations_ = System.Math.Min(maxIterations / 2, 100);
             }
 
-            Utils.QL_REQUIRE(maxStationaryStateIterations_ > 1, () =>
+            QLNet.Utils.QL_REQUIRE(maxStationaryStateIterations_ > 1, () =>
                 "maxStationaryStateIterations_ (" + maxStationaryStateIterations_ + ") must be greater than one");
 
-            Utils.QL_REQUIRE(maxStationaryStateIterations_ < maxIterations_, () =>
+            QLNet.Utils.QL_REQUIRE(maxStationaryStateIterations_ < maxIterations_, () =>
                 "maxStationaryStateIterations_ (" + maxStationaryStateIterations_ + ") must be less than maxIterations_ (" + maxIterations_ + ")");
 
             if (gradientNormEpsilon_ == null)

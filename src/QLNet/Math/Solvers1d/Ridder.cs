@@ -52,7 +52,7 @@ namespace QLNet.Math.Solvers1d
                 fxMid = f.value(xMid);
                 ++evaluationNumber_;
                 s = System.Math.Sqrt(fxMid * fxMid - fxMin_ * fxMax_);
-                if (Utils.close(s, 0.0))
+                if (Math.Utils.close(s, 0.0))
                 {
                     return root_;
                 }
@@ -69,7 +69,7 @@ namespace QLNet.Math.Solvers1d
                 // Second of two function evaluations per iteration
                 froot = f.value(root_);
                 ++evaluationNumber_;
-                if (Utils.close(froot, 0.0))
+                if (Math.Utils.close(froot, 0.0))
                 {
                     return root_;
                 }
@@ -94,7 +94,7 @@ namespace QLNet.Math.Solvers1d
                 }
                 else
                 {
-                    Utils.QL_FAIL("never get here.");
+                    QLNet.Utils.QL_FAIL("never get here.");
                 }
 
                 if (System.Math.Abs(xMax_ - xMin_) <= xAccuracy)
@@ -103,7 +103,7 @@ namespace QLNet.Math.Solvers1d
                 }
             }
 
-            Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
+            QLNet.Utils.QL_FAIL("maximum number of function evaluations (" + maxEvaluations_ + ") exceeded",
                 QLNetExceptionEnum.MaxNumberFuncEvalExceeded);
             return 0;
         }

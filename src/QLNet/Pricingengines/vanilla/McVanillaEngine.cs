@@ -19,12 +19,12 @@
 */
 
 using QLNet.Instruments;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 using QLNet.Math.statistics;
 using QLNet.Methods.montecarlo;
 using QLNet.Patterns;
 
-namespace QLNet.Pricingengines.vanilla
+namespace QLNet.PricingEngines.vanilla
 {
     //! Pricing engine for vanilla options using Monte Carlo simulation
     /*! \ingroup vanillaengines */
@@ -80,17 +80,17 @@ namespace QLNet.Pricingengines.vanilla
             brownianBridge_ = brownianBridge;
             seed_ = seed;
 
-            Utils.QL_REQUIRE(timeSteps != null || timeStepsPerYear != null, () => "no time steps provided");
-            Utils.QL_REQUIRE(timeSteps == null || timeStepsPerYear == null, () =>
+            QLNet.Utils.QL_REQUIRE(timeSteps != null || timeStepsPerYear != null, () => "no time steps provided");
+            QLNet.Utils.QL_REQUIRE(timeSteps == null || timeStepsPerYear == null, () =>
                 "both time steps and time steps per year were provided");
             if (timeSteps != null)
             {
-                Utils.QL_REQUIRE(timeSteps > 0, () => "timeSteps must be positive, " + timeSteps + " not allowed");
+                QLNet.Utils.QL_REQUIRE(timeSteps > 0, () => "timeSteps must be positive, " + timeSteps + " not allowed");
             }
 
             if (timeStepsPerYear != null)
             {
-                Utils.QL_REQUIRE(timeStepsPerYear > 0, () =>
+                QLNet.Utils.QL_REQUIRE(timeStepsPerYear > 0, () =>
                     "timeStepsPerYear must be positive, " + timeStepsPerYear + " not allowed");
             }
 
@@ -110,16 +110,16 @@ namespace QLNet.Pricingengines.vanilla
         protected override double? controlVariateValue()
         {
             var controlPE = controlPricingEngine() as AnalyticHestonHullWhiteEngine;
-            Utils.QL_REQUIRE(controlPE != null, () => "engine does not provide control variation pricing engine");
+            QLNet.Utils.QL_REQUIRE(controlPE != null, () => "engine does not provide control variation pricing engine");
 
             var controlArguments = controlPE.getArguments() as QLNet.Option.Arguments;
-            Utils.QL_REQUIRE(controlArguments != null, () => "engine is using inconsistent arguments");
+            QLNet.Utils.QL_REQUIRE(controlArguments != null, () => "engine is using inconsistent arguments");
 
             controlPE.setupArguments(arguments_);
             controlPE.calculate();
 
             var controlResults = controlPE.getResults() as OneAssetOption.Results;
-            Utils.QL_REQUIRE(controlResults != null, () => "engine returns an inconsistent result ExerciseType");
+            QLNet.Utils.QL_REQUIRE(controlResults != null, () => "engine returns an inconsistent result ExerciseType");
 
             return controlResults.value;
         }
@@ -153,7 +153,7 @@ namespace QLNet.Pricingengines.vanilla
                 return new TimeGrid(t, System.Math.Max(steps, 1));
             }
 
-            Utils.QL_FAIL("time steps not specified");
+            QLNet.Utils.QL_FAIL("time steps not specified");
             return null;
         }
 

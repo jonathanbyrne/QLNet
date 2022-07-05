@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using QLNet.Quotes;
 
-namespace QLNet
+namespace QLNet.Cashflows
 {
     [PublicAPI]
     public interface IMeanRevertingPricer

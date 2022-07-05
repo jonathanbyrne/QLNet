@@ -20,7 +20,7 @@ using QLNet.Instruments;
 using QLNet.Termstructures.Inflation;
 using QLNet.Time;
 
-namespace QLNet.Pricingengines.inflation
+namespace QLNet.PricingEngines.inflation
 {
     //! This engine only adds timing functionality (e.g. different lag)
     //! w.r.t. an existing interpolated price surface.
@@ -45,8 +45,8 @@ namespace QLNet.Pricingengines.inflation
             // TODO next line will fail if units are different
             var lagDiff = arguments_.observationLag - priceSurf_.link.observationLag();
             // next line will fail if units are different if Period() is not well written
-            Utils.QL_REQUIRE(lagDiff >= new Period(0, TimeUnit.Months), () => "InterpolatingCPICapFloorEngine: " +
-                                                                              "lag difference must be non-negative: " + lagDiff);
+            QLNet.Utils.QL_REQUIRE(lagDiff >= new Period(0, TimeUnit.Months), () => "InterpolatingCPICapFloorEngine: " +
+                                                                                    "lag difference must be non-negative: " + lagDiff);
 
             // we now need an effective maturity to use in the price surface because this uses
             // maturity of calibration instruments as its time axis, N.B. this must also
@@ -69,7 +69,7 @@ namespace QLNet.Pricingengines.inflation
             }
             else
             {
-                var dd = Utils.inflationPeriod(effectiveMaturity, arguments_.infIndex.link.frequency());
+                var dd = Termstructures.Utils.inflationPeriod(effectiveMaturity, arguments_.infIndex.link.frequency());
                 var priceStart = 0.0;
 
                 if (arguments_.type == QLNet.Option.Type.Call)

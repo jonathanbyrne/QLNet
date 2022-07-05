@@ -46,7 +46,7 @@ namespace QLNet.Math.Interpolations
             xBegin2_ = xBegin.GetRange(n_, xBegin.Count);
             yBegin2_ = yBegin.GetRange(n_, yBegin.Count);
 
-            Utils.QL_REQUIRE(xBegin2_.Count < size_, () => "too large n (" + n + ") for " + size_ + "-element x sequence");
+            QLNet.Utils.QL_REQUIRE(xBegin2_.Count < size_, () => "too large n (" + n + ") for " + size_ + "-element x sequence");
 
             switch (behavior)
             {
@@ -59,7 +59,7 @@ namespace QLNet.Math.Interpolations
                     interpolation2_ = factory2.interpolate(xBegin2_, size_, yBegin2_);
                     break;
                 default:
-                    Utils.QL_FAIL("unknown mixed-interpolation behavior: " + behavior);
+                    QLNet.Utils.QL_FAIL("unknown mixed-interpolation behavior: " + behavior);
                     break;
             }
         }

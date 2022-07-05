@@ -38,12 +38,12 @@ namespace QLNet.Math.Distributions
         public InverseCumulativePoisson(double lambda)
         {
             lambda_ = lambda;
-            Utils.QL_REQUIRE(lambda_ > 0.0, () => "lambda must be positive");
+            QLNet.Utils.QL_REQUIRE(lambda_ > 0.0, () => "lambda must be positive");
         }
 
         public double value(double x)
         {
-            Utils.QL_REQUIRE(x >= 0.0 && x <= 1.0, () =>
+            QLNet.Utils.QL_REQUIRE(x >= 0.0 && x <= 1.0, () =>
                 "Inverse cumulative Poisson distribution is only defined on the interval [0,1]");
 
             if (x.IsEqual(1.0))

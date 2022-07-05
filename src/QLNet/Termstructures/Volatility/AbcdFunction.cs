@@ -40,7 +40,7 @@ namespace QLNet.Termstructures.Volatility
            \f[ \int_{t1}^{t2} f(T-t)f(S-t)dt \f] */
         public double covariance(double t1, double t2, double T, double S)
         {
-            Utils.QL_REQUIRE(t1 <= t2, () => "integrations bounds (" + t1 + "," + t2 + ") are in reverse order");
+            QLNet.Utils.QL_REQUIRE(t1 <= t2, () => "integrations bounds (" + t1 + "," + t2 + ") are in reverse order");
             var cutOff = System.Math.Min(S, T);
             if (t1 >= cutOff)
             {
@@ -81,7 +81,7 @@ namespace QLNet.Termstructures.Volatility
                 return 0.0;
             }
 
-            if (Utils.close(c_, 0.0))
+            if (Math.Utils.close(c_, 0.0))
             {
                 var v = a_ + d_;
                 return t * (v * v + v * b_ * S + v * b_ * T - v * b_ * t + b_ * b_ * S * T - 0.5 * b_ * b_ * t * (S + T) + b_ * b_ * t * t / 3.0);
@@ -119,7 +119,7 @@ namespace QLNet.Termstructures.Volatility
                 return instantaneousVolatility(tMax, T);
             }
 
-            Utils.QL_REQUIRE(tMax > tMin, () => "tMax must be > tMin");
+            QLNet.Utils.QL_REQUIRE(tMax > tMin, () => "tMax must be > tMin");
             return System.Math.Sqrt(variance(tMin, tMax, T) / (tMax - tMin));
         }
     }

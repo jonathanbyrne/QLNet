@@ -333,7 +333,7 @@ namespace QLNet.Cashflows
                     }
                     catch (Exception e)
                     {
-                        Utils.QL_FAIL("meanReversion: " + meanReversion_.link.value() + ", swapRateValue: " + swapRateValue_ + ", swapStartTime: " + swapStartTime_ + ", shapedPaymentTime: " + shapedPaymentTime_ + "\n error message: " + e.Message);
+                        QLNet.Utils.QL_FAIL("meanReversion: " + meanReversion_.link.value() + ", swapRateValue: " + swapRateValue_ + ", swapStartTime: " + swapStartTime_ + ", shapedPaymentTime: " + shapedPaymentTime_ + "\n error message: " + e.Message);
                     }
 
                     tmpRs_ = Rs;
@@ -374,7 +374,7 @@ namespace QLNet.Cashflows
                 var numerator = derNumOfDerR * denOfDerR - numOfDerR * derDenOfDerR;
                 if (denominator.IsEqual(0.0))
                 {
-                    Utils.QL_FAIL("GFunctionWithShifts::der2Rs_derX2: denominator == 0");
+                    QLNet.Utils.QL_FAIL("GFunctionWithShifts::der2Rs_derX2: denominator == 0");
                 }
 
                 return numerator / denominator;
@@ -387,7 +387,7 @@ namespace QLNet.Cashflows
                 var denominator = System.Math.Pow(denOfZfunction, 4);
                 if (denominator.IsEqual(0))
                 {
-                    Utils.QL_FAIL("GFunctionWithShifts::der2Z_derX2: denominator == 0");
+                    QLNet.Utils.QL_FAIL("GFunctionWithShifts::der2Z_derX2: denominator == 0");
                 }
 
                 double numOfDerZ = 0;
@@ -420,7 +420,7 @@ namespace QLNet.Cashflows
                 numerator -= (discountAtStart_ - swapPaymentDiscounts_.Last() * System.Math.Exp(-shapedSwapPaymentTimes_.Last() * x)) * derSqrtDenominator;
                 if (denominator.IsEqual(0.0))
                 {
-                    Utils.QL_FAIL("GFunctionWithShifts::derRs_derX: denominator == 0");
+                    QLNet.Utils.QL_FAIL("GFunctionWithShifts::derRs_derX: denominator == 0");
                 }
 
                 return numerator / denominator;
@@ -432,7 +432,7 @@ namespace QLNet.Cashflows
                 var denominator = sqrtDenominator * sqrtDenominator;
                 if (denominator.IsEqual(0.0))
                 {
-                    Utils.QL_FAIL("GFunctionWithShifts::derZ_derX: denominator == 0");
+                    QLNet.Utils.QL_FAIL("GFunctionWithShifts::derZ_derX: denominator == 0");
                 }
 
                 double numerator = 0;

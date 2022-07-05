@@ -21,24 +21,25 @@
 using System;
 using System.Collections.Generic;
 using Xunit;
-using QLNet.Math.randomnumbers;
 using QLNet.legacy.libormarketmodels;
 using QLNet.Methods.montecarlo;
 using QLNet.Models;
 using QLNet.Time;
 using QLNet.Math.Optimization;
 using QLNet.Instruments;
-using QLNet.Pricingengines.CapFloor;
+using QLNet.PricingEngines.CapFloor;
 using QLNet.Math.Distributions;
 using QLNet.Indexes;
+using QLNet.Indexes.Ibor;
 using QLNet.Math.statistics;
 using QLNet.Termstructures.Volatility.Optionlet;
 using QLNet.Math.Interpolations;
 using QLNet.Termstructures.Volatility.swaption;
 using QLNet.Termstructures;
 using QLNet.Math;
+using QLNet.Math.RandomNumbers;
 using QLNet.Models.Shortrate.calibrationhelpers;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.Swap;
 using QLNet.Quotes;
 using QLNet.Termstructures.Yield;
 using QLNet.Time.DayCounters;
@@ -467,7 +468,7 @@ namespace QLNet.Tests
                             var path = n % 2 != 0 ? generator.antithetic()
                                                  : generator.next();
                             var value = path.value as MultiPath;
-                            Utils.QL_REQUIRE(value != null, () => "Invalid Path");
+                            QLNet.Utils.QL_REQUIRE(value != null, () => "Invalid Path");
                             //Sample<MultiPath> path = generator.next();
                             List<double> rates_ = new InitializedList<double>(size);
                             for (var k = 0; k < process.size(); ++k)

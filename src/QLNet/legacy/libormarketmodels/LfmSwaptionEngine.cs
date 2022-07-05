@@ -21,8 +21,8 @@
 using System.Linq;
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.Pricingengines;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines;
+using QLNet.PricingEngines.Swap;
 using QLNet.Termstructures;
 
 namespace QLNet.legacy.libormarketmodels
@@ -46,7 +46,7 @@ namespace QLNet.legacy.libormarketmodels
 
         public override void calculate()
         {
-            Utils.QL_REQUIRE(arguments_.settlementMethod != Settlement.Method.ParYieldCurve, () =>
+            QLNet.Utils.QL_REQUIRE(arguments_.settlementMethod != Settlement.Method.ParYieldCurve, () =>
                 "cash-settled (ParYieldCurve) swaptions not priced with Lfm engine");
 
             var swap = arguments_.swap;
@@ -76,7 +76,7 @@ namespace QLNet.legacy.libormarketmodels
             var vol = volatility.volatility(exercise, swapLength,
                 fairRate, true);
             results_.value = swap.fixedLegBPS() / Const.BASIS_POINT *
-                             Utils.blackFormula(w, fixedRate, fairRate, vol * System.Math.Sqrt(exercise));
+                             PricingEngines.Utils.blackFormula(w, fixedRate, fairRate, vol * System.Math.Sqrt(exercise));
         }
     }
 }

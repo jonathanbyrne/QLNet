@@ -157,7 +157,7 @@ namespace QLNet.Instruments.Bonds
                     break;
 
                 default:
-                    Utils.QL_FAIL("unknown callability ExerciseType");
+                    QLNet.Utils.QL_FAIL("unknown callability ExerciseType");
                     break;
             }
         }

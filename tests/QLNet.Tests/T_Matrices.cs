@@ -21,9 +21,9 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 using QLNet;
-using QLNet.Math.matrixutilities;
-using QLNet.Math.randomnumbers;
 using QLNet.Math;
+using QLNet.Math.MatrixUtilities;
+using QLNet.Math.RandomNumbers;
 
 namespace QLNet.Tests
 {

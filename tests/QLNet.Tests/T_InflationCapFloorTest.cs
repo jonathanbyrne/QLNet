@@ -29,8 +29,8 @@ using QLNet.Termstructures;
 using QLNet.Indexes;
 using QLNet.Quotes;
 using QLNet.Indexes.Inflation;
-using QLNet.Pricingengines.inflation;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.inflation;
+using QLNet.PricingEngines.Swap;
 using QLNet.Termstructures.Yield;
 using QLNet.Time.Calendars;
 using QLNet.Time.DayCounters;
@@ -208,7 +208,7 @@ namespace QLNet.Tests
                         break;
                 }
                 // make compiler happy
-                Utils.QL_FAIL("never get here - no engine resolution");
+                QLNet.Utils.QL_FAIL("never get here - no engine resolution");
                 return null;
             }
 
@@ -229,7 +229,7 @@ namespace QLNet.Tests
                         result = new YoYInflationFloor(leg, new List<double>() { strike });
                         break;
                     default:
-                        Utils.QL_FAIL("unknown YoYInflation cap/floor ExerciseType");
+                        QLNet.Utils.QL_FAIL("unknown YoYInflation cap/floor ExerciseType");
                         break;
                 }
                 result.setPricingEngine(makeEngine(volatility, which));

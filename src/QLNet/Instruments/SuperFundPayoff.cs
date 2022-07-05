@@ -11,9 +11,9 @@ namespace QLNet.Instruments
         {
             secondStrike_ = secondStrike;
 
-            Utils.QL_REQUIRE(strike > 0.0, () => "strike (" + strike + ") must be positive");
-            Utils.QL_REQUIRE(secondStrike > strike, () => "second strike (" + secondStrike +
-                                                          ") must be higher than first strike (" + strike + ")");
+            QLNet.Utils.QL_REQUIRE(strike > 0.0, () => "strike (" + strike + ") must be positive");
+            QLNet.Utils.QL_REQUIRE(secondStrike > strike, () => "second strike (" + secondStrike +
+                                                                         ") must be higher than first strike (" + strike + ")");
         }
 
         // Payoff interface

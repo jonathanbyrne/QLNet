@@ -123,6 +123,6 @@ namespace QLNet.Math.Interpolations
             return x;
         }
 
-        public double weight(double strike, double forward, double stdDev, List<double?> addParams) => Utils.blackFormulaStdDevDerivative(strike, forward, stdDev);
+        public double weight(double strike, double forward, double stdDev, List<double?> addParams) => PricingEngines.Utils.blackFormulaStdDevDerivative(strike, forward, stdDev);
     }
 }

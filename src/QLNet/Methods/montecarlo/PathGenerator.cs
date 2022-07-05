@@ -19,7 +19,7 @@
 
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 
 namespace QLNet.Methods.montecarlo
 {
@@ -55,7 +55,7 @@ namespace QLNet.Methods.montecarlo
             next_ = new Sample<IPath>(new Path(timeGrid_), 1.0);
             temp_ = new InitializedList<double>(dimension_);
             bb_ = new BrownianBridge(timeGrid_);
-            Utils.QL_REQUIRE(dimension_ == timeSteps, () =>
+            QLNet.Utils.QL_REQUIRE(dimension_ == timeSteps, () =>
                 "sequence generator dimensionality (" + dimension_ + ") != timeSteps (" + timeSteps + ")");
         }
 
@@ -70,7 +70,7 @@ namespace QLNet.Methods.montecarlo
             temp_ = new InitializedList<double>(dimension_);
             bb_ = new BrownianBridge(timeGrid_);
 
-            Utils.QL_REQUIRE(dimension_ == timeGrid_.size() - 1, () =>
+            QLNet.Utils.QL_REQUIRE(dimension_ == timeGrid_.size() - 1, () =>
                 "sequence generator dimensionality (" + dimension_ + ") != timeSteps (" + (timeGrid_.size() - 1) + ")");
         }
 

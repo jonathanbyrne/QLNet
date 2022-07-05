@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using QLNet.Extensions;
 
-namespace QLNet.Math.matrixutilities
+namespace QLNet.Math.MatrixUtilities
 {
     //! symmetric threshold Jacobi algorithm.
     /*! Given a real symmetric matrix S, the Schur decomposition
@@ -53,8 +53,8 @@ namespace QLNet.Math.matrixutilities
             diagonal_ = new Vector(s.rows());
             eigenVectors_ = new Matrix(s.rows(), s.columns(), 0.0);
 
-            Utils.QL_REQUIRE(s.rows() > 0 && s.columns() > 0, () => "null matrix given");
-            Utils.QL_REQUIRE(s.rows() == s.columns(), () => "input matrix must be square");
+            QLNet.Utils.QL_REQUIRE(s.rows() > 0 && s.columns() > 0, () => "null matrix given");
+            QLNet.Utils.QL_REQUIRE(s.rows() == s.columns(), () => "input matrix must be square");
 
             var size = s.rows();
             for (var q = 0; q < size; q++)
@@ -173,7 +173,7 @@ namespace QLNet.Math.matrixutilities
                 }
             } while (++ite <= maxIterations && keeplooping);
 
-            Utils.QL_REQUIRE(ite <= maxIterations, () => "Too many iterations (" + maxIterations + ") reached");
+            QLNet.Utils.QL_REQUIRE(ite <= maxIterations, () => "Too many iterations (" + maxIterations + ") reached");
 
             // sort (eigenvalues, eigenvectors)
             List<KeyValuePair<double, Vector>> temp = new InitializedList<KeyValuePair<double, Vector>>(size);

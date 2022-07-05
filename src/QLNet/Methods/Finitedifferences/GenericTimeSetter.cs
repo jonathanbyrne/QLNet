@@ -1,7 +1,7 @@
 ﻿using JetBrains.Annotations;
 using QLNet.Math;
 using QLNet.Patterns;
-using QLNet.processes;
+using QLNet.Processes;
 
 namespace QLNet.Methods.Finitedifferences
 {

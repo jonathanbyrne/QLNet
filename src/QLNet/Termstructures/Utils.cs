@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using QLNet.Time;
 
-namespace QLNet
+namespace QLNet.Termstructures
 {
     public static partial class Utils
     {
@@ -31,7 +31,7 @@ namespace QLNet
                     startMonth = endMonth = month;
                     break;
                 default:
-                    QL_FAIL("Frequency not handled: " + frequency);
+                    QLNet.Utils.QL_FAIL("Frequency not handled: " + frequency);
                     break;
             }
 

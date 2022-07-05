@@ -46,7 +46,7 @@ namespace QLNet.Time
         */
         public static string code(Date date)
         {
-            Utils.QL_REQUIRE(isASXdate(date, false), () => date + " is not an ASX date");
+            QLNet.Utils.QL_REQUIRE(isASXdate(date, false), () => date + " is not an ASX date");
 
             var ASXcode = string.Empty;
             var y = (date.year() % 10).ToString();
@@ -89,7 +89,7 @@ namespace QLNet.Time
                     ASXcode = 'Z' + y;
                     break;
                 default:
-                    Utils.QL_FAIL("not an ASX month (and it should have been)");
+                    QLNet.Utils.QL_FAIL("not an ASX month (and it should have been)");
                     break;
             }
 
@@ -104,7 +104,7 @@ namespace QLNet.Time
         */
         public static Date date(string asxCode, Date refDate = null)
         {
-            Utils.QL_REQUIRE(isASXcode(asxCode, false), () =>
+            QLNet.Utils.QL_REQUIRE(isASXcode(asxCode, false), () =>
                 asxCode + " is not a valid ASX code");
 
             var referenceDate = refDate ?? Settings.evaluationDate();
@@ -162,7 +162,7 @@ namespace QLNet.Time
             }
             else
             {
-                Utils.QL_FAIL("invalid ASX month letter");
+                QLNet.Utils.QL_FAIL("invalid ASX month letter");
             }
 
             //       Year y = boost::lexical_cast<Year>(); // lexical_cast causes compilation errors with x64

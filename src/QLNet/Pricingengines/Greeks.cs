@@ -18,9 +18,9 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-using QLNet.processes;
+using QLNet.Processes;
 
-namespace QLNet
+namespace QLNet.PricingEngines
 {
     public static partial class Utils
     {

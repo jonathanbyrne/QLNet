@@ -373,11 +373,11 @@ namespace QLNet.Tests
             .endOfMonth().value();
 
             var issueDate = schedule.date(0);
-            Utils.QL_REQUIRE(issueDate == issueDateExpected, () =>
+            QLNet.Utils.QL_REQUIRE(issueDate == issueDateExpected, () =>
                              "This is not the expected issue date " + issueDate
                              + " expected " + issueDateExpected);
             var firstCouponDate = schedule.date(1);
-            Utils.QL_REQUIRE(firstCouponDate == firstCouponDateExpected, () =>
+            QLNet.Utils.QL_REQUIRE(firstCouponDate == firstCouponDateExpected, () =>
                              "This is not the expected first coupon date " + firstCouponDate
                              + " expected: " + firstCouponDateExpected);
 
@@ -394,11 +394,11 @@ namespace QLNet.Tests
             var quasiCouponDate1Expected = new Date(31, Month.August, 2016);
             var quasiCouponDate2Expected = new Date(28, Month.February, 2017);
 
-            Utils.QL_REQUIRE(quasiCouponDate2 == quasiCouponDate2Expected, () =>
+            QLNet.Utils.QL_REQUIRE(quasiCouponDate2 == quasiCouponDate2Expected, () =>
                              "Expected " + quasiCouponDate2Expected
                              + " as the later quasi coupon date but received "
                              + quasiCouponDate2);
-            Utils.QL_REQUIRE(quasiCouponDate1 == quasiCouponDate1Expected, () =>
+            QLNet.Utils.QL_REQUIRE(quasiCouponDate1 == quasiCouponDate1Expected, () =>
                              "Expected " + quasiCouponDate1Expected
                              + " as the earlier quasi coupon date but received "
                              + quasiCouponDate1);

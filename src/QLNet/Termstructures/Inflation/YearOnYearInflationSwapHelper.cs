@@ -1,7 +1,7 @@
 ﻿using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Instruments;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.Swap;
 using QLNet.Quotes;
 using QLNet.Time;
 
@@ -59,7 +59,7 @@ namespace QLNet.Termstructures.Inflation
             if (yii_.interpolated())
             {
                 var pShift = new Period(yii_.frequency());
-                Utils.QL_REQUIRE(swapObsLag_ - pShift > yii_.availabilityLag(), () =>
+                QLNet.Utils.QL_REQUIRE(swapObsLag_ - pShift > yii_.availabilityLag(), () =>
                     "inconsistency between swap observation of index "
                     + swapObsLag_ +
                     " index availability " + yii_.availabilityLag() +

@@ -41,7 +41,7 @@ namespace QLNet.Math.Interpolations
             if (leftType_ == CubicInterpolation.BoundaryCondition.Lagrange
                 || rightType_ == CubicInterpolation.BoundaryCondition.Lagrange)
             {
-                Utils.QL_REQUIRE(size >= 4, () =>
+                QLNet.Utils.QL_REQUIRE(size >= 4, () =>
                     "Lagrange boundary condition requires at least " +
                     "4 points (" + size + " are given)");
             }

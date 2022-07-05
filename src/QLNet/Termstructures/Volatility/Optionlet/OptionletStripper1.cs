@@ -20,7 +20,7 @@ using JetBrains.Annotations;
 using QLNet.Indexes;
 using QLNet.Instruments;
 using QLNet.Math;
-using QLNet.Pricingengines.CapFloor;
+using QLNet.PricingEngines.CapFloor;
 using QLNet.Quotes;
 using QLNet.Termstructures.Volatility.CapFloor;
 using QLNet.Time;
@@ -178,7 +178,7 @@ namespace QLNet.Termstructures.Volatility.Optionlet
                         }
                         else
                         {
-                            Utils.QL_FAIL("unknown volatility ExerciseType: " + volatilityType_);
+                            QLNet.Utils.QL_FAIL("unknown volatility ExerciseType: " + volatilityType_);
                         }
                     }
                 }
@@ -205,21 +205,21 @@ namespace QLNet.Termstructures.Volatility.Optionlet
                     {
                         if (volatilityType_ == VolatilityType.ShiftedLognormal)
                         {
-                            optionletStDevs_[i, j] = Utils.blackFormulaImpliedStdDev(optionletType, strikes[j], atmOptionletRate_[i],
+                            optionletStDevs_[i, j] = PricingEngines.Utils.blackFormulaImpliedStdDev(optionletType, strikes[j], atmOptionletRate_[i],
                                 optionletPrices_[i, j], optionletAnnuity, displacement_, optionletStDevs_[i, j], accuracy_,
                                 maxIter_);
                         }
                         else if (volatilityType_ == VolatilityType.Normal)
                         {
                             optionletStDevs_[i, j] = System.Math.Sqrt(optionletTimes_[i]) *
-                                                     Utils.bachelierBlackFormulaImpliedVol(
+                                                     PricingEngines.Utils.bachelierBlackFormulaImpliedVol(
                                                          optionletType, strikes[j], atmOptionletRate_[i],
                                                          optionletTimes_[i], optionletPrices_[i, j],
                                                          optionletAnnuity);
                         }
                         else
                         {
-                            Utils.QL_FAIL("Unknown volatility ExerciseType: " + volatilityType_);
+                            QLNet.Utils.QL_FAIL("Unknown volatility ExerciseType: " + volatilityType_);
                         }
                     }
                     catch (Exception e)
@@ -230,14 +230,14 @@ namespace QLNet.Termstructures.Volatility.Optionlet
                         }
                         else
                         {
-                            Utils.QL_FAIL("could not bootstrap optionlet:" +
-                                          "\n ExerciseType:    " + optionletType +
-                                          "\n strike:  " + strikes[j] +
-                                          "\n atm:     " + atmOptionletRate_[i] +
-                                          "\n price:   " + optionletPrices_[i, j] +
-                                          "\n annuity: " + optionletAnnuity +
-                                          "\n expiry:  " + optionletDates_[i] +
-                                          "\n error:   " + e.Message);
+                            QLNet.Utils.QL_FAIL("could not bootstrap optionlet:" +
+                                                         "\n ExerciseType:    " + optionletType +
+                                                         "\n strike:  " + strikes[j] +
+                                                         "\n atm:     " + atmOptionletRate_[i] +
+                                                         "\n price:   " + optionletPrices_[i, j] +
+                                                         "\n annuity: " + optionletAnnuity +
+                                                         "\n expiry:  " + optionletDates_[i] +
+                                                         "\n error:   " + e.Message);
                         }
                     }
 

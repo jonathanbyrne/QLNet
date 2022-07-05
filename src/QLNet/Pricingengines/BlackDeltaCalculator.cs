@@ -20,7 +20,7 @@ using QLNet.Math.Distributions;
 using QLNet.Math.Solvers1d;
 using QLNet.Quotes;
 
-namespace QLNet.Pricingengines
+namespace QLNet.PricingEngines
 {
     //! Black delta calculator class
     /*! Class includes many operations needed for different applications
@@ -58,10 +58,10 @@ namespace QLNet.Pricingengines
             forward_ = spot * fDiscount / dDiscount;
             phi_ = (int)ot;
 
-            Utils.QL_REQUIRE(spot_ > 0.0, () => "positive spot value required: " + spot_ + " not allowed");
-            Utils.QL_REQUIRE(dDiscount_ > 0.0, () => "positive domestic discount factor required: " + dDiscount_ + " not allowed");
-            Utils.QL_REQUIRE(fDiscount_ > 0.0, () => "positive foreign discount factor required: " + fDiscount_ + " not allowed");
-            Utils.QL_REQUIRE(stdDev_ >= 0.0, () => "non-negative standard deviation required: " + stdDev_ + " not allowed");
+            QLNet.Utils.QL_REQUIRE(spot_ > 0.0, () => "positive spot value required: " + spot_ + " not allowed");
+            QLNet.Utils.QL_REQUIRE(dDiscount_ > 0.0, () => "positive domestic discount factor required: " + dDiscount_ + " not allowed");
+            QLNet.Utils.QL_REQUIRE(fDiscount_ > 0.0, () => "positive foreign discount factor required: " + fDiscount_ + " not allowed");
+            QLNet.Utils.QL_REQUIRE(stdDev_ >= 0.0, () => "non-negative standard deviation required: " + stdDev_ + " not allowed");
 
             fExpPos_ = forward_ * System.Math.Exp(0.5 * stdDev_ * stdDev_);
             fExpNeg_ = forward_ * System.Math.Exp(-0.5 * stdDev_ * stdDev_);
@@ -96,13 +96,13 @@ namespace QLNet.Pricingengines
                     break;
 
                 case DeltaVolQuote.AtmType.AtmPutCall50:
-                    Utils.QL_REQUIRE(dt_ == DeltaVolQuote.DeltaType.Fwd, () =>
+                    QLNet.Utils.QL_REQUIRE(dt_ == DeltaVolQuote.DeltaType.Fwd, () =>
                         "|PutDelta|=CallDelta=0.50 only possible for forward delta.");
                     res = fExpPos_;
                     break;
 
                 default:
-                    Utils.QL_FAIL("invalid atm ExerciseType");
+                    QLNet.Utils.QL_FAIL("invalid atm ExerciseType");
                     break;
             }
 
@@ -190,7 +190,7 @@ namespace QLNet.Pricingengines
         // Give strike, receive delta according to specified ExerciseType
         public double deltaFromStrike(double strike)
         {
-            Utils.QL_REQUIRE(strike >= 0.0, () => "positive strike value required: " + strike + " not allowed");
+            QLNet.Utils.QL_REQUIRE(strike >= 0.0, () => "positive strike value required: " + strike + " not allowed");
 
             var res = 0.0;
 
@@ -213,7 +213,7 @@ namespace QLNet.Pricingengines
                     break;
 
                 default:
-                    Utils.QL_FAIL("invalid delta ExerciseType");
+                    QLNet.Utils.QL_FAIL("invalid delta ExerciseType");
                     break;
             }
 
@@ -277,18 +277,18 @@ namespace QLNet.Pricingengines
             var arg = 0.0;
             var f = new InverseCumulativeNormal();
 
-            Utils.QL_REQUIRE(delta * phi_ >= 0.0, () => "Option ExerciseType and delta are incoherent.");
+            QLNet.Utils.QL_REQUIRE(delta * phi_ >= 0.0, () => "Option ExerciseType and delta are incoherent.");
 
             switch (dt)
             {
                 case DeltaVolQuote.DeltaType.Spot:
-                    Utils.QL_REQUIRE(System.Math.Abs(delta) <= fDiscount_, () => "Spot delta out of range.");
+                    QLNet.Utils.QL_REQUIRE(System.Math.Abs(delta) <= fDiscount_, () => "Spot delta out of range.");
                     arg = -phi_ * f.value(phi_ * delta / fDiscount_) * stdDev_ + 0.5 * stdDev_ * stdDev_;
                     res = forward_ * System.Math.Exp(arg);
                     break;
 
                 case DeltaVolQuote.DeltaType.Fwd:
-                    Utils.QL_REQUIRE(System.Math.Abs(delta) <= 1.0, () => "Forward delta out of range.");
+                    QLNet.Utils.QL_REQUIRE(System.Math.Abs(delta) <= 1.0, () => "Forward delta out of range.");
                     arg = -phi_ * f.value(phi_ * delta) * stdDev_ + 0.5 * stdDev_ * stdDev_;
                     res = forward_ * System.Math.Exp(arg);
                     break;
@@ -350,7 +350,7 @@ namespace QLNet.Pricingengines
                     break;
 
                 default:
-                    Utils.QL_FAIL("invalid delta ExerciseType");
+                    QLNet.Utils.QL_FAIL("invalid delta ExerciseType");
                     break;
             }
 

@@ -55,7 +55,7 @@ namespace QLNet.Math.Interpolations
         {
             for (var i = 0; i < size_; ++i)
             {
-                Utils.QL_REQUIRE(yBegin_[i] > 0.0, () => "invalid value (" + yBegin_[i] + ") at index " + i);
+                QLNet.Utils.QL_REQUIRE(yBegin_[i] > 0.0, () => "invalid value (" + yBegin_[i] + ") at index " + i);
                 logY_[i] = System.Math.Log(yBegin_[i]);
             }
 

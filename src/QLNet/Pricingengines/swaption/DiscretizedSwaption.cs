@@ -21,10 +21,10 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.Pricingengines.Swap;
+using QLNet.PricingEngines.Swap;
 using QLNet.Time;
 
-namespace QLNet.Pricingengines.swaption
+namespace QLNet.PricingEngines.swaption
 {
     [PublicAPI]
     public class DiscretizedSwaption : DiscretizedOption

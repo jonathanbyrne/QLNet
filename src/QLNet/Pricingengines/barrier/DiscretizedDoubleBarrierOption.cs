@@ -20,9 +20,9 @@ using System.Linq;
 using JetBrains.Annotations;
 using QLNet.Instruments;
 using QLNet.Math;
-using QLNet.Pricingengines.vanilla;
+using QLNet.PricingEngines.vanilla;
 
-namespace QLNet.Pricingengines.barrier
+namespace QLNet.PricingEngines.barrier
 {
     [PublicAPI]
     public class DiscretizedDoubleBarrierOption : DiscretizedAsset
@@ -36,7 +36,7 @@ namespace QLNet.Pricingengines.barrier
             arguments_ = args;
             vanilla_ = new DiscretizedVanillaOption(arguments_, process, grid);
 
-            Utils.QL_REQUIRE(args.exercise.dates().Count > 0, () => "specify at least one stopping date");
+            QLNet.Utils.QL_REQUIRE(args.exercise.dates().Count > 0, () => "specify at least one stopping date");
 
             stoppingTimes_ = new InitializedList<double>(args.exercise.dates().Count);
             for (var i = 0; i < stoppingTimes_.Count; ++i)
@@ -86,7 +86,7 @@ namespace QLNet.Pricingengines.barrier
 
                     break;
                 default:
-                    Utils.QL_FAIL("invalid option ExerciseType");
+                    QLNet.Utils.QL_FAIL("invalid option ExerciseType");
                     break;
             }
 
@@ -189,7 +189,7 @@ namespace QLNet.Pricingengines.barrier
 
                         break;
                     default:
-                        Utils.QL_FAIL("invalid barrier ExerciseType");
+                        QLNet.Utils.QL_FAIL("invalid barrier ExerciseType");
                         break;
                 }
             }

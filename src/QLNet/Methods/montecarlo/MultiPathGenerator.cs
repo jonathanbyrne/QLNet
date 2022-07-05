@@ -19,7 +19,7 @@
 
 using JetBrains.Annotations;
 using QLNet.Math;
-using QLNet.Math.randomnumbers;
+using QLNet.Math.RandomNumbers;
 
 namespace QLNet.Methods.montecarlo
 {
@@ -44,13 +44,13 @@ namespace QLNet.Methods.montecarlo
             generator_ = generator;
             next_ = new Sample<IPath>(new MultiPath(process.size(), times), 1.0);
 
-            Utils.QL_REQUIRE(generator_.dimension() == process.factors() * (times.size() - 1), () =>
+            QLNet.Utils.QL_REQUIRE(generator_.dimension() == process.factors() * (times.size() - 1), () =>
                 "dimension (" + generator_.dimension()
                               + ") is not equal to ("
                               + process.factors() + " * " + (times.size() - 1)
                               + ") the number of factors "
                               + "times the number of time steps");
-            Utils.QL_REQUIRE(times.size() > 1, () => "no times given");
+            QLNet.Utils.QL_REQUIRE(times.size() > 1, () => "no times given");
         }
 
         public Sample<IPath> antithetic() => next(true);
@@ -61,7 +61,7 @@ namespace QLNet.Methods.montecarlo
         {
             if (brownianBridge_)
             {
-                Utils.QL_FAIL("Brownian bridge not supported");
+                QLNet.Utils.QL_FAIL("Brownian bridge not supported");
                 return null;
             }
 

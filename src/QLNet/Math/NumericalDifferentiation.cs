@@ -84,13 +84,13 @@ namespace QLNet.Math
 
         protected Vector calcOffsets(double h, int n, Scheme scheme)
         {
-            Utils.QL_REQUIRE(n > 1, () => "number of steps must be greater than one");
+            QLNet.Utils.QL_REQUIRE(n > 1, () => "number of steps must be greater than one");
 
             var retVal = new Vector(n);
             switch (scheme)
             {
                 case Scheme.Central:
-                    Utils.QL_REQUIRE(n > 2 && n % 2 > 0,
+                    QLNet.Utils.QL_REQUIRE(n > 2 && n % 2 > 0,
                         () => "number of steps must be an odd number greater than two");
                     for (var i = 0; i < n; ++i)
                     {
@@ -113,7 +113,7 @@ namespace QLNet.Math
 
                     break;
                 default:
-                    Utils.QL_FAIL("unknown numerical differentiation scheme");
+                    QLNet.Utils.QL_FAIL("unknown numerical differentiation scheme");
                     break;
             }
 
@@ -127,8 +127,8 @@ namespace QLNet.Math
         protected Vector calcWeights(Vector x, int M)
         {
             var N = x.size();
-            Utils.QL_REQUIRE(N > M, () => "number of points must be greater "
-                                          + "than the order of the derivative");
+            QLNet.Utils.QL_REQUIRE(N > M, () => "number of points must be greater "
+                                                         + "than the order of the derivative");
 
             var d = new double[M + 1, N, N];
             d[0, 0, 0] = 1.0;

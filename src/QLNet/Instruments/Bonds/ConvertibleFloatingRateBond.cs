@@ -37,7 +37,7 @@ namespace QLNet.Instruments.Bonds
 
             addRedemptionsToCashflows(new List<double> { redemption });
 
-            Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
+            QLNet.Utils.QL_REQUIRE(redemptions_.Count == 1, () => "multiple redemptions created");
 
             option_ = new option(this, exercise, conversionRatio, dividends, callability, creditSpread, cashflows_,
                 dayCounter, schedule,

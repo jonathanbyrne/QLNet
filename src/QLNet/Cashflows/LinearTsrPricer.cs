@@ -250,7 +250,7 @@ namespace QLNet.Cashflows
         public override void initialize(FloatingRateCoupon coupon)
         {
             coupon_ = coupon as CmsCoupon;
-            Utils.QL_REQUIRE(coupon_ != null, () => "CMS coupon needed");
+            QLNet.Utils.QL_REQUIRE(coupon_ != null, () => "CMS coupon needed");
             gearing_ = coupon_.gearing();
             spread_ = coupon_.spread();
 
@@ -491,7 +491,7 @@ namespace QLNet.Cashflows
                 }
 
                 default:
-                    Utils.QL_FAIL("Unknown strategy (" + settings_.strategy_ + ")");
+                    QLNet.Utils.QL_FAIL("Unknown strategy (" + settings_.strategy_ + ")");
                     break;
             }
 

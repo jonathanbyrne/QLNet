@@ -21,7 +21,7 @@
 using System.Linq;
 using JetBrains.Annotations;
 using QLNet.Instruments;
-using QLNet.Pricingengines.Bond;
+using QLNet.PricingEngines.Bond;
 using QLNet.Quotes;
 
 namespace QLNet.Termstructures.Yield
@@ -63,7 +63,7 @@ namespace QLNet.Termstructures.Yield
 
         public override double impliedQuote()
         {
-            Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
+            QLNet.Utils.QL_REQUIRE(termStructure_ != null, () => "term structure not set");
             // we didn't register as observers - force calculation
             bond_.recalculate();
             if (useCleanPrice_)

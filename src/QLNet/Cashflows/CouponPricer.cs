@@ -21,7 +21,7 @@
 
 using System.Collections.Generic;
 
-namespace QLNet
+namespace QLNet.Cashflows
 {
     //! generic pricer for floating-rate coupons
 
@@ -56,10 +56,10 @@ namespace QLNet
         public static void setCouponPricers(List<CashFlow> leg, List<FloatingRateCouponPricer> pricers)
         {
             var nCashFlows = leg.Count;
-            QL_REQUIRE(nCashFlows > 0, () => "no cashflows");
+            QLNet.Utils.QL_REQUIRE(nCashFlows > 0, () => "no cashflows");
 
             var nPricers = pricers.Count;
-            QL_REQUIRE(nCashFlows >= nPricers, () =>
+            QLNet.Utils.QL_REQUIRE(nCashFlows >= nPricers, () =>
                 "mismatch between leg size (" + nCashFlows +
                 ") and number of pricers (" + nPricers + ")");
 

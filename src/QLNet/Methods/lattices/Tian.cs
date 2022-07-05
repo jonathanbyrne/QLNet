@@ -24,8 +24,8 @@ namespace QLNet.Methods.lattices
             pu_ = (r - down_) / (up_ - down_);
             pd_ = 1.0 - pu_;
 
-            Utils.QL_REQUIRE(pu_ <= 1.0, () => "negative probability");
-            Utils.QL_REQUIRE(pu_ >= 0.0, () => "negative probability");
+            QLNet.Utils.QL_REQUIRE(pu_ <= 1.0, () => "negative probability");
+            QLNet.Utils.QL_REQUIRE(pu_ >= 0.0, () => "negative probability");
         }
 
         public Tian factory(StochasticProcess1D process, double end, int steps, double strike) => new Tian(process, end, steps, strike);

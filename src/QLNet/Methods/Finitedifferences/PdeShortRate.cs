@@ -20,7 +20,7 @@
 using System;
 using JetBrains.Annotations;
 using QLNet.Models.Shortrate;
-using QLNet.processes;
+using QLNet.Processes;
 
 namespace QLNet.Methods.Finitedifferences
 {

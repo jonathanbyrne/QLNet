@@ -187,7 +187,7 @@ namespace QLNet.Indexes
         // recheck
         public VanillaSwap underlyingSwap(Date fixingDate)
         {
-            Utils.QL_REQUIRE(fixingDate != null, () => "null fixing date");
+            QLNet.Utils.QL_REQUIRE(fixingDate != null, () => "null fixing date");
             // caching mechanism
             if (lastFixingDate_ != fixingDate)
             {

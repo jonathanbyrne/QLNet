@@ -52,7 +52,7 @@ namespace QLNet.Indexes.Ibor
                 case TimeUnit.Years:
                     return BusinessDayConvention.ModifiedFollowing;
                 default:
-                    Utils.QL_FAIL("invalid time units");
+                    QLNet.Utils.QL_FAIL("invalid time units");
                     return BusinessDayConvention.Unadjusted;
             }
         }

@@ -32,20 +32,20 @@ namespace QLNet.Cashflows
 
         public List<CashFlow> Leg()
         {
-            Utils.QL_REQUIRE(!notionals_.empty(), () => "no notional given");
+            QLNet.Utils.QL_REQUIRE(!notionals_.empty(), () => "no notional given");
 
             var n = schedule_.Count - 1;
-            Utils.QL_REQUIRE(notionals_.Count <= n, () =>
+            QLNet.Utils.QL_REQUIRE(notionals_.Count <= n, () =>
                 "too many nominals (" + notionals_.Count + "), only " + n + " required");
-            Utils.QL_REQUIRE(fixingDays_.Count <= n, () =>
+            QLNet.Utils.QL_REQUIRE(fixingDays_.Count <= n, () =>
                 "too many fixingDays (" + fixingDays_.Count + "), only " + n + " required");
-            Utils.QL_REQUIRE(gearings_.Count <= n, () =>
+            QLNet.Utils.QL_REQUIRE(gearings_.Count <= n, () =>
                 "too many gearings (" + gearings_.Count + "), only " + n + " required");
-            Utils.QL_REQUIRE(spreads_.Count <= n, () =>
+            QLNet.Utils.QL_REQUIRE(spreads_.Count <= n, () =>
                 "too many spreads (" + spreads_.Count + "), only " + n + " required");
-            Utils.QL_REQUIRE(lowerTriggers_.Count <= n, () =>
+            QLNet.Utils.QL_REQUIRE(lowerTriggers_.Count <= n, () =>
                 "too many lowerTriggers (" + lowerTriggers_.Count + "), only " + n + " required");
-            Utils.QL_REQUIRE(upperTriggers_.Count <= n, () =>
+            QLNet.Utils.QL_REQUIRE(upperTriggers_.Count <= n, () =>
                 "too many upperTriggers (" + upperTriggers_.Count + "), only " + n + " required");
 
             var leg = new List<CashFlow>();

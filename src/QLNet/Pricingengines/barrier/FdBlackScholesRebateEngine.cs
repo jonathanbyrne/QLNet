@@ -25,14 +25,14 @@ using QLNet.Methods.Finitedifferences.Operators;
 using QLNet.Methods.Finitedifferences.Solvers;
 using QLNet.Methods.Finitedifferences.StepConditions;
 using QLNet.Methods.Finitedifferences.Utilities;
-using QLNet.processes;
+using QLNet.Processes;
 
 //! Finite-Differences Black Scholes barrier option rebate helper engine
 /*!
     \ingroup barrierengines
 */
 
-namespace QLNet.Pricingengines.barrier
+namespace QLNet.PricingEngines.barrier
 {
     [PublicAPI]
     public class FdBlackScholesRebateEngine : DividendBarrierOption.Engine
@@ -98,7 +98,7 @@ namespace QLNet.Pricingengines.barrier
                 new FdmLogInnerValue(rebatePayoff, mesher, 0);
 
             // 3. Step conditions
-            Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European,
+            QLNet.Utils.QL_REQUIRE(arguments_.exercise.ExerciseType() == Exercise.Type.European,
                 () => "only european style option are supported");
 
             var conditions =

@@ -25,19 +25,19 @@ namespace QLNet.Math.Interpolations
 
         public override double derivative(double d)
         {
-            Utils.QL_FAIL("First derivative calculation not implemented for kernel interpolation");
+            QLNet.Utils.QL_FAIL("First derivative calculation not implemented for kernel interpolation");
             return 0;
         }
 
         public override double primitive(double d)
         {
-            Utils.QL_FAIL("Primitive calculation not implemented for kernel interpolation");
+            QLNet.Utils.QL_FAIL("Primitive calculation not implemented for kernel interpolation");
             return 0;
         }
 
         public override double secondDerivative(double d)
         {
-            Utils.QL_FAIL("Second derivative calculation not implemented for kernel interpolation");
+            QLNet.Utils.QL_FAIL("Second derivative calculation not implemented for kernel interpolation");
             return 0;
         }
 
@@ -102,7 +102,7 @@ namespace QLNet.Math.Interpolations
             }
 
             // Solve y=M*\alpha for \alpha
-            alphaVec_ = MatrixUtilities.qrSolve(M_, yVec_);
+            alphaVec_ = MatrixUtilities.MatrixUtilities.qrSolve(M_, yVec_);
 
             // check if inversion worked up to a reasonable precision.
             // I've chosen not to check determinant(M_)!=0 before solving
@@ -111,7 +111,7 @@ namespace QLNet.Math.Interpolations
 
             for (var i = 0; i < diffVec.size(); ++i)
             {
-                Utils.QL_REQUIRE(diffVec[i] < invPrec_, () =>
+                QLNet.Utils.QL_REQUIRE(diffVec[i] < invPrec_, () =>
                     "Inversion failed in 1d kernel interpolation");
             }
         }

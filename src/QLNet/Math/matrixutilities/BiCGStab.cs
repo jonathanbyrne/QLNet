@@ -20,7 +20,7 @@
 using JetBrains.Annotations;
 using QLNet.Extensions;
 
-namespace QLNet.Math.matrixutilities
+namespace QLNet.Math.MatrixUtilities
 {
     /// bi-conjugated gradient stableized algorithm
     [PublicAPI]
@@ -101,8 +101,8 @@ namespace QLNet.Math.matrixutilities
                 rhoTld = rho;
             }
 
-            Utils.QL_REQUIRE(i < maxIter_, () => "max number of iterations exceeded");
-            Utils.QL_REQUIRE(error < relTol_, () => "could not converge");
+            QLNet.Utils.QL_REQUIRE(i < maxIter_, () => "max number of iterations exceeded");
+            QLNet.Utils.QL_REQUIRE(error < relTol_, () => "could not converge");
 
             result = new BiCGStabResult(i, error, x);
             return result;

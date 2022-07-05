@@ -33,7 +33,7 @@ namespace QLNet.Cashflows
 
         public SimpleCashFlow(double amount, Date date)
         {
-            Utils.QL_REQUIRE(date != null, () => "null date SimpleCashFlow");
+            QLNet.Utils.QL_REQUIRE(date != null, () => "null date SimpleCashFlow");
             amount_ = amount;
             date_ = date;
         }
